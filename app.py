@@ -238,9 +238,11 @@ def render_sidebar_link() -> None:
     if password == PASSWORD:
         st.session_state["inventory_unlocked"] = True
         st.sidebar.link_button("打开实时库存表", "?view=inventory")
-        st.sidebar.caption("本地链接: http://localhost:8501/?view=inventory")
+        st.sidebar.caption("部署后复制浏览器地址栏里的实时库存页链接，即可分享给其他管理人。")
     elif password:
         st.sidebar.error("密码不正确")
+    st.sidebar.divider()
+    st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
 
 def get_row_count() -> int:
@@ -439,6 +441,57 @@ def add_material_category(
     st.rerun()
 
 
+def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> None:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    transaction_data = (
+        TRANSACTIONS_CSV.read_bytes()
+        if TRANSACTIONS_CSV.exists()
+        else ",".join(TRANSACTION_HEADERS).encode("utf-8-sig")
+    )
+
+    st.subheader("下载库存数据")
+    st.caption("下载按钮导出的是当前 Streamlit 应用内保存的最新数据。")
+
+    full_col_a, full_col_b, log_col = st.columns(3)
+    full_col_a.download_button(
+        "下载完整库存 Excel",
+        data=workbook_bytes(full_df),
+        file_name=f"完整物料库存表_{timestamp}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        width="stretch",
+    )
+    full_col_b.download_button(
+        "下载完整库存 CSV",
+        data=full_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+        file_name=f"完整物料库存表_{timestamp}.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+    log_col.download_button(
+        "下载库存变更流水",
+        data=transaction_data,
+        file_name=f"库存变更流水_{timestamp}.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+    filtered_col_a, filtered_col_b = st.columns(2)
+    filtered_col_a.download_button(
+        "下载当前筛选 Excel",
+        data=workbook_bytes(filtered_df),
+        file_name=f"当前筛选物料库存表_{timestamp}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        width="stretch",
+    )
+    filtered_col_b.download_button(
+        "下载当前筛选 CSV",
+        data=filtered_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+        file_name=f"当前筛选物料库存表_{timestamp}.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+
 def apply_changes(changes: list[dict[str, object]]) -> None:
     valid_changes = [item for item in changes if int(item["quantity"]) > 0 or item["action"] == "盘点设为"]
     if not valid_changes:
@@ -500,6 +553,7 @@ def render_inventory_view() -> None:
         return
 
     df = load_inventory()
+    st.caption("当前库存统一保存在 Streamlit 应用目录 `data/inventory.xlsx`。所有入库、出库、新增品类操作都会直接更新这里的数据。")
     product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
 
     selected_products = product_filter.multiselect("物料品类", sorted(df[PRODUCT_COL].unique()))
@@ -524,24 +578,7 @@ def render_inventory_view() -> None:
     metric_d.metric("库存总价值", f"{float(filtered[VALUE_COL].sum()):,.2f}")
 
     st.dataframe(filtered, width="stretch", hide_index=True, height=560)
-
-    excel_data = workbook_bytes(filtered)
-    csv_data = filtered.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
-    download_col_a, download_col_b = st.columns(2)
-    download_col_a.download_button(
-        "下载当前筛选 Excel",
-        data=excel_data,
-        file_name="实时物料库存表.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        width="stretch",
-    )
-    download_col_b.download_button(
-        "下载当前筛选 CSV",
-        data=csv_data,
-        file_name="实时物料库存表.csv",
-        mime="text/csv",
-        width="stretch",
-    )
+    render_download_center(df, filtered)
 
 
 def render_management_page() -> None:
