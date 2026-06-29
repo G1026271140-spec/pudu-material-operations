@@ -40,7 +40,7 @@ declare
   v_created_at timestamptz;
 begin
   if p_action <> '盘点设为' and p_quantity < 0 then
-    raise exception '入库和出库数量不能小于 0';
+    raise exception '领取和采购数量不能小于 0';
   end if;
 
   select ii.*
@@ -57,9 +57,9 @@ begin
 
   v_before := v_item.quantity;
 
-  if p_action = '入库增加' then
+  if p_action in ('物料采购（增加库存）', '入库增加') then
     v_after := v_before + p_quantity;
-  elsif p_action = '出库减少' then
+  elsif p_action in ('物料领取（减少库存）', '出库减少') then
     v_after := v_before - p_quantity;
   elsif p_action = '盘点设为' then
     v_after := p_quantity;

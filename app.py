@@ -24,6 +24,11 @@ TRANSACTIONS_CSV = DATA_DIR / "transactions.csv"
 
 DEFAULT_PASSWORD = "376493"
 NO_MODEL_TEXT = "无需型号"
+ACTION_RECEIVE = "物料领取（减少库存）"
+ACTION_PURCHASE = "物料采购（增加库存）"
+ACTION_OPTIONS = [ACTION_RECEIVE, ACTION_PURCHASE]
+DECREASE_ACTIONS = {ACTION_RECEIVE, "出库减少"}
+INCREASE_ACTIONS = {ACTION_PURCHASE, "入库增加"}
 
 PRODUCT_COL = "物料品类(Material Category)"
 MODEL_COL = "产品型号(Product Model)"
@@ -1028,10 +1033,10 @@ def render_change_form(show_title: bool = True) -> None:
     languages = list(selection_context["languages"])
 
     if show_title:
-        st.title("物料库存更新")
+        st.title("营销物料领取登记")
     else:
-        st.subheader("物料库存更新")
-    st.caption("一次可以填写多种物料。选择品类后，绿色底纹品类会自动使用“无需型号”。")
+        st.subheader("营销物料领取登记")
+    st.caption("一次可以填写多种物料。")
 
     row_count = get_row_count()
     changes: list[dict[str, object]] = []
@@ -1068,13 +1073,17 @@ def render_change_form(show_title: bool = True) -> None:
             )
             action = action_col.selectbox(
                 "操作",
-                ["入库增加", "出库减少", "盘点设为"],
+                ACTION_OPTIONS,
                 key=f"action_{index}",
             )
-            min_quantity = -1_000_000 if action == "盘点设为" else 0
+            action_color = "#DC2626" if action == ACTION_RECEIVE else "#059669"
+            action_col.markdown(
+                f"<div style='height:8px'></div><div style='color:{action_color};font-weight:700;'>{action}</div>",
+                unsafe_allow_html=True,
+            )
             quantity = qty_col.number_input(
                 "数量",
-                min_value=min_quantity,
+                min_value=0,
                 max_value=1_000_000,
                 value=0,
                 step=1,
@@ -1417,18 +1426,24 @@ def render_transaction_admin() -> None:
                 index=languages.index(str(selected.get("language", ""))) if str(selected.get("language", "")) in languages else 0,
                 key=f"replace_language_{selected_id}",
             )
-            actions = ["入库增加", "出库减少", "盘点设为"]
+            actions = ACTION_OPTIONS
+            old_action = str(selected.get("action", ACTION_RECEIVE))
+            if old_action in DECREASE_ACTIONS or old_action == "盘点设为":
+                default_action = ACTION_RECEIVE
+            elif old_action in INCREASE_ACTIONS:
+                default_action = ACTION_PURCHASE
+            else:
+                default_action = ACTION_RECEIVE
             replace_action = edit_col_d.selectbox(
                 "操作",
                 actions,
-                index=actions.index(str(selected.get("action", "入库增加"))) if str(selected.get("action", "")) in actions else 0,
+                index=actions.index(default_action),
                 key=f"replace_action_{selected_id}",
             )
-            replace_min_quantity = -1_000_000 if replace_action == "盘点设为" else 0
-            replace_default_quantity = max(int(selected.get("quantity") or 0), replace_min_quantity)
+            replace_default_quantity = max(int(selected.get("quantity") or 0), 0)
             replace_quantity = edit_col_e.number_input(
                 "数量",
-                min_value=replace_min_quantity,
+                min_value=0,
                 max_value=1_000_000,
                 value=replace_default_quantity,
                 step=1,
@@ -1748,7 +1763,7 @@ def render_edit_revert_page() -> None:
 
 
 def apply_changes(changes: list[dict[str, object]]) -> None:
-    valid_changes = [item for item in changes if int(item["quantity"]) > 0 or item["action"] == "盘点设为"]
+    valid_changes = [item for item in changes if int(item["quantity"]) > 0]
     if not valid_changes:
         st.warning("请至少填写一项数量大于 0 的物料。")
         return
@@ -1799,12 +1814,13 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
             row_index = working.index[mask][0]
             before = int(working.at[row_index, QTY_COL])
 
-            if action == "入库增加":
+            if action in INCREASE_ACTIONS:
                 after = before + quantity
-            elif action == "出库减少":
+            elif action in DECREASE_ACTIONS:
                 after = before - quantity
             else:
-                after = quantity
+                st.error(f"不支持的操作: {action}")
+                return
 
             working.at[row_index, QTY_COL] = after
             working.at[row_index, VALUE_COL] = after * float(working.at[row_index, PRICE_COL])
@@ -1826,7 +1842,7 @@ def render_inventory_view() -> None:
 
     navigate_to_management("inventory_back_to_management")
     df = load_inventory()
-    st.caption(f"当前存储：{storage_mode_label()}。所有入库、出库、新增品类操作都会直接更新当前存储。")
+    st.caption(f"当前存储：{storage_mode_label()}。所有领取、采购、新增品类操作都会直接更新当前存储。")
     product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
 
     selected_products = product_filter.multiselect(
@@ -1879,7 +1895,7 @@ def render_inventory_view() -> None:
 def render_management_page() -> None:
     st.title("物料库存管理")
     navigate_to_inventory("management_open_inventory")
-    update_tab, add_tab, edit_tab = st.tabs(["库存增减", "新增物料品类", "修改与撤回"])
+    update_tab, add_tab, edit_tab = st.tabs(["库存登记", "新增物料品类", "修改与撤回"])
     with update_tab:
         render_change_form(show_title=False)
     with add_tab:

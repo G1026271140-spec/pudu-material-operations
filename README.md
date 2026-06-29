@@ -4,10 +4,10 @@
 
 - 从 `data/source_materials.xlsx` 读取产品品类、型号、语种。
 - 普通品类生成「品类 + 型号 + 语种」库存组合。
-- 绿色底纹品类生成「品类 + 语种」库存组合，并把型号统一标记为「无需型号」。
-- 支持一次提交多种物料的入库、出库和盘点修正。
+- 不按型号分类的品类生成「品类 + 语种」库存组合，并把型号统一标记为「无需型号」。
+- 支持一次登记多种营销物料领取和物料采购。
 - 支持新增物料品类，可多选已有产品型号和语种，也可自定义新增型号和语种。
-- 新增品类后会自动生成库存行，并同步更新库存更新表单的下拉选项。
+- 新增品类后会自动生成库存行，并同步更新库存登记表单的下拉选项。
 - 实时库存主数据保存在 Streamlit 应用目录的 `data/inventory.xlsx`。
 - 配置 Supabase 后，实时库存主数据会保存在 Supabase 长期数据库。
 - 实时库存页支持下载完整库存表、当前筛选结果和库存变更流水。
@@ -30,7 +30,7 @@ cd "$env:USERPROFILE\Desktop\pudu-material-inventory"
 
 运行后打开脚本打印的链接：
 
-- 库存更新表单: `http://localhost:8501`
+- 库存登记表单: `http://localhost:8501`
 - 实时库存表: `http://localhost:8501/?view=inventory`
 
 实时库存页需要输入密码 `376493`。
@@ -49,7 +49,7 @@ SUPABASE_SERVICE_ROLE_KEY = "你的 service_role key"
 
 如果只填写 `INVENTORY_VIEW_PASSWORD`，应用会继续使用本地 Excel 文件。填写 Supabase 后，应用会自动切换到长期数据库。
 
-首次连接到空的 Supabase 数据库时，应用会把 `data/inventory.xlsx` 中的初始库存组合导入数据库。之后入库、出库、新增品类和流水都会写入 Supabase。
+首次连接到空的 Supabase 数据库时，应用会把 `data/inventory.xlsx` 中的初始库存组合导入数据库。之后物料领取、物料采购、新增品类和流水都会写入 Supabase。
 
 ## 多人共同管理
 

@@ -7,7 +7,7 @@
 - `data/options.json`: 表单下拉选项
 - `data/transactions.csv`: 库存变更流水
 
-所有入库、出库、新增物料品类操作都会直接更新这些应用内数据文件。实时库存页提供完整库存表和当前筛选结果的下载按钮。
+所有物料领取、物料采购、新增物料品类操作都会直接更新这些应用内数据文件。实时库存页提供完整库存表和当前筛选结果的下载按钮。
 
 ## 推荐方式：部署到一台固定服务器
 
@@ -56,7 +56,7 @@ SUPABASE_SERVICE_ROLE_KEY = "你的 service_role key"
 
 可以参考 `.streamlit/secrets.toml.example`，但不要把真实密钥提交到 GitHub。
 
-首次连接到空数据库时，应用会自动把 GitHub 仓库里的 `data/inventory.xlsx` 初始化导入 Supabase。之后所有库存增减、新增物料品类和库存变更流水都会写入 Supabase，不再依赖 Streamlit Cloud 的临时文件系统。
+首次连接到空数据库时，应用会自动把 GitHub 仓库里的 `data/inventory.xlsx` 初始化导入 Supabase。之后所有库存登记、新增物料品类和库存变更流水都会写入 Supabase，不再依赖 Streamlit Cloud 的临时文件系统。
 
 需要注意：Streamlit Community Cloud 适合快速共享应用地址，但应用运行时写入的本地文件不是长期数据库。代码重新部署、应用重启或云端环境重建后，`data/inventory.xlsx` 可能会回到 GitHub 仓库里的版本。因此如果采用 Community Cloud，请定期从实时库存页下载完整库存表备份。正式多人长期使用更推荐固定服务器或后续接入外部数据库。
 
