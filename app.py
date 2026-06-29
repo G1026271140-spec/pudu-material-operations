@@ -1038,7 +1038,11 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
             try:
                 logs = apply_supabase_changes(valid_changes)
             except Exception as exc:
-                st.error("Supabase 库存更新失败。请确认已经运行 `supabase/schema.sql`，且 Secrets 配置正确。")
+                error_text = str(exc)
+                if "42702" in error_text or "ambiguous" in error_text:
+                    st.error("Supabase 库存更新函数需要升级。请在 Supabase SQL Editor 运行 `supabase/fix_apply_inventory_change.sql`。")
+                else:
+                    st.error("Supabase 库存更新失败。请确认已经运行 `supabase/schema.sql`，且 Secrets 配置正确。")
                 st.exception(exc)
                 return
 

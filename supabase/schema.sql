@@ -76,12 +76,12 @@ begin
     raise exception '数量不能小于 0';
   end if;
 
-  select *
+  select ii.*
     into v_item
-    from public.inventory_items
-   where category = p_category
-     and model = coalesce(nullif(p_model, ''), '无需型号')
-     and language = p_language
+    from public.inventory_items as ii
+   where ii.category = p_category
+     and ii.model = coalesce(nullif(p_model, ''), '无需型号')
+     and ii.language = p_language
    for update;
 
   if not found then
@@ -103,10 +103,10 @@ begin
     raise exception '不支持的操作: %', p_action;
   end if;
 
-  update public.inventory_items
+  update public.inventory_items as ii
      set quantity = v_after,
          updated_at = now()
-   where id = v_item.id;
+   where ii.id = v_item.id;
 
   insert into public.inventory_transactions (
     action,
@@ -144,3 +144,6 @@ begin
     coalesce(p_note, '');
 end;
 $$;
+
+revoke all on function public.apply_inventory_change(text, text, text, text, integer, text) from public;
+grant execute on function public.apply_inventory_change(text, text, text, text, integer, text) to service_role;
