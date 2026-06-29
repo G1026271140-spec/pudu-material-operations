@@ -276,6 +276,10 @@ def unique_preserve(values: list[str]) -> list[str]:
     return result
 
 
+def normalize_option_label(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value).strip())
+
+
 def parse_custom_values(raw_text: str) -> list[str]:
     parts = re.split(r"[\n,，;；、]+", raw_text)
     return unique_preserve(parts)
@@ -545,12 +549,15 @@ def load_supabase_options() -> dict:
         products = unique_preserve(list(df[PRODUCT_COL].astype(str)))
 
     category_no_model_products = [row["category"] for row in categories if row.get("no_model")]
+    local_no_model_products = load_local_options().get("no_model_products", [])
     inventory_no_model_products: list[str] = []
     if not df.empty:
         inventory_no_model_products = unique_preserve(
             list(df.loc[df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str))
         )
-    no_model_products = unique_preserve(category_no_model_products + inventory_no_model_products)
+    no_model_products = unique_preserve(
+        category_no_model_products + inventory_no_model_products + local_no_model_products
+    )
     models = unique_preserve([value for value in df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT])
     languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
     return {
@@ -757,9 +764,20 @@ def get_row_count() -> int:
 def render_change_form(show_title: bool = True) -> None:
     options = load_options()
     products = options["products"]
-    no_model_products = set(options["no_model_products"])
+    no_model_product_keys = {normalize_option_label(product) for product in options["no_model_products"]}
     models = options["models"]
     languages = sort_languages(options["languages"])
+    inventory_df = load_inventory()
+    inventory_product_keys: set[str] = set()
+    product_models: dict[str, list[str]] = {}
+    if not inventory_df.empty:
+        for item in inventory_df[[PRODUCT_COL, MODEL_COL]].itertuples(index=False):
+            product_key = normalize_option_label(item[0])
+            model_name = str(item[1]).strip()
+            inventory_product_keys.add(product_key)
+            if model_name and model_name != NO_MODEL_TEXT:
+                product_models.setdefault(product_key, []).append(model_name)
+    product_models = {key: unique_preserve(values) for key, values in product_models.items()}
 
     if show_title:
         st.title("物料库存更新")
@@ -780,7 +798,12 @@ def render_change_form(show_title: bool = True) -> None:
                 products,
                 key=f"product_{index}",
             )
-            if product in no_model_products:
+            product_key = normalize_option_label(product)
+            scoped_models = product_models.get(product_key, [])
+            is_no_model_product = product_key in no_model_product_keys or (
+                product_key in inventory_product_keys and not scoped_models
+            )
+            if is_no_model_product:
                 model_col.text_input(
                     "产品型号",
                     value="",
@@ -792,7 +815,7 @@ def render_change_form(show_title: bool = True) -> None:
             else:
                 model = model_col.selectbox(
                     "产品型号",
-                    models,
+                    scoped_models or models,
                     key=f"model_{index}",
                 )
             language = language_col.selectbox(
