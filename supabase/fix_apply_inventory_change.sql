@@ -1,3 +1,6 @@
+alter table public.inventory_items
+  drop constraint if exists inventory_items_quantity_check;
+
 create or replace function public.apply_inventory_change(
   p_action text,
   p_category text,
@@ -27,8 +30,8 @@ declare
   v_after integer;
   v_created_at timestamptz;
 begin
-  if p_quantity < 0 then
-    raise exception '数量不能小于 0';
+  if p_action <> '盘点设为' and p_quantity < 0 then
+    raise exception '入库和出库数量不能小于 0';
   end if;
 
   select ii.*
@@ -49,9 +52,6 @@ begin
     v_after := v_before + p_quantity;
   elsif p_action = '出库减少' then
     v_after := v_before - p_quantity;
-    if v_after < 0 then
-      raise exception '库存不足: 当前 %, 出库 %', v_before, p_quantity;
-    end if;
   elsif p_action = '盘点设为' then
     v_after := p_quantity;
   else

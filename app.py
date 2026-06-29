@@ -301,6 +301,41 @@ def sort_languages(languages: list[str]) -> list[str]:
     )
 
 
+def build_inventory_selection_context() -> dict[str, object]:
+    options = load_options()
+    inventory_df = load_inventory()
+    product_models: dict[str, list[str]] = {}
+    inventory_product_keys: set[str] = set()
+
+    if not inventory_df.empty:
+        for item in inventory_df[[PRODUCT_COL, MODEL_COL]].itertuples(index=False):
+            product_key = normalize_option_label(item[0])
+            model_name = str(item[1]).strip()
+            inventory_product_keys.add(product_key)
+            if model_name and model_name != NO_MODEL_TEXT:
+                product_models.setdefault(product_key, []).append(model_name)
+
+    return {
+        "products": options["products"],
+        "models": options["models"],
+        "languages": sort_languages(options["languages"]),
+        "no_model_product_keys": {normalize_option_label(product) for product in options["no_model_products"]},
+        "inventory_product_keys": inventory_product_keys,
+        "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
+        "inventory_df": inventory_df,
+    }
+
+
+def product_model_state(product: str, selection_context: dict[str, object]) -> tuple[bool, list[str]]:
+    product_key = normalize_option_label(product)
+    product_models = selection_context["product_models"]
+    scoped_models = product_models.get(product_key, [])  # type: ignore[union-attr]
+    is_no_model_product = product_key in selection_context["no_model_product_keys"] or (
+        product_key in selection_context["inventory_product_keys"] and not scoped_models
+    )
+    return bool(is_no_model_product), list(scoped_models)
+
+
 def apply_inventory_filters(
     df: pd.DataFrame,
     selected_products: list[str],
@@ -317,7 +352,7 @@ def apply_inventory_filters(
     if selected_languages:
         mask &= df[LANGUAGE_COL].isin(selected_languages)
     if only_stocked:
-        mask &= df[QTY_COL] > 0
+        mask &= df[QTY_COL] != 0
     return df[mask]
 
 
@@ -686,6 +721,158 @@ def apply_supabase_changes(changes: list[dict[str, object]]) -> list[list[object
     return logs
 
 
+def rpc_rows_to_transaction_logs(rows: list[dict]) -> list[list[object]]:
+    logs: list[list[object]] = []
+    for row in rows:
+        logs.append(
+            [
+                row.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                row.get("action", ""),
+                row.get("category", ""),
+                row.get("model") or NO_MODEL_TEXT,
+                row.get("language", ""),
+                int(row.get("quantity", 0) or 0),
+                int(row.get("before_quantity", 0) or 0),
+                int(row.get("after_quantity", 0) or 0),
+                row.get("note", "") or "",
+            ]
+        )
+    return logs
+
+
+def load_supabase_transaction_records(limit: int = 200) -> list[dict]:
+    client = supabase_client()
+    if client is None:
+        return []
+    response = (
+        client.table("inventory_transactions")
+        .select("id,created_at,action,category,model,language,quantity,before_quantity,after_quantity,note,reversed_at,reversal_of")
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return response.data or []
+
+
+def load_supabase_inventory_records() -> list[dict]:
+    client = supabase_client()
+    if client is None:
+        return []
+    rows = select_all_supabase_rows("inventory_items", "*", order="material_code")
+    return rows
+
+
+def revert_supabase_transaction(transaction_id: int, note: str) -> list[list[object]]:
+    client = supabase_client()
+    if client is None:
+        return []
+    response = client.rpc(
+        "revert_inventory_transaction",
+        {"p_transaction_id": int(transaction_id), "p_note": note.strip()},
+    ).execute()
+    return rpc_rows_to_transaction_logs(response.data or [])
+
+
+def replace_supabase_transaction(
+    transaction_id: int,
+    action: str,
+    product: str,
+    model: str,
+    language: str,
+    quantity: int,
+    note: str,
+) -> list[list[object]]:
+    client = supabase_client()
+    if client is None:
+        return []
+    response = client.rpc(
+        "replace_inventory_transaction",
+        {
+            "p_transaction_id": int(transaction_id),
+            "p_action": action,
+            "p_category": product,
+            "p_model": model or NO_MODEL_TEXT,
+            "p_language": language,
+            "p_quantity": int(quantity),
+            "p_note": note.strip(),
+        },
+    ).execute()
+    return rpc_rows_to_transaction_logs(response.data or [])
+
+
+def update_supabase_inventory_item(
+    item_id: int,
+    material_code: str,
+    product: str,
+    model: str,
+    language: str,
+) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+    product = product.strip()
+    model = model.strip() or NO_MODEL_TEXT
+    language = language.strip()
+    client.table("inventory_items").update(
+        {
+            "material_code": material_code.strip(),
+            "category": product,
+            "model": model,
+            "language": language,
+            "updated_at": datetime.now().isoformat(),
+        }
+    ).eq("id", int(item_id)).execute()
+    client.table("material_categories").upsert(
+        [{"category": product, "no_model": model == NO_MODEL_TEXT}],
+        on_conflict="category",
+    ).execute()
+
+
+def count_supabase_item_transactions(product: str, model: str, language: str) -> int:
+    client = supabase_client()
+    if client is None:
+        return 0
+    response = (
+        client.table("inventory_transactions")
+        .select("id", count="exact")
+        .eq("category", product)
+        .eq("model", model or NO_MODEL_TEXT)
+        .eq("language", language)
+        .limit(1)
+        .execute()
+    )
+    return int(response.count or 0)
+
+
+def delete_supabase_inventory_item(item_id: int) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+    client.table("inventory_items").delete().eq("id", int(item_id)).execute()
+
+
+def count_supabase_category_transactions(product: str) -> int:
+    client = supabase_client()
+    if client is None:
+        return 0
+    response = (
+        client.table("inventory_transactions")
+        .select("id", count="exact")
+        .eq("category", product)
+        .limit(1)
+        .execute()
+    )
+    return int(response.count or 0)
+
+
+def delete_supabase_category(product: str) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+    client.table("inventory_items").delete().eq("category", product).execute()
+    client.table("material_categories").delete().eq("category", product).execute()
+
+
 def next_material_id(df: pd.DataFrame) -> str:
     max_number = 0
     for value in df["物料编码"].astype(str):
@@ -762,22 +949,10 @@ def get_row_count() -> int:
 
 
 def render_change_form(show_title: bool = True) -> None:
-    options = load_options()
-    products = options["products"]
-    no_model_product_keys = {normalize_option_label(product) for product in options["no_model_products"]}
-    models = options["models"]
-    languages = sort_languages(options["languages"])
-    inventory_df = load_inventory()
-    inventory_product_keys: set[str] = set()
-    product_models: dict[str, list[str]] = {}
-    if not inventory_df.empty:
-        for item in inventory_df[[PRODUCT_COL, MODEL_COL]].itertuples(index=False):
-            product_key = normalize_option_label(item[0])
-            model_name = str(item[1]).strip()
-            inventory_product_keys.add(product_key)
-            if model_name and model_name != NO_MODEL_TEXT:
-                product_models.setdefault(product_key, []).append(model_name)
-    product_models = {key: unique_preserve(values) for key, values in product_models.items()}
+    selection_context = build_inventory_selection_context()
+    products = list(selection_context["products"])
+    models = list(selection_context["models"])
+    languages = list(selection_context["languages"])
 
     if show_title:
         st.title("物料库存更新")
@@ -798,11 +973,7 @@ def render_change_form(show_title: bool = True) -> None:
                 products,
                 key=f"product_{index}",
             )
-            product_key = normalize_option_label(product)
-            scoped_models = product_models.get(product_key, [])
-            is_no_model_product = product_key in no_model_product_keys or (
-                product_key in inventory_product_keys and not scoped_models
-            )
+            is_no_model_product, scoped_models = product_model_state(product, selection_context)
             if is_no_model_product:
                 model_col.text_input(
                     "产品型号",
@@ -827,13 +998,14 @@ def render_change_form(show_title: bool = True) -> None:
                 ["入库增加", "出库减少", "盘点设为"],
                 key=f"action_{index}",
             )
+            min_quantity = -1_000_000 if action == "盘点设为" else 0
             quantity = qty_col.number_input(
                 "数量",
-                min_value=0,
+                min_value=min_quantity,
                 max_value=1_000_000,
                 value=0,
                 step=1,
-                key=f"quantity_{index}",
+                key=f"quantity_{index}_{action}",
             )
             note = st.text_input("备注", key=f"note_{index}", placeholder="可选")
             changes.append(
@@ -1027,6 +1199,285 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
     )
 
 
+def format_transaction_option(row: dict) -> str:
+    status = "已撤回" if row.get("reversed_at") else ("撤回记录" if row.get("reversal_of") else "有效")
+    return (
+        f"#{row.get('id')} | {row.get('created_at', '')} | {status} | "
+        f"{row.get('action', '')} | {row.get('category', '')} / {row.get('model') or NO_MODEL_TEXT} / "
+        f"{row.get('language', '')} | {row.get('before_quantity', 0)} -> {row.get('after_quantity', 0)}"
+    )
+
+
+def format_inventory_item_option(row: dict) -> str:
+    return (
+        f"{row.get('material_code', '')} | {row.get('category', '')} / "
+        f"{row.get('model') or NO_MODEL_TEXT} / {row.get('language', '')} | "
+        f"库存 {int(row.get('quantity') or 0)}"
+    )
+
+
+def render_transaction_admin() -> None:
+    st.subheader("库存提交记录修改与撤回")
+    if not supabase_configured():
+        st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请通过下载的流水表人工核对。")
+        return
+
+    try:
+        records = load_supabase_transaction_records()
+    except Exception as exc:
+        st.error("Supabase 还没有升级修改/撤回功能。请先在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
+        st.exception(exc)
+        return
+
+    if not records:
+        st.info("暂无库存提交记录。")
+        return
+
+    record_map = {int(row["id"]): row for row in records if row.get("id") is not None}
+    selected_id = st.selectbox(
+        "选择要处理的提交记录",
+        list(record_map.keys()),
+        format_func=lambda value: format_transaction_option(record_map[int(value)]),
+        key="admin_transaction_id",
+    )
+    selected = record_map[int(selected_id)]
+
+    st.dataframe(
+        pd.DataFrame(
+            [
+                {
+                    "记录ID": selected.get("id"),
+                    "时间": selected.get("created_at", ""),
+                    "状态": "已撤回" if selected.get("reversed_at") else ("撤回记录" if selected.get("reversal_of") else "有效"),
+                    "操作": selected.get("action", ""),
+                    PRODUCT_COL: selected.get("category", ""),
+                    MODEL_COL: selected.get("model") or NO_MODEL_TEXT,
+                    LANGUAGE_COL: selected.get("language", ""),
+                    "数量": int(selected.get("quantity") or 0),
+                    "变更前数量": int(selected.get("before_quantity") or 0),
+                    "变更后数量": int(selected.get("after_quantity") or 0),
+                    "备注": selected.get("note", "") or "",
+                }
+            ]
+        ),
+        width="stretch",
+        hide_index=True,
+    )
+
+    inactive_record = bool(selected.get("reversed_at") or selected.get("reversal_of"))
+    if inactive_record:
+        st.warning("这条记录已经撤回或本身就是撤回记录，不能再次修改或撤回。")
+        return
+
+    revert_col, replace_col = st.columns(2)
+    with revert_col:
+        st.markdown("**撤回该提交**")
+        revert_note = st.text_input("撤回备注", key="revert_transaction_note", placeholder="可选")
+        revert_confirmed = st.checkbox("确认撤回这条库存提交", key="revert_transaction_confirmed")
+        if st.button("撤回提交", type="primary", width="stretch", key="revert_transaction_button"):
+            if not revert_confirmed:
+                st.warning("请先勾选确认撤回。")
+            else:
+                try:
+                    logs = revert_supabase_transaction(int(selected_id), revert_note)
+                    st.success("已撤回该提交，并写入一条撤回流水。")
+                    st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
+                    st.cache_data.clear()
+                except Exception as exc:
+                    st.error("撤回失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
+                    st.exception(exc)
+
+    with replace_col:
+        st.markdown("**修改为新提交**")
+        selection_context = build_inventory_selection_context()
+        products = unique_preserve([str(selected.get("category", ""))] + list(selection_context["products"]))
+        replace_product = st.selectbox(
+            "修正后的物料品类",
+            products,
+            index=products.index(str(selected.get("category", ""))) if str(selected.get("category", "")) in products else 0,
+            key="replace_product",
+        )
+        is_no_model_product, scoped_models = product_model_state(replace_product, selection_context)
+        old_model = str(selected.get("model") or NO_MODEL_TEXT)
+        if is_no_model_product:
+            st.text_input("修正后的产品型号", value=NO_MODEL_TEXT, disabled=True, key="replace_model_blank")
+            replace_model = NO_MODEL_TEXT
+        else:
+            replace_models = unique_preserve([old_model] + scoped_models + list(selection_context["models"]))
+            replace_model = st.selectbox(
+                "修正后的产品型号",
+                replace_models,
+                index=replace_models.index(old_model) if old_model in replace_models else 0,
+                key="replace_model",
+            )
+        languages = unique_preserve([str(selected.get("language", ""))] + list(selection_context["languages"]))
+        replace_language = st.selectbox(
+            "修正后的语种",
+            languages,
+            index=languages.index(str(selected.get("language", ""))) if str(selected.get("language", "")) in languages else 0,
+            key="replace_language",
+        )
+        replace_action = st.selectbox(
+            "修正后的操作",
+            ["入库增加", "出库减少", "盘点设为"],
+            index=["入库增加", "出库减少", "盘点设为"].index(str(selected.get("action", "入库增加")))
+            if str(selected.get("action", "入库增加")) in ["入库增加", "出库减少", "盘点设为"]
+            else 0,
+            key="replace_action",
+        )
+        replace_min_quantity = -1_000_000 if replace_action == "盘点设为" else 0
+        replace_default_quantity = int(selected.get("quantity") or 0)
+        if replace_default_quantity < replace_min_quantity:
+            replace_default_quantity = replace_min_quantity
+        replace_quantity = st.number_input(
+            "修正后的数量",
+            min_value=replace_min_quantity,
+            max_value=1_000_000,
+            value=replace_default_quantity,
+            step=1,
+            key=f"replace_quantity_{replace_action}",
+        )
+        replace_note = st.text_input("修正备注", key="replace_note", placeholder="可选")
+        replace_confirmed = st.checkbox("确认撤回原记录并保存修正记录", key="replace_confirmed")
+        if st.button("保存修正", type="primary", width="stretch", key="replace_transaction_button"):
+            if not replace_confirmed:
+                st.warning("请先勾选确认修正。")
+            else:
+                try:
+                    logs = replace_supabase_transaction(
+                        int(selected_id),
+                        replace_action,
+                        replace_product,
+                        replace_model,
+                        replace_language,
+                        int(replace_quantity),
+                        replace_note,
+                    )
+                    st.success("已撤回原提交，并保存新的修正提交。")
+                    st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
+                    st.cache_data.clear()
+                except Exception as exc:
+                    st.error("修正失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
+                    st.exception(exc)
+
+
+def render_material_data_admin() -> None:
+    st.subheader("新增物料行修改与撤回")
+    if not supabase_configured():
+        st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请直接维护本地库存文件。")
+        return
+
+    try:
+        records = load_supabase_inventory_records()
+    except Exception as exc:
+        st.error("读取物料行失败。请检查 Supabase 连接。")
+        st.exception(exc)
+        return
+    if not records:
+        st.info("暂无物料行。")
+        return
+
+    record_map = {int(row["id"]): row for row in records if row.get("id") is not None}
+    selected_item_id = st.selectbox(
+        "选择要修改的库存行",
+        list(record_map.keys()),
+        format_func=lambda value: format_inventory_item_option(record_map[int(value)]),
+        key="admin_inventory_item_id",
+    )
+    item = record_map[int(selected_item_id)]
+    current_product = str(item.get("category", ""))
+    current_model = str(item.get("model") or NO_MODEL_TEXT)
+    current_language = str(item.get("language", ""))
+
+    edit_col, delete_col = st.columns(2)
+    with edit_col:
+        st.markdown("**修改库存行信息**")
+        material_code = st.text_input("物料编码", value=str(item.get("material_code", "")), key="edit_material_code")
+        product = st.text_input("物料品类", value=current_product, key="edit_material_product")
+        no_model = st.checkbox("不按产品型号分类", value=current_model == NO_MODEL_TEXT, key="edit_material_no_model")
+        if no_model:
+            st.text_input("产品型号", value=NO_MODEL_TEXT, disabled=True, key="edit_material_model_blank")
+            model = NO_MODEL_TEXT
+        else:
+            model = st.text_input("产品型号", value=current_model, key="edit_material_model")
+        language = st.text_input("语种", value=current_language, key="edit_material_language")
+        if st.button("保存库存行修改", type="primary", width="stretch", key="save_inventory_item_edit"):
+            if not material_code.strip() or not product.strip() or not language.strip():
+                st.error("物料编码、物料品类和语种不能为空。")
+            elif count_supabase_item_transactions(current_product, current_model, current_language) > 0:
+                st.error("该库存行已经有流水记录。为保证历史可追溯，请先撤回相关库存提交后再修改行信息。")
+            else:
+                try:
+                    update_supabase_inventory_item(int(selected_item_id), material_code, product, model, language)
+                    st.success("库存行信息已修改。")
+                    st.cache_data.clear()
+                    st.rerun()
+                except Exception as exc:
+                    st.error("修改失败，可能是物料编码或“品类+型号+语种”与现有行重复。")
+                    st.exception(exc)
+
+    with delete_col:
+        st.markdown("**删除误建库存行**")
+        quantity = int(item.get("quantity") or 0)
+        tx_count = count_supabase_item_transactions(current_product, current_model, current_language)
+        st.caption(f"当前库存：{quantity}；相关流水：{tx_count} 条。")
+        delete_confirmed = st.checkbox("确认删除该库存行", key="delete_inventory_item_confirmed")
+        if st.button("删除库存行", type="primary", width="stretch", key="delete_inventory_item_button"):
+            if quantity != 0:
+                st.error("该库存行当前库存不为 0，请先通过库存更新或撤回流水把库存调整为 0。")
+            elif tx_count > 0:
+                st.error("该库存行已有流水记录，不能直接删除。")
+            elif not delete_confirmed:
+                st.warning("请先勾选确认删除。")
+            else:
+                try:
+                    delete_supabase_inventory_item(int(selected_item_id))
+                    st.success("库存行已删除。")
+                    st.cache_data.clear()
+                    st.rerun()
+                except Exception as exc:
+                    st.error("删除库存行失败。")
+                    st.exception(exc)
+
+    st.markdown("**撤回新增物料品类**")
+    df = load_inventory()
+    categories = unique_preserve(list(df[PRODUCT_COL].astype(str)))
+    if not categories:
+        return
+    selected_category = st.selectbox("选择要撤回的物料品类", categories, key="delete_material_category")
+    category_df = df[df[PRODUCT_COL] == selected_category]
+    category_quantity = int(category_df[QTY_COL].sum()) if not category_df.empty else 0
+    category_nonzero_rows = int((category_df[QTY_COL] != 0).sum()) if not category_df.empty else 0
+    category_tx_count = count_supabase_category_transactions(selected_category)
+    st.caption(
+        f"该品类包含 {len(category_df)} 条库存行；库存合计 {category_quantity}；"
+        f"非零库存行 {category_nonzero_rows} 条；相关流水 {category_tx_count} 条。"
+    )
+    category_delete_confirmed = st.checkbox("确认删除该品类及其所有库存行", key="delete_category_confirmed")
+    if st.button("撤回该物料品类", type="primary", width="stretch", key="delete_category_button"):
+        if category_nonzero_rows > 0:
+            st.error("该品类存在非零库存行，请先调整库存后再撤回。")
+        elif category_tx_count > 0:
+            st.error("该品类已有流水记录，不能直接撤回。请先撤回相关库存提交。")
+        elif not category_delete_confirmed:
+            st.warning("请先勾选确认撤回。")
+        else:
+            try:
+                delete_supabase_category(selected_category)
+                st.success("该物料品类及其库存行已撤回。")
+                st.cache_data.clear()
+                st.rerun()
+            except Exception as exc:
+                st.error("撤回物料品类失败。")
+                st.exception(exc)
+
+
+def render_edit_revert_page() -> None:
+    render_transaction_admin()
+    st.divider()
+    render_material_data_admin()
+
+
 def apply_changes(changes: list[dict[str, object]]) -> None:
     valid_changes = [item for item in changes if int(item["quantity"]) > 0 or item["action"] == "盘点设为"]
     if not valid_changes:
@@ -1040,7 +1491,9 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
             except Exception as exc:
                 error_text = str(exc)
                 if "42702" in error_text or "ambiguous" in error_text:
-                    st.error("Supabase 库存更新函数需要升级。请在 Supabase SQL Editor 运行 `supabase/fix_apply_inventory_change.sql`。")
+                    st.error("Supabase 库存更新函数需要升级。请在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
+                elif "inventory_items_quantity_check" in error_text or "violates check constraint" in error_text:
+                    st.error("Supabase 还没有放开负库存。请在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
                 else:
                     st.error("Supabase 库存更新失败。请确认已经运行 `supabase/schema.sql`，且 Secrets 配置正确。")
                 st.exception(exc)
@@ -1081,9 +1534,6 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
                 after = before + quantity
             elif action == "出库减少":
                 after = before - quantity
-                if after < 0:
-                    st.error(f"库存不足: {product} / {model} / {language}，当前 {before}，出库 {quantity}")
-                    return
             else:
                 after = quantity
 
@@ -1129,7 +1579,7 @@ def render_inventory_view() -> None:
     )
     if "inventory_only_stocked" not in st.session_state:
         st.session_state["inventory_only_stocked"] = True
-    only_stocked = stocked_filter.checkbox("仅看有库存", key="inventory_only_stocked")
+    only_stocked = stocked_filter.checkbox("仅看非零库存", key="inventory_only_stocked")
     filtered = apply_inventory_filters(
         df,
         selected_products=selected_products,
@@ -1138,9 +1588,9 @@ def render_inventory_view() -> None:
         only_stocked=only_stocked,
     )
 
-    if filtered.empty and only_stocked and int((df[QTY_COL] > 0).sum()) == 0:
+    if filtered.empty and only_stocked and int((df[QTY_COL] != 0).sum()) == 0:
         st.warning(
-            f"当前默认只显示有库存物料，但应用内库存数量目前全部为 0。"
+            f"当前默认只显示非零库存物料，但应用内库存数量目前全部为 0。"
             f"完整物料组合仍有 {len(df):,} 条，取消“仅看有库存”即可查看。"
         )
         if st.button("显示全部库存组合", key="show_all_inventory_rows", width="stretch"):
@@ -1149,7 +1599,7 @@ def render_inventory_view() -> None:
 
     metric_a, metric_b, metric_c, metric_d = st.columns(4)
     metric_a.metric("组合总数", f"{len(filtered):,}")
-    metric_b.metric("有库存组合", f"{int((filtered[QTY_COL] > 0).sum()):,}")
+    metric_b.metric("非零库存组合", f"{int((filtered[QTY_COL] != 0).sum()):,}")
     metric_c.metric("库存总数量", f"{int(filtered[QTY_COL].sum()):,}")
     metric_d.metric("库存总价值", f"{float(filtered[VALUE_COL].sum()):,.2f}")
 
@@ -1160,11 +1610,13 @@ def render_inventory_view() -> None:
 def render_management_page() -> None:
     st.title("物料库存管理")
     navigate_to_inventory("management_open_inventory")
-    update_tab, add_tab = st.tabs(["库存增减", "新增物料品类"])
+    update_tab, add_tab, edit_tab = st.tabs(["库存增减", "新增物料品类", "修改与撤回"])
     with update_tab:
         render_change_form(show_title=False)
     with add_tab:
         render_add_category_form()
+    with edit_tab:
+        render_edit_revert_page()
 
 
 def main() -> None:
