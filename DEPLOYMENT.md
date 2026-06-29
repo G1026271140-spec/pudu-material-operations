@@ -52,6 +52,9 @@ SUPABASE_SERVICE_ROLE_KEY = "你的 service_role key"
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` 只能放在 Streamlit Secrets 里，不要写入 GitHub 仓库。
+不要填写 `anon` / `public` key，也不要使用 `SUPABASE_KEY`。如果页面报 `permission denied for table inventory_items`，基本就是密钥填错了。
+
+可以参考 `.streamlit/secrets.toml.example`，但不要把真实密钥提交到 GitHub。
 
 首次连接到空数据库时，应用会自动把 GitHub 仓库里的 `data/inventory.xlsx` 初始化导入 Supabase。之后所有库存增减、新增物料品类和库存变更流水都会写入 Supabase，不再依赖 Streamlit Cloud 的临时文件系统。
 

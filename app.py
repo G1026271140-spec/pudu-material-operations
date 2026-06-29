@@ -145,14 +145,46 @@ def get_secret_value(name: str, default: str = "") -> str:
         return default
 
 
+def supabase_url() -> str:
+    return get_secret_value("SUPABASE_URL")
+
+
+def supabase_service_role_key() -> str:
+    return get_secret_value("SUPABASE_SERVICE_ROLE_KEY")
+
+
+def legacy_supabase_key() -> str:
+    return get_secret_value("SUPABASE_KEY")
+
+
 def supabase_configured() -> bool:
-    return bool(
-        get_secret_value("SUPABASE_URL")
-        and (
-            get_secret_value("SUPABASE_SERVICE_ROLE_KEY")
-            or get_secret_value("SUPABASE_KEY")
+    return bool(supabase_url() and supabase_service_role_key())
+
+
+def stop_on_invalid_supabase_config() -> None:
+    url = supabase_url()
+    service_key = supabase_service_role_key()
+    legacy_key = legacy_supabase_key()
+
+    if not url and not service_key and not legacy_key:
+        return
+
+    if url and service_key:
+        return
+
+    if legacy_key and not service_key:
+        st.error(
+            "检测到 Supabase 配置不完整：请使用 `SUPABASE_SERVICE_ROLE_KEY`，不要使用 `SUPABASE_KEY`/anon/public key。"
         )
+    elif service_key and not url:
+        st.error("检测到 `SUPABASE_SERVICE_ROLE_KEY`，但缺少 `SUPABASE_URL`。")
+    else:
+        st.error("Supabase 配置不完整：请同时填写 `SUPABASE_URL` 和 `SUPABASE_SERVICE_ROLE_KEY`。")
+
+    st.info(
+        "请在 Streamlit Secrets 中填写 service_role/secret key；这个密钥只放在 Secrets，不能提交到 GitHub。"
     )
+    st.stop()
 
 
 @st.cache_resource(show_spinner=False)
@@ -163,14 +195,16 @@ def get_supabase_client(url: str, key: str):
 
 
 def supabase_client():
-    url = get_secret_value("SUPABASE_URL")
-    key = get_secret_value("SUPABASE_SERVICE_ROLE_KEY") or get_secret_value("SUPABASE_KEY")
+    url = supabase_url()
+    key = supabase_service_role_key()
     if not url or not key:
         return None
     return get_supabase_client(url, key)
 
 
 def storage_mode_label() -> str:
+    if supabase_url() and not supabase_service_role_key():
+        return "Supabase 配置不完整"
     return "Supabase 长期数据库" if supabase_configured() else "本地 Excel 文件"
 
 
@@ -425,7 +459,12 @@ def ensure_supabase_seeded() -> None:
     try:
         existing = client.table("inventory_items").select("material_code").limit(1).execute()
     except Exception as exc:
-        st.error("Supabase 数据表还没有准备好。请先在 Supabase SQL Editor 运行 `supabase/schema.sql`。")
+        error_text = str(exc)
+        if "permission denied" in error_text or "42501" in error_text:
+            st.error("Supabase 已连接，但当前密钥没有表权限。通常是 Streamlit Secrets 里填成了 anon/public key。")
+            st.info("请把 `SUPABASE_SERVICE_ROLE_KEY` 改成 Supabase 的 service_role/secret key，然后重启应用。")
+        else:
+            st.error("Supabase 数据表还没有准备好。请先在 Supabase SQL Editor 运行 `supabase/schema.sql`。")
         st.exception(exc)
         st.stop()
 
@@ -1065,6 +1104,8 @@ def render_management_page() -> None:
 
 def main() -> None:
     st.set_page_config(page_title="物料库存管理", layout="wide")
+    inject_global_styles()
+    stop_on_invalid_supabase_config()
     ensure_data()
     render_sidebar_link()
 

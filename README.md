@@ -45,6 +45,8 @@ SUPABASE_URL = "https://你的项目.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY = "你的 service_role key"
 ```
 
+不要填写 `anon` / `public` key，也不要使用 `SUPABASE_KEY`。应用只接受 `SUPABASE_SERVICE_ROLE_KEY`，避免误用低权限密钥导致无法读写数据库。
+
 如果只填写 `INVENTORY_VIEW_PASSWORD`，应用会继续使用本地 Excel 文件。填写 Supabase 后，应用会自动切换到长期数据库。
 
 首次连接到空的 Supabase 数据库时，应用会把 `data/inventory.xlsx` 中的初始库存组合导入数据库。之后入库、出库、新增品类和流水都会写入 Supabase。
