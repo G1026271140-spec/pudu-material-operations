@@ -34,6 +34,16 @@ cd "$env:USERPROFILE\Desktop\pudu-material-inventory"
 
 实时库存页需要输入密码 `376493`。
 
+## Streamlit Secrets
+
+部署到 Streamlit Cloud 时，在 Secrets 里填写：
+
+```toml
+INVENTORY_VIEW_PASSWORD = "376493"
+```
+
+如果以后要改密码，只需要修改 Secrets 里的这个值，然后重启应用。
+
 ## 多人共同管理
 
 不要让每个人各自在自己电脑上运行一份应用，否则每个人都会有独立的库存文件，数据不会同步。

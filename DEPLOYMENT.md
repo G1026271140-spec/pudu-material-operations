@@ -35,6 +35,12 @@ http://服务器IP:端口/?view=inventory
 
 如果你希望得到一个 `https://xxx.streamlit.app` 这样的公网链接，可以把项目推送到 GitHub，然后在 Streamlit Community Cloud 中选择仓库、分支和 `app.py` 部署。
 
+部署时在 Secrets 区域填写：
+
+```toml
+INVENTORY_VIEW_PASSWORD = "376493"
+```
+
 需要注意：Streamlit Community Cloud 适合快速共享应用地址，但本地文件写入不保证长期持久化。因此如果采用 Community Cloud，请定期从实时库存页下载完整库存表备份。正式多人长期使用更推荐固定服务器或后续接入外部数据库。
 
 ## 下载备份

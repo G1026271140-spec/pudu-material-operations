@@ -22,7 +22,7 @@ INVENTORY_CSV = DATA_DIR / "inventory.csv"
 OPTIONS_JSON = DATA_DIR / "options.json"
 TRANSACTIONS_CSV = DATA_DIR / "transactions.csv"
 
-PASSWORD = "376493"
+DEFAULT_PASSWORD = "376493"
 NO_MODEL_TEXT = "无需型号"
 
 PRODUCT_COL = "物料品类(Material Category)"
@@ -57,6 +57,13 @@ TRANSACTION_HEADERS = [
 ]
 
 DATA_LOCK = threading.Lock()
+
+
+def get_inventory_password() -> str:
+    try:
+        return str(st.secrets.get("INVENTORY_VIEW_PASSWORD", DEFAULT_PASSWORD))
+    except (FileNotFoundError, KeyError, AttributeError):
+        return DEFAULT_PASSWORD
 
 
 def ensure_data() -> None:
@@ -223,8 +230,9 @@ def build_new_material_rows(
 def auth_gate() -> bool:
     if st.session_state.get("inventory_unlocked"):
         return True
+    password_setting = get_inventory_password()
     password = st.text_input("请输入查看密码", type="password")
-    if password == PASSWORD:
+    if password == password_setting:
         st.session_state["inventory_unlocked"] = True
         st.rerun()
     if password:
@@ -234,8 +242,9 @@ def auth_gate() -> bool:
 
 def render_sidebar_link() -> None:
     st.sidebar.subheader("实时库存链接")
+    password_setting = get_inventory_password()
     password = st.sidebar.text_input("查看密码", type="password", key="sidebar_password")
-    if password == PASSWORD:
+    if password == password_setting:
         st.session_state["inventory_unlocked"] = True
         st.sidebar.link_button("打开实时库存表", "?view=inventory")
         st.sidebar.caption("部署后复制浏览器地址栏里的实时库存页链接，即可分享给其他管理人。")
