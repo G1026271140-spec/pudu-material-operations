@@ -9,6 +9,7 @@
 - 支持新增物料品类，可多选已有产品型号和语种，也可自定义新增型号和语种。
 - 新增品类后会自动生成库存行，并同步更新库存更新表单的下拉选项。
 - 实时库存主数据保存在 Streamlit 应用目录的 `data/inventory.xlsx`。
+- 配置 Supabase 后，实时库存主数据会保存在 Supabase 长期数据库。
 - 实时库存页支持下载完整库存表、当前筛选结果和库存变更流水。
 - 实时库存查看页需要密码 `376493`。
 
@@ -40,9 +41,13 @@ cd "$env:USERPROFILE\Desktop\pudu-material-inventory"
 
 ```toml
 INVENTORY_VIEW_PASSWORD = "376493"
+SUPABASE_URL = "https://你的项目.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY = "你的 service_role key"
 ```
 
-如果以后要改密码，只需要修改 Secrets 里的这个值，然后重启应用。
+如果只填写 `INVENTORY_VIEW_PASSWORD`，应用会继续使用本地 Excel 文件。填写 Supabase 后，应用会自动切换到长期数据库。
+
+首次连接到空的 Supabase 数据库时，应用会把 `data/inventory.xlsx` 中的初始库存组合导入数据库。之后入库、出库、新增品类和流水都会写入 Supabase。
 
 ## 多人共同管理
 

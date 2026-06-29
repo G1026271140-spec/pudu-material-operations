@@ -35,11 +35,25 @@ http://服务器IP:端口/?view=inventory
 
 如果你希望得到一个 `https://xxx.streamlit.app` 这样的公网链接，可以把项目推送到 GitHub，然后在 Streamlit Community Cloud 中选择仓库、分支和 `app.py` 部署。
 
-部署时在 Secrets 区域填写：
+## Supabase 长期数据库
+
+正式多人长期使用时，推荐启用 Supabase。步骤如下：
+
+1. 在 Supabase 新建项目。
+2. 打开 Supabase SQL Editor。
+3. 复制并运行 `supabase/schema.sql` 的全部 SQL。
+4. 打开 Project Settings -> API，复制 Project URL 和 `service_role` key。
+5. 在 Streamlit Cloud 的 Secrets 区域填写：
 
 ```toml
 INVENTORY_VIEW_PASSWORD = "376493"
+SUPABASE_URL = "https://你的项目.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY = "你的 service_role key"
 ```
+
+`SUPABASE_SERVICE_ROLE_KEY` 只能放在 Streamlit Secrets 里，不要写入 GitHub 仓库。
+
+首次连接到空数据库时，应用会自动把 GitHub 仓库里的 `data/inventory.xlsx` 初始化导入 Supabase。之后所有库存增减、新增物料品类和库存变更流水都会写入 Supabase，不再依赖 Streamlit Cloud 的临时文件系统。
 
 需要注意：Streamlit Community Cloud 适合快速共享应用地址，但应用运行时写入的本地文件不是长期数据库。代码重新部署、应用重启或云端环境重建后，`data/inventory.xlsx` 可能会回到 GitHub 仓库里的版本。因此如果采用 Community Cloud，请定期从实时库存页下载完整库存表备份。正式多人长期使用更推荐固定服务器或后续接入外部数据库。
 

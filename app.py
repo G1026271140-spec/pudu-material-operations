@@ -138,6 +138,42 @@ def get_inventory_password() -> str:
         return DEFAULT_PASSWORD
 
 
+def get_secret_value(name: str, default: str = "") -> str:
+    try:
+        return str(st.secrets.get(name, default)).strip()
+    except (FileNotFoundError, KeyError, AttributeError):
+        return default
+
+
+def supabase_configured() -> bool:
+    return bool(
+        get_secret_value("SUPABASE_URL")
+        and (
+            get_secret_value("SUPABASE_SERVICE_ROLE_KEY")
+            or get_secret_value("SUPABASE_KEY")
+        )
+    )
+
+
+@st.cache_resource(show_spinner=False)
+def get_supabase_client(url: str, key: str):
+    from supabase import create_client
+
+    return create_client(url, key)
+
+
+def supabase_client():
+    url = get_secret_value("SUPABASE_URL")
+    key = get_secret_value("SUPABASE_SERVICE_ROLE_KEY") or get_secret_value("SUPABASE_KEY")
+    if not url or not key:
+        return None
+    return get_supabase_client(url, key)
+
+
+def storage_mode_label() -> str:
+    return "Supabase 长期数据库" if supabase_configured() else "本地 Excel 文件"
+
+
 def ensure_data() -> None:
     if INVENTORY_XLSX.exists() and OPTIONS_JSON.exists():
         return
@@ -146,12 +182,12 @@ def ensure_data() -> None:
     generate_inventory()
 
 
-def load_options() -> dict:
+def load_local_options() -> dict:
     ensure_data()
     return json.loads(OPTIONS_JSON.read_text(encoding="utf-8"))
 
 
-def save_options(options: dict) -> None:
+def save_local_options(options: dict) -> None:
     OPTIONS_JSON.write_text(
         json.dumps(options, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -222,7 +258,7 @@ def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
         st.rerun()
 
 
-def load_inventory() -> pd.DataFrame:
+def load_local_inventory() -> pd.DataFrame:
     ensure_data()
     df = pd.read_excel(INVENTORY_XLSX, keep_default_na=False)
     for column in INVENTORY_HEADERS:
@@ -283,7 +319,7 @@ def workbook_bytes(df: pd.DataFrame) -> bytes:
     return buffer.getvalue()
 
 
-def save_inventory(df: pd.DataFrame) -> None:
+def save_local_inventory(df: pd.DataFrame) -> None:
     df = df[INVENTORY_HEADERS].copy()
     for column in ["物料编码", PRODUCT_COL, MODEL_COL, LANGUAGE_COL, UPDATED_COL]:
         df[column] = df[column].fillna("").astype(str)
@@ -295,7 +331,7 @@ def save_inventory(df: pd.DataFrame) -> None:
     df.to_csv(INVENTORY_CSV, index=False, encoding="utf-8-sig")
 
 
-def append_transactions(rows: list[list[object]]) -> None:
+def append_local_transactions(rows: list[list[object]]) -> None:
     if not TRANSACTIONS_CSV.exists():
         with TRANSACTIONS_CSV.open("w", encoding="utf-8-sig", newline="") as file:
             csv.writer(file).writerow(TRANSACTION_HEADERS)
@@ -303,6 +339,266 @@ def append_transactions(rows: list[list[object]]) -> None:
     with TRANSACTIONS_CSV.open("a", encoding="utf-8-sig", newline="") as file:
         writer = csv.writer(file)
         writer.writerows(rows)
+
+
+def select_all_supabase_rows(table: str, columns: str = "*", order: str | None = None) -> list[dict]:
+    client = supabase_client()
+    if client is None:
+        return []
+
+    rows: list[dict] = []
+    start = 0
+    page_size = 1000
+    while True:
+        query = client.table(table).select(columns)
+        if order:
+            query = query.order(order)
+        response = query.range(start, start + page_size - 1).execute()
+        batch = response.data or []
+        rows.extend(batch)
+        if len(batch) < page_size:
+            break
+        start += page_size
+    return rows
+
+
+def inventory_df_to_supabase_records(df: pd.DataFrame) -> list[dict]:
+    normalized = df[INVENTORY_HEADERS].copy()
+    normalized[QTY_COL] = pd.to_numeric(normalized[QTY_COL], errors="coerce").fillna(0).astype(int)
+    normalized[PRICE_COL] = pd.to_numeric(normalized[PRICE_COL], errors="coerce").fillna(0)
+
+    records: list[dict] = []
+    for row in normalized.itertuples(index=False):
+        records.append(
+            {
+                "material_code": str(row[0]),
+                "category": str(row[1]),
+                "model": str(row[2]) or NO_MODEL_TEXT,
+                "language": str(row[3]),
+                "quantity": int(row[4]),
+                "unit_price": float(row[5]),
+            }
+        )
+    return records
+
+
+def upsert_supabase_categories(options: dict) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+
+    no_model_products = set(options.get("no_model_products", []))
+    records = [
+        {
+            "category": product,
+            "no_model": product in no_model_products,
+        }
+        for product in options.get("products", [])
+    ]
+    if records:
+        client.table("material_categories").upsert(records, on_conflict="category").execute()
+
+
+def save_supabase_inventory(df: pd.DataFrame) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+
+    records = inventory_df_to_supabase_records(df)
+    for start in range(0, len(records), 500):
+        client.table("inventory_items").upsert(
+            records[start : start + 500],
+            on_conflict="material_code",
+        ).execute()
+
+
+def ensure_supabase_seeded() -> None:
+    if not supabase_configured():
+        return
+    if st.session_state.get("supabase_seed_checked"):
+        return
+
+    client = supabase_client()
+    if client is None:
+        return
+
+    try:
+        existing = client.table("inventory_items").select("material_code").limit(1).execute()
+    except Exception as exc:
+        st.error("Supabase 数据表还没有准备好。请先在 Supabase SQL Editor 运行 `supabase/schema.sql`。")
+        st.exception(exc)
+        st.stop()
+
+    if not existing.data:
+        local_options = load_local_options()
+        local_df = load_local_inventory()
+        upsert_supabase_categories(local_options)
+        save_supabase_inventory(local_df)
+
+    st.session_state["supabase_seed_checked"] = True
+
+
+def load_supabase_inventory() -> pd.DataFrame:
+    ensure_supabase_seeded()
+    rows = select_all_supabase_rows("inventory_items", "*", order="material_code")
+    data = []
+    for row in rows:
+        quantity = int(row.get("quantity") or 0)
+        unit_price = float(row.get("unit_price") or 0)
+        data.append(
+            [
+                row.get("material_code", ""),
+                row.get("category", ""),
+                row.get("model") or NO_MODEL_TEXT,
+                row.get("language", ""),
+                quantity,
+                unit_price,
+                quantity * unit_price,
+                row.get("updated_at", "") or "",
+            ]
+        )
+    return pd.DataFrame(data, columns=INVENTORY_HEADERS)
+
+
+def load_supabase_options() -> dict:
+    ensure_supabase_seeded()
+    categories = select_all_supabase_rows("material_categories", "category,no_model,created_at", order="created_at")
+    df = load_supabase_inventory()
+    products = [row["category"] for row in categories if row.get("category")]
+    if not products:
+        products = unique_preserve(list(df[PRODUCT_COL].astype(str)))
+
+    no_model_products = [row["category"] for row in categories if row.get("no_model")]
+    if not no_model_products and not df.empty:
+        no_model_products = unique_preserve(
+            list(df.loc[df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str))
+        )
+    models = unique_preserve([value for value in df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT])
+    languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
+    return {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "products": products,
+        "no_model_products": no_model_products,
+        "models": models,
+        "languages": languages,
+        "no_model_text": NO_MODEL_TEXT,
+        "row_count": len(df),
+    }
+
+
+def load_options() -> dict:
+    if supabase_configured():
+        return load_supabase_options()
+    return load_local_options()
+
+
+def save_options(options: dict) -> None:
+    if supabase_configured():
+        upsert_supabase_categories(options)
+        return
+    save_local_options(options)
+
+
+def load_inventory() -> pd.DataFrame:
+    if supabase_configured():
+        return load_supabase_inventory()
+    return load_local_inventory()
+
+
+def save_inventory(df: pd.DataFrame) -> None:
+    if supabase_configured():
+        save_supabase_inventory(df)
+        return
+    save_local_inventory(df)
+
+
+def append_supabase_transactions(rows: list[list[object]]) -> None:
+    client = supabase_client()
+    if client is None or not rows:
+        return
+    records = []
+    for row in rows:
+        records.append(
+            {
+                "created_at": row[0],
+                "action": row[1],
+                "category": row[2],
+                "model": row[3] or NO_MODEL_TEXT,
+                "language": row[4],
+                "quantity": int(row[5]),
+                "before_quantity": int(row[6]),
+                "after_quantity": int(row[7]),
+                "note": row[8],
+            }
+        )
+    client.table("inventory_transactions").insert(records).execute()
+
+
+def append_transactions(rows: list[list[object]]) -> None:
+    if supabase_configured():
+        append_supabase_transactions(rows)
+        return
+    append_local_transactions(rows)
+
+
+def load_transactions_dataframe() -> pd.DataFrame:
+    if not supabase_configured():
+        if TRANSACTIONS_CSV.exists():
+            return pd.read_csv(TRANSACTIONS_CSV, keep_default_na=False)
+        return pd.DataFrame(columns=TRANSACTION_HEADERS)
+
+    rows = select_all_supabase_rows("inventory_transactions", "*", order="created_at")
+    data = []
+    for row in rows:
+        data.append(
+            [
+                row.get("created_at", ""),
+                row.get("action", ""),
+                row.get("category", ""),
+                row.get("model") or NO_MODEL_TEXT,
+                row.get("language", ""),
+                int(row.get("quantity") or 0),
+                int(row.get("before_quantity") or 0),
+                int(row.get("after_quantity") or 0),
+                row.get("note", "") or "",
+            ]
+        )
+    return pd.DataFrame(data, columns=TRANSACTION_HEADERS)
+
+
+def apply_supabase_changes(changes: list[dict[str, object]]) -> list[list[object]]:
+    client = supabase_client()
+    if client is None:
+        return []
+
+    logs: list[list[object]] = []
+    for item in changes:
+        response = client.rpc(
+            "apply_inventory_change",
+            {
+                "p_action": str(item["action"]),
+                "p_category": str(item["product"]),
+                "p_model": str(item["model"]) or NO_MODEL_TEXT,
+                "p_language": str(item["language"]),
+                "p_quantity": int(item["quantity"]),
+                "p_note": str(item["note"]).strip(),
+            },
+        ).execute()
+        result = (response.data or [{}])[0]
+        logs.append(
+            [
+                result.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                result.get("action", item["action"]),
+                result.get("category", item["product"]),
+                result.get("model") or NO_MODEL_TEXT,
+                result.get("language", item["language"]),
+                int(result.get("quantity", item["quantity"]) or 0),
+                int(result.get("before_quantity", 0) or 0),
+                int(result.get("after_quantity", 0) or 0),
+                result.get("note", item["note"]) or "",
+            ]
+        )
+    return logs
 
 
 def next_material_id(df: pd.DataFrame) -> str:
@@ -553,18 +849,29 @@ def add_material_category(
             return
 
         new_df = pd.DataFrame(new_rows, columns=INVENTORY_HEADERS)
-        updated_df = pd.concat([df, new_df], ignore_index=True)
-        save_inventory(updated_df)
-
-        options["products"] = unique_preserve(options["products"] + [product])
-        if no_model:
-            options["no_model_products"] = unique_preserve(options["no_model_products"] + [product])
+        if supabase_configured():
+            client = supabase_client()
+            if client is None:
+                st.error("Supabase 未配置成功。")
+                return
+            client.table("material_categories").upsert(
+                [{"category": product, "no_model": no_model}],
+                on_conflict="category",
+            ).execute()
+            save_supabase_inventory(new_df)
         else:
-            options["models"] = unique_preserve(options["models"] + selected_or_custom_models)
-        options["languages"] = unique_preserve(options["languages"] + selected_or_custom_languages)
-        options["row_count"] = int(len(updated_df))
-        options["generated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        save_options(options)
+            updated_df = pd.concat([df, new_df], ignore_index=True)
+            save_inventory(updated_df)
+
+            options["products"] = unique_preserve(options["products"] + [product])
+            if no_model:
+                options["no_model_products"] = unique_preserve(options["no_model_products"] + [product])
+            else:
+                options["models"] = unique_preserve(options["models"] + selected_or_custom_models)
+            options["languages"] = unique_preserve(options["languages"] + selected_or_custom_languages)
+            options["row_count"] = int(len(updated_df))
+            options["generated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            save_options(options)
 
     skipped_text = f"，跳过 {len(skipped)} 条已存在组合" if skipped else ""
     st.session_state["category_added_message"] = f"已新增物料品类“{product}”，生成 {len(new_rows)} 条库存行{skipped_text}。"
@@ -574,11 +881,8 @@ def add_material_category(
 
 def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    transaction_data = (
-        TRANSACTIONS_CSV.read_bytes()
-        if TRANSACTIONS_CSV.exists()
-        else ",".join(TRANSACTION_HEADERS).encode("utf-8-sig")
-    )
+    transactions_df = load_transactions_dataframe()
+    transaction_data = transactions_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
 
     st.subheader("下载库存数据")
     st.caption("下载按钮导出的是当前 Streamlit 应用内保存的最新数据。")
@@ -627,6 +931,20 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
     valid_changes = [item for item in changes if int(item["quantity"]) > 0 or item["action"] == "盘点设为"]
     if not valid_changes:
         st.warning("请至少填写一项数量大于 0 的物料。")
+        return
+
+    if supabase_configured():
+        with DATA_LOCK:
+            try:
+                logs = apply_supabase_changes(valid_changes)
+            except Exception as exc:
+                st.error("Supabase 库存更新失败。请确认已经运行 `supabase/schema.sql`，且 Secrets 配置正确。")
+                st.exception(exc)
+                return
+
+        st.success(f"已更新 {len(logs)} 项物料库存。")
+        st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
+        st.cache_data.clear()
         return
 
     with DATA_LOCK:
@@ -685,7 +1003,7 @@ def render_inventory_view() -> None:
 
     navigate_to_management("inventory_back_to_management")
     df = load_inventory()
-    st.caption("当前库存统一保存在 Streamlit 应用目录 `data/inventory.xlsx`。所有入库、出库、新增品类操作都会直接更新这里的数据。")
+    st.caption(f"当前存储：{storage_mode_label()}。所有入库、出库、新增品类操作都会直接更新当前存储。")
     product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
 
     selected_products = product_filter.multiselect(
