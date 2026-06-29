@@ -4,7 +4,7 @@ import csv
 import json
 import re
 import threading
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 from io import BytesIO
 from pathlib import Path
 
@@ -334,6 +334,36 @@ def product_model_state(product: str, selection_context: dict[str, object]) -> t
         product_key in selection_context["inventory_product_keys"] and not scoped_models
     )
     return bool(is_no_model_product), list(scoped_models)
+
+
+def day_start(value: date) -> str:
+    return datetime.combine(value, time.min).isoformat()
+
+
+def day_end(value: date) -> str:
+    return datetime.combine(value, time.max).isoformat()
+
+
+def format_datetime(value: object) -> str:
+    parsed = pd.to_datetime(value, errors="coerce")
+    if pd.isna(parsed):
+        return str(value or "")
+    return parsed.strftime("%Y-%m-%d %H:%M")
+
+
+def transaction_status(row: dict) -> str:
+    if row.get("reversed_at"):
+        return "已撤回"
+    if row.get("reversal_of"):
+        return "撤回记录"
+    return "有效"
+
+
+def selected_ids_from_editor(df: pd.DataFrame, id_column: str = "ID") -> list[int]:
+    if df.empty or "选择" not in df.columns or id_column not in df.columns:
+        return []
+    selected = df[df["选择"].fillna(False)]
+    return [int(value) for value in selected[id_column].tolist()]
 
 
 def apply_inventory_filters(
@@ -740,26 +770,57 @@ def rpc_rows_to_transaction_logs(rows: list[dict]) -> list[list[object]]:
     return logs
 
 
-def load_supabase_transaction_records(limit: int = 200) -> list[dict]:
+def load_supabase_transaction_records(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    limit: int = 1000,
+) -> list[dict]:
     client = supabase_client()
     if client is None:
         return []
-    response = (
-        client.table("inventory_transactions")
-        .select("id,created_at,action,category,model,language,quantity,before_quantity,after_quantity,note,reversed_at,reversal_of")
-        .order("created_at", desc=True)
-        .limit(limit)
-        .execute()
+    query = client.table("inventory_transactions").select(
+        "id,created_at,action,category,model,language,quantity,before_quantity,after_quantity,note,reversed_at,reversal_of"
     )
+    if start_date:
+        query = query.gte("created_at", day_start(start_date))
+    if end_date:
+        query = query.lte("created_at", day_end(end_date))
+    response = query.order("created_at", desc=True).limit(limit).execute()
     return response.data or []
 
 
-def load_supabase_inventory_records() -> list[dict]:
+def load_supabase_inventory_records(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    limit: int = 2000,
+) -> list[dict]:
     client = supabase_client()
     if client is None:
         return []
-    rows = select_all_supabase_rows("inventory_items", "*", order="material_code")
-    return rows
+    query = client.table("inventory_items").select("*")
+    if start_date:
+        query = query.gte("created_at", day_start(start_date))
+    if end_date:
+        query = query.lte("created_at", day_end(end_date))
+    response = query.order("created_at", desc=True).limit(limit).execute()
+    return response.data or []
+
+
+def load_supabase_category_records(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    limit: int = 1000,
+) -> list[dict]:
+    client = supabase_client()
+    if client is None:
+        return []
+    query = client.table("material_categories").select("id,category,no_model,created_at")
+    if start_date:
+        query = query.gte("created_at", day_start(start_date))
+    if end_date:
+        query = query.lte("created_at", day_end(end_date))
+    response = query.order("created_at", desc=True).limit(limit).execute()
+    return response.data or []
 
 
 def revert_supabase_transaction(transaction_id: int, note: str) -> list[list[object]]:
@@ -871,6 +932,18 @@ def delete_supabase_category(product: str) -> None:
         return
     client.table("inventory_items").delete().eq("category", product).execute()
     client.table("material_categories").delete().eq("category", product).execute()
+
+
+def update_supabase_category(old_product: str, new_product: str, no_model: bool) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+    old_product = old_product.strip()
+    new_product = new_product.strip()
+    client.table("inventory_items").update({"category": new_product}).eq("category", old_product).execute()
+    client.table("material_categories").update(
+        {"category": new_product, "no_model": bool(no_model)}
+    ).eq("category", old_product).execute()
 
 
 def next_material_id(df: pd.DataFrame) -> str:
@@ -1222,153 +1295,192 @@ def render_transaction_admin() -> None:
         st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请通过下载的流水表人工核对。")
         return
 
+    filter_col_a, filter_col_b, filter_col_c, filter_col_d = st.columns([1, 1, 1, 1])
+    default_end = date.today()
+    default_start = default_end - timedelta(days=30)
+    start_date = filter_col_a.date_input("开始日期", value=default_start, key="tx_start_date")
+    end_date = filter_col_b.date_input("结束日期", value=default_end, key="tx_end_date")
+    status_filter = filter_col_c.selectbox("记录状态", ["有效", "全部", "已撤回", "撤回记录"], key="tx_status_filter")
+    limit = int(filter_col_d.number_input("最多显示", min_value=100, max_value=5000, value=1000, step=100, key="tx_limit"))
+    if start_date > end_date:
+        st.warning("开始日期不能晚于结束日期。")
+        return
+
     try:
-        records = load_supabase_transaction_records()
+        records = load_supabase_transaction_records(start_date=start_date, end_date=end_date, limit=limit)
     except Exception as exc:
         st.error("Supabase 还没有升级修改/撤回功能。请先在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
         st.exception(exc)
         return
+
+    if status_filter != "全部":
+        records = [row for row in records if transaction_status(row) == status_filter]
 
     if not records:
         st.info("暂无库存提交记录。")
         return
 
     record_map = {int(row["id"]): row for row in records if row.get("id") is not None}
-    selected_id = st.selectbox(
-        "选择要处理的提交记录",
-        list(record_map.keys()),
-        format_func=lambda value: format_transaction_option(record_map[int(value)]),
-        key="admin_transaction_id",
+    table_df = pd.DataFrame(
+        [
+            {
+                "选择": False,
+                "ID": int(row.get("id")),
+                "时间": format_datetime(row.get("created_at")),
+                "状态": transaction_status(row),
+                "操作": row.get("action", ""),
+                "物料品类": row.get("category", ""),
+                "产品型号": row.get("model") or NO_MODEL_TEXT,
+                "语种": row.get("language", ""),
+                "数量": int(row.get("quantity") or 0),
+                "变更前": int(row.get("before_quantity") or 0),
+                "变更后": int(row.get("after_quantity") or 0),
+                "库存变化": int(row.get("after_quantity") or 0) - int(row.get("before_quantity") or 0),
+                "备注": row.get("note", "") or "",
+            }
+            for row in records
+        ]
     )
-    selected = record_map[int(selected_id)]
+    metric_col_a, metric_col_b, metric_col_c, metric_col_d = st.columns(4)
+    metric_col_a.metric("显示记录", f"{len(table_df):,}")
+    metric_col_b.metric("有效记录", f"{int((table_df['状态'] == '有效').sum()):,}")
+    metric_col_c.metric("库存净变化", f"{int(table_df['库存变化'].sum()):,}")
+    metric_col_d.metric("备注记录", f"{int((table_df['备注'].astype(str) != '').sum()):,}")
 
-    st.dataframe(
-        pd.DataFrame(
-            [
-                {
-                    "记录ID": selected.get("id"),
-                    "时间": selected.get("created_at", ""),
-                    "状态": "已撤回" if selected.get("reversed_at") else ("撤回记录" if selected.get("reversal_of") else "有效"),
-                    "操作": selected.get("action", ""),
-                    PRODUCT_COL: selected.get("category", ""),
-                    MODEL_COL: selected.get("model") or NO_MODEL_TEXT,
-                    LANGUAGE_COL: selected.get("language", ""),
-                    "数量": int(selected.get("quantity") or 0),
-                    "变更前数量": int(selected.get("before_quantity") or 0),
-                    "变更后数量": int(selected.get("after_quantity") or 0),
-                    "备注": selected.get("note", "") or "",
-                }
-            ]
-        ),
+    edited_df = st.data_editor(
+        table_df,
         width="stretch",
         hide_index=True,
+        height=420,
+        disabled=[column for column in table_df.columns if column != "选择"],
+        column_config={"选择": st.column_config.CheckboxColumn("选择")},
+        key="tx_editor",
     )
+    selected_ids = selected_ids_from_editor(edited_df)
+    selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
+    active_selected_ids = [int(row["id"]) for row in selected_records if transaction_status(row) == "有效"]
+    inactive_count = len(selected_records) - len(active_selected_ids)
 
-    inactive_record = bool(selected.get("reversed_at") or selected.get("reversal_of"))
-    if inactive_record:
-        st.warning("这条记录已经撤回或本身就是撤回记录，不能再次修改或撤回。")
-        return
-
-    revert_col, replace_col = st.columns(2)
-    with revert_col:
-        st.markdown("**撤回该提交**")
-        revert_note = st.text_input("撤回备注", key="revert_transaction_note", placeholder="可选")
-        revert_confirmed = st.checkbox("确认撤回这条库存提交", key="revert_transaction_confirmed")
-        if st.button("撤回提交", type="primary", width="stretch", key="revert_transaction_button"):
-            if not revert_confirmed:
-                st.warning("请先勾选确认撤回。")
-            else:
-                try:
-                    logs = revert_supabase_transaction(int(selected_id), revert_note)
-                    st.success("已撤回该提交，并写入一条撤回流水。")
-                    st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
-                    st.cache_data.clear()
-                except Exception as exc:
-                    st.error("撤回失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-                    st.exception(exc)
-
-    with replace_col:
-        st.markdown("**修改为新提交**")
-        selection_context = build_inventory_selection_context()
-        products = unique_preserve([str(selected.get("category", ""))] + list(selection_context["products"]))
-        replace_product = st.selectbox(
-            "修正后的物料品类",
-            products,
-            index=products.index(str(selected.get("category", ""))) if str(selected.get("category", "")) in products else 0,
-            key="replace_product",
-        )
-        is_no_model_product, scoped_models = product_model_state(replace_product, selection_context)
-        old_model = str(selected.get("model") or NO_MODEL_TEXT)
-        if is_no_model_product:
-            st.text_input("修正后的产品型号", value=NO_MODEL_TEXT, disabled=True, key="replace_model_blank")
-            replace_model = NO_MODEL_TEXT
+    action_col_a, action_col_b, action_col_c = st.columns([1.4, 1, 1])
+    revert_note = action_col_a.text_input("批量撤回备注", key="tx_batch_revert_note", placeholder="可选")
+    revert_confirmed = action_col_b.checkbox("确认批量撤回", key="tx_batch_revert_confirmed")
+    if action_col_c.button("批量撤回选中提交", type="primary", width="stretch", key="tx_batch_revert_button"):
+        if not active_selected_ids:
+            st.warning("请先勾选至少一条有效提交记录。")
+        elif inactive_count:
+            st.warning("选中记录包含已撤回或撤回记录，请取消这些记录后再操作。")
+        elif not revert_confirmed:
+            st.warning("请先勾选确认批量撤回。")
         else:
-            replace_models = unique_preserve([old_model] + scoped_models + list(selection_context["models"]))
-            replace_model = st.selectbox(
-                "修正后的产品型号",
-                replace_models,
-                index=replace_models.index(old_model) if old_model in replace_models else 0,
-                key="replace_model",
+            try:
+                logs: list[list[object]] = []
+                for transaction_id in active_selected_ids:
+                    logs.extend(revert_supabase_transaction(transaction_id, revert_note))
+                st.success(f"已撤回 {len(active_selected_ids)} 条提交记录。")
+                st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
+                st.cache_data.clear()
+                st.rerun()
+            except Exception as exc:
+                st.error("批量撤回失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
+                st.exception(exc)
+
+    if len(active_selected_ids) == 1:
+        selected_id = active_selected_ids[0]
+        selected = record_map[selected_id]
+        with st.expander("编辑选中提交", expanded=True):
+            selection_context = build_inventory_selection_context()
+            edit_col_a, edit_col_b, edit_col_c, edit_col_d, edit_col_e = st.columns([2, 1.3, 1.5, 1.1, 1])
+            products = unique_preserve([str(selected.get("category", ""))] + list(selection_context["products"]))
+            replace_product = edit_col_a.selectbox(
+                "物料品类",
+                products,
+                index=products.index(str(selected.get("category", ""))) if str(selected.get("category", "")) in products else 0,
+                key=f"replace_product_{selected_id}",
             )
-        languages = unique_preserve([str(selected.get("language", ""))] + list(selection_context["languages"]))
-        replace_language = st.selectbox(
-            "修正后的语种",
-            languages,
-            index=languages.index(str(selected.get("language", ""))) if str(selected.get("language", "")) in languages else 0,
-            key="replace_language",
-        )
-        replace_action = st.selectbox(
-            "修正后的操作",
-            ["入库增加", "出库减少", "盘点设为"],
-            index=["入库增加", "出库减少", "盘点设为"].index(str(selected.get("action", "入库增加")))
-            if str(selected.get("action", "入库增加")) in ["入库增加", "出库减少", "盘点设为"]
-            else 0,
-            key="replace_action",
-        )
-        replace_min_quantity = -1_000_000 if replace_action == "盘点设为" else 0
-        replace_default_quantity = int(selected.get("quantity") or 0)
-        if replace_default_quantity < replace_min_quantity:
-            replace_default_quantity = replace_min_quantity
-        replace_quantity = st.number_input(
-            "修正后的数量",
-            min_value=replace_min_quantity,
-            max_value=1_000_000,
-            value=replace_default_quantity,
-            step=1,
-            key=f"replace_quantity_{replace_action}",
-        )
-        replace_note = st.text_input("修正备注", key="replace_note", placeholder="可选")
-        replace_confirmed = st.checkbox("确认撤回原记录并保存修正记录", key="replace_confirmed")
-        if st.button("保存修正", type="primary", width="stretch", key="replace_transaction_button"):
-            if not replace_confirmed:
-                st.warning("请先勾选确认修正。")
+            is_no_model_product, scoped_models = product_model_state(replace_product, selection_context)
+            old_model = str(selected.get("model") or NO_MODEL_TEXT)
+            if is_no_model_product:
+                edit_col_b.text_input("产品型号", value=NO_MODEL_TEXT, disabled=True, key=f"replace_model_blank_{selected_id}")
+                replace_model = NO_MODEL_TEXT
             else:
-                try:
-                    logs = replace_supabase_transaction(
-                        int(selected_id),
-                        replace_action,
-                        replace_product,
-                        replace_model,
-                        replace_language,
-                        int(replace_quantity),
-                        replace_note,
-                    )
-                    st.success("已撤回原提交，并保存新的修正提交。")
-                    st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
-                    st.cache_data.clear()
-                except Exception as exc:
-                    st.error("修正失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-                    st.exception(exc)
+                replace_models = unique_preserve([old_model] + scoped_models + list(selection_context["models"]))
+                replace_model = edit_col_b.selectbox(
+                    "产品型号",
+                    replace_models,
+                    index=replace_models.index(old_model) if old_model in replace_models else 0,
+                    key=f"replace_model_{selected_id}",
+                )
+            languages = unique_preserve([str(selected.get("language", ""))] + list(selection_context["languages"]))
+            replace_language = edit_col_c.selectbox(
+                "语种",
+                languages,
+                index=languages.index(str(selected.get("language", ""))) if str(selected.get("language", "")) in languages else 0,
+                key=f"replace_language_{selected_id}",
+            )
+            actions = ["入库增加", "出库减少", "盘点设为"]
+            replace_action = edit_col_d.selectbox(
+                "操作",
+                actions,
+                index=actions.index(str(selected.get("action", "入库增加"))) if str(selected.get("action", "")) in actions else 0,
+                key=f"replace_action_{selected_id}",
+            )
+            replace_min_quantity = -1_000_000 if replace_action == "盘点设为" else 0
+            replace_default_quantity = max(int(selected.get("quantity") or 0), replace_min_quantity)
+            replace_quantity = edit_col_e.number_input(
+                "数量",
+                min_value=replace_min_quantity,
+                max_value=1_000_000,
+                value=replace_default_quantity,
+                step=1,
+                key=f"replace_quantity_{selected_id}_{replace_action}",
+            )
+            replace_note = st.text_input("修正备注", key=f"replace_note_{selected_id}", placeholder="可选")
+            replace_confirmed = st.checkbox("确认撤回原记录并保存修正记录", key=f"replace_confirmed_{selected_id}")
+            if st.button("保存选中记录的编辑", type="primary", width="stretch", key=f"replace_transaction_button_{selected_id}"):
+                if not replace_confirmed:
+                    st.warning("请先勾选确认修正。")
+                else:
+                    try:
+                        logs = replace_supabase_transaction(
+                            selected_id,
+                            replace_action,
+                            replace_product,
+                            replace_model,
+                            replace_language,
+                            int(replace_quantity),
+                            replace_note,
+                        )
+                        st.success("已撤回原提交，并保存新的修正提交。")
+                        st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
+                        st.cache_data.clear()
+                        st.rerun()
+                    except Exception as exc:
+                        st.error("修正失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
+                        st.exception(exc)
+    elif len(selected_ids) > 1:
+        st.info("已选择多条记录，可批量撤回；如需编辑，请只勾选一条有效记录。")
+    else:
+        st.caption("勾选一条有效记录可编辑；勾选多条有效记录可批量撤回。")
 
 
 def render_material_data_admin() -> None:
-    st.subheader("新增物料行修改与撤回")
+    st.subheader("库存行修改与删除")
     if not supabase_configured():
         st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请直接维护本地库存文件。")
         return
 
+    filter_col_a, filter_col_b, filter_col_c = st.columns([1, 1, 2])
+    default_end = date.today()
+    default_start = default_end - timedelta(days=90)
+    start_date = filter_col_a.date_input("创建开始日期", value=default_start, key="item_start_date")
+    end_date = filter_col_b.date_input("创建结束日期", value=default_end, key="item_end_date")
+    search_text = filter_col_c.text_input("搜索库存行", key="item_search_text", placeholder="物料编码 / 品类 / 型号 / 语种")
+    if start_date > end_date:
+        st.warning("开始日期不能晚于结束日期。")
+        return
+
     try:
-        records = load_supabase_inventory_records()
+        records = load_supabase_inventory_records(start_date=start_date, end_date=end_date)
     except Exception as exc:
         st.error("读取物料行失败。请检查 Supabase 连接。")
         st.exception(exc)
@@ -1378,104 +1490,261 @@ def render_material_data_admin() -> None:
         return
 
     record_map = {int(row["id"]): row for row in records if row.get("id") is not None}
-    selected_item_id = st.selectbox(
-        "选择要修改的库存行",
-        list(record_map.keys()),
-        format_func=lambda value: format_inventory_item_option(record_map[int(value)]),
-        key="admin_inventory_item_id",
+    table_df = pd.DataFrame(
+        [
+            {
+                "选择": False,
+                "ID": int(row.get("id")),
+                "创建时间": format_datetime(row.get("created_at")),
+                "更新时间": format_datetime(row.get("updated_at")),
+                "物料编码": row.get("material_code", ""),
+                "物料品类": row.get("category", ""),
+                "产品型号": row.get("model") or NO_MODEL_TEXT,
+                "语种": row.get("language", ""),
+                "库存数量": int(row.get("quantity") or 0),
+            }
+            for row in records
+        ]
     )
-    item = record_map[int(selected_item_id)]
-    current_product = str(item.get("category", ""))
-    current_model = str(item.get("model") or NO_MODEL_TEXT)
-    current_language = str(item.get("language", ""))
+    if search_text.strip():
+        search = search_text.strip()
+        mask = (
+            table_df["物料编码"].astype(str).str.contains(search, case=False, na=False)
+            | table_df["物料品类"].astype(str).str.contains(search, case=False, na=False)
+            | table_df["产品型号"].astype(str).str.contains(search, case=False, na=False)
+            | table_df["语种"].astype(str).str.contains(search, case=False, na=False)
+        )
+        table_df = table_df[mask].reset_index(drop=True)
 
-    edit_col, delete_col = st.columns(2)
-    with edit_col:
-        st.markdown("**修改库存行信息**")
-        material_code = st.text_input("物料编码", value=str(item.get("material_code", "")), key="edit_material_code")
-        product = st.text_input("物料品类", value=current_product, key="edit_material_product")
-        no_model = st.checkbox("不按产品型号分类", value=current_model == NO_MODEL_TEXT, key="edit_material_no_model")
-        if no_model:
-            st.text_input("产品型号", value=NO_MODEL_TEXT, disabled=True, key="edit_material_model_blank")
-            model = NO_MODEL_TEXT
+    metric_col_a, metric_col_b, metric_col_c = st.columns(3)
+    metric_col_a.metric("显示库存行", f"{len(table_df):,}")
+    metric_col_b.metric("非零库存行", f"{int((table_df['库存数量'] != 0).sum()):,}" if not table_df.empty else "0")
+    metric_col_c.metric("库存合计", f"{int(table_df['库存数量'].sum()):,}" if not table_df.empty else "0")
+
+    edited_df = st.data_editor(
+        table_df,
+        width="stretch",
+        hide_index=True,
+        height=420,
+        disabled=[column for column in table_df.columns if column != "选择"],
+        column_config={"选择": st.column_config.CheckboxColumn("选择")},
+        key="item_editor",
+    )
+    selected_ids = selected_ids_from_editor(edited_df)
+    selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
+
+    delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
+    delete_col_a.caption("仅允许删除库存为 0 且没有流水记录的库存行。")
+    delete_confirmed = delete_col_b.checkbox("确认批量删除", key="item_batch_delete_confirmed")
+    if delete_col_c.button("批量删除选中库存行", type="primary", width="stretch", key="item_batch_delete_button"):
+        if not selected_records:
+            st.warning("请先勾选至少一条库存行。")
+        elif not delete_confirmed:
+            st.warning("请先勾选确认批量删除。")
         else:
-            model = st.text_input("产品型号", value=current_model, key="edit_material_model")
-        language = st.text_input("语种", value=current_language, key="edit_material_language")
-        if st.button("保存库存行修改", type="primary", width="stretch", key="save_inventory_item_edit"):
-            if not material_code.strip() or not product.strip() or not language.strip():
-                st.error("物料编码、物料品类和语种不能为空。")
-            elif count_supabase_item_transactions(current_product, current_model, current_language) > 0:
-                st.error("该库存行已经有流水记录。为保证历史可追溯，请先撤回相关库存提交后再修改行信息。")
+            blocked: list[str] = []
+            for row in selected_records:
+                product = str(row.get("category", ""))
+                model = str(row.get("model") or NO_MODEL_TEXT)
+                language = str(row.get("language", ""))
+                quantity = int(row.get("quantity") or 0)
+                tx_count = count_supabase_item_transactions(product, model, language)
+                if quantity != 0 or tx_count > 0:
+                    blocked.append(f"{row.get('material_code', '')}（库存 {quantity}，流水 {tx_count}）")
+            if blocked:
+                st.error("以下库存行不能删除：" + "；".join(blocked[:8]))
             else:
                 try:
-                    update_supabase_inventory_item(int(selected_item_id), material_code, product, model, language)
-                    st.success("库存行信息已修改。")
+                    for row in selected_records:
+                        delete_supabase_inventory_item(int(row["id"]))
+                    st.success(f"已删除 {len(selected_records)} 条库存行。")
                     st.cache_data.clear()
                     st.rerun()
                 except Exception as exc:
-                    st.error("修改失败，可能是物料编码或“品类+型号+语种”与现有行重复。")
+                    st.error("批量删除库存行失败。")
                     st.exception(exc)
 
-    with delete_col:
-        st.markdown("**删除误建库存行**")
-        quantity = int(item.get("quantity") or 0)
-        tx_count = count_supabase_item_transactions(current_product, current_model, current_language)
-        st.caption(f"当前库存：{quantity}；相关流水：{tx_count} 条。")
-        delete_confirmed = st.checkbox("确认删除该库存行", key="delete_inventory_item_confirmed")
-        if st.button("删除库存行", type="primary", width="stretch", key="delete_inventory_item_button"):
-            if quantity != 0:
-                st.error("该库存行当前库存不为 0，请先通过库存更新或撤回流水把库存调整为 0。")
-            elif tx_count > 0:
-                st.error("该库存行已有流水记录，不能直接删除。")
-            elif not delete_confirmed:
-                st.warning("请先勾选确认删除。")
+    if len(selected_records) == 1:
+        item = selected_records[0]
+        selected_item_id = int(item["id"])
+        current_product = str(item.get("category", ""))
+        current_model = str(item.get("model") or NO_MODEL_TEXT)
+        current_language = str(item.get("language", ""))
+        with st.expander("编辑选中库存行", expanded=True):
+            edit_col_a, edit_col_b, edit_col_c, edit_col_d = st.columns([1.2, 2, 1.3, 1.4])
+            material_code = edit_col_a.text_input("物料编码", value=str(item.get("material_code", "")), key=f"edit_material_code_{selected_item_id}")
+            product = edit_col_b.text_input("物料品类", value=current_product, key=f"edit_material_product_{selected_item_id}")
+            no_model = edit_col_c.checkbox("无需型号", value=current_model == NO_MODEL_TEXT, key=f"edit_material_no_model_{selected_item_id}")
+            if no_model:
+                edit_col_d.text_input("产品型号", value=NO_MODEL_TEXT, disabled=True, key=f"edit_material_model_blank_{selected_item_id}")
+                model = NO_MODEL_TEXT
             else:
-                try:
-                    delete_supabase_inventory_item(int(selected_item_id))
-                    st.success("库存行已删除。")
-                    st.cache_data.clear()
-                    st.rerun()
-                except Exception as exc:
-                    st.error("删除库存行失败。")
-                    st.exception(exc)
+                model = edit_col_d.text_input("产品型号", value=current_model, key=f"edit_material_model_{selected_item_id}")
+            language = st.text_input("语种", value=current_language, key=f"edit_material_language_{selected_item_id}")
+            if st.button("保存选中库存行修改", type="primary", width="stretch", key=f"save_inventory_item_edit_{selected_item_id}"):
+                if not material_code.strip() or not product.strip() or not language.strip():
+                    st.error("物料编码、物料品类和语种不能为空。")
+                elif count_supabase_item_transactions(current_product, current_model, current_language) > 0:
+                    st.error("该库存行已经有流水记录。为保证历史可追溯，请先撤回相关库存提交后再修改行信息。")
+                else:
+                    try:
+                        update_supabase_inventory_item(selected_item_id, material_code, product, model, language)
+                        st.success("库存行信息已修改。")
+                        st.cache_data.clear()
+                        st.rerun()
+                    except Exception as exc:
+                        st.error("修改失败，可能是物料编码或“品类+型号+语种”与现有行重复。")
+                        st.exception(exc)
+    elif len(selected_records) > 1:
+        st.info("已选择多条库存行，可批量删除；如需编辑，请只勾选一条。")
+    else:
+        st.caption("勾选一条库存行可编辑；勾选多条可批量删除。")
 
-    st.markdown("**撤回新增物料品类**")
-    df = load_inventory()
-    categories = unique_preserve(list(df[PRODUCT_COL].astype(str)))
-    if not categories:
+
+def render_category_admin() -> None:
+    st.subheader("物料品类修改与撤回")
+    if not supabase_configured():
+        st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请直接维护本地库存文件。")
         return
-    selected_category = st.selectbox("选择要撤回的物料品类", categories, key="delete_material_category")
-    category_df = df[df[PRODUCT_COL] == selected_category]
-    category_quantity = int(category_df[QTY_COL].sum()) if not category_df.empty else 0
-    category_nonzero_rows = int((category_df[QTY_COL] != 0).sum()) if not category_df.empty else 0
-    category_tx_count = count_supabase_category_transactions(selected_category)
-    st.caption(
-        f"该品类包含 {len(category_df)} 条库存行；库存合计 {category_quantity}；"
-        f"非零库存行 {category_nonzero_rows} 条；相关流水 {category_tx_count} 条。"
+
+    filter_col_a, filter_col_b = st.columns(2)
+    default_end = date.today()
+    default_start = default_end - timedelta(days=90)
+    start_date = filter_col_a.date_input("创建开始日期", value=default_start, key="category_start_date")
+    end_date = filter_col_b.date_input("创建结束日期", value=default_end, key="category_end_date")
+    if start_date > end_date:
+        st.warning("开始日期不能晚于结束日期。")
+        return
+
+    try:
+        categories = load_supabase_category_records(start_date=start_date, end_date=end_date)
+        all_categories = load_supabase_category_records(limit=5000)
+        inventory_df = load_inventory()
+    except Exception as exc:
+        st.error("读取物料品类失败。请检查 Supabase 连接。")
+        st.exception(exc)
+        return
+    if not categories:
+        st.info("暂无物料品类。")
+        return
+
+    existing_category_names = {str(row.get("category", "")) for row in all_categories}
+    summary: dict[str, dict[str, int]] = {}
+    if not inventory_df.empty:
+        for product, group in inventory_df.groupby(PRODUCT_COL):
+            summary[str(product)] = {
+                "row_count": int(len(group)),
+                "nonzero_count": int((group[QTY_COL] != 0).sum()),
+                "quantity_sum": int(group[QTY_COL].sum()),
+                "real_model_count": int((group[MODEL_COL] != NO_MODEL_TEXT).sum()),
+            }
+
+    record_map = {int(row["id"]): row for row in categories if row.get("id") is not None}
+    table_df = pd.DataFrame(
+        [
+            {
+                "选择": False,
+                "ID": int(row.get("id")),
+                "创建时间": format_datetime(row.get("created_at")),
+                "物料品类": row.get("category", ""),
+                "无需型号": bool(row.get("no_model")),
+                "库存行数": summary.get(str(row.get("category", "")), {}).get("row_count", 0),
+                "非零库存行": summary.get(str(row.get("category", "")), {}).get("nonzero_count", 0),
+                "库存合计": summary.get(str(row.get("category", "")), {}).get("quantity_sum", 0),
+            }
+            for row in categories
+        ]
     )
-    category_delete_confirmed = st.checkbox("确认删除该品类及其所有库存行", key="delete_category_confirmed")
-    if st.button("撤回该物料品类", type="primary", width="stretch", key="delete_category_button"):
-        if category_nonzero_rows > 0:
-            st.error("该品类存在非零库存行，请先调整库存后再撤回。")
-        elif category_tx_count > 0:
-            st.error("该品类已有流水记录，不能直接撤回。请先撤回相关库存提交。")
-        elif not category_delete_confirmed:
-            st.warning("请先勾选确认撤回。")
+    metric_col_a, metric_col_b, metric_col_c = st.columns(3)
+    metric_col_a.metric("显示品类", f"{len(table_df):,}")
+    metric_col_b.metric("非零库存品类", f"{int((table_df['非零库存行'] > 0).sum()):,}")
+    metric_col_c.metric("库存合计", f"{int(table_df['库存合计'].sum()):,}")
+
+    edited_df = st.data_editor(
+        table_df,
+        width="stretch",
+        hide_index=True,
+        height=420,
+        disabled=[column for column in table_df.columns if column != "选择"],
+        column_config={"选择": st.column_config.CheckboxColumn("选择")},
+        key="category_editor",
+    )
+    selected_ids = selected_ids_from_editor(edited_df)
+    selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
+
+    delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
+    delete_col_a.caption("仅允许撤回所有库存行为 0 且没有流水记录的品类。")
+    delete_confirmed = delete_col_b.checkbox("确认批量撤回", key="category_batch_delete_confirmed")
+    if delete_col_c.button("批量撤回选中品类", type="primary", width="stretch", key="category_batch_delete_button"):
+        if not selected_records:
+            st.warning("请先勾选至少一个物料品类。")
+        elif not delete_confirmed:
+            st.warning("请先勾选确认批量撤回。")
         else:
-            try:
-                delete_supabase_category(selected_category)
-                st.success("该物料品类及其库存行已撤回。")
-                st.cache_data.clear()
-                st.rerun()
-            except Exception as exc:
-                st.error("撤回物料品类失败。")
-                st.exception(exc)
+            blocked: list[str] = []
+            for row in selected_records:
+                product = str(row.get("category", ""))
+                stats = summary.get(product, {"nonzero_count": 0})
+                tx_count = count_supabase_category_transactions(product)
+                if int(stats.get("nonzero_count", 0)) > 0 or tx_count > 0:
+                    blocked.append(f"{product}（非零库存行 {stats.get('nonzero_count', 0)}，流水 {tx_count}）")
+            if blocked:
+                st.error("以下品类不能撤回：" + "；".join(blocked[:8]))
+            else:
+                try:
+                    for row in selected_records:
+                        delete_supabase_category(str(row.get("category", "")))
+                    st.success(f"已撤回 {len(selected_records)} 个物料品类。")
+                    st.cache_data.clear()
+                    st.rerun()
+                except Exception as exc:
+                    st.error("批量撤回物料品类失败。")
+                    st.exception(exc)
+
+    if len(selected_records) == 1:
+        category = selected_records[0]
+        category_id = int(category["id"])
+        old_product = str(category.get("category", ""))
+        stats = summary.get(old_product, {"real_model_count": 0})
+        with st.expander("编辑选中物料品类", expanded=True):
+            edit_col_a, edit_col_b = st.columns([2, 1])
+            new_product = edit_col_a.text_input("物料品类名称", value=old_product, key=f"edit_category_name_{category_id}")
+            no_model = edit_col_b.checkbox("无需型号", value=bool(category.get("no_model")), key=f"edit_category_no_model_{category_id}")
+            if st.button("保存选中品类修改", type="primary", width="stretch", key=f"save_category_edit_{category_id}"):
+                if not new_product.strip():
+                    st.error("物料品类名称不能为空。")
+                elif no_model and int(stats.get("real_model_count", 0)) > 0:
+                    st.error("该品类已有具体产品型号，不能直接改为无需型号。")
+                elif new_product.strip() != old_product and (
+                    new_product.strip() in existing_category_names
+                    or new_product.strip() in set(inventory_df[PRODUCT_COL].astype(str))
+                ):
+                    st.error("新的物料品类名称已经存在。")
+                elif count_supabase_category_transactions(old_product) > 0:
+                    st.error("该品类已有流水记录。为保证历史可追溯，请先撤回相关库存提交后再修改品类。")
+                else:
+                    try:
+                        update_supabase_category(old_product, new_product, no_model)
+                        st.success("物料品类已修改。")
+                        st.cache_data.clear()
+                        st.rerun()
+                    except Exception as exc:
+                        st.error("修改物料品类失败，可能与现有品类重复。")
+                        st.exception(exc)
+    elif len(selected_records) > 1:
+        st.info("已选择多个品类，可批量撤回；如需编辑，请只勾选一个。")
+    else:
+        st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
 
 
 def render_edit_revert_page() -> None:
-    render_transaction_admin()
-    st.divider()
-    render_material_data_admin()
+    tx_tab, item_tab, category_tab = st.tabs(["提交记录", "库存行", "物料品类"])
+    with tx_tab:
+        render_transaction_admin()
+    with item_tab:
+        render_material_data_admin()
+    with category_tab:
+        render_category_admin()
 
 
 def apply_changes(changes: list[dict[str, object]]) -> None:
