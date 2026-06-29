@@ -310,15 +310,22 @@ def build_inventory_selection_context() -> dict[str, object]:
     options = load_options()
     inventory_df = load_inventory()
     product_models: dict[str, list[str]] = {}
+    product_languages: dict[str, list[str]] = {}
+    product_model_languages: dict[tuple[str, str], list[str]] = {}
     inventory_product_keys: set[str] = set()
 
     if not inventory_df.empty:
-        for item in inventory_df[[PRODUCT_COL, MODEL_COL]].itertuples(index=False):
+        for item in inventory_df[[PRODUCT_COL, MODEL_COL, LANGUAGE_COL]].itertuples(index=False):
             product_key = normalize_option_label(item[0])
-            model_name = str(item[1]).strip()
+            model_name = str(item[1]).strip() or NO_MODEL_TEXT
+            model_key = normalize_option_label(model_name)
+            language_name = str(item[2]).strip()
             inventory_product_keys.add(product_key)
             if model_name and model_name != NO_MODEL_TEXT:
                 product_models.setdefault(product_key, []).append(model_name)
+            if language_name:
+                product_languages.setdefault(product_key, []).append(language_name)
+                product_model_languages.setdefault((product_key, model_key), []).append(language_name)
 
     return {
         "products": options["products"],
@@ -327,6 +334,10 @@ def build_inventory_selection_context() -> dict[str, object]:
         "no_model_product_keys": {normalize_option_label(product) for product in options["no_model_products"]},
         "inventory_product_keys": inventory_product_keys,
         "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
+        "product_languages": {key: sort_languages(values) for key, values in product_languages.items()},
+        "product_model_languages": {
+            key: sort_languages(values) for key, values in product_model_languages.items()
+        },
         "inventory_df": inventory_df,
     }
 
@@ -339,6 +350,25 @@ def product_model_state(product: str, selection_context: dict[str, object]) -> t
         product_key in selection_context["inventory_product_keys"] and not scoped_models
     )
     return bool(is_no_model_product), list(scoped_models)
+
+
+def product_language_options(
+    product: str,
+    model: str,
+    selection_context: dict[str, object],
+    fallback_languages: list[str] | None = None,
+) -> list[str]:
+    product_key = normalize_option_label(product)
+    model_key = normalize_option_label(model or NO_MODEL_TEXT)
+    product_model_languages = selection_context["product_model_languages"]
+    product_languages = selection_context["product_languages"]
+
+    scoped_languages = product_model_languages.get((product_key, model_key), [])  # type: ignore[union-attr]
+    if not scoped_languages:
+        scoped_languages = product_languages.get(product_key, [])  # type: ignore[union-attr]
+    if not scoped_languages:
+        scoped_languages = fallback_languages or list(selection_context["languages"])
+    return sort_languages(list(scoped_languages))
 
 
 def day_start(value: date) -> str:
@@ -1100,9 +1130,10 @@ def render_change_form(show_title: bool = True) -> None:
                     scoped_models or models,
                     key=f"model_{index}",
                 )
+            language_options = product_language_options(product, model, selection_context, languages)
             language = language_col.selectbox(
                 "语种",
-                languages,
+                language_options,
                 key=f"language_{index}",
             )
             action = action_col.selectbox(
@@ -1460,7 +1491,8 @@ def render_transaction_admin() -> None:
                     index=replace_models.index(old_model) if old_model in replace_models else 0,
                     key=f"replace_model_{selected_id}",
                 )
-            languages = unique_preserve([str(selected.get("language", ""))] + list(selection_context["languages"]))
+            scoped_languages = product_language_options(replace_product, replace_model, selection_context)
+            languages = unique_preserve([str(selected.get("language", ""))] + scoped_languages)
             replace_language = edit_col_c.selectbox(
                 "语种",
                 languages,
