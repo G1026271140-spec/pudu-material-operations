@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import threading
 from datetime import datetime
 from io import BytesIO
@@ -69,6 +70,29 @@ def ensure_data() -> None:
 def load_options() -> dict:
     ensure_data()
     return json.loads(OPTIONS_JSON.read_text(encoding="utf-8"))
+
+
+def save_options(options: dict) -> None:
+    OPTIONS_JSON.write_text(
+        json.dumps(options, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def unique_preserve(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        cleaned = str(value).strip()
+        if cleaned and cleaned not in seen:
+            result.append(cleaned)
+            seen.add(cleaned)
+    return result
+
+
+def parse_custom_values(raw_text: str) -> list[str]:
+    parts = re.split(r"[\n,，;；、]+", raw_text)
+    return unique_preserve(parts)
 
 
 def load_inventory() -> pd.DataFrame:
@@ -154,6 +178,48 @@ def append_transactions(rows: list[list[object]]) -> None:
         writer.writerows(rows)
 
 
+def next_material_id(df: pd.DataFrame) -> str:
+    max_number = 0
+    for value in df["物料编码"].astype(str):
+        match = re.search(r"(\d+)$", value)
+        if match:
+            max_number = max(max_number, int(match.group(1)))
+    return f"MAT-{max_number + 1:04d}"
+
+
+def build_new_material_rows(
+    df: pd.DataFrame,
+    product: str,
+    models: list[str],
+    languages: list[str],
+) -> tuple[list[list[object]], list[tuple[str, str]]]:
+    existing_keys = set(zip(df[PRODUCT_COL], df[MODEL_COL], df[LANGUAGE_COL]))
+    next_number = int(next_material_id(df).split("-")[-1])
+    rows: list[list[object]] = []
+    skipped: list[tuple[str, str]] = []
+
+    for model in models:
+        for language in languages:
+            key = (product, model, language)
+            if key in existing_keys:
+                skipped.append((model, language))
+                continue
+            rows.append(
+                [
+                    f"MAT-{next_number:04d}",
+                    product,
+                    model,
+                    language,
+                    0,
+                    0,
+                    0,
+                    "",
+                ]
+            )
+            next_number += 1
+    return rows, skipped
+
+
 def auth_gate() -> bool:
     if st.session_state.get("inventory_unlocked"):
         return True
@@ -189,14 +255,17 @@ def get_row_count() -> int:
     )
 
 
-def render_change_form() -> None:
+def render_change_form(show_title: bool = True) -> None:
     options = load_options()
     products = options["products"]
     no_model_products = set(options["no_model_products"])
     models = options["models"]
     languages = options["languages"]
 
-    st.title("物料库存更新")
+    if show_title:
+        st.title("物料库存更新")
+    else:
+        st.subheader("物料库存更新")
     st.caption("一次可以填写多种物料。选择品类后，绿色底纹品类会自动使用“无需型号”。")
 
     row_count = get_row_count()
@@ -253,6 +322,121 @@ def render_change_form() -> None:
 
     if submitted:
         apply_changes(changes)
+
+
+def render_add_category_form() -> None:
+    options = load_options()
+    existing_products = options["products"]
+    existing_models = options["models"]
+    existing_languages = options["languages"]
+
+    st.subheader("新增物料品类")
+    message = st.session_state.pop("category_added_message", "")
+    if message:
+        st.success(message)
+
+    with st.form("add_category_form", clear_on_submit=False):
+        product = st.text_input(
+            "新增物料品类",
+            placeholder="例如：新版宣传册(New Brochure)",
+        ).strip()
+        no_model = st.checkbox(
+            "该品类不按产品型号分类",
+            help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
+        )
+
+        model_col, language_col = st.columns(2)
+        selected_models = model_col.multiselect(
+            "选择已有产品型号",
+            existing_models,
+            disabled=no_model,
+        )
+        custom_models_text = model_col.text_area(
+            "自定义产品型号",
+            placeholder="可用逗号、分号、顿号或换行分隔",
+            disabled=no_model,
+            height=92,
+        )
+        selected_languages = language_col.multiselect(
+            "选择已有语种",
+            existing_languages,
+        )
+        custom_languages_text = language_col.text_area(
+            "自定义语种",
+            placeholder="可用逗号、分号、顿号或换行分隔",
+            height=92,
+        )
+
+        custom_models = parse_custom_values(custom_models_text)
+        custom_languages = parse_custom_values(custom_languages_text)
+        models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
+        languages = unique_preserve(selected_languages + custom_languages)
+
+        preview_count = len(models) * len(languages) if product and models and languages else 0
+        st.caption(f"预计新增 {preview_count} 条库存行。")
+        submitted = st.form_submit_button("生成新增物料行", width="stretch")
+
+    if submitted:
+        add_material_category(
+            product=product,
+            models=models,
+            languages=languages,
+            no_model=no_model,
+            selected_or_custom_models=unique_preserve(selected_models + custom_models),
+            selected_or_custom_languages=languages,
+        )
+
+
+def add_material_category(
+    product: str,
+    models: list[str],
+    languages: list[str],
+    no_model: bool,
+    selected_or_custom_models: list[str],
+    selected_or_custom_languages: list[str],
+) -> None:
+    product = product.strip()
+    if not product:
+        st.error("请填写新增物料品类。")
+        return
+    if not languages:
+        st.error("请至少选择或填写一个语种。")
+        return
+    if not no_model and not models:
+        st.error("请至少选择或填写一个产品型号，或勾选“不按产品型号分类”。")
+        return
+
+    with DATA_LOCK:
+        options = load_options()
+        df = load_inventory()
+        product_exists = product in set(options["products"]) or product in set(df[PRODUCT_COL].astype(str))
+        if product_exists:
+            st.error("该物料品类已存在。如需给已有品类补充型号或语种，可以先使用一个新的品类名称。")
+            return
+
+        new_rows, skipped = build_new_material_rows(df, product, models, languages)
+        if not new_rows:
+            st.warning("没有生成新的库存行，可能这些组合已经存在。")
+            return
+
+        new_df = pd.DataFrame(new_rows, columns=INVENTORY_HEADERS)
+        updated_df = pd.concat([df, new_df], ignore_index=True)
+        save_inventory(updated_df)
+
+        options["products"] = unique_preserve(options["products"] + [product])
+        if no_model:
+            options["no_model_products"] = unique_preserve(options["no_model_products"] + [product])
+        else:
+            options["models"] = unique_preserve(options["models"] + selected_or_custom_models)
+        options["languages"] = unique_preserve(options["languages"] + selected_or_custom_languages)
+        options["row_count"] = int(len(updated_df))
+        options["generated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        save_options(options)
+
+    skipped_text = f"，跳过 {len(skipped)} 条已存在组合" if skipped else ""
+    st.session_state["category_added_message"] = f"已新增物料品类“{product}”，生成 {len(new_rows)} 条库存行{skipped_text}。"
+    st.cache_data.clear()
+    st.rerun()
 
 
 def apply_changes(changes: list[dict[str, object]]) -> None:
@@ -360,6 +544,15 @@ def render_inventory_view() -> None:
     )
 
 
+def render_management_page() -> None:
+    st.title("物料库存管理")
+    update_tab, add_tab = st.tabs(["库存增减", "新增物料品类"])
+    with update_tab:
+        render_change_form(show_title=False)
+    with add_tab:
+        render_add_category_form()
+
+
 def main() -> None:
     st.set_page_config(page_title="物料库存管理", layout="wide")
     ensure_data()
@@ -369,7 +562,7 @@ def main() -> None:
     if view == "inventory":
         render_inventory_view()
     else:
-        render_change_form()
+        render_management_page()
 
 
 if __name__ == "__main__":
