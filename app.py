@@ -544,11 +544,13 @@ def load_supabase_options() -> dict:
     if not products:
         products = unique_preserve(list(df[PRODUCT_COL].astype(str)))
 
-    no_model_products = [row["category"] for row in categories if row.get("no_model")]
-    if not no_model_products and not df.empty:
-        no_model_products = unique_preserve(
+    category_no_model_products = [row["category"] for row in categories if row.get("no_model")]
+    inventory_no_model_products: list[str] = []
+    if not df.empty:
+        inventory_no_model_products = unique_preserve(
             list(df.loc[df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str))
         )
+    no_model_products = unique_preserve(category_no_model_products + inventory_no_model_products)
     models = unique_preserve([value for value in df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT])
     languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
     return {
@@ -784,7 +786,7 @@ def render_change_form(show_title: bool = True) -> None:
                     value="",
                     key=f"model_blank_{index}",
                     disabled=True,
-                    placeholder="无需按型号分类",
+                    placeholder="无需选择产品型号",
                 )
                 model = NO_MODEL_TEXT
             else:
