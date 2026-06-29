@@ -579,6 +579,21 @@ def insert_supabase_inventory(df: pd.DataFrame) -> None:
         client.table("inventory_items").insert(records[start : start + 500]).execute()
 
 
+def add_supabase_material_category_payload(product: str, no_model: bool, df: pd.DataFrame) -> int:
+    client = supabase_client()
+    if client is None:
+        return 0
+
+    payload = {
+        "category": product.strip(),
+        "no_model": bool(no_model),
+        "items": inventory_df_to_supabase_records(df),
+    }
+    response = client.rpc("add_material_category_payload", {"p_payload": payload}).execute()
+    result = (response.data or [{}])[0]
+    return int(result.get("inserted_count") or 0)
+
+
 def ensure_supabase_seeded() -> None:
     if not supabase_configured():
         return
@@ -1231,11 +1246,13 @@ def add_material_category(
                 st.error("Supabase 未配置成功。")
                 return
             try:
-                insert_supabase_inventory(new_df)
-                save_supabase_category(product, no_model)
+                inserted_count = add_supabase_material_category_payload(product, no_model, new_df)
             except Exception as exc:
-                st.error("新增物料品类写入 Supabase 失败。请确认已经运行最新的 `supabase/schema.sql` 或 `supabase/upgrade_edit_revert_inventory.sql`。")
+                st.error("新增物料品类写入 Supabase 失败。请先在 SQL Editor 运行最新的 `supabase/upgrade_material_category_json.sql`。")
                 st.exception(exc)
+                return
+            if inserted_count <= 0:
+                st.warning("没有写入新的库存行，可能这些组合已经存在。")
                 return
         else:
             updated_df = pd.concat([df, new_df], ignore_index=True)
