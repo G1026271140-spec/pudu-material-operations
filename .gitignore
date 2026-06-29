@@ -1,5 +1,6 @@
 .venv/
 __pycache__/
+work/
 .streamlit/secrets.toml
 *.pyc
 data/~$*

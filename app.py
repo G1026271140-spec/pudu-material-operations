@@ -208,6 +208,43 @@ def storage_mode_label() -> str:
     return "Supabase 长期数据库" if supabase_configured() else "本地 Excel 文件"
 
 
+def count_supabase_table(table: str) -> int | None:
+    client = supabase_client()
+    if client is None:
+        return None
+    response = client.table(table).select("id", count="exact").limit(1).execute()
+    return response.count
+
+
+def render_storage_diagnostics() -> None:
+    with st.sidebar.expander("存储状态", expanded=True):
+        st.write(f"当前存储：**{storage_mode_label()}**")
+        st.write(f"SUPABASE_URL：{'已读取' if bool(supabase_url()) else '未读取'}")
+        st.write(f"SUPABASE_SERVICE_ROLE_KEY：{'已读取' if bool(supabase_service_role_key()) else '未读取'}")
+        if legacy_supabase_key():
+            st.warning("检测到 SUPABASE_KEY。请删除它，只保留 SUPABASE_SERVICE_ROLE_KEY。")
+
+        if supabase_configured():
+            try:
+                categories_count = count_supabase_table("material_categories")
+                inventory_count = count_supabase_table("inventory_items")
+                transactions_count = count_supabase_table("inventory_transactions")
+                st.success("Supabase 连接成功")
+                st.caption(
+                    f"品类 {categories_count or 0} 条 / 库存 {inventory_count or 0} 条 / 流水 {transactions_count or 0} 条"
+                )
+            except Exception as exc:
+                st.error("Supabase 连接失败")
+                st.caption(str(exc))
+        else:
+            st.info("未启用 Supabase 时，应用会读取本地 Excel。")
+
+        if st.button("重新检查连接", key="refresh_storage_status", width="stretch"):
+            st.session_state.pop("supabase_seed_checked", None)
+            st.cache_resource.clear()
+            st.rerun()
+
+
 def ensure_data() -> None:
     if INVENTORY_XLSX.exists() and OPTIONS_JSON.exists():
         return
@@ -1108,6 +1145,7 @@ def main() -> None:
     stop_on_invalid_supabase_config()
     ensure_data()
     render_sidebar_link()
+    render_storage_diagnostics()
 
     view = st.query_params.get("view", "")
     if view == "inventory":
