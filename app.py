@@ -788,7 +788,7 @@ def render_change_form(show_title: bool = True) -> None:
     row_count = get_row_count()
     changes: list[dict[str, object]] = []
 
-    with st.form("inventory_change_form", clear_on_submit=False):
+    with st.container(border=True):
         for index in range(row_count):
             st.markdown(f"**第 {index + 1} 项**")
             product_col, model_col, language_col, action_col, qty_col = st.columns([2.2, 1.5, 1.6, 1.2, 1.1])
@@ -806,10 +806,9 @@ def render_change_form(show_title: bool = True) -> None:
             if is_no_model_product:
                 model_col.text_input(
                     "产品型号",
-                    value="",
+                    value=NO_MODEL_TEXT,
                     key=f"model_blank_{index}",
                     disabled=True,
-                    placeholder="无需选择产品型号",
                 )
                 model = NO_MODEL_TEXT
             else:
@@ -848,7 +847,7 @@ def render_change_form(show_title: bool = True) -> None:
                 }
             )
 
-        submitted = st.form_submit_button("提交更新", width="stretch")
+        submitted = st.button("提交更新", type="primary", width="stretch")
 
     if submitted:
         apply_changes(changes)
