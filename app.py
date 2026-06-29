@@ -59,6 +59,78 @@ TRANSACTION_HEADERS = [
 DATA_LOCK = threading.Lock()
 
 
+def inject_global_styles() -> None:
+    st.markdown(
+        """
+        <style>
+        :root {
+            --pudu-ink: #0B1220;
+            --pudu-muted: #5B667A;
+            --pudu-line: #D8E0EA;
+            --pudu-panel: #FFFFFF;
+            --pudu-cyan: #00A7B5;
+            --pudu-blue: #2563EB;
+        }
+        .stApp {
+            background:
+                radial-gradient(circle at 8% 0%, rgba(0, 167, 181, 0.10), transparent 30%),
+                linear-gradient(180deg, #F6F9FC 0%, #EEF3F8 100%);
+            color: var(--pudu-ink);
+        }
+        h1, h2, h3 {
+            color: var(--pudu-ink);
+            font-weight: 760;
+        }
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #0B1220 0%, #121B2D 100%);
+        }
+        [data-testid="stSidebar"] * {
+            color: #EAF2FF;
+        }
+        [data-testid="stSidebar"] .stCaption {
+            color: #AEBBD0;
+        }
+        div[data-testid="stMetric"] {
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid rgba(118, 138, 160, 0.24);
+            border-radius: 10px;
+            padding: 14px 16px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+        }
+        .stButton > button,
+        .stDownloadButton > button,
+        div[data-testid="stFormSubmitButton"] button {
+            border: 0;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--pudu-cyan), var(--pudu-blue));
+            color: #FFFFFF;
+            font-weight: 720;
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.20);
+        }
+        .stButton > button:hover,
+        .stDownloadButton > button:hover,
+        div[data-testid="stFormSubmitButton"] button:hover {
+            filter: brightness(0.98);
+            box-shadow: 0 12px 26px rgba(37, 99, 235, 0.26);
+            color: #FFFFFF;
+        }
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="input"] > div,
+        textarea {
+            border-color: var(--pudu-line);
+            background-color: rgba(255, 255, 255, 0.92);
+        }
+        [data-testid="stDataFrame"] {
+            border: 1px solid rgba(118, 138, 160, 0.26);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def get_inventory_password() -> str:
     try:
         return str(st.secrets.get("INVENTORY_VIEW_PASSWORD", DEFAULT_PASSWORD))
@@ -100,6 +172,54 @@ def unique_preserve(values: list[str]) -> list[str]:
 def parse_custom_values(raw_text: str) -> list[str]:
     parts = re.split(r"[\n,，;；、]+", raw_text)
     return unique_preserve(parts)
+
+
+def sort_languages(languages: list[str]) -> list[str]:
+    unique_languages = unique_preserve(languages)
+
+    def priority(language: str) -> int:
+        if "English" in language or "英语" in language:
+            return 0
+        if "Simplified Chinese" in language or "简中" in language:
+            return 1
+        return 2
+
+    return sorted(
+        unique_languages,
+        key=lambda language: (priority(language), unique_languages.index(language)),
+    )
+
+
+def apply_inventory_filters(
+    df: pd.DataFrame,
+    selected_products: list[str],
+    selected_models: list[str],
+    selected_languages: list[str],
+    only_stocked: bool,
+) -> pd.DataFrame:
+    mask = pd.Series(True, index=df.index)
+    if selected_products:
+        mask &= df[PRODUCT_COL].isin(selected_products)
+    if selected_models:
+        model_mask = df[MODEL_COL].isin(selected_models)
+        mask &= model_mask
+    if selected_languages:
+        mask &= df[LANGUAGE_COL].isin(selected_languages)
+    if only_stocked:
+        mask &= df[QTY_COL] > 0
+    return df[mask]
+
+
+def navigate_to_inventory(key: str, label: str = "查看实时库存表") -> None:
+    if st.button(label, key=key, type="primary", width="stretch"):
+        st.query_params["view"] = "inventory"
+        st.rerun()
+
+
+def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
+    if st.button(label, key=key, width="stretch"):
+        st.query_params.clear()
+        st.rerun()
 
 
 def load_inventory() -> pd.DataFrame:
@@ -242,14 +362,8 @@ def auth_gate() -> bool:
 
 def render_sidebar_link() -> None:
     st.sidebar.subheader("实时库存链接")
-    password_setting = get_inventory_password()
-    password = st.sidebar.text_input("查看密码", type="password", key="sidebar_password")
-    if password == password_setting:
-        st.session_state["inventory_unlocked"] = True
-        st.sidebar.link_button("打开实时库存表", "?view=inventory")
-        st.sidebar.caption("部署后复制浏览器地址栏里的实时库存页链接，即可分享给其他管理人。")
-    elif password:
-        st.sidebar.error("密码不正确")
+    navigate_to_inventory("sidebar_open_inventory", "打开实时库存表")
+    st.sidebar.caption("实时库存页只需要输入一次密码。部署后复制浏览器地址栏链接，即可分享给其他管理人。")
     st.sidebar.divider()
     st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
@@ -271,7 +385,7 @@ def render_change_form(show_title: bool = True) -> None:
     products = options["products"]
     no_model_products = set(options["no_model_products"])
     models = options["models"]
-    languages = options["languages"]
+    languages = sort_languages(options["languages"])
 
     if show_title:
         st.title("物料库存更新")
@@ -292,13 +406,21 @@ def render_change_form(show_title: bool = True) -> None:
                 products,
                 key=f"product_{index}",
             )
-            model_options = [NO_MODEL_TEXT] if product in no_model_products else models
-            model = model_col.selectbox(
-                "产品型号",
-                model_options,
-                key=f"model_{index}",
-                disabled=product in no_model_products,
-            )
+            if product in no_model_products:
+                model_col.text_input(
+                    "产品型号",
+                    value="",
+                    key=f"model_blank_{index}",
+                    disabled=True,
+                    placeholder="无需按型号分类",
+                )
+                model = NO_MODEL_TEXT
+            else:
+                model = model_col.selectbox(
+                    "产品型号",
+                    models,
+                    key=f"model_{index}",
+                )
             language = language_col.selectbox(
                 "语种",
                 languages,
@@ -339,7 +461,7 @@ def render_add_category_form() -> None:
     options = load_options()
     existing_products = options["products"]
     existing_models = options["models"]
-    existing_languages = options["languages"]
+    existing_languages = sort_languages(options["languages"])
 
     st.subheader("新增物料品类")
     message = st.session_state.pop("category_added_message", "")
@@ -561,24 +683,38 @@ def render_inventory_view() -> None:
     if not auth_gate():
         return
 
+    navigate_to_management("inventory_back_to_management")
     df = load_inventory()
     st.caption("当前库存统一保存在 Streamlit 应用目录 `data/inventory.xlsx`。所有入库、出库、新增品类操作都会直接更新这里的数据。")
     product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
 
-    selected_products = product_filter.multiselect("物料品类", sorted(df[PRODUCT_COL].unique()))
-    filtered = df[df[PRODUCT_COL].isin(selected_products)] if selected_products else df
+    selected_products = product_filter.multiselect(
+        "物料品类",
+        sorted(df[PRODUCT_COL].unique()),
+        key="inventory_filter_products",
+    )
+    product_scoped_df = df[df[PRODUCT_COL].isin(selected_products)] if selected_products else df
 
-    selected_models = model_filter.multiselect("产品型号", sorted(filtered[MODEL_COL].unique()))
-    if selected_models:
-        filtered = filtered[filtered[MODEL_COL].isin(selected_models)]
-
-    selected_languages = language_filter.multiselect("语种", sorted(filtered[LANGUAGE_COL].unique()))
-    if selected_languages:
-        filtered = filtered[filtered[LANGUAGE_COL].isin(selected_languages)]
-
-    only_stocked = stocked_filter.checkbox("仅看有库存")
-    if only_stocked:
-        filtered = filtered[filtered[QTY_COL] > 0]
+    selected_models = model_filter.multiselect(
+        "产品型号",
+        sorted(product_scoped_df[MODEL_COL].unique()),
+        key="inventory_filter_models",
+    )
+    selected_languages = language_filter.multiselect(
+        "语种",
+        sort_languages(list(product_scoped_df[LANGUAGE_COL].unique())),
+        key="inventory_filter_languages",
+    )
+    if "inventory_only_stocked" not in st.session_state:
+        st.session_state["inventory_only_stocked"] = True
+    only_stocked = stocked_filter.checkbox("仅看有库存", key="inventory_only_stocked")
+    filtered = apply_inventory_filters(
+        df,
+        selected_products=selected_products,
+        selected_models=selected_models,
+        selected_languages=selected_languages,
+        only_stocked=only_stocked,
+    )
 
     metric_a, metric_b, metric_c, metric_d = st.columns(4)
     metric_a.metric("组合总数", f"{len(filtered):,}")
@@ -592,6 +728,7 @@ def render_inventory_view() -> None:
 
 def render_management_page() -> None:
     st.title("物料库存管理")
+    navigate_to_inventory("management_open_inventory")
     update_tab, add_tab = st.tabs(["库存增减", "新增物料品类"])
     with update_tab:
         render_change_form(show_title=False)
