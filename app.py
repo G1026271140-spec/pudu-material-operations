@@ -716,6 +716,15 @@ def render_inventory_view() -> None:
         only_stocked=only_stocked,
     )
 
+    if filtered.empty and only_stocked and int((df[QTY_COL] > 0).sum()) == 0:
+        st.warning(
+            f"当前默认只显示有库存物料，但应用内库存数量目前全部为 0。"
+            f"完整物料组合仍有 {len(df):,} 条，取消“仅看有库存”即可查看。"
+        )
+        if st.button("显示全部库存组合", key="show_all_inventory_rows", width="stretch"):
+            st.session_state["inventory_only_stocked"] = False
+            st.rerun()
+
     metric_a, metric_b, metric_c, metric_d = st.columns(4)
     metric_a.metric("组合总数", f"{len(filtered):,}")
     metric_b.metric("有库存组合", f"{int((filtered[QTY_COL] > 0).sum()):,}")

@@ -41,7 +41,7 @@ http://服务器IP:端口/?view=inventory
 INVENTORY_VIEW_PASSWORD = "376493"
 ```
 
-需要注意：Streamlit Community Cloud 适合快速共享应用地址，但本地文件写入不保证长期持久化。因此如果采用 Community Cloud，请定期从实时库存页下载完整库存表备份。正式多人长期使用更推荐固定服务器或后续接入外部数据库。
+需要注意：Streamlit Community Cloud 适合快速共享应用地址，但应用运行时写入的本地文件不是长期数据库。代码重新部署、应用重启或云端环境重建后，`data/inventory.xlsx` 可能会回到 GitHub 仓库里的版本。因此如果采用 Community Cloud，请定期从实时库存页下载完整库存表备份。正式多人长期使用更推荐固定服务器或后续接入外部数据库。
 
 ## 下载备份
 
