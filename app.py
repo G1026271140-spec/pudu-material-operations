@@ -533,15 +533,27 @@ def upsert_supabase_categories(options: dict) -> None:
         return
 
     no_model_products = set(options.get("no_model_products", []))
-    records = [
-        {
-            "category": product,
-            "no_model": product in no_model_products,
-        }
-        for product in options.get("products", [])
-    ]
-    if records:
-        client.table("material_categories").upsert(records, on_conflict="category").execute()
+    for product in options.get("products", []):
+        save_supabase_category(str(product), str(product) in no_model_products)
+
+
+def save_supabase_category(product: str, no_model: bool) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+
+    product = product.strip()
+    existing = (
+        client.table("material_categories")
+        .select("id")
+        .eq("category", product)
+        .limit(1)
+        .execute()
+    )
+    if existing.data:
+        client.table("material_categories").update({"no_model": bool(no_model)}).eq("category", product).execute()
+    else:
+        client.table("material_categories").insert({"category": product, "no_model": bool(no_model)}).execute()
 
 
 def save_supabase_inventory(df: pd.DataFrame) -> None:
@@ -555,6 +567,16 @@ def save_supabase_inventory(df: pd.DataFrame) -> None:
             records[start : start + 500],
             on_conflict="material_code",
         ).execute()
+
+
+def insert_supabase_inventory(df: pd.DataFrame) -> None:
+    client = supabase_client()
+    if client is None:
+        return
+
+    records = inventory_df_to_supabase_records(df)
+    for start in range(0, len(records), 500):
+        client.table("inventory_items").insert(records[start : start + 500]).execute()
 
 
 def ensure_supabase_seeded() -> None:
@@ -888,10 +910,7 @@ def update_supabase_inventory_item(
             "updated_at": datetime.now().isoformat(),
         }
     ).eq("id", int(item_id)).execute()
-    client.table("material_categories").upsert(
-        [{"category": product, "no_model": model == NO_MODEL_TEXT}],
-        on_conflict="category",
-    ).execute()
+    save_supabase_category(product, model == NO_MODEL_TEXT)
 
 
 def count_supabase_item_transactions(product: str, model: str, language: str) -> int:
@@ -1192,10 +1211,13 @@ def add_material_category(
     with DATA_LOCK:
         options = load_options()
         df = load_inventory()
-        product_exists = product in set(options["products"]) or product in set(df[PRODUCT_COL].astype(str))
-        if product_exists:
+        product_exists_in_inventory = product in set(df[PRODUCT_COL].astype(str))
+        product_exists_in_options = product in set(options["products"])
+        if product_exists_in_inventory:
             st.error("该物料品类已存在。如需给已有品类补充型号或语种，可以先使用一个新的品类名称。")
             return
+        if product_exists_in_options:
+            st.info("检测到该品类选项已存在但没有库存行，本次会补建对应库存行。")
 
         new_rows, skipped = build_new_material_rows(df, product, models, languages)
         if not new_rows:
@@ -1208,11 +1230,13 @@ def add_material_category(
             if client is None:
                 st.error("Supabase 未配置成功。")
                 return
-            client.table("material_categories").upsert(
-                [{"category": product, "no_model": no_model}],
-                on_conflict="category",
-            ).execute()
-            save_supabase_inventory(new_df)
+            try:
+                insert_supabase_inventory(new_df)
+                save_supabase_category(product, no_model)
+            except Exception as exc:
+                st.error("新增物料品类写入 Supabase 失败。请确认已经运行最新的 `supabase/schema.sql` 或 `supabase/upgrade_edit_revert_inventory.sql`。")
+                st.exception(exc)
+                return
         else:
             updated_df = pd.concat([df, new_df], ignore_index=True)
             save_inventory(updated_df)
