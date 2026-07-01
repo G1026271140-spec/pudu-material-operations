@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import base64
 import csv
+import hashlib
+import hmac
 import json
 import re
 import secrets
@@ -30,6 +33,7 @@ DEFAULT_PASSWORD = "376493"
 FEISHU_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
 FEISHU_TOKEN_URL = "https://accounts.feishu.cn/oauth/v3/token"
 FEISHU_USER_INFO_URL = "https://open.feishu.cn/open-apis/authen/v1/user_info"
+FEISHU_STATE_TTL_SECONDS = 10 * 60
 NO_MODEL_TEXT = "无需型号"
 ACTION_RECEIVE = "物料领取（减少库存）"
 ACTION_PURCHASE = "物料采购（增加库存）"
@@ -171,6 +175,10 @@ def feishu_redirect_uri() -> str:
 
 def feishu_scope() -> str:
     return get_secret_value("FEISHU_SCOPE")
+
+
+def feishu_state_secret() -> str:
+    return get_secret_value("FEISHU_STATE_SECRET") or feishu_app_secret()
 
 
 def feishu_allowed_tenant_keys() -> set[str]:
@@ -1113,14 +1121,54 @@ def current_url_without_oauth_params() -> str:
     )
 
 
+def sign_feishu_state(payload: dict) -> str:
+    payload_bytes = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    encoded_payload = base64.urlsafe_b64encode(payload_bytes).decode("ascii").rstrip("=")
+    signature = hmac.new(
+        feishu_state_secret().encode("utf-8"),
+        encoded_payload.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    encoded_signature = base64.urlsafe_b64encode(signature).decode("ascii").rstrip("=")
+    return f"{encoded_payload}.{encoded_signature}"
+
+
+def load_feishu_state(state: str) -> dict:
+    try:
+        encoded_payload, encoded_signature = state.split(".", 1)
+    except ValueError as exc:
+        raise ValueError("飞书登录状态格式无效。") from exc
+
+    expected_signature = hmac.new(
+        feishu_state_secret().encode("utf-8"),
+        encoded_payload.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    actual_signature = base64.urlsafe_b64decode(encoded_signature + "=" * (-len(encoded_signature) % 4))
+    if not hmac.compare_digest(actual_signature, expected_signature):
+        raise ValueError("飞书登录状态签名无效。")
+
+    payload_bytes = base64.urlsafe_b64decode(encoded_payload + "=" * (-len(encoded_payload) % 4))
+    payload = json.loads(payload_bytes.decode("utf-8"))
+    created_at = int(payload.get("created_at") or 0)
+    if created_at + FEISHU_STATE_TTL_SECONDS < int(time_module.time()):
+        raise ValueError("飞书登录状态已过期，请重新登录。")
+    return payload
+
+
 def feishu_login_url() -> str:
-    state = secrets.token_urlsafe(24)
-    st.session_state["feishu_oauth_state"] = state
-    st.session_state["feishu_login_next_params"] = {
+    next_params = {
         key: value
         for key, value in st.query_params.to_dict().items()
         if key not in {"code", "state", "error", "error_description"}
     }
+    state = sign_feishu_state(
+        {
+            "nonce": secrets.token_urlsafe(16),
+            "created_at": int(time_module.time()),
+            "next_params": next_params,
+        }
+    )
     params = {
         "client_id": feishu_app_id(),
         "response_type": "code",
@@ -1246,9 +1294,12 @@ def feishu_login_gate() -> bool:
     code = st.query_params.get("code")
     if code:
         returned_state = st.query_params.get("state")
-        expected_state = st.session_state.get("feishu_oauth_state")
-        if not expected_state or returned_state != expected_state:
+        try:
+            state_payload = load_feishu_state(returned_state or "")
+        except Exception as exc:
+            st.query_params.clear()
             st.error("飞书登录状态校验失败，请重新登录。")
+            st.caption(str(exc))
             st.link_button("重新使用飞书登录", feishu_login_url())
             st.stop()
 
@@ -1268,7 +1319,7 @@ def feishu_login_gate() -> bool:
             st.link_button("重新使用飞书登录", feishu_login_url())
             st.stop()
 
-        next_params = st.session_state.pop("feishu_login_next_params", {})
+        next_params = state_payload.get("next_params") or {}
         st.query_params.clear()
         for key, value in next_params.items():
             st.query_params[key] = value
