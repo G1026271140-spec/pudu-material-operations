@@ -35,6 +35,22 @@ http://服务器IP:端口/?view=inventory
 
 如果你希望得到一个 `https://xxx.streamlit.app` 这样的公网链接，可以把项目推送到 GitHub，然后在 Streamlit Community Cloud 中选择仓库、分支和 `app.py` 部署。
 
+## 飞书登录
+
+当前测试版本已经把飞书登录作为全站门禁。未通过飞书登录时，不会显示库存登记、实时库存、数据维护等任何页面。实时库存页原来的查看密码 `376493` 仍然保留，飞书登录通过后进入实时库存页还需要输入一次该密码。
+
+在飞书开发者后台创建企业自建应用后，进入应用的安全设置，把应用访问地址配置为重定向 URL。然后在 Streamlit Secrets 中填写：
+
+```toml
+FEISHU_APP_ID = "cli_xxxxxx"
+FEISHU_APP_SECRET = "你的 App Secret"
+FEISHU_REDIRECT_URI = "https://你的应用地址"
+FEISHU_ALLOWED_TENANT_KEY = "深圳市普渡科技股份有限公司对应的 tenant_key"
+FEISHU_SCOPE = ""
+```
+
+企业限制建议使用飞书 `user_info` 接口返回的 `tenant_key` 判断，而不是使用公司中文名。第一次配置时，可以先用普渡员工账号登录；如果 `FEISHU_ALLOWED_TENANT_KEY` 未填或填错，页面会提示当前账号返回的 `tenant_key`，复制该值到 Secrets 后重新启动应用即可。
+
 ## Supabase 长期数据库
 
 正式多人长期使用时，推荐启用 Supabase。步骤如下：
