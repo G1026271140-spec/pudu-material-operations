@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+import base64
 import csv
+import hashlib
+import hmac
 import json
 import re
+import secrets
 import threading
+import time as time_module
 from datetime import date, datetime, time, timedelta
 from io import BytesIO
 from pathlib import Path
+from urllib.parse import urlencode, urlsplit, urlunsplit
 
 import pandas as pd
+import requests
 import streamlit as st
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -23,6 +30,10 @@ OPTIONS_JSON = DATA_DIR / "options.json"
 TRANSACTIONS_CSV = DATA_DIR / "transactions.csv"
 
 DEFAULT_PASSWORD = "376493"
+FEISHU_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
+FEISHU_TOKEN_URL = "https://accounts.feishu.cn/oauth/v3/token"
+FEISHU_USER_INFO_URL = "https://open.feishu.cn/open-apis/authen/v1/user_info"
+FEISHU_STATE_TTL_SECONDS = 10 * 60
 NO_MODEL_TEXT = "无需型号"
 ACTION_RECEIVE = "物料领取（减少库存）"
 ACTION_PURCHASE = "物料采购（增加库存）"
@@ -148,6 +159,37 @@ def get_secret_value(name: str, default: str = "") -> str:
         return str(st.secrets.get(name, default)).strip()
     except (FileNotFoundError, KeyError, AttributeError):
         return default
+
+
+def feishu_app_id() -> str:
+    return get_secret_value("FEISHU_APP_ID")
+
+
+def feishu_app_secret() -> str:
+    return get_secret_value("FEISHU_APP_SECRET")
+
+
+def feishu_redirect_uri() -> str:
+    return get_secret_value("FEISHU_REDIRECT_URI")
+
+
+def feishu_scope() -> str:
+    return get_secret_value("FEISHU_SCOPE")
+
+
+def feishu_state_secret() -> str:
+    return get_secret_value("FEISHU_STATE_SECRET") or feishu_app_secret()
+
+
+def feishu_allowed_tenant_keys() -> set[str]:
+    raw_value = get_secret_value("FEISHU_ALLOWED_TENANT_KEY") or get_secret_value(
+        "FEISHU_ALLOWED_TENANT_KEYS"
+    )
+    return {value.strip() for value in re.split(r"[,;\s]+", raw_value) if value.strip()}
+
+
+def feishu_configured() -> bool:
+    return bool(feishu_app_id() and feishu_app_secret() and feishu_redirect_uri())
 
 
 def supabase_url() -> str:
@@ -1055,6 +1097,247 @@ def build_new_material_rows(
             )
             next_number += 1
     return rows, skipped
+
+
+def current_url_without_oauth_params() -> str:
+    url = getattr(st.context, "url", "") or feishu_redirect_uri()
+    if not url:
+        return ""
+
+    split_url = urlsplit(url)
+    filtered_query = {
+        key: value
+        for key, value in st.query_params.to_dict().items()
+        if key not in {"code", "state", "error", "error_description"}
+    }
+    return urlunsplit(
+        (
+            split_url.scheme,
+            split_url.netloc,
+            split_url.path,
+            urlencode(filtered_query, doseq=True),
+            "",
+        )
+    )
+
+
+def sign_feishu_state(payload: dict) -> str:
+    payload_bytes = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    encoded_payload = base64.urlsafe_b64encode(payload_bytes).decode("ascii").rstrip("=")
+    signature = hmac.new(
+        feishu_state_secret().encode("utf-8"),
+        encoded_payload.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    encoded_signature = base64.urlsafe_b64encode(signature).decode("ascii").rstrip("=")
+    return f"{encoded_payload}.{encoded_signature}"
+
+
+def load_feishu_state(state: str) -> dict:
+    try:
+        encoded_payload, encoded_signature = state.split(".", 1)
+    except ValueError as exc:
+        raise ValueError("飞书登录状态格式无效。") from exc
+
+    expected_signature = hmac.new(
+        feishu_state_secret().encode("utf-8"),
+        encoded_payload.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    actual_signature = base64.urlsafe_b64decode(encoded_signature + "=" * (-len(encoded_signature) % 4))
+    if not hmac.compare_digest(actual_signature, expected_signature):
+        raise ValueError("飞书登录状态签名无效。")
+
+    payload_bytes = base64.urlsafe_b64decode(encoded_payload + "=" * (-len(encoded_payload) % 4))
+    payload = json.loads(payload_bytes.decode("utf-8"))
+    created_at = int(payload.get("created_at") or 0)
+    if created_at + FEISHU_STATE_TTL_SECONDS < int(time_module.time()):
+        raise ValueError("飞书登录状态已过期，请重新登录。")
+    return payload
+
+
+def feishu_login_url() -> str:
+    next_params = {
+        key: value
+        for key, value in st.query_params.to_dict().items()
+        if key not in {"code", "state", "error", "error_description"}
+    }
+    state = sign_feishu_state(
+        {
+            "nonce": secrets.token_urlsafe(16),
+            "created_at": int(time_module.time()),
+            "next_params": next_params,
+        }
+    )
+    params = {
+        "client_id": feishu_app_id(),
+        "response_type": "code",
+        "redirect_uri": feishu_redirect_uri(),
+        "state": state,
+    }
+    scope = feishu_scope()
+    if scope:
+        params["scope"] = scope
+    return f"{FEISHU_AUTHORIZE_URL}?{urlencode(params)}"
+
+
+def exchange_feishu_code(code: str) -> dict:
+    payload = {
+        "grant_type": "authorization_code",
+        "client_id": feishu_app_id(),
+        "client_secret": feishu_app_secret(),
+        "code": code,
+        "redirect_uri": feishu_redirect_uri(),
+    }
+    response = requests.post(
+        FEISHU_TOKEN_URL,
+        json=payload,
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if int(data.get("code", -1)) != 0:
+        message = data.get("error_description") or data.get("msg") or data.get("error") or data
+        raise RuntimeError(f"飞书授权失败：{message}")
+    return data
+
+
+def fetch_feishu_user_info(access_token: str) -> dict:
+    response = requests.get(
+        FEISHU_USER_INFO_URL,
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if int(data.get("code", -1)) != 0:
+        message = data.get("msg") or data
+        raise RuntimeError(f"获取飞书用户信息失败：{message}")
+    return data.get("data") or {}
+
+
+def validate_feishu_tenant(user_info: dict) -> None:
+    tenant_key = str(user_info.get("tenant_key") or "").strip()
+    allowed_tenant_keys = feishu_allowed_tenant_keys()
+    if not allowed_tenant_keys:
+        raise PermissionError(
+            "`FEISHU_ALLOWED_TENANT_KEY` 尚未配置，当前账号不会被放行。"
+            f" 当前账号 tenant_key：{tenant_key or '未返回'}。"
+        )
+    if tenant_key and tenant_key in allowed_tenant_keys:
+        return
+
+    raise PermissionError(
+        "当前飞书账号不属于允许访问的企业。"
+        f" 当前账号 tenant_key：{tenant_key or '未返回'}。"
+    )
+
+
+def finish_feishu_login(code: str) -> None:
+    token_data = exchange_feishu_code(code)
+    access_token = token_data["access_token"]
+    user_info = fetch_feishu_user_info(access_token)
+    validate_feishu_tenant(user_info)
+    expires_in = int(token_data.get("expires_in") or 0)
+
+    st.session_state["feishu_user"] = user_info
+    st.session_state["feishu_access_token"] = access_token
+    st.session_state["feishu_token_expires_at"] = int(time_module.time()) + expires_in
+    st.session_state.pop("feishu_oauth_state", None)
+
+
+def render_feishu_login_status() -> None:
+    user = st.session_state.get("feishu_user") or {}
+    name = user.get("name") or user.get("en_name") or user.get("open_id") or "飞书用户"
+    st.sidebar.caption(f"已通过飞书登录：{name}")
+    if st.sidebar.button("退出飞书登录", key="feishu_logout", width="stretch"):
+        for key in [
+            "feishu_user",
+            "feishu_access_token",
+            "feishu_token_expires_at",
+            "feishu_oauth_state",
+            "feishu_login_next_params",
+            "inventory_unlocked",
+        ]:
+            st.session_state.pop(key, None)
+        st.query_params.clear()
+        st.rerun()
+
+
+def feishu_login_gate() -> bool:
+    if st.session_state.get("feishu_user"):
+        expires_at = int(st.session_state.get("feishu_token_expires_at") or 0)
+        if expires_at and expires_at <= int(time_module.time()):
+            for key in ["feishu_user", "feishu_access_token", "feishu_token_expires_at"]:
+                st.session_state.pop(key, None)
+            st.warning("飞书登录已过期，请重新登录。")
+        else:
+            render_feishu_login_status()
+            return True
+
+    if not feishu_configured():
+        st.error("飞书登录未配置，无法进入系统。")
+        st.info(
+            "请在 Streamlit Secrets 中填写 `FEISHU_APP_ID`、`FEISHU_APP_SECRET`、"
+            "`FEISHU_REDIRECT_URI`，"
+            "并在飞书开发者后台把同一个回调地址加入重定向 URL。"
+        )
+        st.stop()
+
+    error = st.query_params.get("error")
+    if error:
+        st.error(f"飞书授权被拒绝或失败：{error}")
+        st.link_button("重新使用飞书登录", feishu_login_url())
+        st.stop()
+
+    code = st.query_params.get("code")
+    if code:
+        returned_state = st.query_params.get("state")
+        try:
+            state_payload = load_feishu_state(returned_state or "")
+        except Exception as exc:
+            st.query_params.clear()
+            st.error("飞书登录状态校验失败，请重新登录。")
+            st.caption(str(exc))
+            st.link_button("重新使用飞书登录", feishu_login_url())
+            st.stop()
+
+        try:
+            finish_feishu_login(code)
+        except PermissionError as exc:
+            st.query_params.clear()
+            st.error("无权限访问。")
+            st.warning(str(exc))
+            st.info("请确认当前登录的是深圳市普渡科技股份有限公司的飞书账号。")
+            st.link_button("重新使用飞书登录", feishu_login_url())
+            st.stop()
+        except Exception as exc:
+            st.query_params.clear()
+            st.error("飞书登录失败，请重新尝试。")
+            st.exception(exc)
+            st.link_button("重新使用飞书登录", feishu_login_url())
+            st.stop()
+
+        next_params = state_payload.get("next_params") or {}
+        st.query_params.clear()
+        for key, value in next_params.items():
+            st.query_params[key] = value
+        st.rerun()
+
+    st.title("物料库存管理")
+    st.subheader("请先使用飞书登录")
+    st.caption("未登录时不会显示库存登记、实时库存、数据维护等任何页面。")
+    st.link_button("使用飞书登录", feishu_login_url(), type="primary")
+
+    redirect_uri = feishu_redirect_uri()
+    if redirect_uri:
+        st.caption(f"当前配置的飞书回调地址：{redirect_uri}")
+    current_url = current_url_without_oauth_params()
+    if current_url and current_url != redirect_uri:
+        st.info("如果飞书后台的重定向 URL 还没配置，请使用当前应用地址作为 `FEISHU_REDIRECT_URI`。")
+        st.code(current_url)
+    st.stop()
 
 
 def auth_gate() -> bool:
@@ -1980,6 +2263,7 @@ def render_management_page() -> None:
 def main() -> None:
     st.set_page_config(page_title="物料库存管理", layout="wide")
     inject_global_styles()
+    feishu_login_gate()
     stop_on_invalid_supabase_config()
     ensure_data()
     render_sidebar_link()
