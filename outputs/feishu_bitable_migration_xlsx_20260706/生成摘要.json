@@ -1,0 +1,38 @@
+{
+  "material_categories": {
+    "sheet": "物料品类",
+    "file": "01_物料品类_material_categories.xlsx",
+    "rows": 14,
+    "source": "旧库存数据: material_categories"
+  },
+  "inventory_items": {
+    "sheet": "物料主数据",
+    "file": "02_物料主数据_inventory_items.xlsx",
+    "rows": 990,
+    "source": "旧库存数据: inventory_items"
+  },
+  "inventory_transactions": {
+    "sheet": "库存流水",
+    "file": "03_库存流水_inventory_transactions.xlsx",
+    "rows": 0,
+    "source": "旧库存数据: inventory_transactions"
+  },
+  "material_request": {
+    "sheet": "物料申请单",
+    "file": "04_物料申请单_material_request.xlsx",
+    "rows": 0,
+    "source": "新增飞书表"
+  },
+  "material_request_line": {
+    "sheet": "申请明细",
+    "file": "05_申请明细_material_request_line.xlsx",
+    "rows": 0,
+    "source": "新增飞书表"
+  },
+  "stock_operation_batch": {
+    "sheet": "库存批量操作",
+    "file": "06_库存批量操作_stock_operation_batch.xlsx",
+    "rows": 0,
+    "source": "新增飞书表"
+  }
+}

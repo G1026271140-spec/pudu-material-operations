@@ -1,0 +1,815 @@
+{
+  "type": "feishu_apaas_data_objects_import",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-02",
+  "import_note": "包含五个对象。若飞书后台只支持逐个对象导入，请使用同目录下的独立对象 JSON。",
+  "objects": [
+    {
+      "api_name": "material_item",
+      "name": "物料主数据",
+      "description": "从当前库存表迁移来的物料组合和库存主数据。",
+      "display_name_field": "material_code",
+      "fields": [
+        {
+          "order": 1,
+          "api_name": "material_code",
+          "name": "物料编码",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "order": 2,
+          "api_name": "material_category",
+          "name": "物料品类",
+          "type": "text",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 3,
+          "api_name": "product_model",
+          "name": "产品型号",
+          "type": "text",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 4,
+          "api_name": "language",
+          "name": "语种",
+          "type": "text",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 5,
+          "api_name": "no_model",
+          "name": "是否无需型号",
+          "type": "boolean",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 6,
+          "api_name": "unit_price",
+          "name": "单价",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 2
+        },
+        {
+          "order": 7,
+          "api_name": "initial_stock",
+          "name": "初始库存",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 8,
+          "api_name": "current_stock",
+          "name": "当前库存",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 9,
+          "api_name": "reserved_stock",
+          "name": "已占用库存",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 10,
+          "api_name": "available_stock",
+          "name": "可用库存",
+          "type": "formula",
+          "required": false,
+          "unique": false,
+          "formula": "current_stock - reserved_stock"
+        },
+        {
+          "order": 11,
+          "api_name": "low_stock_threshold",
+          "name": "库存下限",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 12,
+          "api_name": "stock_status",
+          "name": "库存状态",
+          "type": "formula",
+          "required": false,
+          "unique": false,
+          "formula": "current_stock < 0 ? '负库存' : current_stock <= low_stock_threshold ? '低库存' : '正常'"
+        },
+        {
+          "order": 13,
+          "api_name": "status",
+          "name": "启用状态",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "启用",
+            "停用"
+          ]
+        },
+        {
+          "order": 14,
+          "api_name": "material_key",
+          "name": "物料唯一键",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "order": 15,
+          "api_name": "remark",
+          "name": "备注",
+          "type": "long_text",
+          "required": false,
+          "unique": false
+        }
+      ],
+      "indexes": [
+        "material_code",
+        "material_key",
+        "material_category",
+        "product_model",
+        "language"
+      ],
+      "relations": [],
+      "permissions": [
+        {
+          "role": "销售",
+          "permissions": [
+            "read_enabled_records"
+          ]
+        },
+        {
+          "role": "市场专员",
+          "permissions": [
+            "read",
+            "create_inventory_operations"
+          ]
+        },
+        {
+          "role": "市场主管",
+          "permissions": [
+            "read",
+            "update",
+            "audit"
+          ]
+        },
+        {
+          "role": "管理员",
+          "permissions": [
+            "read",
+            "create",
+            "update",
+            "delete",
+            "import"
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "material_request",
+      "name": "物料申请单",
+      "description": "销售一次申请的主单。",
+      "display_name_field": "request_no",
+      "fields": [
+        {
+          "order": 1,
+          "api_name": "request_no",
+          "name": "申请单号",
+          "type": "auto_number",
+          "required": true,
+          "unique": true,
+          "format": "REQ-{yyyyMMdd}-{0000}"
+        },
+        {
+          "order": 2,
+          "api_name": "requester",
+          "name": "申请人",
+          "type": "user",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 3,
+          "api_name": "requester_department",
+          "name": "申请部门/区域",
+          "type": "text",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 4,
+          "api_name": "business_type",
+          "name": "业务类型",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "物料领取",
+            "物料采购",
+            "盘点调整"
+          ]
+        },
+        {
+          "order": 5,
+          "api_name": "usage_scene",
+          "name": "用途/活动",
+          "type": "long_text",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 6,
+          "api_name": "expected_issue_date",
+          "name": "期望发放日期",
+          "type": "date",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 7,
+          "api_name": "request_status",
+          "name": "审批状态",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "草稿",
+            "待审批",
+            "审批中",
+            "已通过",
+            "已驳回",
+            "待发放",
+            "部分发放",
+            "已发放",
+            "已取消"
+          ]
+        },
+        {
+          "order": 8,
+          "api_name": "market_owner",
+          "name": "市场负责人",
+          "type": "user",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 9,
+          "api_name": "approval_comment",
+          "name": "审批意见",
+          "type": "long_text",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 10,
+          "api_name": "submitted_at",
+          "name": "提交时间",
+          "type": "datetime",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 11,
+          "api_name": "approved_at",
+          "name": "审批时间",
+          "type": "datetime",
+          "required": false,
+          "unique": false
+        }
+      ],
+      "indexes": [],
+      "relations": [
+        {
+          "target": "material_request_line",
+          "relation": "one_to_many",
+          "field": "request"
+        }
+      ],
+      "permissions": [
+        {
+          "role": "销售",
+          "permissions": [
+            "create",
+            "read_own",
+            "update_draft_own"
+          ]
+        },
+        {
+          "role": "市场专员",
+          "permissions": [
+            "read_all",
+            "approve",
+            "reject",
+            "update_market_fields"
+          ]
+        },
+        {
+          "role": "市场主管",
+          "permissions": [
+            "read_all",
+            "approve",
+            "reject",
+            "override"
+          ]
+        },
+        {
+          "role": "管理员",
+          "permissions": [
+            "read",
+            "create",
+            "update",
+            "delete",
+            "import"
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "material_request_line",
+      "name": "申请明细",
+      "description": "申请单下的物料明细，市场在这里填写审批和实际发放数量。",
+      "display_name_field": "line_no",
+      "fields": [
+        {
+          "order": 1,
+          "api_name": "line_no",
+          "name": "明细编号",
+          "type": "auto_number",
+          "required": true,
+          "unique": true,
+          "format": "LINE-{yyyyMMdd}-{0000}"
+        },
+        {
+          "order": 2,
+          "api_name": "request",
+          "name": "所属申请单",
+          "type": "lookup",
+          "required": true,
+          "unique": false,
+          "target_object": "material_request"
+        },
+        {
+          "order": 3,
+          "api_name": "material",
+          "name": "物料",
+          "type": "lookup",
+          "required": true,
+          "unique": false,
+          "target_object": "material_item"
+        },
+        {
+          "order": 4,
+          "api_name": "request_qty",
+          "name": "申请数量",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0,
+          "validators": [
+            "value > 0"
+          ]
+        },
+        {
+          "order": 5,
+          "api_name": "stock_snapshot",
+          "name": "提交时库存快照",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 6,
+          "api_name": "approved_qty",
+          "name": "审批通过数量",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 7,
+          "api_name": "actual_issue_qty",
+          "name": "实际发放数量",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 8,
+          "api_name": "line_status",
+          "name": "明细状态",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "待审批",
+            "待发放",
+            "部分发放",
+            "已发放",
+            "缺货",
+            "取消"
+          ]
+        },
+        {
+          "order": 9,
+          "api_name": "issue_user",
+          "name": "发放人",
+          "type": "user",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 10,
+          "api_name": "issue_at",
+          "name": "发放时间",
+          "type": "datetime",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 11,
+          "api_name": "ledger",
+          "name": "出库流水",
+          "type": "lookup",
+          "required": false,
+          "unique": false,
+          "target_object": "inventory_ledger"
+        },
+        {
+          "order": 12,
+          "api_name": "shortage_reason",
+          "name": "缺货说明",
+          "type": "long_text",
+          "required": false,
+          "unique": false
+        }
+      ],
+      "indexes": [
+        "request",
+        "material",
+        "line_status"
+      ],
+      "relations": [],
+      "permissions": [
+        {
+          "role": "销售",
+          "permissions": [
+            "create",
+            "read_own_request",
+            "update_draft_own_request"
+          ]
+        },
+        {
+          "role": "市场专员",
+          "permissions": [
+            "read_all",
+            "update_approved_qty",
+            "update_actual_issue_qty"
+          ]
+        },
+        {
+          "role": "市场主管",
+          "permissions": [
+            "read_all",
+            "update",
+            "override"
+          ]
+        },
+        {
+          "role": "管理员",
+          "permissions": [
+            "read",
+            "create",
+            "update",
+            "delete",
+            "import"
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "inventory_ledger",
+      "name": "库存流水",
+      "description": "库存唯一审计账本。撤回时新增反向流水，不删除原流水。",
+      "display_name_field": "ledger_no",
+      "fields": [
+        {
+          "order": 1,
+          "api_name": "ledger_no",
+          "name": "流水编号",
+          "type": "auto_number",
+          "required": true,
+          "unique": true,
+          "format": "TX-{yyyyMMdd}-{0000}"
+        },
+        {
+          "order": 2,
+          "api_name": "occurred_at",
+          "name": "发生时间",
+          "type": "datetime",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 3,
+          "api_name": "ledger_type",
+          "name": "流水类型",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "销售领用出库",
+            "采购入库",
+            "盘点调整",
+            "撤回冲销"
+          ]
+        },
+        {
+          "order": 4,
+          "api_name": "material",
+          "name": "物料",
+          "type": "lookup",
+          "required": true,
+          "unique": false,
+          "target_object": "material_item"
+        },
+        {
+          "order": 5,
+          "api_name": "quantity_delta",
+          "name": "数量变化",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 6,
+          "api_name": "before_stock",
+          "name": "变更前库存",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 7,
+          "api_name": "after_stock",
+          "name": "变更后库存",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 8,
+          "api_name": "source_request",
+          "name": "关联申请单",
+          "type": "lookup",
+          "required": false,
+          "unique": false,
+          "target_object": "material_request"
+        },
+        {
+          "order": 9,
+          "api_name": "source_line",
+          "name": "关联申请明细",
+          "type": "lookup",
+          "required": false,
+          "unique": false,
+          "target_object": "material_request_line"
+        },
+        {
+          "order": 10,
+          "api_name": "idempotency_key",
+          "name": "幂等键",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "order": 11,
+          "api_name": "operator",
+          "name": "操作人",
+          "type": "user",
+          "required": false,
+          "unique": false
+        },
+        {
+          "order": 12,
+          "api_name": "ledger_status",
+          "name": "操作状态",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "有效",
+            "已撤回",
+            "冲销记录"
+          ]
+        },
+        {
+          "order": 13,
+          "api_name": "original_ledger",
+          "name": "原流水",
+          "type": "lookup",
+          "required": false,
+          "unique": false,
+          "target_object": "inventory_ledger"
+        },
+        {
+          "order": 14,
+          "api_name": "note",
+          "name": "备注",
+          "type": "long_text",
+          "required": false,
+          "unique": false
+        }
+      ],
+      "indexes": [
+        "material",
+        "occurred_at",
+        "source_request",
+        "source_line",
+        "idempotency_key"
+      ],
+      "relations": [],
+      "permissions": [
+        {
+          "role": "销售",
+          "permissions": [
+            "none"
+          ]
+        },
+        {
+          "role": "市场专员",
+          "permissions": [
+            "read_all",
+            "create_via_function"
+          ]
+        },
+        {
+          "role": "市场主管",
+          "permissions": [
+            "read_all",
+            "revert_via_function"
+          ]
+        },
+        {
+          "role": "管理员",
+          "permissions": [
+            "read",
+            "create",
+            "update",
+            "delete",
+            "import"
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "stock_operation_batch",
+      "name": "库存批量操作",
+      "description": "批量发放、批量入库、批量撤回的执行批次。",
+      "display_name_field": "batch_no",
+      "fields": [
+        {
+          "order": 1,
+          "api_name": "batch_no",
+          "name": "批次号",
+          "type": "auto_number",
+          "required": true,
+          "unique": true,
+          "format": "BATCH-{yyyyMMdd}-{0000}"
+        },
+        {
+          "order": 2,
+          "api_name": "operation_type",
+          "name": "操作类型",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "批量发放",
+            "批量入库",
+            "批量撤回"
+          ]
+        },
+        {
+          "order": 3,
+          "api_name": "operator",
+          "name": "操作人",
+          "type": "user",
+          "required": true,
+          "unique": false
+        },
+        {
+          "order": 4,
+          "api_name": "batch_status",
+          "name": "批次状态",
+          "type": "single_select",
+          "required": true,
+          "unique": false,
+          "options": [
+            "草稿",
+            "处理中",
+            "成功",
+            "部分成功",
+            "失败"
+          ]
+        },
+        {
+          "order": 5,
+          "api_name": "total_count",
+          "name": "总条数",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 6,
+          "api_name": "success_count",
+          "name": "成功条数",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 7,
+          "api_name": "fail_count",
+          "name": "失败条数",
+          "type": "number",
+          "required": false,
+          "unique": false,
+          "precision": 0
+        },
+        {
+          "order": 8,
+          "api_name": "error_message",
+          "name": "错误信息",
+          "type": "long_text",
+          "required": false,
+          "unique": false
+        }
+      ],
+      "indexes": [],
+      "relations": [],
+      "permissions": [
+        {
+          "role": "销售",
+          "permissions": [
+            "none"
+          ]
+        },
+        {
+          "role": "市场专员",
+          "permissions": [
+            "create",
+            "read_own",
+            "execute_batch"
+          ]
+        },
+        {
+          "role": "市场主管",
+          "permissions": [
+            "read_all",
+            "execute_batch",
+            "audit"
+          ]
+        },
+        {
+          "role": "管理员",
+          "permissions": [
+            "read",
+            "create",
+            "update",
+            "delete",
+            "import"
+          ]
+        }
+      ]
+    }
+  ]
+}

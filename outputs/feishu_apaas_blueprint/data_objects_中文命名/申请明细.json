@@ -1,0 +1,171 @@
+{
+  "type": "feishu_apaas_data_object_import",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-02",
+  "import_note": "字段类型为通用 aPaaS 建模表达。导入后如飞书要求字段类型枚举或关联对象 ID，请按导入提示重新绑定。",
+  "object": {
+    "api_name": "material_request_line",
+    "name": "申请明细",
+    "description": "申请单下的物料明细，市场在这里填写审批和实际发放数量。",
+    "display_name_field": "line_no",
+    "fields": [
+      {
+        "order": 1,
+        "api_name": "line_no",
+        "name": "明细编号",
+        "type": "auto_number",
+        "required": true,
+        "unique": true,
+        "format": "LINE-{yyyyMMdd}-{0000}"
+      },
+      {
+        "order": 2,
+        "api_name": "request",
+        "name": "所属申请单",
+        "type": "lookup",
+        "required": true,
+        "unique": false,
+        "target_object": "material_request"
+      },
+      {
+        "order": 3,
+        "api_name": "material",
+        "name": "物料",
+        "type": "lookup",
+        "required": true,
+        "unique": false,
+        "target_object": "material_item"
+      },
+      {
+        "order": 4,
+        "api_name": "request_qty",
+        "name": "申请数量",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0,
+        "validators": [
+          "value > 0"
+        ]
+      },
+      {
+        "order": 5,
+        "api_name": "stock_snapshot",
+        "name": "提交时库存快照",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 6,
+        "api_name": "approved_qty",
+        "name": "审批通过数量",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 7,
+        "api_name": "actual_issue_qty",
+        "name": "实际发放数量",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 8,
+        "api_name": "line_status",
+        "name": "明细状态",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "待审批",
+          "待发放",
+          "部分发放",
+          "已发放",
+          "缺货",
+          "取消"
+        ]
+      },
+      {
+        "order": 9,
+        "api_name": "issue_user",
+        "name": "发放人",
+        "type": "user",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 10,
+        "api_name": "issue_at",
+        "name": "发放时间",
+        "type": "datetime",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 11,
+        "api_name": "ledger",
+        "name": "出库流水",
+        "type": "lookup",
+        "required": false,
+        "unique": false,
+        "target_object": "inventory_ledger"
+      },
+      {
+        "order": 12,
+        "api_name": "shortage_reason",
+        "name": "缺货说明",
+        "type": "long_text",
+        "required": false,
+        "unique": false
+      }
+    ],
+    "indexes": [
+      "request",
+      "material",
+      "line_status"
+    ],
+    "relations": [],
+    "permissions": [
+      {
+        "role": "销售",
+        "permissions": [
+          "create",
+          "read_own_request",
+          "update_draft_own_request"
+        ]
+      },
+      {
+        "role": "市场专员",
+        "permissions": [
+          "read_all",
+          "update_approved_qty",
+          "update_actual_issue_qty"
+        ]
+      },
+      {
+        "role": "市场主管",
+        "permissions": [
+          "read_all",
+          "update",
+          "override"
+        ]
+      },
+      {
+        "role": "管理员",
+        "permissions": [
+          "read",
+          "create",
+          "update",
+          "delete",
+          "import"
+        ]
+      }
+    ]
+  }
+}

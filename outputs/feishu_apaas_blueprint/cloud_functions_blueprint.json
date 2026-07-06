@@ -1,0 +1,105 @@
+{
+  "schema_version": "blueprint-2026-07-02",
+  "functions": [
+    {
+      "name": "submit_material_request",
+      "purpose": "销售提交申请，做必填、数量、重复明细校验，并推送市场审批提醒。",
+      "input": {
+        "request_id": "record_id"
+      },
+      "pseudo_code": [
+        "request = get material_request by request_id",
+        "lines = list material_request_line where request = request_id",
+        "assert request required fields",
+        "assert lines.length > 0",
+        "for each line: assert request_qty > 0 and material.status = 启用",
+        "block or merge duplicate material lines",
+        "write stock_snapshot = material.current_stock",
+        "set request_status = 待审批 and submitted_at = now",
+        "send Feishu card to market group"
+      ]
+    },
+    {
+      "name": "approve_material_request",
+      "purpose": "市场审批通过或驳回申请。",
+      "input": {
+        "request_id": "record_id",
+        "action": "approve|reject",
+        "comment": "text"
+      },
+      "pseudo_code": [
+        "assert current_user in market roles",
+        "if action == reject: set request_status = 已驳回 and return",
+        "lines = list request lines",
+        "for each line: approved_qty = approved_qty || request_qty; assert approved_qty >= 0 and approved_qty <= request_qty",
+        "set each line_status = 待发放",
+        "set request_status = 待发放 and approved_at = now",
+        "send issue reminder"
+      ]
+    },
+    {
+      "name": "batch_issue_request_lines",
+      "purpose": "市场批量发放，库存不足拦截，防重复扣库存。",
+      "input": {
+        "line_ids": [
+          "record_id"
+        ],
+        "operator_user_id": "user_id"
+      },
+      "pseudo_code": [
+        "create stock_operation_batch",
+        "for each line_id in line_ids:",
+        "  line = get line with request and material",
+        "  assert line_status == 待发放",
+        "  assert no existing ledger linked to this line",
+        "  assert actual_issue_qty > 0",
+        "  assert actual_issue_qty <= approved_qty",
+        "  material = reload material for update",
+        "  if material.current_stock < actual_issue_qty: mark line 缺货 and record failure",
+        "  else: call apply_inventory_change(material, -actual_issue_qty, source_line=line_id, idempotency_key='issue:' + line_id)",
+        "  set line_status = 已发放 or 部分发放",
+        "update parent request status by all line statuses",
+        "update batch success/failure count",
+        "return per-line result"
+      ]
+    },
+    {
+      "name": "apply_inventory_change",
+      "purpose": "所有库存变更唯一入口。",
+      "input": {
+        "material_id": "record_id",
+        "ledger_type": "text",
+        "quantity_delta": "number",
+        "source_request_id": "record_id",
+        "source_line_id": "record_id",
+        "idempotency_key": "text",
+        "note": "text"
+      },
+      "pseudo_code": [
+        "assert idempotency_key not exists in inventory_ledger",
+        "material = get material for update",
+        "before = material.current_stock",
+        "after = before + quantity_delta",
+        "if ledger_type is outflow and after < 0: throw 库存不足",
+        "create inventory_ledger(before_stock=before, after_stock=after, quantity_delta=quantity_delta, ledger_status=有效)",
+        "update material.current_stock = after",
+        "return ledger"
+      ]
+    },
+    {
+      "name": "revert_inventory_ledger",
+      "purpose": "撤回流水时新增反向流水，保留审计。",
+      "input": {
+        "ledger_id": "record_id",
+        "note": "text"
+      },
+      "pseudo_code": [
+        "ledger = get original ledger",
+        "assert ledger_status == 有效",
+        "reverse_delta = -ledger.quantity_delta",
+        "call apply_inventory_change(material=ledger.material, ledger_type=撤回冲销, quantity_delta=reverse_delta, original_ledger=ledger_id)",
+        "set original ledger_status = 已撤回"
+      ]
+    }
+  ]
+}

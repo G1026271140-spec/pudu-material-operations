@@ -1,0 +1,311 @@
+{
+  "schema_version": "blueprint-2026-07-02",
+  "note": "Page structure blueprint. Convert this to native Feishu aPaaS page JSON after you provide an exported page JSON sample.",
+  "pages": [
+    {
+      "api_name": "sales_request_page",
+      "name": "销售物料申请",
+      "route": "/sales/request",
+      "role_visibility": [
+        "销售",
+        "市场专员",
+        "市场主管",
+        "管理员"
+      ],
+      "layout": [
+        {
+          "type": "form",
+          "id": "request_header_form",
+          "data_object": "material_request",
+          "fields": [
+            "requester",
+            "requester_department",
+            "business_type",
+            "usage_scene",
+            "expected_issue_date"
+          ]
+        },
+        {
+          "type": "editable_table",
+          "id": "request_lines_table",
+          "data_object": "material_request_line",
+          "fields": [
+            "material",
+            "request_qty",
+            "stock_snapshot"
+          ],
+          "actions": [
+            "add_row",
+            "copy_row",
+            "delete_row"
+          ]
+        },
+        {
+          "type": "button_bar",
+          "id": "sales_buttons",
+          "buttons": [
+            {
+              "id": "save_draft",
+              "text": "保存草稿",
+              "action": "save"
+            },
+            {
+              "id": "submit_approval",
+              "text": "提交审批",
+              "style": "primary",
+              "action": "call_function",
+              "function": "submit_material_request"
+            }
+          ]
+        }
+      ],
+      "validations": [
+        "request.business_type is required",
+        "request.usage_scene is required",
+        "request.expected_issue_date is required",
+        "lines.length > 0",
+        "every line.request_qty > 0",
+        "merge or block duplicate material within same request"
+      ]
+    },
+    {
+      "api_name": "market_approval_workspace",
+      "name": "市场审批工作台",
+      "route": "/market/approval",
+      "role_visibility": [
+        "市场专员",
+        "市场主管",
+        "管理员"
+      ],
+      "layout": [
+        {
+          "type": "filter_bar",
+          "id": "approval_filters",
+          "fields": [
+            "requester",
+            "requester_department",
+            "expected_issue_date",
+            "request_status"
+          ]
+        },
+        {
+          "type": "split_view",
+          "id": "approval_split",
+          "left": {
+            "type": "list",
+            "data_object": "material_request",
+            "filter": "request_status in ['待审批','审批中']"
+          },
+          "right": {
+            "type": "detail_with_lines",
+            "parent": "material_request",
+            "child": "material_request_line"
+          }
+        },
+        {
+          "type": "button_bar",
+          "id": "approval_buttons",
+          "buttons": [
+            {
+              "id": "approve",
+              "text": "通过",
+              "style": "primary",
+              "action": "call_function",
+              "function": "approve_material_request",
+              "params": {
+                "action": "approve"
+              }
+            },
+            {
+              "id": "reject",
+              "text": "驳回",
+              "style": "danger",
+              "action": "call_function",
+              "function": "approve_material_request",
+              "params": {
+                "action": "reject"
+              }
+            },
+            {
+              "id": "mark_shortage",
+              "text": "标记缺货",
+              "action": "update_lines",
+              "status": "缺货"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "market_issue_workspace",
+      "name": "市场发放工作台",
+      "route": "/market/issue",
+      "role_visibility": [
+        "市场专员",
+        "市场主管",
+        "管理员"
+      ],
+      "layout": [
+        {
+          "type": "filter_bar",
+          "id": "issue_filters",
+          "fields": [
+            "material",
+            "line_status",
+            "expected_issue_date"
+          ]
+        },
+        {
+          "type": "editable_table",
+          "id": "issue_lines_table",
+          "data_object": "material_request_line",
+          "filter": "line_status = '待发放'",
+          "selectable": true,
+          "fields": [
+            "request",
+            "material",
+            "request_qty",
+            "approved_qty",
+            "actual_issue_qty",
+            "shortage_reason"
+          ]
+        },
+        {
+          "type": "button_bar",
+          "id": "issue_buttons",
+          "buttons": [
+            {
+              "id": "batch_set_full_qty",
+              "text": "按审批数量填充",
+              "action": "client_script",
+              "script": "actual_issue_qty = approved_qty"
+            },
+            {
+              "id": "batch_issue",
+              "text": "批量发放",
+              "style": "primary",
+              "action": "call_function",
+              "function": "batch_issue_request_lines"
+            },
+            {
+              "id": "cancel_issue",
+              "text": "取消发放",
+              "action": "update_lines",
+              "status": "取消"
+            }
+          ]
+        }
+      ],
+      "validations": [
+        "selected_lines.length > 0",
+        "actual_issue_qty >= 0",
+        "actual_issue_qty <= approved_qty",
+        "block lines with existing ledger"
+      ]
+    },
+    {
+      "api_name": "inventory_management_page",
+      "name": "库存管理",
+      "route": "/inventory",
+      "role_visibility": [
+        "市场专员",
+        "市场主管",
+        "管理员"
+      ],
+      "layout": [
+        {
+          "type": "kpi_bar",
+          "id": "inventory_kpis",
+          "metrics": [
+            "物料总数",
+            "库存总数",
+            "低库存数",
+            "负库存数"
+          ]
+        },
+        {
+          "type": "table",
+          "id": "material_table",
+          "data_object": "material_item",
+          "fields": [
+            "material_code",
+            "material_category",
+            "product_model",
+            "language",
+            "current_stock",
+            "reserved_stock",
+            "available_stock",
+            "low_stock_threshold",
+            "stock_status"
+          ]
+        },
+        {
+          "type": "button_bar",
+          "id": "inventory_buttons",
+          "buttons": [
+            {
+              "id": "purchase_in",
+              "text": "采购入库",
+              "style": "primary",
+              "action": "open_modal",
+              "modal": "inventory_change_modal",
+              "params": {
+                "ledger_type": "采购入库"
+              }
+            },
+            {
+              "id": "stock_adjust",
+              "text": "盘点调整",
+              "action": "open_modal",
+              "modal": "inventory_change_modal",
+              "params": {
+                "ledger_type": "盘点调整"
+              }
+            },
+            {
+              "id": "view_ledger",
+              "text": "查看流水",
+              "action": "navigate",
+              "route": "/inventory/ledger"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "api_name": "admin_material_config",
+      "name": "物料配置",
+      "route": "/admin/materials",
+      "role_visibility": [
+        "管理员"
+      ],
+      "layout": [
+        {
+          "type": "table",
+          "id": "material_admin_table",
+          "data_object": "material_item",
+          "editable": true
+        },
+        {
+          "type": "button_bar",
+          "id": "admin_buttons",
+          "buttons": [
+            {
+              "id": "import_materials",
+              "text": "批量导入物料",
+              "action": "import_csv",
+              "target": "material_item"
+            },
+            {
+              "id": "disable_selected",
+              "text": "停用选中物料",
+              "action": "batch_update",
+              "field": "status",
+              "value": "停用"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

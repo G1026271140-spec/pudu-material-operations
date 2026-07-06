@@ -1,0 +1,56 @@
+{
+  "schema_version": "blueprint-2026-07-02",
+  "flows": [
+    {
+      "api_name": "submit_request_flow",
+      "name": "销售提交申请",
+      "trigger": "button:sales_request_page.submit_approval",
+      "steps": [
+        "call submit_material_request",
+        "set material_request.request_status = 待审批",
+        "send market_request_reminder card to market group"
+      ]
+    },
+    {
+      "api_name": "approve_request_flow",
+      "name": "市场审批申请",
+      "trigger": "button:market_approval_workspace.approve",
+      "steps": [
+        "call approve_material_request(action=approve)",
+        "set request lines to 待发放",
+        "send issue reminder to market owner"
+      ]
+    },
+    {
+      "api_name": "reject_request_flow",
+      "name": "市场驳回申请",
+      "trigger": "button:market_approval_workspace.reject",
+      "steps": [
+        "call approve_material_request(action=reject)",
+        "set request status = 已驳回",
+        "send rejection card to requester"
+      ]
+    },
+    {
+      "api_name": "batch_issue_flow",
+      "name": "市场批量发放",
+      "trigger": "button:market_issue_workspace.batch_issue",
+      "steps": [
+        "call batch_issue_request_lines",
+        "write inventory ledger",
+        "update material current_stock",
+        "update request and line statuses",
+        "send result summary card"
+      ]
+    },
+    {
+      "api_name": "low_stock_warning_flow",
+      "name": "库存预警",
+      "trigger": "data_change:material_item.stock_status",
+      "condition": "stock_status in ['低库存','负库存']",
+      "steps": [
+        "send low stock card to market supervisor"
+      ]
+    }
+  ]
+}

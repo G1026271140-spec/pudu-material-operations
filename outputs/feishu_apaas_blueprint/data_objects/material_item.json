@@ -1,0 +1,186 @@
+{
+  "type": "feishu_apaas_data_object_import",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-02",
+  "import_note": "字段类型为通用 aPaaS 建模表达。导入后如飞书要求字段类型枚举或关联对象 ID，请按导入提示重新绑定。",
+  "object": {
+    "api_name": "material_item",
+    "name": "物料主数据",
+    "description": "从当前库存表迁移来的物料组合和库存主数据。",
+    "display_name_field": "material_code",
+    "fields": [
+      {
+        "order": 1,
+        "api_name": "material_code",
+        "name": "物料编码",
+        "type": "text",
+        "required": true,
+        "unique": true
+      },
+      {
+        "order": 2,
+        "api_name": "material_category",
+        "name": "物料品类",
+        "type": "text",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 3,
+        "api_name": "product_model",
+        "name": "产品型号",
+        "type": "text",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 4,
+        "api_name": "language",
+        "name": "语种",
+        "type": "text",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 5,
+        "api_name": "no_model",
+        "name": "是否无需型号",
+        "type": "boolean",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 6,
+        "api_name": "unit_price",
+        "name": "单价",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 2
+      },
+      {
+        "order": 7,
+        "api_name": "initial_stock",
+        "name": "初始库存",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 8,
+        "api_name": "current_stock",
+        "name": "当前库存",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 9,
+        "api_name": "reserved_stock",
+        "name": "已占用库存",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 10,
+        "api_name": "available_stock",
+        "name": "可用库存",
+        "type": "formula",
+        "required": false,
+        "unique": false,
+        "formula": "current_stock - reserved_stock"
+      },
+      {
+        "order": 11,
+        "api_name": "low_stock_threshold",
+        "name": "库存下限",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 12,
+        "api_name": "stock_status",
+        "name": "库存状态",
+        "type": "formula",
+        "required": false,
+        "unique": false,
+        "formula": "current_stock < 0 ? '负库存' : current_stock <= low_stock_threshold ? '低库存' : '正常'"
+      },
+      {
+        "order": 13,
+        "api_name": "status",
+        "name": "启用状态",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "启用",
+          "停用"
+        ]
+      },
+      {
+        "order": 14,
+        "api_name": "material_key",
+        "name": "物料唯一键",
+        "type": "text",
+        "required": true,
+        "unique": true
+      },
+      {
+        "order": 15,
+        "api_name": "remark",
+        "name": "备注",
+        "type": "long_text",
+        "required": false,
+        "unique": false
+      }
+    ],
+    "indexes": [
+      "material_code",
+      "material_key",
+      "material_category",
+      "product_model",
+      "language"
+    ],
+    "relations": [],
+    "permissions": [
+      {
+        "role": "销售",
+        "permissions": [
+          "read_enabled_records"
+        ]
+      },
+      {
+        "role": "市场专员",
+        "permissions": [
+          "read",
+          "create_inventory_operations"
+        ]
+      },
+      {
+        "role": "市场主管",
+        "permissions": [
+          "read",
+          "update",
+          "audit"
+        ]
+      },
+      {
+        "role": "管理员",
+        "permissions": [
+          "read",
+          "create",
+          "update",
+          "delete",
+          "import"
+        ]
+      }
+    ]
+  }
+}

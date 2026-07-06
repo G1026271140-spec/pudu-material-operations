@@ -1,0 +1,165 @@
+{
+  "type": "feishu_apaas_data_object_import",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-02",
+  "import_note": "字段类型为通用 aPaaS 建模表达。导入后如飞书要求字段类型枚举或关联对象 ID，请按导入提示重新绑定。",
+  "object": {
+    "api_name": "material_request",
+    "name": "物料申请单",
+    "description": "销售一次申请的主单。",
+    "display_name_field": "request_no",
+    "fields": [
+      {
+        "order": 1,
+        "api_name": "request_no",
+        "name": "申请单号",
+        "type": "auto_number",
+        "required": true,
+        "unique": true,
+        "format": "REQ-{yyyyMMdd}-{0000}"
+      },
+      {
+        "order": 2,
+        "api_name": "requester",
+        "name": "申请人",
+        "type": "user",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 3,
+        "api_name": "requester_department",
+        "name": "申请部门/区域",
+        "type": "text",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 4,
+        "api_name": "business_type",
+        "name": "业务类型",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "物料领取",
+          "物料采购",
+          "盘点调整"
+        ]
+      },
+      {
+        "order": 5,
+        "api_name": "usage_scene",
+        "name": "用途/活动",
+        "type": "long_text",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 6,
+        "api_name": "expected_issue_date",
+        "name": "期望发放日期",
+        "type": "date",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 7,
+        "api_name": "request_status",
+        "name": "审批状态",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "草稿",
+          "待审批",
+          "审批中",
+          "已通过",
+          "已驳回",
+          "待发放",
+          "部分发放",
+          "已发放",
+          "已取消"
+        ]
+      },
+      {
+        "order": 8,
+        "api_name": "market_owner",
+        "name": "市场负责人",
+        "type": "user",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 9,
+        "api_name": "approval_comment",
+        "name": "审批意见",
+        "type": "long_text",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 10,
+        "api_name": "submitted_at",
+        "name": "提交时间",
+        "type": "datetime",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 11,
+        "api_name": "approved_at",
+        "name": "审批时间",
+        "type": "datetime",
+        "required": false,
+        "unique": false
+      }
+    ],
+    "indexes": [],
+    "relations": [
+      {
+        "target": "material_request_line",
+        "relation": "one_to_many",
+        "field": "request"
+      }
+    ],
+    "permissions": [
+      {
+        "role": "销售",
+        "permissions": [
+          "create",
+          "read_own",
+          "update_draft_own"
+        ]
+      },
+      {
+        "role": "市场专员",
+        "permissions": [
+          "read_all",
+          "approve",
+          "reject",
+          "update_market_fields"
+        ]
+      },
+      {
+        "role": "市场主管",
+        "permissions": [
+          "read_all",
+          "approve",
+          "reject",
+          "override"
+        ]
+      },
+      {
+        "role": "管理员",
+        "permissions": [
+          "read",
+          "create",
+          "update",
+          "delete",
+          "import"
+        ]
+      }
+    ]
+  }
+}

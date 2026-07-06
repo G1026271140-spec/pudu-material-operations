@@ -1,0 +1,130 @@
+{
+  "type": "feishu_apaas_data_object_import",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-02",
+  "import_note": "字段类型为通用 aPaaS 建模表达。导入后如飞书要求字段类型枚举或关联对象 ID，请按导入提示重新绑定。",
+  "object": {
+    "api_name": "stock_operation_batch",
+    "name": "库存批量操作",
+    "description": "批量发放、批量入库、批量撤回的执行批次。",
+    "display_name_field": "batch_no",
+    "fields": [
+      {
+        "order": 1,
+        "api_name": "batch_no",
+        "name": "批次号",
+        "type": "auto_number",
+        "required": true,
+        "unique": true,
+        "format": "BATCH-{yyyyMMdd}-{0000}"
+      },
+      {
+        "order": 2,
+        "api_name": "operation_type",
+        "name": "操作类型",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "批量发放",
+          "批量入库",
+          "批量撤回"
+        ]
+      },
+      {
+        "order": 3,
+        "api_name": "operator",
+        "name": "操作人",
+        "type": "user",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 4,
+        "api_name": "batch_status",
+        "name": "批次状态",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "草稿",
+          "处理中",
+          "成功",
+          "部分成功",
+          "失败"
+        ]
+      },
+      {
+        "order": 5,
+        "api_name": "total_count",
+        "name": "总条数",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 6,
+        "api_name": "success_count",
+        "name": "成功条数",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 7,
+        "api_name": "fail_count",
+        "name": "失败条数",
+        "type": "number",
+        "required": false,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 8,
+        "api_name": "error_message",
+        "name": "错误信息",
+        "type": "long_text",
+        "required": false,
+        "unique": false
+      }
+    ],
+    "indexes": [],
+    "relations": [],
+    "permissions": [
+      {
+        "role": "销售",
+        "permissions": [
+          "none"
+        ]
+      },
+      {
+        "role": "市场专员",
+        "permissions": [
+          "create",
+          "read_own",
+          "execute_batch"
+        ]
+      },
+      {
+        "role": "市场主管",
+        "permissions": [
+          "read_all",
+          "execute_batch",
+          "audit"
+        ]
+      },
+      {
+        "role": "管理员",
+        "permissions": [
+          "read",
+          "create",
+          "update",
+          "delete",
+          "import"
+        ]
+      }
+    ]
+  }
+}

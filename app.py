@@ -1,26 +1,18 @@
 from __future__ import annotations
 
-import csv
-import json
 import re
 import threading
-from datetime import date, datetime, time, timedelta
+import uuid
+from datetime import date, datetime, timedelta
 from io import BytesIO
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
-
-ROOT = Path(__file__).resolve().parent
-DATA_DIR = ROOT / "data"
-INVENTORY_XLSX = DATA_DIR / "inventory.xlsx"
-INVENTORY_CSV = DATA_DIR / "inventory.csv"
-OPTIONS_JSON = DATA_DIR / "options.json"
-TRANSACTIONS_CSV = DATA_DIR / "transactions.csv"
 
 DEFAULT_PASSWORD = "376493"
 NO_MODEL_TEXT = "无需型号"
@@ -150,124 +142,106 @@ def get_secret_value(name: str, default: str = "") -> str:
         return default
 
 
-def supabase_url() -> str:
-    return get_secret_value("SUPABASE_URL")
+def feishu_app_id() -> str:
+    return get_secret_value("FEISHU_APP_ID")
 
 
-def supabase_service_role_key() -> str:
-    return get_secret_value("SUPABASE_SERVICE_ROLE_KEY")
+def feishu_app_secret() -> str:
+    return get_secret_value("FEISHU_APP_SECRET")
 
 
-def legacy_supabase_key() -> str:
-    return get_secret_value("SUPABASE_KEY")
+def feishu_bitable_app_token() -> str:
+    return get_secret_value("FEISHU_BITABLE_APP_TOKEN")
 
 
-def supabase_configured() -> bool:
-    return bool(supabase_url() and supabase_service_role_key())
+def feishu_configured() -> bool:
+    return bool(feishu_app_id() and feishu_app_secret() and feishu_bitable_app_token())
 
 
-def stop_on_invalid_supabase_config() -> None:
-    url = supabase_url()
-    service_key = supabase_service_role_key()
-    legacy_key = legacy_supabase_key()
-
-    if not url and not service_key and not legacy_key:
+def stop_on_invalid_feishu_config() -> None:
+    values = {
+        "FEISHU_APP_ID": feishu_app_id(),
+        "FEISHU_APP_SECRET": feishu_app_secret(),
+        "FEISHU_BITABLE_APP_TOKEN": feishu_bitable_app_token(),
+    }
+    if all(values.values()):
         return
 
-    if url and service_key:
-        return
-
-    if legacy_key and not service_key:
-        st.error(
-            "检测到 Supabase 配置不完整：请使用 `SUPABASE_SERVICE_ROLE_KEY`，不要使用 `SUPABASE_KEY`/anon/public key。"
-        )
-    elif service_key and not url:
-        st.error("检测到 `SUPABASE_SERVICE_ROLE_KEY`，但缺少 `SUPABASE_URL`。")
-    else:
-        st.error("Supabase 配置不完整：请同时填写 `SUPABASE_URL` 和 `SUPABASE_SERVICE_ROLE_KEY`。")
-
-    st.info(
-        "请在 Streamlit Secrets 中填写 service_role/secret key；这个密钥只放在 Secrets，不能提交到 GitHub。"
-    )
+    missing = [key for key, value in values.items() if not value]
+    st.error("应用现在只使用飞书多维表格，请先补齐飞书配置：" + "、".join(missing))
+    st.info("请在 Streamlit Secrets 中同时填写 FEISHU_APP_ID、FEISHU_APP_SECRET、FEISHU_BITABLE_APP_TOKEN。")
     st.stop()
 
 
 @st.cache_resource(show_spinner=False)
-def get_supabase_client(url: str, key: str):
-    from supabase import create_client
-
-    return create_client(url, key)
+def get_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) -> FeishuBitableClient:
+    return FeishuBitableClient(FeishuBitableConfig(app_id, app_secret, app_token))
 
 
-def supabase_client():
-    url = supabase_url()
-    key = supabase_service_role_key()
-    if not url or not key:
+def feishu_client() -> FeishuBitableClient | None:
+    app_id = feishu_app_id()
+    app_secret = feishu_app_secret()
+    app_token = feishu_bitable_app_token()
+    if not app_id or not app_secret or not app_token:
         return None
-    return get_supabase_client(url, key)
+    return get_feishu_bitable_client(app_id, app_secret, app_token)
+
+
+@st.cache_data(show_spinner=False, ttl=300)
+def load_feishu_schema_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
+    client = FeishuBitableClient(FeishuBitableConfig(app_id, app_secret, app_token))
+    return client.discover_schema()
+
+
+def feishu_schema() -> dict:
+    return load_feishu_schema_snapshot(feishu_app_id(), feishu_app_secret(), feishu_bitable_app_token())
+
+
+def feishu_table_id(table_name: str) -> str:
+    table = feishu_schema().get("tables", {}).get(table_name)
+    if not table:
+        raise RuntimeError(f"飞书多维表格缺少数据表：{table_name}")
+    return str(table["table_id"])
 
 
 def storage_mode_label() -> str:
-    if supabase_url() and not supabase_service_role_key():
-        return "Supabase 配置不完整"
-    return "Supabase 长期数据库" if supabase_configured() else "本地 Excel 文件"
+    return "飞书多维表格"
 
 
-def count_supabase_table(table: str) -> int | None:
-    client = supabase_client()
+def count_feishu_table(table_name: str) -> int:
+    if table_name == "物料主数据":
+        return len(load_feishu_inventory())
+    if table_name == "库存流水":
+        return len(load_feishu_transactions_dataframe())
+    client = feishu_client()
     if client is None:
-        return None
-    response = client.table(table).select("id", count="exact").limit(1).execute()
-    return response.count
+        return 0
+    return len(client.list_records(feishu_table_id(table_name)))
 
 
 def render_storage_diagnostics() -> None:
     with st.sidebar.expander("存储状态", expanded=True):
         st.write(f"当前存储：**{storage_mode_label()}**")
-        st.write(f"SUPABASE_URL：{'已读取' if bool(supabase_url()) else '未读取'}")
-        st.write(f"SUPABASE_SERVICE_ROLE_KEY：{'已读取' if bool(supabase_service_role_key()) else '未读取'}")
-        if legacy_supabase_key():
-            st.warning("检测到 SUPABASE_KEY。请删除它，只保留 SUPABASE_SERVICE_ROLE_KEY。")
+        st.write(f"FEISHU_APP_ID：{'已读取' if bool(feishu_app_id()) else '未读取'}")
+        st.write(f"FEISHU_APP_SECRET：{'已读取' if bool(feishu_app_secret()) else '未读取'}")
+        st.write(f"FEISHU_BITABLE_APP_TOKEN：{'已读取' if bool(feishu_bitable_app_token()) else '未读取'}")
 
-        if supabase_configured():
-            try:
-                categories_count = count_supabase_table("material_categories")
-                inventory_count = count_supabase_table("inventory_items")
-                transactions_count = count_supabase_table("inventory_transactions")
-                st.success("Supabase 连接成功")
-                st.caption(
-                    f"品类 {categories_count or 0} 条 / 库存 {inventory_count or 0} 条 / 流水 {transactions_count or 0} 条"
-                )
-            except Exception as exc:
-                st.error("Supabase 连接失败")
-                st.caption(str(exc))
-        else:
-            st.info("未启用 Supabase 时，应用会读取本地 Excel。")
+        try:
+            categories_count = count_feishu_table("物料品类")
+            inventory_count = count_feishu_table("物料主数据")
+            transactions_count = count_feishu_table("库存流水")
+            st.success("飞书多维表格连接成功")
+            st.caption(
+                f"品类 {categories_count or 0} 条 / 库存 {inventory_count or 0} 条 / 流水 {transactions_count or 0} 条"
+            )
+        except Exception as exc:
+            st.error("飞书多维表格连接失败")
+            st.caption(str(exc))
 
         if st.button("重新检查连接", key="refresh_storage_status", width="stretch"):
-            st.session_state.pop("supabase_seed_checked", None)
             st.cache_resource.clear()
+            st.cache_data.clear()
             st.rerun()
-
-
-def ensure_data() -> None:
-    if INVENTORY_XLSX.exists() and OPTIONS_JSON.exists():
-        return
-    from scripts.generate_inventory import main as generate_inventory
-
-    generate_inventory()
-
-
-def load_local_options() -> dict:
-    ensure_data()
-    return json.loads(OPTIONS_JSON.read_text(encoding="utf-8"))
-
-
-def save_local_options(options: dict) -> None:
-    OPTIONS_JSON.write_text(
-        json.dumps(options, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
 
 
 def unique_preserve(values: list[str]) -> list[str]:
@@ -371,14 +345,6 @@ def product_language_options(
     return sort_languages(list(scoped_languages))
 
 
-def day_start(value: date) -> str:
-    return datetime.combine(value, time.min).isoformat()
-
-
-def day_end(value: date) -> str:
-    return datetime.combine(value, time.max).isoformat()
-
-
 def format_datetime(value: object) -> str:
     parsed = pd.to_datetime(value, errors="coerce")
     if pd.isna(parsed):
@@ -386,19 +352,18 @@ def format_datetime(value: object) -> str:
     return parsed.strftime("%Y-%m-%d %H:%M")
 
 
-def transaction_status(row: dict) -> str:
-    if row.get("reversed_at"):
-        return "已撤回"
-    if row.get("reversal_of"):
-        return "撤回记录"
-    return "有效"
+def parse_datetime(value: object) -> datetime | None:
+    parsed = pd.to_datetime(value, errors="coerce")
+    if pd.isna(parsed):
+        return None
+    return parsed.to_pydatetime()
 
 
-def selected_ids_from_editor(df: pd.DataFrame, id_column: str = "ID") -> list[int]:
+def selected_values_from_editor(df: pd.DataFrame, id_column: str = "记录ID") -> list[str]:
     if df.empty or "选择" not in df.columns or id_column not in df.columns:
         return []
     selected = df[df["选择"].fillna(False)]
-    return [int(value) for value in selected[id_column].tolist()]
+    return [str(value) for value in selected[id_column].tolist() if str(value)]
 
 
 def apply_inventory_filters(
@@ -431,20 +396,6 @@ def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
     if st.button(label, key=key, width="stretch"):
         st.query_params.clear()
         st.rerun()
-
-
-def load_local_inventory() -> pd.DataFrame:
-    ensure_data()
-    df = pd.read_excel(INVENTORY_XLSX, keep_default_na=False)
-    for column in INVENTORY_HEADERS:
-        if column not in df.columns:
-            df[column] = "" if column != QTY_COL else 0
-    for column in ["物料编码", PRODUCT_COL, MODEL_COL, LANGUAGE_COL, UPDATED_COL]:
-        df[column] = df[column].fillna("").astype(str)
-    df[QTY_COL] = pd.to_numeric(df[QTY_COL], errors="coerce").fillna(0).astype(int)
-    df[PRICE_COL] = pd.to_numeric(df[PRICE_COL], errors="coerce").fillna(0)
-    df[VALUE_COL] = df[QTY_COL] * df[PRICE_COL]
-    return df[INVENTORY_HEADERS]
 
 
 def workbook_bytes(df: pd.DataFrame) -> bytes:
@@ -494,420 +445,653 @@ def workbook_bytes(df: pd.DataFrame) -> bytes:
     return buffer.getvalue()
 
 
-def save_local_inventory(df: pd.DataFrame) -> None:
-    df = df[INVENTORY_HEADERS].copy()
-    for column in ["物料编码", PRODUCT_COL, MODEL_COL, LANGUAGE_COL, UPDATED_COL]:
-        df[column] = df[column].fillna("").astype(str)
-    df[QTY_COL] = pd.to_numeric(df[QTY_COL], errors="coerce").fillna(0).astype(int)
-    df[PRICE_COL] = pd.to_numeric(df[PRICE_COL], errors="coerce").fillna(0)
-    df[VALUE_COL] = df[QTY_COL] * df[PRICE_COL]
-
-    INVENTORY_XLSX.write_bytes(workbook_bytes(df))
-    df.to_csv(INVENTORY_CSV, index=False, encoding="utf-8-sig")
-
-
-def append_local_transactions(rows: list[list[object]]) -> None:
-    if not TRANSACTIONS_CSV.exists():
-        with TRANSACTIONS_CSV.open("w", encoding="utf-8-sig", newline="") as file:
-            csv.writer(file).writerow(TRANSACTION_HEADERS)
-
-    with TRANSACTIONS_CSV.open("a", encoding="utf-8-sig", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerows(rows)
-
-
-def select_all_supabase_rows(table: str, columns: str = "*", order: str | None = None) -> list[dict]:
-    client = supabase_client()
+def feishu_rows(table_name: str) -> list[dict]:
+    client = feishu_client()
     if client is None:
         return []
-
-    rows: list[dict] = []
-    start = 0
-    page_size = 1000
-    while True:
-        query = client.table(table).select(columns)
-        if order:
-            query = query.order(order)
-        response = query.range(start, start + page_size - 1).execute()
-        batch = response.data or []
-        rows.extend(batch)
-        if len(batch) < page_size:
-            break
-        start += page_size
-    return rows
+    return client.list_records(feishu_table_id(table_name))
 
 
-def inventory_df_to_supabase_records(df: pd.DataFrame) -> list[dict]:
-    normalized = df[INVENTORY_HEADERS].copy()
-    normalized[QTY_COL] = pd.to_numeric(normalized[QTY_COL], errors="coerce").fillna(0).astype(int)
-    normalized[PRICE_COL] = pd.to_numeric(normalized[PRICE_COL], errors="coerce").fillna(0)
-
-    records: list[dict] = []
-    for row in normalized.itertuples(index=False):
-        records.append(
-            {
-                "material_code": str(row[0]),
-                "category": str(row[1]),
-                "model": str(row[2]) or NO_MODEL_TEXT,
-                "language": str(row[3]),
-                "quantity": int(row[4]),
-                "unit_price": float(row[5]),
-            }
-        )
-    return records
+def feishu_record_id(row: dict) -> str:
+    return str(row.get("record_id") or row.get("id") or "")
 
 
-def upsert_supabase_categories(options: dict) -> None:
-    client = supabase_client()
-    if client is None:
-        return
-
-    no_model_products = set(options.get("no_model_products", []))
-    for product in options.get("products", []):
-        save_supabase_category(str(product), str(product) in no_model_products)
+def feishu_fields(row: dict) -> dict:
+    return dict(row.get("fields") or {})
 
 
-def save_supabase_category(product: str, no_model: bool) -> None:
-    client = supabase_client()
-    if client is None:
-        return
-
-    product = product.strip()
-    existing = (
-        client.table("material_categories")
-        .select("id")
-        .eq("category", product)
-        .limit(1)
-        .execute()
-    )
-    if existing.data:
-        client.table("material_categories").update({"no_model": bool(no_model)}).eq("category", product).execute()
-    else:
-        client.table("material_categories").insert({"category": product, "no_model": bool(no_model)}).execute()
+def feishu_text(fields: dict, name: str, default: str = "") -> str:
+    value = fields.get(name, default)
+    if isinstance(value, list):
+        if not value:
+            return default
+        item = value[0]
+        if isinstance(item, dict):
+            text_arr = item.get("text_arr") or []
+            if text_arr:
+                return str(text_arr[0])
+            return str(item.get("text") or default)
+        return str(item)
+    if value is None:
+        return default
+    return str(value)
 
 
-def save_supabase_inventory(df: pd.DataFrame) -> None:
-    client = supabase_client()
-    if client is None:
-        return
-
-    records = inventory_df_to_supabase_records(df)
-    for start in range(0, len(records), 500):
-        client.table("inventory_items").upsert(
-            records[start : start + 500],
-            on_conflict="material_code",
-        ).execute()
-
-
-def insert_supabase_inventory(df: pd.DataFrame) -> None:
-    client = supabase_client()
-    if client is None:
-        return
-
-    records = inventory_df_to_supabase_records(df)
-    for start in range(0, len(records), 500):
-        client.table("inventory_items").insert(records[start : start + 500]).execute()
-
-
-def add_supabase_material_category_payload(product: str, no_model: bool, df: pd.DataFrame) -> int:
-    client = supabase_client()
-    if client is None:
-        return 0
-
-    payload = {
-        "category": product.strip(),
-        "no_model": bool(no_model),
-        "items": inventory_df_to_supabase_records(df),
-    }
-    response = client.rpc("add_material_category_payload", {"p_payload": payload}).execute()
-    result = (response.data or [{}])[0]
-    return int(result.get("inserted_count") or 0)
-
-
-def ensure_supabase_seeded() -> None:
-    if not supabase_configured():
-        return
-    if st.session_state.get("supabase_seed_checked"):
-        return
-
-    client = supabase_client()
-    if client is None:
-        return
-
+def feishu_int(fields: dict, name: str, default: int = 0) -> int:
+    value = fields.get(name, default)
+    if isinstance(value, list):
+        value = value[0] if value else default
     try:
-        existing = client.table("inventory_items").select("material_code").limit(1).execute()
-    except Exception as exc:
-        error_text = str(exc)
-        if "permission denied" in error_text or "42501" in error_text:
-            st.error("Supabase 已连接，但当前密钥没有表权限。通常是 Streamlit Secrets 里填成了 anon/public key。")
-            st.info("请把 `SUPABASE_SERVICE_ROLE_KEY` 改成 Supabase 的 service_role/secret key，然后重启应用。")
-        else:
-            st.error("Supabase 数据表还没有准备好。请先在 Supabase SQL Editor 运行 `supabase/schema.sql`。")
-        st.exception(exc)
-        st.stop()
-
-    if not existing.data:
-        local_options = load_local_options()
-        local_df = load_local_inventory()
-        upsert_supabase_categories(local_options)
-        save_supabase_inventory(local_df)
-
-    st.session_state["supabase_seed_checked"] = True
+        return int(float(value))
+    except (TypeError, ValueError):
+        return default
 
 
-def load_supabase_inventory() -> pd.DataFrame:
-    ensure_supabase_seeded()
-    rows = select_all_supabase_rows("inventory_items", "*", order="material_code")
-    data = []
-    for row in rows:
-        quantity = int(row.get("quantity") or 0)
-        unit_price = float(row.get("unit_price") or 0)
+def feishu_float(fields: dict, name: str, default: float = 0.0) -> float:
+    value = fields.get(name, default)
+    if isinstance(value, list):
+        value = value[0] if value else default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def feishu_timestamp(value: object | None = None) -> int:
+    if isinstance(value, datetime):
+        dt = value
+    elif value:
+        parsed = pd.to_datetime(value, errors="coerce")
+        dt = datetime.now() if pd.isna(parsed) else parsed.to_pydatetime()
+    else:
+        dt = datetime.now()
+    return int(dt.timestamp() * 1000)
+
+
+def feishu_datetime_text(value: object) -> str:
+    if value in (None, ""):
+        return ""
+    if isinstance(value, (int, float)) or str(value).isdigit():
+        try:
+            return datetime.fromtimestamp(int(value) / 1000).strftime("%Y-%m-%d %H:%M:%S")
+        except (OSError, ValueError):
+            return str(value)
+    return format_datetime(value)
+
+
+def feishu_link_ids(fields: dict, name: str) -> list[str]:
+    value = fields.get(name)
+    if value in (None, ""):
+        return []
+
+    raw_items = value if isinstance(value, list) else [value]
+    record_ids: list[str] = []
+    for item in raw_items:
+        if isinstance(item, str):
+            record_ids.append(item)
+        elif isinstance(item, dict):
+            for key in ("record_id", "id"):
+                if item.get(key):
+                    record_ids.append(str(item[key]))
+            for key in ("record_ids", "link_record_ids"):
+                nested = item.get(key) or []
+                if isinstance(nested, list):
+                    record_ids.extend(str(record_id) for record_id in nested if record_id)
+    return unique_preserve(record_ids)
+
+
+def feishu_transaction_status(fields: dict) -> str:
+    status = feishu_text(fields, "操作状态")
+    if status:
+        return status
+    if fields.get("撤回时间"):
+        return "已撤回"
+    if feishu_text(fields, "原流水ID"):
+        return "冲销记录"
+    return "有效"
+
+
+def feishu_transaction_delta(fields: dict) -> int:
+    before_quantity = feishu_int(fields, "变更前数量")
+    after_quantity = feishu_int(fields, "变更后数量")
+    delta = after_quantity - before_quantity
+    if delta != 0:
+        return delta
+    return feishu_int(fields, "库存变化")
+
+
+def is_blank_feishu_transaction(fields: dict) -> bool:
+    product = feishu_text(fields, "物料品类")
+    model = feishu_text(fields, "产品型号") or NO_MODEL_TEXT
+    language = feishu_text(fields, "语种")
+    note = feishu_text(fields, "备注")
+    before_quantity = feishu_int(fields, "变更前数量")
+    after_quantity = feishu_int(fields, "变更后数量")
+    quantity = feishu_int(fields, "数量", abs(after_quantity - before_quantity))
+    return not product and model == NO_MODEL_TEXT and not language and quantity == 0 and not note
+
+
+def feishu_material_rows() -> list[dict]:
+    return feishu_rows("物料主数据")
+
+
+def feishu_category_rows() -> list[dict]:
+    return feishu_rows("物料品类")
+
+
+def find_feishu_material_by_id(record_id: str) -> dict | None:
+    for row in feishu_material_rows():
+        if feishu_record_id(row) == record_id:
+            return row
+    return None
+
+
+def find_feishu_material_record(product: str, model: str, language: str) -> dict | None:
+    key = (product, model or NO_MODEL_TEXT, language)
+    return feishu_inventory_index().get(key)
+
+
+def find_feishu_material_by_code(material_code: str, exclude_record_id: str = "") -> dict | None:
+    material_code = material_code.strip()
+    for row in feishu_material_rows():
+        if exclude_record_id and feishu_record_id(row) == exclude_record_id:
+            continue
+        if feishu_text(feishu_fields(row), "物料编码") == material_code:
+            return row
+    return None
+
+
+def find_feishu_material_duplicate(
+    product: str,
+    model: str,
+    language: str,
+    exclude_record_id: str = "",
+) -> dict | None:
+    product = product.strip()
+    model = model.strip() or NO_MODEL_TEXT
+    language = language.strip()
+    for row in feishu_material_rows():
+        if exclude_record_id and feishu_record_id(row) == exclude_record_id:
+            continue
+        fields = feishu_fields(row)
+        if (
+            feishu_text(fields, "物料品类") == product
+            and (feishu_text(fields, "产品型号") or NO_MODEL_TEXT) == model
+            and feishu_text(fields, "语种") == language
+        ):
+            return row
+    return None
+
+
+def resolve_feishu_material_from_transaction(row: dict) -> dict:
+    fields = feishu_fields(row)
+    linked_ids = feishu_link_ids(fields, "物料编码")
+    for record_id in linked_ids:
+        material_row = find_feishu_material_by_id(record_id)
+        if material_row is not None:
+            return material_row
+
+    product = feishu_text(fields, "物料品类")
+    model = feishu_text(fields, "产品型号") or NO_MODEL_TEXT
+    language = feishu_text(fields, "语种")
+    material_row = find_feishu_material_record(product, model, language)
+    if material_row is None:
+        raise RuntimeError(f"未找到流水对应物料: {product} / {model} / {language}")
+    return material_row
+
+
+def append_admin_note(existing: str, label: str, note: str) -> str:
+    note = note.strip()
+    if not note:
+        return existing
+    suffix = f"{label}：{note}"
+    return f"{existing}\n{suffix}" if existing else suffix
+
+
+def feishu_inventory_index() -> dict[tuple[str, str, str], dict]:
+    index: dict[tuple[str, str, str], dict] = {}
+    for row in feishu_rows("物料主数据"):
+        fields = feishu_fields(row)
+        key = (
+            feishu_text(fields, "物料品类"),
+            feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+            feishu_text(fields, "语种"),
+        )
+        index[key] = row
+    return index
+
+
+def load_feishu_inventory() -> pd.DataFrame:
+    data: list[list[object]] = []
+    for row in feishu_rows("物料主数据"):
+        fields = feishu_fields(row)
+        material_code = feishu_text(fields, "物料编码")
+        category = feishu_text(fields, "物料品类")
+        if not material_code or not category:
+            continue
+        quantity = feishu_int(fields, "当前库存")
+        unit_price = feishu_float(fields, "单价")
         data.append(
             [
-                row.get("material_code", ""),
-                row.get("category", ""),
-                row.get("model") or NO_MODEL_TEXT,
-                row.get("language", ""),
+                material_code,
+                category,
+                feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+                feishu_text(fields, "语种"),
                 quantity,
                 unit_price,
                 quantity * unit_price,
-                row.get("updated_at", "") or "",
+                "",
             ]
         )
     return pd.DataFrame(data, columns=INVENTORY_HEADERS)
 
 
-def load_supabase_options() -> dict:
-    ensure_supabase_seeded()
-    categories = select_all_supabase_rows("material_categories", "category,no_model,created_at", order="created_at")
-    df = load_supabase_inventory()
-    products = [row["category"] for row in categories if row.get("category")]
-    if not products:
-        products = unique_preserve(list(df[PRODUCT_COL].astype(str)))
-
-    category_no_model_products = [row["category"] for row in categories if row.get("no_model")]
-    local_no_model_products = load_local_options().get("no_model_products", [])
-    inventory_no_model_products: list[str] = []
-    if not df.empty:
-        inventory_no_model_products = unique_preserve(
-            list(df.loc[df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str))
-        )
-    no_model_products = unique_preserve(
-        category_no_model_products + inventory_no_model_products + local_no_model_products
+def load_feishu_options() -> dict:
+    categories = feishu_rows("物料品类")
+    inventory_df = load_feishu_inventory()
+    products: list[str] = []
+    no_model_products: list[str] = []
+    for row in categories:
+        fields = feishu_fields(row)
+        product = feishu_text(fields, "物料品类")
+        if product:
+            products.append(product)
+        if feishu_text(fields, "是否无需型号") == "是":
+            no_model_products.append(product)
+    if not products and not inventory_df.empty:
+        products = unique_preserve(list(inventory_df[PRODUCT_COL].astype(str)))
+    inventory_no_model_products = (
+        unique_preserve(list(inventory_df.loc[inventory_df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str)))
+        if not inventory_df.empty
+        else []
     )
-    models = unique_preserve([value for value in df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT])
-    languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
+    models = unique_preserve(
+        [value for value in inventory_df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT]
+    ) if not inventory_df.empty else []
+    languages = unique_preserve(list(inventory_df[LANGUAGE_COL].astype(str))) if not inventory_df.empty else []
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "products": products,
-        "no_model_products": no_model_products,
+        "products": unique_preserve(products),
+        "no_model_products": unique_preserve(no_model_products + inventory_no_model_products),
         "models": models,
         "languages": languages,
         "no_model_text": NO_MODEL_TEXT,
-        "row_count": len(df),
+        "row_count": len(inventory_df),
     }
 
 
-def load_options() -> dict:
-    if supabase_configured():
-        return load_supabase_options()
-    return load_local_options()
-
-
-def save_options(options: dict) -> None:
-    if supabase_configured():
-        upsert_supabase_categories(options)
-        return
-    save_local_options(options)
-
-
-def load_inventory() -> pd.DataFrame:
-    if supabase_configured():
-        return load_supabase_inventory()
-    return load_local_inventory()
-
-
-def save_inventory(df: pd.DataFrame) -> None:
-    if supabase_configured():
-        save_supabase_inventory(df)
-        return
-    save_local_inventory(df)
-
-
-def append_supabase_transactions(rows: list[list[object]]) -> None:
-    client = supabase_client()
-    if client is None or not rows:
-        return
-    records = []
-    for row in rows:
-        records.append(
-            {
-                "created_at": row[0],
-                "action": row[1],
-                "category": row[2],
-                "model": row[3] or NO_MODEL_TEXT,
-                "language": row[4],
-                "quantity": int(row[5]),
-                "before_quantity": int(row[6]),
-                "after_quantity": int(row[7]),
-                "note": row[8],
-            }
-        )
-    client.table("inventory_transactions").insert(records).execute()
-
-
-def append_transactions(rows: list[list[object]]) -> None:
-    if supabase_configured():
-        append_supabase_transactions(rows)
-        return
-    append_local_transactions(rows)
-
-
-def load_transactions_dataframe() -> pd.DataFrame:
-    if not supabase_configured():
-        if TRANSACTIONS_CSV.exists():
-            return pd.read_csv(TRANSACTIONS_CSV, keep_default_na=False)
-        return pd.DataFrame(columns=TRANSACTION_HEADERS)
-
-    rows = select_all_supabase_rows("inventory_transactions", "*", order="created_at")
-    data = []
-    for row in rows:
+def load_feishu_transactions_dataframe() -> pd.DataFrame:
+    data: list[list[object]] = []
+    for row in feishu_rows("库存流水"):
+        fields = feishu_fields(row)
+        if not fields or is_blank_feishu_transaction(fields):
+            continue
+        product = feishu_text(fields, "物料品类")
+        model = feishu_text(fields, "产品型号") or NO_MODEL_TEXT
+        language = feishu_text(fields, "语种")
+        note = feishu_text(fields, "备注")
+        before_quantity = feishu_int(fields, "变更前数量")
+        after_quantity = feishu_int(fields, "变更后数量")
+        quantity = feishu_int(fields, "数量", abs(after_quantity - before_quantity))
         data.append(
             [
-                row.get("created_at", ""),
-                row.get("action", ""),
-                row.get("category", ""),
-                row.get("model") or NO_MODEL_TEXT,
-                row.get("language", ""),
-                int(row.get("quantity") or 0),
-                int(row.get("before_quantity") or 0),
-                int(row.get("after_quantity") or 0),
-                row.get("note", "") or "",
+                feishu_datetime_text(fields.get("发生时间", "")),
+                feishu_text(fields, "流水类型"),
+                product,
+                model,
+                language,
+                quantity,
+                before_quantity,
+                after_quantity,
+                note,
             ]
         )
     return pd.DataFrame(data, columns=TRANSACTION_HEADERS)
 
 
-def apply_supabase_changes(changes: list[dict[str, object]]) -> list[list[object]]:
-    client = supabase_client()
+def feishu_ledger_type(action: str) -> str:
+    return action
+
+
+def create_feishu_ledger(
+    material_record_id: str,
+    action: str,
+    product: str,
+    model: str,
+    language: str,
+    quantity: int,
+    before_quantity: int,
+    after_quantity: int,
+    note: str,
+    occurred_at: datetime,
+    *,
+    status: str = "有效",
+    original_ledger_id: str = "",
+) -> dict | None:
+    client = feishu_client()
+    if client is None:
+        return None
+    fields: dict[str, object] = {
+        "发生时间": feishu_timestamp(occurred_at),
+        "流水类型": feishu_ledger_type(action),
+        "物料编码": [material_record_id],
+        "物料品类": product,
+        "产品型号": model or NO_MODEL_TEXT,
+        "语种": language,
+        "数量": int(quantity),
+        "变更前数量": int(before_quantity),
+        "变更后数量": int(after_quantity),
+        "库存变化": int(after_quantity) - int(before_quantity),
+        "幂等键": f"streamlit:{uuid.uuid4().hex}",
+        "操作状态": status,
+        "备注": note,
+    }
+    if original_ledger_id:
+        fields["原流水ID"] = original_ledger_id
+
+    created = client.batch_create_records(
+        feishu_table_id("库存流水"),
+        [fields],
+    )
+    return created[0] if created else None
+
+
+def apply_feishu_changes(changes: list[dict[str, object]]) -> list[list[object]]:
+    client = feishu_client()
     if client is None:
         return []
 
+    inventory_index = feishu_inventory_index()
     logs: list[list[object]] = []
     for item in changes:
-        response = client.rpc(
-            "apply_inventory_change",
+        product = str(item["product"])
+        model = str(item["model"]) or NO_MODEL_TEXT
+        language = str(item["language"])
+        action = str(item["action"])
+        quantity = int(item["quantity"])
+        note = str(item["note"]).strip()
+        key = (product, model, language)
+        row = inventory_index.get(key)
+        if row is None:
+            raise RuntimeError(f"未找到物料组合: {product} / {model} / {language}")
+
+        fields = feishu_fields(row)
+        before_quantity = feishu_int(fields, "当前库存")
+        if action in INCREASE_ACTIONS:
+            after_quantity = before_quantity + quantity
+        elif action in DECREASE_ACTIONS:
+            after_quantity = before_quantity - quantity
+        else:
+            raise RuntimeError(f"不支持的操作: {action}")
+
+        material_record_id = feishu_record_id(row)
+        occurred_at = datetime.now()
+        client.update_record(
+            feishu_table_id("物料主数据"),
+            material_record_id,
+            {"当前库存": after_quantity},
+        )
+        create_feishu_ledger(
+            material_record_id,
+            action,
+            product,
+            model,
+            language,
+            quantity,
+            before_quantity,
+            after_quantity,
+            note,
+            occurred_at,
+        )
+        logs.append(
+            [
+                occurred_at.strftime("%Y-%m-%d %H:%M:%S"),
+                action,
+                product,
+                model,
+                language,
+                quantity,
+                before_quantity,
+                after_quantity,
+                note,
+            ]
+        )
+    return logs
+
+
+def find_feishu_transaction_by_id(record_id: str) -> dict | None:
+    for row in feishu_rows("库存流水"):
+        if feishu_record_id(row) == record_id:
+            return row
+    return None
+
+
+def load_feishu_transaction_records(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    limit: int = 1000,
+) -> list[dict]:
+    records: list[dict] = []
+    for row in feishu_rows("库存流水"):
+        fields = feishu_fields(row)
+        if not fields or is_blank_feishu_transaction(fields):
+            continue
+        occurred_text = feishu_datetime_text(fields.get("发生时间", ""))
+        occurred_at = parse_datetime(occurred_text)
+        if start_date and (occurred_at is None or occurred_at.date() < start_date):
+            continue
+        if end_date and (occurred_at is None or occurred_at.date() > end_date):
+            continue
+
+        before_quantity = feishu_int(fields, "变更前数量")
+        after_quantity = feishu_int(fields, "变更后数量")
+        records.append(
             {
-                "p_action": str(item["action"]),
-                "p_category": str(item["product"]),
-                "p_model": str(item["model"]) or NO_MODEL_TEXT,
-                "p_language": str(item["language"]),
-                "p_quantity": int(item["quantity"]),
-                "p_note": str(item["note"]).strip(),
-            },
-        ).execute()
-        result = (response.data or [{}])[0]
-        logs.append(
-            [
-                result.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                result.get("action", item["action"]),
-                result.get("category", item["product"]),
-                result.get("model") or NO_MODEL_TEXT,
-                result.get("language", item["language"]),
-                int(result.get("quantity", item["quantity"]) or 0),
-                int(result.get("before_quantity", 0) or 0),
-                int(result.get("after_quantity", 0) or 0),
-                result.get("note", item["note"]) or "",
-            ]
+                "record_id": feishu_record_id(row),
+                "created_at": occurred_text,
+                "created_sort": occurred_at or datetime.min,
+                "status": feishu_transaction_status(fields),
+                "action": feishu_text(fields, "流水类型"),
+                "category": feishu_text(fields, "物料品类"),
+                "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+                "language": feishu_text(fields, "语种"),
+                "quantity": feishu_int(fields, "数量", abs(after_quantity - before_quantity)),
+                "before_quantity": before_quantity,
+                "after_quantity": after_quantity,
+                "delta": feishu_transaction_delta(fields),
+                "note": feishu_text(fields, "备注"),
+                "reversed_at": feishu_datetime_text(fields.get("撤回时间", "")),
+                "reversal_of": feishu_text(fields, "原流水ID"),
+                "material_record_id": (feishu_link_ids(fields, "物料编码") or [""])[0],
+            }
         )
-    return logs
+    records.sort(key=lambda item: item["created_sort"], reverse=True)
+    return records[:limit]
 
 
-def rpc_rows_to_transaction_logs(rows: list[dict]) -> list[list[object]]:
-    logs: list[list[object]] = []
-    for row in rows:
-        logs.append(
-            [
-                row.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                row.get("action", ""),
-                row.get("category", ""),
-                row.get("model") or NO_MODEL_TEXT,
-                row.get("language", ""),
-                int(row.get("quantity", 0) or 0),
-                int(row.get("before_quantity", 0) or 0),
-                int(row.get("after_quantity", 0) or 0),
-                row.get("note", "") or "",
-            ]
+def load_feishu_inventory_records() -> list[dict]:
+    records: list[dict] = []
+    for row in feishu_material_rows():
+        fields = feishu_fields(row)
+        if not fields:
+            continue
+        material_code = feishu_text(fields, "物料编码")
+        category = feishu_text(fields, "物料品类")
+        if not material_code or not category:
+            continue
+        quantity = feishu_int(fields, "当前库存")
+        unit_price = feishu_float(fields, "单价")
+        records.append(
+            {
+                "record_id": feishu_record_id(row),
+                "material_code": material_code,
+                "category": category,
+                "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+                "language": feishu_text(fields, "语种"),
+                "quantity": quantity,
+                "unit_price": unit_price,
+                "total_value": quantity * unit_price,
+                "remark": feishu_text(fields, "备注"),
+                "customs_code": feishu_text(fields, "海关编码"),
+            }
         )
-    return logs
+    records.sort(key=lambda item: (item["category"], item["model"], item["language"], item["material_code"]))
+    return records
 
 
-def load_supabase_transaction_records(
-    start_date: date | None = None,
-    end_date: date | None = None,
-    limit: int = 1000,
-) -> list[dict]:
-    client = supabase_client()
+def load_feishu_category_records() -> list[dict]:
+    records: list[dict] = []
+    for row in feishu_category_rows():
+        fields = feishu_fields(row)
+        product = feishu_text(fields, "物料品类")
+        if not product:
+            continue
+        records.append(
+            {
+                "record_id": feishu_record_id(row),
+                "category": product,
+                "no_model": feishu_text(fields, "是否无需型号") == "是",
+                "status": feishu_text(fields, "启用状态"),
+                "created_at": feishu_text(fields, "创建时间"),
+                "remark": feishu_text(fields, "备注"),
+            }
+        )
+    records.sort(key=lambda item: item["category"])
+    return records
+
+
+def count_feishu_item_transactions(
+    material_record_id: str,
+    product: str,
+    model: str,
+    language: str,
+) -> int:
+    count = 0
+    for row in feishu_rows("库存流水"):
+        fields = feishu_fields(row)
+        if not fields or is_blank_feishu_transaction(fields):
+            continue
+        linked_ids = feishu_link_ids(fields, "物料编码")
+        if material_record_id and material_record_id in linked_ids:
+            count += 1
+            continue
+        if (
+            feishu_text(fields, "物料品类") == product
+            and (feishu_text(fields, "产品型号") or NO_MODEL_TEXT) == (model or NO_MODEL_TEXT)
+            and feishu_text(fields, "语种") == language
+        ):
+            count += 1
+    return count
+
+
+def count_feishu_category_transactions(product: str) -> int:
+    count = 0
+    for row in feishu_rows("库存流水"):
+        fields = feishu_fields(row)
+        if not fields or is_blank_feishu_transaction(fields):
+            continue
+        if feishu_text(fields, "物料品类") == product:
+            count += 1
+    return count
+
+
+def get_or_create_feishu_category_record(product: str, no_model: bool) -> dict:
+    client = feishu_client()
     if client is None:
-        return []
-    query = client.table("inventory_transactions").select(
-        "id,created_at,action,category,model,language,quantity,before_quantity,after_quantity,note,reversed_at,reversal_of"
+        raise RuntimeError("飞书客户端未初始化。")
+    existing = find_feishu_category_record(product)
+    if existing is not None:
+        return existing
+    created = client.batch_create_records(
+        feishu_table_id("物料品类"),
+        [
+            {
+                "物料品类": product,
+                "是否无需型号": "是" if no_model else "否",
+                "启用状态": "启用",
+                "库存行数": 0,
+                "产品型号数量": 0,
+                "语种数量": 0,
+                "备注": "",
+            }
+        ],
     )
-    if start_date:
-        query = query.gte("created_at", day_start(start_date))
-    if end_date:
-        query = query.lte("created_at", day_end(end_date))
-    response = query.order("created_at", desc=True).limit(limit).execute()
-    return response.data or []
+    if not created:
+        raise RuntimeError(f"创建物料品类失败: {product}")
+    return created[0]
 
 
-def load_supabase_inventory_records(
-    start_date: date | None = None,
-    end_date: date | None = None,
-    limit: int = 2000,
-) -> list[dict]:
-    client = supabase_client()
+def revert_feishu_transaction(transaction_record_id: str, note: str) -> list[list[object]]:
+    client = feishu_client()
     if client is None:
         return []
-    query = client.table("inventory_items").select("*")
-    if start_date:
-        query = query.gte("created_at", day_start(start_date))
-    if end_date:
-        query = query.lte("created_at", day_end(end_date))
-    response = query.order("created_at", desc=True).limit(limit).execute()
-    return response.data or []
+
+    transaction_row = find_feishu_transaction_by_id(transaction_record_id)
+    if transaction_row is None:
+        raise RuntimeError("未找到要撤回的库存流水。")
+    transaction_fields = feishu_fields(transaction_row)
+    if feishu_transaction_status(transaction_fields) != "有效":
+        raise RuntimeError("只能撤回状态为“有效”的库存流水。")
+
+    material_row = resolve_feishu_material_from_transaction(transaction_row)
+    material_record_id = feishu_record_id(material_row)
+    material_fields = feishu_fields(material_row)
+    product = feishu_text(transaction_fields, "物料品类") or feishu_text(material_fields, "物料品类")
+    model = feishu_text(transaction_fields, "产品型号") or feishu_text(material_fields, "产品型号") or NO_MODEL_TEXT
+    language = feishu_text(transaction_fields, "语种") or feishu_text(material_fields, "语种")
+    current_quantity = feishu_int(material_fields, "当前库存")
+    original_delta = feishu_transaction_delta(transaction_fields)
+    after_quantity = current_quantity - original_delta
+    occurred_at = datetime.now()
+    reversal_note = f"撤回流水 {transaction_record_id}"
+    if note.strip():
+        reversal_note += f"；{note.strip()}"
+
+    client.update_record(
+        feishu_table_id("物料主数据"),
+        material_record_id,
+        {"当前库存": after_quantity},
+    )
+    client.update_record(
+        feishu_table_id("库存流水"),
+        transaction_record_id,
+        {
+            "操作状态": "已撤回",
+            "撤回时间": feishu_timestamp(occurred_at),
+            "备注": append_admin_note(feishu_text(transaction_fields, "备注"), "撤回备注", note),
+        },
+    )
+    create_feishu_ledger(
+        material_record_id,
+        "撤回",
+        product,
+        model,
+        language,
+        abs(original_delta),
+        current_quantity,
+        after_quantity,
+        reversal_note,
+        occurred_at,
+        status="冲销记录",
+        original_ledger_id=transaction_record_id,
+    )
+    return [
+        [
+            occurred_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "撤回",
+            product,
+            model,
+            language,
+            abs(original_delta),
+            current_quantity,
+            after_quantity,
+            reversal_note,
+        ]
+    ]
 
 
-def load_supabase_category_records(
-    start_date: date | None = None,
-    end_date: date | None = None,
-    limit: int = 1000,
-) -> list[dict]:
-    client = supabase_client()
-    if client is None:
-        return []
-    query = client.table("material_categories").select("id,category,no_model,created_at")
-    if start_date:
-        query = query.gte("created_at", day_start(start_date))
-    if end_date:
-        query = query.lte("created_at", day_end(end_date))
-    response = query.order("created_at", desc=True).limit(limit).execute()
-    return response.data or []
-
-
-def revert_supabase_transaction(transaction_id: int, note: str) -> list[list[object]]:
-    client = supabase_client()
-    if client is None:
-        return []
-    response = client.rpc(
-        "revert_inventory_transaction",
-        {"p_transaction_id": int(transaction_id), "p_note": note.strip()},
-    ).execute()
-    return rpc_rows_to_transaction_logs(response.data or [])
-
-
-def replace_supabase_transaction(
-    transaction_id: int,
+def replace_feishu_transaction(
+    transaction_record_id: str,
     action: str,
     product: str,
     model: str,
@@ -915,104 +1099,165 @@ def replace_supabase_transaction(
     quantity: int,
     note: str,
 ) -> list[list[object]]:
-    client = supabase_client()
+    logs = revert_feishu_transaction(transaction_record_id, f"修正原记录。{note}".strip())
+    logs.extend(
+        apply_feishu_changes(
+            [
+                {
+                    "action": action,
+                    "product": product,
+                    "model": model,
+                    "language": language,
+                    "quantity": int(quantity),
+                    "note": note,
+                }
+            ]
+        )
+    )
+    return logs
+
+
+def delete_feishu_inventory_item(record_id: str) -> None:
+    client = feishu_client()
     if client is None:
-        return []
-    response = client.rpc(
-        "replace_inventory_transaction",
-        {
-            "p_transaction_id": int(transaction_id),
-            "p_action": action,
-            "p_category": product,
-            "p_model": model or NO_MODEL_TEXT,
-            "p_language": language,
-            "p_quantity": int(quantity),
-            "p_note": note.strip(),
-        },
-    ).execute()
-    return rpc_rows_to_transaction_logs(response.data or [])
+        return
+    client.delete_record(feishu_table_id("物料主数据"), record_id)
 
 
-def update_supabase_inventory_item(
-    item_id: int,
+def update_feishu_inventory_item(
+    record_id: str,
     material_code: str,
     product: str,
     model: str,
     language: str,
+    unit_price: float,
+    remark: str,
+    customs_code: str,
 ) -> None:
-    client = supabase_client()
+    client = feishu_client()
     if client is None:
         return
-    product = product.strip()
     model = model.strip() or NO_MODEL_TEXT
-    language = language.strip()
-    client.table("inventory_items").update(
+    category_record = get_or_create_feishu_category_record(product.strip(), model == NO_MODEL_TEXT)
+    category_record_id = feishu_record_id(category_record)
+    client.update_record(
+        feishu_table_id("物料主数据"),
+        record_id,
         {
-            "material_code": material_code.strip(),
-            "category": product,
-            "model": model,
-            "language": language,
-            "updated_at": datetime.now().isoformat(),
-        }
-    ).eq("id", int(item_id)).execute()
-    save_supabase_category(product, model == NO_MODEL_TEXT)
-
-
-def count_supabase_item_transactions(product: str, model: str, language: str) -> int:
-    client = supabase_client()
-    if client is None:
-        return 0
-    response = (
-        client.table("inventory_transactions")
-        .select("id", count="exact")
-        .eq("category", product)
-        .eq("model", model or NO_MODEL_TEXT)
-        .eq("language", language)
-        .limit(1)
-        .execute()
+            "物料编码": material_code.strip(),
+            "物料品类": product.strip(),
+            "产品型号": model,
+            "语种": language.strip(),
+            "单价": float(unit_price or 0),
+            "备注": remark.strip(),
+            "海关编码": customs_code.strip(),
+            "品类关联": [category_record_id] if category_record_id else [],
+        },
     )
-    return int(response.count or 0)
 
 
-def delete_supabase_inventory_item(item_id: int) -> None:
-    client = supabase_client()
+def delete_feishu_category(product: str, category_record_id: str) -> None:
+    client = feishu_client()
     if client is None:
         return
-    client.table("inventory_items").delete().eq("id", int(item_id)).execute()
+    for row in feishu_material_rows():
+        if feishu_text(feishu_fields(row), "物料品类") == product:
+            client.delete_record(feishu_table_id("物料主数据"), feishu_record_id(row))
+    client.delete_record(feishu_table_id("物料品类"), category_record_id)
 
 
-def count_supabase_category_transactions(product: str) -> int:
-    client = supabase_client()
-    if client is None:
-        return 0
-    response = (
-        client.table("inventory_transactions")
-        .select("id", count="exact")
-        .eq("category", product)
-        .limit(1)
-        .execute()
-    )
-    return int(response.count or 0)
-
-
-def delete_supabase_category(product: str) -> None:
-    client = supabase_client()
+def update_feishu_category(old_product: str, new_product: str, no_model: bool, category_record_id: str) -> None:
+    client = feishu_client()
     if client is None:
         return
-    client.table("inventory_items").delete().eq("category", product).execute()
-    client.table("material_categories").delete().eq("category", product).execute()
-
-
-def update_supabase_category(old_product: str, new_product: str, no_model: bool) -> None:
-    client = supabase_client()
-    if client is None:
-        return
-    old_product = old_product.strip()
     new_product = new_product.strip()
-    client.table("inventory_items").update({"category": new_product}).eq("category", old_product).execute()
-    client.table("material_categories").update(
-        {"category": new_product, "no_model": bool(no_model)}
-    ).eq("category", old_product).execute()
+    client.update_record(
+        feishu_table_id("物料品类"),
+        category_record_id,
+        {
+            "物料品类": new_product,
+            "是否无需型号": "是" if no_model else "否",
+        },
+    )
+    for row in feishu_material_rows():
+        fields = feishu_fields(row)
+        if feishu_text(fields, "物料品类") != old_product:
+            continue
+        update_fields: dict[str, object] = {
+            "物料品类": new_product,
+            "品类关联": [category_record_id],
+        }
+        if no_model:
+            update_fields["产品型号"] = NO_MODEL_TEXT
+        client.update_record(feishu_table_id("物料主数据"), feishu_record_id(row), update_fields)
+
+
+def find_feishu_category_record(product: str) -> dict | None:
+    for row in feishu_rows("物料品类"):
+        if feishu_text(feishu_fields(row), "物料品类") == product:
+            return row
+    return None
+
+
+def add_feishu_material_category_payload(product: str, no_model: bool, df: pd.DataFrame) -> int:
+    client = feishu_client()
+    if client is None:
+        return 0
+
+    category_record = find_feishu_category_record(product)
+    if category_record is None:
+        models = unique_preserve(list(df[MODEL_COL].astype(str)))
+        languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
+        created = client.batch_create_records(
+            feishu_table_id("物料品类"),
+            [
+                {
+                    "物料品类": product,
+                    "是否无需型号": "是" if no_model else "否",
+                    "启用状态": "启用",
+                    "库存行数": len(df),
+                    "产品型号数量": len(models),
+                    "语种数量": len(languages),
+                    "备注": "",
+                }
+            ],
+        )
+        category_record_id = str((created[0] if created else {}).get("record_id", ""))
+    else:
+        category_record_id = feishu_record_id(category_record)
+
+    records: list[dict[str, object]] = []
+    for row in df[INVENTORY_HEADERS].itertuples(index=False):
+        records.append(
+            {
+                "物料编码": str(row[0]),
+                "物料品类": str(row[1]),
+                "产品型号": str(row[2]) or NO_MODEL_TEXT,
+                "语种": str(row[3]),
+                "当前库存": int(row[4]),
+                "备注": "",
+                "单价": float(row[5] or 0),
+                "品类关联": [category_record_id] if category_record_id else [],
+            }
+        )
+
+    inserted = 0
+    for start in range(0, len(records), 500):
+        created = client.batch_create_records(feishu_table_id("物料主数据"), records[start : start + 500])
+        inserted += len(created)
+    return inserted
+
+
+def load_options() -> dict:
+    return load_feishu_options()
+
+
+def load_inventory() -> pd.DataFrame:
+    return load_feishu_inventory()
+
+
+def load_transactions_dataframe() -> pd.DataFrame:
+    return load_feishu_transactions_dataframe()
 
 
 def next_material_id(df: pd.DataFrame) -> str:
@@ -1230,8 +1475,6 @@ def render_add_category_form() -> None:
             models=models,
             languages=languages,
             no_model=no_model,
-            selected_or_custom_models=unique_preserve(selected_models + custom_models),
-            selected_or_custom_languages=languages,
         )
 
 
@@ -1240,8 +1483,6 @@ def add_material_category(
     models: list[str],
     languages: list[str],
     no_model: bool,
-    selected_or_custom_models: list[str],
-    selected_or_custom_languages: list[str],
 ) -> None:
     product = product.strip()
     if not product:
@@ -1271,33 +1512,19 @@ def add_material_category(
             return
 
         new_df = pd.DataFrame(new_rows, columns=INVENTORY_HEADERS)
-        if supabase_configured():
-            client = supabase_client()
-            if client is None:
-                st.error("Supabase 未配置成功。")
-                return
+        if feishu_configured():
             try:
-                inserted_count = add_supabase_material_category_payload(product, no_model, new_df)
+                inserted_count = add_feishu_material_category_payload(product, no_model, new_df)
             except Exception as exc:
-                st.error("新增物料品类写入 Supabase 失败。请先在 SQL Editor 运行最新的 `supabase/upgrade_material_category_json.sql`。")
+                st.error(
+                    "新增物料品类写入飞书失败。请检查物料主数据里的“物料编码/物料品类/产品型号/语种”是否为单选字段；"
+                    "如是单选，需要先在飞书中补充新选项，或改为文本字段。"
+                )
                 st.exception(exc)
                 return
             if inserted_count <= 0:
                 st.warning("没有写入新的库存行，可能这些组合已经存在。")
                 return
-        else:
-            updated_df = pd.concat([df, new_df], ignore_index=True)
-            save_inventory(updated_df)
-
-            options["products"] = unique_preserve(options["products"] + [product])
-            if no_model:
-                options["no_model_products"] = unique_preserve(options["no_model_products"] + [product])
-            else:
-                options["models"] = unique_preserve(options["models"] + selected_or_custom_models)
-            options["languages"] = unique_preserve(options["languages"] + selected_or_custom_languages)
-            options["row_count"] = int(len(updated_df))
-            options["generated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            save_options(options)
 
     skipped_text = f"，跳过 {len(skipped)} 条已存在组合" if skipped else ""
     st.session_state["category_added_message"] = f"已新增物料品类“{product}”，生成 {len(new_rows)} 条库存行{skipped_text}。"
@@ -1353,71 +1580,48 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
     )
 
 
-def format_transaction_option(row: dict) -> str:
-    status = "已撤回" if row.get("reversed_at") else ("撤回记录" if row.get("reversal_of") else "有效")
-    return (
-        f"#{row.get('id')} | {row.get('created_at', '')} | {status} | "
-        f"{row.get('action', '')} | {row.get('category', '')} / {row.get('model') or NO_MODEL_TEXT} / "
-        f"{row.get('language', '')} | {row.get('before_quantity', 0)} -> {row.get('after_quantity', 0)}"
-    )
-
-
-def format_inventory_item_option(row: dict) -> str:
-    return (
-        f"{row.get('material_code', '')} | {row.get('category', '')} / "
-        f"{row.get('model') or NO_MODEL_TEXT} / {row.get('language', '')} | "
-        f"库存 {int(row.get('quantity') or 0)}"
-    )
-
-
 def render_transaction_admin() -> None:
     st.subheader("库存提交记录修改与撤回")
-    if not supabase_configured():
-        st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请通过下载的流水表人工核对。")
-        return
+    message = st.session_state.pop("transaction_admin_message", "")
+    if message:
+        st.success(message)
 
     filter_col_a, filter_col_b, filter_col_c, filter_col_d = st.columns([1, 1, 1, 1])
     default_end = date.today()
     default_start = default_end - timedelta(days=30)
     start_date = filter_col_a.date_input("开始日期", value=default_start, key="tx_start_date")
     end_date = filter_col_b.date_input("结束日期", value=default_end, key="tx_end_date")
-    status_filter = filter_col_c.selectbox("记录状态", ["有效", "全部", "已撤回", "撤回记录"], key="tx_status_filter")
+    status_filter = filter_col_c.selectbox("记录状态", ["有效", "全部", "已撤回", "冲销记录"], key="tx_status_filter")
     limit = int(filter_col_d.number_input("最多显示", min_value=100, max_value=5000, value=1000, step=100, key="tx_limit"))
     if start_date > end_date:
         st.warning("开始日期不能晚于结束日期。")
         return
 
-    try:
-        records = load_supabase_transaction_records(start_date=start_date, end_date=end_date, limit=limit)
-    except Exception as exc:
-        st.error("Supabase 还没有升级修改/撤回功能。请先在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-        st.exception(exc)
-        return
-
+    records = load_feishu_transaction_records(start_date=start_date, end_date=end_date, limit=limit)
     if status_filter != "全部":
-        records = [row for row in records if transaction_status(row) == status_filter]
-
+        records = [row for row in records if row["status"] == status_filter]
     if not records:
         st.info("暂无库存提交记录。")
         return
 
-    record_map = {int(row["id"]): row for row in records if row.get("id") is not None}
+    record_map = {row["record_id"]: row for row in records}
     table_df = pd.DataFrame(
         [
             {
                 "选择": False,
-                "ID": int(row.get("id")),
-                "时间": format_datetime(row.get("created_at")),
-                "状态": transaction_status(row),
-                "操作": row.get("action", ""),
-                "物料品类": row.get("category", ""),
-                "产品型号": row.get("model") or NO_MODEL_TEXT,
-                "语种": row.get("language", ""),
-                "数量": int(row.get("quantity") or 0),
-                "变更前": int(row.get("before_quantity") or 0),
-                "变更后": int(row.get("after_quantity") or 0),
-                "库存变化": int(row.get("after_quantity") or 0) - int(row.get("before_quantity") or 0),
-                "备注": row.get("note", "") or "",
+                "记录ID": row["record_id"],
+                "时间": row["created_at"],
+                "状态": row["status"],
+                "操作": row["action"],
+                "物料品类": row["category"],
+                "产品型号": row["model"],
+                "语种": row["language"],
+                "数量": row["quantity"],
+                "变更前": row["before_quantity"],
+                "变更后": row["after_quantity"],
+                "库存变化": row["delta"],
+                "原流水ID": row["reversal_of"],
+                "备注": row["note"],
             }
             for row in records
         ]
@@ -1437,9 +1641,9 @@ def render_transaction_admin() -> None:
         column_config={"选择": st.column_config.CheckboxColumn("选择")},
         key="tx_editor",
     )
-    selected_ids = selected_ids_from_editor(edited_df)
+    selected_ids = selected_values_from_editor(edited_df)
     selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
-    active_selected_ids = [int(row["id"]) for row in selected_records if transaction_status(row) == "有效"]
+    active_selected_ids = [row["record_id"] for row in selected_records if row["status"] == "有效"]
     inactive_count = len(selected_records) - len(active_selected_ids)
 
     action_col_a, action_col_b, action_col_c = st.columns([1.4, 1, 1])
@@ -1449,21 +1653,21 @@ def render_transaction_admin() -> None:
         if not active_selected_ids:
             st.warning("请先勾选至少一条有效提交记录。")
         elif inactive_count:
-            st.warning("选中记录包含已撤回或撤回记录，请取消这些记录后再操作。")
+            st.warning("选中记录包含已撤回或冲销记录，请取消这些记录后再操作。")
         elif not revert_confirmed:
             st.warning("请先勾选确认批量撤回。")
         else:
-            try:
-                logs: list[list[object]] = []
-                for transaction_id in active_selected_ids:
-                    logs.extend(revert_supabase_transaction(transaction_id, revert_note))
-                st.success(f"已撤回 {len(active_selected_ids)} 条提交记录。")
-                st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
-                st.cache_data.clear()
-                st.rerun()
-            except Exception as exc:
-                st.error("批量撤回失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-                st.exception(exc)
+            with DATA_LOCK:
+                try:
+                    for transaction_id in active_selected_ids:
+                        revert_feishu_transaction(transaction_id, revert_note)
+                except Exception as exc:
+                    st.error("批量撤回失败。请检查飞书应用是否有物料主数据和库存流水编辑权限。")
+                    st.exception(exc)
+                    return
+            st.session_state["transaction_admin_message"] = f"已撤回 {len(active_selected_ids)} 条提交记录。"
+            st.cache_data.clear()
+            st.rerun()
 
     if len(active_selected_ids) == 1:
         selected_id = active_selected_ids[0]
@@ -1471,15 +1675,15 @@ def render_transaction_admin() -> None:
         with st.expander("编辑选中提交", expanded=True):
             selection_context = build_inventory_selection_context()
             edit_col_a, edit_col_b, edit_col_c, edit_col_d, edit_col_e = st.columns([2, 1.3, 1.5, 1.1, 1])
-            products = unique_preserve([str(selected.get("category", ""))] + list(selection_context["products"]))
+            products = unique_preserve([str(selected["category"])] + list(selection_context["products"]))
             replace_product = edit_col_a.selectbox(
                 "物料品类",
                 products,
-                index=products.index(str(selected.get("category", ""))) if str(selected.get("category", "")) in products else 0,
+                index=products.index(str(selected["category"])) if str(selected["category"]) in products else 0,
                 key=f"replace_product_{selected_id}",
             )
             is_no_model_product, scoped_models = product_model_state(replace_product, selection_context)
-            old_model = str(selected.get("model") or NO_MODEL_TEXT)
+            old_model = str(selected["model"] or NO_MODEL_TEXT)
             if is_no_model_product:
                 edit_col_b.text_input("产品型号", value=NO_MODEL_TEXT, disabled=True, key=f"replace_model_blank_{selected_id}")
                 replace_model = NO_MODEL_TEXT
@@ -1492,33 +1696,25 @@ def render_transaction_admin() -> None:
                     key=f"replace_model_{selected_id}",
                 )
             scoped_languages = product_language_options(replace_product, replace_model, selection_context)
-            languages = unique_preserve([str(selected.get("language", ""))] + scoped_languages)
+            languages = unique_preserve([str(selected["language"])] + scoped_languages)
             replace_language = edit_col_c.selectbox(
                 "语种",
                 languages,
-                index=languages.index(str(selected.get("language", ""))) if str(selected.get("language", "")) in languages else 0,
+                index=languages.index(str(selected["language"])) if str(selected["language"]) in languages else 0,
                 key=f"replace_language_{selected_id}",
             )
-            actions = ACTION_OPTIONS
-            old_action = str(selected.get("action", ACTION_RECEIVE))
-            if old_action in DECREASE_ACTIONS or old_action == "盘点设为":
-                default_action = ACTION_RECEIVE
-            elif old_action in INCREASE_ACTIONS:
-                default_action = ACTION_PURCHASE
-            else:
-                default_action = ACTION_RECEIVE
+            default_action = ACTION_PURCHASE if int(selected["delta"]) > 0 else ACTION_RECEIVE
             replace_action = edit_col_d.selectbox(
                 "操作",
-                actions,
-                index=actions.index(default_action),
+                ACTION_OPTIONS,
+                index=ACTION_OPTIONS.index(default_action),
                 key=f"replace_action_{selected_id}",
             )
-            replace_default_quantity = max(int(selected.get("quantity") or 0), 0)
             replace_quantity = edit_col_e.number_input(
                 "数量",
-                min_value=0,
+                min_value=1,
                 max_value=1_000_000,
-                value=replace_default_quantity,
+                value=max(int(selected["quantity"] or 1), 1),
                 step=1,
                 key=f"replace_quantity_{selected_id}_{replace_action}",
             )
@@ -1528,23 +1724,24 @@ def render_transaction_admin() -> None:
                 if not replace_confirmed:
                     st.warning("请先勾选确认修正。")
                 else:
-                    try:
-                        logs = replace_supabase_transaction(
-                            selected_id,
-                            replace_action,
-                            replace_product,
-                            replace_model,
-                            replace_language,
-                            int(replace_quantity),
-                            replace_note,
-                        )
-                        st.success("已撤回原提交，并保存新的修正提交。")
-                        st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
-                        st.cache_data.clear()
-                        st.rerun()
-                    except Exception as exc:
-                        st.error("修正失败。请确认已经运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-                        st.exception(exc)
+                    with DATA_LOCK:
+                        try:
+                            replace_feishu_transaction(
+                                selected_id,
+                                replace_action,
+                                replace_product,
+                                replace_model,
+                                replace_language,
+                                int(replace_quantity),
+                                replace_note,
+                            )
+                        except Exception as exc:
+                            st.error("修正失败。请检查选中物料是否存在、飞书字段类型是否允许写入。")
+                            st.exception(exc)
+                            return
+                    st.session_state["transaction_admin_message"] = "已撤回原提交，并保存新的修正提交。"
+                    st.cache_data.clear()
+                    st.rerun()
     elif len(selected_ids) > 1:
         st.info("已选择多条记录，可批量撤回；如需编辑，请只勾选一条有效记录。")
     else:
@@ -1553,43 +1750,31 @@ def render_transaction_admin() -> None:
 
 def render_material_data_admin() -> None:
     st.subheader("库存行修改与删除")
-    if not supabase_configured():
-        st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请直接维护本地库存文件。")
-        return
+    message = st.session_state.pop("material_admin_message", "")
+    if message:
+        st.success(message)
 
-    filter_col_a, filter_col_b, filter_col_c = st.columns([1, 1, 2])
-    default_end = date.today()
-    default_start = default_end - timedelta(days=90)
-    start_date = filter_col_a.date_input("创建开始日期", value=default_start, key="item_start_date")
-    end_date = filter_col_b.date_input("创建结束日期", value=default_end, key="item_end_date")
-    search_text = filter_col_c.text_input("搜索库存行", key="item_search_text", placeholder="物料编码 / 品类 / 型号 / 语种")
-    if start_date > end_date:
-        st.warning("开始日期不能晚于结束日期。")
-        return
-
-    try:
-        records = load_supabase_inventory_records(start_date=start_date, end_date=end_date)
-    except Exception as exc:
-        st.error("读取物料行失败。请检查 Supabase 连接。")
-        st.exception(exc)
-        return
+    search_text = st.text_input("搜索库存行", key="item_search_text", placeholder="物料编码 / 品类 / 型号 / 语种")
+    records = load_feishu_inventory_records()
     if not records:
         st.info("暂无物料行。")
         return
 
-    record_map = {int(row["id"]): row for row in records if row.get("id") is not None}
+    record_map = {row["record_id"]: row for row in records}
     table_df = pd.DataFrame(
         [
             {
                 "选择": False,
-                "ID": int(row.get("id")),
-                "创建时间": format_datetime(row.get("created_at")),
-                "更新时间": format_datetime(row.get("updated_at")),
-                "物料编码": row.get("material_code", ""),
-                "物料品类": row.get("category", ""),
-                "产品型号": row.get("model") or NO_MODEL_TEXT,
-                "语种": row.get("language", ""),
-                "库存数量": int(row.get("quantity") or 0),
+                "记录ID": row["record_id"],
+                "物料编码": row["material_code"],
+                "物料品类": row["category"],
+                "产品型号": row["model"],
+                "语种": row["language"],
+                "库存数量": row["quantity"],
+                "单价": row["unit_price"],
+                "总价值": row["total_value"],
+                "备注": row["remark"],
+                "海关编码": row["customs_code"],
             }
             for row in records
         ]
@@ -1618,7 +1803,7 @@ def render_material_data_admin() -> None:
         column_config={"选择": st.column_config.CheckboxColumn("选择")},
         key="item_editor",
     )
-    selected_ids = selected_ids_from_editor(edited_df)
+    selected_ids = selected_values_from_editor(edited_df)
     selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
 
     delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
@@ -1632,35 +1817,33 @@ def render_material_data_admin() -> None:
         else:
             blocked: list[str] = []
             for row in selected_records:
-                product = str(row.get("category", ""))
-                model = str(row.get("model") or NO_MODEL_TEXT)
-                language = str(row.get("language", ""))
-                quantity = int(row.get("quantity") or 0)
-                tx_count = count_supabase_item_transactions(product, model, language)
-                if quantity != 0 or tx_count > 0:
-                    blocked.append(f"{row.get('material_code', '')}（库存 {quantity}，流水 {tx_count}）")
+                tx_count = count_feishu_item_transactions(row["record_id"], row["category"], row["model"], row["language"])
+                if int(row["quantity"] or 0) != 0 or tx_count > 0:
+                    blocked.append(f"{row['material_code']}（库存 {row['quantity']}，流水 {tx_count}）")
             if blocked:
                 st.error("以下库存行不能删除：" + "；".join(blocked[:8]))
             else:
-                try:
-                    for row in selected_records:
-                        delete_supabase_inventory_item(int(row["id"]))
-                    st.success(f"已删除 {len(selected_records)} 条库存行。")
-                    st.cache_data.clear()
-                    st.rerun()
-                except Exception as exc:
-                    st.error("批量删除库存行失败。")
-                    st.exception(exc)
+                with DATA_LOCK:
+                    try:
+                        for row in selected_records:
+                            delete_feishu_inventory_item(row["record_id"])
+                    except Exception as exc:
+                        st.error("批量删除库存行失败。")
+                        st.exception(exc)
+                        return
+                st.session_state["material_admin_message"] = f"已删除 {len(selected_records)} 条库存行。"
+                st.cache_data.clear()
+                st.rerun()
 
     if len(selected_records) == 1:
         item = selected_records[0]
-        selected_item_id = int(item["id"])
-        current_product = str(item.get("category", ""))
-        current_model = str(item.get("model") or NO_MODEL_TEXT)
-        current_language = str(item.get("language", ""))
+        selected_item_id = item["record_id"]
+        current_product = str(item["category"])
+        current_model = str(item["model"] or NO_MODEL_TEXT)
+        current_language = str(item["language"])
         with st.expander("编辑选中库存行", expanded=True):
             edit_col_a, edit_col_b, edit_col_c, edit_col_d = st.columns([1.2, 2, 1.3, 1.4])
-            material_code = edit_col_a.text_input("物料编码", value=str(item.get("material_code", "")), key=f"edit_material_code_{selected_item_id}")
+            material_code = edit_col_a.text_input("物料编码", value=str(item["material_code"]), key=f"edit_material_code_{selected_item_id}")
             product = edit_col_b.text_input("物料品类", value=current_product, key=f"edit_material_product_{selected_item_id}")
             no_model = edit_col_c.checkbox("无需型号", value=current_model == NO_MODEL_TEXT, key=f"edit_material_no_model_{selected_item_id}")
             if no_model:
@@ -1669,20 +1852,46 @@ def render_material_data_admin() -> None:
             else:
                 model = edit_col_d.text_input("产品型号", value=current_model, key=f"edit_material_model_{selected_item_id}")
             language = st.text_input("语种", value=current_language, key=f"edit_material_language_{selected_item_id}")
+            meta_col_a, meta_col_b, meta_col_c = st.columns([1, 1.2, 2])
+            unit_price = meta_col_a.number_input(
+                "单价",
+                min_value=0.0,
+                value=float(item["unit_price"] or 0),
+                step=0.01,
+                key=f"edit_material_price_{selected_item_id}",
+            )
+            customs_code = meta_col_b.text_input("海关编码", value=str(item["customs_code"]), key=f"edit_material_customs_{selected_item_id}")
+            remark = meta_col_c.text_input("备注", value=str(item["remark"]), key=f"edit_material_remark_{selected_item_id}")
             if st.button("保存选中库存行修改", type="primary", width="stretch", key=f"save_inventory_item_edit_{selected_item_id}"):
+                tx_count = count_feishu_item_transactions(selected_item_id, current_product, current_model, current_language)
                 if not material_code.strip() or not product.strip() or not language.strip():
                     st.error("物料编码、物料品类和语种不能为空。")
-                elif count_supabase_item_transactions(current_product, current_model, current_language) > 0:
+                elif tx_count > 0:
                     st.error("该库存行已经有流水记录。为保证历史可追溯，请先撤回相关库存提交后再修改行信息。")
+                elif find_feishu_material_by_code(material_code, exclude_record_id=selected_item_id) is not None:
+                    st.error("新的物料编码已经存在。")
+                elif find_feishu_material_duplicate(product, model, language, exclude_record_id=selected_item_id) is not None:
+                    st.error("新的“品类 + 型号 + 语种”组合已经存在。")
                 else:
-                    try:
-                        update_supabase_inventory_item(selected_item_id, material_code, product, model, language)
-                        st.success("库存行信息已修改。")
-                        st.cache_data.clear()
-                        st.rerun()
-                    except Exception as exc:
-                        st.error("修改失败，可能是物料编码或“品类+型号+语种”与现有行重复。")
-                        st.exception(exc)
+                    with DATA_LOCK:
+                        try:
+                            update_feishu_inventory_item(
+                                selected_item_id,
+                                material_code,
+                                product,
+                                model,
+                                language,
+                                float(unit_price),
+                                remark,
+                                customs_code,
+                            )
+                        except Exception as exc:
+                            st.error("修改失败。请检查飞书单选字段是否已有对应选项，或改为文本字段。")
+                            st.exception(exc)
+                            return
+                    st.session_state["material_admin_message"] = "库存行信息已修改。"
+                    st.cache_data.clear()
+                    st.rerun()
     elif len(selected_records) > 1:
         st.info("已选择多条库存行，可批量删除；如需编辑，请只勾选一条。")
     else:
@@ -1691,54 +1900,43 @@ def render_material_data_admin() -> None:
 
 def render_category_admin() -> None:
     st.subheader("物料品类修改与撤回")
-    if not supabase_configured():
-        st.info("该功能需要 Supabase 长期数据库。当前本地 Excel 模式下请直接维护本地库存文件。")
-        return
+    message = st.session_state.pop("category_admin_message", "")
+    if message:
+        st.success(message)
 
-    filter_col_a, filter_col_b = st.columns(2)
-    default_end = date.today()
-    default_start = default_end - timedelta(days=90)
-    start_date = filter_col_a.date_input("创建开始日期", value=default_start, key="category_start_date")
-    end_date = filter_col_b.date_input("创建结束日期", value=default_end, key="category_end_date")
-    if start_date > end_date:
-        st.warning("开始日期不能晚于结束日期。")
-        return
-
-    try:
-        categories = load_supabase_category_records(start_date=start_date, end_date=end_date)
-        all_categories = load_supabase_category_records(limit=5000)
-        inventory_df = load_inventory()
-    except Exception as exc:
-        st.error("读取物料品类失败。请检查 Supabase 连接。")
-        st.exception(exc)
-        return
+    categories = load_feishu_category_records()
+    inventory_records = load_feishu_inventory_records()
     if not categories:
         st.info("暂无物料品类。")
         return
 
-    existing_category_names = {str(row.get("category", "")) for row in all_categories}
     summary: dict[str, dict[str, int]] = {}
-    if not inventory_df.empty:
-        for product, group in inventory_df.groupby(PRODUCT_COL):
-            summary[str(product)] = {
-                "row_count": int(len(group)),
-                "nonzero_count": int((group[QTY_COL] != 0).sum()),
-                "quantity_sum": int(group[QTY_COL].sum()),
-                "real_model_count": int((group[MODEL_COL] != NO_MODEL_TEXT).sum()),
-            }
+    for item in inventory_records:
+        product = str(item["category"])
+        stats = summary.setdefault(
+            product,
+            {"row_count": 0, "nonzero_count": 0, "quantity_sum": 0, "real_model_count": 0},
+        )
+        stats["row_count"] += 1
+        stats["quantity_sum"] += int(item["quantity"] or 0)
+        if int(item["quantity"] or 0) != 0:
+            stats["nonzero_count"] += 1
+        if str(item["model"] or NO_MODEL_TEXT) != NO_MODEL_TEXT:
+            stats["real_model_count"] += 1
 
-    record_map = {int(row["id"]): row for row in categories if row.get("id") is not None}
+    record_map = {row["record_id"]: row for row in categories}
     table_df = pd.DataFrame(
         [
             {
                 "选择": False,
-                "ID": int(row.get("id")),
-                "创建时间": format_datetime(row.get("created_at")),
-                "物料品类": row.get("category", ""),
-                "无需型号": bool(row.get("no_model")),
-                "库存行数": summary.get(str(row.get("category", "")), {}).get("row_count", 0),
-                "非零库存行": summary.get(str(row.get("category", "")), {}).get("nonzero_count", 0),
-                "库存合计": summary.get(str(row.get("category", "")), {}).get("quantity_sum", 0),
+                "记录ID": row["record_id"],
+                "物料品类": row["category"],
+                "无需型号": bool(row["no_model"]),
+                "启用状态": row["status"],
+                "库存行数": summary.get(row["category"], {}).get("row_count", 0),
+                "非零库存行": summary.get(row["category"], {}).get("nonzero_count", 0),
+                "库存合计": summary.get(row["category"], {}).get("quantity_sum", 0),
+                "备注": row["remark"],
             }
             for row in categories
         ]
@@ -1757,7 +1955,7 @@ def render_category_admin() -> None:
         column_config={"选择": st.column_config.CheckboxColumn("选择")},
         key="category_editor",
     )
-    selected_ids = selected_ids_from_editor(edited_df)
+    selected_ids = selected_values_from_editor(edited_df)
     selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
 
     delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
@@ -1771,59 +1969,63 @@ def render_category_admin() -> None:
         else:
             blocked: list[str] = []
             for row in selected_records:
-                product = str(row.get("category", ""))
+                product = str(row["category"])
                 stats = summary.get(product, {"nonzero_count": 0})
-                tx_count = count_supabase_category_transactions(product)
+                tx_count = count_feishu_category_transactions(product)
                 if int(stats.get("nonzero_count", 0)) > 0 or tx_count > 0:
                     blocked.append(f"{product}（非零库存行 {stats.get('nonzero_count', 0)}，流水 {tx_count}）")
             if blocked:
                 st.error("以下品类不能撤回：" + "；".join(blocked[:8]))
             else:
-                try:
-                    for row in selected_records:
-                        delete_supabase_category(str(row.get("category", "")))
-                    st.success(f"已撤回 {len(selected_records)} 个物料品类。")
-                    st.cache_data.clear()
-                    st.rerun()
-                except Exception as exc:
-                    st.error("批量撤回物料品类失败。")
-                    st.exception(exc)
+                with DATA_LOCK:
+                    try:
+                        for row in selected_records:
+                            delete_feishu_category(str(row["category"]), str(row["record_id"]))
+                    except Exception as exc:
+                        st.error("批量撤回物料品类失败。")
+                        st.exception(exc)
+                        return
+                st.session_state["category_admin_message"] = f"已撤回 {len(selected_records)} 个物料品类。"
+                st.cache_data.clear()
+                st.rerun()
 
     if len(selected_records) == 1:
         category = selected_records[0]
-        category_id = int(category["id"])
-        old_product = str(category.get("category", ""))
+        category_id = str(category["record_id"])
+        old_product = str(category["category"])
         stats = summary.get(old_product, {"real_model_count": 0})
+        existing_category_names = {str(row["category"]) for row in categories if row["record_id"] != category_id}
+        inventory_category_names = {str(row["category"]) for row in inventory_records if str(row["category"]) != old_product}
         with st.expander("编辑选中物料品类", expanded=True):
             edit_col_a, edit_col_b = st.columns([2, 1])
             new_product = edit_col_a.text_input("物料品类名称", value=old_product, key=f"edit_category_name_{category_id}")
-            no_model = edit_col_b.checkbox("无需型号", value=bool(category.get("no_model")), key=f"edit_category_no_model_{category_id}")
+            no_model = edit_col_b.checkbox("无需型号", value=bool(category["no_model"]), key=f"edit_category_no_model_{category_id}")
             if st.button("保存选中品类修改", type="primary", width="stretch", key=f"save_category_edit_{category_id}"):
                 if not new_product.strip():
                     st.error("物料品类名称不能为空。")
                 elif no_model and int(stats.get("real_model_count", 0)) > 0:
                     st.error("该品类已有具体产品型号，不能直接改为无需型号。")
                 elif new_product.strip() != old_product and (
-                    new_product.strip() in existing_category_names
-                    or new_product.strip() in set(inventory_df[PRODUCT_COL].astype(str))
+                    new_product.strip() in existing_category_names or new_product.strip() in inventory_category_names
                 ):
                     st.error("新的物料品类名称已经存在。")
-                elif count_supabase_category_transactions(old_product) > 0:
+                elif count_feishu_category_transactions(old_product) > 0:
                     st.error("该品类已有流水记录。为保证历史可追溯，请先撤回相关库存提交后再修改品类。")
                 else:
-                    try:
-                        update_supabase_category(old_product, new_product, no_model)
-                        st.success("物料品类已修改。")
-                        st.cache_data.clear()
-                        st.rerun()
-                    except Exception as exc:
-                        st.error("修改物料品类失败，可能与现有品类重复。")
-                        st.exception(exc)
+                    with DATA_LOCK:
+                        try:
+                            update_feishu_category(old_product, new_product, no_model, category_id)
+                        except Exception as exc:
+                            st.error("修改物料品类失败。请检查飞书单选字段是否已有对应选项，或改为文本字段。")
+                            st.exception(exc)
+                            return
+                    st.session_state["category_admin_message"] = "物料品类已修改。"
+                    st.cache_data.clear()
+                    st.rerun()
     elif len(selected_records) > 1:
         st.info("已选择多个品类，可批量撤回；如需编辑，请只勾选一个。")
     else:
         st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
-
 
 def render_edit_revert_page() -> None:
     tx_tab, item_tab, category_tab = st.tabs(["提交记录", "库存行", "物料品类"])
@@ -1841,67 +2043,13 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
         st.warning("请至少填写一项数量大于 0 的物料。")
         return
 
-    if supabase_configured():
-        with DATA_LOCK:
-            try:
-                logs = apply_supabase_changes(valid_changes)
-            except Exception as exc:
-                error_text = str(exc)
-                if "42702" in error_text or "ambiguous" in error_text:
-                    st.error("Supabase 库存更新函数需要升级。请在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-                elif "inventory_items_quantity_check" in error_text or "violates check constraint" in error_text:
-                    st.error("Supabase 还没有放开负库存。请在 SQL Editor 运行 `supabase/upgrade_edit_revert_inventory.sql`。")
-                else:
-                    st.error("Supabase 库存更新失败。请确认已经运行 `supabase/schema.sql`，且 Secrets 配置正确。")
-                st.exception(exc)
-                return
-
-        st.success(f"已更新 {len(logs)} 项物料库存。")
-        st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
-        st.cache_data.clear()
-        return
-
     with DATA_LOCK:
-        df = load_inventory()
-        working = df.copy()
-        logs: list[list[object]] = []
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        for item in valid_changes:
-            product = str(item["product"])
-            model = str(item["model"])
-            language = str(item["language"])
-            action = str(item["action"])
-            quantity = int(item["quantity"])
-            note = str(item["note"]).strip()
-
-            mask = (
-                (working[PRODUCT_COL] == product)
-                & (working[MODEL_COL] == model)
-                & (working[LANGUAGE_COL] == language)
-            )
-            if not mask.any():
-                st.error(f"未找到物料组合: {product} / {model} / {language}")
-                return
-
-            row_index = working.index[mask][0]
-            before = int(working.at[row_index, QTY_COL])
-
-            if action in INCREASE_ACTIONS:
-                after = before + quantity
-            elif action in DECREASE_ACTIONS:
-                after = before - quantity
-            else:
-                st.error(f"不支持的操作: {action}")
-                return
-
-            working.at[row_index, QTY_COL] = after
-            working.at[row_index, VALUE_COL] = after * float(working.at[row_index, PRICE_COL])
-            working.at[row_index, UPDATED_COL] = now
-            logs.append([now, action, product, model, language, quantity, before, after, note])
-
-        save_inventory(working)
-        append_transactions(logs)
+        try:
+            logs = apply_feishu_changes(valid_changes)
+        except Exception as exc:
+            st.error("飞书多维表格库存更新失败。请检查应用是否有可编辑权限，关联字段和字段类型是否正确。")
+            st.exception(exc)
+            return
 
     st.success(f"已更新 {len(logs)} 项物料库存。")
     st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
@@ -1980,8 +2128,7 @@ def render_management_page() -> None:
 def main() -> None:
     st.set_page_config(page_title="物料库存管理", layout="wide")
     inject_global_styles()
-    stop_on_invalid_supabase_config()
-    ensure_data()
+    stop_on_invalid_feishu_config()
     render_sidebar_link()
     render_storage_diagnostics()
 

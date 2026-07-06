@@ -1,0 +1,185 @@
+{
+  "type": "feishu_apaas_data_object_import",
+  "schema_version": "1.0",
+  "generated_at": "2026-07-02",
+  "import_note": "字段类型为通用 aPaaS 建模表达。导入后如飞书要求字段类型枚举或关联对象 ID，请按导入提示重新绑定。",
+  "object": {
+    "api_name": "inventory_ledger",
+    "name": "库存流水",
+    "description": "库存唯一审计账本。撤回时新增反向流水，不删除原流水。",
+    "display_name_field": "ledger_no",
+    "fields": [
+      {
+        "order": 1,
+        "api_name": "ledger_no",
+        "name": "流水编号",
+        "type": "auto_number",
+        "required": true,
+        "unique": true,
+        "format": "TX-{yyyyMMdd}-{0000}"
+      },
+      {
+        "order": 2,
+        "api_name": "occurred_at",
+        "name": "发生时间",
+        "type": "datetime",
+        "required": true,
+        "unique": false
+      },
+      {
+        "order": 3,
+        "api_name": "ledger_type",
+        "name": "流水类型",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "销售领用出库",
+          "采购入库",
+          "盘点调整",
+          "撤回冲销"
+        ]
+      },
+      {
+        "order": 4,
+        "api_name": "material",
+        "name": "物料",
+        "type": "lookup",
+        "required": true,
+        "unique": false,
+        "target_object": "material_item"
+      },
+      {
+        "order": 5,
+        "api_name": "quantity_delta",
+        "name": "数量变化",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 6,
+        "api_name": "before_stock",
+        "name": "变更前库存",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 7,
+        "api_name": "after_stock",
+        "name": "变更后库存",
+        "type": "number",
+        "required": true,
+        "unique": false,
+        "precision": 0
+      },
+      {
+        "order": 8,
+        "api_name": "source_request",
+        "name": "关联申请单",
+        "type": "lookup",
+        "required": false,
+        "unique": false,
+        "target_object": "material_request"
+      },
+      {
+        "order": 9,
+        "api_name": "source_line",
+        "name": "关联申请明细",
+        "type": "lookup",
+        "required": false,
+        "unique": false,
+        "target_object": "material_request_line"
+      },
+      {
+        "order": 10,
+        "api_name": "idempotency_key",
+        "name": "幂等键",
+        "type": "text",
+        "required": true,
+        "unique": true
+      },
+      {
+        "order": 11,
+        "api_name": "operator",
+        "name": "操作人",
+        "type": "user",
+        "required": false,
+        "unique": false
+      },
+      {
+        "order": 12,
+        "api_name": "ledger_status",
+        "name": "操作状态",
+        "type": "single_select",
+        "required": true,
+        "unique": false,
+        "options": [
+          "有效",
+          "已撤回",
+          "冲销记录"
+        ]
+      },
+      {
+        "order": 13,
+        "api_name": "original_ledger",
+        "name": "原流水",
+        "type": "lookup",
+        "required": false,
+        "unique": false,
+        "target_object": "inventory_ledger"
+      },
+      {
+        "order": 14,
+        "api_name": "note",
+        "name": "备注",
+        "type": "long_text",
+        "required": false,
+        "unique": false
+      }
+    ],
+    "indexes": [
+      "material",
+      "occurred_at",
+      "source_request",
+      "source_line",
+      "idempotency_key"
+    ],
+    "relations": [],
+    "permissions": [
+      {
+        "role": "销售",
+        "permissions": [
+          "none"
+        ]
+      },
+      {
+        "role": "市场专员",
+        "permissions": [
+          "read_all",
+          "create_via_function"
+        ]
+      },
+      {
+        "role": "市场主管",
+        "permissions": [
+          "read_all",
+          "revert_via_function"
+        ]
+      },
+      {
+        "role": "管理员",
+        "permissions": [
+          "read",
+          "create",
+          "update",
+          "delete",
+          "import"
+        ]
+      }
+    ]
+  }
+}
