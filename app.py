@@ -1818,10 +1818,9 @@ def approval_auth_gate() -> bool:
 
 
 def render_sidebar_link() -> None:
-    st.sidebar.subheader("实时库存链接")
-    navigate_to_inventory("sidebar_open_inventory", "打开实时库存表")
+    st.sidebar.subheader("审批发放入口")
     navigate_to_approval("sidebar_open_approval", "打开审批发放页")
-    st.sidebar.caption("实时库存页和审批发放页各自只需要输入一次密码。部署后复制浏览器地址栏链接，即可分享给对应人员。")
+    st.sidebar.caption("审批发放页需要输入审批密码。部署后复制浏览器地址栏链接，即可分享给对应审批人。")
     st.sidebar.divider()
     st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
@@ -2821,11 +2820,7 @@ def render_inventory_view() -> None:
 
 def render_management_page() -> None:
     st.title("物料库存管理")
-    nav_col_a, nav_col_b = st.columns(2)
-    with nav_col_a:
-        navigate_to_inventory("management_open_inventory")
-    with nav_col_b:
-        navigate_to_approval("management_open_approval")
+    navigate_to_approval("management_open_approval")
     management_section = st.radio(
         "管理功能",
         ["库存登记", "新增物料品类", "修改与撤回"],
