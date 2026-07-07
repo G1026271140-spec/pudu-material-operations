@@ -2820,7 +2820,6 @@ def render_inventory_view() -> None:
 
 def render_management_page() -> None:
     st.title("物料库存管理")
-    navigate_to_approval("management_open_approval")
     management_section = st.radio(
         "管理功能",
         ["库存登记", "新增物料品类", "修改与撤回"],
