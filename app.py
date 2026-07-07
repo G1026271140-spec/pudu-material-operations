@@ -21,6 +21,17 @@ ACTION_PURCHASE = "物料采购（增加库存）"
 ACTION_OPTIONS = [ACTION_RECEIVE, ACTION_PURCHASE]
 DECREASE_ACTIONS = {ACTION_RECEIVE, "出库减少"}
 INCREASE_ACTIONS = {ACTION_PURCHASE, "入库增加"}
+REQUEST_TABLE_NAME = "物料申请单"
+REQUEST_LINE_TABLE_NAME = "申请明细"
+REQUEST_NO_PREFIX = "REQ"
+REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
+REQUEST_STATUS_PENDING = "待审批"
+REQUEST_STATUS_PARTIAL = "部分发放"
+REQUEST_STATUS_ISSUED = "已发放"
+REQUEST_LINE_STATUS_PENDING = "待审批"
+REQUEST_LINE_STATUS_PARTIAL = "部分发放"
+REQUEST_LINE_STATUS_ISSUED = "已发放"
+FREIGHT_PAYER_OPTIONS = ["", "申请部门承担", "市场部承担", "客户承担", "其他"]
 
 PRODUCT_COL = "物料品类(Material Category)"
 MODEL_COL = "产品型号(Product Model)"
@@ -136,6 +147,13 @@ def get_inventory_password() -> str:
         return DEFAULT_PASSWORD
 
 
+def get_approval_password() -> str:
+    try:
+        return str(st.secrets.get("APPROVAL_VIEW_PASSWORD", get_inventory_password()))
+    except (FileNotFoundError, KeyError, AttributeError):
+        return get_inventory_password()
+
+
 def get_secret_value(name: str, default: str = "") -> str:
     try:
         return str(st.secrets.get(name, default)).strip()
@@ -220,6 +238,72 @@ def feishu_table_id(table_name: str) -> str:
     if not table:
         raise RuntimeError(f"飞书多维表格缺少数据表：{table_name}")
     return str(table["table_id"])
+
+
+def feishu_table_fields(table_name: str) -> dict:
+    table = feishu_schema().get("tables", {}).get(table_name)
+    return dict((table or {}).get("fields") or {})
+
+
+def feishu_has_field(table_name: str, field_name: str) -> bool:
+    return field_name in feishu_table_fields(table_name)
+
+
+def first_feishu_field(table_name: str, candidates: list[str]) -> str:
+    fields = feishu_table_fields(table_name)
+    for field_name in candidates:
+        if field_name in fields:
+            return field_name
+    return candidates[0] if candidates else ""
+
+
+def filter_feishu_fields(table_name: str, fields: dict[str, object]) -> dict[str, object]:
+    table_fields = feishu_table_fields(table_name)
+    return {key: value for key, value in fields.items() if key in table_fields and value is not None}
+
+
+def feishu_field_type(table_name: str, field_name: str) -> object:
+    return feishu_table_fields(table_name).get(field_name, {}).get("type")
+
+
+def feishu_accepts_plain_value(table_name: str, field_name: str) -> bool:
+    field_type = feishu_field_type(table_name, field_name)
+    return field_type not in {11, 17, 18, 21, 23}
+
+
+def set_first_plain_field(
+    table_name: str,
+    fields: dict[str, object],
+    candidates: list[str],
+    value: object,
+) -> None:
+    if value in (None, ""):
+        return
+    for field_name in candidates:
+        if feishu_has_field(table_name, field_name) and feishu_accepts_plain_value(table_name, field_name):
+            fields[field_name] = value
+            return
+
+
+def feishu_create_record(table_name: str, fields: dict[str, object]) -> dict:
+    client = feishu_client()
+    if client is None:
+        return {}
+    writable_fields = filter_feishu_fields(table_name, fields)
+    if not writable_fields:
+        raise RuntimeError(f"{table_name} 没有可写入的匹配字段。")
+    created = client.batch_create_records(feishu_table_id(table_name), [writable_fields])
+    return created[0] if created else {}
+
+
+def feishu_update_record_fields(table_name: str, record_id: str, fields: dict[str, object]) -> dict:
+    client = feishu_client()
+    if client is None:
+        return {}
+    writable_fields = filter_feishu_fields(table_name, fields)
+    if not writable_fields:
+        return {}
+    return client.update_record(feishu_table_id(table_name), record_id, writable_fields)
 
 
 def storage_mode_label() -> str:
@@ -409,6 +493,12 @@ def navigate_to_inventory(key: str, label: str = "查看实时库存表") -> Non
         st.rerun()
 
 
+def navigate_to_approval(key: str, label: str = "打开审批发放页") -> None:
+    if st.button(label, key=key, width="stretch"):
+        st.query_params["view"] = "approval"
+        st.rerun()
+
+
 def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
     if st.button(label, key=key, width="stretch"):
         st.query_params.clear()
@@ -564,6 +654,29 @@ def feishu_link_ids(fields: dict, name: str) -> list[str]:
                 if isinstance(nested, list):
                     record_ids.extend(str(record_id) for record_id in nested if record_id)
     return unique_preserve(record_ids)
+
+
+def feishu_text_any(fields: dict, names: list[str], default: str = "") -> str:
+    for name in names:
+        value = feishu_text(fields, name, "")
+        if value:
+            return value
+    return default
+
+
+def feishu_int_any(fields: dict, names: list[str], default: int = 0) -> int:
+    for name in names:
+        if name in fields:
+            return feishu_int(fields, name, default)
+    return default
+
+
+def feishu_link_ids_any(fields: dict, names: list[str]) -> list[str]:
+    for name in names:
+        ids = feishu_link_ids(fields, name)
+        if ids:
+            return ids
+    return []
 
 
 def feishu_transaction_status(fields: dict) -> str:
@@ -808,6 +921,10 @@ def create_feishu_ledger(
     *,
     status: str = "有效",
     original_ledger_id: str = "",
+    source_request_id: str = "",
+    source_line_id: str = "",
+    source_request_no: str = "",
+    idempotency_key: str = "",
 ) -> dict | None:
     client = feishu_client()
     if client is None:
@@ -823,16 +940,20 @@ def create_feishu_ledger(
         "变更前数量": int(before_quantity),
         "变更后数量": int(after_quantity),
         "库存变化": int(after_quantity) - int(before_quantity),
-        "幂等键": f"streamlit:{uuid.uuid4().hex}",
+        "幂等键": idempotency_key or f"streamlit:{uuid.uuid4().hex}",
         "操作状态": status,
         "备注": note,
+        "关联申请单": [source_request_id] if source_request_id else None,
+        "关联申请明细": [source_line_id] if source_line_id else None,
+        "关联明细": [source_line_id] if source_line_id else None,
+        "关联申请单号": source_request_no or None,
     }
     if original_ledger_id:
         fields["原流水ID"] = original_ledger_id
 
     created = client.batch_create_records(
         feishu_table_id("库存流水"),
-        [fields],
+        [filter_feishu_fields("库存流水", fields)],
     )
     return created[0] if created else None
 
@@ -897,6 +1018,334 @@ def apply_feishu_changes(changes: list[dict[str, object]]) -> list[list[object]]
                 note,
             ]
         )
+    return logs
+
+
+def next_request_no() -> str:
+    today = datetime.now().strftime("%Y%m%d")
+    prefix = f"{REQUEST_NO_PREFIX}-{today}-"
+    max_number = 0
+    for row in feishu_rows(REQUEST_TABLE_NAME):
+        request_no = feishu_text(feishu_fields(row), "申请单号")
+        if request_no.startswith(prefix):
+            suffix = request_no.removeprefix(prefix)
+            if suffix.isdigit():
+                max_number = max(max_number, int(suffix))
+    return f"{prefix}{max_number + 1:03d}"
+
+
+def material_lookup_by_key() -> dict[tuple[str, str, str], dict]:
+    return feishu_inventory_index()
+
+
+def request_usage_summary(lines: list[dict[str, object]]) -> str:
+    usages = unique_preserve([str(item.get("usage", "")).strip() for item in lines])
+    return "；".join(usages)
+
+
+def request_note_text(request_payload: dict[str, object], attachment_note: str = "") -> str:
+    parts = [
+        ("客户名称", request_payload.get("customer_name")),
+        ("国家", request_payload.get("country")),
+        ("收件人信息", request_payload.get("recipient_info")),
+        ("运费承担者", request_payload.get("freight_payer")),
+        ("申请人", request_payload.get("requester")),
+        ("岗位", request_payload.get("position")),
+        ("相关附件", attachment_note),
+    ]
+    return "\n".join(f"{label}：{str(value).strip()}" for label, value in parts if str(value or "").strip())
+
+
+def submit_feishu_material_request(
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> tuple[str, int]:
+    valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
+    if not valid_lines:
+        raise RuntimeError("请至少填写一条数量大于 0 的物料明细。")
+
+    material_index = material_lookup_by_key()
+    seen_keys: set[tuple[str, str, str]] = set()
+    prepared_lines: list[dict[str, object]] = []
+    for item in valid_lines:
+        product = str(item.get("product", "")).strip()
+        model = str(item.get("model", "")).strip() or NO_MODEL_TEXT
+        language = str(item.get("language", "")).strip()
+        usage = str(item.get("usage", "")).strip()
+        quantity = int(item.get("quantity") or 0)
+        if not product or not model or not language:
+            raise RuntimeError("每条明细都需要填写物料品类、产品型号和语种。")
+        if not usage:
+            raise RuntimeError("每条明细都需要填写物料用途。")
+        key = (product, model, language)
+        if key in seen_keys:
+            raise RuntimeError(f"同一申请单内物料重复，请合并数量：{product} / {model} / {language}")
+        seen_keys.add(key)
+        material_row = material_index.get(key)
+        if material_row is None:
+            raise RuntimeError(f"未找到物料组合：{product} / {model} / {language}")
+        material_fields = feishu_fields(material_row)
+        prepared_lines.append(
+            {
+                "product": product,
+                "model": model,
+                "language": language,
+                "usage": usage,
+                "quantity": quantity,
+                "material_record_id": feishu_record_id(material_row),
+                "material_code": feishu_text(material_fields, "物料编码"),
+                "stock_snapshot": feishu_int(material_fields, "当前库存"),
+            }
+        )
+
+    request_no = next_request_no()
+    now = datetime.now()
+    request_fields: dict[str, object] = {
+        "申请单号": request_no,
+        "标题": request_payload.get("title") or REQUEST_FORM_TITLE,
+        "申请部门/区域": request_payload.get("department"),
+        "申请部门": request_payload.get("department"),
+        "申请部门|区域": request_payload.get("department"),
+        "客户名称": request_payload.get("customer_name"),
+        "国家": request_payload.get("country"),
+        "收件人信息": request_payload.get("recipient_info"),
+        "运费的承担者": request_payload.get("freight_payer"),
+        "运费承担者": request_payload.get("freight_payer"),
+        "业务类型": "物料领取",
+        "用途/活动": request_usage_summary(prepared_lines),
+        "用途|活动": request_usage_summary(prepared_lines),
+        "审批状态": REQUEST_STATUS_PENDING,
+        "提交时间": feishu_timestamp(now),
+        "备注": request_note_text(request_payload, str(request_payload.get("attachment_note") or "")),
+    }
+    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人", "申请人姓名"], request_payload.get("requester"))
+    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["岗位", "职位"], request_payload.get("position"))
+    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["附件说明", "相关附件说明"], request_payload.get("attachment_note"))
+
+    request_record = feishu_create_record(REQUEST_TABLE_NAME, request_fields)
+    request_record_id = feishu_record_id(request_record)
+    if not request_record_id:
+        raise RuntimeError("申请单创建成功但未返回记录 ID。")
+
+    line_records: list[dict[str, object]] = []
+    for index, item in enumerate(prepared_lines, start=1):
+        material_record_id = str(item["material_record_id"])
+        line_fields: dict[str, object] = {
+            "明细编号": f"{request_no}-{index:02d}",
+            "申请单号": request_no,
+            "物料品类": item["product"],
+            "产品型号": item["model"],
+            "语种": item["language"],
+            "申请数量": int(item["quantity"]),
+            "物料数量": int(item["quantity"]),
+            "物料用途": item["usage"],
+            "提交时库存快照": int(item["stock_snapshot"]),
+            "审批通过数量": int(item["quantity"]),
+            "实际发放数量": 0,
+            "明细状态": REQUEST_LINE_STATUS_PENDING,
+            "备注": item["usage"],
+        }
+        for request_field in ["所属申请单", "申请单"]:
+            if feishu_has_field(REQUEST_LINE_TABLE_NAME, request_field):
+                line_fields[request_field] = request_no if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, request_field) else [request_record_id]
+                break
+        for material_field in ["物料", "物料编码"]:
+            if feishu_has_field(REQUEST_LINE_TABLE_NAME, material_field):
+                line_fields[material_field] = (
+                    item["material_code"]
+                    if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, material_field)
+                    else [material_record_id]
+                )
+        line_records.append(filter_feishu_fields(REQUEST_LINE_TABLE_NAME, line_fields))
+
+    client = feishu_client()
+    if client is None:
+        return request_no, 0
+    for start in range(0, len(line_records), 500):
+        client.batch_create_records(feishu_table_id(REQUEST_LINE_TABLE_NAME), line_records[start : start + 500])
+    return request_no, len(line_records)
+
+
+def load_feishu_request_records() -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    for row in feishu_rows(REQUEST_TABLE_NAME):
+        fields = feishu_fields(row)
+        request_no = feishu_text(fields, "申请单号")
+        if not request_no:
+            continue
+        records.append(
+            {
+                "record_id": feishu_record_id(row),
+                "request_no": request_no,
+                "title": feishu_text(fields, "标题"),
+                "requester": feishu_text_any(fields, ["申请人", "申请人姓名"]),
+                "department": feishu_text_any(fields, ["申请部门/区域", "申请部门|区域", "申请部门"]),
+                "position": feishu_text_any(fields, ["岗位", "职位"]),
+                "customer_name": feishu_text(fields, "客户名称"),
+                "country": feishu_text(fields, "国家"),
+                "recipient_info": feishu_text(fields, "收件人信息"),
+                "freight_payer": feishu_text_any(fields, ["运费的承担者", "运费承担者"]),
+                "status": feishu_text(fields, "审批状态"),
+                "submitted_at": feishu_datetime_text(fields.get("提交时间", "")),
+                "approval_comment": feishu_text(fields, "审批意见"),
+            }
+        )
+    records.sort(key=lambda item: str(item["request_no"]), reverse=True)
+    return records
+
+
+def load_feishu_request_line_records() -> list[dict[str, object]]:
+    material_by_id = {feishu_record_id(row): row for row in feishu_material_rows()}
+    records: list[dict[str, object]] = []
+    for row in feishu_rows(REQUEST_LINE_TABLE_NAME):
+        fields = feishu_fields(row)
+        request_ids = feishu_link_ids_any(fields, ["所属申请单", "申请单"])
+        material_ids = feishu_link_ids_any(fields, ["物料", "物料编码"])
+        material_row = material_by_id.get(material_ids[0], {}) if material_ids else {}
+        material_fields = feishu_fields(material_row)
+        product = feishu_text(fields, "物料品类") or feishu_text(material_fields, "物料品类")
+        model = feishu_text(fields, "产品型号") or feishu_text(material_fields, "产品型号") or NO_MODEL_TEXT
+        language = feishu_text(fields, "语种") or feishu_text(material_fields, "语种")
+        quantity = feishu_int_any(fields, ["申请数量", "物料数量"])
+        if not product or not language or quantity <= 0:
+            continue
+        approved_qty = feishu_int(fields, "审批通过数量", quantity)
+        actual_qty = feishu_int(fields, "实际发放数量")
+        records.append(
+            {
+                "record_id": feishu_record_id(row),
+                "request_ids": request_ids,
+                "request_no": feishu_text_any(fields, ["申请单号", "所属申请单", "申请单"]),
+                "material_record_id": material_ids[0] if material_ids else "",
+                "product": product,
+                "model": model,
+                "language": language,
+                "quantity": quantity,
+                "usage": feishu_text_any(fields, ["物料用途", "备注"]),
+                "stock_snapshot": feishu_int(fields, "提交时库存快照"),
+                "approved_qty": approved_qty,
+                "actual_issue_qty": actual_qty,
+                "status": feishu_text(fields, "明细状态") or REQUEST_LINE_STATUS_PENDING,
+            }
+        )
+    return records
+
+
+def issue_request_lines(
+    request: dict[str, object],
+    edited_lines: list[dict[str, object]],
+    note: str,
+) -> list[list[object]]:
+    client = feishu_client()
+    if client is None:
+        return []
+    inventory_index = material_lookup_by_key()
+    logs: list[list[object]] = []
+    issued_line_ids: set[str] = set()
+    now = datetime.now()
+    request_record_id = str(request["record_id"])
+    request_no = str(request["request_no"])
+
+    for line in edited_lines:
+        actual_qty = int(line.get("actual_issue_qty") or 0)
+        requested_qty = int(line.get("quantity") or 0)
+        if actual_qty > requested_qty:
+            raise RuntimeError(f"{line['product']} / {line['model']} / {line['language']} 实际发放数量不能大于申请数量。")
+        if str(line.get("status")) == REQUEST_LINE_STATUS_ISSUED:
+            continue
+        previous_actual_qty = int(line.get("previous_actual_issue_qty") or 0)
+        issue_delta = actual_qty - previous_actual_qty
+        if issue_delta < 0:
+            raise RuntimeError(f"{line['product']} / {line['model']} / {line['language']} 实际发放数量不能小于已记录数量。")
+        if issue_delta <= 0:
+            continue
+
+        material_record_id = str(line.get("material_record_id") or "")
+        material_row = None
+        if material_record_id:
+            material_row = find_feishu_material_by_id(material_record_id)
+        if material_row is None:
+            material_row = inventory_index.get((str(line["product"]), str(line["model"]) or NO_MODEL_TEXT, str(line["language"])))
+        if material_row is None:
+            raise RuntimeError(f"未找到物料组合：{line['product']} / {line['model']} / {line['language']}")
+
+        material_fields = feishu_fields(material_row)
+        material_record_id = feishu_record_id(material_row)
+        before_quantity = feishu_int(material_fields, "当前库存")
+        after_quantity = before_quantity - issue_delta
+        if after_quantity < 0:
+            raise RuntimeError(
+                f"{line['product']} / {line['model']} / {line['language']} 当前库存 {before_quantity}，不足以发放 {issue_delta}。"
+            )
+
+        client.update_record(feishu_table_id("物料主数据"), material_record_id, {"当前库存": after_quantity})
+        ledger_note = f"申请单 {request_no} 实际发放"
+        if note.strip():
+            ledger_note += f"；{note.strip()}"
+        create_feishu_ledger(
+            material_record_id,
+            ACTION_RECEIVE,
+            str(line["product"]),
+            str(line["model"]),
+            str(line["language"]),
+            issue_delta,
+            before_quantity,
+            after_quantity,
+            ledger_note,
+            now,
+            source_request_id=request_record_id,
+            source_line_id=str(line["record_id"]),
+            source_request_no=request_no,
+            idempotency_key=f"issue:{line['record_id']}:{actual_qty}",
+        )
+
+        line_status = REQUEST_LINE_STATUS_ISSUED if actual_qty >= requested_qty else REQUEST_LINE_STATUS_PARTIAL
+        feishu_update_record_fields(
+            REQUEST_LINE_TABLE_NAME,
+            str(line["record_id"]),
+            {
+                "实际发放数量": actual_qty,
+                "审批通过数量": actual_qty,
+                "明细状态": line_status,
+                "发放时间": feishu_timestamp(now),
+                "缺货说明": note.strip() if actual_qty < requested_qty else "",
+            },
+        )
+        issued_line_ids.add(str(line["record_id"]))
+        logs.append(
+            [
+                now.strftime("%Y-%m-%d %H:%M:%S"),
+                ACTION_RECEIVE,
+                str(line["product"]),
+                str(line["model"]),
+                str(line["language"]),
+                issue_delta,
+                before_quantity,
+                after_quantity,
+                ledger_note,
+            ]
+        )
+
+    if not logs:
+        raise RuntimeError("请至少填写一条大于 0 的实际发放数量。")
+
+    all_line_ids = {str(line["record_id"]) for line in edited_lines}
+    fully_issued_ids = {
+        str(line["record_id"])
+        for line in edited_lines
+        if str(line["record_id"]) in issued_line_ids
+        and int(line.get("actual_issue_qty") or 0) >= int(line.get("quantity") or 0)
+    }
+    request_status = REQUEST_STATUS_ISSUED if all_line_ids and all_line_ids == fully_issued_ids else REQUEST_STATUS_PARTIAL
+    feishu_update_record_fields(
+        REQUEST_TABLE_NAME,
+        request_record_id,
+        {
+            "审批状态": request_status,
+            "审批时间": feishu_timestamp(now),
+            "审批意见": note.strip(),
+        },
+    )
     return logs
 
 
@@ -1356,22 +1805,35 @@ def auth_gate() -> bool:
     return False
 
 
+def approval_auth_gate() -> bool:
+    if st.session_state.get("approval_unlocked"):
+        return True
+    password = st.text_input("请输入审批密码", type="password", key="approval_password")
+    if password == get_approval_password():
+        st.session_state["approval_unlocked"] = True
+        st.rerun()
+    if password:
+        st.error("密码不正确")
+    return False
+
+
 def render_sidebar_link() -> None:
     st.sidebar.subheader("实时库存链接")
     navigate_to_inventory("sidebar_open_inventory", "打开实时库存表")
-    st.sidebar.caption("实时库存页只需要输入一次密码。部署后复制浏览器地址栏链接，即可分享给其他管理人。")
+    navigate_to_approval("sidebar_open_approval", "打开审批发放页")
+    st.sidebar.caption("实时库存页和审批发放页各自只需要输入一次密码。部署后复制浏览器地址栏链接，即可分享给对应人员。")
     st.sidebar.divider()
     st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
 
 def get_row_count() -> int:
     return int(
-        st.number_input(
+        st.radio(
             "本次填写物料种类数",
-            min_value=1,
-            max_value=30,
-            value=3,
-            step=1,
+            list(range(1, 11)),
+            index=2,
+            horizontal=True,
+            key="request_line_count",
         )
     )
 
@@ -1379,83 +1841,125 @@ def get_row_count() -> int:
 def render_change_form(show_title: bool = True) -> None:
     selection_context = build_inventory_selection_context()
     products = list(selection_context["products"])
-    models = list(selection_context["models"])
+    models = unique_preserve([NO_MODEL_TEXT] + list(selection_context["models"]))
     languages = list(selection_context["languages"])
 
     if show_title:
         st.title("营销物料领取登记")
     else:
         st.subheader("营销物料领取登记")
-    st.caption("一次可以填写多种物料。")
+    st.caption("提交后会先生成申请单和申请明细；审批发放页填写实际发放数量后，才会扣减当前库存。")
+
+    message = st.session_state.pop("request_submit_message", "")
+    if message:
+        st.success(message)
 
     row_count = get_row_count()
-    changes: list[dict[str, object]] = []
+    lines: list[dict[str, object]] = []
 
-    with st.container(border=True):
+    with st.form("material_request_form", clear_on_submit=False):
+        st.markdown("**申请信息**")
+        title = st.text_input("标题", value=REQUEST_FORM_TITLE)
+        info_col_a, info_col_b = st.columns(2)
+        department = info_col_a.text_input("申请部门", value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""))
+        requester = info_col_b.text_input("申请人", value=get_secret_value("DEFAULT_REQUESTER", ""))
+        position = info_col_b.text_input("岗位", value=get_secret_value("DEFAULT_REQUEST_POSITION", ""))
+
+        st.markdown("**业务信息 Business Information**")
+        biz_col_a, biz_col_b = st.columns(2)
+        customer_name = biz_col_a.text_input("客户名称 Customer Name")
+        country = biz_col_b.text_input("国家 Country")
+        recipient_info = st.text_area(
+            "收件人信息 Recipient Information",
+            placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
+            height=96,
+        )
+        freight_payer = st.selectbox("运费的承担者 Freight Payer", FREIGHT_PAYER_OPTIONS)
+        uploaded_files = st.file_uploader("相关附件 Relevant Attachments", accept_multiple_files=True)
+        attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
+        if uploaded_files:
+            st.caption("当前版本会把附件文件名写入“附件说明/相关附件说明”字段；实际文件仍建议在飞书审批消息或多维表格中补充。")
+
+        st.markdown("**物料明细 Material Details**")
         for index in range(row_count):
-            st.markdown(f"**第 {index + 1} 项**")
-            product_col, model_col, language_col, action_col, qty_col = st.columns([2.2, 1.5, 1.6, 1.2, 1.1])
+            st.caption(f"第 {index + 1} 项")
+            product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
 
             product = product_col.selectbox(
-                "物料品类",
+                "物料品类(Material Category)",
                 products,
-                key=f"product_{index}",
+                key=f"request_product_{index}",
             )
-            is_no_model_product, scoped_models = product_model_state(product, selection_context)
-            if is_no_model_product:
-                model_col.text_input(
-                    "产品型号",
-                    value=NO_MODEL_TEXT,
-                    key=f"model_blank_{index}",
-                    disabled=True,
-                )
-                model = NO_MODEL_TEXT
-            else:
-                model = model_col.selectbox(
-                    "产品型号",
-                    scoped_models or models,
-                    key=f"model_{index}",
-                )
-            language_options = product_language_options(product, model, selection_context, languages)
+            model = model_col.selectbox(
+                "产品型号(Product Model)",
+                models,
+                key=f"request_model_{index}",
+            )
             language = language_col.selectbox(
-                "语种",
-                language_options,
-                key=f"language_{index}",
-            )
-            action = action_col.selectbox(
-                "操作",
-                ACTION_OPTIONS,
-                key=f"action_{index}",
-            )
-            action_color = "#DC2626" if action == ACTION_RECEIVE else "#059669"
-            action_col.markdown(
-                f"<div style='height:8px'></div><div style='color:{action_color};font-weight:700;'>{action}</div>",
-                unsafe_allow_html=True,
+                "语种(Language)",
+                languages,
+                key=f"request_language_{index}",
             )
             quantity = qty_col.number_input(
-                "数量",
+                "物料数量",
                 min_value=0,
                 max_value=1_000_000,
                 value=0,
                 step=1,
-                key=f"quantity_{index}_{action}",
+                key=f"request_quantity_{index}",
             )
-            note = st.text_input("备注", key=f"note_{index}", placeholder="可选")
-            changes.append(
+            usage = st.text_input(
+                "物料用途(Material Usage)",
+                key=f"request_usage_{index}",
+                placeholder="活动物料请注明具体活动名称",
+            )
+            lines.append(
                 {
                     "product": product,
                     "model": model,
                     "language": language,
-                    "action": action,
                     "quantity": int(quantity),
-                    "note": note,
+                    "usage": usage,
                 }
             )
 
-        submitted = st.button("提交更新", type="primary", width="stretch")
+        submitted = st.form_submit_button("提交申请", type="primary", width="stretch")
 
     if submitted:
-        apply_changes(changes)
+        payload = {
+            "title": title,
+            "department": department,
+            "requester": requester,
+            "position": position,
+            "customer_name": customer_name,
+            "country": country,
+            "recipient_info": recipient_info,
+            "freight_payer": freight_payer,
+            "attachment_note": attachment_note,
+        }
+        missing = [
+            label
+            for label, value in [
+                ("客户名称", customer_name),
+                ("国家", country),
+                ("收件人信息", recipient_info),
+                ("运费的承担者", freight_payer),
+            ]
+            if not str(value).strip()
+        ]
+        if missing:
+            st.warning("请补充必填信息：" + "、".join(missing))
+            return
+        with DATA_LOCK:
+            try:
+                request_no, line_count = submit_feishu_material_request(payload, lines)
+            except Exception as exc:
+                st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
+                st.exception(exc)
+                return
+        st.cache_data.clear()
+        st.session_state["request_submit_message"] = f"已提交申请单 {request_no}，共 {line_count} 条申请明细。"
+        st.rerun()
 
 
 def render_add_category_form() -> None:
@@ -2121,6 +2625,143 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
     st.cache_data.clear()
 
 
+def request_lines_for_request(
+    request: dict[str, object],
+    lines: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    request_id = str(request["record_id"])
+    request_no = str(request["request_no"])
+    result: list[dict[str, object]] = []
+    for line in lines:
+        request_ids = [str(item) for item in line.get("request_ids", [])]
+        if request_id in request_ids or str(line.get("request_no", "")) == request_no:
+            result.append(line)
+    return result
+
+
+def render_approval_view() -> None:
+    st.title("营销物料审批与发放")
+    if not approval_auth_gate():
+        return
+
+    navigate_to_management("approval_back_to_management")
+    st.caption("填写实际发放数量并提交后，系统才会扣减物料主数据并写入库存流水。")
+
+    message = st.session_state.pop("approval_issue_message", "")
+    if message:
+        st.success(message)
+
+    requests = load_feishu_request_records()
+    all_lines = load_feishu_request_line_records()
+    active_statuses = {
+        REQUEST_LINE_STATUS_PENDING,
+        "待发放",
+        "已通过",
+        REQUEST_LINE_STATUS_PARTIAL,
+        "",
+    }
+    active_requests: list[dict[str, object]] = []
+    request_line_map: dict[str, list[dict[str, object]]] = {}
+    for request in requests:
+        request_lines = [
+            line
+            for line in request_lines_for_request(request, all_lines)
+            if str(line.get("status", "")) in active_statuses
+        ]
+        if request_lines:
+            active_requests.append(request)
+            request_line_map[str(request["record_id"])] = request_lines
+
+    if not active_requests:
+        st.info("暂无待审批或待发放的申请明细。")
+        return
+
+    option_labels = [
+        (
+            f"{request['request_no']} | {request.get('customer_name') or '未填写客户'} | "
+            f"{request.get('country') or '未填写国家'} | {request.get('status') or '未设置状态'}"
+        )
+        for request in active_requests
+    ]
+    selected_label = st.selectbox("选择申请单", option_labels, key="approval_request_selector")
+    selected_index = option_labels.index(selected_label)
+    selected_request = active_requests[selected_index]
+    selected_lines = request_line_map[str(selected_request["record_id"])]
+
+    detail_col_a, detail_col_b, detail_col_c = st.columns(3)
+    detail_col_a.metric("申请单号", str(selected_request["request_no"]))
+    detail_col_b.metric("明细数", f"{len(selected_lines):,}")
+    detail_col_c.metric("状态", str(selected_request.get("status") or "未设置"))
+    st.caption(
+        f"客户：{selected_request.get('customer_name') or '-'}；国家：{selected_request.get('country') or '-'}；"
+        f"申请人：{selected_request.get('requester') or '-'}；部门：{selected_request.get('department') or '-'}"
+    )
+    if selected_request.get("recipient_info"):
+        with st.expander("收件人信息"):
+            st.write(selected_request["recipient_info"])
+
+    table_df = pd.DataFrame(
+        [
+            {
+                "记录ID": line["record_id"],
+                "物料品类": line["product"],
+                "产品型号": line["model"],
+                "语种": line["language"],
+                "申请数量": int(line["quantity"]),
+                "当前库存快照": int(line.get("stock_snapshot") or 0),
+                "物料用途": line.get("usage", ""),
+                "明细状态": line.get("status", ""),
+                "实际发放数量": int(line.get("actual_issue_qty") or line.get("quantity") or 0),
+            }
+            for line in selected_lines
+        ]
+    )
+
+    with st.form(f"approval_issue_form_{selected_request['record_id']}"):
+        edited_df = st.data_editor(
+            table_df,
+            width="stretch",
+            hide_index=True,
+            height=360,
+            disabled=[column for column in table_df.columns if column != "实际发放数量"],
+            column_config={
+                "实际发放数量": st.column_config.NumberColumn(
+                    "实际发放数量",
+                    min_value=0,
+                    max_value=1_000_000,
+                    step=1,
+                )
+            },
+            key=f"approval_issue_editor_{selected_request['record_id']}",
+        )
+        issue_note = st.text_input("审批/发放备注", key=f"approval_issue_note_{selected_request['record_id']}")
+        submitted = st.form_submit_button("保存实际发放并扣减库存", type="primary", width="stretch")
+
+    if submitted:
+        edited_by_id = {str(row["记录ID"]): row for row in edited_df.to_dict("records")}
+        issue_lines: list[dict[str, object]] = []
+        for line in selected_lines:
+            row = edited_by_id.get(str(line["record_id"]))
+            if not row:
+                continue
+            next_line = dict(line)
+            next_line["previous_actual_issue_qty"] = int(line.get("actual_issue_qty") or 0)
+            next_line["actual_issue_qty"] = int(row.get("实际发放数量") or 0)
+            issue_lines.append(next_line)
+        with DATA_LOCK:
+            try:
+                logs = issue_request_lines(selected_request, issue_lines, issue_note)
+            except Exception as exc:
+                st.error("审批发放失败。请检查实际发放数量、当前库存、申请明细字段和飞书写入权限。")
+                st.exception(exc)
+                return
+        st.cache_data.clear()
+        st.session_state["approval_issue_message"] = (
+            f"已处理申请单 {selected_request['request_no']}，完成 {len(logs)} 条实际发放。"
+        )
+        st.rerun()
+
+
 def render_inventory_view() -> None:
     st.title("实时物料库存表")
     if not auth_gate():
@@ -2180,7 +2821,11 @@ def render_inventory_view() -> None:
 
 def render_management_page() -> None:
     st.title("物料库存管理")
-    navigate_to_inventory("management_open_inventory")
+    nav_col_a, nav_col_b = st.columns(2)
+    with nav_col_a:
+        navigate_to_inventory("management_open_inventory")
+    with nav_col_b:
+        navigate_to_approval("management_open_approval")
     management_section = st.radio(
         "管理功能",
         ["库存登记", "新增物料品类", "修改与撤回"],
@@ -2207,6 +2852,8 @@ def main() -> None:
     try:
         if view == "inventory":
             render_inventory_view()
+        elif view == "approval":
+            render_approval_view()
         else:
             render_management_page()
     except FeishuBitableError as exc:
