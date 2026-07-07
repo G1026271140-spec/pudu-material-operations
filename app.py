@@ -273,6 +273,8 @@ def normalize_feishu_field_value(table_name: str, field_name: str, value: object
         except (TypeError, ValueError):
             return value
     if field_type == 5:
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
         return value
     if field_type in {18, 21}:
         if isinstance(value, list):
@@ -301,7 +303,31 @@ def feishu_accepts_plain_value(table_name: str, field_name: str) -> bool:
 
 
 def feishu_datetime_value(table_name: str, field_name: str, value: datetime) -> object:
-    return feishu_timestamp(value) if feishu_field_type(table_name, field_name) == 5 else value.strftime("%Y-%m-%d %H:%M:%S")
+    return feishu_timestamp(value)
+
+
+def is_feishu_field_conversion_error(exc: Exception) -> bool:
+    message = str(exc)
+    return "FieldConvFail" in message or "125406" in message
+
+
+def feishu_batch_create_records(table_name: str, records: list[dict[str, object]]) -> list[dict]:
+    client = feishu_client()
+    if client is None:
+        return []
+    writable_records = [filter_feishu_fields(table_name, fields) for fields in records]
+    writable_records = [fields for fields in writable_records if fields]
+    if not writable_records:
+        raise RuntimeError(f"{table_name} 没有可写入的匹配字段。")
+    try:
+        return client.batch_create_records(feishu_table_id(table_name), writable_records)
+    except FeishuBitableError as exc:
+        if not is_feishu_field_conversion_error(exc):
+            raise
+        st.cache_data.clear()
+        writable_records = [filter_feishu_fields(table_name, fields) for fields in records]
+        writable_records = [fields for fields in writable_records if fields]
+        return client.batch_create_records(feishu_table_id(table_name), writable_records)
 
 
 def set_first_plain_field(
@@ -319,13 +345,7 @@ def set_first_plain_field(
 
 
 def feishu_create_record(table_name: str, fields: dict[str, object]) -> dict:
-    client = feishu_client()
-    if client is None:
-        return {}
-    writable_fields = filter_feishu_fields(table_name, fields)
-    if not writable_fields:
-        raise RuntimeError(f"{table_name} 没有可写入的匹配字段。")
-    created = client.batch_create_records(feishu_table_id(table_name), [writable_fields])
+    created = feishu_batch_create_records(table_name, [fields])
     return created[0] if created else {}
 
 
@@ -336,7 +356,16 @@ def feishu_update_record_fields(table_name: str, record_id: str, fields: dict[st
     writable_fields = filter_feishu_fields(table_name, fields)
     if not writable_fields:
         return {}
-    return client.update_record(feishu_table_id(table_name), record_id, writable_fields)
+    try:
+        return client.update_record(feishu_table_id(table_name), record_id, writable_fields)
+    except FeishuBitableError as exc:
+        if not is_feishu_field_conversion_error(exc):
+            raise
+        st.cache_data.clear()
+        writable_fields = filter_feishu_fields(table_name, fields)
+        if not writable_fields:
+            return {}
+        return client.update_record(feishu_table_id(table_name), record_id, writable_fields)
 
 
 def storage_mode_label() -> str:
@@ -984,10 +1013,7 @@ def create_feishu_ledger(
     if original_ledger_id:
         fields["原流水ID"] = original_ledger_id
 
-    created = client.batch_create_records(
-        feishu_table_id("库存流水"),
-        [filter_feishu_fields("库存流水", fields)],
-    )
+    created = feishu_batch_create_records("库存流水", [fields])
     return created[0] if created else None
 
 
@@ -1195,7 +1221,7 @@ def submit_feishu_material_request(
     if client is None:
         return request_no, 0
     for start in range(0, len(line_records), 500):
-        client.batch_create_records(feishu_table_id(REQUEST_LINE_TABLE_NAME), line_records[start : start + 500])
+        feishu_batch_create_records(REQUEST_LINE_TABLE_NAME, line_records[start : start + 500])
     return request_no, len(line_records)
 
 
