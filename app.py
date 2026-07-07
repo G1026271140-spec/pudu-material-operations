@@ -233,6 +233,10 @@ def feishu_schema() -> dict:
     return load_feishu_schema_snapshot(feishu_app_id(), feishu_app_secret(), feishu_bitable_app_token())
 
 
+def refresh_feishu_schema_cache() -> None:
+    load_feishu_schema_snapshot.clear()
+
+
 def feishu_table_id(table_name: str) -> str:
     table = feishu_schema().get("tables", {}).get(table_name)
     if not table:
@@ -1119,6 +1123,7 @@ def submit_feishu_material_request(
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
 ) -> tuple[str, int]:
+    refresh_feishu_schema_cache()
     valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少填写一条数量大于 0 的物料明细。")
@@ -1215,7 +1220,7 @@ def submit_feishu_material_request(
                     if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, material_field)
                     else [material_record_id]
                 )
-        line_records.append(filter_feishu_fields(REQUEST_LINE_TABLE_NAME, line_fields))
+        line_records.append(line_fields)
 
     client = feishu_client()
     if client is None:
