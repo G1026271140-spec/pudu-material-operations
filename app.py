@@ -257,18 +257,51 @@ def first_feishu_field(table_name: str, candidates: list[str]) -> str:
     return candidates[0] if candidates else ""
 
 
-def filter_feishu_fields(table_name: str, fields: dict[str, object]) -> dict[str, object]:
-    table_fields = feishu_table_fields(table_name)
-    return {key: value for key, value in fields.items() if key in table_fields and value is not None}
-
-
 def feishu_field_type(table_name: str, field_name: str) -> object:
     return feishu_table_fields(table_name).get(field_name, {}).get("type")
+
+
+def normalize_feishu_field_value(table_name: str, field_name: str, value: object) -> object | None:
+    if value is None:
+        return None
+    field_type = feishu_field_type(table_name, field_name)
+    if field_type == 1:
+        return str(value)
+    if field_type == 2:
+        try:
+            return float(value) if isinstance(value, str) and "." in value else int(value)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return value
+    if field_type == 5:
+        return value
+    if field_type in {18, 21}:
+        if isinstance(value, list):
+            return [str(item) for item in value if item]
+        if value:
+            return [str(value)]
+        return None
+    return value
+
+
+def filter_feishu_fields(table_name: str, fields: dict[str, object]) -> dict[str, object]:
+    table_fields = feishu_table_fields(table_name)
+    result: dict[str, object] = {}
+    for key, value in fields.items():
+        if key not in table_fields:
+            continue
+        normalized = normalize_feishu_field_value(table_name, key, value)
+        if normalized is not None:
+            result[key] = normalized
+    return result
 
 
 def feishu_accepts_plain_value(table_name: str, field_name: str) -> bool:
     field_type = feishu_field_type(table_name, field_name)
     return field_type not in {11, 17, 18, 21, 23}
+
+
+def feishu_datetime_value(table_name: str, field_name: str, value: datetime) -> object:
+    return feishu_timestamp(value) if feishu_field_type(table_name, field_name) == 5 else value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def set_first_plain_field(
@@ -1115,7 +1148,7 @@ def submit_feishu_material_request(
         "用途/活动": request_usage_summary(prepared_lines),
         "用途|活动": request_usage_summary(prepared_lines),
         "审批状态": REQUEST_STATUS_PENDING,
-        "提交时间": feishu_timestamp(now),
+        "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
         "备注": request_note_text(request_payload, str(request_payload.get("attachment_note") or "")),
     }
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人", "申请人姓名"], request_payload.get("requester"))
@@ -1307,7 +1340,7 @@ def issue_request_lines(
                 "实际发放数量": actual_qty,
                 "审批通过数量": actual_qty,
                 "明细状态": line_status,
-                "发放时间": feishu_timestamp(now),
+                "发放时间": feishu_datetime_value(REQUEST_LINE_TABLE_NAME, "发放时间", now),
                 "缺货说明": note.strip() if actual_qty < requested_qty else "",
             },
         )
@@ -1342,7 +1375,7 @@ def issue_request_lines(
         request_record_id,
         {
             "审批状态": request_status,
-            "审批时间": feishu_timestamp(now),
+            "审批时间": feishu_datetime_value(REQUEST_TABLE_NAME, "审批时间", now),
             "审批意见": note.strip(),
         },
     )
