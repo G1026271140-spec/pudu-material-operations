@@ -8,7 +8,7 @@ from io import BytesIO
 
 import pandas as pd
 import streamlit as st
-from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
+from feishu_bitable import FeishuBitableClient, FeishuBitableConfig, FeishuBitableError
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -54,6 +54,7 @@ TRANSACTION_HEADERS = [
 ]
 
 DATA_LOCK = threading.Lock()
+DATA_CACHE_TTL_SECONDS = 30
 
 
 def inject_global_styles() -> None:
@@ -158,6 +159,10 @@ def feishu_configured() -> bool:
     return bool(feishu_app_id() and feishu_app_secret() and feishu_bitable_app_token())
 
 
+def feishu_config_args() -> tuple[str, str, str]:
+    return feishu_app_id(), feishu_app_secret(), feishu_bitable_app_token()
+
+
 def stop_on_invalid_feishu_config() -> None:
     values = {
         "FEISHU_APP_ID": feishu_app_id(),
@@ -171,6 +176,20 @@ def stop_on_invalid_feishu_config() -> None:
     st.error("应用现在只使用飞书多维表格，请先补齐飞书配置：" + "、".join(missing))
     st.info("请在 Streamlit Secrets 中同时填写 FEISHU_APP_ID、FEISHU_APP_SECRET、FEISHU_BITABLE_APP_TOKEN。")
     st.stop()
+
+
+def redact_feishu_error(message: str) -> str:
+    message = re.sub(r"cli_[A-Za-z0-9]+", "cli_***", message)
+    return re.sub(r"https://open\.feishu\.cn/\S+", "[飞书权限配置链接]", message)
+
+
+def render_feishu_error(exc: FeishuBitableError) -> None:
+    message = str(exc)
+    st.error("飞书多维表格读取失败，请先检查应用权限和多维表格授权。")
+    if "99991672" in message or "scope" in message or "权限" in message:
+        st.info("当前飞书应用缺少多维表格读取权限。请在飞书开放平台给应用开通 bitable/base 表格读取权限，并确认该应用已添加到目标多维表格。")
+    with st.expander("查看错误详情"):
+        st.code(redact_feishu_error(message), language="text")
 
 
 @st.cache_resource(show_spinner=False)
@@ -189,8 +208,7 @@ def feishu_client() -> FeishuBitableClient | None:
 
 @st.cache_data(show_spinner=False, ttl=300)
 def load_feishu_schema_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
-    client = FeishuBitableClient(FeishuBitableConfig(app_id, app_secret, app_token))
-    return client.discover_schema()
+    return get_feishu_bitable_client(app_id, app_secret, app_token).discover_schema()
 
 
 def feishu_schema() -> dict:
@@ -220,28 +238,27 @@ def count_feishu_table(table_name: str) -> int:
 
 
 def render_storage_diagnostics() -> None:
-    with st.sidebar.expander("存储状态", expanded=True):
+    with st.sidebar.expander("存储状态", expanded=False):
         st.write(f"当前存储：**{storage_mode_label()}**")
         st.write(f"FEISHU_APP_ID：{'已读取' if bool(feishu_app_id()) else '未读取'}")
         st.write(f"FEISHU_APP_SECRET：{'已读取' if bool(feishu_app_secret()) else '未读取'}")
         st.write(f"FEISHU_BITABLE_APP_TOKEN：{'已读取' if bool(feishu_bitable_app_token()) else '未读取'}")
 
-        try:
-            categories_count = count_feishu_table("物料品类")
-            inventory_count = count_feishu_table("物料主数据")
-            transactions_count = count_feishu_table("库存流水")
-            st.success("飞书多维表格连接成功")
-            st.caption(
-                f"品类 {categories_count or 0} 条 / 库存 {inventory_count or 0} 条 / 流水 {transactions_count or 0} 条"
-            )
-        except Exception as exc:
-            st.error("飞书多维表格连接失败")
-            st.caption(str(exc))
-
-        if st.button("重新检查连接", key="refresh_storage_status", width="stretch"):
+        st.caption("为加快页面打开速度，行数统计改为手动检查。")
+        if st.button("检查连接并刷新数据", key="refresh_storage_status", width="stretch"):
             st.cache_resource.clear()
             st.cache_data.clear()
-            st.rerun()
+            try:
+                categories_count = count_feishu_table("物料品类")
+                inventory_count = count_feishu_table("物料主数据")
+                transactions_count = count_feishu_table("库存流水")
+                st.success("飞书多维表格连接成功")
+                st.caption(
+                    f"品类 {categories_count or 0} 条 / 库存 {inventory_count or 0} 条 / 流水 {transactions_count or 0} 条"
+                )
+            except Exception as exc:
+                st.error("飞书多维表格连接失败")
+                st.caption(str(exc))
 
 
 def unique_preserve(values: list[str]) -> list[str]:
@@ -445,11 +462,20 @@ def workbook_bytes(df: pd.DataFrame) -> bytes:
     return buffer.getvalue()
 
 
-def feishu_rows(table_name: str) -> list[dict]:
-    client = feishu_client()
-    if client is None:
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def load_feishu_rows_snapshot(table_name: str, app_id: str, app_secret: str, app_token: str) -> list[dict]:
+    if not app_id or not app_secret or not app_token:
         return []
-    return client.list_records(feishu_table_id(table_name))
+    client = get_feishu_bitable_client(app_id, app_secret, app_token)
+    schema = load_feishu_schema_snapshot(app_id, app_secret, app_token)
+    table = schema.get("tables", {}).get(table_name)
+    if not table:
+        raise RuntimeError(f"飞书多维表格缺少数据表：{table_name}")
+    return client.list_records(str(table["table_id"]))
+
+
+def feishu_rows(table_name: str) -> list[dict]:
+    return load_feishu_rows_snapshot(table_name, *feishu_config_args())
 
 
 def feishu_record_id(row: dict) -> str:
@@ -661,9 +687,10 @@ def feishu_inventory_index() -> dict[tuple[str, str, str], dict]:
     return index
 
 
-def load_feishu_inventory() -> pd.DataFrame:
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def load_feishu_inventory_snapshot(app_id: str, app_secret: str, app_token: str) -> pd.DataFrame:
     data: list[list[object]] = []
-    for row in feishu_rows("物料主数据"):
+    for row in load_feishu_rows_snapshot("物料主数据", app_id, app_secret, app_token):
         fields = feishu_fields(row)
         material_code = feishu_text(fields, "物料编码")
         category = feishu_text(fields, "物料品类")
@@ -686,9 +713,14 @@ def load_feishu_inventory() -> pd.DataFrame:
     return pd.DataFrame(data, columns=INVENTORY_HEADERS)
 
 
-def load_feishu_options() -> dict:
-    categories = feishu_rows("物料品类")
-    inventory_df = load_feishu_inventory()
+def load_feishu_inventory() -> pd.DataFrame:
+    return load_feishu_inventory_snapshot(*feishu_config_args())
+
+
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
+    categories = load_feishu_rows_snapshot("物料品类", app_id, app_secret, app_token)
+    inventory_df = load_feishu_inventory_snapshot(app_id, app_secret, app_token)
     products: list[str] = []
     no_model_products: list[str] = []
     for row in categories:
@@ -720,9 +752,14 @@ def load_feishu_options() -> dict:
     }
 
 
-def load_feishu_transactions_dataframe() -> pd.DataFrame:
+def load_feishu_options() -> dict:
+    return load_feishu_options_snapshot(*feishu_config_args())
+
+
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def load_feishu_transactions_dataframe_snapshot(app_id: str, app_secret: str, app_token: str) -> pd.DataFrame:
     data: list[list[object]] = []
-    for row in feishu_rows("库存流水"):
+    for row in load_feishu_rows_snapshot("库存流水", app_id, app_secret, app_token):
         fields = feishu_fields(row)
         if not fields or is_blank_feishu_transaction(fields):
             continue
@@ -747,6 +784,10 @@ def load_feishu_transactions_dataframe() -> pd.DataFrame:
             ]
         )
     return pd.DataFrame(data, columns=TRANSACTION_HEADERS)
+
+
+def load_feishu_transactions_dataframe() -> pd.DataFrame:
+    return load_feishu_transactions_dataframe_snapshot(*feishu_config_args())
 
 
 def feishu_ledger_type(action: str) -> str:
@@ -1533,31 +1574,49 @@ def add_material_category(
 
 
 def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> None:
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    transactions_df = load_transactions_dataframe()
-    transaction_data = transactions_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
-
     st.subheader("下载库存数据")
-    st.caption("下载按钮导出的是当前 Streamlit 应用内保存的最新数据。")
+    st.caption("需要下载时再生成文件，避免打开库存页时等待导出文件准备。")
+
+    if st.button("生成/刷新下载文件", key="prepare_inventory_downloads", width="stretch"):
+        with st.spinner("正在生成下载文件..."):
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            transactions_df = load_transactions_dataframe()
+            st.session_state["inventory_download_bundle"] = {
+                "timestamp": timestamp,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "full_xlsx": workbook_bytes(full_df),
+                "full_csv": full_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+                "filtered_xlsx": workbook_bytes(filtered_df),
+                "filtered_csv": filtered_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+                "transaction_csv": transactions_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+            }
+
+    bundle = st.session_state.get("inventory_download_bundle")
+    if not bundle:
+        st.info("点击上方按钮后会显示下载链接。筛选条件变化后请重新生成。")
+        return
+
+    timestamp = str(bundle["timestamp"])
+    st.caption(f"下载文件生成时间：{bundle['created_at']}。筛选条件变化后请重新生成。")
 
     full_col_a, full_col_b, log_col = st.columns(3)
     full_col_a.download_button(
         "下载完整库存 Excel",
-        data=workbook_bytes(full_df),
+        data=bundle["full_xlsx"],
         file_name=f"完整物料库存表_{timestamp}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         width="stretch",
     )
     full_col_b.download_button(
         "下载完整库存 CSV",
-        data=full_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+        data=bundle["full_csv"],
         file_name=f"完整物料库存表_{timestamp}.csv",
         mime="text/csv",
         width="stretch",
     )
     log_col.download_button(
         "下载库存变更流水",
-        data=transaction_data,
+        data=bundle["transaction_csv"],
         file_name=f"库存变更流水_{timestamp}.csv",
         mime="text/csv",
         width="stretch",
@@ -1566,14 +1625,14 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
     filtered_col_a, filtered_col_b = st.columns(2)
     filtered_col_a.download_button(
         "下载当前筛选 Excel",
-        data=workbook_bytes(filtered_df),
+        data=bundle["filtered_xlsx"],
         file_name=f"当前筛选物料库存表_{timestamp}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         width="stretch",
     )
     filtered_col_b.download_button(
         "下载当前筛选 CSV",
-        data=filtered_df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"),
+        data=bundle["filtered_csv"],
         file_name=f"当前筛选物料库存表_{timestamp}.csv",
         mime="text/csv",
         width="stretch",
@@ -2028,12 +2087,18 @@ def render_category_admin() -> None:
         st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
 
 def render_edit_revert_page() -> None:
-    tx_tab, item_tab, category_tab = st.tabs(["提交记录", "库存行", "物料品类"])
-    with tx_tab:
+    admin_section = st.radio(
+        "修改与撤回类型",
+        ["提交记录", "库存行", "物料品类"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="edit_revert_section",
+    )
+    if admin_section == "提交记录":
         render_transaction_admin()
-    with item_tab:
+    elif admin_section == "库存行":
         render_material_data_admin()
-    with category_tab:
+    else:
         render_category_admin()
 
 
@@ -2116,12 +2181,18 @@ def render_inventory_view() -> None:
 def render_management_page() -> None:
     st.title("物料库存管理")
     navigate_to_inventory("management_open_inventory")
-    update_tab, add_tab, edit_tab = st.tabs(["库存登记", "新增物料品类", "修改与撤回"])
-    with update_tab:
+    management_section = st.radio(
+        "管理功能",
+        ["库存登记", "新增物料品类", "修改与撤回"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="management_section",
+    )
+    if management_section == "库存登记":
         render_change_form(show_title=False)
-    with add_tab:
+    elif management_section == "新增物料品类":
         render_add_category_form()
-    with edit_tab:
+    else:
         render_edit_revert_page()
 
 
@@ -2133,10 +2204,13 @@ def main() -> None:
     render_storage_diagnostics()
 
     view = st.query_params.get("view", "")
-    if view == "inventory":
-        render_inventory_view()
-    else:
-        render_management_page()
+    try:
+        if view == "inventory":
+            render_inventory_view()
+        else:
+            render_management_page()
+    except FeishuBitableError as exc:
+        render_feishu_error(exc)
 
 
 if __name__ == "__main__":
