@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 import re
 import threading
 import uuid
 from datetime import date, datetime, timedelta
 from io import BytesIO
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -66,6 +68,14 @@ TRANSACTION_HEADERS = [
 
 DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
+REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
+REQUEST_FORM_CACHE_LOCK = threading.Lock()
+REQUEST_FORM_CACHE_STATE: dict[str, object] = {
+    "data": None,
+    "refreshing": False,
+    "error": "",
+    "updated_at": "",
+}
 
 
 def inject_global_styles() -> None:
@@ -512,6 +522,161 @@ def product_language_options(
     return sort_languages(list(scoped_languages))
 
 
+def request_form_cache_from_inventory(
+    options: dict,
+    inventory_df: pd.DataFrame,
+    *,
+    source: str,
+) -> dict[str, object]:
+    rows: list[dict[str, object]] = []
+    if not inventory_df.empty:
+        for item in inventory_df.fillna("").itertuples(index=False):
+            rows.append(
+                {
+                    "material_code": str(item[0]),
+                    "product": str(item[1]),
+                    "model": str(item[2]) or NO_MODEL_TEXT,
+                    "language": str(item[3]),
+                    "quantity": int(item[4] or 0),
+                }
+            )
+    return {
+        "schema_version": 1,
+        "source": source,
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "products": unique_preserve(list(options.get("products") or [])),
+        "no_model_products": unique_preserve(list(options.get("no_model_products") or [])),
+        "models": unique_preserve(list(options.get("models") or [])),
+        "languages": sort_languages(list(options.get("languages") or [])),
+        "inventory_rows": rows,
+        "row_count": len(rows),
+    }
+
+
+def build_live_request_form_cache() -> dict[str, object]:
+    inventory_df = load_feishu_inventory()
+    options = load_feishu_options()
+    return request_form_cache_from_inventory(options, inventory_df, source="live_feishu")
+
+
+@st.cache_data(show_spinner=False)
+def load_static_request_form_cache() -> dict[str, object]:
+    if not REQUEST_FORM_STATIC_CACHE_PATH.exists():
+        return {
+            "schema_version": 1,
+            "source": "empty",
+            "generated_at": "",
+            "products": [],
+            "no_model_products": [],
+            "models": [],
+            "languages": [],
+            "inventory_rows": [],
+            "row_count": 0,
+        }
+    return json.loads(REQUEST_FORM_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+
+
+def request_form_cache_state() -> dict[str, object]:
+    with REQUEST_FORM_CACHE_LOCK:
+        return dict(REQUEST_FORM_CACHE_STATE)
+
+
+def set_request_form_cache_state(**updates: object) -> None:
+    with REQUEST_FORM_CACHE_LOCK:
+        REQUEST_FORM_CACHE_STATE.update(updates)
+
+
+def refresh_request_form_cache_sync() -> dict[str, object]:
+    data = build_live_request_form_cache()
+    set_request_form_cache_state(data=data, refreshing=False, error="", updated_at=str(data.get("generated_at") or ""))
+    return data
+
+
+def start_request_form_cache_refresh() -> None:
+    state = request_form_cache_state()
+    if state.get("refreshing"):
+        return
+    set_request_form_cache_state(refreshing=True, error="")
+
+    def worker() -> None:
+        try:
+            refresh_request_form_cache_sync()
+        except Exception as exc:
+            set_request_form_cache_state(refreshing=False, error=str(exc))
+
+    threading.Thread(target=worker, name="request-form-cache-refresh", daemon=True).start()
+
+
+def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> dict[str, object]:
+    product_models: dict[str, list[str]] = {}
+    product_languages: dict[str, list[str]] = {}
+    product_model_languages: dict[tuple[str, str], list[str]] = {}
+    inventory_product_keys: set[str] = set()
+    rows = list(cache_data.get("inventory_rows") or [])
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        product = str(item.get("product") or "").strip()
+        model = str(item.get("model") or "").strip() or NO_MODEL_TEXT
+        language = str(item.get("language") or "").strip()
+        if not product:
+            continue
+        product_key = normalize_option_label(product)
+        model_key = normalize_option_label(model)
+        inventory_product_keys.add(product_key)
+        if model and model != NO_MODEL_TEXT:
+            product_models.setdefault(product_key, []).append(model)
+        if language:
+            product_languages.setdefault(product_key, []).append(language)
+            product_model_languages.setdefault((product_key, model_key), []).append(language)
+
+    products = unique_preserve(list(cache_data.get("products") or []) + [str(item.get("product") or "") for item in rows if isinstance(item, dict)])
+    models = unique_preserve(list(cache_data.get("models") or []) + [str(item.get("model") or "") for item in rows if isinstance(item, dict)])
+    languages = sort_languages(unique_preserve(list(cache_data.get("languages") or []) + [str(item.get("language") or "") for item in rows if isinstance(item, dict)]))
+    return {
+        "products": products,
+        "models": [model for model in models if model and model != NO_MODEL_TEXT],
+        "languages": languages,
+        "no_model_product_keys": {
+            normalize_option_label(product) for product in list(cache_data.get("no_model_products") or [])
+        },
+        "inventory_product_keys": inventory_product_keys,
+        "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
+        "product_languages": {key: sort_languages(values) for key, values in product_languages.items()},
+        "product_model_languages": {
+            key: sort_languages(values) for key, values in product_model_languages.items()
+        },
+        "inventory_df": pd.DataFrame(rows),
+        "cache_source": cache_data.get("source", ""),
+        "cache_generated_at": cache_data.get("generated_at", ""),
+        "cache_row_count": int(cache_data.get("row_count") or len(rows)),
+    }
+
+
+def mark_request_form_dirty() -> None:
+    st.session_state["request_form_cache_locked"] = True
+
+
+def reset_request_form_cache_lock() -> None:
+    st.session_state.pop("request_form_cache_locked", None)
+    st.session_state.pop("request_form_cache_data", None)
+
+
+def get_request_form_selection_context() -> dict[str, object]:
+    state = request_form_cache_state()
+    live_data = state.get("data") if isinstance(state.get("data"), dict) else None
+    static_data = load_static_request_form_cache()
+    if "request_form_cache_data" not in st.session_state:
+        st.session_state["request_form_cache_data"] = live_data or static_data
+    elif live_data and not st.session_state.get("request_form_cache_locked"):
+        current_generated_at = str(st.session_state["request_form_cache_data"].get("generated_at") or "")
+        live_generated_at = str(live_data.get("generated_at") or "")
+        if live_generated_at and live_generated_at != current_generated_at:
+            st.session_state["request_form_cache_data"] = live_data
+    start_request_form_cache_refresh()
+    return request_form_cache_to_selection_context(dict(st.session_state["request_form_cache_data"]))
+
+
 def format_datetime(value: object) -> str:
     parsed = pd.to_datetime(value, errors="coerce")
     if pd.isna(parsed):
@@ -562,6 +727,12 @@ def navigate_to_inventory(key: str, label: str = "查看实时库存表") -> Non
 def navigate_to_approval(key: str, label: str = "打开审批发放页") -> None:
     if st.button(label, key=key, width="stretch"):
         st.query_params["view"] = "approval"
+        st.rerun()
+
+
+def navigate_to_cache(key: str, label: str = "打开数据缓存页") -> None:
+    if st.button(label, key=key, width="stretch"):
+        st.query_params["view"] = "cache"
         st.rerun()
 
 
@@ -1899,6 +2070,10 @@ def render_sidebar_link() -> None:
     navigate_to_approval("sidebar_open_approval", "打开审批发放页")
     st.sidebar.caption("审批发放页需要输入审批密码。部署后复制浏览器地址栏链接，即可分享给对应审批人。")
     st.sidebar.divider()
+    st.sidebar.subheader("数据缓存")
+    navigate_to_cache("sidebar_open_cache", "打开数据缓存页")
+    st.sidebar.caption("登记页会优先读取缓存快照，减少销售打开等待时间。")
+    st.sidebar.divider()
     st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
 
@@ -1910,12 +2085,13 @@ def get_row_count() -> int:
             index=2,
             horizontal=True,
             key="request_line_count",
+            on_change=mark_request_form_dirty,
         )
     )
 
 
 def render_change_form(show_title: bool = True) -> None:
-    selection_context = build_inventory_selection_context()
+    selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
     models = unique_preserve([NO_MODEL_TEXT] + list(selection_context["models"]))
     languages = list(selection_context["languages"])
@@ -1925,6 +2101,13 @@ def render_change_form(show_title: bool = True) -> None:
     else:
         st.subheader("营销物料领取登记")
     st.caption("提交后会先生成申请单和申请明细；审批发放页填写实际发放数量后，才会扣减当前库存。")
+    cache_state = request_form_cache_state()
+    cache_label = "实时缓存" if selection_context.get("cache_source") == "live_feishu" else "静态缓存"
+    cache_status = "同步中" if cache_state.get("refreshing") else "已就绪"
+    st.caption(
+        f"登记页数据：{cache_label} / {selection_context.get('cache_generated_at') or '-'} / "
+        f"{selection_context.get('cache_row_count') or 0} 条 / {cache_status}"
+    )
 
     message = st.session_state.pop("request_submit_message", "")
     if message:
@@ -1937,9 +2120,18 @@ def render_change_form(show_title: bool = True) -> None:
         st.markdown("**申请信息**")
         title = st.text_input("标题", value=REQUEST_FORM_TITLE)
         info_col_a, info_col_b = st.columns(2)
-        department = info_col_a.text_input("申请部门", value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""))
-        requester = info_col_b.text_input("申请人", value=get_secret_value("DEFAULT_REQUESTER", ""))
-        position = info_col_b.text_input("岗位", value=get_secret_value("DEFAULT_REQUEST_POSITION", ""))
+        department = info_col_a.text_input(
+            "申请部门",
+            value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+        )
+        requester = info_col_b.text_input(
+            "申请人",
+            value=get_secret_value("DEFAULT_REQUESTER", ""),
+        )
+        position = info_col_b.text_input(
+            "岗位",
+            value=get_secret_value("DEFAULT_REQUEST_POSITION", ""),
+        )
 
         st.markdown("**业务信息 Business Information**")
         biz_col_a, biz_col_b = st.columns(2)
@@ -1950,13 +2142,19 @@ def render_change_form(show_title: bool = True) -> None:
             placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
             height=96,
         )
-        freight_payer = st.selectbox("运费的承担者 Freight Payer", FREIGHT_PAYER_OPTIONS)
+        freight_payer = st.selectbox(
+            "运费的承担者 Freight Payer",
+            FREIGHT_PAYER_OPTIONS,
+        )
         material_usage = st.text_area(
             "物料用途 Material Usage",
             placeholder="活动物料请注明具体活动名称",
             height=76,
         )
-        uploaded_files = st.file_uploader("相关附件 Relevant Attachments", accept_multiple_files=True)
+        uploaded_files = st.file_uploader(
+            "相关附件 Relevant Attachments",
+            accept_multiple_files=True,
+        )
         attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
         if uploaded_files:
             st.caption("当前版本会把附件文件名写入“附件说明/相关附件说明”字段；实际文件仍建议在飞书审批消息或多维表格中补充。")
@@ -2021,7 +2219,12 @@ def render_change_form(show_title: bool = True) -> None:
                 }
             )
 
-        submitted = st.form_submit_button("提交申请", type="primary", width="stretch")
+        submitted = st.form_submit_button(
+            "提交申请",
+            type="primary",
+            width="stretch",
+            on_click=mark_request_form_dirty,
+        )
 
     if submitted:
         payload = {
@@ -2059,6 +2262,7 @@ def render_change_form(show_title: bool = True) -> None:
                 st.exception(exc)
                 return
         st.cache_data.clear()
+        reset_request_form_cache_lock()
         st.session_state["request_submit_message"] = f"已提交申请单 {request_no}，共 {line_count} 条申请明细。"
         st.rerun()
 
@@ -2922,6 +3126,53 @@ def render_inventory_view() -> None:
     render_download_center(df, filtered)
 
 
+def render_cache_page() -> None:
+    st.title("数据缓存")
+    static_cache = load_static_request_form_cache()
+    state = request_form_cache_state()
+    live_cache = state.get("data") if isinstance(state.get("data"), dict) else {}
+
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("静态缓存行数", f"{int(static_cache.get('row_count') or 0):,}")
+    metric_b.metric("静态缓存时间", str(static_cache.get("generated_at") or "-"))
+    metric_c.metric("后台状态", "同步中" if state.get("refreshing") else "就绪")
+    if state.get("error"):
+        st.error(str(state["error"]))
+
+    action_a, action_b, action_c = st.columns([1, 1, 1])
+    if action_a.button("刷新当前会话缓存", type="primary", width="stretch"):
+        with st.spinner("正在同步飞书数据..."):
+            try:
+                data = refresh_request_form_cache_sync()
+            except Exception as exc:
+                st.error("刷新失败")
+                st.exception(exc)
+                return
+        st.session_state["request_form_cache_data"] = data
+        st.session_state.pop("request_form_cache_locked", None)
+        st.success("当前会话缓存已更新。")
+    if action_b.button("后台同步一次", width="stretch"):
+        start_request_form_cache_refresh()
+        st.success("已开始后台同步。")
+    if action_c.button("返回登记页", width="stretch"):
+        st.query_params.clear()
+        st.rerun()
+
+    display_cache = live_cache or static_cache
+    st.subheader("当前可用缓存")
+    st.caption(
+        f"来源：{display_cache.get('source') or '-'}；"
+        f"生成时间：{display_cache.get('generated_at') or '-'}；"
+        f"物料行：{int(display_cache.get('row_count') or 0):,}"
+    )
+    rows = list(display_cache.get("inventory_rows") or [])
+    if rows:
+        preview_df = pd.DataFrame(rows[:200])
+        st.dataframe(preview_df, width="stretch", hide_index=True, height=360)
+    else:
+        st.info("暂无缓存数据。")
+
+
 def render_management_page() -> None:
     st.title("物料库存管理")
     management_section = st.radio(
@@ -2952,6 +3203,8 @@ def main() -> None:
             render_inventory_view()
         elif view == "approval":
             render_approval_view()
+        elif view == "cache":
+            render_cache_page()
         else:
             render_management_page()
     except FeishuBitableError as exc:
