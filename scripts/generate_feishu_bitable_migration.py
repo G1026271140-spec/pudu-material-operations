@@ -114,6 +114,7 @@ TABLES = {
             "申请人",
             "申请部门/区域",
             "业务类型",
+            "物料用途",
             "用途/活动",
             "期望发放日期",
             "审批状态",
@@ -196,6 +197,7 @@ FIELD_DICTIONARY = {
         ("request_no", "申请单号", "new", "auto_number/text", "销售申请主单编号。"),
         ("requester", "申请人", "new", "user", "销售申请人。"),
         ("business_type", "业务类型", "new", "single_select", "物料领取/物料采购/盘点调整。"),
+        ("material_usage", "物料用途", "new", "text", "整张申请单的物料用途或活动名称。"),
         ("request_status", "审批状态", "new", "single_select", "草稿、待审批、待发放、已发放等。"),
     ],
     "material_request_line": [
@@ -205,6 +207,7 @@ FIELD_DICTIONARY = {
         ("request_qty", "申请数量", "new", "number", "销售申请数量。"),
         ("approved_qty", "审批通过数量", "new", "number", "市场审批通过数量。"),
         ("actual_issue_qty", "实际发放数量", "new", "number", "最终发放并扣库存的数量。"),
+        ("remark", "备注", "new", "text", "单条明细备注，可留空。"),
         ("ledger", "出库流水编号", "new", "link", "关联库存流水。"),
     ],
     "stock_operation_batch": [

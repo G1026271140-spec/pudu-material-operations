@@ -56,6 +56,23 @@ class FeishuBitableClient:
             "items",
         )
 
+    def create_field(
+        self,
+        table_id: str,
+        field_name: str,
+        field_type: int,
+        property: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"field_name": field_name, "type": field_type}
+        if property is not None:
+            payload["property"] = property
+        response = self._request(
+            "POST",
+            f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/fields",
+            payload=payload,
+        )
+        return dict(response.get("data", {}).get("field", {}))
+
     def list_records(self, table_id: str, page_size: int = 500) -> list[dict[str, Any]]:
         return self._paged_get(
             f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records",
