@@ -2116,115 +2116,126 @@ def render_change_form(show_title: bool = True) -> None:
     row_count = get_row_count()
     lines: list[dict[str, object]] = []
 
-    with st.form("material_request_form", clear_on_submit=False):
-        st.markdown("**申请信息**")
-        title = st.text_input("标题", value=REQUEST_FORM_TITLE)
-        info_col_a, info_col_b = st.columns(2)
-        department = info_col_a.text_input(
-            "申请部门",
-            value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+    st.markdown("**申请信息**")
+    title = st.text_input("标题", value=REQUEST_FORM_TITLE, on_change=mark_request_form_dirty)
+    info_col_a, info_col_b = st.columns(2)
+    department = info_col_a.text_input(
+        "申请部门",
+        value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+        on_change=mark_request_form_dirty,
+    )
+    requester = info_col_b.text_input(
+        "申请人",
+        value=get_secret_value("DEFAULT_REQUESTER", ""),
+        on_change=mark_request_form_dirty,
+    )
+    position = info_col_b.text_input(
+        "岗位",
+        value=get_secret_value("DEFAULT_REQUEST_POSITION", ""),
+        on_change=mark_request_form_dirty,
+    )
+
+    st.markdown("**业务信息 Business Information**")
+    biz_col_a, biz_col_b = st.columns(2)
+    customer_name = biz_col_a.text_input("客户名称 Customer Name", on_change=mark_request_form_dirty)
+    country = biz_col_b.text_input("国家 Country", on_change=mark_request_form_dirty)
+    recipient_info = st.text_area(
+        "收件人信息 Recipient Information",
+        placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
+        height=96,
+        on_change=mark_request_form_dirty,
+    )
+    freight_payer = st.selectbox(
+        "运费的承担者 Freight Payer",
+        FREIGHT_PAYER_OPTIONS,
+        on_change=mark_request_form_dirty,
+    )
+    material_usage = st.text_area(
+        "物料用途 Material Usage",
+        placeholder="活动物料请注明具体活动名称",
+        height=76,
+        on_change=mark_request_form_dirty,
+    )
+    uploaded_files = st.file_uploader(
+        "相关附件 Relevant Attachments",
+        accept_multiple_files=True,
+        on_change=mark_request_form_dirty,
+    )
+    attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
+    if uploaded_files:
+        st.caption("当前版本会把附件文件名写入“附件说明/相关附件说明”字段；实际文件仍建议在飞书审批消息或多维表格中补充。")
+
+    st.markdown("**物料明细 Material Details**")
+    for index in range(row_count):
+        st.caption(f"第 {index + 1} 项")
+        product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
+
+        product = product_col.selectbox(
+            "物料品类(Material Category)",
+            products,
+            key=f"request_product_{index}",
+            on_change=mark_request_form_dirty,
         )
-        requester = info_col_b.text_input(
-            "申请人",
-            value=get_secret_value("DEFAULT_REQUESTER", ""),
+        is_no_model_product, scoped_models = product_model_state(product, selection_context)
+        if is_no_model_product:
+            model_options = [NO_MODEL_TEXT]
+        elif scoped_models:
+            model_options = unique_preserve(scoped_models)
+        else:
+            model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
+        if not model_options:
+            model_options = [NO_MODEL_TEXT]
+        model_key = f"request_model_{index}"
+        if st.session_state.get(model_key) not in model_options:
+            st.session_state[model_key] = model_options[0]
+        model = model_col.selectbox(
+            "产品型号(Product Model)",
+            model_options,
+            key=model_key,
+            disabled=is_no_model_product,
+            on_change=mark_request_form_dirty,
         )
-        position = info_col_b.text_input(
-            "岗位",
-            value=get_secret_value("DEFAULT_REQUEST_POSITION", ""),
+        language_options = product_language_options(product, model, selection_context, languages)
+        language_key = f"request_language_{index}"
+        if st.session_state.get(language_key) not in language_options:
+            st.session_state[language_key] = language_options[0] if language_options else ""
+        language = language_col.selectbox(
+            "语种(Language)",
+            language_options,
+            key=language_key,
+            on_change=mark_request_form_dirty,
+        )
+        quantity = qty_col.number_input(
+            "物料数量",
+            min_value=0,
+            max_value=1_000_000,
+            value=0,
+            step=1,
+            key=f"request_quantity_{index}",
+            on_change=mark_request_form_dirty,
+        )
+        remark = st.text_input(
+            "备注",
+            key=f"request_remark_{index}",
+            placeholder="可选",
+            on_change=mark_request_form_dirty,
+        )
+        lines.append(
+            {
+                "product": product,
+                "model": model,
+                "language": language,
+                "quantity": int(quantity),
+                "remark": remark,
+            }
         )
 
-        st.markdown("**业务信息 Business Information**")
-        biz_col_a, biz_col_b = st.columns(2)
-        customer_name = biz_col_a.text_input("客户名称 Customer Name")
-        country = biz_col_b.text_input("国家 Country")
-        recipient_info = st.text_area(
-            "收件人信息 Recipient Information",
-            placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
-            height=96,
-        )
-        freight_payer = st.selectbox(
-            "运费的承担者 Freight Payer",
-            FREIGHT_PAYER_OPTIONS,
-        )
-        material_usage = st.text_area(
-            "物料用途 Material Usage",
-            placeholder="活动物料请注明具体活动名称",
-            height=76,
-        )
-        uploaded_files = st.file_uploader(
-            "相关附件 Relevant Attachments",
-            accept_multiple_files=True,
-        )
-        attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
-        if uploaded_files:
-            st.caption("当前版本会把附件文件名写入“附件说明/相关附件说明”字段；实际文件仍建议在飞书审批消息或多维表格中补充。")
-
-        st.markdown("**物料明细 Material Details**")
-        for index in range(row_count):
-            st.caption(f"第 {index + 1} 项")
-            product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
-
-            product = product_col.selectbox(
-                "物料品类(Material Category)",
-                products,
-                key=f"request_product_{index}",
-            )
-            is_no_model_product, scoped_models = product_model_state(product, selection_context)
-            if is_no_model_product:
-                model_options = [NO_MODEL_TEXT]
-            elif scoped_models:
-                model_options = unique_preserve(scoped_models)
-            else:
-                model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
-            if not model_options:
-                model_options = [NO_MODEL_TEXT]
-            model_key = f"request_model_{index}"
-            if st.session_state.get(model_key) not in model_options:
-                st.session_state[model_key] = model_options[0]
-            model = model_col.selectbox(
-                "产品型号(Product Model)",
-                model_options,
-                key=model_key,
-                disabled=is_no_model_product,
-            )
-            language_options = product_language_options(product, model, selection_context, languages)
-            language_key = f"request_language_{index}"
-            if st.session_state.get(language_key) not in language_options:
-                st.session_state[language_key] = language_options[0] if language_options else ""
-            language = language_col.selectbox(
-                "语种(Language)",
-                language_options,
-                key=language_key,
-            )
-            quantity = qty_col.number_input(
-                "物料数量",
-                min_value=0,
-                max_value=1_000_000,
-                value=0,
-                step=1,
-                key=f"request_quantity_{index}",
-            )
-            remark = st.text_input(
-                "备注",
-                key=f"request_remark_{index}",
-                placeholder="可选",
-            )
-            lines.append(
-                {
-                    "product": product,
-                    "model": model,
-                    "language": language,
-                    "quantity": int(quantity),
-                    "remark": remark,
-                }
-            )
-
-        submitted = st.form_submit_button(
-            "提交申请",
-            type="primary",
-            width="stretch",
-            on_click=mark_request_form_dirty,
-        )
+    submitted = st.button(
+        "提交申请",
+        type="primary",
+        width="stretch",
+        on_click=mark_request_form_dirty,
+    )
 
     if submitted:
         payload = {
