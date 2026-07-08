@@ -1101,17 +1101,13 @@ def material_lookup_by_key() -> dict[tuple[str, str, str], dict]:
     return feishu_inventory_index()
 
 
-def request_usage_summary(lines: list[dict[str, object]]) -> str:
-    usages = unique_preserve([str(item.get("usage", "")).strip() for item in lines])
-    return "；".join(usages)
-
-
 def request_note_text(request_payload: dict[str, object], attachment_note: str = "") -> str:
     parts = [
         ("客户名称", request_payload.get("customer_name")),
         ("国家", request_payload.get("country")),
         ("收件人信息", request_payload.get("recipient_info")),
         ("运费承担者", request_payload.get("freight_payer")),
+        ("物料用途", request_payload.get("material_usage")),
         ("申请人", request_payload.get("requester")),
         ("岗位", request_payload.get("position")),
         ("相关附件", attachment_note),
@@ -1135,12 +1131,10 @@ def submit_feishu_material_request(
         product = str(item.get("product", "")).strip()
         model = str(item.get("model", "")).strip() or NO_MODEL_TEXT
         language = str(item.get("language", "")).strip()
-        usage = str(item.get("usage", "")).strip()
+        remark = str(item.get("remark", "")).strip()
         quantity = int(item.get("quantity") or 0)
         if not product or not model or not language:
             raise RuntimeError("每条明细都需要填写物料品类、产品型号和语种。")
-        if not usage:
-            raise RuntimeError("每条明细都需要填写物料用途。")
         key = (product, model, language)
         if key in seen_keys:
             raise RuntimeError(f"同一申请单内物料重复，请合并数量：{product} / {model} / {language}")
@@ -1154,7 +1148,7 @@ def submit_feishu_material_request(
                 "product": product,
                 "model": model,
                 "language": language,
-                "usage": usage,
+                "remark": remark,
                 "quantity": quantity,
                 "material_record_id": feishu_record_id(material_row),
                 "material_code": feishu_text(material_fields, "物料编码"),
@@ -1164,6 +1158,7 @@ def submit_feishu_material_request(
 
     request_no = next_request_no()
     now = datetime.now()
+    material_usage = str(request_payload.get("material_usage") or "").strip()
     request_fields: dict[str, object] = {
         "申请单号": request_no,
         "标题": request_payload.get("title") or REQUEST_FORM_TITLE,
@@ -1176,8 +1171,9 @@ def submit_feishu_material_request(
         "运费的承担者": request_payload.get("freight_payer"),
         "运费承担者": request_payload.get("freight_payer"),
         "业务类型": "物料领取",
-        "用途/活动": request_usage_summary(prepared_lines),
-        "用途|活动": request_usage_summary(prepared_lines),
+        "用途/活动": material_usage,
+        "用途|活动": material_usage,
+        "物料用途": material_usage,
         "审批状态": REQUEST_STATUS_PENDING,
         "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
         "备注": request_note_text(request_payload, str(request_payload.get("attachment_note") or "")),
@@ -1196,19 +1192,18 @@ def submit_feishu_material_request(
         material_record_id = str(item["material_record_id"])
         line_fields: dict[str, object] = {
             "明细编号": f"{request_no}-{index:02d}",
-            "申请单号": request_no,
-            "物料品类": item["product"],
-            "产品型号": item["model"],
-            "语种": item["language"],
             "申请数量": int(item["quantity"]),
-            "物料数量": int(item["quantity"]),
-            "物料用途": item["usage"],
             "提交时库存快照": int(item["stock_snapshot"]),
             "审批通过数量": int(item["quantity"]),
             "实际发放数量": 0,
             "明细状态": REQUEST_LINE_STATUS_PENDING,
-            "备注": item["usage"],
+            "备注": item["remark"],
         }
+        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["申请单号"], request_no)
+        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["物料品类"], item["product"])
+        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["产品型号"], item["model"])
+        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["语种"], item["language"])
+        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["物料数量"], int(item["quantity"]))
         for request_field in ["所属申请单", "申请单"]:
             if feishu_has_field(REQUEST_LINE_TABLE_NAME, request_field):
                 line_fields[request_field] = request_no if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, request_field) else [request_record_id]
@@ -1225,8 +1220,24 @@ def submit_feishu_material_request(
     client = feishu_client()
     if client is None:
         return request_no, 0
-    for start in range(0, len(line_records), 500):
-        feishu_batch_create_records(REQUEST_LINE_TABLE_NAME, line_records[start : start + 500])
+    created_line_records: list[dict] = []
+    try:
+        for start in range(0, len(line_records), 500):
+            created_line_records.extend(feishu_batch_create_records(REQUEST_LINE_TABLE_NAME, line_records[start : start + 500]))
+    except Exception:
+        line_table_id = feishu_table_id(REQUEST_LINE_TABLE_NAME)
+        for created_line in created_line_records:
+            created_line_id = feishu_record_id(created_line)
+            if created_line_id:
+                try:
+                    client.delete_record(line_table_id, created_line_id)
+                except Exception:
+                    pass
+        try:
+            client.delete_record(feishu_table_id(REQUEST_TABLE_NAME), request_record_id)
+        except Exception:
+            pass
+        raise
     return request_no, len(line_records)
 
 
@@ -1249,6 +1260,7 @@ def load_feishu_request_records() -> list[dict[str, object]]:
                 "country": feishu_text(fields, "国家"),
                 "recipient_info": feishu_text(fields, "收件人信息"),
                 "freight_payer": feishu_text_any(fields, ["运费的承担者", "运费承担者"]),
+                "material_usage": feishu_text_any(fields, ["物料用途", "用途/活动", "用途|活动"]),
                 "status": feishu_text(fields, "审批状态"),
                 "submitted_at": feishu_datetime_text(fields.get("提交时间", "")),
                 "approval_comment": feishu_text(fields, "审批意见"),
@@ -1285,7 +1297,8 @@ def load_feishu_request_line_records() -> list[dict[str, object]]:
                 "model": model,
                 "language": language,
                 "quantity": quantity,
-                "usage": feishu_text_any(fields, ["物料用途", "备注"]),
+                "usage": feishu_text(fields, "物料用途"),
+                "remark": feishu_text(fields, "备注"),
                 "stock_snapshot": feishu_int(fields, "提交时库存快照"),
                 "approved_qty": approved_qty,
                 "actual_issue_qty": actual_qty,
@@ -1938,6 +1951,11 @@ def render_change_form(show_title: bool = True) -> None:
             height=96,
         )
         freight_payer = st.selectbox("运费的承担者 Freight Payer", FREIGHT_PAYER_OPTIONS)
+        material_usage = st.text_area(
+            "物料用途 Material Usage",
+            placeholder="活动物料请注明具体活动名称",
+            height=76,
+        )
         uploaded_files = st.file_uploader("相关附件 Relevant Attachments", accept_multiple_files=True)
         attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
         if uploaded_files:
@@ -1953,15 +1971,32 @@ def render_change_form(show_title: bool = True) -> None:
                 products,
                 key=f"request_product_{index}",
             )
+            is_no_model_product, scoped_models = product_model_state(product, selection_context)
+            if is_no_model_product:
+                model_options = [NO_MODEL_TEXT]
+            elif scoped_models:
+                model_options = unique_preserve(scoped_models)
+            else:
+                model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
+            if not model_options:
+                model_options = [NO_MODEL_TEXT]
+            model_key = f"request_model_{index}"
+            if st.session_state.get(model_key) not in model_options:
+                st.session_state[model_key] = model_options[0]
             model = model_col.selectbox(
                 "产品型号(Product Model)",
-                models,
-                key=f"request_model_{index}",
+                model_options,
+                key=model_key,
+                disabled=is_no_model_product,
             )
+            language_options = product_language_options(product, model, selection_context, languages)
+            language_key = f"request_language_{index}"
+            if st.session_state.get(language_key) not in language_options:
+                st.session_state[language_key] = language_options[0] if language_options else ""
             language = language_col.selectbox(
                 "语种(Language)",
-                languages,
-                key=f"request_language_{index}",
+                language_options,
+                key=language_key,
             )
             quantity = qty_col.number_input(
                 "物料数量",
@@ -1971,10 +2006,10 @@ def render_change_form(show_title: bool = True) -> None:
                 step=1,
                 key=f"request_quantity_{index}",
             )
-            usage = st.text_input(
-                "物料用途(Material Usage)",
-                key=f"request_usage_{index}",
-                placeholder="活动物料请注明具体活动名称",
+            remark = st.text_input(
+                "备注",
+                key=f"request_remark_{index}",
+                placeholder="可选",
             )
             lines.append(
                 {
@@ -1982,7 +2017,7 @@ def render_change_form(show_title: bool = True) -> None:
                     "model": model,
                     "language": language,
                     "quantity": int(quantity),
-                    "usage": usage,
+                    "remark": remark,
                 }
             )
 
@@ -1998,15 +2033,18 @@ def render_change_form(show_title: bool = True) -> None:
             "country": country,
             "recipient_info": recipient_info,
             "freight_payer": freight_payer,
+            "material_usage": material_usage,
             "attachment_note": attachment_note,
         }
         missing = [
             label
             for label, value in [
+                ("申请人", requester),
                 ("客户名称", customer_name),
                 ("国家", country),
                 ("收件人信息", recipient_info),
                 ("运费的承担者", freight_payer),
+                ("物料用途", material_usage),
             ]
             if not str(value).strip()
         ]
@@ -2759,6 +2797,8 @@ def render_approval_view() -> None:
         f"客户：{selected_request.get('customer_name') or '-'}；国家：{selected_request.get('country') or '-'}；"
         f"申请人：{selected_request.get('requester') or '-'}；部门：{selected_request.get('department') or '-'}"
     )
+    if selected_request.get("material_usage"):
+        st.caption(f"物料用途：{selected_request['material_usage']}")
     if selected_request.get("recipient_info"):
         with st.expander("收件人信息"):
             st.write(selected_request["recipient_info"])
@@ -2772,7 +2812,7 @@ def render_approval_view() -> None:
                 "语种": line["language"],
                 "申请数量": int(line["quantity"]),
                 "当前库存快照": int(line.get("stock_snapshot") or 0),
-                "物料用途": line.get("usage", ""),
+                "备注": line.get("remark") or line.get("usage", ""),
                 "明细状态": line.get("status", ""),
                 "实际发放数量": int(line.get("actual_issue_qty") or line.get("quantity") or 0),
             }
