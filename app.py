@@ -943,13 +943,21 @@ def current_app_base_url() -> str:
     return parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path or "/", "", ""))
 
 
+def is_streamlit_community_app_url(url: str) -> bool:
+    hostname = str(parse.urlsplit(url).hostname or "").lower()
+    return hostname.endswith(".streamlit.app") and hostname != "streamlit.app"
+
+
 def feishu_oauth_redirect_uri() -> str:
-    return (
+    configured_uri = (
         get_secret_value("FEISHU_OAUTH_REDIRECT_URI")
         or get_secret_value("APP_PUBLIC_URL")
         or get_secret_value("STREAMLIT_APP_URL")
-        or current_app_base_url()
     ).strip()
+    current_uri = current_app_base_url()
+    if is_streamlit_community_app_url(current_uri):
+        return current_uri
+    return configured_uri or current_uri
 
 
 def build_feishu_authorize_url(redirect_uri: str, state: str) -> str:

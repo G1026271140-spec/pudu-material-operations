@@ -30,6 +30,7 @@ INVENTORY_VIEW_PASSWORD = "376493"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
+# Community Cloud 会自动识别当前 *.streamlit.app 地址；本地、自建或自定义域名部署时再填写。
 FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 ```
 
@@ -59,7 +60,7 @@ FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 - 角色：销售 / 管理员
 - 是否启用：是
 
-飞书开放平台还需要把 `FEISHU_OAUTH_REDIRECT_URI` 配置到网页登录的重定向 URL 白名单。销售会直接进入物料申请页；管理员会默认进入审批发放页，并在侧边栏看到全部管理入口。
+Streamlit Community Cloud 会自动采用当前真实的 `*.streamlit.app` 地址，不依赖手填的随机子域名；本地、自建服务器或自定义域名部署仍使用 `FEISHU_OAUTH_REDIRECT_URI`。无论采用哪种方式，最终回调地址都需要加入飞书开放平台的网页登录重定向 URL 白名单。销售会直接进入物料申请页；管理员会默认进入审批发放页，并在侧边栏看到全部管理入口。
 
 ## 下载备份
 
