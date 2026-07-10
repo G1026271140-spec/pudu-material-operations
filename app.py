@@ -7,6 +7,7 @@ import uuid
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from pathlib import Path
+from urllib import parse
 
 import pandas as pd
 import streamlit as st
@@ -25,6 +26,7 @@ DECREASE_ACTIONS = {ACTION_RECEIVE, "出库减少"}
 INCREASE_ACTIONS = {ACTION_PURCHASE, "入库增加"}
 REQUEST_TABLE_NAME = "物料申请单"
 REQUEST_LINE_TABLE_NAME = "申请明细"
+USER_PERMISSION_TABLE_NAME = "用户权限表"
 REQUEST_NO_PREFIX = "REQ"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
 REQUEST_STATUS_PENDING = "待审批"
@@ -33,6 +35,11 @@ REQUEST_STATUS_ISSUED = "已发放"
 REQUEST_LINE_STATUS_PENDING = "待审批"
 REQUEST_LINE_STATUS_PARTIAL = "部分发放"
 REQUEST_LINE_STATUS_ISSUED = "已发放"
+ROLE_ADMIN = "管理员"
+ROLE_SALES = "销售"
+ROLE_ENABLED_VALUE = "是"
+FEISHU_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
+FEISHU_LOGIN_CONTEXT_KEY = "feishu_login_context"
 FREIGHT_PAYER_OPTIONS = ["", "申请部门承担", "市场部承担", "客户承担", "其他"]
 
 PRODUCT_COL = "物料品类(Material Category)"
@@ -738,7 +745,7 @@ def navigate_to_cache(key: str, label: str = "打开数据缓存页") -> None:
 
 def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
     if st.button(label, key=key, width="stretch"):
-        st.query_params.clear()
+        st.query_params["view"] = "management"
         st.rerun()
 
 
@@ -914,6 +921,293 @@ def feishu_link_ids_any(fields: dict, names: list[str]) -> list[str]:
         if ids:
             return ids
     return []
+
+
+def query_param_value(name: str, default: str = "") -> str:
+    value = st.query_params.get(name, default)
+    if isinstance(value, list):
+        return str(value[0] if value else default)
+    return str(value or default)
+
+
+def current_app_base_url() -> str:
+    try:
+        context_url = str(st.context.url or "")
+    except Exception:
+        context_url = ""
+    if not context_url:
+        return ""
+    parsed = parse.urlsplit(context_url)
+    if not parsed.scheme or not parsed.netloc:
+        return ""
+    return parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path or "/", "", ""))
+
+
+def feishu_oauth_redirect_uri() -> str:
+    return (
+        get_secret_value("FEISHU_OAUTH_REDIRECT_URI")
+        or get_secret_value("APP_PUBLIC_URL")
+        or get_secret_value("STREAMLIT_APP_URL")
+        or current_app_base_url()
+    ).strip()
+
+
+def build_feishu_authorize_url(redirect_uri: str, state: str) -> str:
+    params = {
+        "client_id": feishu_app_id(),
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "state": state,
+    }
+    scope = get_secret_value("FEISHU_OAUTH_SCOPE")
+    if scope:
+        params["scope"] = scope
+    authorize_url = get_secret_value("FEISHU_AUTHORIZE_URL", FEISHU_AUTHORIZE_URL)
+    return authorize_url + "?" + parse.urlencode(params)
+
+
+def oauth_user_access_token(token_data: dict[str, object]) -> str:
+    return str(
+        token_data.get("access_token")
+        or token_data.get("user_access_token")
+        or token_data.get("token")
+        or ""
+    ).strip()
+
+
+def normalize_identity_value(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip()).lower()
+
+
+def identity_sets_from_mapping(data: dict[str, object]) -> tuple[set[str], set[str]]:
+    strong_keys = [
+        "open_id",
+        "user_id",
+        "union_id",
+        "employee_id",
+        "employee_no",
+        "email",
+        "enterprise_email",
+        "mobile",
+        "id",
+    ]
+    weak_keys = ["name", "en_name", "nickname"]
+    strong = {normalize_identity_value(data.get(key)) for key in strong_keys if normalize_identity_value(data.get(key))}
+    weak = {normalize_identity_value(data.get(key)) for key in weak_keys if normalize_identity_value(data.get(key))}
+    return strong, weak
+
+
+def identity_sets_from_user_info(user_info: dict[str, object]) -> tuple[set[str], set[str]]:
+    combined = dict(user_info)
+    nested_data = combined.get("data")
+    if isinstance(nested_data, dict):
+        combined.update(nested_data)
+    return identity_sets_from_mapping(combined)
+
+
+def identity_sets_from_permission_account(value: object) -> tuple[set[str], set[str], str]:
+    raw_items = value if isinstance(value, list) else [value]
+    strong: set[str] = set()
+    weak: set[str] = set()
+    display_names: list[str] = []
+    for item in raw_items:
+        if item in (None, ""):
+            continue
+        if isinstance(item, dict):
+            item_strong, item_weak = identity_sets_from_mapping(item)
+            strong.update(item_strong)
+            weak.update(item_weak)
+            display_name = str(item.get("name") or item.get("en_name") or item.get("email") or item.get("id") or "").strip()
+            if display_name:
+                display_names.append(display_name)
+            continue
+        normalized = normalize_identity_value(item)
+        if not normalized:
+            continue
+        if "@" in normalized or normalized.startswith(("ou_", "on_", "un_", "cli_")):
+            strong.add(normalized)
+        else:
+            weak.add(normalized)
+            display_names.append(str(item).strip())
+    return strong, weak, "、".join(unique_preserve(display_names))
+
+
+def is_permission_enabled(value: str) -> bool:
+    normalized = normalize_identity_value(value)
+    return normalized in {ROLE_ENABLED_VALUE.lower(), "true", "1", "yes", "启用", "已启用"}
+
+
+@st.cache_data(show_spinner=False, ttl=60)
+def load_user_permission_records_snapshot(app_id: str, app_secret: str, app_token: str) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    for row in load_feishu_rows_snapshot(USER_PERMISSION_TABLE_NAME, app_id, app_secret, app_token):
+        fields = feishu_fields(row)
+        role = feishu_text(fields, "角色").strip()
+        enabled = feishu_text(fields, "是否启用").strip()
+        if role not in {ROLE_ADMIN, ROLE_SALES} or not is_permission_enabled(enabled):
+            continue
+        strong, weak, display_name = identity_sets_from_permission_account(fields.get("用户账号"))
+        if not strong and not weak:
+            continue
+        user_no = feishu_text(fields, "用户编号").strip()
+        if user_no:
+            strong.add(normalize_identity_value(user_no))
+        records.append(
+            {
+                "record_id": feishu_record_id(row),
+                "role": role,
+                "enabled": enabled,
+                "display_name": display_name,
+                "strong": sorted(strong),
+                "weak": sorted(weak),
+            }
+        )
+    return records
+
+
+def load_user_permission_records() -> list[dict[str, object]]:
+    return load_user_permission_records_snapshot(*feishu_config_args())
+
+
+def resolve_user_permission(user_info: dict[str, object]) -> dict[str, object] | None:
+    user_strong, user_weak = identity_sets_from_user_info(user_info)
+    for record in load_user_permission_records():
+        if user_strong & set(record.get("strong") or []):
+            return record
+    for record in load_user_permission_records():
+        if user_weak & set(record.get("weak") or []):
+            return record
+    return None
+
+
+def user_display_name(user_info: dict[str, object], permission: dict[str, object] | None = None) -> str:
+    if permission and permission.get("display_name"):
+        return str(permission["display_name"])
+    for key in ["name", "en_name", "email", "enterprise_email", "user_id", "open_id"]:
+        value = str(user_info.get(key) or "").strip()
+        if value:
+            return value
+    return "当前用户"
+
+
+def feishu_login_context_from_code(code: str, redirect_uri: str) -> dict[str, object]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书应用配置不完整，无法登录。")
+    token_data = client.exchange_oauth_code(code, redirect_uri)
+    user_access_token = oauth_user_access_token(token_data)
+    if not user_access_token:
+        raise RuntimeError("飞书 OAuth 未返回 user_access_token。")
+    user_info = client.oauth_user_info(user_access_token)
+    identity_keys = ["open_id", "user_id", "union_id", "employee_id", "employee_no", "email", "enterprise_email", "mobile"]
+    for key in identity_keys:
+        if token_data.get(key) and not user_info.get(key):
+            user_info[key] = token_data[key]
+    permission = resolve_user_permission(user_info)
+    role = str((permission or {}).get("role") or "")
+    return {
+        "user_info": user_info,
+        "permission": permission or {},
+        "role": role,
+        "display_name": user_display_name(user_info, permission),
+    }
+
+
+def current_login_context() -> dict[str, object]:
+    context = st.session_state.get(FEISHU_LOGIN_CONTEXT_KEY)
+    return dict(context) if isinstance(context, dict) else {}
+
+
+def current_user_role() -> str:
+    return str(current_login_context().get("role") or "")
+
+
+def current_user_is_admin() -> bool:
+    return current_user_role() == ROLE_ADMIN
+
+
+def clear_login_context() -> None:
+    st.session_state.pop(FEISHU_LOGIN_CONTEXT_KEY, None)
+    st.session_state.pop("feishu_oauth_state", None)
+    load_user_permission_records_snapshot.clear()
+
+
+def redirect_to_feishu_login(redirect_uri: str) -> None:
+    state = str(uuid.uuid4())
+    st.session_state["feishu_oauth_state"] = state
+    authorize_url = build_feishu_authorize_url(redirect_uri, state)
+    st.info("正在通过飞书识别当前登录人，请稍候...")
+    st.markdown(
+        f'<meta http-equiv="refresh" content="0; url={authorize_url}">',
+        unsafe_allow_html=True,
+    )
+    st.link_button("如果没有自动跳转，点击这里", authorize_url, type="primary")
+    st.stop()
+
+
+def stop_for_unauthorized_user(context: dict[str, object]) -> None:
+    st.error("当前飞书账号未在「用户权限表」中配置为已启用的销售或管理员，暂时不能进入应用。")
+    st.info("请确认「用户账号」已选择当前飞书用户，「角色」为销售/管理员，「是否启用」为是。")
+    user_info = dict(context.get("user_info") or {})
+    if user_info:
+        with st.expander("当前识别到的飞书账号"):
+            st.json(user_info)
+    if st.button("重新识别飞书账号", type="primary"):
+        clear_login_context()
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
+
+
+def ensure_feishu_login_context() -> dict[str, object]:
+    if query_param_value("logout"):
+        clear_login_context()
+        st.query_params.clear()
+        st.rerun()
+
+    existing = current_login_context()
+    if existing.get("role") in {ROLE_ADMIN, ROLE_SALES}:
+        return existing
+    if existing.get("user_info"):
+        stop_for_unauthorized_user(existing)
+
+    redirect_uri = feishu_oauth_redirect_uri()
+    if not redirect_uri:
+        st.error("缺少飞书登录回调地址。请在 Secrets 中配置 FEISHU_OAUTH_REDIRECT_URI。")
+        st.stop()
+
+    code = query_param_value("code")
+    if not code:
+        redirect_to_feishu_login(redirect_uri)
+
+    request_state = query_param_value("state")
+    expected_state = str(st.session_state.get("feishu_oauth_state") or "")
+    if expected_state and request_state and request_state != expected_state:
+        st.error("飞书登录状态校验失败，请重新进入应用。")
+        if st.button("重新登录", type="primary"):
+            clear_login_context()
+            st.query_params.clear()
+            st.rerun()
+        st.stop()
+
+    with st.spinner("正在读取飞书登录身份..."):
+        try:
+            context = feishu_login_context_from_code(code, redirect_uri)
+        except FeishuBitableError:
+            raise
+        except Exception as exc:
+            st.error("飞书登录失败，请检查应用登录配置、回调地址和用户权限表。")
+            st.exception(exc)
+            st.stop()
+    st.session_state[FEISHU_LOGIN_CONTEXT_KEY] = context
+    st.session_state.pop("feishu_oauth_state", None)
+    if context.get("role") not in {ROLE_ADMIN, ROLE_SALES}:
+        st.query_params.clear()
+        stop_for_unauthorized_user(context)
+    st.query_params.clear()
+    if context.get("role") == ROLE_ADMIN:
+        st.query_params["view"] = "approval"
+    st.rerun()
 
 
 def feishu_transaction_status(fields: dict) -> str:
@@ -2065,16 +2359,22 @@ def approval_auth_gate() -> bool:
     return False
 
 
-def render_sidebar_link() -> None:
-    st.sidebar.subheader("审批发放入口")
-    navigate_to_approval("sidebar_open_approval", "打开审批发放页")
-    st.sidebar.caption("审批发放页需要输入审批密码。部署后复制浏览器地址栏链接，即可分享给对应审批人。")
-    st.sidebar.divider()
-    st.sidebar.subheader("数据缓存")
-    navigate_to_cache("sidebar_open_cache", "打开数据缓存页")
-    st.sidebar.caption("登记页会优先读取缓存快照，减少销售打开等待时间。")
-    st.sidebar.divider()
-    st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
+def render_sidebar_link(auth_context: dict[str, object]) -> None:
+    if str(auth_context.get("role") or "") != ROLE_ADMIN:
+        return
+    with st.sidebar:
+        st.subheader("管理员入口")
+        st.caption(f"{auth_context.get('display_name') or '当前用户'} / {ROLE_ADMIN}")
+        navigate_to_approval("sidebar_open_approval", "审批发放页")
+        navigate_to_management("sidebar_open_management", "物料申请管理")
+        navigate_to_inventory("sidebar_open_inventory", "查看实时库存表")
+        navigate_to_cache("sidebar_open_cache", "数据缓存页")
+        st.divider()
+        if st.button("重新识别飞书账号", key="sidebar_logout", width="stretch"):
+            clear_login_context()
+            st.query_params.clear()
+            st.rerun()
+        st.caption("管理员可查看全部页面；销售登录后只会进入物料申请页。")
 
 
 def get_row_count() -> int:
@@ -2126,7 +2426,7 @@ def render_change_form(show_title: bool = True) -> None:
     )
     requester = info_col_b.text_input(
         "申请人",
-        value=get_secret_value("DEFAULT_REQUESTER", ""),
+        value=str(current_login_context().get("display_name") or get_secret_value("DEFAULT_REQUESTER", "")),
         on_change=mark_request_form_dirty,
     )
     position = info_col_b.text_input(
@@ -2955,9 +3255,9 @@ def request_lines_for_request(
     return result
 
 
-def render_approval_view() -> None:
+def render_approval_view(require_password: bool = True) -> None:
     st.title("营销物料审批与发放")
-    if not approval_auth_gate():
+    if require_password and not approval_auth_gate():
         return
 
     navigate_to_management("approval_back_to_management")
@@ -3080,9 +3380,9 @@ def render_approval_view() -> None:
         st.rerun()
 
 
-def render_inventory_view() -> None:
+def render_inventory_view(require_password: bool = True) -> None:
     st.title("实时物料库存表")
-    if not auth_gate():
+    if require_password and not auth_gate():
         return
 
     navigate_to_management("inventory_back_to_management")
@@ -3166,7 +3466,10 @@ def render_cache_page() -> None:
         start_request_form_cache_refresh()
         st.success("已开始后台同步。")
     if action_c.button("返回登记页", width="stretch"):
-        st.query_params.clear()
+        if current_user_is_admin():
+            st.query_params["view"] = "management"
+        else:
+            st.query_params.clear()
         st.rerun()
 
     display_cache = live_cache or static_cache
@@ -3205,19 +3508,26 @@ def main() -> None:
     st.set_page_config(page_title="物料库存管理", layout="wide")
     inject_global_styles()
     stop_on_invalid_feishu_config()
-    render_sidebar_link()
-    render_storage_diagnostics()
 
-    view = st.query_params.get("view", "")
     try:
+        auth_context = ensure_feishu_login_context()
+        role = str(auth_context.get("role") or "")
+        if role == ROLE_SALES:
+            render_change_form(show_title=True)
+            return
+
+        render_sidebar_link(auth_context)
+        render_storage_diagnostics()
+
+        view = query_param_value("view")
         if view == "inventory":
-            render_inventory_view()
-        elif view == "approval":
-            render_approval_view()
+            render_inventory_view(require_password=False)
         elif view == "cache":
             render_cache_page()
-        else:
+        elif view == "management":
             render_management_page()
+        else:
+            render_approval_view(require_password=False)
     except FeishuBitableError as exc:
         render_feishu_error(exc)
 

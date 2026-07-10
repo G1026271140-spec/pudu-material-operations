@@ -108,6 +108,30 @@ class FeishuBitableClient:
             ),
         )
 
+    def exchange_oauth_code(self, code: str, redirect_uri: str) -> dict[str, Any]:
+        response = self._request(
+            "POST",
+            "/authen/v2/oauth/token",
+            auth=False,
+            payload={
+                "grant_type": "authorization_code",
+                "client_id": self.config.app_id,
+                "client_secret": self.config.app_secret,
+                "code": code,
+                "redirect_uri": redirect_uri,
+            },
+        )
+        return dict(response.get("data") or {})
+
+    def oauth_user_info(self, user_access_token: str) -> dict[str, Any]:
+        response = self._request(
+            "GET",
+            "/authen/v1/user_info",
+            auth=False,
+            bearer_token=user_access_token,
+        )
+        return dict(response.get("data") or {})
+
     def discover_schema(self) -> dict[str, Any]:
         tables = self.list_tables()
         result: dict[str, Any] = {"tables": {}}
@@ -158,13 +182,16 @@ class FeishuBitableClient:
         auth: bool = True,
         params: dict[str, Any] | None = None,
         payload: dict[str, Any] | None = None,
+        bearer_token: str | None = None,
     ) -> dict[str, Any]:
         url = FEISHU_OPEN_API + path
         if params:
             url += "?" + parse.urlencode(params)
 
         headers = {"Content-Type": "application/json; charset=utf-8"}
-        if auth:
+        if bearer_token:
+            headers["Authorization"] = f"Bearer {bearer_token}"
+        elif auth:
             headers["Authorization"] = f"Bearer {self.tenant_access_token()}"
 
         body = json.dumps(payload).encode("utf-8") if payload is not None else None
@@ -176,7 +203,7 @@ class FeishuBitableClient:
             text = exc.read().decode("utf-8", errors="replace")
             raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
 
-        if data.get("code") != 0:
+        if str(data.get("code", 0)) != "0":
             raise FeishuBitableError(f"Feishu API {data.get('code')}: {data.get('msg')}")
         return data
 

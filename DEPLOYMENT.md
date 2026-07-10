@@ -30,6 +30,7 @@ INVENTORY_VIEW_PASSWORD = "376493"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
+FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 ```
 
 缺少任意一项飞书配置时，应用会直接停止并提示补齐配置。
@@ -50,6 +51,15 @@ FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
 - 物料申请单
 - 申请明细
 - 库存批量操作
+- 用户权限表
+
+「用户权限表」用于飞书登录后的自动分流，至少需要这些字段：
+
+- 用户账号
+- 角色：销售 / 管理员
+- 是否启用：是
+
+飞书开放平台还需要把 `FEISHU_OAUTH_REDIRECT_URI` 配置到网页登录的重定向 URL 白名单。销售会直接进入物料申请页；管理员会默认进入审批发放页，并在侧边栏看到全部管理入口。
 
 ## 下载备份
 
