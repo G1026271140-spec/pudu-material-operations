@@ -56,7 +56,7 @@ FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 - 库存批量操作
 - 用户权限表
 
-飞书应用需要开通多维表格读写权限和网页登录 OAuth，并在目标多维表格右上角 `... -> 更多 -> 添加文档应用` 中添加为文档应用。Streamlit Community Cloud 会自动采用用户正在访问的真实 `*.streamlit.app` 地址，并通过 `/app/static/oauth_callback.html` 接收飞书回调，避免手填随机子域名出错；该完整回调地址仍需加入飞书开放平台的重定向 URL 白名单。
+飞书应用需要开通多维表格读写权限和网页登录 OAuth，并在目标多维表格右上角 `... -> 更多 -> 添加文档应用` 中添加为文档应用。Streamlit Community Cloud 会自动采用用户正在访问的真实 `*.streamlit.app` 地址，并通过 `/~/+/app/static/oauth_callback.html` 接收飞书回调，避免手填随机子域名出错；该完整回调地址仍需加入飞书开放平台的重定向 URL 白名单。本地、自建或自定义域名部署使用 `/app/static/oauth_callback.html`。
 
 「用户权限表」需要包含 `用户账号`、`角色`、`是否启用` 字段。`角色` 只使用 `销售` / `管理员`，`是否启用` 填 `是` 后才会生效。
 

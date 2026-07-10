@@ -41,6 +41,7 @@ ROLE_ENABLED_VALUE = "是"
 FEISHU_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
 FEISHU_LOGIN_CONTEXT_KEY = "feishu_login_context"
 FEISHU_OAUTH_CALLBACK_PATH = "/app/static/oauth_callback.html"
+STREAMLIT_COMMUNITY_OAUTH_CALLBACK_PATH = "/~/+/app/static/oauth_callback.html"
 FREIGHT_PAYER_OPTIONS = ["", "申请部门承担", "市场部承担", "客户承担", "其他"]
 
 PRODUCT_COL = "物料品类(Material Category)"
@@ -949,11 +950,11 @@ def is_streamlit_community_app_url(url: str) -> bool:
     return hostname.endswith(".streamlit.app") and hostname != "streamlit.app"
 
 
-def oauth_callback_uri(app_url: str) -> str:
+def oauth_callback_uri(app_url: str, callback_path: str = FEISHU_OAUTH_CALLBACK_PATH) -> str:
     parsed = parse.urlsplit(app_url)
     if not parsed.scheme or not parsed.netloc:
         return ""
-    return parse.urlunsplit((parsed.scheme, parsed.netloc, FEISHU_OAUTH_CALLBACK_PATH, "", ""))
+    return parse.urlunsplit((parsed.scheme, parsed.netloc, callback_path, "", ""))
 
 
 def feishu_oauth_redirect_uri() -> str:
@@ -964,7 +965,7 @@ def feishu_oauth_redirect_uri() -> str:
     ).strip()
     current_uri = current_app_base_url()
     if is_streamlit_community_app_url(current_uri):
-        return oauth_callback_uri(current_uri)
+        return oauth_callback_uri(current_uri, STREAMLIT_COMMUNITY_OAUTH_CALLBACK_PATH)
     return oauth_callback_uri(configured_uri or current_uri)
 
 

@@ -60,7 +60,7 @@ FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 - 角色：销售 / 管理员
 - 是否启用：是
 
-Streamlit Community Cloud 会自动采用当前真实的 `*.streamlit.app` 地址，不依赖手填的随机子域名；本地、自建服务器或自定义域名部署仍使用 `FEISHU_OAUTH_REDIRECT_URI`。应用会在部署地址后追加 `/app/static/oauth_callback.html` 作为最终回调地址，该完整地址需要加入飞书开放平台的网页登录重定向 URL 白名单。销售会直接进入物料申请页；管理员会默认进入审批发放页，并在侧边栏看到全部管理入口。
+Streamlit Community Cloud 会自动采用当前真实的 `*.streamlit.app` 地址，不依赖手填的随机子域名，并追加 `/~/+/app/static/oauth_callback.html` 作为最终回调地址；本地、自建服务器或自定义域名部署仍使用 `FEISHU_OAUTH_REDIRECT_URI`，并追加 `/app/static/oauth_callback.html`。最终完整地址需要加入飞书开放平台的网页登录重定向 URL 白名单。销售会直接进入物料申请页；管理员会默认进入审批发放页，并在侧边栏看到全部管理入口。
 
 ## 下载备份
 
