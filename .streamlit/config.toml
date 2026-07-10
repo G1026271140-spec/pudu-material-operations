@@ -1,6 +1,7 @@
 [server]
 address = "0.0.0.0"
 headless = true
+enableStaticServing = true
 
 [browser]
 gatherUsageStats = false

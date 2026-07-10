@@ -40,6 +40,7 @@ ROLE_SALES = "销售"
 ROLE_ENABLED_VALUE = "是"
 FEISHU_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
 FEISHU_LOGIN_CONTEXT_KEY = "feishu_login_context"
+FEISHU_OAUTH_CALLBACK_PATH = "/app/static/oauth_callback.html"
 FREIGHT_PAYER_OPTIONS = ["", "申请部门承担", "市场部承担", "客户承担", "其他"]
 
 PRODUCT_COL = "物料品类(Material Category)"
@@ -948,6 +949,13 @@ def is_streamlit_community_app_url(url: str) -> bool:
     return hostname.endswith(".streamlit.app") and hostname != "streamlit.app"
 
 
+def oauth_callback_uri(app_url: str) -> str:
+    parsed = parse.urlsplit(app_url)
+    if not parsed.scheme or not parsed.netloc:
+        return ""
+    return parse.urlunsplit((parsed.scheme, parsed.netloc, FEISHU_OAUTH_CALLBACK_PATH, "", ""))
+
+
 def feishu_oauth_redirect_uri() -> str:
     configured_uri = (
         get_secret_value("FEISHU_OAUTH_REDIRECT_URI")
@@ -956,8 +964,8 @@ def feishu_oauth_redirect_uri() -> str:
     ).strip()
     current_uri = current_app_base_url()
     if is_streamlit_community_app_url(current_uri):
-        return current_uri
-    return configured_uri or current_uri
+        return oauth_callback_uri(current_uri)
+    return oauth_callback_uri(configured_uri or current_uri)
 
 
 def build_feishu_authorize_url(redirect_uri: str, state: str) -> str:
@@ -1146,7 +1154,7 @@ def redirect_to_feishu_login(redirect_uri: str) -> None:
     authorize_url = build_feishu_authorize_url(redirect_uri, state)
     st.info("正在通过飞书识别当前登录人，请稍候...")
     st.html(
-        f"<script>window.top.location.replace({json.dumps(authorize_url)});</script>",
+        f"<script>window.location.replace({json.dumps(authorize_url)});</script>",
         unsafe_allow_javascript=True,
     )
     st.link_button("如果没有自动跳转，点击这里", authorize_url, type="primary")
