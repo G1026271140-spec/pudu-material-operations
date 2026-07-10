@@ -121,7 +121,10 @@ class FeishuBitableClient:
                 "redirect_uri": redirect_uri,
             },
         )
-        return dict(response.get("data") or {})
+        data = response.get("data")
+        if isinstance(data, dict) and data.get("access_token"):
+            return dict(data)
+        return dict(response)
 
     def oauth_user_info(self, user_access_token: str) -> dict[str, Any]:
         response = self._request(
