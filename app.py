@@ -1145,9 +1145,9 @@ def redirect_to_feishu_login(redirect_uri: str) -> None:
     st.session_state["feishu_oauth_state"] = state
     authorize_url = build_feishu_authorize_url(redirect_uri, state)
     st.info("正在通过飞书识别当前登录人，请稍候...")
-    st.markdown(
-        f'<meta http-equiv="refresh" content="0; url={authorize_url}">',
-        unsafe_allow_html=True,
+    st.html(
+        f"<script>window.top.location.replace({json.dumps(authorize_url)});</script>",
+        unsafe_allow_javascript=True,
     )
     st.link_button("如果没有自动跳转，点击这里", authorize_url, type="primary")
     st.stop()
@@ -1182,6 +1182,16 @@ def ensure_feishu_login_context() -> dict[str, object]:
     redirect_uri = feishu_oauth_redirect_uri()
     if not redirect_uri:
         st.error("缺少飞书登录回调地址。请在 Secrets 中配置 FEISHU_OAUTH_REDIRECT_URI。")
+        st.stop()
+
+    oauth_error = query_param_value("error")
+    if oauth_error:
+        st.error("飞书登录未完成，应用已停止自动重试，避免重复扫码。")
+        st.caption(f"飞书返回：{oauth_error}")
+        if st.button("重新登录", type="primary"):
+            clear_login_context()
+            st.query_params.clear()
+            st.rerun()
         st.stop()
 
     code = query_param_value("code")
