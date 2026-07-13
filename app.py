@@ -730,12 +730,6 @@ def navigate_to_approval(key: str, label: str = "打开审批发放页") -> None
         st.rerun()
 
 
-def navigate_to_cache(key: str, label: str = "打开数据缓存页") -> None:
-    if st.button(label, key=key, width="stretch"):
-        st.query_params["view"] = "cache"
-        st.rerun()
-
-
 def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
     if st.button(label, key=key, width="stretch"):
         st.query_params.clear()
@@ -2066,15 +2060,25 @@ def approval_auth_gate() -> bool:
 
 
 def render_sidebar_link() -> None:
-    st.sidebar.subheader("审批发放入口")
-    navigate_to_approval("sidebar_open_approval", "打开审批发放页")
-    st.sidebar.caption("审批发放页需要输入审批密码。部署后复制浏览器地址栏链接，即可分享给对应审批人。")
-    st.sidebar.divider()
-    st.sidebar.subheader("数据缓存")
-    navigate_to_cache("sidebar_open_cache", "打开数据缓存页")
-    st.sidebar.caption("登记页会优先读取缓存快照，减少销售打开等待时间。")
-    st.sidebar.divider()
-    st.sidebar.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
+    with st.sidebar:
+        st.subheader("审批发放入口")
+        navigate_to_approval("sidebar_open_approval", "打开审批发放页")
+        st.caption("审批发放页需要输入审批密码。部署后复制浏览器地址栏链接，即可分享给对应审批人。")
+        st.divider()
+        if st.button("点击更新缓存", key="sidebar_refresh_data", width="stretch"):
+            with st.spinner("正在同步飞书数据库..."):
+                try:
+                    st.cache_data.clear()
+                    reset_request_form_cache_lock()
+                    data = refresh_request_form_cache_sync()
+                except Exception as exc:
+                    st.error("数据库同步失败。")
+                    st.exception(exc)
+                else:
+                    st.session_state["request_form_cache_data"] = data
+                    st.success("数据库数据已同步。")
+        st.divider()
+        st.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
 
 def get_row_count() -> int:
@@ -3137,53 +3141,6 @@ def render_inventory_view() -> None:
     render_download_center(df, filtered)
 
 
-def render_cache_page() -> None:
-    st.title("数据缓存")
-    static_cache = load_static_request_form_cache()
-    state = request_form_cache_state()
-    live_cache = state.get("data") if isinstance(state.get("data"), dict) else {}
-
-    metric_a, metric_b, metric_c = st.columns(3)
-    metric_a.metric("静态缓存行数", f"{int(static_cache.get('row_count') or 0):,}")
-    metric_b.metric("静态缓存时间", str(static_cache.get("generated_at") or "-"))
-    metric_c.metric("后台状态", "同步中" if state.get("refreshing") else "就绪")
-    if state.get("error"):
-        st.error(str(state["error"]))
-
-    action_a, action_b, action_c = st.columns([1, 1, 1])
-    if action_a.button("刷新当前会话缓存", type="primary", width="stretch"):
-        with st.spinner("正在同步飞书数据..."):
-            try:
-                data = refresh_request_form_cache_sync()
-            except Exception as exc:
-                st.error("刷新失败")
-                st.exception(exc)
-                return
-        st.session_state["request_form_cache_data"] = data
-        st.session_state.pop("request_form_cache_locked", None)
-        st.success("当前会话缓存已更新。")
-    if action_b.button("后台同步一次", width="stretch"):
-        start_request_form_cache_refresh()
-        st.success("已开始后台同步。")
-    if action_c.button("返回登记页", width="stretch"):
-        st.query_params.clear()
-        st.rerun()
-
-    display_cache = live_cache or static_cache
-    st.subheader("当前可用缓存")
-    st.caption(
-        f"来源：{display_cache.get('source') or '-'}；"
-        f"生成时间：{display_cache.get('generated_at') or '-'}；"
-        f"物料行：{int(display_cache.get('row_count') or 0):,}"
-    )
-    rows = list(display_cache.get("inventory_rows") or [])
-    if rows:
-        preview_df = pd.DataFrame(rows[:200])
-        st.dataframe(preview_df, width="stretch", hide_index=True, height=360)
-    else:
-        st.info("暂无缓存数据。")
-
-
 def render_management_page() -> None:
     st.title("物料库存管理")
     management_section = st.radio(
@@ -3214,8 +3171,6 @@ def main() -> None:
             render_inventory_view()
         elif view == "approval":
             render_approval_view()
-        elif view == "cache":
-            render_cache_page()
         else:
             render_management_page()
     except FeishuBitableError as exc:
