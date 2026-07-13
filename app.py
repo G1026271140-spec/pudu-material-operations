@@ -5,6 +5,7 @@ import re
 import threading
 import uuid
 from datetime import date, datetime, timedelta
+from html import escape
 from io import BytesIO
 from pathlib import Path
 
@@ -33,7 +34,9 @@ REQUEST_STATUS_ISSUED = "已发放"
 REQUEST_LINE_STATUS_PENDING = "待审批"
 REQUEST_LINE_STATUS_PARTIAL = "部分发放"
 REQUEST_LINE_STATUS_ISSUED = "已发放"
-FREIGHT_PAYER_OPTIONS = ["", "申请部门承担", "市场部承担", "客户承担", "其他"]
+FREIGHT_PAYER_OPTIONS = ["申请部门承担", "市场部承担", "客户承担", "其他"]
+MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
+MAX_ATTACHMENTS_PER_REQUEST = 100
 
 PRODUCT_COL = "物料品类(Material Category)"
 MODEL_COL = "产品型号(Product Model)"
@@ -143,6 +146,15 @@ def inject_global_styles() -> None:
             border: 1px solid rgba(118, 138, 160, 0.26);
             border-radius: 10px;
             overflow: hidden;
+        }
+        .pudu-field-label {
+            color: var(--pudu-ink);
+            font-size: 0.875rem;
+            margin: 0 0 0.25rem;
+        }
+        .pudu-required-star {
+            color: #DC2626;
+            font-weight: 800;
         }
         </style>
         """,
@@ -1274,7 +1286,6 @@ def request_note_text(request_payload: dict[str, object], attachment_note: str =
         ("运费承担者", request_payload.get("freight_payer")),
         ("物料用途", request_payload.get("material_usage")),
         ("申请人", request_payload.get("requester")),
-        ("岗位", request_payload.get("position")),
         ("相关附件", attachment_note),
     ]
     return "\n".join(f"{label}：{str(value).strip()}" for label, value in parts if str(value or "").strip())
@@ -1324,6 +1335,24 @@ def submit_feishu_material_request(
     request_no = next_request_no()
     now = datetime.now()
     material_usage = str(request_payload.get("material_usage") or "").strip()
+    attachments = list(request_payload.get("attachments") or [])
+    attachment_values: list[dict[str, str]] = []
+    if attachments:
+        if not feishu_has_field(REQUEST_TABLE_NAME, "相关附件"):
+            raise RuntimeError("物料申请单缺少“相关附件”附件字段。")
+        if feishu_field_type(REQUEST_TABLE_NAME, "相关附件") != 17:
+            raise RuntimeError("物料申请单的“相关附件”必须是附件类型字段。")
+        client = feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法上传附件。")
+        for attachment in attachments:
+            file_token = client.upload_media(
+                str(attachment.get("name") or ""),
+                bytes(attachment.get("content") or b""),
+                str(attachment.get("content_type") or "application/octet-stream"),
+            )
+            attachment_values.append({"file_token": file_token})
+
     request_fields: dict[str, object] = {
         "申请单号": request_no,
         "标题": request_payload.get("title") or REQUEST_FORM_TITLE,
@@ -1343,8 +1372,9 @@ def submit_feishu_material_request(
         "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
         "备注": request_note_text(request_payload, str(request_payload.get("attachment_note") or "")),
     }
+    if attachment_values:
+        request_fields["相关附件"] = attachment_values
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人", "申请人姓名"], request_payload.get("requester"))
-    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["岗位", "职位"], request_payload.get("position"))
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["附件说明", "相关附件说明"], request_payload.get("attachment_note"))
 
     request_record = feishu_create_record(REQUEST_TABLE_NAME, request_fields)
@@ -2094,6 +2124,19 @@ def get_row_count() -> int:
     )
 
 
+def build_request_title(material_usage: object, requester: object) -> str:
+    usage_text = str(material_usage or "").strip() or "物料用途"
+    requester_text = str(requester or "").strip() or "申请人"
+    return f"{usage_text}-{requester_text}-营销物料领取"
+
+
+def required_field_label(container: object, label: str) -> None:
+    container.markdown(
+        f'<div class="pudu-field-label">{escape(label)} <span class="pudu-required-star">*</span></div>',
+        unsafe_allow_html=True,
+    )
+
+
 def render_change_form(show_title: bool = True) -> None:
     selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
@@ -2117,67 +2160,90 @@ def render_change_form(show_title: bool = True) -> None:
     if message:
         st.success(message)
 
-    row_count = get_row_count()
     lines: list[dict[str, object]] = []
 
     st.markdown("**申请信息**")
-    title = st.text_input("标题", value=REQUEST_FORM_TITLE, on_change=mark_request_form_dirty)
+    requester_key = "request_requester"
+    material_usage_key = "request_material_usage"
+    if requester_key not in st.session_state:
+        st.session_state[requester_key] = get_secret_value("DEFAULT_REQUESTER", "")
+    st.session_state["request_title_display"] = build_request_title(
+        st.session_state.get(material_usage_key, ""),
+        st.session_state.get(requester_key, ""),
+    )
+    st.text_input("标题", key="request_title_display", disabled=True)
     info_col_a, info_col_b = st.columns(2)
     department = info_col_a.text_input(
         "申请部门",
         value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
         on_change=mark_request_form_dirty,
     )
+    required_field_label(info_col_b, "申请人")
     requester = info_col_b.text_input(
         "申请人",
-        value=get_secret_value("DEFAULT_REQUESTER", ""),
-        on_change=mark_request_form_dirty,
-    )
-    position = info_col_b.text_input(
-        "岗位",
-        value=get_secret_value("DEFAULT_REQUEST_POSITION", ""),
+        key=requester_key,
+        label_visibility="collapsed",
         on_change=mark_request_form_dirty,
     )
 
     st.markdown("**业务信息 Business Information**")
     biz_col_a, biz_col_b = st.columns(2)
-    customer_name = biz_col_a.text_input("客户名称 Customer Name", on_change=mark_request_form_dirty)
-    country = biz_col_b.text_input("国家 Country", on_change=mark_request_form_dirty)
+    required_field_label(biz_col_a, "客户名称 Customer Name")
+    customer_name = biz_col_a.text_input(
+        "客户名称 Customer Name",
+        label_visibility="collapsed",
+        on_change=mark_request_form_dirty,
+    )
+    required_field_label(biz_col_b, "国家 Country")
+    country = biz_col_b.text_input(
+        "国家 Country",
+        label_visibility="collapsed",
+        on_change=mark_request_form_dirty,
+    )
+    required_field_label(st, "收件人信息 Recipient Information")
     recipient_info = st.text_area(
         "收件人信息 Recipient Information",
         placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
         height=96,
+        label_visibility="collapsed",
         on_change=mark_request_form_dirty,
     )
+    required_field_label(st, "运费的承担者 Freight Payer")
     freight_payer = st.selectbox(
         "运费的承担者 Freight Payer",
         FREIGHT_PAYER_OPTIONS,
+        label_visibility="collapsed",
         on_change=mark_request_form_dirty,
     )
+    required_field_label(st, "物料用途 Material Usage")
     material_usage = st.text_area(
         "物料用途 Material Usage",
         placeholder="活动物料请注明具体活动名称",
         height=76,
+        key=material_usage_key,
+        label_visibility="collapsed",
         on_change=mark_request_form_dirty,
     )
     uploaded_files = st.file_uploader(
         "相关附件 Relevant Attachments",
         accept_multiple_files=True,
+        help="单个附件不超过 20 MB，最多上传 100 个。",
         on_change=mark_request_form_dirty,
     )
     attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
-    if uploaded_files:
-        st.caption("当前版本会把附件文件名写入“附件说明/相关附件说明”字段；实际文件仍建议在飞书审批消息或多维表格中补充。")
 
     st.markdown("**物料明细 Material Details**")
+    row_count = get_row_count()
     for index in range(row_count):
         st.caption(f"第 {index + 1} 项")
         product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
 
+        required_field_label(product_col, "物料品类(Material Category)")
         product = product_col.selectbox(
             "物料品类(Material Category)",
             products,
             key=f"request_product_{index}",
+            label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
         is_no_model_product, scoped_models = product_model_state(product, selection_context)
@@ -2192,23 +2258,28 @@ def render_change_form(show_title: bool = True) -> None:
         model_key = f"request_model_{index}"
         if st.session_state.get(model_key) not in model_options:
             st.session_state[model_key] = model_options[0]
+        required_field_label(model_col, "产品型号(Product Model)")
         model = model_col.selectbox(
             "产品型号(Product Model)",
             model_options,
             key=model_key,
             disabled=is_no_model_product,
+            label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
         language_options = product_language_options(product, model, selection_context, languages)
         language_key = f"request_language_{index}"
         if st.session_state.get(language_key) not in language_options:
             st.session_state[language_key] = language_options[0] if language_options else ""
+        required_field_label(language_col, "语种(Language)")
         language = language_col.selectbox(
             "语种(Language)",
             language_options,
             key=language_key,
+            label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        required_field_label(qty_col, "物料数量")
         quantity = qty_col.number_input(
             "物料数量",
             min_value=0,
@@ -2216,6 +2287,7 @@ def render_change_form(show_title: bool = True) -> None:
             value=0,
             step=1,
             key=f"request_quantity_{index}",
+            label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
         remark = st.text_input(
@@ -2242,17 +2314,32 @@ def render_change_form(show_title: bool = True) -> None:
     )
 
     if submitted:
+        if len(uploaded_files) > MAX_ATTACHMENTS_PER_REQUEST:
+            st.warning(f"相关附件最多上传 {MAX_ATTACHMENTS_PER_REQUEST} 个。")
+            return
+        oversized_files = [file.name for file in uploaded_files if int(file.size) > MAX_ATTACHMENT_SIZE_BYTES]
+        if oversized_files:
+            st.warning("以下附件超过飞书单文件 20 MB 限制：" + "、".join(oversized_files))
+            return
+        generated_title = build_request_title(material_usage, requester)
         payload = {
-            "title": title,
+            "title": generated_title,
             "department": department,
             "requester": requester,
-            "position": position,
             "customer_name": customer_name,
             "country": country,
             "recipient_info": recipient_info,
             "freight_payer": freight_payer,
             "material_usage": material_usage,
             "attachment_note": attachment_note,
+            "attachments": [
+                {
+                    "name": file.name,
+                    "content": file.getvalue(),
+                    "content_type": file.type or "application/octet-stream",
+                }
+                for file in uploaded_files
+            ],
         }
         missing = [
             label

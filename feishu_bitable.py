@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+import uuid
 from dataclasses import dataclass
 from typing import Any
 from urllib import error, parse, request
@@ -72,6 +73,64 @@ class FeishuBitableClient:
             payload=payload,
         )
         return dict(response.get("data", {}).get("field", {}))
+
+    def upload_media(
+        self,
+        file_name: str,
+        content: bytes,
+        content_type: str = "application/octet-stream",
+    ) -> str:
+        normalized_name = file_name.strip()
+        if not normalized_name:
+            raise FeishuBitableError("Attachment file name cannot be empty.")
+        if len(normalized_name) > 250:
+            raise FeishuBitableError(f"Attachment file name is too long: {normalized_name}")
+        if not content:
+            raise FeishuBitableError(f"Attachment file is empty: {normalized_name}")
+        if len(content) > 20 * 1024 * 1024:
+            raise FeishuBitableError(f"Attachment exceeds Feishu's 20 MB limit: {normalized_name}")
+
+        boundary = f"----PuduMaterialInventory{uuid.uuid4().hex}"
+        body = bytearray()
+
+        def add_text_field(name: str, value: str) -> None:
+            body.extend(f"--{boundary}\r\n".encode("ascii"))
+            body.extend(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode("ascii"))
+            body.extend(value.encode("utf-8"))
+            body.extend(b"\r\n")
+
+        add_text_field("file_name", normalized_name)
+        add_text_field("parent_type", "bitable_file")
+        add_text_field("parent_node", self.config.app_token)
+        add_text_field("size", str(len(content)))
+        body.extend(f"--{boundary}\r\n".encode("ascii"))
+        body.extend(b'Content-Disposition: form-data; name="file"; filename="upload"\r\n')
+        body.extend(f"Content-Type: {content_type or 'application/octet-stream'}\r\n\r\n".encode("ascii"))
+        body.extend(content)
+        body.extend(f"\r\n--{boundary}--\r\n".encode("ascii"))
+
+        req = request.Request(
+            FEISHU_OPEN_API + "/drive/v1/medias/upload_all",
+            data=bytes(body),
+            headers={
+                "Authorization": f"Bearer {self.tenant_access_token()}",
+                "Content-Type": f"multipart/form-data; boundary={boundary}",
+            },
+            method="POST",
+        )
+        try:
+            with request.urlopen(req, timeout=60) as response:
+                data = json.loads(response.read().decode("utf-8"))
+        except error.HTTPError as exc:
+            text = exc.read().decode("utf-8", errors="replace")
+            raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
+
+        if data.get("code") != 0:
+            raise FeishuBitableError(f"Feishu API {data.get('code')}: {data.get('msg')}")
+        file_token = str(data.get("data", {}).get("file_token", "")).strip()
+        if not file_token:
+            raise FeishuBitableError("Feishu did not return an attachment file_token.")
+        return file_token
 
     def list_records(self, table_id: str, page_size: int = 500) -> list[dict[str, Any]]:
         return self._paged_get(
