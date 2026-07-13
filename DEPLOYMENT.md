@@ -30,8 +30,6 @@ INVENTORY_VIEW_PASSWORD = "376493"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
-# Community Cloud 会自动识别当前 *.streamlit.app 地址；本地、自建或自定义域名部署时再填写。
-FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 ```
 
 缺少任意一项飞书配置时，应用会直接停止并提示补齐配置。
@@ -52,15 +50,6 @@ FEISHU_OAUTH_REDIRECT_URI = "https://你的Streamlit应用地址/"
 - 物料申请单
 - 申请明细
 - 库存批量操作
-- 用户权限表
-
-「用户权限表」用于飞书登录后的自动分流，至少需要这些字段：
-
-- 用户账号
-- 角色：销售 / 管理员
-- 是否启用：是
-
-Streamlit Community Cloud 会自动采用当前真实的 `*.streamlit.app` 地址，不依赖手填的随机子域名，并追加 `/~/+/app/static/oauth_callback.html` 作为最终回调地址；本地、自建服务器或自定义域名部署仍使用 `FEISHU_OAUTH_REDIRECT_URI`，并追加 `/app/static/oauth_callback.html`。最终完整地址需要加入飞书开放平台的网页登录重定向 URL 白名单。销售会直接进入物料申请页；管理员会默认进入审批发放页，并在侧边栏看到全部管理入口。
 
 ## 下载备份
 
