@@ -1523,10 +1523,7 @@ def issue_request_lines(
 
     for line in edited_lines:
         actual_qty = int(line.get("actual_issue_qty") or 0)
-        requested_qty = int(line.get("quantity") or 0)
         previous_actual_qty = int(line.get("previous_actual_issue_qty") or 0)
-        if actual_qty > requested_qty:
-            raise RuntimeError(f"{line['product']} / {line['model']} / {line['language']} 实际发放数量不能大于申请数量。")
         if actual_qty < previous_actual_qty:
             raise RuntimeError(f"{line['product']} / {line['model']} / {line['language']} 实际发放数量不能小于已记录数量。")
 
