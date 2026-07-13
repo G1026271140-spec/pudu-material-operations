@@ -811,6 +811,13 @@ def feishu_rows(table_name: str) -> list[dict]:
     return load_feishu_rows_snapshot(table_name, *feishu_config_args())
 
 
+def fresh_feishu_rows(table_name: str) -> list[dict]:
+    client = feishu_client()
+    if client is None:
+        return []
+    return client.list_records(feishu_table_id(table_name))
+
+
 def feishu_record_id(row: dict) -> str:
     return str(row.get("record_id") or row.get("id") or "")
 
@@ -1265,13 +1272,111 @@ def next_request_no() -> str:
     today = datetime.now().strftime("%Y%m%d")
     prefix = f"{REQUEST_NO_PREFIX}-{today}-"
     max_number = 0
-    for row in feishu_rows(REQUEST_TABLE_NAME):
+    for row in fresh_feishu_rows(REQUEST_TABLE_NAME):
         request_no = feishu_text(feishu_fields(row), "申请单号")
         if request_no.startswith(prefix):
             suffix = request_no.removeprefix(prefix)
             if suffix.isdigit():
                 max_number = max(max_number, int(suffix))
     return f"{prefix}{max_number + 1:03d}"
+
+
+def request_row_sort_key(row: dict) -> tuple[int, str]:
+    submitted_value = feishu_fields(row).get("提交时间", 0)
+    try:
+        submitted_at = int(submitted_value)
+    except (TypeError, ValueError):
+        submitted_at = 0
+    return submitted_at, feishu_record_id(row)
+
+
+def submission_token_rows(submission_token: str) -> list[dict]:
+    if not submission_token or not feishu_has_field(REQUEST_TABLE_NAME, "提交幂等键"):
+        return []
+    rows = [
+        row
+        for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
+        if feishu_text(feishu_fields(row), "提交幂等键") == submission_token
+    ]
+    return sorted(rows, key=request_row_sort_key)
+
+
+def request_line_rows_by_request_id() -> tuple[list[dict], dict[str, list[dict]]]:
+    rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+    result: dict[str, list[dict]] = {}
+    for row in rows:
+        request_ids = feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
+        for request_id in request_ids:
+            result.setdefault(str(request_id), []).append(row)
+    return rows, result
+
+
+def find_completed_submission(submission_token: str) -> tuple[dict, int] | None:
+    request_rows = submission_token_rows(submission_token)
+    if not request_rows:
+        return None
+    _, lines_by_request_id = request_line_rows_by_request_id()
+    for row in request_rows:
+        line_count = len(lines_by_request_id.get(feishu_record_id(row), []))
+        if line_count > 0:
+            return row, line_count
+    return None
+
+
+def ensure_unique_request_no(request_record_id: str, request_no: str, submission_token: str) -> str:
+    client = feishu_client()
+    if client is None:
+        return request_no
+    current_request_no = request_no
+    for _ in range(5):
+        matching_rows = [
+            row
+            for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
+            if feishu_text(feishu_fields(row), "申请单号") == current_request_no
+        ]
+        if len(matching_rows) <= 1:
+            return current_request_no
+        matching_rows.sort(key=request_row_sort_key)
+        canonical_row = matching_rows[0]
+        if feishu_record_id(canonical_row) == request_record_id:
+            return current_request_no
+        canonical_token = feishu_text(feishu_fields(canonical_row), "提交幂等键")
+        if submission_token and canonical_token == submission_token:
+            return current_request_no
+        current_request_no = next_request_no()
+        client.update_record(
+            feishu_table_id(REQUEST_TABLE_NAME),
+            request_record_id,
+            {"申请单号": current_request_no},
+        )
+    raise RuntimeError("申请单号并发冲突，请重新提交。")
+
+
+def reconcile_submission_duplicates(submission_token: str, current_request_id: str) -> tuple[dict | None, int]:
+    client = feishu_client()
+    if client is None or not submission_token:
+        return None, 0
+    request_rows = submission_token_rows(submission_token)
+    if len(request_rows) <= 1:
+        return (request_rows[0], 0) if request_rows else (None, 0)
+
+    _, lines_by_request_id = request_line_rows_by_request_id()
+    completed_rows = [row for row in request_rows if lines_by_request_id.get(feishu_record_id(row))]
+    if len(completed_rows) <= 1:
+        current_row = next((row for row in request_rows if feishu_record_id(row) == current_request_id), None)
+        return current_row, 0
+
+    completed_rows.sort(key=request_row_sort_key)
+    canonical_row = completed_rows[0]
+    canonical_id = feishu_record_id(canonical_row)
+    removed_count = 0
+    for duplicate_row in completed_rows[1:]:
+        duplicate_id = feishu_record_id(duplicate_row)
+        for line_row in lines_by_request_id.get(duplicate_id, []):
+            client.delete_record(feishu_table_id(REQUEST_LINE_TABLE_NAME), feishu_record_id(line_row))
+        client.delete_record(feishu_table_id(REQUEST_TABLE_NAME), duplicate_id)
+        removed_count += 1
+    return canonical_row if canonical_id else None, removed_count
 
 
 def material_lookup_by_key() -> dict[tuple[str, str, str], dict]:
@@ -1299,6 +1404,11 @@ def submit_feishu_material_request(
     valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少填写一条数量大于 0 的物料明细。")
+    submission_token = str(request_payload.get("submission_token") or "").strip()
+    existing_submission = find_completed_submission(submission_token)
+    if existing_submission is not None:
+        existing_row, existing_line_count = existing_submission
+        return feishu_text(feishu_fields(existing_row), "申请单号"), existing_line_count
 
     material_index = material_lookup_by_key()
     seen_keys: set[tuple[str, str, str]] = set()
@@ -1332,7 +1442,6 @@ def submit_feishu_material_request(
             }
         )
 
-    request_no = next_request_no()
     now = datetime.now()
     material_usage = str(request_payload.get("material_usage") or "").strip()
     attachments = list(request_payload.get("attachments") or [])
@@ -1353,6 +1462,7 @@ def submit_feishu_material_request(
             )
             attachment_values.append({"file_token": file_token})
 
+    request_no = next_request_no()
     request_fields: dict[str, object] = {
         "申请单号": request_no,
         "标题": request_payload.get("title") or REQUEST_FORM_TITLE,
@@ -1374,6 +1484,7 @@ def submit_feishu_material_request(
     }
     if attachment_values:
         request_fields["相关附件"] = attachment_values
+    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["提交幂等键"], submission_token)
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人", "申请人姓名"], request_payload.get("requester"))
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["附件说明", "相关附件说明"], request_payload.get("attachment_note"))
 
@@ -1381,6 +1492,7 @@ def submit_feishu_material_request(
     request_record_id = feishu_record_id(request_record)
     if not request_record_id:
         raise RuntimeError("申请单创建成功但未返回记录 ID。")
+    request_no = ensure_unique_request_no(request_record_id, request_no, submission_token)
 
     line_records: list[dict[str, object]] = []
     for index, item in enumerate(prepared_lines, start=1):
@@ -1433,6 +1545,9 @@ def submit_feishu_material_request(
         except Exception:
             pass
         raise
+    canonical_row, _ = reconcile_submission_duplicates(submission_token, request_record_id)
+    if canonical_row is not None:
+        request_no = feishu_text(feishu_fields(canonical_row), "申请单号") or request_no
     return request_no, len(line_records)
 
 
@@ -2159,6 +2274,8 @@ def render_change_form(show_title: bool = True) -> None:
         st.success(message)
 
     lines: list[dict[str, object]] = []
+    if "request_submission_token" not in st.session_state:
+        st.session_state["request_submission_token"] = uuid.uuid4().hex
 
     st.markdown("**申请信息**")
     requester_key = "request_requester"
@@ -2330,6 +2447,7 @@ def render_change_form(show_title: bool = True) -> None:
             "freight_payer": freight_payer,
             "material_usage": material_usage,
             "attachment_note": attachment_note,
+            "submission_token": st.session_state["request_submission_token"],
             "attachments": [
                 {
                     "name": file.name,
@@ -2354,15 +2472,17 @@ def render_change_form(show_title: bool = True) -> None:
         if missing:
             st.warning("请补充必填信息：" + "、".join(missing))
             return
-        with DATA_LOCK:
-            try:
-                request_no, line_count = submit_feishu_material_request(payload, lines)
-            except Exception as exc:
-                st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
-                st.exception(exc)
-                return
+        with st.spinner("正在提交申请，请勿重复点击..."):
+            with DATA_LOCK:
+                try:
+                    request_no, line_count = submit_feishu_material_request(payload, lines)
+                except Exception as exc:
+                    st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
+                    st.exception(exc)
+                    return
         st.cache_data.clear()
         reset_request_form_cache_lock()
+        st.session_state["request_submission_token"] = uuid.uuid4().hex
         st.session_state["request_submit_message"] = f"已提交申请单 {request_no}，共 {line_count} 条申请明细。"
         st.rerun()
 
@@ -3039,7 +3159,11 @@ def request_lines_for_request(
     result: list[dict[str, object]] = []
     for line in lines:
         request_ids = [str(item) for item in line.get("request_ids", [])]
-        if request_id in request_ids or str(line.get("request_no", "")) == request_no:
+        if request_ids:
+            matches_request = request_id in request_ids
+        else:
+            matches_request = str(line.get("request_no", "")) == request_no
+        if matches_request:
             result.append(line)
     return result
 
