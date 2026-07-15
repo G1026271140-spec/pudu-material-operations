@@ -90,6 +90,7 @@ def inject_global_styles() -> None:
             --pudu-muted: #646A73;
             --pudu-subtle: #8F959E;
             --pudu-line: #DEE0E3;
+            --pudu-control-line: #C9CDD4;
             --pudu-line-soft: #EBEDF0;
             --pudu-panel: #FFFFFF;
             --pudu-canvas: #F5F6F8;
@@ -362,7 +363,7 @@ def inject_global_styles() -> None:
         div[data-baseweb="select"] > div,
         div[data-baseweb="input"] > div,
         textarea {
-            border-color: var(--pudu-line);
+            border: 1px solid var(--pudu-control-line) !important;
             border-radius: 6px !important;
             background-color: #FFFFFF;
             box-shadow: none !important;
@@ -377,7 +378,7 @@ def inject_global_styles() -> None:
         [data-testid="stTextAreaRootElement"],
         [data-testid="stNumberInputContainer"] {
             min-height: 40px;
-            border: 1px solid var(--pudu-line) !important;
+            border: 1px solid var(--pudu-control-line) !important;
             border-radius: 6px !important;
             background: #FFFFFF !important;
         }
@@ -2629,7 +2630,6 @@ def render_sidebar_link() -> None:
             )
         else:
             navigate_to_approval("sidebar_open_approval", "审批与发放")
-        st.caption("审批入口受密码保护。")
         st.divider()
         st.markdown('<div class="pudu-sidebar-label">数据同步</div>', unsafe_allow_html=True)
         if st.button(
