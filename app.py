@@ -9,6 +9,7 @@ from html import escape
 from io import BytesIO
 from pathlib import Path
 from urllib import error as url_error
+from urllib import parse as url_parse
 from urllib import request as url_request
 
 import pandas as pd
@@ -109,6 +110,7 @@ PAGE_CACHE_TABLES = {
     "request": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME),
     "category": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
+    "material_database": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "approval": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME),
     "inventory": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
 }
@@ -676,6 +678,19 @@ def feishu_app_secret() -> str:
 
 def feishu_bitable_app_token() -> str:
     return get_secret_value("FEISHU_BITABLE_APP_TOKEN")
+
+
+def feishu_bitable_web_url(table_name: str) -> str:
+    table_id = feishu_table_id(table_name)
+    configured_url = get_secret_value("FEISHU_BITABLE_WEB_URL")
+    base_url = configured_url or (
+        f"https://pudutech.feishu.cn/base/{url_parse.quote(feishu_bitable_app_token())}"
+    )
+    parsed = url_parse.urlparse(base_url)
+    query = dict(url_parse.parse_qsl(parsed.query, keep_blank_values=True))
+    query["table"] = table_id
+    query.pop("view", None)
+    return url_parse.urlunparse(parsed._replace(query=url_parse.urlencode(query)))
 
 
 def feishu_configured() -> bool:
@@ -3511,6 +3526,12 @@ def render_sidebar_link() -> None:
         else:
             navigate_to_approval("sidebar_open_approval", "审批与发放")
         navigate_to_management_section(
+            "sidebar_open_material_database",
+            "物料数据库",
+            "物料数据库",
+            ":material/database:",
+        )
+        navigate_to_management_section(
             "sidebar_open_category",
             "品类管理",
             "品类管理",
@@ -4564,7 +4585,7 @@ def render_material_data_admin() -> None:
                         st.exception(exc)
                         return
                 st.session_state["material_admin_message"] = f"已删除 {len(selected_records)} 条库存行。"
-                refresh_page_cache_after_write("maintenance", update_request_form=True)
+                refresh_page_cache_after_write("material_database", update_request_form=True)
                 st.rerun()
 
     if len(selected_records) == 1:
@@ -4634,7 +4655,7 @@ def render_material_data_admin() -> None:
                             st.exception(exc)
                             return
                     st.session_state["material_admin_message"] = "库存行信息已修改。"
-                    refresh_page_cache_after_write("maintenance", update_request_form=True)
+                    refresh_page_cache_after_write("material_database", update_request_form=True)
                     st.rerun()
     elif len(selected_records) > 1:
         st.info("已选择多条库存行，可批量删除；如需编辑，请只勾选一条。")
@@ -4800,17 +4821,31 @@ def render_category_admin() -> None:
         st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
 
 def render_edit_revert_page() -> None:
-    admin_section = st.radio(
-        "修改与撤回类型",
-        ["提交记录", "库存行"],
-        horizontal=True,
-        label_visibility="collapsed",
-        key="edit_revert_section",
-    )
-    if admin_section == "提交记录":
-        render_transaction_admin()
+    render_transaction_admin()
+
+
+def render_material_database_page() -> None:
+    action_spacer, action_col = st.columns([4, 1.35], vertical_alignment="center")
+    action_spacer.empty()
+    try:
+        table_url = feishu_bitable_web_url(MATERIAL_TABLE_NAME)
+    except Exception as exc:
+        action_col.button(
+            "打开飞书物料主数据表",
+            key="open_feishu_material_database_unavailable",
+            icon=":material/open_in_new:",
+            disabled=True,
+            width="stretch",
+        )
+        st.warning(f"暂时无法生成飞书物料主数据表链接：{exc}")
     else:
-        render_material_data_admin()
+        action_col.link_button(
+            "打开飞书物料主数据表",
+            table_url,
+            icon=":material/open_in_new:",
+            width="stretch",
+        )
+    render_material_data_admin()
 
 
 def apply_changes(changes: list[dict[str, object]]) -> None:
@@ -5183,13 +5218,18 @@ def render_management_page() -> None:
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
         "品类管理": ("物料品类管理", "基础数据", "新增或调整物料品类、型号、语种和库存组合。"),
-        "修改与撤回": ("数据维护与撤回", "管理工作台", "管理库存提交记录和单条库存数据。"),
+        "物料数据库": ("物料数据库", "基础数据", "搜索、编辑或删除物料主数据记录。"),
+        "修改与撤回": ("提交记录修改与撤回", "管理工作台", "筛选、修正或撤回库存提交记录。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
     if current_section == "品类管理":
         render_page_cache_toolbar("category")
         render_add_category_form()
+        return
+    if current_section == "物料数据库":
+        render_page_cache_toolbar("material_database")
+        render_material_database_page()
         return
     if current_section not in {"库存登记", "修改与撤回"}:
         current_section = "库存登记"
