@@ -3066,58 +3066,65 @@ def render_add_category_form() -> None:
 
     with st.container(border=True):
         render_section_header("01", "品类基础信息", "配置品类名称、型号规则和可用语种")
-        with st.form("add_category_form", clear_on_submit=False, border=False):
-            product = st.text_input(
-                "新增物料品类",
-                placeholder="例如：新版宣传册(New Brochure)",
-            ).strip()
-            rule_col_a, rule_col_b = st.columns(2)
-            no_model = rule_col_a.checkbox(
-                "该品类不按产品型号分类",
-                help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
-            )
-            no_language = rule_col_b.checkbox(
-                "该品类无需语种",
-                help="勾选后会按“品类 + 型号”生成，语种统一为“无需语种”。",
-            )
+        product = st.text_input(
+            "新增物料品类",
+            placeholder="例如：新版宣传册(New Brochure)",
+            key="add_category_product",
+        ).strip()
+        rule_col_a, rule_col_b = st.columns(2)
+        no_model = rule_col_a.checkbox(
+            "该品类不按产品型号分类",
+            help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
+            key="add_category_no_model",
+        )
+        no_language = rule_col_b.checkbox(
+            "该品类无需语种",
+            help="勾选后会按“品类 + 型号”生成，语种统一为“无需语种”。",
+            key="add_category_no_language",
+        )
 
-            model_col, language_col = st.columns(2)
-            selected_models = model_col.multiselect(
-                "选择已有产品型号",
-                existing_models,
-                disabled=no_model,
-            )
-            custom_models_text = model_col.text_area(
-                "自定义产品型号",
-                placeholder="可用逗号、分号、顿号或换行分隔",
-                disabled=no_model,
-                height=92,
-            )
-            selected_languages = language_col.multiselect(
-                "选择已有语种",
-                existing_languages,
-                disabled=no_language,
-            )
-            custom_languages_text = language_col.text_area(
-                "自定义语种",
-                placeholder="可用逗号、分号、顿号或换行分隔",
-                disabled=no_language,
-                height=92,
-            )
+        model_col, language_col = st.columns(2)
+        selected_models = model_col.multiselect(
+            "选择已有产品型号",
+            existing_models,
+            disabled=no_model,
+            key="add_category_models",
+        )
+        custom_models_text = model_col.text_area(
+            "自定义产品型号",
+            placeholder="可用逗号、分号、顿号或换行分隔",
+            disabled=no_model,
+            height=92,
+            key="add_category_custom_models",
+        )
+        selected_languages = language_col.multiselect(
+            "选择已有语种",
+            existing_languages,
+            disabled=no_language,
+            key="add_category_languages",
+        )
+        custom_languages_text = language_col.text_area(
+            "自定义语种",
+            placeholder="可用逗号、分号、顿号或换行分隔",
+            disabled=no_language,
+            height=92,
+            key="add_category_custom_languages",
+        )
 
-            custom_models = parse_custom_values(custom_models_text)
-            custom_languages = parse_custom_values(custom_languages_text)
-            models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
-            languages = [NO_LANGUAGE_TEXT] if no_language else unique_preserve(selected_languages + custom_languages)
+        custom_models = parse_custom_values(custom_models_text)
+        custom_languages = parse_custom_values(custom_languages_text)
+        models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
+        languages = [NO_LANGUAGE_TEXT] if no_language else unique_preserve(selected_languages + custom_languages)
 
-            preview_count = len(models) * len(languages) if product and models and languages else 0
-            st.caption(f"预计新增 {preview_count} 条库存行。")
-            submitted = st.form_submit_button(
-                "生成新增物料行",
-                type="primary",
-                icon=":material/add_circle:",
-                width="stretch",
-            )
+        preview_count = len(models) * len(languages) if product and models and languages else 0
+        st.caption(f"预计新增 {preview_count} 条库存行。")
+        submitted = st.button(
+            "生成新增物料行",
+            type="primary",
+            icon=":material/add_circle:",
+            width="stretch",
+            key="add_category_submit",
+        )
 
     if submitted:
         add_material_category(
