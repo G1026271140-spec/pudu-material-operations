@@ -92,6 +92,7 @@ DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
+APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
 REQUEST_FORM_CACHE_LOCK = threading.Lock()
 REQUEST_FORM_CACHE_STATE: dict[str, object] = {
     "data": None,
@@ -121,21 +122,28 @@ def inject_global_styles() -> None:
         """
         <style>
         :root {
-            --pudu-ink: #1F2329;
-            --pudu-muted: #646A73;
-            --pudu-subtle: #8F959E;
-            --pudu-line: #DEE0E3;
-            --pudu-control-line: #C9CDD4;
-            --pudu-line-soft: #EBEDF0;
+            --pudu-ink: #172A3D;
+            --pudu-muted: #5B6975;
+            --pudu-subtle: #7F8C96;
+            --pudu-line: #D6E0E6;
+            --pudu-control-line: #BBC9D2;
+            --pudu-line-soft: #E6ECEF;
             --pudu-panel: #FFFFFF;
-            --pudu-canvas: #F5F6F8;
-            --pudu-blue: #3370FF;
-            --pudu-blue-hover: #2858D8;
-            --pudu-blue-soft: #EAF0FF;
-            --pudu-teal: #0F9F8F;
+            --pudu-canvas: #F4F7F8;
+            --pudu-blue: #174C7A;
+            --pudu-blue-hover: #103B62;
+            --pudu-blue-soft: #EAF2F8;
+            --pudu-navy: #123E6D;
+            --pudu-navy-soft: #EDF4F9;
+            --pudu-teal: #167F83;
+            --pudu-teal-soft: #EAF7F5;
+            --pudu-coral: #EF6648;
+            --pudu-coral-soft: #FFF1EC;
+            --pudu-gold: #D99528;
+            --pudu-gold-soft: #FFF7E7;
             --pudu-green: #20A162;
-            --pudu-amber: #D46B08;
-            --pudu-red: #D83931;
+            --pudu-amber: #B86B13;
+            --pudu-red: #C83F32;
         }
         html, body, [class*="css"] {
             font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -173,7 +181,7 @@ def inject_global_styles() -> None:
             letter-spacing: 0;
         }
         [data-testid="stSidebar"] {
-            background: #FFFFFF;
+            background: #F6F9FA;
             border-right: 1px solid var(--pudu-line);
         }
         [data-testid="stSidebar"] * {
@@ -200,25 +208,59 @@ def inject_global_styles() -> None:
         }
         [data-testid="stSidebar"] .stButton > button:hover {
             background: var(--pudu-blue-soft);
-            border-color: #B8C8F8;
-            color: #245BDB;
+            border-color: #9FB8CB;
+            color: var(--pudu-blue);
         }
-        .pudu-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.25rem 0 1.25rem;
+        .st-key-sidebar_open_request button {
+            border-left: 3px solid var(--pudu-navy) !important;
         }
-        .pudu-brand-mark {
-            display: grid;
-            place-items: center;
-            width: 36px;
-            height: 36px;
+        .st-key-sidebar_open_approval button,
+        .st-key-sidebar_current_approval button {
+            border-left: 3px solid var(--pudu-coral) !important;
+        }
+        .st-key-sidebar_open_material_database button {
+            border-left: 3px solid var(--pudu-teal) !important;
+        }
+        .st-key-sidebar_open_category button {
+            border-left: 3px solid var(--pudu-gold) !important;
+        }
+        .st-key-sidebar_open_request button:disabled {
+            background: var(--pudu-navy-soft) !important;
+            color: var(--pudu-navy) !important;
+            opacity: 1;
+        }
+        .st-key-sidebar_current_approval button:disabled {
+            background: var(--pudu-coral-soft) !important;
+            color: #A6422D !important;
+            opacity: 1;
+        }
+        .st-key-sidebar_open_material_database button:disabled {
+            background: var(--pudu-teal-soft) !important;
+            color: #116A6E !important;
+            opacity: 1;
+        }
+        .st-key-sidebar_open_category button:disabled {
+            background: var(--pudu-gold-soft) !important;
+            color: #8A5B13 !important;
+            opacity: 1;
+        }
+        .st-key-sidebar_brand {
+            margin-bottom: 1rem;
+            padding: 0.25rem 0 1rem;
+            border-bottom: 1px solid var(--pudu-line);
+        }
+        .st-key-sidebar_brand [data-testid="stImage"] {
+            width: 64px;
+            padding: 2px;
+            border: 1px solid #C9D8E0;
             border-radius: 8px;
-            background: var(--pudu-blue);
-            color: #FFFFFF !important;
-            font-size: 1rem;
-            font-weight: 750;
+            background: #FFFFFF;
+            overflow: hidden;
+        }
+        .st-key-sidebar_brand [data-testid="stImage"] img {
+            width: 58px !important;
+            height: 58px !important;
+            object-fit: cover;
         }
         .pudu-brand-name {
             color: var(--pudu-ink) !important;
@@ -246,7 +288,7 @@ def inject_global_styles() -> None:
             padding: 0.75rem;
             border: 1px solid var(--pudu-line-soft);
             border-radius: 8px;
-            background: #FAFBFC;
+            background: var(--pudu-teal-soft);
             color: var(--pudu-muted) !important;
             font-size: 0.78rem;
         }
@@ -262,12 +304,14 @@ def inject_global_styles() -> None:
             align-items: flex-end;
             justify-content: space-between;
             gap: 1.5rem;
-            margin: 0 0 1.35rem;
-            padding: 0.35rem 0 1.25rem;
-            border-bottom: 1px solid var(--pudu-line);
+            margin: 0 -0.5rem 1.35rem;
+            padding: 0.9rem 0.5rem 1.05rem;
+            border-top: 1px solid #D9E4EA;
+            border-bottom: 1px solid #D9E4EA;
+            background: #F8FBFC;
         }
         .pudu-page-kicker {
-            color: var(--pudu-blue);
+            color: var(--pudu-teal);
             font-size: 0.75rem;
             font-weight: 680;
             margin-bottom: 0.4rem;
@@ -292,10 +336,10 @@ def inject_global_styles() -> None:
             gap: 0.45rem;
             white-space: nowrap;
             padding: 0.42rem 0.7rem;
-            border: 1px solid #C9D7FF;
+            border: 1px solid #BFDCD8;
             border-radius: 999px;
-            background: #F2F5FF;
-            color: #245BDB;
+            background: var(--pudu-teal-soft);
+            color: #116A6E;
             font-size: 0.75rem;
             font-weight: 620;
         }
@@ -318,8 +362,8 @@ def inject_global_styles() -> None:
             min-width: 28px;
             height: 28px;
             border-radius: 6px;
-            background: var(--pudu-blue-soft);
-            color: #245BDB;
+            background: var(--pudu-navy-soft);
+            color: var(--pudu-navy);
             font-size: 0.75rem;
             font-weight: 700;
         }
@@ -342,10 +386,43 @@ def inject_global_styles() -> None:
             background: var(--pudu-panel);
             box-shadow: none;
         }
+        [data-testid="stLayoutWrapper"]:has(.pudu-section-tone-navy) > [data-testid="stVerticalBlock"] {
+            border-color: #C8D9E5 !important;
+            border-top: 3px solid var(--pudu-navy) !important;
+            background: var(--pudu-navy-soft);
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-section-tone-teal) > [data-testid="stVerticalBlock"] {
+            border-color: #C4E0DC !important;
+            border-top: 3px solid var(--pudu-teal) !important;
+            background: var(--pudu-teal-soft);
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-section-tone-coral) > [data-testid="stVerticalBlock"] {
+            border-color: #F0D1C8 !important;
+            border-top: 3px solid var(--pudu-coral) !important;
+            background: var(--pudu-coral-soft);
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-section-tone-gold) > [data-testid="stVerticalBlock"] {
+            border-color: #EAD9B3 !important;
+            border-top: 3px solid var(--pudu-gold) !important;
+            background: var(--pudu-gold-soft);
+        }
+        .pudu-section-tone-teal .pudu-section-index {
+            background: #D5EFEB;
+            color: #116A6E;
+        }
+        .pudu-section-tone-coral .pudu-section-index {
+            background: #FADDD5;
+            color: #A6422D;
+        }
+        .pudu-section-tone-gold .pudu-section-index {
+            background: #F6E6BD;
+            color: #815712;
+        }
         div[data-testid="stMetric"] {
             min-height: 102px;
-            background: var(--pudu-panel);
+            background: #FBFDFD;
             border: 1px solid var(--pudu-line);
+            border-top: 3px solid var(--pudu-teal);
             border-radius: 8px;
             padding: 0.95rem 1rem;
             box-shadow: none;
@@ -382,14 +459,14 @@ def inject_global_styles() -> None:
             box-shadow: none !important;
         }
         button[kind="secondary"]:hover {
-            border-color: #9FB5F2 !important;
-            background: #F5F8FF !important;
-            color: #245BDB !important;
+            border-color: #94B3C5 !important;
+            background: var(--pudu-blue-soft) !important;
+            color: var(--pudu-blue) !important;
         }
         button[kind="tertiary"] {
             min-height: 36px;
             border-radius: 6px !important;
-            color: #245BDB !important;
+            color: var(--pudu-blue) !important;
         }
         .stButton button p,
         .stDownloadButton button p {
@@ -405,13 +482,23 @@ def inject_global_styles() -> None:
             background-color: #FFFFFF;
             box-shadow: none !important;
         }
+        input,
+        textarea,
+        div[data-baseweb="select"] * {
+            color: var(--pudu-ink) !important;
+        }
+        input::placeholder,
+        textarea::placeholder {
+            color: #7C8993 !important;
+            opacity: 1;
+        }
         div[data-baseweb="select"] > div:focus-within,
         [data-testid="stSelectbox"] div[role="group"]:focus-within,
         [data-testid="stMultiSelect"] div[role="group"]:focus-within,
         div[data-baseweb="input"] > div:focus-within,
         textarea:focus {
             border-color: var(--pudu-blue) !important;
-            box-shadow: 0 0 0 2px rgba(51, 112, 255, 0.12) !important;
+            box-shadow: 0 0 0 2px rgba(23, 76, 122, 0.13) !important;
         }
         [data-testid="stTextInputRootElement"],
         [data-testid="stTextAreaRootElement"],
@@ -425,7 +512,7 @@ def inject_global_styles() -> None:
         [data-testid="stTextAreaRootElement"]:focus-within,
         [data-testid="stNumberInputContainer"]:focus-within {
             border-color: var(--pudu-blue) !important;
-            box-shadow: 0 0 0 2px rgba(51, 112, 255, 0.12) !important;
+            box-shadow: 0 0 0 2px rgba(23, 76, 122, 0.13) !important;
         }
         [data-testid="stTextInputRootElement"]:has(input:disabled),
         [data-testid="stTextAreaRootElement"]:has(textarea:disabled),
@@ -437,7 +524,7 @@ def inject_global_styles() -> None:
             min-height: 90px;
             border: 1px dashed #BFC4CC;
             border-radius: 8px;
-            background: #FAFBFC;
+            background: var(--pudu-gold-soft);
         }
         [data-testid="stDataFrame"] {
             border: 1px solid var(--pudu-line);
@@ -462,7 +549,7 @@ def inject_global_styles() -> None:
             font-weight: 570;
         }
         [data-testid="stTabs"] [aria-selected="true"] {
-            color: #245BDB;
+            color: var(--pudu-teal);
         }
         div[role="radiogroup"] {
             display: flex;
@@ -471,7 +558,7 @@ def inject_global_styles() -> None:
             gap: 0.25rem;
             padding: 0.25rem;
             border-radius: 8px;
-            background: #ECEFF3;
+            background: #E8EEF1;
         }
         div[role="radiogroup"] label {
             min-height: 34px;
@@ -481,7 +568,8 @@ def inject_global_styles() -> None:
         }
         div[role="radiogroup"] label:has(input:checked) {
             background: #FFFFFF;
-            color: #245BDB !important;
+            color: var(--pudu-navy) !important;
+            outline: 1px solid #C7D7E2;
             box-shadow: 0 1px 2px rgba(31, 35, 41, 0.10);
         }
         [data-testid="stExpander"] {
@@ -599,12 +687,18 @@ def render_page_header(title: str, kicker: str, subtitle: str, status: str = "�
 
 
 def render_section_header(index: str, title: str, description: str = "") -> None:
+    tone = {
+        "01": "navy",
+        "02": "teal",
+        "03": "coral",
+        "04": "gold",
+    }.get(index, "navy")
     description_html = (
         f'<div class="pudu-section-description">{escape(description)}</div>' if description else ""
     )
     st.markdown(
         f"""
-        <div class="pudu-section-heading">
+        <div class="pudu-section-heading pudu-section-tone-{tone}">
             <div class="pudu-section-index">{escape(index)}</div>
             <div>
                 <div class="pudu-section-title">{escape(title)}</div>
@@ -3496,15 +3590,22 @@ def approval_auth_gate() -> bool:
 def render_sidebar_link() -> None:
     with st.sidebar:
         current_view = str(st.query_params.get("view", ""))
-        st.markdown(
-            """
-            <div class="pudu-brand">
-                <div class="pudu-brand-mark">M</div>
-                <div>
+        with st.container(key="sidebar_brand"):
+            brand_icon_col, brand_text_col = st.columns(
+                [0.3, 0.7],
+                gap="small",
+                vertical_alignment="center",
+            )
+            brand_icon_col.image(str(APP_ICON_PATH), width=64)
+            brand_text_col.markdown(
+                """
                     <div class="pudu-brand-name">营销物料中心</div>
                     <div class="pudu-brand-subtitle">PUDU Material Operations</div>
-                </div>
-            </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        st.markdown(
+            """
             <div class="pudu-sidebar-label">工作台导航</div>
             """,
             unsafe_allow_html=True,
@@ -5256,7 +5357,7 @@ def render_management_page() -> None:
 def main() -> None:
     st.set_page_config(
         page_title="营销物料中心",
-        page_icon=":material/inventory_2:",
+        page_icon=str(APP_ICON_PATH) if APP_ICON_PATH.exists() else ":material/inventory_2:",
         layout="wide",
         initial_sidebar_state="auto",
     )
