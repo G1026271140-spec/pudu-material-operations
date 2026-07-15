@@ -8,6 +8,8 @@ from datetime import date, datetime, timedelta
 from html import escape
 from io import BytesIO
 from pathlib import Path
+from urllib import error as url_error
+from urllib import request as url_request
 
 import pandas as pd
 import streamlit as st
@@ -48,6 +50,11 @@ REQUEST_LINE_STATUS_ISSUED = "已发放"
 FREIGHT_PAYER_OPTIONS = ["申请部门承担", "市场部承担", "客户承担", "其他"]
 MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
 MAX_ATTACHMENTS_PER_REQUEST = 100
+GITHUB_REPOSITORY = "G1026271140-spec/pudu-material-inventory"
+GITHUB_CACHE_WORKFLOW_FILE = "refresh-static-cache.yml"
+GITHUB_CACHE_WORKFLOW_URL = (
+    f"https://github.com/{GITHUB_REPOSITORY}/actions/workflows/{GITHUB_CACHE_WORKFLOW_FILE}"
+)
 
 PRODUCT_COL = "物料品类(Material Category)"
 MODEL_COL = "产品型号(Product Model)"
@@ -101,7 +108,7 @@ ALL_PAGE_CACHE_TABLES = (
 PAGE_CACHE_TABLES = {
     "request": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME),
     "category": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
-    "maintenance": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "maintenance": ALL_PAGE_CACHE_TABLES,
     "approval": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME),
     "inventory": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
 }
@@ -626,6 +633,37 @@ def get_secret_value(name: str, default: str = "") -> str:
         return str(st.secrets.get(name, default)).strip()
     except (FileNotFoundError, KeyError, AttributeError):
         return default
+
+
+def github_cache_refresh_token() -> str:
+    return get_secret_value("GITHUB_CACHE_REFRESH_TOKEN")
+
+
+def trigger_github_cache_refresh() -> None:
+    token = github_cache_refresh_token()
+    if not token:
+        raise RuntimeError("Streamlit Secrets 尚未配置 GITHUB_CACHE_REFRESH_TOKEN。")
+    payload = json.dumps({"event_type": "refresh-static-cache"}).encode("utf-8")
+    api_request = url_request.Request(
+        f"https://api.github.com/repos/{GITHUB_REPOSITORY}/dispatches",
+        data=payload,
+        method="POST",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "Content-Type": "application/json",
+            "User-Agent": "pudu-material-inventory",
+        },
+    )
+    try:
+        with url_request.urlopen(api_request, timeout=20) as response:
+            if response.status != 204:
+                raise RuntimeError(f"GitHub 返回了异常状态码：{response.status}")
+    except url_error.HTTPError as exc:
+        raise RuntimeError(f"GitHub 缓存发布任务触发失败（HTTP {exc.code}）。") from exc
+    except url_error.URLError as exc:
+        raise RuntimeError("无法连接 GitHub，请稍后重试。") from exc
 
 
 def feishu_app_id() -> str:
@@ -1289,6 +1327,15 @@ def navigate_to_approval(key: str, label: str = "打开审批发放页") -> None
 
 def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
     if st.button(label, key=key, type="tertiary", icon=":material/arrow_back:", width="stretch"):
+        st.query_params.clear()
+        st.rerun()
+
+
+def navigate_to_management_section(key: str, section: str, label: str, icon: str) -> None:
+    current_view = str(st.query_params.get("view", ""))
+    active = not current_view and str(st.session_state.get("management_section", "库存登记")) == section
+    if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
+        st.session_state["management_section"] = section
         st.query_params.clear()
         st.rerun()
 
@@ -1973,6 +2020,9 @@ def apply_feishu_changes(changes: list[dict[str, object]]) -> list[list[object]]
             after_quantity,
             note,
             occurred_at,
+            source_request_id=str(item.get("source_request_id") or ""),
+            source_line_id=str(item.get("source_line_id") or ""),
+            source_request_no=str(item.get("source_request_no") or ""),
         )
         logs.append(
             [
@@ -2273,6 +2323,31 @@ def submit_feishu_material_request(
     return request_no, len(line_records)
 
 
+def feishu_person_text(fields: dict, names: list[str]) -> str:
+    for name in names:
+        value = fields.get(name)
+        if value in (None, ""):
+            continue
+        items = value if isinstance(value, list) else [value]
+        for item in items:
+            if isinstance(item, dict):
+                for key in ("name", "en_name", "text", "email"):
+                    if item.get(key):
+                        return str(item[key]).strip()
+            elif str(item).strip():
+                return str(item).strip()
+    return ""
+
+
+def request_applicant_text(fields: dict) -> str:
+    requester = feishu_person_text(fields, ["申请人", "申请人姓名"])
+    if requester:
+        return requester
+    note = feishu_text(fields, "备注")
+    match = re.search(r"(?:^|\n)\s*申请人[：:]\s*([^\n]+)", note)
+    return match.group(1).strip() if match else ""
+
+
 def load_feishu_request_records() -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     for row in feishu_rows(REQUEST_TABLE_NAME):
@@ -2285,7 +2360,7 @@ def load_feishu_request_records() -> list[dict[str, object]]:
                 "record_id": feishu_record_id(row),
                 "request_no": request_no,
                 "title": feishu_text(fields, "标题"),
-                "requester": feishu_text_any(fields, ["申请人", "申请人姓名"]),
+                "requester": request_applicant_text(fields),
                 "department": feishu_text_any(fields, ["申请部门/区域", "申请部门|区域", "申请部门"]),
                 "position": feishu_text_any(fields, ["岗位", "职位"]),
                 "customer_name": feishu_text(fields, "客户名称"),
@@ -2339,6 +2414,55 @@ def load_feishu_request_line_records() -> list[dict[str, object]]:
             }
         )
     return records
+
+
+def transaction_request_context_indexes() -> tuple[
+    dict[str, dict[str, str]],
+    dict[str, dict[str, str]],
+    dict[str, dict[str, str]],
+]:
+    request_by_id: dict[str, dict[str, str]] = {}
+    request_by_no: dict[str, dict[str, str]] = {}
+    for request_record in load_feishu_request_records():
+        context = {
+            "request_no": str(request_record.get("request_no") or ""),
+            "requester": str(request_record.get("requester") or ""),
+        }
+        request_id = str(request_record.get("record_id") or "")
+        if request_id:
+            request_by_id[request_id] = context
+        if context["request_no"]:
+            request_by_no[context["request_no"]] = context
+
+    line_context_by_id: dict[str, dict[str, str]] = {}
+    for line_record in load_feishu_request_line_records():
+        context: dict[str, str] | None = None
+        for request_id in line_record.get("request_ids", []):
+            context = request_by_id.get(str(request_id))
+            if context:
+                break
+        if context is None:
+            context = request_by_no.get(str(line_record.get("request_no") or ""))
+        line_id = str(line_record.get("record_id") or "")
+        if line_id and context:
+            line_context_by_id[line_id] = context
+    return request_by_id, request_by_no, line_context_by_id
+
+
+def transaction_source_context(
+    fields: dict,
+    request_by_id: dict[str, dict[str, str]],
+    request_by_no: dict[str, dict[str, str]],
+    line_context_by_id: dict[str, dict[str, str]],
+) -> dict[str, str]:
+    for request_id in feishu_link_ids_any(fields, ["关联申请单"]):
+        if str(request_id) in request_by_id:
+            return request_by_id[str(request_id)]
+    for line_id in feishu_link_ids_any(fields, ["关联申请明细", "关联明细"]):
+        if str(line_id) in line_context_by_id:
+            return line_context_by_id[str(line_id)]
+    request_no = feishu_text_any(fields, ["关联申请单号", "关联申请单"])
+    return request_by_no.get(request_no, {})
 
 
 def issue_request_lines(
@@ -2467,6 +2591,7 @@ def load_feishu_transaction_records(
     limit: int = 1000,
 ) -> list[dict]:
     records: list[dict] = []
+    request_by_id, request_by_no, line_context_by_id = transaction_request_context_indexes()
     for row in feishu_rows("库存流水"):
         fields = feishu_fields(row)
         if not fields or is_blank_feishu_transaction(fields):
@@ -2480,6 +2605,12 @@ def load_feishu_transaction_records(
 
         before_quantity = feishu_int(fields, "变更前数量")
         after_quantity = feishu_int(fields, "变更后数量")
+        request_context = transaction_source_context(
+            fields,
+            request_by_id,
+            request_by_no,
+            line_context_by_id,
+        )
         records.append(
             {
                 "record_id": feishu_record_id(row),
@@ -2498,8 +2629,20 @@ def load_feishu_transaction_records(
                 "reversed_at": feishu_datetime_text(fields.get("撤回时间", "")),
                 "reversal_of": feishu_text(fields, "原流水ID"),
                 "material_record_id": (feishu_link_ids(fields, "物料编码") or [""])[0],
+                "request_no": request_context.get("request_no", ""),
+                "requester": request_context.get("requester", ""),
             }
         )
+    record_by_id = {str(item["record_id"]): item for item in records}
+    for item in records:
+        original = record_by_id.get(str(item.get("reversal_of") or ""))
+        if original and not item["request_no"]:
+            item["request_no"] = original.get("request_no", "")
+            item["requester"] = original.get("requester", "")
+        if item["request_no"] and not item["requester"]:
+            item["requester"] = "未填写申请人"
+        elif not item["request_no"]:
+            item["requester"] = "非申请记录"
     records.sort(key=lambda item: item["created_sort"], reverse=True)
     return records[:limit]
 
@@ -2793,6 +2936,11 @@ def revert_feishu_transaction(transaction_record_id: str, note: str) -> list[lis
     language = feishu_text(transaction_fields, "语种") or feishu_text(material_fields, "语种")
     current_quantity = feishu_int(material_fields, "当前库存")
     original_delta = feishu_transaction_delta(transaction_fields)
+    source_request_id = (feishu_link_ids_any(transaction_fields, ["关联申请单"]) or [""])[0]
+    source_line_id = (
+        feishu_link_ids_any(transaction_fields, ["关联申请明细", "关联明细"]) or [""]
+    )[0]
+    source_request_no = feishu_text_any(transaction_fields, ["关联申请单号", "关联申请单"])
     after_quantity = current_quantity - original_delta
     occurred_at = datetime.now()
     reversal_note = f"撤回流水 {transaction_record_id}"
@@ -2826,6 +2974,9 @@ def revert_feishu_transaction(transaction_record_id: str, note: str) -> list[lis
         occurred_at,
         status="冲销记录",
         original_ledger_id=transaction_record_id,
+        source_request_id=source_request_id,
+        source_line_id=source_line_id,
+        source_request_no=source_request_no,
     )
     return [
         [
@@ -2851,6 +3002,13 @@ def replace_feishu_transaction(
     quantity: int,
     note: str,
 ) -> list[list[object]]:
+    original_row = find_feishu_transaction_by_id(transaction_record_id)
+    original_fields = feishu_fields(original_row or {})
+    source_request_id = (feishu_link_ids_any(original_fields, ["关联申请单"]) or [""])[0]
+    source_line_id = (
+        feishu_link_ids_any(original_fields, ["关联申请明细", "关联明细"]) or [""]
+    )[0]
+    source_request_no = feishu_text_any(original_fields, ["关联申请单号", "关联申请单"])
     logs = revert_feishu_transaction(transaction_record_id, f"修正原记录。{note}".strip())
     logs.extend(
         apply_feishu_changes(
@@ -2862,6 +3020,9 @@ def replace_feishu_transaction(
                     "language": language,
                     "quantity": int(quantity),
                     "note": note,
+                    "source_request_id": source_request_id,
+                    "source_line_id": source_line_id,
+                    "source_request_no": source_request_no,
                 }
             ]
         )
@@ -3333,8 +3494,12 @@ def render_sidebar_link() -> None:
             """,
             unsafe_allow_html=True,
         )
-        if current_view:
-            navigate_to_management("sidebar_back_to_management", "返回申请与管理")
+        navigate_to_management_section(
+            "sidebar_open_request",
+            "库存登记",
+            "库存登记",
+            ":material/edit_note:",
+        )
         if current_view == "approval":
             st.button(
                 "审批与发放",
@@ -3345,6 +3510,12 @@ def render_sidebar_link() -> None:
             )
         else:
             navigate_to_approval("sidebar_open_approval", "审批与发放")
+        navigate_to_management_section(
+            "sidebar_open_category",
+            "品类管理",
+            "品类管理",
+            ":material/category:",
+        )
         st.divider()
         st.markdown('<div class="pudu-sidebar-label">数据同步</div>', unsafe_allow_html=True)
         if st.button(
@@ -3362,6 +3533,33 @@ def render_sidebar_link() -> None:
                     st.exception(exc)
                 else:
                     st.success(f"全部页面数据已同步，共 {result['row_count']} 条记录。")
+        github_message = st.session_state.pop("github_cache_refresh_message", "")
+        if github_message:
+            st.success(github_message)
+        if github_cache_refresh_token() and st.session_state.get("approval_unlocked"):
+            if st.button(
+                "发布 GitHub 静态缓存",
+                key="sidebar_publish_github_cache",
+                icon=":material/cloud_upload:",
+                width="stretch",
+            ):
+                with st.spinner("正在提交 GitHub 缓存发布任务，请稍后......"):
+                    try:
+                        trigger_github_cache_refresh()
+                    except Exception as exc:
+                        st.error(str(exc))
+                    else:
+                        st.session_state["github_cache_refresh_message"] = (
+                            "GitHub 静态缓存更新任务已提交，完成后应用将自动重新部署。"
+                        )
+                        st.rerun()
+        else:
+            st.link_button(
+                "手动发布静态缓存",
+                GITHUB_CACHE_WORKFLOW_URL,
+                icon=":material/open_in_new:",
+                width="stretch",
+            )
         st.markdown(
             """
             <div class="pudu-sidebar-status">
@@ -4097,8 +4295,17 @@ def render_transaction_admin() -> None:
         records = load_feishu_transaction_records(start_date=start_date, end_date=end_date, limit=limit)
     if status_filter != "全部":
         records = [row for row in records if row["status"] == status_filter]
+    applicant_options = sorted({str(row["requester"]) for row in records if row.get("requester")})
+    selected_applicants = st.multiselect(
+        "按申请人筛选",
+        applicant_options,
+        key="tx_applicant_filter",
+        placeholder="全部申请人",
+    )
+    if selected_applicants:
+        records = [row for row in records if row["requester"] in selected_applicants]
     if not records:
-        st.info("暂无库存提交记录。")
+        st.info("当前日期、状态和申请人筛选条件下暂无库存提交记录。")
         return
 
     record_map = {row["record_id"]: row for row in records}
@@ -4109,6 +4316,8 @@ def render_transaction_admin() -> None:
                 "记录ID": row["record_id"],
                 "时间": row["created_at"],
                 "状态": row["status"],
+                "申请人": row["requester"],
+                "申请单号": row["request_no"],
                 "操作": row["action"],
                 "物料品类": row["category"],
                 "产品型号": row["model"],
@@ -4127,7 +4336,7 @@ def render_transaction_admin() -> None:
     metric_col_a.metric("显示记录", f"{len(table_df):,}")
     metric_col_b.metric("有效记录", f"{int((table_df['状态'] == '有效').sum()):,}")
     metric_col_c.metric("库存净变化", f"{int(table_df['库存变化'].sum()):,}")
-    metric_col_d.metric("备注记录", f"{int((table_df['备注'].astype(str) != '').sum()):,}")
+    metric_col_d.metric("关联申请单", f"{table_df['申请单号'].replace('', pd.NA).nunique():,}")
 
     edited_df = st.data_editor(
         table_df,
@@ -4978,9 +5187,16 @@ def render_management_page() -> None:
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
+    if current_section == "品类管理":
+        render_page_cache_toolbar("category")
+        render_add_category_form()
+        return
+    if current_section not in {"库存登记", "修改与撤回"}:
+        current_section = "库存登记"
+        st.session_state["management_section"] = current_section
     management_section = st.radio(
         "管理功能",
-        ["库存登记", "品类管理", "修改与撤回"],
+        ["库存登记", "修改与撤回"],
         horizontal=True,
         label_visibility="collapsed",
         key="management_section",
@@ -4988,14 +5204,11 @@ def render_management_page() -> None:
     render_page_cache_toolbar(
         {
             "库存登记": "request",
-            "品类管理": "category",
             "修改与撤回": "maintenance",
         }[management_section]
     )
     if management_section == "库存登记":
         render_change_form(show_title=False)
-    elif management_section == "品类管理":
-        render_add_category_form()
     else:
         render_edit_revert_page()
 
