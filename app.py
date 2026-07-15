@@ -86,77 +86,475 @@ def inject_global_styles() -> None:
         """
         <style>
         :root {
-            --pudu-ink: #0B1220;
-            --pudu-muted: #5B667A;
-            --pudu-line: #D8E0EA;
+            --pudu-ink: #1F2329;
+            --pudu-muted: #646A73;
+            --pudu-subtle: #8F959E;
+            --pudu-line: #DEE0E3;
+            --pudu-line-soft: #EBEDF0;
             --pudu-panel: #FFFFFF;
-            --pudu-cyan: #00A7B5;
-            --pudu-blue: #2563EB;
+            --pudu-canvas: #F5F6F8;
+            --pudu-blue: #3370FF;
+            --pudu-blue-hover: #2858D8;
+            --pudu-blue-soft: #EAF0FF;
+            --pudu-teal: #0F9F8F;
+            --pudu-green: #20A162;
+            --pudu-amber: #D46B08;
+            --pudu-red: #D83931;
+        }
+        html, body, [class*="css"] {
+            font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            letter-spacing: 0;
+        }
+        html, body {
+            background: var(--pudu-canvas) !important;
+            color-scheme: light;
         }
         .stApp {
-            background:
-                radial-gradient(circle at 8% 0%, rgba(0, 167, 181, 0.10), transparent 30%),
-                linear-gradient(180deg, #F6F9FC 0%, #EEF3F8 100%);
+            background: var(--pudu-canvas);
             color: var(--pudu-ink);
+        }
+        [data-testid="stAppViewContainer"] {
+            background: var(--pudu-canvas);
+        }
+        [data-testid="stHeader"] {
+            height: 56px;
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid var(--pudu-line-soft);
+        }
+        [data-testid="stMainBlockContainer"] {
+            max-width: 1320px;
+            padding: 3.5rem 2.25rem 4rem;
         }
         h1, h2, h3 {
             color: var(--pudu-ink);
-            font-weight: 760;
+            font-weight: 650;
+            letter-spacing: 0;
+        }
+        h1 { font-size: 1.875rem; line-height: 1.3; }
+        h2 { font-size: 1.375rem; line-height: 1.4; }
+        h3 { font-size: 1.125rem; line-height: 1.45; }
+        p, label, [data-testid="stCaptionContainer"] {
+            letter-spacing: 0;
         }
         [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #0B1220 0%, #121B2D 100%);
+            background: #FFFFFF;
+            border-right: 1px solid var(--pudu-line);
         }
         [data-testid="stSidebar"] * {
-            color: #EAF2FF;
+            color: var(--pudu-ink);
         }
         [data-testid="stSidebar"] .stCaption {
-            color: #AEBBD0;
+            color: var(--pudu-muted);
+        }
+        [data-testid="stSidebarContent"] {
+            padding-top: 1.25rem;
+        }
+        [data-testid="stSidebar"] hr {
+            margin: 1rem 0;
+            border-color: var(--pudu-line-soft);
+        }
+        [data-testid="stSidebar"] .stButton > button {
+            justify-content: flex-start;
+            min-height: 40px;
+            padding: 0 0.75rem;
+            background: #FFFFFF;
+            border: 1px solid var(--pudu-line);
+            color: var(--pudu-ink);
+            box-shadow: none;
+        }
+        [data-testid="stSidebar"] .stButton > button:hover {
+            background: var(--pudu-blue-soft);
+            border-color: #B8C8F8;
+            color: #245BDB;
+        }
+        .pudu-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.25rem 0 1.25rem;
+        }
+        .pudu-brand-mark {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--pudu-blue);
+            color: #FFFFFF !important;
+            font-size: 1rem;
+            font-weight: 750;
+        }
+        .pudu-brand-name {
+            color: var(--pudu-ink) !important;
+            font-size: 1rem;
+            font-weight: 680;
+            line-height: 1.35;
+        }
+        .pudu-brand-subtitle {
+            color: var(--pudu-muted) !important;
+            font-size: 0.75rem;
+            margin-top: 0.1rem;
+        }
+        .pudu-sidebar-label {
+            color: var(--pudu-subtle) !important;
+            font-size: 0.72rem;
+            font-weight: 650;
+            margin: 0.15rem 0 0.5rem;
+            text-transform: uppercase;
+        }
+        .pudu-sidebar-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border: 1px solid var(--pudu-line-soft);
+            border-radius: 8px;
+            background: #FAFBFC;
+            color: var(--pudu-muted) !important;
+            font-size: 0.78rem;
+        }
+        .pudu-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--pudu-green);
+            flex: 0 0 auto;
+        }
+        .pudu-page-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin: 0 0 1.35rem;
+            padding: 0.35rem 0 1.25rem;
+            border-bottom: 1px solid var(--pudu-line);
+        }
+        .pudu-page-kicker {
+            color: var(--pudu-blue);
+            font-size: 0.75rem;
+            font-weight: 680;
+            margin-bottom: 0.4rem;
+        }
+        .pudu-page-title {
+            margin: 0;
+            color: var(--pudu-ink);
+            font-size: 1.875rem;
+            font-weight: 680;
+            line-height: 1.28;
+        }
+        .pudu-page-subtitle {
+            max-width: 760px;
+            margin: 0.45rem 0 0;
+            color: var(--pudu-muted);
+            font-size: 0.875rem;
+            line-height: 1.65;
+        }
+        .pudu-header-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+            padding: 0.42rem 0.7rem;
+            border: 1px solid #C9D7FF;
+            border-radius: 999px;
+            background: #F2F5FF;
+            color: #245BDB;
+            font-size: 0.75rem;
+            font-weight: 620;
+        }
+        .pudu-header-status::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--pudu-green);
+        }
+        .pudu-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            margin: 0 0 1rem;
+        }
+        .pudu-section-index {
+            display: grid;
+            place-items: center;
+            min-width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: var(--pudu-blue-soft);
+            color: #245BDB;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .pudu-section-title {
+            color: var(--pudu-ink);
+            font-size: 1rem;
+            font-weight: 650;
+            line-height: 1.45;
+        }
+        .pudu-section-description {
+            margin-top: 0.16rem;
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-section-heading) > [data-testid="stVerticalBlock"] {
+            padding: 1.05rem 1.15rem;
+            border-color: var(--pudu-line) !important;
+            border-radius: 8px !important;
+            background: var(--pudu-panel);
+            box-shadow: none;
         }
         div[data-testid="stMetric"] {
-            background: rgba(255, 255, 255, 0.86);
-            border: 1px solid rgba(118, 138, 160, 0.24);
-            border-radius: 10px;
-            padding: 14px 16px;
-            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+            min-height: 102px;
+            background: var(--pudu-panel);
+            border: 1px solid var(--pudu-line);
+            border-radius: 8px;
+            padding: 0.95rem 1rem;
+            box-shadow: none;
         }
-        .stButton > button,
-        .stDownloadButton > button,
-        div[data-testid="stFormSubmitButton"] button {
-            border: 0;
-            border-radius: 9px;
-            background: linear-gradient(135deg, var(--pudu-cyan), var(--pudu-blue));
-            color: #FFFFFF;
-            font-weight: 720;
-            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.20);
+        [data-testid="stMetricLabel"] {
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
         }
-        .stButton > button:hover,
-        .stDownloadButton > button:hover,
-        div[data-testid="stFormSubmitButton"] button:hover {
-            filter: brightness(0.98);
-            box-shadow: 0 12px 26px rgba(37, 99, 235, 0.26);
+        [data-testid="stMetricValue"] {
+            color: var(--pudu-ink);
+            font-size: 1.55rem;
+            font-weight: 670;
+        }
+        button[kind="primary"] {
+            min-height: 40px;
+            border: 1px solid var(--pudu-blue) !important;
+            border-radius: 6px !important;
+            background: var(--pudu-blue) !important;
             color: #FFFFFF;
+            font-weight: 620;
+            box-shadow: none !important;
+        }
+        button[kind="primary"]:hover {
+            border-color: var(--pudu-blue-hover) !important;
+            background: var(--pudu-blue-hover) !important;
+        }
+        button[kind="secondary"] {
+            min-height: 40px;
+            border: 1px solid var(--pudu-line) !important;
+            border-radius: 6px !important;
+            background: #FFFFFF !important;
+            color: var(--pudu-ink) !important;
+            font-weight: 570;
+            box-shadow: none !important;
+        }
+        button[kind="secondary"]:hover {
+            border-color: #9FB5F2 !important;
+            background: #F5F8FF !important;
+            color: #245BDB !important;
+        }
+        button[kind="tertiary"] {
+            min-height: 36px;
+            border-radius: 6px !important;
+            color: #245BDB !important;
+        }
+        .stButton button p,
+        .stDownloadButton button p {
+            letter-spacing: 0;
         }
         div[data-baseweb="select"] > div,
         div[data-baseweb="input"] > div,
         textarea {
             border-color: var(--pudu-line);
-            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 6px !important;
+            background-color: #FFFFFF;
+            box-shadow: none !important;
+        }
+        div[data-baseweb="select"] > div:focus-within,
+        div[data-baseweb="input"] > div:focus-within,
+        textarea:focus {
+            border-color: var(--pudu-blue) !important;
+            box-shadow: 0 0 0 2px rgba(51, 112, 255, 0.12) !important;
+        }
+        [data-testid="stTextInputRootElement"],
+        [data-testid="stTextAreaRootElement"],
+        [data-testid="stNumberInputContainer"] {
+            min-height: 40px;
+            border: 1px solid var(--pudu-line) !important;
+            border-radius: 6px !important;
+            background: #FFFFFF !important;
+        }
+        [data-testid="stTextInputRootElement"]:focus-within,
+        [data-testid="stTextAreaRootElement"]:focus-within,
+        [data-testid="stNumberInputContainer"]:focus-within {
+            border-color: var(--pudu-blue) !important;
+            box-shadow: 0 0 0 2px rgba(51, 112, 255, 0.12) !important;
+        }
+        [data-testid="stTextInputRootElement"]:has(input:disabled),
+        [data-testid="stTextAreaRootElement"]:has(textarea:disabled) {
+            background: #F5F6F8 !important;
+        }
+        [data-testid="stFileUploaderDropzone"] {
+            min-height: 90px;
+            border: 1px dashed #BFC4CC;
+            border-radius: 8px;
+            background: #FAFBFC;
         }
         [data-testid="stDataFrame"] {
-            border: 1px solid rgba(118, 138, 160, 0.26);
-            border-radius: 10px;
+            border: 1px solid var(--pudu-line);
+            border-radius: 8px;
             overflow: hidden;
+            background: #FFFFFF;
+        }
+        [data-testid="stDataEditor"] {
+            border: 1px solid var(--pudu-line);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #FFFFFF;
+        }
+        [data-testid="stTabs"] [data-baseweb="tab-list"] {
+            gap: 0.25rem;
+            border-bottom: 1px solid var(--pudu-line);
+        }
+        [data-testid="stTabs"] [data-baseweb="tab"] {
+            min-height: 44px;
+            padding: 0 0.9rem;
+            color: var(--pudu-muted);
+            font-weight: 570;
+        }
+        [data-testid="stTabs"] [aria-selected="true"] {
+            color: #245BDB;
+        }
+        div[role="radiogroup"] {
+            display: flex;
+            width: fit-content;
+            max-width: 100%;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            border-radius: 8px;
+            background: #ECEFF3;
+        }
+        div[role="radiogroup"] label {
+            min-height: 34px;
+            margin: 0 !important;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+        }
+        div[role="radiogroup"] label:has(input:checked) {
+            background: #FFFFFF;
+            color: #245BDB !important;
+            box-shadow: 0 1px 2px rgba(31, 35, 41, 0.10);
+        }
+        [data-testid="stExpander"] {
+            border: 1px solid var(--pudu-line) !important;
+            border-radius: 8px !important;
+            background: #FFFFFF;
+        }
+        [data-testid="stAlert"] {
+            border-radius: 8px;
+            box-shadow: none;
+        }
+        [data-testid="stCaptionContainer"] {
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
         }
         .pudu-field-label {
             color: var(--pudu-ink);
-            font-size: 0.875rem;
-            margin: 0 0 0.25rem;
+            font-size: 0.82rem;
+            font-weight: 540;
+            margin: 0 0 0.35rem;
         }
         .pudu-required-star {
-            color: #DC2626;
-            font-weight: 800;
+            color: var(--pudu-red);
+            font-weight: 700;
+        }
+        .pudu-form-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem 0.9rem;
+            margin: -0.35rem 0 1rem;
+            color: var(--pudu-muted);
+            font-size: 0.76rem;
+        }
+        .pudu-form-meta strong {
+            color: var(--pudu-ink);
+            font-weight: 620;
+        }
+        hr {
+            border-color: var(--pudu-line-soft);
+        }
+        [data-testid="stAppDeployButton"],
+        [data-testid="stMainMenuButton"] {
+            display: none;
+        }
+        @media (max-width: 900px) {
+            [data-testid="stMainBlockContainer"] {
+                padding: 3.5rem 1rem 3rem;
+            }
+            .pudu-page-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .pudu-page-title {
+                font-size: 1.55rem;
+            }
+            .pudu-header-status {
+                white-space: normal;
+            }
+            [data-testid="stHorizontalBlock"] {
+                gap: 0.75rem;
+            }
+        }
+        @media (max-width: 640px) {
+            [data-testid="stMainBlockContainer"] {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            div[role="radiogroup"] {
+                width: 100%;
+                overflow-x: auto;
+            }
+            div[role="radiogroup"] label {
+                flex: 0 0 auto;
+            }
+            [data-testid="stLayoutWrapper"]:has(.pudu-section-heading) > [data-testid="stVerticalBlock"] {
+                padding: 0.9rem;
+            }
         }
         </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_page_header(title: str, kicker: str, subtitle: str, status: str = "飞书数据已连接") -> None:
+    st.markdown(
+        f"""
+        <div class="pudu-page-header">
+            <div>
+                <div class="pudu-page-kicker">{escape(kicker)}</div>
+                <div class="pudu-page-title">{escape(title)}</div>
+                <div class="pudu-page-subtitle">{escape(subtitle)}</div>
+            </div>
+            <div class="pudu-header-status">{escape(status)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_section_header(index: str, title: str, description: str = "") -> None:
+    description_html = (
+        f'<div class="pudu-section-description">{escape(description)}</div>' if description else ""
+    )
+    st.markdown(
+        f"""
+        <div class="pudu-section-heading">
+            <div class="pudu-section-index">{escape(index)}</div>
+            <div>
+                <div class="pudu-section-title">{escape(title)}</div>
+                {description_html}
+            </div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -410,14 +808,19 @@ def count_feishu_table(table_name: str) -> int:
 
 
 def render_storage_diagnostics() -> None:
-    with st.sidebar.expander("存储状态", expanded=False):
+    with st.sidebar.expander("系统连接", expanded=False):
         st.write(f"当前存储：**{storage_mode_label()}**")
         st.write(f"FEISHU_APP_ID：{'已读取' if bool(feishu_app_id()) else '未读取'}")
         st.write(f"FEISHU_APP_SECRET：{'已读取' if bool(feishu_app_secret()) else '未读取'}")
         st.write(f"FEISHU_BITABLE_APP_TOKEN：{'已读取' if bool(feishu_bitable_app_token()) else '未读取'}")
 
         st.caption("为加快页面打开速度，行数统计改为手动检查。")
-        if st.button("检查连接并刷新数据", key="refresh_storage_status", width="stretch"):
+        if st.button(
+            "检查连接并刷新数据",
+            key="refresh_storage_status",
+            icon=":material/cloud_sync:",
+            width="stretch",
+        ):
             st.cache_resource.clear()
             st.cache_data.clear()
             try:
@@ -731,19 +1134,19 @@ def apply_inventory_filters(
 
 
 def navigate_to_inventory(key: str, label: str = "查看实时库存表") -> None:
-    if st.button(label, key=key, type="primary", width="stretch"):
+    if st.button(label, key=key, icon=":material/inventory_2:", width="stretch"):
         st.query_params["view"] = "inventory"
         st.rerun()
 
 
 def navigate_to_approval(key: str, label: str = "打开审批发放页") -> None:
-    if st.button(label, key=key, width="stretch"):
+    if st.button(label, key=key, icon=":material/fact_check:", width="stretch"):
         st.query_params["view"] = "approval"
         st.rerun()
 
 
 def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
-    if st.button(label, key=key, width="stretch"):
+    if st.button(label, key=key, type="tertiary", icon=":material/arrow_back:", width="stretch"):
         st.query_params.clear()
         st.rerun()
 
@@ -2202,11 +2605,41 @@ def approval_auth_gate() -> bool:
 
 def render_sidebar_link() -> None:
     with st.sidebar:
-        st.subheader("审批发放入口")
-        navigate_to_approval("sidebar_open_approval", "打开审批发放页")
-        st.caption("审批发放页需要输入审批密码。部署后复制浏览器地址栏链接，即可分享给对应审批人。")
+        current_view = str(st.query_params.get("view", ""))
+        st.markdown(
+            """
+            <div class="pudu-brand">
+                <div class="pudu-brand-mark">M</div>
+                <div>
+                    <div class="pudu-brand-name">营销物料中心</div>
+                    <div class="pudu-brand-subtitle">PUDU Material Operations</div>
+                </div>
+            </div>
+            <div class="pudu-sidebar-label">工作台导航</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if current_view:
+            navigate_to_management("sidebar_back_to_management", "返回申请与管理")
+        if current_view == "approval":
+            st.button(
+                "审批与发放",
+                key="sidebar_current_approval",
+                icon=":material/fact_check:",
+                disabled=True,
+                width="stretch",
+            )
+        else:
+            navigate_to_approval("sidebar_open_approval", "审批与发放")
+        st.caption("审批入口受密码保护。")
         st.divider()
-        if st.button("点击更新缓存", key="sidebar_refresh_data", width="stretch"):
+        st.markdown('<div class="pudu-sidebar-label">数据同步</div>', unsafe_allow_html=True)
+        if st.button(
+            "更新物料缓存",
+            key="sidebar_refresh_data",
+            icon=":material/refresh:",
+            width="stretch",
+        ):
             with st.spinner("物料数据同步中，请稍后......"):
                 try:
                     st.cache_data.clear()
@@ -2218,8 +2651,16 @@ def render_sidebar_link() -> None:
                 else:
                     st.session_state["request_form_cache_data"] = data
                     st.success("数据库数据已同步。")
+        st.markdown(
+            """
+            <div class="pudu-sidebar-status">
+                <span class="pudu-status-dot"></span>
+                飞书多维表格连接已配置
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.divider()
-        st.caption("多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址；本地端口只适合开发和测试。")
 
 
 def get_row_count() -> int:
@@ -2255,16 +2696,24 @@ def render_change_form(show_title: bool = True) -> None:
     languages = list(selection_context["languages"])
 
     if show_title:
-        st.title("营销物料领取登记")
-    else:
-        st.subheader("营销物料领取登记")
-    st.caption("提交后会先生成申请单和申请明细；审批发放页填写实际发放数量后，才会扣减当前库存。")
+        render_page_header(
+            "营销物料领取登记",
+            "申请工作台",
+            "登记客户、收件信息和领取明细，提交后进入审批发放流程。",
+        )
     cache_state = request_form_cache_state()
     cache_label = "实时缓存" if selection_context.get("cache_source") == "live_feishu" else "静态缓存"
     cache_status = "同步中" if cache_state.get("refreshing") else "已就绪"
-    st.caption(
-        f"登记页数据：{cache_label} / {selection_context.get('cache_generated_at') or '-'} / "
-        f"{selection_context.get('cache_row_count') or 0} 条 / {cache_status}"
+    st.markdown(
+        f"""
+        <div class="pudu-form-meta">
+            <span>数据源 <strong>{escape(cache_label)}</strong></span>
+            <span>更新时间 <strong>{escape(str(selection_context.get('cache_generated_at') or '-'))}</strong></span>
+            <span>物料组合 <strong>{int(selection_context.get('cache_row_count') or 0)} 条</strong></span>
+            <span>状态 <strong>{escape(cache_status)}</strong></span>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
     if cache_state.get("refreshing"):
         st.info("物料数据同步中，请稍后......")
@@ -2277,7 +2726,6 @@ def render_change_form(show_title: bool = True) -> None:
     if "request_submission_token" not in st.session_state:
         st.session_state["request_submission_token"] = uuid.uuid4().hex
 
-    st.markdown("**申请信息**")
     requester_key = "request_requester"
     material_usage_key = "request_material_usage"
     if requester_key not in st.session_state:
@@ -2286,144 +2734,153 @@ def render_change_form(show_title: bool = True) -> None:
         st.session_state.get(material_usage_key, ""),
         st.session_state.get(requester_key, ""),
     )
-    st.text_input("标题", key="request_title_display", disabled=True)
-    info_col_a, info_col_b = st.columns(2)
-    department = info_col_a.text_input(
-        "申请部门",
-        value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
-        on_change=mark_request_form_dirty,
-    )
-    required_field_label(info_col_b, "申请人")
-    requester = info_col_b.text_input(
-        "申请人",
-        key=requester_key,
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
+    with st.container(border=True):
+        render_section_header("01", "申请信息", "申请标题由物料用途和申请人自动生成")
+        st.text_input("标题", key="request_title_display", disabled=True)
+        info_col_a, info_col_b = st.columns(2)
+        department = info_col_a.text_input(
+            "申请部门",
+            value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+            on_change=mark_request_form_dirty,
+        )
+        required_field_label(info_col_b, "申请人")
+        requester = info_col_b.text_input(
+            "申请人",
+            key=requester_key,
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
 
-    st.markdown("**业务信息 Business Information**")
-    biz_col_a, biz_col_b = st.columns(2)
-    required_field_label(biz_col_a, "客户名称 Customer Name")
-    customer_name = biz_col_a.text_input(
-        "客户名称 Customer Name",
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
-    required_field_label(biz_col_b, "国家 Country")
-    country = biz_col_b.text_input(
-        "国家 Country",
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
-    required_field_label(st, "收件人信息 Recipient Information")
-    recipient_info = st.text_area(
-        "收件人信息 Recipient Information",
-        placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
-        height=96,
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
-    required_field_label(st, "运费的承担者 Freight Payer")
-    freight_payer = st.selectbox(
-        "运费的承担者 Freight Payer",
-        FREIGHT_PAYER_OPTIONS,
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
-    required_field_label(st, "物料用途 Material Usage")
-    material_usage = st.text_area(
-        "物料用途 Material Usage",
-        placeholder="活动物料请注明具体活动名称",
-        height=76,
-        key=material_usage_key,
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
-    uploaded_files = st.file_uploader(
-        "相关附件 Relevant Attachments",
-        accept_multiple_files=True,
-        help="单个附件不超过 20 MB，最多上传 100 个。",
-        on_change=mark_request_form_dirty,
-    )
+    with st.container(border=True):
+        render_section_header("02", "业务信息 Business Information", "客户、收件、运费与用途信息")
+        biz_col_a, biz_col_b = st.columns(2)
+        required_field_label(biz_col_a, "客户名称 Customer Name")
+        customer_name = biz_col_a.text_input(
+            "客户名称 Customer Name",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        required_field_label(biz_col_b, "国家 Country")
+        country = biz_col_b.text_input(
+            "国家 Country",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        required_field_label(st, "收件人信息 Recipient Information")
+        recipient_info = st.text_area(
+            "收件人信息 Recipient Information",
+            placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
+            height=96,
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        freight_col, usage_col = st.columns(2)
+        required_field_label(freight_col, "运费的承担者 Freight Payer")
+        freight_payer = freight_col.selectbox(
+            "运费的承担者 Freight Payer",
+            FREIGHT_PAYER_OPTIONS,
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        required_field_label(usage_col, "物料用途 Material Usage")
+        material_usage = usage_col.text_area(
+            "物料用途 Material Usage",
+            placeholder="活动物料请注明具体活动名称",
+            height=76,
+            key=material_usage_key,
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        uploaded_files = st.file_uploader(
+            "相关附件 Relevant Attachments",
+            accept_multiple_files=True,
+            help="单个附件不超过 20 MB，最多上传 100 个。",
+            on_change=mark_request_form_dirty,
+        )
     attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
 
-    st.markdown("**物料明细 Material Details**")
-    row_count = get_row_count()
-    for index in range(row_count):
-        st.caption(f"第 {index + 1} 项")
-        product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
+    with st.container(border=True):
+        render_section_header("03", "物料明细 Material Details", "一次申请可登记 1 至 10 种物料")
+        row_count = get_row_count()
+        for index in range(row_count):
+            if index:
+                st.divider()
+            st.markdown(f"**明细 {index + 1:02d}**")
+            product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
 
-        required_field_label(product_col, "物料品类(Material Category)")
-        product = product_col.selectbox(
-            "物料品类(Material Category)",
-            products,
-            key=f"request_product_{index}",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        is_no_model_product, scoped_models = product_model_state(product, selection_context)
-        if is_no_model_product:
-            model_options = [NO_MODEL_TEXT]
-        elif scoped_models:
-            model_options = unique_preserve(scoped_models)
-        else:
-            model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
-        if not model_options:
-            model_options = [NO_MODEL_TEXT]
-        model_key = f"request_model_{index}"
-        if st.session_state.get(model_key) not in model_options:
-            st.session_state[model_key] = model_options[0]
-        required_field_label(model_col, "产品型号(Product Model)")
-        model = model_col.selectbox(
-            "产品型号(Product Model)",
-            model_options,
-            key=model_key,
-            disabled=is_no_model_product,
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        language_options = product_language_options(product, model, selection_context, languages)
-        language_key = f"request_language_{index}"
-        if st.session_state.get(language_key) not in language_options:
-            st.session_state[language_key] = language_options[0] if language_options else ""
-        required_field_label(language_col, "语种(Language)")
-        language = language_col.selectbox(
-            "语种(Language)",
-            language_options,
-            key=language_key,
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        required_field_label(qty_col, "物料数量")
-        quantity = qty_col.number_input(
-            "物料数量",
-            min_value=0,
-            max_value=1_000_000,
-            value=0,
-            step=1,
-            key=f"request_quantity_{index}",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        remark = st.text_input(
-            "备注",
-            key=f"request_remark_{index}",
-            placeholder="可选",
-            on_change=mark_request_form_dirty,
-        )
-        lines.append(
-            {
-                "product": product,
-                "model": model,
-                "language": language,
-                "quantity": int(quantity),
-                "remark": remark,
-            }
-        )
+            required_field_label(product_col, "物料品类(Material Category)")
+            product = product_col.selectbox(
+                "物料品类(Material Category)",
+                products,
+                key=f"request_product_{index}",
+                label_visibility="collapsed",
+                on_change=mark_request_form_dirty,
+            )
+            is_no_model_product, scoped_models = product_model_state(product, selection_context)
+            if is_no_model_product:
+                model_options = [NO_MODEL_TEXT]
+            elif scoped_models:
+                model_options = unique_preserve(scoped_models)
+            else:
+                model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
+            if not model_options:
+                model_options = [NO_MODEL_TEXT]
+            model_key = f"request_model_{index}"
+            if st.session_state.get(model_key) not in model_options:
+                st.session_state[model_key] = model_options[0]
+            required_field_label(model_col, "产品型号(Product Model)")
+            model = model_col.selectbox(
+                "产品型号(Product Model)",
+                model_options,
+                key=model_key,
+                disabled=is_no_model_product,
+                label_visibility="collapsed",
+                on_change=mark_request_form_dirty,
+            )
+            language_options = product_language_options(product, model, selection_context, languages)
+            language_key = f"request_language_{index}"
+            if st.session_state.get(language_key) not in language_options:
+                st.session_state[language_key] = language_options[0] if language_options else ""
+            required_field_label(language_col, "语种(Language)")
+            language = language_col.selectbox(
+                "语种(Language)",
+                language_options,
+                key=language_key,
+                label_visibility="collapsed",
+                on_change=mark_request_form_dirty,
+            )
+            required_field_label(qty_col, "物料数量")
+            quantity = qty_col.number_input(
+                "物料数量",
+                min_value=0,
+                max_value=1_000_000,
+                value=0,
+                step=1,
+                key=f"request_quantity_{index}",
+                label_visibility="collapsed",
+                on_change=mark_request_form_dirty,
+            )
+            remark = st.text_input(
+                "备注",
+                key=f"request_remark_{index}",
+                placeholder="可选",
+                on_change=mark_request_form_dirty,
+            )
+            lines.append(
+                {
+                    "product": product,
+                    "model": model,
+                    "language": language,
+                    "quantity": int(quantity),
+                    "remark": remark,
+                }
+            )
 
-    submitted = st.button(
+    submit_spacer, submit_col = st.columns([3, 1])
+    submitted = submit_col.button(
         "提交申请",
         type="primary",
+        icon=":material/send:",
         width="stretch",
         on_click=mark_request_form_dirty,
     )
@@ -2493,51 +2950,57 @@ def render_add_category_form() -> None:
     existing_models = options["models"]
     existing_languages = sort_languages(options["languages"])
 
-    st.subheader("新增物料品类")
     message = st.session_state.pop("category_added_message", "")
     if message:
         st.success(message)
 
-    with st.form("add_category_form", clear_on_submit=False):
-        product = st.text_input(
-            "新增物料品类",
-            placeholder="例如：新版宣传册(New Brochure)",
-        ).strip()
-        no_model = st.checkbox(
-            "该品类不按产品型号分类",
-            help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
-        )
+    with st.container(border=True):
+        render_section_header("01", "品类基础信息", "配置品类名称、型号规则和可用语种")
+        with st.form("add_category_form", clear_on_submit=False, border=False):
+            product = st.text_input(
+                "新增物料品类",
+                placeholder="例如：新版宣传册(New Brochure)",
+            ).strip()
+            no_model = st.checkbox(
+                "该品类不按产品型号分类",
+                help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
+            )
 
-        model_col, language_col = st.columns(2)
-        selected_models = model_col.multiselect(
-            "选择已有产品型号",
-            existing_models,
-            disabled=no_model,
-        )
-        custom_models_text = model_col.text_area(
-            "自定义产品型号",
-            placeholder="可用逗号、分号、顿号或换行分隔",
-            disabled=no_model,
-            height=92,
-        )
-        selected_languages = language_col.multiselect(
-            "选择已有语种",
-            existing_languages,
-        )
-        custom_languages_text = language_col.text_area(
-            "自定义语种",
-            placeholder="可用逗号、分号、顿号或换行分隔",
-            height=92,
-        )
+            model_col, language_col = st.columns(2)
+            selected_models = model_col.multiselect(
+                "选择已有产品型号",
+                existing_models,
+                disabled=no_model,
+            )
+            custom_models_text = model_col.text_area(
+                "自定义产品型号",
+                placeholder="可用逗号、分号、顿号或换行分隔",
+                disabled=no_model,
+                height=92,
+            )
+            selected_languages = language_col.multiselect(
+                "选择已有语种",
+                existing_languages,
+            )
+            custom_languages_text = language_col.text_area(
+                "自定义语种",
+                placeholder="可用逗号、分号、顿号或换行分隔",
+                height=92,
+            )
 
-        custom_models = parse_custom_values(custom_models_text)
-        custom_languages = parse_custom_values(custom_languages_text)
-        models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
-        languages = unique_preserve(selected_languages + custom_languages)
+            custom_models = parse_custom_values(custom_models_text)
+            custom_languages = parse_custom_values(custom_languages_text)
+            models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
+            languages = unique_preserve(selected_languages + custom_languages)
 
-        preview_count = len(models) * len(languages) if product and models and languages else 0
-        st.caption(f"预计新增 {preview_count} 条库存行。")
-        submitted = st.form_submit_button("生成新增物料行", width="stretch")
+            preview_count = len(models) * len(languages) if product and models and languages else 0
+            st.caption(f"预计新增 {preview_count} 条库存行。")
+            submitted = st.form_submit_button(
+                "生成新增物料行",
+                type="primary",
+                icon=":material/add_circle:",
+                width="stretch",
+            )
 
     if submitted:
         add_material_category(
@@ -2603,10 +3066,14 @@ def add_material_category(
 
 
 def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> None:
-    st.subheader("下载库存数据")
-    st.caption("需要下载时再生成文件，避免打开库存页时等待导出文件准备。")
+    render_section_header("03", "下载库存数据", "按需生成完整库存、筛选结果和库存流水文件")
 
-    if st.button("生成/刷新下载文件", key="prepare_inventory_downloads", width="stretch"):
+    if st.button(
+        "生成或刷新下载文件",
+        key="prepare_inventory_downloads",
+        icon=":material/file_export:",
+        width="stretch",
+    ):
         with st.spinner("正在生成下载文件..."):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             transactions_df = load_transactions_dataframe()
@@ -2634,6 +3101,7 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
         data=bundle["full_xlsx"],
         file_name=f"完整物料库存表_{timestamp}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        icon=":material/download:",
         width="stretch",
     )
     full_col_b.download_button(
@@ -2641,6 +3109,7 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
         data=bundle["full_csv"],
         file_name=f"完整物料库存表_{timestamp}.csv",
         mime="text/csv",
+        icon=":material/download:",
         width="stretch",
     )
     log_col.download_button(
@@ -2648,6 +3117,7 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
         data=bundle["transaction_csv"],
         file_name=f"库存变更流水_{timestamp}.csv",
         mime="text/csv",
+        icon=":material/download:",
         width="stretch",
     )
 
@@ -2657,6 +3127,7 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
         data=bundle["filtered_xlsx"],
         file_name=f"当前筛选物料库存表_{timestamp}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        icon=":material/download:",
         width="stretch",
     )
     filtered_col_b.download_button(
@@ -2664,12 +3135,13 @@ def render_download_center(full_df: pd.DataFrame, filtered_df: pd.DataFrame) -> 
         data=bundle["filtered_csv"],
         file_name=f"当前筛选物料库存表_{timestamp}.csv",
         mime="text/csv",
+        icon=":material/download:",
         width="stretch",
     )
 
 
 def render_transaction_admin() -> None:
-    st.subheader("库存提交记录修改与撤回")
+    render_section_header("01", "库存提交记录", "筛选、修正或撤回库存变更流水")
     message = st.session_state.pop("transaction_admin_message", "")
     if message:
         st.success(message)
@@ -2737,7 +3209,12 @@ def render_transaction_admin() -> None:
     action_col_a, action_col_b, action_col_c = st.columns([1.4, 1, 1])
     revert_note = action_col_a.text_input("批量撤回备注", key="tx_batch_revert_note", placeholder="可选")
     revert_confirmed = action_col_b.checkbox("确认批量撤回", key="tx_batch_revert_confirmed")
-    if action_col_c.button("批量撤回选中提交", type="primary", width="stretch", key="tx_batch_revert_button"):
+    if action_col_c.button(
+        "批量撤回选中提交",
+        icon=":material/undo:",
+        width="stretch",
+        key="tx_batch_revert_button",
+    ):
         if not active_selected_ids:
             st.warning("请先勾选至少一条有效提交记录。")
         elif inactive_count:
@@ -2808,7 +3285,13 @@ def render_transaction_admin() -> None:
             )
             replace_note = st.text_input("修正备注", key=f"replace_note_{selected_id}", placeholder="可选")
             replace_confirmed = st.checkbox("确认撤回原记录并保存修正记录", key=f"replace_confirmed_{selected_id}")
-            if st.button("保存选中记录的编辑", type="primary", width="stretch", key=f"replace_transaction_button_{selected_id}"):
+            if st.button(
+                "保存选中记录的编辑",
+                type="primary",
+                icon=":material/save:",
+                width="stretch",
+                key=f"replace_transaction_button_{selected_id}",
+            ):
                 if not replace_confirmed:
                     st.warning("请先勾选确认修正。")
                 else:
@@ -2837,7 +3320,7 @@ def render_transaction_admin() -> None:
 
 
 def render_material_data_admin() -> None:
-    st.subheader("库存行修改与删除")
+    render_section_header("01", "库存行维护", "搜索、编辑或删除物料主数据记录")
     message = st.session_state.pop("material_admin_message", "")
     if message:
         st.success(message)
@@ -2897,7 +3380,12 @@ def render_material_data_admin() -> None:
     delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
     delete_col_a.caption("仅允许删除库存为 0 且没有流水记录的库存行。")
     delete_confirmed = delete_col_b.checkbox("确认批量删除", key="item_batch_delete_confirmed")
-    if delete_col_c.button("批量删除选中库存行", type="primary", width="stretch", key="item_batch_delete_button"):
+    if delete_col_c.button(
+        "批量删除选中库存行",
+        icon=":material/delete:",
+        width="stretch",
+        key="item_batch_delete_button",
+    ):
         if not selected_records:
             st.warning("请先勾选至少一条库存行。")
         elif not delete_confirmed:
@@ -2950,7 +3438,13 @@ def render_material_data_admin() -> None:
             )
             customs_code = meta_col_b.text_input("海关编码", value=str(item["customs_code"]), key=f"edit_material_customs_{selected_item_id}")
             remark = meta_col_c.text_input("备注", value=str(item["remark"]), key=f"edit_material_remark_{selected_item_id}")
-            if st.button("保存选中库存行修改", type="primary", width="stretch", key=f"save_inventory_item_edit_{selected_item_id}"):
+            if st.button(
+                "保存选中库存行修改",
+                type="primary",
+                icon=":material/save:",
+                width="stretch",
+                key=f"save_inventory_item_edit_{selected_item_id}",
+            ):
                 tx_count = count_feishu_item_transactions(selected_item_id, current_product, current_model, current_language)
                 if not material_code.strip() or not product.strip() or not language.strip():
                     st.error("物料编码、物料品类和语种不能为空。")
@@ -2987,7 +3481,7 @@ def render_material_data_admin() -> None:
 
 
 def render_category_admin() -> None:
-    st.subheader("物料品类修改与撤回")
+    render_section_header("01", "物料品类维护", "编辑品类规则或撤回未使用的品类")
     message = st.session_state.pop("category_admin_message", "")
     if message:
         st.success(message)
@@ -3049,7 +3543,12 @@ def render_category_admin() -> None:
     delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
     delete_col_a.caption("仅允许撤回所有库存行为 0 且没有流水记录的品类。")
     delete_confirmed = delete_col_b.checkbox("确认批量撤回", key="category_batch_delete_confirmed")
-    if delete_col_c.button("批量撤回选中品类", type="primary", width="stretch", key="category_batch_delete_button"):
+    if delete_col_c.button(
+        "批量撤回选中品类",
+        icon=":material/undo:",
+        width="stretch",
+        key="category_batch_delete_button",
+    ):
         if not selected_records:
             st.warning("请先勾选至少一个物料品类。")
         elif not delete_confirmed:
@@ -3088,7 +3587,13 @@ def render_category_admin() -> None:
             edit_col_a, edit_col_b = st.columns([2, 1])
             new_product = edit_col_a.text_input("物料品类名称", value=old_product, key=f"edit_category_name_{category_id}")
             no_model = edit_col_b.checkbox("无需型号", value=bool(category["no_model"]), key=f"edit_category_no_model_{category_id}")
-            if st.button("保存选中品类修改", type="primary", width="stretch", key=f"save_category_edit_{category_id}"):
+            if st.button(
+                "保存选中品类修改",
+                type="primary",
+                icon=":material/save:",
+                width="stretch",
+                key=f"save_category_edit_{category_id}",
+            ):
                 if not new_product.strip():
                     st.error("物料品类名称不能为空。")
                 elif no_model and int(stats.get("real_model_count", 0)) > 0:
@@ -3198,6 +3703,7 @@ def render_pending_approval_requests(
         st.info("暂无待审批或待发放的申请明细。")
         return
 
+    render_section_header("01", "待审批申请", "选择申请单并填写实际发放数量")
     option_labels = [
         (
             f"{request['request_no']} | {request.get('customer_name') or '未填写客户'} | "
@@ -3247,7 +3753,12 @@ def render_pending_approval_requests(
             key=f"approval_issue_editor_{selected_request['record_id']}",
         )
         issue_note = st.text_input("审批/发放备注", key=f"approval_issue_note_{selected_request['record_id']}")
-        submitted = st.form_submit_button("保存实际发放并扣减库存", type="primary", width="stretch")
+        submitted = st.form_submit_button(
+            "保存实际发放并扣减库存",
+            type="primary",
+            icon=":material/check_circle:",
+            width="stretch",
+        )
 
     if submitted:
         edited_by_id = {str(row["记录ID"]): row for row in edited_df.to_dict("records")}
@@ -3282,6 +3793,7 @@ def render_approval_history(
         st.info("暂无历史审批记录。")
         return
 
+    render_section_header("02", "历史审批记录", "查看已完成审批及对应发放明细")
     history_rows: list[dict[str, object]] = []
     for request in history_requests:
         lines = history_line_map.get(str(request["record_id"]), [])
@@ -3354,12 +3866,13 @@ def render_approval_history(
 
 
 def render_approval_view() -> None:
-    st.title("营销物料审批与发放")
+    render_page_header(
+        "营销物料审批与发放",
+        "审批工作台",
+        "核对申请明细、登记实际发放数量并同步库存流水。",
+    )
     if not approval_auth_gate():
         return
-
-    navigate_to_management("approval_back_to_management")
-    st.caption("填写实际发放数量并提交后，系统会扣减物料主数据并写入库存流水；库存允许出现负数。")
 
     message = st.session_state.pop("approval_issue_message", "")
     if message:
@@ -3397,6 +3910,15 @@ def render_approval_view() -> None:
             active_requests.append(request)
             active_line_map[request_id] = pending_lines
 
+    approval_metric_a, approval_metric_b, approval_metric_c, approval_metric_d = st.columns(4)
+    approval_metric_a.metric("待审批申请", f"{len(active_requests):,}")
+    approval_metric_b.metric("待处理明细", f"{sum(len(lines) for lines in active_line_map.values()):,}")
+    approval_metric_c.metric("历史申请", f"{len(history_requests):,}")
+    approval_metric_d.metric(
+        "历史发放数量",
+        f"{sum(int(line.get('actual_issue_qty') or 0) for lines in history_line_map.values() for line in lines):,}",
+    )
+
     pending_tab, history_tab = st.tabs(["待审批发放", "历史审批记录"])
     with pending_tab:
         render_pending_approval_requests(active_requests, active_line_map)
@@ -3405,35 +3927,39 @@ def render_approval_view() -> None:
 
 
 def render_inventory_view() -> None:
-    st.title("实时物料库存表")
+    render_page_header(
+        "实时物料库存表",
+        "库存视图",
+        "按物料品类、产品型号和语种查看当前库存与价值。",
+    )
     if not auth_gate():
         return
 
-    navigate_to_management("inventory_back_to_management")
     df = load_inventory()
-    st.caption(f"当前存储：{storage_mode_label()}。所有领取、采购、新增品类操作都会直接更新当前存储。")
-    product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
+    with st.container(border=True):
+        render_section_header("01", "库存筛选", f"当前存储：{storage_mode_label()}")
+        product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
 
-    selected_products = product_filter.multiselect(
-        "物料品类",
-        sorted(df[PRODUCT_COL].unique()),
-        key="inventory_filter_products",
-    )
-    product_scoped_df = df[df[PRODUCT_COL].isin(selected_products)] if selected_products else df
+        selected_products = product_filter.multiselect(
+            "物料品类",
+            sorted(df[PRODUCT_COL].unique()),
+            key="inventory_filter_products",
+        )
+        product_scoped_df = df[df[PRODUCT_COL].isin(selected_products)] if selected_products else df
 
-    selected_models = model_filter.multiselect(
-        "产品型号",
-        sorted(product_scoped_df[MODEL_COL].unique()),
-        key="inventory_filter_models",
-    )
-    selected_languages = language_filter.multiselect(
-        "语种",
-        sort_languages(list(product_scoped_df[LANGUAGE_COL].unique())),
-        key="inventory_filter_languages",
-    )
-    if "inventory_only_stocked" not in st.session_state:
-        st.session_state["inventory_only_stocked"] = True
-    only_stocked = stocked_filter.checkbox("仅看非零库存", key="inventory_only_stocked")
+        selected_models = model_filter.multiselect(
+            "产品型号",
+            sorted(product_scoped_df[MODEL_COL].unique()),
+            key="inventory_filter_models",
+        )
+        selected_languages = language_filter.multiselect(
+            "语种",
+            sort_languages(list(product_scoped_df[LANGUAGE_COL].unique())),
+            key="inventory_filter_languages",
+        )
+        if "inventory_only_stocked" not in st.session_state:
+            st.session_state["inventory_only_stocked"] = True
+        only_stocked = stocked_filter.checkbox("仅看非零库存", key="inventory_only_stocked")
     filtered = apply_inventory_filters(
         df,
         selected_products=selected_products,
@@ -3447,7 +3973,12 @@ def render_inventory_view() -> None:
             f"当前默认只显示非零库存物料，但应用内库存数量目前全部为 0。"
             f"完整物料组合仍有 {len(df):,} 条，取消“仅看有库存”即可查看。"
         )
-        if st.button("显示全部库存组合", key="show_all_inventory_rows", width="stretch"):
+        if st.button(
+            "显示全部库存组合",
+            key="show_all_inventory_rows",
+            icon=":material/view_list:",
+            width="stretch",
+        ):
             st.session_state["inventory_only_stocked"] = False
             st.rerun()
 
@@ -3457,12 +3988,20 @@ def render_inventory_view() -> None:
     metric_c.metric("库存总数量", f"{int(filtered[QTY_COL].sum()):,}")
     metric_d.metric("库存总价值", f"{float(filtered[VALUE_COL].sum()):,.2f}")
 
+    render_section_header("02", "库存明细", f"当前筛选显示 {len(filtered):,} 条物料组合")
     st.dataframe(filtered, width="stretch", hide_index=True, height=560)
     render_download_center(df, filtered)
 
 
 def render_management_page() -> None:
-    st.title("物料库存管理")
+    current_section = str(st.session_state.get("management_section", "库存登记"))
+    page_copy = {
+        "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
+        "新增物料品类": ("新增物料品类", "基础数据", "维护可申请的物料品类、型号和语种组合。"),
+        "修改与撤回": ("数据维护与撤回", "管理工作台", "管理库存提交、库存行和物料品类记录。"),
+    }
+    page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
+    render_page_header(page_title, page_kicker, page_subtitle)
     management_section = st.radio(
         "管理功能",
         ["库存登记", "新增物料品类", "修改与撤回"],
@@ -3479,7 +4018,12 @@ def render_management_page() -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="物料库存管理", layout="wide")
+    st.set_page_config(
+        page_title="营销物料中心",
+        page_icon=":material/inventory_2:",
+        layout="wide",
+        initial_sidebar_state="auto",
+    )
     inject_global_styles()
     stop_on_invalid_feishu_config()
     render_sidebar_link()
