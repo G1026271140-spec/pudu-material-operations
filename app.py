@@ -361,6 +361,8 @@ def inject_global_styles() -> None:
             letter-spacing: 0;
         }
         div[data-baseweb="select"] > div,
+        [data-testid="stSelectbox"] div[role="group"],
+        [data-testid="stMultiSelect"] div[role="group"],
         div[data-baseweb="input"] > div,
         textarea {
             border: 1px solid var(--pudu-control-line) !important;
@@ -369,6 +371,8 @@ def inject_global_styles() -> None:
             box-shadow: none !important;
         }
         div[data-baseweb="select"] > div:focus-within,
+        [data-testid="stSelectbox"] div[role="group"]:focus-within,
+        [data-testid="stMultiSelect"] div[role="group"]:focus-within,
         div[data-baseweb="input"] > div:focus-within,
         textarea:focus {
             border-color: var(--pudu-blue) !important;
@@ -389,7 +393,9 @@ def inject_global_styles() -> None:
             box-shadow: 0 0 0 2px rgba(51, 112, 255, 0.12) !important;
         }
         [data-testid="stTextInputRootElement"]:has(input:disabled),
-        [data-testid="stTextAreaRootElement"]:has(textarea:disabled) {
+        [data-testid="stTextAreaRootElement"]:has(textarea:disabled),
+        [data-testid="stSelectbox"] div[role="group"]:has(input:disabled),
+        [data-testid="stMultiSelect"] div[role="group"]:has(input:disabled) {
             background: #F5F6F8 !important;
         }
         [data-testid="stFileUploaderDropzone"] {
