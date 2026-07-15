@@ -451,6 +451,33 @@ def inject_global_styles() -> None:
             border-radius: 8px;
             box-shadow: none;
         }
+        [data-testid="stSpinner"] {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(245, 246, 248, 0.82);
+            backdrop-filter: blur(1.5px);
+        }
+        [data-testid="stSpinner"] > div {
+            width: min(360px, calc(100vw - 2rem)) !important;
+            min-width: 0;
+            max-width: calc(100vw - 2rem);
+            flex: 0 0 auto;
+            padding: 1rem 1.15rem;
+            border: 1px solid var(--pudu-line);
+            border-radius: 8px;
+            background: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(31, 35, 41, 0.12);
+        }
+        [data-testid="stSpinner"] p {
+            color: var(--pudu-ink);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
         [data-testid="stCaptionContainer"] {
             color: var(--pudu-muted);
             font-size: 0.78rem;
@@ -2690,7 +2717,8 @@ def required_field_label(container: object, label: str) -> None:
 
 
 def render_change_form(show_title: bool = True) -> None:
-    selection_context = get_request_form_selection_context()
+    with st.spinner("物料数据加载中，请稍后......"):
+        selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
     models = unique_preserve([NO_MODEL_TEXT] + list(selection_context["models"]))
     languages = list(selection_context["languages"])
@@ -2945,7 +2973,8 @@ def render_change_form(show_title: bool = True) -> None:
 
 
 def render_add_category_form() -> None:
-    options = load_options()
+    with st.spinner("物料数据加载中，请稍后......"):
+        options = load_options()
     existing_products = options["products"]
     existing_models = options["models"]
     existing_languages = sort_languages(options["languages"])
@@ -3157,7 +3186,8 @@ def render_transaction_admin() -> None:
         st.warning("开始日期不能晚于结束日期。")
         return
 
-    records = load_feishu_transaction_records(start_date=start_date, end_date=end_date, limit=limit)
+    with st.spinner("物料数据加载中，请稍后......"):
+        records = load_feishu_transaction_records(start_date=start_date, end_date=end_date, limit=limit)
     if status_filter != "全部":
         records = [row for row in records if row["status"] == status_filter]
     if not records:
@@ -3326,7 +3356,8 @@ def render_material_data_admin() -> None:
         st.success(message)
 
     search_text = st.text_input("搜索库存行", key="item_search_text", placeholder="物料编码 / 品类 / 型号 / 语种")
-    records = load_feishu_inventory_records()
+    with st.spinner("物料数据加载中，请稍后......"):
+        records = load_feishu_inventory_records()
     if not records:
         st.info("暂无物料行。")
         return
@@ -3486,8 +3517,9 @@ def render_category_admin() -> None:
     if message:
         st.success(message)
 
-    categories = load_feishu_category_records()
-    inventory_records = load_feishu_inventory_records()
+    with st.spinner("物料数据加载中，请稍后......"):
+        categories = load_feishu_category_records()
+        inventory_records = load_feishu_inventory_records()
     if not categories:
         st.info("暂无物料品类。")
         return
@@ -3878,8 +3910,9 @@ def render_approval_view() -> None:
     if message:
         st.success(message)
 
-    requests = load_feishu_request_records()
-    all_lines = load_feishu_request_line_records()
+    with st.spinner("物料数据加载中，请稍后......"):
+        requests = load_feishu_request_records()
+        all_lines = load_feishu_request_line_records()
     pending_line_statuses = {REQUEST_LINE_STATUS_PENDING, "待发放", "已通过", ""}
     completed_line_statuses = {REQUEST_LINE_STATUS_PARTIAL, REQUEST_LINE_STATUS_ISSUED}
     completed_request_statuses = {
@@ -3935,7 +3968,8 @@ def render_inventory_view() -> None:
     if not auth_gate():
         return
 
-    df = load_inventory()
+    with st.spinner("物料数据加载中，请稍后......"):
+        df = load_inventory()
     with st.container(border=True):
         render_section_header("01", "库存筛选", f"当前存储：{storage_mode_label()}")
         product_filter, model_filter, language_filter, stocked_filter = st.columns([2.2, 1.6, 1.6, 1])
