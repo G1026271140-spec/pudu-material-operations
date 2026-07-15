@@ -3777,6 +3777,7 @@ def render_pending_approval_requests(
             column_config={
                 "实际发放数量": st.column_config.NumberColumn(
                     "实际发放数量",
+                    help="填写实际发放数量并保存后，系统会按该数量更新物料库存。",
                     min_value=0,
                     max_value=1_000_000,
                     step=1,
