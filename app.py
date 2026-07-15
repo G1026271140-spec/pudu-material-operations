@@ -19,6 +19,14 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 
 DEFAULT_PASSWORD = "376493"
 NO_MODEL_TEXT = "无需型号"
+NO_LANGUAGE_TEXT = "无需语种"
+DEFAULT_NO_LANGUAGE_PRODUCTS = (
+    "公仔(Plush Toy)",
+    "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
+    "笔记本礼盒(Notebook Gift Box)",
+    "定制LOGO书包(Customized PUDU bag)",
+    "展会服装",
+)
 ACTION_RECEIVE = "物料领取（减少库存）"
 ACTION_PURCHASE = "物料采购（增加库存）"
 ACTION_OPTIONS = [ACTION_RECEIVE, ACTION_PURCHASE]
@@ -872,6 +880,14 @@ def normalize_option_label(value: object) -> str:
     return re.sub(r"\s+", " ", str(value).strip())
 
 
+def default_no_language_product_keys() -> set[str]:
+    return {normalize_option_label(product) for product in DEFAULT_NO_LANGUAGE_PRODUCTS}
+
+
+def is_default_no_language_product(product: str) -> bool:
+    return normalize_option_label(product) in default_no_language_product_keys()
+
+
 def parse_custom_values(raw_text: str) -> list[str]:
     parts = re.split(r"[\n,，;；、]+", raw_text)
     return unique_preserve(parts)
@@ -881,6 +897,8 @@ def sort_languages(languages: list[str]) -> list[str]:
     unique_languages = unique_preserve(languages)
 
     def priority(language: str) -> int:
+        if language == NO_LANGUAGE_TEXT:
+            return -1
         if "English" in language or "英语" in language:
             return 0
         if "Simplified Chinese" in language or "简中" in language:
@@ -914,11 +932,21 @@ def build_inventory_selection_context() -> dict[str, object]:
                 product_languages.setdefault(product_key, []).append(language_name)
                 product_model_languages.setdefault((product_key, model_key), []).append(language_name)
 
+    no_language_product_keys = {
+        normalize_option_label(product) for product in options.get("no_language_products", [])
+    } | default_no_language_product_keys()
+    no_language_product_keys.update(
+        product_key
+        for product_key, product_language_values in product_languages.items()
+        if product_language_values and set(product_language_values) == {NO_LANGUAGE_TEXT}
+    )
+
     return {
         "products": options["products"],
         "models": options["models"],
         "languages": sort_languages(options["languages"]),
         "no_model_product_keys": {normalize_option_label(product) for product in options["no_model_products"]},
+        "no_language_product_keys": no_language_product_keys,
         "inventory_product_keys": inventory_product_keys,
         "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
         "product_languages": {key: sort_languages(values) for key, values in product_languages.items()},
@@ -946,6 +974,8 @@ def product_language_options(
     fallback_languages: list[str] | None = None,
 ) -> list[str]:
     product_key = normalize_option_label(product)
+    if product_key in selection_context.get("no_language_product_keys", set()):
+        return [NO_LANGUAGE_TEXT]
     model_key = normalize_option_label(model or NO_MODEL_TEXT)
     product_model_languages = selection_context["product_model_languages"]
     product_languages = selection_context["product_languages"]
@@ -956,6 +986,22 @@ def product_language_options(
     if not scoped_languages:
         scoped_languages = fallback_languages or list(selection_context["languages"])
     return sort_languages(list(scoped_languages))
+
+
+def product_language_state(
+    product: str,
+    model: str,
+    selection_context: dict[str, object],
+    fallback_languages: list[str] | None = None,
+) -> tuple[bool, list[str]]:
+    product_key = normalize_option_label(product)
+    is_no_language_product = product_key in selection_context.get("no_language_product_keys", set())
+    return bool(is_no_language_product), product_language_options(
+        product,
+        model,
+        selection_context,
+        fallback_languages,
+    )
 
 
 def request_form_cache_from_inventory(
@@ -982,6 +1028,7 @@ def request_form_cache_from_inventory(
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "products": unique_preserve(list(options.get("products") or [])),
         "no_model_products": unique_preserve(list(options.get("no_model_products") or [])),
+        "no_language_products": unique_preserve(list(options.get("no_language_products") or [])),
         "models": unique_preserve(list(options.get("models") or [])),
         "languages": sort_languages(list(options.get("languages") or [])),
         "inventory_rows": rows,
@@ -1004,6 +1051,7 @@ def load_static_request_form_cache() -> dict[str, object]:
             "generated_at": "",
             "products": [],
             "no_model_products": [],
+            "no_language_products": [],
             "models": [],
             "languages": [],
             "inventory_rows": [],
@@ -1054,6 +1102,15 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
     products = unique_preserve(list(cache_data.get("products") or []) + [str(item.get("product") or "") for item in rows if isinstance(item, dict)])
     models = unique_preserve(list(cache_data.get("models") or []) + [str(item.get("model") or "") for item in rows if isinstance(item, dict)])
     languages = sort_languages(unique_preserve(list(cache_data.get("languages") or []) + [str(item.get("language") or "") for item in rows if isinstance(item, dict)]))
+    no_language_product_keys = {
+        normalize_option_label(product) for product in list(cache_data.get("no_language_products") or [])
+    } | default_no_language_product_keys()
+    no_language_product_keys.update(
+        product_key
+        for product_key, product_language_values in product_languages.items()
+        if product_language_values and set(product_language_values) == {NO_LANGUAGE_TEXT}
+    )
+
     return {
         "products": products,
         "models": [model for model in models if model and model != NO_MODEL_TEXT],
@@ -1061,6 +1118,7 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
         "no_model_product_keys": {
             normalize_option_label(product) for product in list(cache_data.get("no_model_products") or [])
         },
+        "no_language_product_keys": no_language_product_keys,
         "inventory_product_keys": inventory_product_keys,
         "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
         "product_languages": {key: sort_languages(values) for key, values in product_languages.items()},
@@ -1494,6 +1552,7 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
     inventory_df = load_feishu_inventory_snapshot(app_id, app_secret, app_token)
     products: list[str] = []
     no_model_products: list[str] = []
+    no_language_products: list[str] = []
     for row in categories:
         fields = feishu_fields(row)
         product = feishu_text(fields, "物料品类")
@@ -1501,6 +1560,8 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
             products.append(product)
         if feishu_text(fields, "是否无需型号") == "是":
             no_model_products.append(product)
+        if feishu_text(fields, "是否无需语种") == "是" or is_default_no_language_product(product):
+            no_language_products.append(product)
     if not products and not inventory_df.empty:
         products = unique_preserve(list(inventory_df[PRODUCT_COL].astype(str)))
     inventory_no_model_products = (
@@ -1512,13 +1573,20 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
         [value for value in inventory_df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT]
     ) if not inventory_df.empty else []
     languages = unique_preserve(list(inventory_df[LANGUAGE_COL].astype(str))) if not inventory_df.empty else []
+    if not inventory_df.empty:
+        for product, product_df in inventory_df.groupby(PRODUCT_COL):
+            product_languages = {str(value).strip() for value in product_df[LANGUAGE_COL] if str(value).strip()}
+            if product_languages == {NO_LANGUAGE_TEXT}:
+                no_language_products.append(str(product))
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "products": unique_preserve(products),
         "no_model_products": unique_preserve(no_model_products + inventory_no_model_products),
+        "no_language_products": unique_preserve(no_language_products),
         "models": models,
         "languages": languages,
         "no_model_text": NO_MODEL_TEXT,
+        "no_language_text": NO_LANGUAGE_TEXT,
         "row_count": len(inventory_df),
     }
 
@@ -2232,6 +2300,8 @@ def load_feishu_category_records() -> list[dict]:
                 "record_id": feishu_record_id(row),
                 "category": product,
                 "no_model": feishu_text(fields, "是否无需型号") == "是",
+                "no_language": feishu_text(fields, "是否无需语种") == "是"
+                or is_default_no_language_product(product),
                 "status": feishu_text(fields, "启用状态"),
                 "created_at": feishu_text(fields, "创建时间"),
                 "remark": feishu_text(fields, "备注"),
@@ -2276,19 +2346,31 @@ def count_feishu_category_transactions(product: str) -> int:
     return count
 
 
-def get_or_create_feishu_category_record(product: str, no_model: bool) -> dict:
+def get_or_create_feishu_category_record(product: str, no_model: bool, no_language: bool = False) -> dict:
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书客户端未初始化。")
     existing = find_feishu_category_record(product)
     if existing is not None:
+        updates: dict[str, object] = {}
+        if no_model:
+            updates["是否无需型号"] = "是"
+        if no_language:
+            updates["是否无需语种"] = "是"
+        if updates:
+            feishu_update_record_fields(
+                "物料品类",
+                feishu_record_id(existing),
+                updates,
+            )
         return existing
-    created = client.batch_create_records(
-        feishu_table_id("物料品类"),
+    created = feishu_batch_create_records(
+        "物料品类",
         [
             {
                 "物料品类": product,
                 "是否无需型号": "是" if no_model else "否",
+                "是否无需语种": "是" if no_language else "否",
                 "启用状态": "启用",
                 "库存行数": 0,
                 "产品型号数量": 0,
@@ -2419,7 +2501,11 @@ def update_feishu_inventory_item(
     if client is None:
         return
     model = model.strip() or NO_MODEL_TEXT
-    category_record = get_or_create_feishu_category_record(product.strip(), model == NO_MODEL_TEXT)
+    category_record = get_or_create_feishu_category_record(
+        product.strip(),
+        model == NO_MODEL_TEXT,
+        language.strip() == NO_LANGUAGE_TEXT,
+    )
     category_record_id = feishu_record_id(category_record)
     client.update_record(
         feishu_table_id("物料主数据"),
@@ -2447,17 +2533,24 @@ def delete_feishu_category(product: str, category_record_id: str) -> None:
     client.delete_record(feishu_table_id("物料品类"), category_record_id)
 
 
-def update_feishu_category(old_product: str, new_product: str, no_model: bool, category_record_id: str) -> None:
+def update_feishu_category(
+    old_product: str,
+    new_product: str,
+    no_model: bool,
+    no_language: bool,
+    category_record_id: str,
+) -> None:
     client = feishu_client()
     if client is None:
         return
     new_product = new_product.strip()
-    client.update_record(
-        feishu_table_id("物料品类"),
+    feishu_update_record_fields(
+        "物料品类",
         category_record_id,
         {
             "物料品类": new_product,
             "是否无需型号": "是" if no_model else "否",
+            "是否无需语种": "是" if no_language else "否",
         },
     )
     for row in feishu_material_rows():
@@ -2470,6 +2563,8 @@ def update_feishu_category(old_product: str, new_product: str, no_model: bool, c
         }
         if no_model:
             update_fields["产品型号"] = NO_MODEL_TEXT
+        if no_language:
+            update_fields["语种"] = NO_LANGUAGE_TEXT
         client.update_record(feishu_table_id("物料主数据"), feishu_record_id(row), update_fields)
 
 
@@ -2480,21 +2575,27 @@ def find_feishu_category_record(product: str) -> dict | None:
     return None
 
 
-def add_feishu_material_category_payload(product: str, no_model: bool, df: pd.DataFrame) -> int:
+def add_feishu_material_category_payload(
+    product: str,
+    no_model: bool,
+    no_language: bool,
+    df: pd.DataFrame,
+) -> int:
     client = feishu_client()
     if client is None:
         return 0
 
+    models = unique_preserve(list(df[MODEL_COL].astype(str)))
+    languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
     category_record = find_feishu_category_record(product)
     if category_record is None:
-        models = unique_preserve(list(df[MODEL_COL].astype(str)))
-        languages = unique_preserve(list(df[LANGUAGE_COL].astype(str)))
-        created = client.batch_create_records(
-            feishu_table_id("物料品类"),
+        created = feishu_batch_create_records(
+            "物料品类",
             [
                 {
                     "物料品类": product,
                     "是否无需型号": "是" if no_model else "否",
+                    "是否无需语种": "是" if no_language else "否",
                     "启用状态": "启用",
                     "库存行数": len(df),
                     "产品型号数量": len(models),
@@ -2506,6 +2607,18 @@ def add_feishu_material_category_payload(product: str, no_model: bool, df: pd.Da
         category_record_id = str((created[0] if created else {}).get("record_id", ""))
     else:
         category_record_id = feishu_record_id(category_record)
+        feishu_update_record_fields(
+            "物料品类",
+            category_record_id,
+            {
+                "是否无需型号": "是" if no_model else "否",
+                "是否无需语种": "是" if no_language else "否",
+                "启用状态": "启用",
+                "库存行数": len(df),
+                "产品型号数量": len(models),
+                "语种数量": len(languages),
+            },
+        )
 
     records: list[dict[str, object]] = []
     for row in df[INVENTORY_HEADERS].itertuples(index=False):
@@ -2698,7 +2811,7 @@ def render_change_form(show_title: bool = True) -> None:
         selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
     models = unique_preserve([NO_MODEL_TEXT] + list(selection_context["models"]))
-    languages = list(selection_context["languages"])
+    languages = [language for language in selection_context["languages"] if language != NO_LANGUAGE_TEXT]
 
     if show_title:
         render_page_header(
@@ -2825,7 +2938,12 @@ def render_change_form(show_title: bool = True) -> None:
                 label_visibility="collapsed",
                 on_change=mark_request_form_dirty,
             )
-            language_options = product_language_options(product, model, selection_context, languages)
+            is_no_language_product, language_options = product_language_state(
+                product,
+                model,
+                selection_context,
+                languages,
+            )
             language_key = f"request_language_{index}"
             if st.session_state.get(language_key) not in language_options:
                 st.session_state[language_key] = language_options[0] if language_options else ""
@@ -2834,6 +2952,7 @@ def render_change_form(show_title: bool = True) -> None:
                 "语种(Language)",
                 language_options,
                 key=language_key,
+                disabled=is_no_language_product,
                 label_visibility="collapsed",
                 on_change=mark_request_form_dirty,
             )
@@ -2937,7 +3056,9 @@ def render_add_category_form() -> None:
         options = load_options()
     existing_products = options["products"]
     existing_models = options["models"]
-    existing_languages = sort_languages(options["languages"])
+    existing_languages = [
+        language for language in sort_languages(options["languages"]) if language != NO_LANGUAGE_TEXT
+    ]
 
     message = st.session_state.pop("category_added_message", "")
     if message:
@@ -2950,9 +3071,14 @@ def render_add_category_form() -> None:
                 "新增物料品类",
                 placeholder="例如：新版宣传册(New Brochure)",
             ).strip()
-            no_model = st.checkbox(
+            rule_col_a, rule_col_b = st.columns(2)
+            no_model = rule_col_a.checkbox(
                 "该品类不按产品型号分类",
                 help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
+            )
+            no_language = rule_col_b.checkbox(
+                "该品类无需语种",
+                help="勾选后会按“品类 + 型号”生成，语种统一为“无需语种”。",
             )
 
             model_col, language_col = st.columns(2)
@@ -2970,17 +3096,19 @@ def render_add_category_form() -> None:
             selected_languages = language_col.multiselect(
                 "选择已有语种",
                 existing_languages,
+                disabled=no_language,
             )
             custom_languages_text = language_col.text_area(
                 "自定义语种",
                 placeholder="可用逗号、分号、顿号或换行分隔",
+                disabled=no_language,
                 height=92,
             )
 
             custom_models = parse_custom_values(custom_models_text)
             custom_languages = parse_custom_values(custom_languages_text)
             models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
-            languages = unique_preserve(selected_languages + custom_languages)
+            languages = [NO_LANGUAGE_TEXT] if no_language else unique_preserve(selected_languages + custom_languages)
 
             preview_count = len(models) * len(languages) if product and models and languages else 0
             st.caption(f"预计新增 {preview_count} 条库存行。")
@@ -2997,6 +3125,7 @@ def render_add_category_form() -> None:
             models=models,
             languages=languages,
             no_model=no_model,
+            no_language=no_language,
         )
 
 
@@ -3005,6 +3134,7 @@ def add_material_category(
     models: list[str],
     languages: list[str],
     no_model: bool,
+    no_language: bool,
 ) -> None:
     product = product.strip()
     if not product:
@@ -3036,7 +3166,12 @@ def add_material_category(
         new_df = pd.DataFrame(new_rows, columns=INVENTORY_HEADERS)
         if feishu_configured():
             try:
-                inserted_count = add_feishu_material_category_payload(product, no_model, new_df)
+                inserted_count = add_feishu_material_category_payload(
+                    product,
+                    no_model,
+                    no_language,
+                    new_df,
+                )
             except Exception as exc:
                 st.error(
                     "新增物料品类写入飞书失败。请检查物料主数据里的“物料编码/物料品类/产品型号/语种”是否为单选字段；"
@@ -3250,13 +3385,22 @@ def render_transaction_admin() -> None:
                     index=replace_models.index(old_model) if old_model in replace_models else 0,
                     key=f"replace_model_{selected_id}",
                 )
-            scoped_languages = product_language_options(replace_product, replace_model, selection_context)
-            languages = unique_preserve([str(selected["language"])] + scoped_languages)
+            is_no_language_product, scoped_languages = product_language_state(
+                replace_product,
+                replace_model,
+                selection_context,
+            )
+            languages = (
+                [NO_LANGUAGE_TEXT]
+                if is_no_language_product
+                else unique_preserve([str(selected["language"])] + scoped_languages)
+            )
             replace_language = edit_col_c.selectbox(
                 "语种",
                 languages,
                 index=languages.index(str(selected["language"])) if str(selected["language"]) in languages else 0,
                 key=f"replace_language_{selected_id}",
+                disabled=is_no_language_product,
             )
             default_action = ACTION_PURCHASE if int(selected["delta"]) > 0 else ACTION_RECEIVE
             replace_action = edit_col_d.selectbox(
@@ -3408,6 +3552,7 @@ def render_material_data_admin() -> None:
         current_product = str(item["category"])
         current_model = str(item["model"] or NO_MODEL_TEXT)
         current_language = str(item["language"])
+        no_language = current_language == NO_LANGUAGE_TEXT or is_default_no_language_product(current_product)
         with st.expander("编辑选中库存行", expanded=True):
             edit_col_a, edit_col_b, edit_col_c, edit_col_d = st.columns([1.2, 2, 1.3, 1.4])
             material_code = edit_col_a.text_input("物料编码", value=str(item["material_code"]), key=f"edit_material_code_{selected_item_id}")
@@ -3418,7 +3563,12 @@ def render_material_data_admin() -> None:
                 model = NO_MODEL_TEXT
             else:
                 model = edit_col_d.text_input("产品型号", value=current_model, key=f"edit_material_model_{selected_item_id}")
-            language = st.text_input("语种", value=current_language, key=f"edit_material_language_{selected_item_id}")
+            language = st.text_input(
+                "语种",
+                value=NO_LANGUAGE_TEXT if no_language else current_language,
+                disabled=no_language,
+                key=f"edit_material_language_{selected_item_id}",
+            )
             meta_col_a, meta_col_b, meta_col_c = st.columns([1, 1.2, 2])
             unit_price = meta_col_a.number_input(
                 "单价",
@@ -3485,8 +3635,10 @@ def render_category_admin() -> None:
         return
 
     summary: dict[str, dict[str, int]] = {}
+    category_models: dict[str, set[str]] = {}
     for item in inventory_records:
         product = str(item["category"])
+        category_models.setdefault(product, set()).add(str(item["model"] or NO_MODEL_TEXT))
         stats = summary.setdefault(
             product,
             {"row_count": 0, "nonzero_count": 0, "quantity_sum": 0, "real_model_count": 0},
@@ -3506,6 +3658,7 @@ def render_category_admin() -> None:
                 "记录ID": row["record_id"],
                 "物料品类": row["category"],
                 "无需型号": bool(row["no_model"]),
+                "无需语种": bool(row["no_language"]),
                 "启用状态": row["status"],
                 "库存行数": summary.get(row["category"], {}).get("row_count", 0),
                 "非零库存行": summary.get(row["category"], {}).get("nonzero_count", 0),
@@ -3576,9 +3729,14 @@ def render_category_admin() -> None:
         existing_category_names = {str(row["category"]) for row in categories if row["record_id"] != category_id}
         inventory_category_names = {str(row["category"]) for row in inventory_records if str(row["category"]) != old_product}
         with st.expander("编辑选中物料品类", expanded=True):
-            edit_col_a, edit_col_b = st.columns([2, 1])
+            edit_col_a, edit_col_b, edit_col_c = st.columns([2, 1, 1])
             new_product = edit_col_a.text_input("物料品类名称", value=old_product, key=f"edit_category_name_{category_id}")
             no_model = edit_col_b.checkbox("无需型号", value=bool(category["no_model"]), key=f"edit_category_no_model_{category_id}")
+            no_language = edit_col_c.checkbox(
+                "无需语种",
+                value=bool(category["no_language"]),
+                key=f"edit_category_no_language_{category_id}",
+            )
             if st.button(
                 "保存选中品类修改",
                 type="primary",
@@ -3590,6 +3748,8 @@ def render_category_admin() -> None:
                     st.error("物料品类名称不能为空。")
                 elif no_model and int(stats.get("real_model_count", 0)) > 0:
                     st.error("该品类已有具体产品型号，不能直接改为无需型号。")
+                elif no_language and int(stats.get("row_count", 0)) > len(category_models.get(old_product, set())):
+                    st.error("该品类仍有按语种拆分的重复库存行，请先合并后再改为无需语种。")
                 elif new_product.strip() != old_product and (
                     new_product.strip() in existing_category_names or new_product.strip() in inventory_category_names
                 ):
@@ -3599,7 +3759,13 @@ def render_category_admin() -> None:
                 else:
                     with DATA_LOCK:
                         try:
-                            update_feishu_category(old_product, new_product, no_model, category_id)
+                            update_feishu_category(
+                                old_product,
+                                new_product,
+                                no_model,
+                                no_language,
+                                category_id,
+                            )
                         except Exception as exc:
                             st.error("修改物料品类失败。请检查飞书单选字段是否已有对应选项，或改为文本字段。")
                             st.exception(exc)

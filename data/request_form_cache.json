@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-08 12:23:08",
+  "generated_at": "2026-07-15 16:24:48",
   "products": [
     "产品折页(Single Product Brochure)",
     "产品单页(Product Flyer )",
@@ -16,7 +16,8 @@
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "展会服装"
+    "展会服装",
+    "新版宣传册"
   ],
   "no_model_products": [
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -27,6 +28,14 @@
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
+    "展会服装",
+    "新版宣传册"
+  ],
+  "no_language_products": [
+    "公仔(Plush Toy)",
+    "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
+    "笔记本礼盒(Notebook Gift Box)",
+    "定制LOGO书包(Customized PUDU bag)",
     "展会服装"
   ],
   "models": [
@@ -50,6 +59,7 @@
     "BellaBot"
   ],
   "languages": [
+    "无需语种",
     "英语(English)",
     "简中(Simplified Chinese)",
     "德语(German)",
@@ -67,7 +77,7 @@
       "product": "产品折页(Single Product Brochure)",
       "model": "KettyBot Pro",
       "language": "英语(English)",
-      "quantity": 1000
+      "quantity": 990
     },
     {
       "material_code": "MAT-0012",
@@ -977,7 +987,7 @@
       "product": "产品折页(Single Product Brochure)",
       "model": "MT1 Vac",
       "language": "英语(English)",
-      "quantity": 1000
+      "quantity": -1300
     },
     {
       "material_code": "MAT-0142",
@@ -2272,7 +2282,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Vac",
       "language": "葡语(Portuguese)",
-      "quantity": 1000
+      "quantity": 990
     },
     {
       "material_code": "MAT-0327",
@@ -2587,7 +2597,7 @@
       "product": "工业产品线手册（Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 1000
+      "quantity": 990
     },
     {
       "material_code": "MAT-0372",
@@ -2678,7 +2688,7 @@
       "product": "清洁产品线手册（Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "法语(French)",
-      "quantity": 1000
+      "quantity": 999
     },
     {
       "material_code": "MAT-0385",
@@ -4056,2590 +4066,259 @@
       "material_code": "MAT-0581",
       "product": "公仔(Plush Toy)",
       "model": "BellaBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0582",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0583",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0584",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0585",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0586",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0587",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0588",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0589",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0590",
-      "product": "公仔(Plush Toy)",
-      "model": "BellaBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0591",
       "product": "公仔(Plush Toy)",
       "model": "KettyBot Pro",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0592",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0593",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0594",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0595",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0596",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0597",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0598",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0599",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0600",
-      "product": "公仔(Plush Toy)",
-      "model": "KettyBot Pro",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0601",
       "product": "公仔(Plush Toy)",
       "model": "PuduBot 2",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0602",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0603",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0604",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0605",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0606",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0607",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0608",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0609",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0610",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "意大利语(Italian)",
-      "quantity": 1000
+      "language": "无需语种",
+      "quantity": 996
     },
     {
       "material_code": "MAT-0611",
       "product": "公仔(Plush Toy)",
       "model": "FlashBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0612",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0613",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0614",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0615",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0616",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0617",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0618",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0619",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0620",
-      "product": "公仔(Plush Toy)",
-      "model": "FlashBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0621",
       "product": "公仔(Plush Toy)",
       "model": "SwiftBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0622",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0623",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0624",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0625",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0626",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0627",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0628",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0629",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0630",
-      "product": "公仔(Plush Toy)",
-      "model": "SwiftBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0631",
       "product": "公仔(Plush Toy)",
       "model": "PUDU HolaBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0632",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0633",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0634",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0635",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0636",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0637",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0638",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0639",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0640",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0641",
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0642",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0643",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0644",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0645",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0646",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0647",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0648",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0649",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0650",
-      "product": "公仔(Plush Toy)",
-      "model": "PUDU CC1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0651",
       "product": "公仔(Plush Toy)",
       "model": "Bellabot pro",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0652",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0653",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0654",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0655",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0656",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0657",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0658",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0659",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0660",
-      "product": "公仔(Plush Toy)",
-      "model": "Bellabot pro",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0661",
       "product": "公仔(Plush Toy)",
       "model": "SH1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0662",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0663",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0664",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0665",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0666",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0667",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0668",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0669",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0670",
-      "product": "公仔(Plush Toy)",
-      "model": "SH1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0671",
       "product": "公仔(Plush Toy)",
       "model": "T300",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0672",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0673",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0674",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0675",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0676",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0677",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0678",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0679",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0680",
-      "product": "公仔(Plush Toy)",
-      "model": "T300",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0681",
       "product": "公仔(Plush Toy)",
       "model": "MT1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0682",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0683",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0684",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0685",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0686",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0687",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0688",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0689",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0690",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0691",
       "product": "公仔(Plush Toy)",
       "model": "新闪电匣",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0692",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0693",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0694",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0695",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0696",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0697",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0698",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0699",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0700",
-      "product": "公仔(Plush Toy)",
-      "model": "新闪电匣",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0701",
       "product": "公仔(Plush Toy)",
       "model": "CC1 PRO",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0702",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0703",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0704",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0705",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0706",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0707",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0708",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0709",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0710",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0711",
       "product": "公仔(Plush Toy)",
       "model": "T600",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0712",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0713",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0714",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0715",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0716",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0717",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0718",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0719",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0720",
-      "product": "公仔(Plush Toy)",
-      "model": "T600",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0721",
       "product": "公仔(Plush Toy)",
       "model": "MT1 Vac",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0722",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0723",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0724",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0725",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0726",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0727",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0728",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0729",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0730",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Vac",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0731",
       "product": "公仔(Plush Toy)",
       "model": "MT1 Max",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0732",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0733",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0734",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0735",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0736",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0737",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0738",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0739",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0740",
-      "product": "公仔(Plush Toy)",
-      "model": "MT1 Max",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0741",
       "product": "公仔(Plush Toy)",
       "model": "BG1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0742",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0743",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0744",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0745",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0746",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0747",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0748",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0749",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0750",
-      "product": "公仔(Plush Toy)",
-      "model": "BG1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0751",
       "product": "公仔(Plush Toy)",
       "model": "ET1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0752",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0753",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0754",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0755",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0756",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0757",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0758",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0759",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0760",
-      "product": "公仔(Plush Toy)",
-      "model": "ET1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0761",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "BellaBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0762",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0763",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0764",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0765",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0766",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0767",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0768",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0769",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0770",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BellaBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0771",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "KettyBot Pro",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0772",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0773",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0774",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0775",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0776",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0777",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0778",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0779",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0780",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "KettyBot Pro",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0781",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "PuduBot 2",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0782",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0783",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0784",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0785",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0786",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0787",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0788",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0789",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0790",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0791",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "FlashBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0792",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0793",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0794",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0795",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0796",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0797",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0798",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0799",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0800",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0801",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "SwiftBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0802",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0803",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0804",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0805",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0806",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0807",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0808",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0809",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0810",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0811",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "PUDU HolaBot",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0812",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0813",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0814",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0815",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0816",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0817",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0818",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0819",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0820",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0821",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "PUDU CC1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0822",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0823",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0824",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0825",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0826",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0827",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0828",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0829",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0830",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "PUDU CC1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0831",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "Bellabot pro",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0832",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0833",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0834",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0835",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0836",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0837",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0838",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0839",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0840",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0841",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "SH1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0842",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0843",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0844",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0845",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0846",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0847",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0848",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0849",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0850",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "SH1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0851",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "T300",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0852",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0853",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0854",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0855",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0856",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0857",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0858",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0859",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0860",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T300",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0861",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "MT1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0862",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0863",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0864",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0865",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0866",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0867",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0868",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0869",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0870",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0871",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "新闪电匣",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0872",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0873",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0874",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0875",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0876",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0877",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0878",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0879",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0880",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0881",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "CC1 PRO",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0882",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0883",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0884",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0885",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0886",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0887",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0888",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0889",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0890",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0891",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "T600",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0892",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0893",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0894",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0895",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0896",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0897",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0898",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0899",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0900",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "T600",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0901",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "MT1 Vac",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0902",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0903",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0904",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0905",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0906",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0907",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0908",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0909",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0910",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0911",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "MT1 Max",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0912",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0913",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0914",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0915",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0916",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0917",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0918",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0919",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0920",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0921",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "BG1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0922",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0923",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0924",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0925",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0926",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0927",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0928",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0929",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0930",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "BG1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0931",
       "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
       "model": "ET1",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0932",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0933",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0934",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0935",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0936",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0937",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0938",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0939",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0940",
-      "product": "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
-      "model": "ET1",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
       "material_code": "MAT-0941",
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0942",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0943",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0944",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0945",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0946",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0947",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0948",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0949",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0950",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
@@ -6716,71 +4395,8 @@
       "material_code": "MAT-0961",
       "product": "定制LOGO书包(Customized PUDU bag)",
       "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0962",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0963",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0964",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0965",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0966",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0967",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0968",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0969",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0970",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "意大利语(Italian)",
-      "quantity": 1000
+      "language": "无需语种",
+      "quantity": 996
     },
     {
       "material_code": "MAT-0971",
@@ -6856,70 +4472,7 @@
       "material_code": "MAT-0981",
       "product": "展会服装",
       "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0982",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "德语(German)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0983",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "日语(apanese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0984",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0985",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "西语(Spanish)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0986",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "葡语(Portuguese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0987",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "俄语(Russian)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0988",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0989",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0990",
-      "product": "展会服装",
-      "model": "无需型号",
-      "language": "意大利语(Italian)",
+      "language": "无需语种",
       "quantity": 1000
     },
     {
@@ -6991,8 +4544,36 @@
       "model": "BellaBot",
       "language": "意大利语(Italian)",
       "quantity": 1000
+    },
+    {
+      "material_code": "MAT-0991",
+      "product": "新版宣传册",
+      "model": "无需型号",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0992",
+      "product": "新版宣传册",
+      "model": "无需型号",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0991",
+      "product": "新版宣传册",
+      "model": "无需型号",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0992",
+      "product": "新版宣传册",
+      "model": "无需型号",
+      "language": "日语(apanese)",
+      "quantity": 0
     }
   ],
-  "row_count": 990,
+  "row_count": 643,
   "built_from": "live_feishu"
 }

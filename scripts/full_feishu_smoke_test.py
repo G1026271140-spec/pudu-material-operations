@@ -290,7 +290,7 @@ class SmokeTest:
             ],
             columns=app.INVENTORY_HEADERS,
         )
-        inserted = app.add_feishu_material_category_payload(product, False, df)
+        inserted = app.add_feishu_material_category_payload(product, False, False, df)
         self.clear_cache()
         self.log("新增物料品类", inserted == 1, f"inserted={inserted}")
         category = app.find_feishu_category_record(product)
@@ -320,7 +320,7 @@ class SmokeTest:
             and app.feishu_text(updated_fields, "备注") == f"{self.prefix}-MATERIAL-REMARK",
             material_id,
         )
-        app.update_feishu_category(product, renamed_product, False, category_id)
+        app.update_feishu_category(product, renamed_product, False, False, category_id)
         self.clear_cache()
         renamed = app.find_feishu_category_record(renamed_product)
         self.log("物料品类编辑", renamed is not None, renamed_product)
@@ -341,7 +341,7 @@ class SmokeTest:
             ],
             columns=app.INVENTORY_HEADERS,
         )
-        inserted = app.add_feishu_material_category_payload(product, True, df)
+        inserted = app.add_feishu_material_category_payload(product, True, False, df)
         self.clear_cache()
         category = app.find_feishu_category_record(product)
         category_id = app.feishu_record_id(category or {})
