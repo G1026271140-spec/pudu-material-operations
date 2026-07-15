@@ -7,12 +7,18 @@ import app
 
 
 class NoLanguageRuleTests(unittest.TestCase):
-    def selection_context(self, *, explicit_products: list[str] | None = None) -> dict[str, object]:
+    def selection_context(
+        self,
+        *,
+        explicit_products: list[str] | None = None,
+        configured_products: list[str] | None = None,
+    ) -> dict[str, object]:
         return app.request_form_cache_to_selection_context(
             {
                 "products": ["公仔(Plush Toy)", "普通宣传册", "活动礼品"],
                 "no_model_products": [],
                 "no_language_products": explicit_products or [],
+                "configured_language_products": configured_products or [],
                 "models": ["BellaBot"],
                 "languages": ["英语(English)", "德语(German)"],
                 "inventory_rows": [
@@ -57,6 +63,16 @@ class NoLanguageRuleTests(unittest.TestCase):
 
         self.assertTrue(disabled)
         self.assertEqual(languages, [app.NO_LANGUAGE_TEXT])
+
+    def test_explicit_language_rule_can_override_default_category(self) -> None:
+        disabled, languages = app.product_language_state(
+            "公仔(Plush Toy)",
+            "BellaBot",
+            self.selection_context(configured_products=["公仔(Plush Toy)"]),
+        )
+
+        self.assertFalse(disabled)
+        self.assertEqual(languages, ["英语(English)"])
 
     def test_normal_category_keeps_scoped_languages(self) -> None:
         disabled, languages = app.product_language_state(

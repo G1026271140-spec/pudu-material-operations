@@ -821,6 +821,37 @@ def feishu_update_record_fields(table_name: str, record_id: str, fields: dict[st
         return client.update_record(feishu_table_id(table_name), record_id, writable_fields)
 
 
+def feishu_batch_update_record_fields(table_name: str, records: list[dict]) -> int:
+    client = feishu_client()
+    if client is None:
+        return 0
+    writable_records = [
+        {
+            "record_id": str(record.get("record_id") or ""),
+            "fields": filter_feishu_fields(table_name, dict(record.get("fields") or {})),
+        }
+        for record in records
+    ]
+    writable_records = [
+        record for record in writable_records if record["record_id"] and record["fields"]
+    ]
+    updated = 0
+    for start in range(0, len(writable_records), 1000):
+        batch = writable_records[start : start + 1000]
+        updated += len(client.batch_update_records(feishu_table_id(table_name), batch))
+    return updated
+
+
+def feishu_batch_delete_record_ids(table_name: str, record_ids: list[str]) -> int:
+    client = feishu_client()
+    if client is None:
+        return 0
+    normalized_ids = unique_preserve([str(record_id) for record_id in record_ids if record_id])
+    for start in range(0, len(normalized_ids), 500):
+        client.batch_delete_records(feishu_table_id(table_name), normalized_ids[start : start + 500])
+    return len(normalized_ids)
+
+
 def storage_mode_label() -> str:
     return "飞书多维表格"
 
@@ -932,9 +963,12 @@ def build_inventory_selection_context() -> dict[str, object]:
                 product_languages.setdefault(product_key, []).append(language_name)
                 product_model_languages.setdefault((product_key, model_key), []).append(language_name)
 
+    configured_language_product_keys = {
+        normalize_option_label(product) for product in options.get("configured_language_products", [])
+    }
     no_language_product_keys = {
         normalize_option_label(product) for product in options.get("no_language_products", [])
-    } | default_no_language_product_keys()
+    } | (default_no_language_product_keys() - configured_language_product_keys)
     no_language_product_keys.update(
         product_key
         for product_key, product_language_values in product_languages.items()
@@ -1029,6 +1063,9 @@ def request_form_cache_from_inventory(
         "products": unique_preserve(list(options.get("products") or [])),
         "no_model_products": unique_preserve(list(options.get("no_model_products") or [])),
         "no_language_products": unique_preserve(list(options.get("no_language_products") or [])),
+        "configured_language_products": unique_preserve(
+            list(options.get("configured_language_products") or [])
+        ),
         "models": unique_preserve(list(options.get("models") or [])),
         "languages": sort_languages(list(options.get("languages") or [])),
         "inventory_rows": rows,
@@ -1052,6 +1089,7 @@ def load_static_request_form_cache() -> dict[str, object]:
             "products": [],
             "no_model_products": [],
             "no_language_products": [],
+            "configured_language_products": [],
             "models": [],
             "languages": [],
             "inventory_rows": [],
@@ -1102,9 +1140,13 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
     products = unique_preserve(list(cache_data.get("products") or []) + [str(item.get("product") or "") for item in rows if isinstance(item, dict)])
     models = unique_preserve(list(cache_data.get("models") or []) + [str(item.get("model") or "") for item in rows if isinstance(item, dict)])
     languages = sort_languages(unique_preserve(list(cache_data.get("languages") or []) + [str(item.get("language") or "") for item in rows if isinstance(item, dict)]))
+    configured_language_product_keys = {
+        normalize_option_label(product)
+        for product in list(cache_data.get("configured_language_products") or [])
+    }
     no_language_product_keys = {
         normalize_option_label(product) for product in list(cache_data.get("no_language_products") or [])
-    } | default_no_language_product_keys()
+    } | (default_no_language_product_keys() - configured_language_product_keys)
     no_language_product_keys.update(
         product_key
         for product_key, product_language_values in product_languages.items()
@@ -1553,6 +1595,7 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
     products: list[str] = []
     no_model_products: list[str] = []
     no_language_products: list[str] = []
+    configured_language_products: list[str] = []
     for row in categories:
         fields = feishu_fields(row)
         product = feishu_text(fields, "物料品类")
@@ -1560,7 +1603,10 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
             products.append(product)
         if feishu_text(fields, "是否无需型号") == "是":
             no_model_products.append(product)
-        if feishu_text(fields, "是否无需语种") == "是" or is_default_no_language_product(product):
+        no_language_value = feishu_text(fields, "是否无需语种")
+        if no_language_value:
+            configured_language_products.append(product)
+        if no_language_value == "是" or (not no_language_value and is_default_no_language_product(product)):
             no_language_products.append(product)
     if not products and not inventory_df.empty:
         products = unique_preserve(list(inventory_df[PRODUCT_COL].astype(str)))
@@ -1583,6 +1629,7 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
         "products": unique_preserve(products),
         "no_model_products": unique_preserve(no_model_products + inventory_no_model_products),
         "no_language_products": unique_preserve(no_language_products),
+        "configured_language_products": unique_preserve(configured_language_products),
         "models": models,
         "languages": languages,
         "no_model_text": NO_MODEL_TEXT,
@@ -2258,32 +2305,36 @@ def load_feishu_transaction_records(
     return records[:limit]
 
 
+def parse_feishu_inventory_record(row: dict) -> dict | None:
+    fields = feishu_fields(row)
+    if not fields:
+        return None
+    material_code = feishu_text(fields, "物料编码")
+    category = feishu_text(fields, "物料品类")
+    if not material_code or not category:
+        return None
+    quantity = feishu_int(fields, "当前库存")
+    unit_price = feishu_float(fields, "单价")
+    return {
+        "record_id": feishu_record_id(row),
+        "material_code": material_code,
+        "category": category,
+        "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+        "language": feishu_text(fields, "语种"),
+        "quantity": quantity,
+        "unit_price": unit_price,
+        "total_value": quantity * unit_price,
+        "remark": feishu_text(fields, "备注"),
+        "customs_code": feishu_text(fields, "海关编码"),
+    }
+
+
 def load_feishu_inventory_records() -> list[dict]:
-    records: list[dict] = []
-    for row in feishu_material_rows():
-        fields = feishu_fields(row)
-        if not fields:
-            continue
-        material_code = feishu_text(fields, "物料编码")
-        category = feishu_text(fields, "物料品类")
-        if not material_code or not category:
-            continue
-        quantity = feishu_int(fields, "当前库存")
-        unit_price = feishu_float(fields, "单价")
-        records.append(
-            {
-                "record_id": feishu_record_id(row),
-                "material_code": material_code,
-                "category": category,
-                "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
-                "language": feishu_text(fields, "语种"),
-                "quantity": quantity,
-                "unit_price": unit_price,
-                "total_value": quantity * unit_price,
-                "remark": feishu_text(fields, "备注"),
-                "customs_code": feishu_text(fields, "海关编码"),
-            }
-        )
+    records = [
+        parsed
+        for row in feishu_material_rows()
+        if (parsed := parse_feishu_inventory_record(row)) is not None
+    ]
     records.sort(key=lambda item: (item["category"], item["model"], item["language"], item["material_code"]))
     return records
 
@@ -2301,7 +2352,10 @@ def load_feishu_category_records() -> list[dict]:
                 "category": product,
                 "no_model": feishu_text(fields, "是否无需型号") == "是",
                 "no_language": feishu_text(fields, "是否无需语种") == "是"
-                or is_default_no_language_product(product),
+                or (
+                    not feishu_text(fields, "是否无需语种")
+                    and is_default_no_language_product(product)
+                ),
                 "status": feishu_text(fields, "启用状态"),
                 "created_at": feishu_text(fields, "创建时间"),
                 "remark": feishu_text(fields, "备注"),
@@ -2309,6 +2363,135 @@ def load_feishu_category_records() -> list[dict]:
         )
     records.sort(key=lambda item: item["category"])
     return records
+
+
+def build_category_inventory_plan(
+    records: list[dict],
+    target_product: str,
+    target_models: list[str],
+    target_languages: list[str],
+    *,
+    carry_model: str = "",
+    carry_language: str = "",
+    initial_quantities: dict[tuple[str, str], int] | None = None,
+    referenced_ids: set[str] | None = None,
+) -> dict:
+    product = target_product.strip()
+    models = unique_preserve([str(value).strip() for value in target_models if str(value).strip()])
+    languages = unique_preserve([str(value).strip() for value in target_languages if str(value).strip()])
+    if not product:
+        raise ValueError("物料品类名称不能为空。")
+    if not models:
+        raise ValueError("目标产品型号不能为空。")
+    if not languages:
+        raise ValueError("目标语种不能为空。")
+
+    carry_model = carry_model.strip() or models[0]
+    carry_language = carry_language.strip() or languages[0]
+    if carry_model not in models:
+        raise ValueError("承接库存的产品型号必须包含在目标型号中。")
+    if carry_language not in languages:
+        raise ValueError("承接库存的语种必须包含在目标语种中。")
+
+    grouped: dict[tuple[str, str], list[dict]] = {}
+    for source in records:
+        source_model = str(source.get("model") or NO_MODEL_TEXT).strip() or NO_MODEL_TEXT
+        source_language = str(source.get("language") or "").strip()
+        target_model = source_model if source_model in models else carry_model
+        target_language = source_language if source_language in languages else carry_language
+        grouped.setdefault((target_model, target_language), []).append(dict(source))
+
+    initial_quantities = initial_quantities or {}
+    referenced_ids = referenced_ids or set()
+    targets: list[dict] = []
+    source_to_target_key: dict[str, tuple[str, str]] = {}
+    delete_ids: list[str] = []
+    merge_count = 0
+
+    for model in models:
+        for language in languages:
+            key = (model, language)
+            sources = grouped.get(key, [])
+            keeper: dict | None = None
+            if sources:
+                keeper = min(
+                    sources,
+                    key=lambda item: (
+                        0 if str(item.get("record_id") or "") in referenced_ids else 1,
+                        0 if int(item.get("quantity") or 0) != 0 else 1,
+                        str(item.get("material_code") or ""),
+                    ),
+                )
+                if len(sources) > 1:
+                    merge_count += len(sources) - 1
+
+            quantity = (
+                sum(int(item.get("quantity") or 0) for item in sources)
+                if sources
+                else int(initial_quantities.get(key, 0) or 0)
+            )
+            total_value = sum(
+                int(item.get("quantity") or 0) * float(item.get("unit_price") or 0)
+                for item in sources
+            )
+            if sources and quantity:
+                unit_price = total_value / quantity
+            elif keeper is not None:
+                unit_price = float(keeper.get("unit_price") or 0)
+            else:
+                unit_price = 0.0
+
+            remarks = unique_preserve(
+                [str(item.get("remark") or "").strip() for item in sources if str(item.get("remark") or "").strip()]
+            )
+            customs_values = unique_preserve(
+                [
+                    str(item.get("customs_code") or "").strip()
+                    for item in sources
+                    if str(item.get("customs_code") or "").strip()
+                ]
+            )
+            keeper_id = str((keeper or {}).get("record_id") or "")
+            source_ids = [str(item.get("record_id") or "") for item in sources if item.get("record_id")]
+            for source_id in source_ids:
+                source_to_target_key[source_id] = key
+                if source_id != keeper_id:
+                    delete_ids.append(source_id)
+
+            targets.append(
+                {
+                    "key": key,
+                    "product": product,
+                    "model": model,
+                    "language": language,
+                    "quantity": quantity,
+                    "unit_price": unit_price,
+                    "remark": "\n".join(remarks),
+                    "customs_code": (
+                        str((keeper or {}).get("customs_code") or "").strip()
+                        or (customs_values[0] if customs_values else "")
+                    ),
+                    "material_code": str((keeper or {}).get("material_code") or ""),
+                    "keeper_id": keeper_id,
+                    "source_ids": source_ids,
+                    "is_new": not sources,
+                    "action": "新增" if not sources else ("合并" if len(sources) > 1 else "保留"),
+                }
+            )
+
+    return {
+        "product": product,
+        "models": models,
+        "languages": languages,
+        "targets": targets,
+        "source_to_target_key": source_to_target_key,
+        "delete_ids": unique_preserve(delete_ids),
+        "current_count": len(records),
+        "target_count": len(targets),
+        "create_count": sum(1 for target in targets if target["is_new"]),
+        "delete_count": len(unique_preserve(delete_ids)),
+        "merge_count": merge_count,
+    }
 
 
 def count_feishu_item_transactions(
@@ -2336,12 +2519,19 @@ def count_feishu_item_transactions(
 
 
 def count_feishu_category_transactions(product: str) -> int:
+    material_ids = {
+        feishu_record_id(row)
+        for row in feishu_material_rows()
+        if feishu_text(feishu_fields(row), "物料品类") == product
+    }
     count = 0
     for row in feishu_rows("库存流水"):
         fields = feishu_fields(row)
         if not fields or is_blank_feishu_transaction(fields):
             continue
-        if feishu_text(fields, "物料品类") == product:
+        if feishu_text(fields, "物料品类") == product or material_ids.intersection(
+            feishu_link_ids_any(fields, ["物料编码", "物料"])
+        ):
             count += 1
     return count
 
@@ -2566,6 +2756,213 @@ def update_feishu_category(
         if no_language:
             update_fields["语种"] = NO_LANGUAGE_TEXT
         client.update_record(feishu_table_id("物料主数据"), feishu_record_id(row), update_fields)
+
+
+def next_material_codes_from_records(records: list[dict], count: int) -> list[str]:
+    max_number = 0
+    for record in records:
+        value = str(record.get("material_code") or "")
+        match = re.search(r"(\d+)$", value)
+        if match:
+            max_number = max(max_number, int(match.group(1)))
+    return [f"MAT-{number:04d}" for number in range(max_number + 1, max_number + count + 1)]
+
+
+def build_material_relation_updates(
+    rows: list[dict],
+    source_to_target_id: dict[str, str],
+    relation_fields: list[str],
+) -> list[dict]:
+    updates: list[dict] = []
+    for row in rows:
+        fields = feishu_fields(row)
+        changed_fields: dict[str, object] = {}
+        for field_name in relation_fields:
+            old_ids = feishu_link_ids(fields, field_name)
+            if not old_ids:
+                continue
+            new_ids = unique_preserve([source_to_target_id.get(record_id, record_id) for record_id in old_ids])
+            if new_ids != old_ids:
+                changed_fields[field_name] = new_ids
+        if changed_fields:
+            updates.append({"record_id": feishu_record_id(row), "fields": changed_fields})
+    return updates
+
+
+def sync_feishu_category_inventory(
+    *,
+    old_product: str,
+    new_product: str,
+    no_model: bool,
+    no_language: bool,
+    target_models: list[str],
+    target_languages: list[str],
+    category_record_id: str = "",
+    carry_model: str = "",
+    carry_language: str = "",
+    initial_quantities: dict[tuple[str, str], int] | None = None,
+) -> dict:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书客户端未初始化。")
+
+    old_product = old_product.strip()
+    new_product = new_product.strip()
+    models = [NO_MODEL_TEXT] if no_model else target_models
+    languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
+
+    category_rows = fresh_feishu_rows("物料品类")
+    for row in category_rows:
+        row_id = feishu_record_id(row)
+        row_product = feishu_text(feishu_fields(row), "物料品类")
+        if (
+            row_product == new_product
+            and row_id != category_record_id
+            and new_product != old_product
+        ):
+            raise ValueError("新的物料品类名称已经存在。")
+
+    raw_inventory_rows = fresh_feishu_rows("物料主数据")
+    all_inventory = [
+        parsed
+        for row in raw_inventory_rows
+        if (parsed := parse_feishu_inventory_record(row)) is not None
+    ]
+    source_records = [record for record in all_inventory if record["category"] == old_product] if old_product else []
+
+    relation_sources: list[tuple[str, list[str], list[dict]]] = []
+    referenced_ids: set[str] = set()
+    for table_name, candidates in (
+        ("库存流水", ["物料编码", "物料"]),
+        (REQUEST_LINE_TABLE_NAME, ["物料", "物料编码"]),
+    ):
+        relation_fields = [
+            field_name
+            for field_name in candidates
+            if feishu_has_field(table_name, field_name) and feishu_field_type(table_name, field_name) in {18, 21}
+        ]
+        rows = fresh_feishu_rows(table_name) if relation_fields else []
+        relation_sources.append((table_name, relation_fields, rows))
+        for row in rows:
+            fields = feishu_fields(row)
+            for field_name in relation_fields:
+                referenced_ids.update(feishu_link_ids(fields, field_name))
+
+    plan = build_category_inventory_plan(
+        source_records,
+        new_product,
+        models,
+        languages,
+        carry_model=carry_model,
+        carry_language=carry_language,
+        initial_quantities=initial_quantities,
+        referenced_ids=referenced_ids,
+    )
+
+    created_category = False
+    if not category_record_id:
+        created = feishu_batch_create_records(
+            "物料品类",
+            [
+                {
+                    "物料品类": new_product,
+                    "是否无需型号": "是" if no_model else "否",
+                    "是否无需语种": "是" if no_language else "否",
+                    "启用状态": "启用",
+                    "库存行数": plan["target_count"],
+                    "产品型号数量": len(plan["models"]),
+                    "语种数量": len(plan["languages"]),
+                    "备注": "",
+                }
+            ],
+        )
+        category_record_id = feishu_record_id(created[0] if created else {})
+        if not category_record_id:
+            raise RuntimeError("创建物料品类后未返回记录 ID。")
+        created_category = True
+
+    new_targets = [target for target in plan["targets"] if target["is_new"]]
+    new_codes = next_material_codes_from_records(all_inventory, len(new_targets))
+    create_fields: list[dict[str, object]] = []
+    for target, material_code in zip(new_targets, new_codes):
+        target["material_code"] = material_code
+        create_fields.append(
+            {
+                "物料编码": material_code,
+                "物料品类": new_product,
+                "产品型号": target["model"],
+                "语种": target["language"],
+                "当前库存": int(target["quantity"]),
+                "备注": target["remark"],
+                "单价": float(target["unit_price"]),
+                "海关编码": target["customs_code"],
+                "品类关联": [category_record_id],
+            }
+        )
+
+    created_material_rows: list[dict] = []
+    for start in range(0, len(create_fields), 500):
+        created_material_rows.extend(feishu_batch_create_records("物料主数据", create_fields[start : start + 500]))
+    if len(created_material_rows) != len(new_targets):
+        raise RuntimeError("新增库存组合数量与飞书返回数量不一致，请刷新后重试。")
+    for target, created_row in zip(new_targets, created_material_rows):
+        target["keeper_id"] = feishu_record_id(created_row)
+
+    keeper_updates: list[dict] = []
+    for target in plan["targets"]:
+        if target["is_new"]:
+            continue
+        keeper_updates.append(
+            {
+                "record_id": target["keeper_id"],
+                "fields": {
+                    "物料品类": new_product,
+                    "产品型号": target["model"],
+                    "语种": target["language"],
+                    "当前库存": int(target["quantity"]),
+                    "备注": target["remark"],
+                    "单价": float(target["unit_price"]),
+                    "海关编码": target["customs_code"],
+                    "品类关联": [category_record_id],
+                },
+            }
+        )
+    feishu_batch_update_record_fields("物料主数据", keeper_updates)
+
+    target_id_by_key = {target["key"]: str(target["keeper_id"]) for target in plan["targets"]}
+    source_to_target_id = {
+        source_id: target_id_by_key[target_key]
+        for source_id, target_key in plan["source_to_target_key"].items()
+    }
+    relation_update_count = 0
+    for table_name, relation_fields, rows in relation_sources:
+        updates = build_material_relation_updates(rows, source_to_target_id, relation_fields)
+        relation_update_count += feishu_batch_update_record_fields(table_name, updates)
+
+    deleted_count = feishu_batch_delete_record_ids("物料主数据", plan["delete_ids"])
+    feishu_update_record_fields(
+        "物料品类",
+        category_record_id,
+        {
+            "物料品类": new_product,
+            "是否无需型号": "是" if no_model else "否",
+            "是否无需语种": "是" if no_language else "否",
+            "启用状态": "启用",
+            "库存行数": plan["target_count"],
+            "产品型号数量": len(plan["models"]),
+            "语种数量": len(plan["languages"]),
+        },
+    )
+
+    return {
+        **plan,
+        "category_record_id": category_record_id,
+        "created_category": created_category,
+        "created_count": len(created_material_rows),
+        "updated_count": len(keeper_updates),
+        "deleted_count": deleted_count,
+        "relation_update_count": relation_update_count,
+    }
 
 
 def find_feishu_category_record(product: str) -> dict | None:
@@ -3054,86 +3451,307 @@ def render_change_form(show_title: bool = True) -> None:
 def render_add_category_form() -> None:
     with st.spinner("物料数据加载中，请稍后......"):
         options = load_options()
-    existing_products = options["products"]
-    existing_models = options["models"]
-    existing_languages = [
-        language for language in sort_languages(options["languages"]) if language != NO_LANGUAGE_TEXT
-    ]
+        categories = load_feishu_category_records()
+        inventory_records = load_feishu_inventory_records()
 
-    message = st.session_state.pop("category_added_message", "")
+    message = st.session_state.pop("category_added_message", "") or st.session_state.pop(
+        "category_admin_message", ""
+    )
     if message:
         st.success(message)
 
+    render_section_header("01", "物料品类管理", "新增或调整品类名称、型号、语种和对应库存组合")
+    mode = st.radio(
+        "操作类型",
+        ["新增品类", "编辑现有品类"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="category_management_mode",
+    )
+    is_edit = mode == "编辑现有品类"
+    category_by_name = {str(item["category"]): item for item in categories}
+
+    selected_category: dict | None = None
+    if is_edit:
+        if not category_by_name:
+            st.info("暂无可编辑的物料品类，请先新增品类。")
+            return
+        selected_name = st.selectbox(
+            "选择物料品类",
+            list(category_by_name),
+            key="category_management_selected_name",
+        )
+        selected_category = category_by_name[selected_name]
+
+    category_id = str((selected_category or {}).get("record_id") or "")
+    old_product = str((selected_category or {}).get("category") or "")
+    current_records = [record for record in inventory_records if record["category"] == old_product] if is_edit else []
+    current_models = unique_preserve([str(record["model"] or NO_MODEL_TEXT) for record in current_records])
+    current_languages = unique_preserve([str(record["language"]) for record in current_records if record["language"]])
+    current_no_model = bool((selected_category or {}).get("no_model")) or (
+        bool(current_models) and set(current_models) == {NO_MODEL_TEXT}
+    )
+    current_no_language = bool((selected_category or {}).get("no_language")) or (
+        bool(current_languages) and set(current_languages) == {NO_LANGUAGE_TEXT}
+    )
+    editor_key = category_id or "new"
+
     with st.container(border=True):
-        render_section_header("01", "品类基础信息", "配置品类名称、型号规则和可用语种")
         product = st.text_input(
-            "新增物料品类",
+            "物料品类名称 *",
+            value=old_product,
             placeholder="例如：新版宣传册(New Brochure)",
-            key="add_category_product",
+            key=f"category_name_{editor_key}",
         ).strip()
         rule_col_a, rule_col_b = st.columns(2)
         no_model = rule_col_a.checkbox(
-            "该品类不按产品型号分类",
-            help="勾选后会按“品类 + 语种”生成，产品型号统一为“无需型号”。",
-            key="add_category_no_model",
+            "该品类无需产品型号",
+            value=current_no_model,
+            help="勾选后产品型号统一为“无需型号”，现有型号库存会自动归并。",
+            key=f"category_no_model_{editor_key}",
         )
         no_language = rule_col_b.checkbox(
             "该品类无需语种",
-            help="勾选后会按“品类 + 型号”生成，语种统一为“无需语种”。",
-            key="add_category_no_language",
+            value=current_no_language,
+            help="勾选后语种统一为“无需语种”，现有语种库存会自动归并。",
+            key=f"category_no_language_{editor_key}",
         )
+
+        available_models = unique_preserve(
+            [model for model in current_models + list(options["models"]) if model and model != NO_MODEL_TEXT]
+        )
+        available_languages = unique_preserve(
+            [
+                language
+                for language in sort_languages(current_languages + list(options["languages"]))
+                if language and language != NO_LANGUAGE_TEXT
+            ]
+        )
+        default_models = [model for model in current_models if model != NO_MODEL_TEXT]
+        default_languages = [language for language in current_languages if language != NO_LANGUAGE_TEXT]
 
         model_col, language_col = st.columns(2)
         selected_models = model_col.multiselect(
-            "选择已有产品型号",
-            existing_models,
+            "产品型号 *",
+            available_models,
+            default=default_models,
             disabled=no_model,
-            key="add_category_models",
+            help="编辑时会自动勾选当前型号；取消勾选即可移除该型号。",
+            key=f"category_models_{editor_key}",
         )
         custom_models_text = model_col.text_area(
-            "自定义产品型号",
+            "新增自定义型号",
             placeholder="可用逗号、分号、顿号或换行分隔",
             disabled=no_model,
-            height=92,
-            key="add_category_custom_models",
+            height=86,
+            key=f"category_custom_models_{editor_key}",
         )
         selected_languages = language_col.multiselect(
-            "选择已有语种",
-            existing_languages,
+            "语种 *",
+            available_languages,
+            default=default_languages,
             disabled=no_language,
-            key="add_category_languages",
+            help="编辑时会自动勾选当前语种；取消勾选即可移除该语种。",
+            key=f"category_languages_{editor_key}",
         )
         custom_languages_text = language_col.text_area(
-            "自定义语种",
+            "新增自定义语种",
             placeholder="可用逗号、分号、顿号或换行分隔",
             disabled=no_language,
-            height=92,
-            key="add_category_custom_languages",
+            height=86,
+            key=f"category_custom_languages_{editor_key}",
         )
 
-        custom_models = parse_custom_values(custom_models_text)
-        custom_languages = parse_custom_values(custom_languages_text)
-        models = [NO_MODEL_TEXT] if no_model else unique_preserve(selected_models + custom_models)
-        languages = [NO_LANGUAGE_TEXT] if no_language else unique_preserve(selected_languages + custom_languages)
+        models = (
+            [NO_MODEL_TEXT]
+            if no_model
+            else unique_preserve(selected_models + parse_custom_values(custom_models_text))
+        )
+        languages = (
+            [NO_LANGUAGE_TEXT]
+            if no_language
+            else unique_preserve(selected_languages + parse_custom_values(custom_languages_text))
+        )
 
-        preview_count = len(models) * len(languages) if product and models and languages else 0
-        st.caption(f"预计新增 {preview_count} 条库存行。")
+        carry_model = models[0] if models else ""
+        carry_language = languages[0] if languages else ""
+        removed_models = [model for model in current_models if model not in models]
+        removed_languages = [language for language in current_languages if language not in languages]
+        if current_records and models and removed_models:
+            carry_model = st.selectbox(
+                "被取消型号的库存归并到 *",
+                models,
+                help="被取消型号对应的库存、申请明细和流水关联会迁移到这里。",
+                key=f"category_carry_model_{editor_key}",
+            )
+        if current_records and languages and removed_languages:
+            carry_language = st.selectbox(
+                "被取消语种的库存归并到 *",
+                languages,
+                help="被取消语种对应的库存、申请明细和流水关联会迁移到这里。",
+                key=f"category_carry_language_{editor_key}",
+            )
+
+        plan: dict | None = None
+        if product and models and languages:
+            try:
+                plan = build_category_inventory_plan(
+                    current_records,
+                    product,
+                    models,
+                    languages,
+                    carry_model=carry_model,
+                    carry_language=carry_language,
+                )
+            except ValueError as exc:
+                st.error(str(exc))
+
+        initial_quantities: dict[tuple[str, str], int] = {}
+        if plan is not None:
+            new_targets = [target for target in plan["targets"] if target["is_new"]]
+            if new_targets:
+                st.markdown("**新增组合初始库存**")
+                st.caption("只需填写新增组合；已有或归并组合会沿用并汇总当前库存。库存允许为负数。")
+                initial_df = pd.DataFrame(
+                    [
+                        {
+                            "产品型号": target["model"],
+                            "语种": target["language"],
+                            "初始库存": 0,
+                        }
+                        for target in new_targets
+                    ]
+                )
+                signature = uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    "|".join(f"{target['model']}::{target['language']}" for target in new_targets),
+                ).hex[:12]
+                edited_initial_df = st.data_editor(
+                    initial_df,
+                    width="stretch",
+                    hide_index=True,
+                    disabled=["产品型号", "语种"],
+                    column_config={
+                        "初始库存": st.column_config.NumberColumn("初始库存", step=1, format="%d")
+                    },
+                    key=f"category_initial_stock_{editor_key}_{signature}",
+                )
+                initial_quantities = {
+                    (str(row["产品型号"]), str(row["语种"])): int(row["初始库存"] or 0)
+                    for row in edited_initial_df.to_dict("records")
+                }
+                plan = build_category_inventory_plan(
+                    current_records,
+                    product,
+                    models,
+                    languages,
+                    carry_model=carry_model,
+                    carry_language=carry_language,
+                    initial_quantities=initial_quantities,
+                )
+
+            metric_a, metric_b, metric_c, metric_d = st.columns(4)
+            metric_a.metric("当前组合", plan["current_count"])
+            metric_b.metric("目标组合", plan["target_count"])
+            metric_c.metric("新增组合", plan["create_count"])
+            metric_d.metric("合并/删除行", plan["delete_count"])
+            preview_df = pd.DataFrame(
+                [
+                    {
+                        "产品型号": target["model"],
+                        "语种": target["language"],
+                        "结果库存": int(target["quantity"]),
+                        "处理方式": target["action"],
+                    }
+                    for target in plan["targets"]
+                ]
+            )
+            st.dataframe(preview_df, width="stretch", hide_index=True, height=min(420, 38 * len(preview_df) + 40))
+
+        confirmed = st.checkbox(
+            "我已确认以上品类配置和库存组合",
+            key=f"category_confirm_{editor_key}",
+        )
         submitted = st.button(
-            "生成新增物料行",
+            "保存品类配置" if is_edit else "创建物料品类",
             type="primary",
-            icon=":material/add_circle:",
+            icon=":material/save:" if is_edit else ":material/add_circle:",
             width="stretch",
-            key="add_category_submit",
+            key=f"category_submit_{editor_key}",
         )
 
     if submitted:
-        add_material_category(
-            product=product,
-            models=models,
-            languages=languages,
-            no_model=no_model,
-            no_language=no_language,
-        )
+        existing_names = {str(item["category"]) for item in categories if item["record_id"] != category_id}
+        if not product:
+            st.error("请填写物料品类名称。")
+        elif product != old_product and product in existing_names:
+            st.error("该物料品类名称已经存在。")
+        elif not models:
+            st.error("请至少保留或新增一个产品型号，或勾选“无需产品型号”。")
+        elif not languages:
+            st.error("请至少保留或新增一个语种，或勾选“无需语种”。")
+        elif not confirmed:
+            st.warning("请先确认品类配置和库存组合。")
+        else:
+            with st.spinner("正在保存品类配置并同步关联数据，请勿关闭页面......"):
+                with DATA_LOCK:
+                    try:
+                        result = sync_feishu_category_inventory(
+                            old_product=old_product,
+                            new_product=product,
+                            no_model=no_model,
+                            no_language=no_language,
+                            target_models=models,
+                            target_languages=languages,
+                            category_record_id=category_id,
+                            carry_model=carry_model,
+                            carry_language=carry_language,
+                            initial_quantities=initial_quantities,
+                        )
+                    except Exception as exc:
+                        st.error("保存品类配置失败。数据未全部同步，请刷新页面检查飞书字段和关联后重试。")
+                        st.exception(exc)
+                        return
+            st.cache_data.clear()
+            reset_request_form_cache_lock()
+            try:
+                refresh_request_form_cache_sync()
+            except Exception:
+                reset_request_form_cache_lock()
+            st.session_state["category_added_message"] = (
+                f"物料品类“{product}”已保存：目标组合 {result['target_count']} 条，"
+                f"新增 {result['created_count']} 条，归并删除 {result['deleted_count']} 条，"
+                f"迁移关联 {result['relation_update_count']} 条。"
+            )
+            st.rerun()
+
+    if is_edit and selected_category is not None:
+        with st.expander("撤回当前品类"):
+            quantity_sum = sum(int(record["quantity"] or 0) for record in current_records)
+            st.caption("仅允许撤回库存合计为 0 且没有库存流水的品类。")
+            delete_confirmed = st.checkbox("确认撤回该品类", key=f"delete_category_confirm_{category_id}")
+            if st.button(
+                "撤回当前品类",
+                icon=":material/undo:",
+                width="stretch",
+                key=f"delete_category_{category_id}",
+            ):
+                transaction_count = count_feishu_category_transactions(old_product)
+                if quantity_sum != 0 or transaction_count > 0:
+                    st.error(f"当前库存合计 {quantity_sum}，流水 {transaction_count} 条，不能撤回。")
+                elif not delete_confirmed:
+                    st.warning("请先勾选确认撤回。")
+                else:
+                    with DATA_LOCK:
+                        delete_feishu_category(old_product, category_id)
+                    st.cache_data.clear()
+                    reset_request_form_cache_lock()
+                    try:
+                        refresh_request_form_cache_sync()
+                    except Exception:
+                        reset_request_form_cache_lock()
+                    st.session_state["category_added_message"] = f"已撤回物料品类“{old_product}”。"
+                    st.rerun()
 
 
 def add_material_category(
@@ -3559,7 +4177,7 @@ def render_material_data_admin() -> None:
         current_product = str(item["category"])
         current_model = str(item["model"] or NO_MODEL_TEXT)
         current_language = str(item["language"])
-        no_language = current_language == NO_LANGUAGE_TEXT or is_default_no_language_product(current_product)
+        no_language = current_language == NO_LANGUAGE_TEXT
         with st.expander("编辑选中库存行", expanded=True):
             edit_col_a, edit_col_b, edit_col_c, edit_col_d = st.columns([1.2, 2, 1.3, 1.4])
             material_code = edit_col_a.text_input("物料编码", value=str(item["material_code"]), key=f"edit_material_code_{selected_item_id}")
@@ -3788,17 +4406,15 @@ def render_category_admin() -> None:
 def render_edit_revert_page() -> None:
     admin_section = st.radio(
         "修改与撤回类型",
-        ["提交记录", "库存行", "物料品类"],
+        ["提交记录", "库存行"],
         horizontal=True,
         label_visibility="collapsed",
         key="edit_revert_section",
     )
     if admin_section == "提交记录":
         render_transaction_admin()
-    elif admin_section == "库存行":
-        render_material_data_admin()
     else:
-        render_category_admin()
+        render_material_data_admin()
 
 
 def apply_changes(changes: list[dict[str, object]]) -> None:
@@ -4163,23 +4779,26 @@ def render_inventory_view() -> None:
 
 def render_management_page() -> None:
     current_section = str(st.session_state.get("management_section", "库存登记"))
+    if current_section == "新增物料品类":
+        current_section = "品类管理"
+        st.session_state["management_section"] = current_section
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
-        "新增物料品类": ("新增物料品类", "基础数据", "维护可申请的物料品类、型号和语种组合。"),
-        "修改与撤回": ("数据维护与撤回", "管理工作台", "管理库存提交、库存行和物料品类记录。"),
+        "品类管理": ("物料品类管理", "基础数据", "新增或调整物料品类、型号、语种和库存组合。"),
+        "修改与撤回": ("数据维护与撤回", "管理工作台", "管理库存提交记录和单条库存数据。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
     management_section = st.radio(
         "管理功能",
-        ["库存登记", "新增物料品类", "修改与撤回"],
+        ["库存登记", "品类管理", "修改与撤回"],
         horizontal=True,
         label_visibility="collapsed",
         key="management_section",
     )
     if management_section == "库存登记":
         render_change_form(show_title=False)
-    elif management_section == "新增物料品类":
+    elif management_section == "品类管理":
         render_add_category_form()
     else:
         render_edit_revert_page()

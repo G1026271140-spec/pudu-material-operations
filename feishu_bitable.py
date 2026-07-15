@@ -147,6 +147,36 @@ class FeishuBitableClient:
         )
         return list(response.get("data", {}).get("records", []))
 
+    def batch_update_records(
+        self,
+        table_id: str,
+        records: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        response = self._request(
+            "POST",
+            f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records/batch_update",
+            payload={
+                "records": [
+                    {
+                        "record_id": str(record["record_id"]),
+                        "fields": dict(record.get("fields") or {}),
+                    }
+                    for record in records
+                ]
+            },
+        )
+        return list(response.get("data", {}).get("records", []))
+
+    def batch_delete_records(self, table_id: str, record_ids: list[str]) -> None:
+        if not record_ids:
+            return
+        self._request(
+            "POST",
+            f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records/batch_delete",
+            params={"ignore_consistency_check": "false"},
+            payload={"records": [str(record_id) for record_id in record_ids]},
+        )
+
     def update_record(self, table_id: str, record_id: str, fields: dict[str, Any]) -> dict[str, Any]:
         response = self._request(
             "PUT",
