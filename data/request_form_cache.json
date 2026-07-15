@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-15 16:24:48",
+  "generated_at": "2026-07-15 17:30:56",
   "products": [
     "产品折页(Single Product Brochure)",
     "产品单页(Product Flyer )",
@@ -37,6 +37,23 @@
     "笔记本礼盒(Notebook Gift Box)",
     "定制LOGO书包(Customized PUDU bag)",
     "展会服装"
+  ],
+  "configured_language_products": [
+    "产品折页(Single Product Brochure)",
+    "产品单页(Product Flyer )",
+    "品牌手册(Product Brochure (All\nBanner)）",
+    "工业产品线手册（Industrial Product Line Brochure）",
+    "清洁产品线手册（Cleaning Product Line Brochure）",
+    "公司手册",
+    "产品易拉宝(Product Roll-Up)",
+    "公仔(Plush Toy)",
+    "开瓶器&冰箱贴(Bottle Opener & Fridge Magnet)",
+    "笔记本礼盒(Notebook Gift Box)",
+    "普渡logo无纺布手提袋(PUDU logo bag)",
+    "定制LOGO书包(Customized PUDU bag)",
+    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
+    "展会服装",
+    "新版宣传册"
   ],
   "models": [
     "KettyBot Pro",

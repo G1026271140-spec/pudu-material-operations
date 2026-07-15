@@ -34,6 +34,9 @@ DECREASE_ACTIONS = {ACTION_RECEIVE, "出库减少"}
 INCREASE_ACTIONS = {ACTION_PURCHASE, "入库增加"}
 REQUEST_TABLE_NAME = "物料申请单"
 REQUEST_LINE_TABLE_NAME = "申请明细"
+MATERIAL_TABLE_NAME = "物料主数据"
+CATEGORY_TABLE_NAME = "物料品类"
+LEDGER_TABLE_NAME = "库存流水"
 REQUEST_NO_PREFIX = "REQ"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
 REQUEST_STATUS_PENDING = "待审批"
@@ -80,12 +83,27 @@ TRANSACTION_HEADERS = [
 DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
+PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 REQUEST_FORM_CACHE_LOCK = threading.Lock()
 REQUEST_FORM_CACHE_STATE: dict[str, object] = {
     "data": None,
     "refreshing": False,
     "error": "",
     "updated_at": "",
+}
+ALL_PAGE_CACHE_TABLES = (
+    CATEGORY_TABLE_NAME,
+    MATERIAL_TABLE_NAME,
+    LEDGER_TABLE_NAME,
+    REQUEST_TABLE_NAME,
+    REQUEST_LINE_TABLE_NAME,
+)
+PAGE_CACHE_TABLES = {
+    "request": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "category": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "maintenance": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "approval": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "inventory": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
 }
 
 
@@ -1074,8 +1092,8 @@ def request_form_cache_from_inventory(
 
 
 def build_live_request_form_cache() -> dict[str, object]:
-    inventory_df = load_feishu_inventory()
-    options = load_feishu_options()
+    inventory_df = load_feishu_inventory_snapshot(*feishu_config_args())
+    options = load_feishu_options_snapshot(*feishu_config_args())
     return request_form_cache_from_inventory(options, inventory_df, source="live_feishu")
 
 
@@ -1111,6 +1129,23 @@ def set_request_form_cache_state(**updates: object) -> None:
 def refresh_request_form_cache_sync() -> dict[str, object]:
     data = build_live_request_form_cache()
     set_request_form_cache_state(data=data, refreshing=False, error="", updated_at=str(data.get("generated_at") or ""))
+    return data
+
+
+def refresh_request_form_cache_from_page_data() -> dict[str, object]:
+    data = request_form_cache_from_inventory(
+        load_feishu_options(),
+        load_feishu_inventory(),
+        source="session_page_refresh",
+    )
+    set_request_form_cache_state(
+        data=data,
+        refreshing=False,
+        error="",
+        updated_at=str(data.get("generated_at") or ""),
+    )
+    if not st.session_state.get("request_form_cache_locked"):
+        st.session_state["request_form_cache_data"] = data
     return data
 
 
@@ -1186,14 +1221,16 @@ def reset_request_form_cache_lock() -> None:
 def get_request_form_selection_context() -> dict[str, object]:
     state = request_form_cache_state()
     live_data = state.get("data") if isinstance(state.get("data"), dict) else None
+    runtime_data = request_form_cache_from_runtime_page_data()
     static_data = load_static_request_form_cache()
     if "request_form_cache_data" not in st.session_state:
-        st.session_state["request_form_cache_data"] = live_data or static_data
-    elif live_data and not st.session_state.get("request_form_cache_locked"):
+        st.session_state["request_form_cache_data"] = runtime_data or live_data or static_data
+    elif (runtime_data or live_data) and not st.session_state.get("request_form_cache_locked"):
+        next_data = runtime_data or live_data
         current_generated_at = str(st.session_state["request_form_cache_data"].get("generated_at") or "")
-        live_generated_at = str(live_data.get("generated_at") or "")
+        live_generated_at = str(next_data.get("generated_at") or "")
         if live_generated_at and live_generated_at != current_generated_at:
-            st.session_state["request_form_cache_data"] = live_data
+            st.session_state["request_form_cache_data"] = next_data
     return request_form_cache_to_selection_context(dict(st.session_state["request_form_cache_data"]))
 
 
@@ -1315,7 +1352,43 @@ def load_feishu_rows_snapshot(table_name: str, app_id: str, app_secret: str, app
     return client.list_records(str(table["table_id"]))
 
 
+@st.cache_data(show_spinner=False)
+def load_static_page_data_cache() -> dict[str, object]:
+    if not PAGE_DATA_STATIC_CACHE_PATH.exists():
+        return {"schema_version": 1, "generated_at": "", "tables": {}}
+    data = json.loads(PAGE_DATA_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not isinstance(data.get("tables"), dict):
+        raise RuntimeError("页面静态缓存文件格式不正确。")
+    return data
+
+
+@st.cache_resource(show_spinner=False)
+def page_data_runtime_cache() -> dict[str, object]:
+    return {
+        "lock": threading.Lock(),
+        "tables": {},
+        "updated_at": {},
+    }
+
+
+def page_data_cache_rows(table_name: str) -> list[dict]:
+    runtime_cache = page_data_runtime_cache()
+    runtime_lock = runtime_cache["lock"]
+    with runtime_lock:  # type: ignore[union-attr]
+        runtime_tables = dict(runtime_cache.get("tables") or {})
+        if table_name in runtime_tables:
+            return list(runtime_tables[table_name])
+    static_tables = dict(load_static_page_data_cache().get("tables") or {})
+    table_data = static_tables.get(table_name, [])
+    if isinstance(table_data, dict):
+        table_data = table_data.get("rows", [])
+    return list(table_data) if isinstance(table_data, list) else []
+
+
 def feishu_rows(table_name: str) -> list[dict]:
+    cached_rows = page_data_cache_rows(table_name)
+    if cached_rows or table_name in dict(load_static_page_data_cache().get("tables") or {}):
+        return cached_rows
     return load_feishu_rows_snapshot(table_name, *feishu_config_args())
 
 
@@ -1324,6 +1397,112 @@ def fresh_feishu_rows(table_name: str) -> list[dict]:
     if client is None:
         return []
     return client.list_records(feishu_table_id(table_name))
+
+
+def refresh_page_cache_tables(table_names: list[str] | tuple[str, ...]) -> dict[str, object]:
+    normalized_names = unique_preserve([str(table_name) for table_name in table_names])
+    refreshed_tables = {table_name: fresh_feishu_rows(table_name) for table_name in normalized_names}
+    refreshed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    runtime_cache = page_data_runtime_cache()
+    runtime_lock = runtime_cache["lock"]
+    with runtime_lock:  # type: ignore[union-attr]
+        runtime_tables = dict(runtime_cache.get("tables") or {})
+        runtime_updated_at = dict(runtime_cache.get("updated_at") or {})
+        runtime_tables.update(refreshed_tables)
+        runtime_updated_at.update({table_name: refreshed_at for table_name in normalized_names})
+        runtime_cache["tables"] = runtime_tables
+        runtime_cache["updated_at"] = runtime_updated_at
+    st.cache_data.clear()
+    return {
+        "tables": normalized_names,
+        "updated_at": refreshed_at,
+        "row_count": sum(len(rows) for rows in refreshed_tables.values()),
+    }
+
+
+def page_cache_status(table_names: list[str] | tuple[str, ...]) -> tuple[str, str]:
+    normalized_names = unique_preserve([str(table_name) for table_name in table_names])
+    runtime_cache = page_data_runtime_cache()
+    runtime_lock = runtime_cache["lock"]
+    with runtime_lock:  # type: ignore[union-attr]
+        runtime_tables = dict(runtime_cache.get("tables") or {})
+        runtime_updated_at = dict(runtime_cache.get("updated_at") or {})
+    if normalized_names and all(table_name in runtime_tables for table_name in normalized_names):
+        timestamps = [str(runtime_updated_at.get(table_name) or "") for table_name in normalized_names]
+        return "服务缓存已刷新", max(timestamps) if timestamps else ""
+    static_cache = load_static_page_data_cache()
+    return "部署静态缓存", str(static_cache.get("generated_at") or "")
+
+
+def build_page_data_static_snapshot() -> dict[str, object]:
+    tables = {table_name: fresh_feishu_rows(table_name) for table_name in ALL_PAGE_CACHE_TABLES}
+    return {
+        "schema_version": 1,
+        "source": "live_feishu",
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "tables": tables,
+        "row_counts": {table_name: len(rows) for table_name, rows in tables.items()},
+    }
+
+
+def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
+    runtime_cache = page_data_runtime_cache()
+    runtime_lock = runtime_cache["lock"]
+    with runtime_lock:  # type: ignore[union-attr]
+        runtime_tables = dict(runtime_cache.get("tables") or {})
+    if not all(table_name in runtime_tables for table_name in PAGE_CACHE_TABLES["request"]):
+        return None
+    return request_form_cache_from_inventory(
+        load_feishu_options(),
+        load_feishu_inventory(),
+        source="shared_runtime_page_cache",
+    )
+
+
+def render_page_cache_toolbar(page_key: str) -> None:
+    table_names = PAGE_CACHE_TABLES[page_key]
+    message_key = f"page_cache_message_{page_key}"
+    message = st.session_state.pop(message_key, "")
+    if message:
+        st.success(message)
+    warning = st.session_state.pop("post_write_cache_warning", "")
+    if warning:
+        st.warning(warning)
+
+    source, updated_at = page_cache_status(table_names)
+    status_col, button_col = st.columns([5, 1.35], vertical_alignment="center")
+    updated_text = updated_at or "未记录"
+    status_col.caption(f"数据来源：{source}　更新时间：{updated_text}")
+    if button_col.button(
+        "刷新本页数据",
+        key=f"refresh_page_cache_{page_key}",
+        icon=":material/refresh:",
+        width="stretch",
+    ):
+        with st.spinner("正在同步本页数据，请稍后......"):
+            try:
+                result = refresh_page_cache_tables(table_names)
+                if page_key == "request":
+                    refresh_request_form_cache_from_page_data()
+            except Exception as exc:
+                st.error("本页数据刷新失败，请检查飞书连接和数据表权限。")
+                st.exception(exc)
+                return
+        st.session_state[message_key] = (
+            f"本页数据已刷新，共同步 {result['row_count']} 条记录。"
+        )
+        st.rerun()
+
+
+def refresh_page_cache_after_write(page_key: str, *, update_request_form: bool = False) -> None:
+    try:
+        refresh_page_cache_tables(PAGE_CACHE_TABLES[page_key])
+        if update_request_form:
+            refresh_request_form_cache_from_page_data()
+    except Exception as exc:
+        st.session_state["post_write_cache_warning"] = (
+            f"业务数据已保存，但页面缓存刷新失败：{exc}。请点击“刷新本页数据”重试。"
+        )
 
 
 def feishu_record_id(row: dict) -> str:
@@ -1558,10 +1737,9 @@ def feishu_inventory_index() -> dict[tuple[str, str, str], dict]:
     return index
 
 
-@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
-def load_feishu_inventory_snapshot(app_id: str, app_secret: str, app_token: str) -> pd.DataFrame:
+def feishu_inventory_dataframe_from_rows(rows: list[dict]) -> pd.DataFrame:
     data: list[list[object]] = []
-    for row in load_feishu_rows_snapshot("物料主数据", app_id, app_secret, app_token):
+    for row in rows:
         fields = feishu_fields(row)
         material_code = feishu_text(fields, "物料编码")
         category = feishu_text(fields, "物料品类")
@@ -1584,14 +1762,18 @@ def load_feishu_inventory_snapshot(app_id: str, app_secret: str, app_token: str)
     return pd.DataFrame(data, columns=INVENTORY_HEADERS)
 
 
-def load_feishu_inventory() -> pd.DataFrame:
-    return load_feishu_inventory_snapshot(*feishu_config_args())
-
-
 @st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
-def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
-    categories = load_feishu_rows_snapshot("物料品类", app_id, app_secret, app_token)
-    inventory_df = load_feishu_inventory_snapshot(app_id, app_secret, app_token)
+def load_feishu_inventory_snapshot(app_id: str, app_secret: str, app_token: str) -> pd.DataFrame:
+    return feishu_inventory_dataframe_from_rows(
+        load_feishu_rows_snapshot(MATERIAL_TABLE_NAME, app_id, app_secret, app_token)
+    )
+
+
+def load_feishu_inventory() -> pd.DataFrame:
+    return feishu_inventory_dataframe_from_rows(feishu_rows(MATERIAL_TABLE_NAME))
+
+
+def feishu_options_from_rows(categories: list[dict], inventory_df: pd.DataFrame) -> dict:
     products: list[str] = []
     no_model_products: list[str] = []
     no_language_products: list[str] = []
@@ -1638,14 +1820,24 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
     }
 
 
-def load_feishu_options() -> dict:
-    return load_feishu_options_snapshot(*feishu_config_args())
-
-
 @st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
-def load_feishu_transactions_dataframe_snapshot(app_id: str, app_secret: str, app_token: str) -> pd.DataFrame:
+def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
+    return feishu_options_from_rows(
+        load_feishu_rows_snapshot(CATEGORY_TABLE_NAME, app_id, app_secret, app_token),
+        load_feishu_inventory_snapshot(app_id, app_secret, app_token),
+    )
+
+
+def load_feishu_options() -> dict:
+    return feishu_options_from_rows(
+        feishu_rows(CATEGORY_TABLE_NAME),
+        load_feishu_inventory(),
+    )
+
+
+def feishu_transactions_dataframe_from_rows(rows: list[dict]) -> pd.DataFrame:
     data: list[list[object]] = []
-    for row in load_feishu_rows_snapshot("库存流水", app_id, app_secret, app_token):
+    for row in rows:
         fields = feishu_fields(row)
         if not fields or is_blank_feishu_transaction(fields):
             continue
@@ -1672,8 +1864,15 @@ def load_feishu_transactions_dataframe_snapshot(app_id: str, app_secret: str, ap
     return pd.DataFrame(data, columns=TRANSACTION_HEADERS)
 
 
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def load_feishu_transactions_dataframe_snapshot(app_id: str, app_secret: str, app_token: str) -> pd.DataFrame:
+    return feishu_transactions_dataframe_from_rows(
+        load_feishu_rows_snapshot(LEDGER_TABLE_NAME, app_id, app_secret, app_token)
+    )
+
+
 def load_feishu_transactions_dataframe() -> pd.DataFrame:
-    return load_feishu_transactions_dataframe_snapshot(*feishu_config_args())
+    return feishu_transactions_dataframe_from_rows(feishu_rows(LEDGER_TABLE_NAME))
 
 
 def feishu_ledger_type(action: str) -> str:
@@ -3149,22 +3348,20 @@ def render_sidebar_link() -> None:
         st.divider()
         st.markdown('<div class="pudu-sidebar-label">数据同步</div>', unsafe_allow_html=True)
         if st.button(
-            "更新物料缓存",
+            "更新全部数据缓存",
             key="sidebar_refresh_data",
             icon=":material/refresh:",
             width="stretch",
         ):
-            with st.spinner("物料数据同步中，请稍后......"):
+            with st.spinner("全部页面数据同步中，请稍后......"):
                 try:
-                    st.cache_data.clear()
-                    reset_request_form_cache_lock()
-                    data = refresh_request_form_cache_sync()
+                    result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
+                    refresh_request_form_cache_from_page_data()
                 except Exception as exc:
                     st.error("数据库同步失败。")
                     st.exception(exc)
                 else:
-                    st.session_state["request_form_cache_data"] = data
-                    st.success("数据库数据已同步。")
+                    st.success(f"全部页面数据已同步，共 {result['row_count']} 条记录。")
         st.markdown(
             """
             <div class="pudu-sidebar-status">
@@ -3712,12 +3909,7 @@ def render_add_category_form() -> None:
                         st.error("保存品类配置失败。数据未全部同步，请刷新页面检查飞书字段和关联后重试。")
                         st.exception(exc)
                         return
-            st.cache_data.clear()
-            reset_request_form_cache_lock()
-            try:
-                refresh_request_form_cache_sync()
-            except Exception:
-                reset_request_form_cache_lock()
+            refresh_page_cache_after_write("category", update_request_form=True)
             st.session_state["category_added_message"] = (
                 f"物料品类“{product}”已保存：目标组合 {result['target_count']} 条，"
                 f"新增 {result['created_count']} 条，归并删除 {result['deleted_count']} 条，"
@@ -3744,12 +3936,7 @@ def render_add_category_form() -> None:
                 else:
                     with DATA_LOCK:
                         delete_feishu_category(old_product, category_id)
-                    st.cache_data.clear()
-                    reset_request_form_cache_lock()
-                    try:
-                        refresh_request_form_cache_sync()
-                    except Exception:
-                        reset_request_form_cache_lock()
+                    refresh_page_cache_after_write("category", update_request_form=True)
                     st.session_state["category_added_message"] = f"已撤回物料品类“{old_product}”。"
                     st.rerun()
 
@@ -3810,7 +3997,7 @@ def add_material_category(
 
     skipped_text = f"，跳过 {len(skipped)} 条已存在组合" if skipped else ""
     st.session_state["category_added_message"] = f"已新增物料品类“{product}”，生成 {len(new_rows)} 条库存行{skipped_text}。"
-    st.cache_data.clear()
+    refresh_page_cache_after_write("category", update_request_form=True)
     st.rerun()
 
 
@@ -3981,7 +4168,7 @@ def render_transaction_admin() -> None:
                     st.exception(exc)
                     return
             st.session_state["transaction_admin_message"] = f"已撤回 {len(active_selected_ids)} 条提交记录。"
-            st.cache_data.clear()
+            refresh_page_cache_after_write("maintenance", update_request_form=True)
             st.rerun()
 
     if len(active_selected_ids) == 1:
@@ -4070,7 +4257,7 @@ def render_transaction_admin() -> None:
                             st.exception(exc)
                             return
                     st.session_state["transaction_admin_message"] = "已撤回原提交，并保存新的修正提交。"
-                    st.cache_data.clear()
+                    refresh_page_cache_after_write("maintenance", update_request_form=True)
                     st.rerun()
     elif len(selected_ids) > 1:
         st.info("已选择多条记录，可批量撤回；如需编辑，请只勾选一条有效记录。")
@@ -4168,7 +4355,7 @@ def render_material_data_admin() -> None:
                         st.exception(exc)
                         return
                 st.session_state["material_admin_message"] = f"已删除 {len(selected_records)} 条库存行。"
-                st.cache_data.clear()
+                refresh_page_cache_after_write("maintenance", update_request_form=True)
                 st.rerun()
 
     if len(selected_records) == 1:
@@ -4238,7 +4425,7 @@ def render_material_data_admin() -> None:
                             st.exception(exc)
                             return
                     st.session_state["material_admin_message"] = "库存行信息已修改。"
-                    st.cache_data.clear()
+                    refresh_page_cache_after_write("maintenance", update_request_form=True)
                     st.rerun()
     elif len(selected_records) > 1:
         st.info("已选择多条库存行，可批量删除；如需编辑，请只勾选一条。")
@@ -4343,7 +4530,7 @@ def render_category_admin() -> None:
                         st.exception(exc)
                         return
                 st.session_state["category_admin_message"] = f"已撤回 {len(selected_records)} 个物料品类。"
-                st.cache_data.clear()
+                refresh_page_cache_after_write("category", update_request_form=True)
                 st.rerun()
 
     if len(selected_records) == 1:
@@ -4396,7 +4583,7 @@ def render_category_admin() -> None:
                             st.exception(exc)
                             return
                     st.session_state["category_admin_message"] = "物料品类已修改。"
-                    st.cache_data.clear()
+                    refresh_page_cache_after_write("category", update_request_form=True)
                     st.rerun()
     elif len(selected_records) > 1:
         st.info("已选择多个品类，可批量撤回；如需编辑，请只勾选一个。")
@@ -4433,7 +4620,7 @@ def apply_changes(changes: list[dict[str, object]]) -> None:
 
     st.success(f"已更新 {len(logs)} 项物料库存。")
     st.dataframe(pd.DataFrame(logs, columns=TRANSACTION_HEADERS), width="stretch", hide_index=True)
-    st.cache_data.clear()
+    refresh_page_cache_after_write("maintenance", update_request_form=True)
 
 
 def request_lines_for_request(
@@ -4560,7 +4747,7 @@ def render_pending_approval_requests(
                 st.error("审批发放失败。请检查实际发放数量、申请明细字段和飞书写入权限。")
                 st.exception(exc)
                 return
-        st.cache_data.clear()
+        refresh_page_cache_after_write("approval", update_request_form=True)
         st.session_state["approval_issue_message"] = (
             f"已完成申请单 {selected_request['request_no']} 的审批，新增 {len(logs)} 条库存流水。"
         )
@@ -4655,6 +4842,7 @@ def render_approval_view() -> None:
     )
     if not approval_auth_gate():
         return
+    render_page_cache_toolbar("approval")
 
     message = st.session_state.pop("approval_issue_message", "")
     if message:
@@ -4717,6 +4905,7 @@ def render_inventory_view() -> None:
     )
     if not auth_gate():
         return
+    render_page_cache_toolbar("inventory")
 
     with st.spinner("物料数据加载中，请稍后......"):
         df = load_inventory()
@@ -4795,6 +4984,13 @@ def render_management_page() -> None:
         horizontal=True,
         label_visibility="collapsed",
         key="management_section",
+    )
+    render_page_cache_toolbar(
+        {
+            "库存登记": "request",
+            "品类管理": "category",
+            "修改与撤回": "maintenance",
+        }[management_section]
     )
     if management_section == "库存登记":
         render_change_form(show_title=False)
