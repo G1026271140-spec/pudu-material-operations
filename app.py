@@ -492,19 +492,6 @@ def inject_global_styles() -> None:
             color: var(--pudu-red);
             font-weight: 700;
         }
-        .pudu-form-meta {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem 0.9rem;
-            margin: -0.35rem 0 1rem;
-            color: var(--pudu-muted);
-            font-size: 0.76rem;
-        }
-        .pudu-form-meta strong {
-            color: var(--pudu-ink);
-            font-weight: 620;
-        }
         hr {
             border-color: var(--pudu-line-soft);
         }
@@ -1034,21 +1021,6 @@ def refresh_request_form_cache_sync() -> dict[str, object]:
     return data
 
 
-def start_request_form_cache_refresh() -> None:
-    state = request_form_cache_state()
-    if state.get("refreshing"):
-        return
-    set_request_form_cache_state(refreshing=True, error="")
-
-    def worker() -> None:
-        try:
-            refresh_request_form_cache_sync()
-        except Exception as exc:
-            set_request_form_cache_state(refreshing=False, error=str(exc))
-
-    threading.Thread(target=worker, name="request-form-cache-refresh", daemon=True).start()
-
-
 def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> dict[str, object]:
     product_models: dict[str, list[str]] = {}
     product_languages: dict[str, list[str]] = {}
@@ -1115,7 +1087,6 @@ def get_request_form_selection_context() -> dict[str, object]:
         live_generated_at = str(live_data.get("generated_at") or "")
         if live_generated_at and live_generated_at != current_generated_at:
             st.session_state["request_form_cache_data"] = live_data
-    start_request_form_cache_refresh()
     return request_form_cache_to_selection_context(dict(st.session_state["request_form_cache_data"]))
 
 
@@ -2729,23 +2700,6 @@ def render_change_form(show_title: bool = True) -> None:
             "申请工作台",
             "登记客户、收件信息和领取明细，提交后进入审批发放流程。",
         )
-    cache_state = request_form_cache_state()
-    cache_label = "实时缓存" if selection_context.get("cache_source") == "live_feishu" else "静态缓存"
-    cache_status = "同步中" if cache_state.get("refreshing") else "已就绪"
-    st.markdown(
-        f"""
-        <div class="pudu-form-meta">
-            <span>数据源 <strong>{escape(cache_label)}</strong></span>
-            <span>更新时间 <strong>{escape(str(selection_context.get('cache_generated_at') or '-'))}</strong></span>
-            <span>物料组合 <strong>{int(selection_context.get('cache_row_count') or 0)} 条</strong></span>
-            <span>状态 <strong>{escape(cache_status)}</strong></span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    if cache_state.get("refreshing"):
-        st.info("物料数据同步中，请稍后......")
-
     message = st.session_state.pop("request_submit_message", "")
     if message:
         st.success(message)
