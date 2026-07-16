@@ -10,6 +10,12 @@ import app  # noqa: E402
 
 def main() -> int:
     cache = app.build_live_request_form_cache()
+    if int(cache.get("row_count") or 0) <= 0 or not list(cache.get("products") or []):
+        print(
+            "request_form_cache_not_written: Feishu returned no material rows or products",
+            file=sys.stderr,
+        )
+        return 1
     cache["source"] = "static_snapshot"
     cache["built_from"] = "live_feishu"
     app.REQUEST_FORM_STATIC_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -624,6 +624,91 @@ def inject_global_styles() -> None:
             color: var(--pudu-red);
             font-weight: 700;
         }
+        .pudu-generated-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            min-height: 40px;
+            margin-bottom: 0.85rem;
+            padding: 0.55rem 0.75rem;
+            border-left: 3px solid var(--pudu-navy);
+            background: rgba(255, 255, 255, 0.72);
+        }
+        .pudu-generated-title span {
+            flex: 0 0 auto;
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
+        }
+        .pudu-generated-title strong {
+            min-width: 0;
+            overflow-wrap: anywhere;
+            color: var(--pudu-ink);
+            font-size: 0.9rem;
+            font-weight: 650;
+        }
+        .pudu-material-list-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 0.8rem 0 0.55rem;
+            color: var(--pudu-muted);
+            font-size: 0.8rem;
+        }
+        .pudu-material-list-status strong {
+            color: var(--pudu-coral);
+            font-size: 0.9rem;
+        }
+        .pudu-review-field {
+            min-height: 58px;
+            padding: 0.2rem 0.15rem 0.65rem;
+            border-bottom: 1px solid var(--pudu-line);
+        }
+        .pudu-review-field span {
+            display: block;
+            margin-bottom: 0.28rem;
+            color: var(--pudu-muted);
+            font-size: 0.75rem;
+        }
+        .pudu-review-field strong {
+            display: block;
+            overflow-wrap: anywhere;
+            color: var(--pudu-ink);
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        .pudu-review-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-bottom: 1rem;
+            border-top: 3px solid var(--pudu-teal);
+            border-right: 1px solid var(--pudu-line);
+            border-bottom: 1px solid var(--pudu-line);
+            border-left: 1px solid var(--pudu-line);
+            border-radius: 8px;
+            background: #FFFFFF;
+            overflow: hidden;
+        }
+        .pudu-review-metric {
+            min-width: 0;
+            padding: 0.75rem 1rem;
+            border-right: 1px solid var(--pudu-line);
+        }
+        .pudu-review-metric:last-child {
+            border-right: 0;
+        }
+        .pudu-review-metric span {
+            display: block;
+            margin-bottom: 0.2rem;
+            color: var(--pudu-muted);
+            font-size: 0.75rem;
+        }
+        .pudu-review-metric strong {
+            color: var(--pudu-ink);
+            font-size: 1.35rem;
+            font-weight: 680;
+        }
         hr {
             border-color: var(--pudu-line-soft);
         }
@@ -664,6 +749,20 @@ def inject_global_styles() -> None:
             }
             [data-testid="stLayoutWrapper"]:has(.pudu-section-heading) > [data-testid="stVerticalBlock"] {
                 padding: 0.9rem;
+            }
+            .pudu-generated-title {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+            .pudu-review-metric {
+                padding: 0.65rem 0.55rem;
+            }
+            .pudu-review-metric span {
+                font-size: 0.68rem;
+            }
+            .pudu-review-metric strong {
+                font-size: 1.1rem;
             }
         }
         </style>
@@ -1360,11 +1459,6 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
 
 def mark_request_form_dirty() -> None:
     st.session_state["request_form_cache_locked"] = True
-
-
-def reset_request_form_cache_lock() -> None:
-    st.session_state.pop("request_form_cache_locked", None)
-    st.session_state.pop("request_form_cache_data", None)
 
 
 def get_request_form_selection_context() -> dict[str, object]:
@@ -3702,19 +3796,6 @@ def render_sidebar_link() -> None:
         st.divider()
 
 
-def get_row_count() -> int:
-    return int(
-        st.radio(
-            "本次填写物料种类数",
-            list(range(1, MAX_REQUEST_LINE_COUNT + 1)),
-            index=2,
-            horizontal=True,
-            key="request_line_count",
-            on_change=mark_request_form_dirty,
-        )
-    )
-
-
 def build_request_title(material_usage: object, requester: object) -> str:
     usage_text = str(material_usage or "").strip() or "物料用途"
     requester_text = str(requester or "").strip() or "申请人"
@@ -3728,7 +3809,613 @@ def required_field_label(container: object, label: str) -> None:
     )
 
 
+def initialize_request_form_state() -> None:
+    defaults = {
+        "request_department": get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+        "request_requester": get_secret_value("DEFAULT_REQUESTER", ""),
+        "request_customer_name": "",
+        "request_country": "",
+        "request_recipient_info": "",
+        "request_freight_payer": FREIGHT_PAYER_OPTIONS[0],
+        "request_material_usage": "",
+        "request_material_lines": [],
+        "request_saved_attachments": [],
+        "request_form_stage": "edit",
+        "request_material_table_version": 0,
+        "request_attachment_upload_version": 0,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+    if "request_submission_token" not in st.session_state:
+        st.session_state["request_submission_token"] = uuid.uuid4().hex
+
+
+def get_request_material_lines() -> list[dict[str, object]]:
+    raw_lines = st.session_state.get("request_material_lines")
+    if not isinstance(raw_lines, list):
+        raw_lines = []
+    lines = [
+        {
+            "product": str(item.get("product", "")).strip(),
+            "model": str(item.get("model", "")).strip() or NO_MODEL_TEXT,
+            "language": str(item.get("language", "")).strip() or NO_LANGUAGE_TEXT,
+            "quantity": int(item.get("quantity") or 0),
+            "remark": str(item.get("remark", "")).strip(),
+        }
+        for item in raw_lines
+        if isinstance(item, dict)
+    ]
+    st.session_state["request_material_lines"] = lines
+    return lines
+
+
+def request_material_key(item: dict[str, object]) -> tuple[str, str, str]:
+    return (
+        str(item.get("product", "")).strip(),
+        str(item.get("model", "")).strip() or NO_MODEL_TEXT,
+        str(item.get("language", "")).strip() or NO_LANGUAGE_TEXT,
+    )
+
+
+def prepare_request_line_editor_state() -> None:
+    load_data = st.session_state.pop("request_line_editor_load", None)
+    if isinstance(load_data, dict):
+        st.session_state["request_material_edit_index"] = int(load_data.get("index", -1))
+        st.session_state["request_line_product"] = str(load_data.get("product", ""))
+        st.session_state["request_line_model"] = str(load_data.get("model", "")) or NO_MODEL_TEXT
+        st.session_state["request_line_language"] = (
+            str(load_data.get("language", "")) or NO_LANGUAGE_TEXT
+        )
+        st.session_state["request_line_quantity"] = max(1, int(load_data.get("quantity") or 1))
+        st.session_state["request_line_remark"] = str(load_data.get("remark", ""))
+        return
+    if st.session_state.pop("request_line_editor_reset", False):
+        for key in (
+            "request_line_product",
+            "request_line_model",
+            "request_line_language",
+            "request_line_quantity",
+            "request_line_remark",
+        ):
+            st.session_state.pop(key, None)
+        st.session_state["request_material_edit_index"] = None
+
+
+def request_material_table_dataframe(lines: list[dict[str, object]]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "选择": False,
+                "序号": index + 1,
+                "物料品类": line["product"],
+                "产品型号": line["model"],
+                "语种": line["language"],
+                "数量": int(line["quantity"]),
+                "备注": line.get("remark", ""),
+            }
+            for index, line in enumerate(lines)
+        ]
+    )
+
+
+def apply_request_material_table_edits(
+    lines: list[dict[str, object]],
+    edited_df: pd.DataFrame,
+) -> tuple[list[dict[str, object]], list[int]]:
+    updated_lines = [dict(line) for line in lines]
+    selected_indices: list[int] = []
+    for row in edited_df.to_dict("records"):
+        try:
+            line_index = int(row.get("序号") or 0) - 1
+        except (TypeError, ValueError):
+            continue
+        if not 0 <= line_index < len(updated_lines):
+            continue
+        if bool(row.get("选择")):
+            selected_indices.append(line_index)
+        try:
+            quantity = int(row.get("数量") or updated_lines[line_index].get("quantity") or 1)
+        except (TypeError, ValueError):
+            quantity = int(updated_lines[line_index].get("quantity") or 1)
+        remark_value = row.get("备注", "")
+        remark = "" if pd.isna(remark_value) else str(remark_value).strip()
+        updated_lines[line_index]["quantity"] = max(1, min(1_000_000, quantity))
+        updated_lines[line_index]["remark"] = remark
+    return updated_lines, list(dict.fromkeys(selected_indices))
+
+
+def serialize_request_uploads(uploaded_files: object) -> list[dict[str, object]]:
+    if not uploaded_files:
+        return []
+    return [
+        {
+            "name": str(file.name),
+            "content": bytes(file.getvalue()),
+            "content_type": str(file.type or "application/octet-stream"),
+        }
+        for file in uploaded_files
+    ]
+
+
+def merge_request_attachments(
+    saved_attachments: object,
+    uploaded_attachments: object,
+) -> list[dict[str, object]]:
+    merged: dict[str, dict[str, object]] = {}
+    for attachment in list(saved_attachments or []) + list(uploaded_attachments or []):
+        if not isinstance(attachment, dict):
+            continue
+        name = str(attachment.get("name", "")).strip()
+        content = attachment.get("content", b"")
+        if not name or not isinstance(content, (bytes, bytearray)):
+            continue
+        merged[name] = {
+            "name": name,
+            "content": bytes(content),
+            "content_type": str(attachment.get("content_type") or "application/octet-stream"),
+        }
+    return list(merged.values())
+
+
+def validate_request_draft(draft: dict[str, object]) -> list[str]:
+    errors: list[str] = []
+    missing = [
+        label
+        for label, value in [
+            ("申请人", draft.get("requester")),
+            ("客户名称", draft.get("customer_name")),
+            ("国家", draft.get("country")),
+            ("收件人信息", draft.get("recipient_info")),
+            ("运费的承担者", draft.get("freight_payer")),
+            ("物料用途", draft.get("material_usage")),
+        ]
+        if not str(value or "").strip()
+    ]
+    if missing:
+        errors.append("请补充必填信息：" + "、".join(missing))
+
+    lines = list(draft.get("lines") or [])
+    if not lines:
+        errors.append("请至少加入一种申请物料")
+    elif len(lines) > MAX_REQUEST_LINE_COUNT:
+        errors.append(f"一次申请最多可添加 {MAX_REQUEST_LINE_COUNT} 种物料")
+    for index, line in enumerate(lines):
+        if not isinstance(line, dict):
+            errors.append(f"第 {index + 1} 条物料明细无效")
+            continue
+        if not all(str(line.get(field, "")).strip() for field in ("product", "model", "language")):
+            errors.append(f"第 {index + 1} 条物料缺少品类、型号或语种")
+        if int(line.get("quantity") or 0) <= 0:
+            errors.append(f"第 {index + 1} 条物料数量必须大于 0")
+
+    attachments = list(draft.get("attachments") or [])
+    if len(attachments) > MAX_ATTACHMENTS_PER_REQUEST:
+        errors.append(f"相关附件最多上传 {MAX_ATTACHMENTS_PER_REQUEST} 个")
+    oversized_names: list[str] = []
+    for attachment in attachments:
+        if not isinstance(attachment, dict):
+            continue
+        content = attachment.get("content", b"")
+        if isinstance(content, (bytes, bytearray)) and len(content) > MAX_ATTACHMENT_SIZE_BYTES:
+            oversized_names.append(str(attachment.get("name", "")))
+    if oversized_names:
+        errors.append("以下附件超过飞书单文件 20 MB 限制：" + "、".join(oversized_names))
+    return errors
+
+
+def restore_request_form_from_draft(draft: dict[str, object]) -> None:
+    field_map = {
+        "request_department": "department",
+        "request_requester": "requester",
+        "request_customer_name": "customer_name",
+        "request_country": "country",
+        "request_recipient_info": "recipient_info",
+        "request_freight_payer": "freight_payer",
+        "request_material_usage": "material_usage",
+    }
+    for state_key, draft_key in field_map.items():
+        st.session_state[state_key] = draft.get(draft_key, "")
+    st.session_state["request_material_lines"] = [
+        dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)
+    ]
+    st.session_state["request_saved_attachments"] = [
+        dict(attachment)
+        for attachment in list(draft.get("attachments") or [])
+        if isinstance(attachment, dict)
+    ]
+    st.session_state["request_material_table_version"] = (
+        int(st.session_state.get("request_material_table_version", 0)) + 1
+    )
+    st.session_state["request_attachment_upload_version"] = (
+        int(st.session_state.get("request_attachment_upload_version", 0)) + 1
+    )
+    st.session_state["request_line_editor_reset"] = True
+    st.session_state["request_form_stage"] = "edit"
+    st.session_state.pop("request_draft_payload", None)
+
+
+def clear_request_application_state() -> None:
+    for key in list(st.session_state):
+        if str(key).startswith("request_"):
+            st.session_state.pop(key, None)
+
+
+def scroll_request_page_to_top_if_needed() -> None:
+    if not st.session_state.pop("request_scroll_to_top", False):
+        return
+    st.html(
+        """
+        <script>
+        const main = document.querySelector('[data-testid="stMain"]');
+        if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        </script>
+        """,
+        unsafe_allow_javascript=True,
+    )
+
+
+def render_request_review_field(container: object, label: str, value: object) -> None:
+    display_value = escape(str(value or "-")).replace("\n", "<br>")
+    container.markdown(
+        f"""
+        <div class="pudu-review-field">
+            <span>{escape(label)}</span>
+            <strong>{display_value}</strong>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_request_review() -> None:
+    scroll_request_page_to_top_if_needed()
+    draft = st.session_state.get("request_draft_payload")
+    if not isinstance(draft, dict):
+        st.session_state["request_form_stage"] = "edit"
+        st.rerun()
+
+    lines = [dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)]
+    attachments = [
+        dict(attachment)
+        for attachment in list(draft.get("attachments") or [])
+        if isinstance(attachment, dict)
+    ]
+    total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+    st.markdown(
+        f"""
+        <div class="pudu-review-metrics">
+            <div class="pudu-review-metric"><span>物料种类</span><strong>{len(lines)}</strong></div>
+            <div class="pudu-review-metric"><span>申请总数量</span><strong>{total_quantity}</strong></div>
+            <div class="pudu-review-metric"><span>附件数量</span><strong>{len(attachments)}</strong></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container(border=True):
+        render_section_header("01", "申请信息确认", "请核对完整申请内容后再提交")
+        st.markdown(
+            f"""
+            <div class="pudu-generated-title">
+                <span>申请标题</span>
+                <strong>{escape(str(draft.get("title") or ""))}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        overview_cols = st.columns(4)
+        render_request_review_field(overview_cols[0], "申请人", draft.get("requester"))
+        render_request_review_field(overview_cols[1], "申请部门", draft.get("department"))
+        render_request_review_field(overview_cols[2], "客户名称", draft.get("customer_name"))
+        render_request_review_field(overview_cols[3], "国家", draft.get("country"))
+        detail_cols = st.columns([1.2, 1, 1.4])
+        render_request_review_field(detail_cols[0], "运费承担者", draft.get("freight_payer"))
+        render_request_review_field(detail_cols[1], "物料用途", draft.get("material_usage"))
+        render_request_review_field(detail_cols[2], "收件人信息", draft.get("recipient_info"))
+        render_request_review_field(
+            st,
+            "相关附件",
+            "、".join(str(item.get("name", "")) for item in attachments) or "无",
+        )
+
+    with st.container(border=True):
+        render_section_header("02", "申请物料清单", f"共 {len(lines)} 种物料")
+        review_df = pd.DataFrame(
+            [
+                {
+                    "序号": index + 1,
+                    "物料品类": line.get("product", ""),
+                    "产品型号": line.get("model", ""),
+                    "语种": line.get("language", ""),
+                    "申请数量": int(line.get("quantity") or 0),
+                    "备注": line.get("remark", ""),
+                }
+                for index, line in enumerate(lines)
+            ]
+        )
+        st.dataframe(
+            review_df,
+            width="stretch",
+            hide_index=True,
+            height=min(820, max(150, 38 * (len(review_df) + 1) + 18)),
+            row_height=34,
+        )
+
+    back_col, _, confirm_col = st.columns([1.1, 2.2, 1.4])
+    if back_col.button(
+        "返回修改",
+        key="request_review_back",
+        icon=":material/arrow_back:",
+        width="stretch",
+    ):
+        restore_request_form_from_draft(draft)
+        st.session_state["request_scroll_to_top"] = True
+        st.rerun()
+    if confirm_col.button(
+        "确认提交",
+        key="request_review_confirm",
+        type="primary",
+        icon=":material/check_circle:",
+        width="stretch",
+    ):
+        errors = validate_request_draft(draft)
+        if errors:
+            st.warning("；".join(errors))
+            return
+        with st.spinner("正在提交申请，请勿重复点击..."):
+            with DATA_LOCK:
+                try:
+                    request_no, line_count = submit_feishu_material_request(draft, lines)
+                except Exception as exc:
+                    st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
+                    st.exception(exc)
+                    return
+        st.cache_data.clear()
+        clear_request_application_state()
+        st.session_state["request_submit_message"] = f"已提交申请单 {request_no}，共 {line_count} 条申请明细。"
+        st.session_state["request_scroll_to_top"] = True
+        st.rerun()
+
+
+def render_request_material_builder(
+    selection_context: dict[str, object],
+    products: list[str],
+    models: list[str],
+    languages: list[str],
+) -> list[dict[str, object]]:
+    prepare_request_line_editor_state()
+    lines = get_request_material_lines()
+
+    with st.container(border=True):
+        render_section_header(
+            "02",
+            "物料申请清单 Material List",
+            f"逐条添加物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
+        )
+        if not products:
+            st.error("当前没有可申请的物料品类，请先刷新数据或联系管理员。")
+            return lines
+
+        editor_index_value = st.session_state.get("request_material_edit_index")
+        editor_index = (
+            int(editor_index_value)
+            if isinstance(editor_index_value, int) and 0 <= editor_index_value < len(lines)
+            else None
+        )
+        editor_cols = st.columns(
+            [2.2, 1.7, 1.5, 0.85, 1.5, 1.15],
+            gap="small",
+            vertical_alignment="bottom",
+        )
+        product_col, model_col, language_col, quantity_col, remark_col, action_col = editor_cols
+
+        required_field_label(product_col, "物料品类")
+        product = product_col.selectbox(
+            "物料品类",
+            products,
+            key="request_line_product",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        is_no_model_product, scoped_models = product_model_state(product, selection_context)
+        if is_no_model_product:
+            model_options = [NO_MODEL_TEXT]
+        elif scoped_models:
+            model_options = unique_preserve(scoped_models)
+        else:
+            model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
+        if st.session_state.get("request_line_model") not in model_options:
+            st.session_state["request_line_model"] = model_options[0]
+        required_field_label(model_col, "产品型号")
+        model = model_col.selectbox(
+            "产品型号",
+            model_options,
+            key="request_line_model",
+            disabled=is_no_model_product,
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+
+        is_no_language_product, language_options = product_language_state(
+            product,
+            model,
+            selection_context,
+            languages,
+        )
+        if st.session_state.get("request_line_language") not in language_options:
+            st.session_state["request_line_language"] = (
+                language_options[0] if language_options else NO_LANGUAGE_TEXT
+            )
+        required_field_label(language_col, "语种")
+        language = language_col.selectbox(
+            "语种",
+            language_options,
+            key="request_line_language",
+            disabled=is_no_language_product,
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+
+        required_field_label(quantity_col, "数量")
+        quantity = quantity_col.number_input(
+            "数量",
+            min_value=1,
+            max_value=1_000_000,
+            value=1,
+            step=1,
+            key="request_line_quantity",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        remark = remark_col.text_input(
+            "备注",
+            key="request_line_remark",
+            placeholder="可选",
+            on_change=mark_request_form_dirty,
+        )
+
+        action_label = "保存修改" if editor_index is not None else "加入清单"
+        action_icon = ":material/save:" if editor_index is not None else ":material/add:"
+        action_clicked = action_col.button(
+            action_label,
+            key="request_add_material",
+            type="primary",
+            icon=action_icon,
+            disabled=editor_index is None and len(lines) >= MAX_REQUEST_LINE_COUNT,
+            width="stretch",
+        )
+        if editor_index is not None and action_col.button(
+            "取消编辑",
+            key="request_cancel_material_edit",
+            type="tertiary",
+            icon=":material/close:",
+            width="stretch",
+        ):
+            st.session_state["request_line_editor_reset"] = True
+            st.rerun()
+
+        if action_clicked:
+            next_line = {
+                "product": product,
+                "model": model or NO_MODEL_TEXT,
+                "language": language or NO_LANGUAGE_TEXT,
+                "quantity": int(quantity),
+                "remark": str(remark or "").strip(),
+            }
+            duplicate_index = next(
+                (
+                    index
+                    for index, line in enumerate(lines)
+                    if request_material_key(line) == request_material_key(next_line)
+                    and index != editor_index
+                ),
+                None,
+            )
+            if duplicate_index is not None:
+                st.warning(f"该物料组合已在清单第 {duplicate_index + 1} 行，请直接修改原行。")
+            else:
+                next_lines = [dict(line) for line in lines]
+                if editor_index is None:
+                    next_lines.append(next_line)
+                else:
+                    next_lines[editor_index] = next_line
+                st.session_state["request_material_lines"] = next_lines
+                st.session_state["request_material_table_version"] = (
+                    int(st.session_state.get("request_material_table_version", 0)) + 1
+                )
+                st.session_state["request_line_editor_reset"] = True
+                mark_request_form_dirty()
+                st.rerun()
+
+        lines = get_request_material_lines()
+        st.markdown(
+            f"""
+            <div class="pudu-material-list-status">
+                <span>申请物料清单</span>
+                <strong>{len(lines)} / {MAX_REQUEST_LINE_COUNT}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if not lines:
+            st.info("尚未添加申请物料。")
+            return lines
+
+        table_version = int(st.session_state.get("request_material_table_version", 0))
+        edited_df = st.data_editor(
+            request_material_table_dataframe(lines),
+            width="stretch",
+            hide_index=True,
+            height=min(520, max(140, 38 * (len(lines) + 1) + 22)),
+            row_height=34,
+            disabled=["序号", "物料品类", "产品型号", "语种"],
+            column_config={
+                "选择": st.column_config.CheckboxColumn("选择", width="small"),
+                "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
+                "物料品类": st.column_config.TextColumn("物料品类", width="large"),
+                "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
+                "语种": st.column_config.TextColumn("语种", width="medium"),
+                "数量": st.column_config.NumberColumn(
+                    "数量",
+                    min_value=1,
+                    max_value=1_000_000,
+                    step=1,
+                    format="%d",
+                    width="small",
+                ),
+                "备注": st.column_config.TextColumn("备注", width="medium"),
+            },
+            key=f"request_material_table_{table_version}",
+            on_change=mark_request_form_dirty,
+        )
+        updated_lines, selected_indices = apply_request_material_table_edits(lines, edited_df)
+        if updated_lines != lines:
+            st.session_state["request_material_lines"] = updated_lines
+            lines = updated_lines
+
+        edit_col, delete_col, _ = st.columns([1.1, 1.1, 3])
+        if edit_col.button(
+            "编辑选中",
+            key="request_edit_selected_material",
+            icon=":material/edit:",
+            disabled=len(selected_indices) != 1,
+            width="stretch",
+        ):
+            selected_index = selected_indices[0]
+            st.session_state["request_line_editor_load"] = {
+                "index": selected_index,
+                **lines[selected_index],
+            }
+            st.session_state["request_material_table_version"] = table_version + 1
+            st.rerun()
+        if delete_col.button(
+            "删除选中",
+            key="request_delete_selected_material",
+            icon=":material/delete:",
+            disabled=not selected_indices,
+            width="stretch",
+        ):
+            selected_set = set(selected_indices)
+            st.session_state["request_material_lines"] = [
+                line for index, line in enumerate(lines) if index not in selected_set
+            ]
+            st.session_state["request_material_table_version"] = table_version + 1
+            if editor_index in selected_set:
+                st.session_state["request_line_editor_reset"] = True
+            mark_request_form_dirty()
+            st.rerun()
+    return lines
+
+
 def render_change_form(show_title: bool = True) -> None:
+    initialize_request_form_state()
+    scroll_request_page_to_top_if_needed()
+    if st.session_state.get("request_form_stage") == "review":
+        render_request_review()
+        return
+
     with st.spinner("物料数据加载中，请稍后......"):
         selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
@@ -3745,189 +4432,138 @@ def render_change_form(show_title: bool = True) -> None:
     if message:
         st.success(message)
 
-    lines: list[dict[str, object]] = []
-    if "request_submission_token" not in st.session_state:
-        st.session_state["request_submission_token"] = uuid.uuid4().hex
-
-    requester_key = "request_requester"
-    material_usage_key = "request_material_usage"
-    if requester_key not in st.session_state:
-        st.session_state[requester_key] = get_secret_value("DEFAULT_REQUESTER", "")
-    st.session_state["request_title_display"] = build_request_title(
-        st.session_state.get(material_usage_key, ""),
-        st.session_state.get(requester_key, ""),
-    )
     with st.container(border=True):
-        render_section_header("01", "申请信息", "申请标题由物料用途和申请人自动生成")
-        st.text_input("标题", key="request_title_display", disabled=True)
-        info_col_a, info_col_b = st.columns(2)
-        department = info_col_a.text_input(
+        render_section_header("01", "申请与业务信息", "填写领取申请的基础信息")
+        generated_title = build_request_title(
+            st.session_state.get("request_material_usage", ""),
+            st.session_state.get("request_requester", ""),
+        )
+        st.markdown(
+            f"""
+            <div class="pudu-generated-title">
+                <span>申请标题</span>
+                <strong>{escape(generated_title)}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        top_cols = st.columns(4)
+        department = top_cols[0].text_input(
             "申请部门",
-            value=get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+            key="request_department",
             on_change=mark_request_form_dirty,
         )
-        required_field_label(info_col_b, "申请人")
-        requester = info_col_b.text_input(
+        required_field_label(top_cols[1], "申请人")
+        requester = top_cols[1].text_input(
             "申请人",
-            key=requester_key,
+            key="request_requester",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        required_field_label(top_cols[2], "客户名称 Customer Name")
+        customer_name = top_cols[2].text_input(
+            "客户名称 Customer Name",
+            key="request_customer_name",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        required_field_label(top_cols[3], "国家 Country")
+        country = top_cols[3].text_input(
+            "国家 Country",
+            key="request_country",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
 
-    with st.container(border=True):
-        render_section_header("02", "业务信息 Business Information", "客户、收件、运费与用途信息")
-        biz_col_a, biz_col_b = st.columns(2)
-        required_field_label(biz_col_a, "客户名称 Customer Name")
-        customer_name = biz_col_a.text_input(
-            "客户名称 Customer Name",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        required_field_label(biz_col_b, "国家 Country")
-        country = biz_col_b.text_input(
-            "国家 Country",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        required_field_label(st, "收件人信息 Recipient Information")
-        recipient_info = st.text_area(
+        middle_cols = st.columns([2.4, 1])
+        required_field_label(middle_cols[0], "收件人信息 Recipient Information")
+        recipient_info = middle_cols[0].text_area(
             "收件人信息 Recipient Information",
             placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
-            height=96,
+            height=84,
+            key="request_recipient_info",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        freight_col, usage_col = st.columns(2)
-        required_field_label(freight_col, "运费的承担者 Freight Payer")
-        freight_payer = freight_col.selectbox(
+        required_field_label(middle_cols[1], "运费的承担者 Freight Payer")
+        if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
+            st.session_state["request_freight_payer"] = FREIGHT_PAYER_OPTIONS[0]
+        freight_payer = middle_cols[1].selectbox(
             "运费的承担者 Freight Payer",
             FREIGHT_PAYER_OPTIONS,
+            key="request_freight_payer",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        required_field_label(usage_col, "物料用途 Material Usage")
-        material_usage = usage_col.text_area(
+
+        bottom_cols = st.columns([2.4, 1])
+        required_field_label(bottom_cols[0], "物料用途 Material Usage")
+        material_usage = bottom_cols[0].text_area(
             "物料用途 Material Usage",
             placeholder="活动物料请注明具体活动名称",
             height=76,
-            key=material_usage_key,
+            key="request_material_usage",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        uploaded_files = st.file_uploader(
-            "相关附件 Relevant Attachments",
-            accept_multiple_files=True,
-            help="单个附件不超过 20 MB，最多上传 100 个。",
-            on_change=mark_request_form_dirty,
+        bottom_cols[1].markdown(
+            '<div class="pudu-field-label">相关附件 Relevant Attachments</div>',
+            unsafe_allow_html=True,
         )
-    attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
-
-    with st.container(border=True):
-        render_section_header(
-            "03",
-            "物料明细 Material Details",
-            f"一次申请可登记 1 至 {MAX_REQUEST_LINE_COUNT} 种物料",
+        upload_version = int(st.session_state.get("request_attachment_upload_version", 0))
+        uploaded_files: list[object] = []
+        with bottom_cols[1].popover(
+            "上传或管理附件",
+            icon=":material/attach_file:",
+            width="stretch",
+            key=f"request_attachment_popover_{upload_version}",
+        ):
+            uploaded_files = st.file_uploader(
+                "相关附件",
+                accept_multiple_files=True,
+                help="单个附件不超过 20 MB，最多上传 100 个。",
+                key=f"request_attachment_upload_{upload_version}",
+                on_change=mark_request_form_dirty,
+            )
+            saved_names = [
+                str(item.get("name", ""))
+                for item in list(st.session_state.get("request_saved_attachments") or [])
+                if isinstance(item, dict)
+            ]
+            if saved_names:
+                st.caption("已保留：" + "、".join(saved_names))
+            if (saved_names or uploaded_files) and st.button(
+                "清空附件",
+                key=f"request_clear_attachments_{upload_version}",
+                icon=":material/delete:",
+                width="stretch",
+            ):
+                st.session_state["request_saved_attachments"] = []
+                st.session_state["request_attachment_upload_version"] = upload_version + 1
+                mark_request_form_dirty()
+                st.rerun()
+        attachment_count = len(list(st.session_state.get("request_saved_attachments") or [])) + len(
+            uploaded_files or []
         )
-        row_count = get_row_count()
-        for index in range(row_count):
-            if index:
-                st.divider()
-            st.markdown(f"**明细 {index + 1:02d}**")
-            product_col, model_col, language_col, qty_col = st.columns([2.3, 1.8, 1.7, 1.1])
+        bottom_cols[1].caption(f"已选择 {attachment_count} 个附件" if attachment_count else "未上传附件")
 
-            required_field_label(product_col, "物料品类(Material Category)")
-            product = product_col.selectbox(
-                "物料品类(Material Category)",
-                products,
-                key=f"request_product_{index}",
-                label_visibility="collapsed",
-                on_change=mark_request_form_dirty,
-            )
-            is_no_model_product, scoped_models = product_model_state(product, selection_context)
-            if is_no_model_product:
-                model_options = [NO_MODEL_TEXT]
-            elif scoped_models:
-                model_options = unique_preserve(scoped_models)
-            else:
-                model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
-            if not model_options:
-                model_options = [NO_MODEL_TEXT]
-            model_key = f"request_model_{index}"
-            if st.session_state.get(model_key) not in model_options:
-                st.session_state[model_key] = model_options[0]
-            required_field_label(model_col, "产品型号(Product Model)")
-            model = model_col.selectbox(
-                "产品型号(Product Model)",
-                model_options,
-                key=model_key,
-                disabled=is_no_model_product,
-                label_visibility="collapsed",
-                on_change=mark_request_form_dirty,
-            )
-            is_no_language_product, language_options = product_language_state(
-                product,
-                model,
-                selection_context,
-                languages,
-            )
-            language_key = f"request_language_{index}"
-            if st.session_state.get(language_key) not in language_options:
-                st.session_state[language_key] = language_options[0] if language_options else ""
-            required_field_label(language_col, "语种(Language)")
-            language = language_col.selectbox(
-                "语种(Language)",
-                language_options,
-                key=language_key,
-                disabled=is_no_language_product,
-                label_visibility="collapsed",
-                on_change=mark_request_form_dirty,
-            )
-            required_field_label(qty_col, "物料数量")
-            quantity = qty_col.number_input(
-                "物料数量",
-                min_value=0,
-                max_value=1_000_000,
-                value=0,
-                step=1,
-                key=f"request_quantity_{index}",
-                label_visibility="collapsed",
-                on_change=mark_request_form_dirty,
-            )
-            remark = st.text_input(
-                "备注",
-                key=f"request_remark_{index}",
-                placeholder="可选",
-                on_change=mark_request_form_dirty,
-            )
-            lines.append(
-                {
-                    "product": product,
-                    "model": model,
-                    "language": language,
-                    "quantity": int(quantity),
-                    "remark": remark,
-                }
-            )
+    lines = render_request_material_builder(selection_context, products, models, languages)
 
-    submit_spacer, submit_col = st.columns([3, 1])
-    submitted = submit_col.button(
-        "提交申请",
+    _, preview_col = st.columns([3, 1.25])
+    preview_clicked = preview_col.button(
+        "预览并核对申请",
+        key="request_preview",
         type="primary",
-        icon=":material/send:",
+        icon=":material/preview:",
         width="stretch",
-        on_click=mark_request_form_dirty,
     )
-
-    if submitted:
-        if len(uploaded_files) > MAX_ATTACHMENTS_PER_REQUEST:
-            st.warning(f"相关附件最多上传 {MAX_ATTACHMENTS_PER_REQUEST} 个。")
-            return
-        oversized_files = [file.name for file in uploaded_files if int(file.size) > MAX_ATTACHMENT_SIZE_BYTES]
-        if oversized_files:
-            st.warning("以下附件超过飞书单文件 20 MB 限制：" + "、".join(oversized_files))
-            return
+    if preview_clicked:
+        attachments = merge_request_attachments(
+            st.session_state.get("request_saved_attachments"),
+            serialize_request_uploads(uploaded_files),
+        )
         generated_title = build_request_title(material_usage, requester)
-        payload = {
+        draft = {
             "title": generated_title,
             "department": department,
             "requester": requester,
@@ -3936,44 +4572,20 @@ def render_change_form(show_title: bool = True) -> None:
             "recipient_info": recipient_info,
             "freight_payer": freight_payer,
             "material_usage": material_usage,
-            "attachment_note": attachment_note,
+            "attachment_note": "\n".join(str(item.get("name", "")) for item in attachments),
             "submission_token": st.session_state["request_submission_token"],
-            "attachments": [
-                {
-                    "name": file.name,
-                    "content": file.getvalue(),
-                    "content_type": file.type or "application/octet-stream",
-                }
-                for file in uploaded_files
-            ],
+            "attachments": attachments,
+            "lines": [dict(line) for line in lines],
         }
-        missing = [
-            label
-            for label, value in [
-                ("申请人", requester),
-                ("客户名称", customer_name),
-                ("国家", country),
-                ("收件人信息", recipient_info),
-                ("运费的承担者", freight_payer),
-                ("物料用途", material_usage),
-            ]
-            if not str(value).strip()
-        ]
-        if missing:
-            st.warning("请补充必填信息：" + "、".join(missing))
+        errors = validate_request_draft(draft)
+        if errors:
+            st.warning("；".join(errors))
             return
-        with st.spinner("正在提交申请，请勿重复点击..."):
-            with DATA_LOCK:
-                try:
-                    request_no, line_count = submit_feishu_material_request(payload, lines)
-                except Exception as exc:
-                    st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
-                    st.exception(exc)
-                    return
-        st.cache_data.clear()
-        reset_request_form_cache_lock()
-        st.session_state["request_submission_token"] = uuid.uuid4().hex
-        st.session_state["request_submit_message"] = f"已提交申请单 {request_no}，共 {line_count} 条申请明细。"
+        st.session_state["request_saved_attachments"] = attachments
+        st.session_state["request_draft_payload"] = draft
+        st.session_state["request_form_stage"] = "review"
+        st.session_state["request_scroll_to_top"] = True
+        mark_request_form_dirty()
         st.rerun()
 
 
@@ -5328,6 +5940,18 @@ def render_management_page() -> None:
     if current_section == "新增物料品类":
         current_section = "品类管理"
         st.session_state["management_section"] = current_section
+    if (
+        current_section == "库存登记"
+        and st.session_state.get("request_form_stage") == "review"
+    ):
+        render_page_header(
+            "申请信息确认",
+            "提交前核对",
+            "确认申请信息和全部物料明细后再同步至飞书。",
+            status="等待确认",
+        )
+        render_request_review()
+        return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
         "品类管理": ("物料品类管理", "基础数据", "新增或调整物料品类、型号、语种和库存组合。"),
