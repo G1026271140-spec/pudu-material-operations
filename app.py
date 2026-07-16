@@ -91,6 +91,7 @@ TRANSACTION_HEADERS = [
 DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
 MAX_REQUEST_LINE_COUNT = 20
+ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料数据库", "品类管理"})
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
@@ -3578,12 +3579,16 @@ def auth_gate() -> bool:
     return False
 
 
-def approval_auth_gate() -> bool:
-    if st.session_state.get("approval_unlocked"):
+def management_section_requires_admin(section: object) -> bool:
+    return str(section or "") in ADMIN_MANAGEMENT_SECTIONS
+
+
+def admin_auth_gate() -> bool:
+    if st.session_state.get("admin_unlocked"):
         return True
-    password = st.text_input("请输入审批密码", type="password", key="approval_password")
+    password = st.text_input("请输入管理员密码", type="password", key="admin_password")
     if password == get_approval_password():
-        st.session_state["approval_unlocked"] = True
+        st.session_state["admin_unlocked"] = True
         st.rerun()
     if password:
         st.error("密码不正确")
@@ -3661,7 +3666,7 @@ def render_sidebar_link() -> None:
         github_message = st.session_state.pop("github_cache_refresh_message", "")
         if github_message:
             st.success(github_message)
-        if github_cache_refresh_token() and st.session_state.get("approval_unlocked"):
+        if github_cache_refresh_token() and st.session_state.get("admin_unlocked"):
             if st.button(
                 "发布 GitHub 静态缓存",
                 key="sidebar_publish_github_cache",
@@ -5192,7 +5197,7 @@ def render_approval_view() -> None:
         "审批工作台",
         "核对申请明细、登记实际发放数量并同步库存流水。",
     )
-    if not approval_auth_gate():
+    if not admin_auth_gate():
         return
     render_page_cache_toolbar("approval")
 
@@ -5331,6 +5336,8 @@ def render_management_page() -> None:
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
+    if management_section_requires_admin(current_section) and not admin_auth_gate():
+        return
     if current_section == "品类管理":
         render_page_cache_toolbar("category")
         render_add_category_form()
