@@ -48,7 +48,13 @@ REQUEST_STATUS_ISSUED = "已发放"
 REQUEST_LINE_STATUS_PENDING = "待审批"
 REQUEST_LINE_STATUS_PARTIAL = "部分发放"
 REQUEST_LINE_STATUS_ISSUED = "已发放"
-FREIGHT_PAYER_OPTIONS = ["申请部门承担", "市场部承担", "客户承担", "其他"]
+FREIGHT_PAYER_OPTIONS = [
+    "申请部门承担",
+    "市场部承担",
+    "客户承担",
+    "普渡付款(PUDU)",
+    "其他",
+]
 MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
 MAX_ATTACHMENTS_PER_REQUEST = 100
 GITHUB_REPOSITORY = "G1026271140-spec/pudu-material-inventory"

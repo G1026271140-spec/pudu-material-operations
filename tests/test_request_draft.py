@@ -28,6 +28,9 @@ def valid_draft() -> dict[str, object]:
 
 
 class RequestDraftTests(unittest.TestCase):
+    def test_freight_payer_options_include_pudu(self) -> None:
+        self.assertIn("普渡付款(PUDU)", app.FREIGHT_PAYER_OPTIONS)
+
     def test_valid_draft_passes_without_errors(self) -> None:
         self.assertEqual(app.validate_request_draft(valid_draft()), [])
 
