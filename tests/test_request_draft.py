@@ -7,6 +7,7 @@ import app
 
 def valid_draft() -> dict[str, object]:
     return {
+        "department": "市场部",
         "requester": "申请人",
         "customer_name": "客户",
         "country": "国家",

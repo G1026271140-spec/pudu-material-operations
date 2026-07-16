@@ -139,6 +139,34 @@ class FeishuBitableClient:
             page_size=page_size,
         )
 
+    def list_contact_departments(self) -> list[dict[str, Any]]:
+        return self._paged_get(
+            "/contact/v3/departments",
+            "items",
+            page_size=50,
+            params={
+                "parent_department_id": "0",
+                "fetch_child": "true",
+                "department_id_type": "open_department_id",
+                "user_id_type": "open_id",
+            },
+        )
+
+    def list_department_users(self, department_id: str) -> list[dict[str, Any]]:
+        normalized_department_id = department_id.strip()
+        if not normalized_department_id:
+            return []
+        return self._paged_get(
+            "/contact/v3/users/find_by_department",
+            "items",
+            page_size=50,
+            params={
+                "department_id": normalized_department_id,
+                "department_id_type": "open_department_id",
+                "user_id_type": "open_id",
+            },
+        )
+
     def batch_create_records(self, table_id: str, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         response = self._request(
             "POST",
@@ -222,14 +250,16 @@ class FeishuBitableClient:
         path: str,
         data_key: str,
         page_size: int = 100,
+        params: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         items: list[dict[str, Any]] = []
         page_token = ""
         while True:
-            params = {"page_size": page_size}
+            request_params = dict(params or {})
+            request_params["page_size"] = page_size
             if page_token:
-                params["page_token"] = page_token
-            response = self._request("GET", path, params=params)
+                request_params["page_token"] = page_token
+            response = self._request("GET", path, params=request_params)
             data = response.get("data", {})
             items.extend(data.get(data_key, []))
             if not data.get("has_more"):

@@ -94,6 +94,9 @@ MAX_REQUEST_LINE_COUNT = 20
 ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料数据库", "品类管理"})
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
+CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
+    Path(__file__).resolve().parent / "data" / "contact_departments_cache.json"
+)
 APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
 REQUEST_FORM_CACHE_LOCK = threading.Lock()
 REQUEST_FORM_CACHE_STATE: dict[str, object] = {
@@ -1063,6 +1066,25 @@ def set_first_plain_field(
             return
 
 
+def set_first_person_or_plain_field(
+    table_name: str,
+    fields: dict[str, object],
+    candidates: list[str],
+    display_value: object,
+    open_id: object,
+) -> None:
+    normalized_open_id = str(open_id or "").strip()
+    for field_name in candidates:
+        if not feishu_has_field(table_name, field_name):
+            continue
+        if feishu_field_type(table_name, field_name) == 11 and normalized_open_id:
+            fields[field_name] = [{"id": normalized_open_id}]
+            return
+        if display_value not in (None, "") and feishu_accepts_plain_value(table_name, field_name):
+            fields[field_name] = display_value
+            return
+
+
 def feishu_create_record(table_name: str, fields: dict[str, object]) -> dict:
     created = feishu_batch_create_records(table_name, [fields])
     return created[0] if created else {}
@@ -1697,6 +1719,134 @@ def build_page_data_static_snapshot() -> dict[str, object]:
     }
 
 
+def contact_department_cache_from_rows(
+    rows: list[dict[str, object]],
+    *,
+    source: str,
+) -> dict[str, object]:
+    departments_by_id: dict[str, dict[str, str]] = {}
+    for row in rows:
+        department_id = str(
+            row.get("open_department_id") or row.get("department_id") or ""
+        ).strip()
+        name = str(row.get("name") or "").strip()
+        if not department_id or not name:
+            continue
+        departments_by_id[department_id] = {
+            "department_id": department_id,
+            "name": name,
+            "parent_department_id": str(row.get("parent_department_id") or "").strip(),
+        }
+
+    def department_path(department_id: str, visited: set[str] | None = None) -> str:
+        department = departments_by_id.get(department_id)
+        if department is None:
+            return ""
+        current_visited = set(visited or set())
+        if department_id in current_visited:
+            return department["name"]
+        current_visited.add(department_id)
+        parent_id = department["parent_department_id"]
+        parent_path = (
+            department_path(parent_id, current_visited)
+            if parent_id and parent_id != "0" and parent_id in departments_by_id
+            else ""
+        )
+        return f"{parent_path} / {department['name']}" if parent_path else department["name"]
+
+    departments = [
+        {
+            "department_id": department_id,
+            "name": department["name"],
+            "path": department_path(department_id),
+        }
+        for department_id, department in departments_by_id.items()
+    ]
+    departments.sort(key=lambda item: str(item["path"]).casefold())
+    return {
+        "schema_version": 1,
+        "source": source,
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "departments": departments,
+        "row_count": len(departments),
+    }
+
+
+def build_live_contact_department_cache() -> dict[str, object]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法读取通讯录部门。")
+    return contact_department_cache_from_rows(
+        client.list_contact_departments(),
+        source="live_feishu",
+    )
+
+
+@st.cache_data(show_spinner=False)
+def load_static_contact_department_cache() -> dict[str, object]:
+    if not CONTACT_DEPARTMENT_STATIC_CACHE_PATH.exists():
+        return {
+            "schema_version": 1,
+            "source": "empty",
+            "generated_at": "",
+            "departments": [],
+            "row_count": 0,
+        }
+    return json.loads(CONTACT_DEPARTMENT_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+
+
+def get_contact_departments() -> list[dict[str, str]]:
+    cached = st.session_state.get("contact_department_cache_data")
+    if not isinstance(cached, dict):
+        cached = load_static_contact_department_cache()
+        if not list(cached.get("departments") or []):
+            cached = build_live_contact_department_cache()
+        st.session_state["contact_department_cache_data"] = cached
+    return [
+        {
+            "department_id": str(item.get("department_id") or ""),
+            "name": str(item.get("name") or ""),
+            "path": str(item.get("path") or item.get("name") or ""),
+        }
+        for item in list(cached.get("departments") or [])
+        if isinstance(item, dict) and str(item.get("department_id") or "").strip()
+    ]
+
+
+def refresh_contact_departments_from_feishu() -> dict[str, object]:
+    data = build_live_contact_department_cache()
+    st.session_state["contact_department_cache_data"] = data
+    return data
+
+
+@st.cache_data(ttl=24 * 60 * 60, show_spinner=False)
+def load_contact_department_users_snapshot(
+    department_id: str,
+    app_id: str,
+    app_secret: str,
+    app_token: str,
+) -> list[dict[str, str]]:
+    client = FeishuBitableClient(
+        FeishuBitableConfig(
+            app_id=app_id,
+            app_secret=app_secret,
+            app_token=app_token,
+        )
+    )
+    users_by_open_id: dict[str, dict[str, str]] = {}
+    for item in client.list_department_users(department_id):
+        open_id = str(item.get("open_id") or "").strip()
+        name = str(item.get("name") or "").strip()
+        if not open_id or not name:
+            continue
+        users_by_open_id[open_id] = {"open_id": open_id, "name": name}
+    return sorted(users_by_open_id.values(), key=lambda item: item["name"].casefold())
+
+
+def load_contact_department_users(department_id: str) -> list[dict[str, str]]:
+    return load_contact_department_users_snapshot(department_id, *feishu_config_args())
+
+
 def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
     runtime_cache = page_data_runtime_cache()
     runtime_lock = runtime_cache["lock"]
@@ -1736,6 +1886,7 @@ def render_page_cache_toolbar(page_key: str) -> None:
                 result = refresh_page_cache_tables(table_names)
                 if page_key == "request":
                     refresh_request_form_cache_from_page_data()
+                    refresh_contact_departments_from_feishu()
             except Exception as exc:
                 st.error("本页数据刷新失败，请检查飞书连接和数据表权限。")
                 st.exception(exc)
@@ -2464,7 +2615,25 @@ def submit_feishu_material_request(
     if attachment_values:
         request_fields["相关附件"] = attachment_values
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["提交幂等键"], submission_token)
-    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人", "申请人姓名"], request_payload.get("requester"))
+    set_first_person_or_plain_field(
+        REQUEST_TABLE_NAME,
+        request_fields,
+        ["申请人", "申请人姓名"],
+        request_payload.get("requester"),
+        request_payload.get("requester_open_id"),
+    )
+    set_first_plain_field(
+        REQUEST_TABLE_NAME,
+        request_fields,
+        ["申请人OpenID", "申请人 open_id"],
+        request_payload.get("requester_open_id"),
+    )
+    set_first_plain_field(
+        REQUEST_TABLE_NAME,
+        request_fields,
+        ["申请部门ID", "申请部门 open_department_id"],
+        request_payload.get("department_id"),
+    )
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["附件说明", "相关附件说明"], request_payload.get("attachment_note"))
 
     request_record = feishu_create_record(REQUEST_TABLE_NAME, request_fields)
@@ -3752,6 +3921,7 @@ def render_sidebar_link() -> None:
                 try:
                     result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
                     refresh_request_form_cache_from_page_data()
+                    refresh_contact_departments_from_feishu()
                 except Exception as exc:
                     st.error("数据库同步失败。")
                     st.exception(exc)
@@ -3813,6 +3983,10 @@ def initialize_request_form_state() -> None:
     defaults = {
         "request_department": get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
         "request_requester": get_secret_value("DEFAULT_REQUESTER", ""),
+        "request_department_id": None,
+        "request_requester_open_id": None,
+        "request_department_manual": get_secret_value("DEFAULT_REQUEST_DEPARTMENT", ""),
+        "request_requester_manual": get_secret_value("DEFAULT_REQUESTER", ""),
         "request_customer_name": "",
         "request_country": "",
         "request_recipient_info": "",
@@ -3829,6 +4003,111 @@ def initialize_request_form_state() -> None:
             st.session_state[key] = value
     if "request_submission_token" not in st.session_state:
         st.session_state["request_submission_token"] = uuid.uuid4().hex
+
+
+def render_request_contact_fields(
+    department_col: object,
+    requester_col: object,
+) -> tuple[str, str, str, str]:
+    required_field_label(department_col, "申请部门")
+    required_field_label(requester_col, "申请人")
+    try:
+        departments = get_contact_departments()
+    except Exception as exc:
+        st.warning(f"飞书通讯录暂时不可用，已切换为手动填写：{exc}")
+        department = department_col.text_input(
+            "申请部门",
+            key="request_department_manual",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        requester = requester_col.text_input(
+            "申请人",
+            key="request_requester_manual",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+        st.session_state["request_department"] = department
+        st.session_state["request_requester"] = requester
+        st.session_state["request_department_id"] = None
+        st.session_state["request_requester_open_id"] = None
+        return department, "", requester, ""
+
+    department_by_id = {
+        str(item["department_id"]): item
+        for item in departments
+        if str(item.get("department_id") or "").strip()
+    }
+    department_options = list(department_by_id)
+    current_department_id = st.session_state.get("request_department_id")
+    if current_department_id not in department_options:
+        st.session_state["request_department_id"] = None
+    department_id = department_col.selectbox(
+        "申请部门",
+        department_options,
+        index=None,
+        key="request_department_id",
+        format_func=lambda value: str(department_by_id.get(str(value), {}).get("path") or value),
+        placeholder="请选择飞书部门",
+        label_visibility="collapsed",
+        on_change=mark_request_form_dirty,
+    )
+    department = (
+        str(department_by_id.get(str(department_id), {}).get("path") or "")
+        if department_id
+        else ""
+    )
+    st.session_state["request_department"] = department
+
+    users: list[dict[str, str]] = []
+    user_error = ""
+    if department_id:
+        try:
+            with st.spinner("正在读取部门成员，请稍后......"):
+                users = load_contact_department_users(str(department_id))
+        except Exception as exc:
+            user_error = str(exc)
+    user_by_id = {
+        str(item["open_id"]): item
+        for item in users
+        if str(item.get("open_id") or "").strip()
+    }
+    name_counts: dict[str, int] = {}
+    for item in users:
+        name = str(item.get("name") or "")
+        name_counts[name] = name_counts.get(name, 0) + 1
+
+    def user_label(open_id: object) -> str:
+        item = user_by_id.get(str(open_id), {})
+        name = str(item.get("name") or open_id)
+        return f"{name} · {str(open_id)[-6:]}" if name_counts.get(name, 0) > 1 else name
+
+    user_options = list(user_by_id)
+    current_open_id = st.session_state.get("request_requester_open_id")
+    if current_open_id not in user_options:
+        st.session_state["request_requester_open_id"] = None
+    requester_open_id = requester_col.selectbox(
+        "申请人",
+        user_options,
+        index=None,
+        key="request_requester_open_id",
+        format_func=user_label,
+        placeholder="请先选择部门" if not department_id else "请选择飞书员工",
+        disabled=not user_options,
+        label_visibility="collapsed",
+        on_change=mark_request_form_dirty,
+    )
+    requester = (
+        str(user_by_id.get(str(requester_open_id), {}).get("name") or "")
+        if requester_open_id
+        else ""
+    )
+    st.session_state["request_requester"] = requester
+    if user_error:
+        requester_col.caption("部门成员读取失败，请刷新本页数据后重试。")
+    elif department_id and not users:
+        requester_col.caption("该部门暂无可选成员。")
+    return department, str(department_id or ""), requester, str(requester_open_id or "")
 
 
 def get_request_material_lines() -> list[dict[str, object]]:
@@ -3963,6 +4242,7 @@ def validate_request_draft(draft: dict[str, object]) -> list[str]:
     missing = [
         label
         for label, value in [
+            ("申请部门", draft.get("department")),
             ("申请人", draft.get("requester")),
             ("客户名称", draft.get("customer_name")),
             ("国家", draft.get("country")),
@@ -4016,6 +4296,10 @@ def restore_request_form_from_draft(draft: dict[str, object]) -> None:
     }
     for state_key, draft_key in field_map.items():
         st.session_state[state_key] = draft.get(draft_key, "")
+    st.session_state["request_department_id"] = draft.get("department_id") or None
+    st.session_state["request_requester_open_id"] = draft.get("requester_open_id") or None
+    st.session_state["request_department_manual"] = draft.get("department", "")
+    st.session_state["request_requester_manual"] = draft.get("requester", "")
     st.session_state["request_material_lines"] = [
         dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)
     ]
@@ -4434,31 +4718,10 @@ def render_change_form(show_title: bool = True) -> None:
 
     with st.container(border=True):
         render_section_header("01", "申请与业务信息", "填写领取申请的基础信息")
-        generated_title = build_request_title(
-            st.session_state.get("request_material_usage", ""),
-            st.session_state.get("request_requester", ""),
-        )
-        st.markdown(
-            f"""
-            <div class="pudu-generated-title">
-                <span>申请标题</span>
-                <strong>{escape(generated_title)}</strong>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
         top_cols = st.columns(4)
-        department = top_cols[0].text_input(
-            "申请部门",
-            key="request_department",
-            on_change=mark_request_form_dirty,
-        )
-        required_field_label(top_cols[1], "申请人")
-        requester = top_cols[1].text_input(
-            "申请人",
-            key="request_requester",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
+        department, department_id, requester, requester_open_id = render_request_contact_fields(
+            top_cols[0],
+            top_cols[1],
         )
         required_field_label(top_cols[2], "客户名称 Customer Name")
         customer_name = top_cols[2].text_input(
@@ -4473,6 +4736,19 @@ def render_change_form(show_title: bool = True) -> None:
             key="request_country",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
+        )
+        generated_title = build_request_title(
+            st.session_state.get("request_material_usage", ""),
+            requester,
+        )
+        st.markdown(
+            f"""
+            <div class="pudu-generated-title">
+                <span>申请标题</span>
+                <strong>{escape(generated_title)}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
         middle_cols = st.columns([2.4, 1])
@@ -4566,7 +4842,9 @@ def render_change_form(show_title: bool = True) -> None:
         draft = {
             "title": generated_title,
             "department": department,
+            "department_id": department_id,
             "requester": requester,
+            "requester_open_id": requester_open_id,
             "customer_name": customer_name,
             "country": country,
             "recipient_info": recipient_info,

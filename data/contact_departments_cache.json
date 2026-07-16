@@ -1,0 +1,898 @@
+{
+  "schema_version": 1,
+  "source": "static_snapshot",
+  "generated_at": "2026-07-16 18:19:16",
+  "departments": [
+    {
+      "department_id": "od-6daa61e0fad320b53db9d267fff19727",
+      "name": "AI Infra部",
+      "path": "AI Infra部"
+    },
+    {
+      "department_id": "od-283083eed35339f3f9f4515dc115bcb3",
+      "name": "AI变革部",
+      "path": "AI变革部"
+    },
+    {
+      "department_id": "od-099e7b86d7cb90491876968defc380c5",
+      "name": "CAO",
+      "path": "CAO"
+    },
+    {
+      "department_id": "od-a2c8c76e17adbe337a08b3599350f975",
+      "name": "CRPBU",
+      "path": "CRPBU"
+    },
+    {
+      "department_id": "od-1f59ca891cc0f50d13d93de3dffbaa5d",
+      "name": "CRPBU嵌入式组",
+      "path": "CRPBU嵌入式组"
+    },
+    {
+      "department_id": "od-05b225f00ac533c63b0f954e0e58df2d",
+      "name": "CRPBU机械组",
+      "path": "CRPBU机械组"
+    },
+    {
+      "department_id": "od-517b7bb6437c97e2c6c7aa5bb4ea4196",
+      "name": "CRPBU机电测试组",
+      "path": "CRPBU机电测试组"
+    },
+    {
+      "department_id": "od-b24a7f5bbb3a5f8a4d07593b12588488",
+      "name": "CRPBU测试组",
+      "path": "CRPBU测试组"
+    },
+    {
+      "department_id": "od-ee55428dc13b208d651cb609357eb26c",
+      "name": "CRPBU硬件组",
+      "path": "CRPBU硬件组"
+    },
+    {
+      "department_id": "od-881887a1314920e1df0803e13cb615d3",
+      "name": "CRPBU算法实习生组",
+      "path": "CRPBU算法实习生组"
+    },
+    {
+      "department_id": "od-9ad23d5284430da79278f14ad7fbadd6",
+      "name": "CRPBU算法组",
+      "path": "CRPBU算法组"
+    },
+    {
+      "department_id": "od-351136960c7fbc3cedd00a20c4f6699b",
+      "name": "CRPBU系统测试组",
+      "path": "CRPBU系统测试组"
+    },
+    {
+      "department_id": "od-e0a6dbed43b62c85d21f33fa9bb21aff",
+      "name": "CRPBU软件组",
+      "path": "CRPBU软件组"
+    },
+    {
+      "department_id": "od-8882285166a5e51389b4bc0f32a66dac",
+      "name": "CR业务部",
+      "path": "CR业务部"
+    },
+    {
+      "department_id": "od-19e0ee1f867576e2a88732d4fa16b9a5",
+      "name": "CR产品组",
+      "path": "CR产品组"
+    },
+    {
+      "department_id": "od-258af88b87ee07177fa50fcd637be6af",
+      "name": "CR项目管理组",
+      "path": "CR项目管理组"
+    },
+    {
+      "department_id": "od-c8d5fb56744a842e9b765eba20b5a968",
+      "name": "Dream组",
+      "path": "Dream组"
+    },
+    {
+      "department_id": "od-13e447d65e4d340b80b0485b459f3ad0",
+      "name": "GRPBU",
+      "path": "GRPBU"
+    },
+    {
+      "department_id": "od-c85ebe41cdf07b2290fc9e0cb0f334e8",
+      "name": "GRPBU机械组",
+      "path": "GRPBU机械组"
+    },
+    {
+      "department_id": "od-821a8df99001a505f8ecfd37f1ed07ec",
+      "name": "GRPBU电机组",
+      "path": "GRPBU电机组"
+    },
+    {
+      "department_id": "od-e9be822e07696582ef8c156ffbc06d39",
+      "name": "GRPBU硬件组",
+      "path": "GRPBU硬件组"
+    },
+    {
+      "department_id": "od-25d320a49e945efe59e2b6cf41f9ba93",
+      "name": "GRPBU算法组",
+      "path": "GRPBU算法组"
+    },
+    {
+      "department_id": "od-4460d5aedeb32b282f1fd1cf0fc5c8eb",
+      "name": "GRPBU软件组",
+      "path": "GRPBU软件组"
+    },
+    {
+      "department_id": "od-d9e5ff8ee354bf07eb769f776537d8cd",
+      "name": "GR产品组",
+      "path": "GR产品组"
+    },
+    {
+      "department_id": "od-c50a2c413c74e41f94763fb5ece1b71f",
+      "name": "GR测试组",
+      "path": "GR测试组"
+    },
+    {
+      "department_id": "od-402266e5a325283450f7a37c968e0cd8",
+      "name": "HMT战队",
+      "path": "HMT战队"
+    },
+    {
+      "department_id": "od-7eee8ca08116446465f83dbb14b45572",
+      "name": "HMT服务组",
+      "path": "HMT服务组"
+    },
+    {
+      "department_id": "od-eee1fccff5628c10729f806e17daedc7",
+      "name": "HRBP部",
+      "path": "HRBP部"
+    },
+    {
+      "department_id": "od-0f6648d2be38f9764cbcf8fab9eb8408",
+      "name": "IQC组",
+      "path": "IQC组"
+    },
+    {
+      "department_id": "od-6afee528ac3552d176d278e4d67b56b1",
+      "name": "IR&GR服务组",
+      "path": "IR&GR服务组"
+    },
+    {
+      "department_id": "od-2ef0ed2a9652dcc4a1e137f9cb141c5d",
+      "name": "IRPBU",
+      "path": "IRPBU"
+    },
+    {
+      "department_id": "od-e54aac47367cee190976675bc3b04e52",
+      "name": "IRPBU机械组",
+      "path": "IRPBU机械组"
+    },
+    {
+      "department_id": "od-8315ef7d5fbb47a9a2e622049bbb357d",
+      "name": "IRPBU硬件组",
+      "path": "IRPBU硬件组"
+    },
+    {
+      "department_id": "od-17a71865d680ccdd42d8ac4fc076e4a9",
+      "name": "IRPBU软件组",
+      "path": "IRPBU软件组"
+    },
+    {
+      "department_id": "od-1810f30e2c5a3663b9bf7b4ab9f8afbd",
+      "name": "IR业务部",
+      "path": "IR业务部"
+    },
+    {
+      "department_id": "od-2eb390725dcc0830d6b1bb9c18b498d0",
+      "name": "IR产品组",
+      "path": "IR产品组"
+    },
+    {
+      "department_id": "od-6f65635089baafd7e93f931f6f432fff",
+      "name": "IR测试组",
+      "path": "IR测试组"
+    },
+    {
+      "department_id": "od-0fb85889b8ef919a21a392e0dc075d54",
+      "name": "IR部",
+      "path": "IR部"
+    },
+    {
+      "department_id": "od-8f0949a277d53ce4c0ddc39fa86e583c",
+      "name": "KA业务部",
+      "path": "KA业务部"
+    },
+    {
+      "department_id": "od-d90d38def427cf71640b80459d6b5118",
+      "name": "M LAB",
+      "path": "M LAB"
+    },
+    {
+      "department_id": "od-5e0c85effb5980fef902cf64007ea666",
+      "name": "M LAB测试组",
+      "path": "M LAB测试组"
+    },
+    {
+      "department_id": "od-c66cd8d7e00d195dfb1a1ef9f337409e",
+      "name": "NPI组",
+      "path": "NPI组"
+    },
+    {
+      "department_id": "od-e1ee40bc646bf97402cc006645379aba",
+      "name": "OTD&REC部",
+      "path": "OTD&REC部"
+    },
+    {
+      "department_id": "od-57835fdb64fd69a83b124af6f2d26cba",
+      "name": "PBG",
+      "path": "PBG"
+    },
+    {
+      "department_id": "od-62d305b24a1a254ea505354e9a4d4897",
+      "name": "PDT管理部",
+      "path": "PDT管理部"
+    },
+    {
+      "department_id": "od-8acc8c6a8b3d1c152f32b2f8a4c8d63e",
+      "name": "PE组",
+      "path": "PE组"
+    },
+    {
+      "department_id": "od-87008252685ec50922f3b015a8d6f2fc",
+      "name": "SE管理部",
+      "path": "SE管理部"
+    },
+    {
+      "department_id": "od-0236863f6c8cc3dc03c39e865cda6825",
+      "name": "Space",
+      "path": "Space"
+    },
+    {
+      "department_id": "od-c05de3b34dd820522367206a8074bcc9",
+      "name": "SQE组",
+      "path": "SQE组"
+    },
+    {
+      "department_id": "od-2ad94517ad05054ce0f493f52ab20811",
+      "name": "SQM组",
+      "path": "SQM组"
+    },
+    {
+      "department_id": "od-72e44aa01224d9f0fb674858f50c11c6",
+      "name": "SR2D业务部",
+      "path": "SR2D业务部"
+    },
+    {
+      "department_id": "od-b35ab362a474fb11410ed33b9a6f864f",
+      "name": "SR3D业务部",
+      "path": "SR3D业务部"
+    },
+    {
+      "department_id": "od-6a1072bf3977d7f847b93e394d868b6e",
+      "name": "SRPBU",
+      "path": "SRPBU"
+    },
+    {
+      "department_id": "od-09b287eb66dba5205dda08947ffa61e3",
+      "name": "SRPBU应用软件组",
+      "path": "SRPBU应用软件组"
+    },
+    {
+      "department_id": "od-1de0bdb48b288bf845fe787076104525",
+      "name": "SRPBU机械组",
+      "path": "SRPBU机械组"
+    },
+    {
+      "department_id": "od-47ac2d8034febe72333461b667de4a7b",
+      "name": "SRPBU硬件组",
+      "path": "SRPBU硬件组"
+    },
+    {
+      "department_id": "od-b944fc7cdfcb318f3a43bed28c1ee6d1",
+      "name": "SR产品组",
+      "path": "SR产品组"
+    },
+    {
+      "department_id": "od-0e24460647c4ddfb9ee39322af0c583d",
+      "name": "SR测试组",
+      "path": "SR测试组"
+    },
+    {
+      "department_id": "od-264e0d6ec3e739c33ad5d32c3908108e",
+      "name": "X LAB",
+      "path": "X LAB"
+    },
+    {
+      "department_id": "od-5d441daa075643882e57dc112e94aa3c",
+      "name": "X LAB测试组",
+      "path": "X LAB测试组"
+    },
+    {
+      "department_id": "od-1e491b60e74980792615bf38114130df",
+      "name": "业务运营平台团队",
+      "path": "业务运营平台团队"
+    },
+    {
+      "department_id": "od-f1200e9f28462c091e27df1f34a2b754",
+      "name": "业务运营部",
+      "path": "业务运营部"
+    },
+    {
+      "department_id": "od-dcaced44f4f1f7a339d3b395f266a83d",
+      "name": "东莞仓储物流组",
+      "path": "东莞仓储物流组"
+    },
+    {
+      "department_id": "od-1147a688e929998624f9fd910d185167",
+      "name": "东莞工厂",
+      "path": "东莞工厂"
+    },
+    {
+      "department_id": "od-aedeed340adea71c38ab27fdf5675280",
+      "name": "东莞综合组",
+      "path": "东莞综合组"
+    },
+    {
+      "department_id": "od-1bf81bfe41c3a082d6eca0db9e5fea29",
+      "name": "中东战队",
+      "path": "中东战队"
+    },
+    {
+      "department_id": "od-9c8b192d089e36db46e1c6ab85181660",
+      "name": "中东欧战队",
+      "path": "中东欧战队"
+    },
+    {
+      "department_id": "od-8a6be015e45ecd5b1ff2100c6030d56e",
+      "name": "九江仓储物流组",
+      "path": "九江仓储物流组"
+    },
+    {
+      "department_id": "od-5e4ce3726c5963582cc77a891cabf052",
+      "name": "九江品控组",
+      "path": "九江品控组"
+    },
+    {
+      "department_id": "od-8f465b8df9bf527951f2c2d6ca9c604e",
+      "name": "九江工厂",
+      "path": "九江工厂"
+    },
+    {
+      "department_id": "od-b923d4dec22c875151839fc86bc30809",
+      "name": "九江生产组",
+      "path": "九江生产组"
+    },
+    {
+      "department_id": "od-1be6a4cdafefb7cf090a1957825b7645",
+      "name": "九江综合组",
+      "path": "九江综合组"
+    },
+    {
+      "department_id": "od-5172c5e353c88f8b5d4f864bee7bca44",
+      "name": "亚太战区",
+      "path": "亚太战区"
+    },
+    {
+      "department_id": "od-e36195829136c279cc43ba7cf98790d8",
+      "name": "亚太服务部",
+      "path": "亚太服务部"
+    },
+    {
+      "department_id": "od-cb36388a9c64192b8eece27f78a64fc8",
+      "name": "交付与服务中心",
+      "path": "交付与服务中心"
+    },
+    {
+      "department_id": "od-2b672221d2482c393be9e63da8af30b1",
+      "name": "产品市场部",
+      "path": "产品市场部"
+    },
+    {
+      "department_id": "od-6d165a595b7980645d86341ff90e9918",
+      "name": "产品管理部",
+      "path": "产品管理部"
+    },
+    {
+      "department_id": "od-f98406808d14f27107b9ae59bdfd35cd",
+      "name": "产品营销组",
+      "path": "产品营销组"
+    },
+    {
+      "department_id": "od-5f5c5f1a5418c38112998c9aa20d5b91",
+      "name": "公共事务部",
+      "path": "公共事务部"
+    },
+    {
+      "department_id": "od-6f1f85c67d26cc11b8f44d75341a19e1",
+      "name": "制造部",
+      "path": "制造部"
+    },
+    {
+      "department_id": "od-151cb497ff13ec4f3bd9b0499335f76e",
+      "name": "加拿大战队",
+      "path": "加拿大战队"
+    },
+    {
+      "department_id": "od-4057bb1dddb7771e3e1fcb52fbb7f995",
+      "name": "区域市场组",
+      "path": "区域市场组"
+    },
+    {
+      "department_id": "od-2729883a51e3546845db6c391ee85b3c",
+      "name": "品牌部",
+      "path": "品牌部"
+    },
+    {
+      "department_id": "od-4afe3cc3320dde9749a14f0c32c4ad13",
+      "name": "国内商务交付组",
+      "path": "国内商务交付组"
+    },
+    {
+      "department_id": "od-3dd1486ac774c442539f2658feefbf00",
+      "name": "基座模型部",
+      "path": "基座模型部"
+    },
+    {
+      "department_id": "od-bb94a48101961959a04cbb38fc67a2aa",
+      "name": "大中华战区",
+      "path": "大中华战区"
+    },
+    {
+      "department_id": "od-85b7e52993730cf0464dc2e4a0518d63",
+      "name": "大中华服务部",
+      "path": "大中华服务部"
+    },
+    {
+      "department_id": "od-057136d1f73860bc2ea5a9fb1a421adf",
+      "name": "工程部",
+      "path": "工程部"
+    },
+    {
+      "department_id": "od-8497f98beba479ba536e13f0c5b1bb6c",
+      "name": "市场营销部",
+      "path": "市场营销部"
+    },
+    {
+      "department_id": "od-1fd86a029c8f9337c98371ce5c1cded7",
+      "name": "平台软件测试组",
+      "path": "平台软件测试组"
+    },
+    {
+      "department_id": "od-8f3a4c538a65e3c3396660a2d4e21445",
+      "name": "建湖仓储物流组",
+      "path": "建湖仓储物流组"
+    },
+    {
+      "department_id": "od-06131ba8852986a300888d62cddb684f",
+      "name": "建湖品控组",
+      "path": "建湖品控组"
+    },
+    {
+      "department_id": "od-84cba1c1b29ae2abc4157a60fdf713c6",
+      "name": "建湖工厂",
+      "path": "建湖工厂"
+    },
+    {
+      "department_id": "od-9e387510e5f803ba2124d78b4af8d0ea",
+      "name": "建湖生产组",
+      "path": "建湖生产组"
+    },
+    {
+      "department_id": "od-b4cfaf55356ab0c488b0bf9db23fde75",
+      "name": "建湖综合组",
+      "path": "建湖综合组"
+    },
+    {
+      "department_id": "od-7309113e523032338d203ac69979e06c",
+      "name": "德瑞奥战队",
+      "path": "德瑞奥战队"
+    },
+    {
+      "department_id": "od-0aa6e2631a44ff0e4a973bc6b87fc3a7",
+      "name": "意大利战队",
+      "path": "意大利战队"
+    },
+    {
+      "department_id": "od-8dc08802227b80fb469148f547072734",
+      "name": "成本管理组",
+      "path": "成本管理组"
+    },
+    {
+      "department_id": "od-701ddd9877a7e20160a051c065030d80",
+      "name": "技术客服组",
+      "path": "技术客服组"
+    },
+    {
+      "department_id": "od-29132b36a30195a2ddf9f5a698e2da29",
+      "name": "技术平台中心",
+      "path": "技术平台中心"
+    },
+    {
+      "department_id": "od-d5b5adf71053ea0c9517cb214913c447",
+      "name": "报告&税务组",
+      "path": "报告&税务组"
+    },
+    {
+      "department_id": "od-abcc729db50f1e4d9cca6a501e9c266f",
+      "name": "拉美战队",
+      "path": "拉美战队"
+    },
+    {
+      "department_id": "od-75d6b33abad414680ad52fde19e35e5a",
+      "name": "收入成本核算组",
+      "path": "收入成本核算组"
+    },
+    {
+      "department_id": "od-257bc9cc6263635875bc1b11aac10705",
+      "name": "数字化组",
+      "path": "数字化组"
+    },
+    {
+      "department_id": "od-886aa0651896930d25f3c135ffd1498e",
+      "name": "新加坡战队",
+      "path": "新加坡战队"
+    },
+    {
+      "department_id": "od-e73a158c62d9dc3f8db2b7104a333e0f",
+      "name": "日本CR业务组",
+      "path": "日本CR业务组"
+    },
+    {
+      "department_id": "od-01209160411537594767149219156c03",
+      "name": "日本战队",
+      "path": "日本战队"
+    },
+    {
+      "department_id": "od-74945021b666e12d9329ee192162b7b2",
+      "name": "日本服务组",
+      "path": "日本服务组"
+    },
+    {
+      "department_id": "od-f610c7036dc1e1e4dd10f168c41a1d61",
+      "name": "服务代表组",
+      "path": "服务代表组"
+    },
+    {
+      "department_id": "od-9185a31353a55b2d9aa44628dcba9757",
+      "name": "服务运营组",
+      "path": "服务运营组"
+    },
+    {
+      "department_id": "od-b17d75858b35d6e9f37ecbac8012b60d",
+      "name": "机械平台部",
+      "path": "机械平台部"
+    },
+    {
+      "department_id": "od-be83c4809822eaf7aa5bba4c4e8f3eba",
+      "name": "桐乡仓储物流组",
+      "path": "桐乡仓储物流组"
+    },
+    {
+      "department_id": "od-b5594223b60818b552a17a06fc341b13",
+      "name": "桐乡品控组",
+      "path": "桐乡品控组"
+    },
+    {
+      "department_id": "od-e3748e6fc08cb158a8431b22a028705d",
+      "name": "桐乡工厂",
+      "path": "桐乡工厂"
+    },
+    {
+      "department_id": "od-7c4c394d59fe1b9f14e3629e853dea7c",
+      "name": "桐乡生产组",
+      "path": "桐乡生产组"
+    },
+    {
+      "department_id": "od-0d2e69b5098d365910e13a12f726cd12",
+      "name": "桐乡综合组",
+      "path": "桐乡综合组"
+    },
+    {
+      "department_id": "od-5616f1c13a5eea3a958db44c31e0a9fd",
+      "name": "欧日韩战区",
+      "path": "欧日韩战区"
+    },
+    {
+      "department_id": "od-09be02d0c22e49d9acb523e297ce841e",
+      "name": "欧洲GR业务部",
+      "path": "欧洲GR业务部"
+    },
+    {
+      "department_id": "od-c621cfa10cd2b910d80195cdfb677d19",
+      "name": "欧洲IR业务部",
+      "path": "欧洲IR业务部"
+    },
+    {
+      "department_id": "od-71f0011e42e86e57d97ce7df9e16bac3",
+      "name": "欧洲服务A组",
+      "path": "欧洲服务A组"
+    },
+    {
+      "department_id": "od-184f859c2485577e35968cb6772788db",
+      "name": "欧洲服务B组",
+      "path": "欧洲服务B组"
+    },
+    {
+      "department_id": "od-74a3d5ba2d4fa6622ac439f050cf5921",
+      "name": "欧洲服务部",
+      "path": "欧洲服务部"
+    },
+    {
+      "department_id": "od-8ea21aec8f51e3d04d0b9216c974f732",
+      "name": "法务部",
+      "path": "法务部"
+    },
+    {
+      "department_id": "od-a0b8fd7a2dca5396590c54bbd8838f9b",
+      "name": "法国战队",
+      "path": "法国战队"
+    },
+    {
+      "department_id": "od-1961c9d1ed2b6e96f3be8602246ab92f",
+      "name": "泰国战队",
+      "path": "泰国战队"
+    },
+    {
+      "department_id": "od-44ef8f07c2bc27a78c0d6ccbd4a7ff31",
+      "name": "测试部",
+      "path": "测试部"
+    },
+    {
+      "department_id": "od-9487cd1b780367a333bae909869435fb",
+      "name": "海外商务交付组",
+      "path": "海外商务交付组"
+    },
+    {
+      "department_id": "od-bb30508003376665ccf103b15439c5cf",
+      "name": "渠道管理组",
+      "path": "渠道管理组"
+    },
+    {
+      "department_id": "od-63b2c77d31e71823c8fb7206ab945cd9",
+      "name": "澳新战队",
+      "path": "澳新战队"
+    },
+    {
+      "department_id": "od-37c6236c5a825b772186d202361170a7",
+      "name": "物料计划组",
+      "path": "物料计划组"
+    },
+    {
+      "department_id": "od-40905cd24d45a5f7c13fc8315a5d8e67",
+      "name": "生产计划组",
+      "path": "生产计划组"
+    },
+    {
+      "department_id": "od-8e45a1055cf45a02f1c906e2c67e58af",
+      "name": "生产质量组",
+      "path": "生产质量组"
+    },
+    {
+      "department_id": "od-30db39571d65087f1a2b2b228a26f2fa",
+      "name": "生命周期工具链团队",
+      "path": "生命周期工具链团队"
+    },
+    {
+      "department_id": "od-da55c9287e228110d2e1562a8468e79a",
+      "name": "知识产权部",
+      "path": "知识产权部"
+    },
+    {
+      "department_id": "od-8647dad561eae9e0be25174f4ce46116",
+      "name": "硬件平台部",
+      "path": "硬件平台部"
+    },
+    {
+      "department_id": "od-306e7e8186e4bfd316136d0dfc4f21b1",
+      "name": "硬件平台部电机组",
+      "path": "硬件平台部电机组"
+    },
+    {
+      "department_id": "od-518ea4bbe9d0cff39ee3f05a2bdb7729",
+      "name": "硬件测试组",
+      "path": "硬件测试组"
+    },
+    {
+      "department_id": "od-754da632f053f98253ef6a21d157a69f",
+      "name": "端到端导航组",
+      "path": "端到端导航组"
+    },
+    {
+      "department_id": "od-9a46491ced317ade510565011c2e1004",
+      "name": "组织与人才发展中心",
+      "path": "组织与人才发展中心"
+    },
+    {
+      "department_id": "od-e4a3f704e1d3d36f8c8028bcd18f1003",
+      "name": "美国战队",
+      "path": "美国战队"
+    },
+    {
+      "department_id": "od-89f44bfe9d5e17bb4cb4e3f13fa6b8d6",
+      "name": "美洲服务部",
+      "path": "美洲服务部"
+    },
+    {
+      "department_id": "od-fe043774765220e2c51dfb9893e589bf",
+      "name": "美澳英战区",
+      "path": "美澳英战区"
+    },
+    {
+      "department_id": "od-92c711fd0693c9bd3c68ea056b019247",
+      "name": "英爱战队",
+      "path": "英爱战队"
+    },
+    {
+      "department_id": "od-109f848df6184ac791bb7dfb7f45e15a",
+      "name": "荷比卢战队",
+      "path": "荷比卢战队"
+    },
+    {
+      "department_id": "od-70c7bc366e3de3a1088322ed400429df",
+      "name": "营销中心",
+      "path": "营销中心"
+    },
+    {
+      "department_id": "od-d08d7dd9bd9eff22e6c9c8f18681cea6",
+      "name": "营销运营组",
+      "path": "营销运营组"
+    },
+    {
+      "department_id": "od-9fd52c9f58ded2235fd6a36668ad9c9c",
+      "name": "行政服务部",
+      "path": "行政服务部"
+    },
+    {
+      "department_id": "od-310c862ed2f9977a236b945290f3bfc2",
+      "name": "西葡战队",
+      "path": "西葡战队"
+    },
+    {
+      "department_id": "od-b18350f1312163245be431262fac55f3",
+      "name": "视觉设计组",
+      "path": "视觉设计组"
+    },
+    {
+      "department_id": "od-ba14556394b828e39a9b98f599ad21a2",
+      "name": "解决方案中台组",
+      "path": "解决方案中台组"
+    },
+    {
+      "department_id": "od-249de05d151ab691398f06bca2457576",
+      "name": "解决方案部",
+      "path": "解决方案部"
+    },
+    {
+      "department_id": "od-97e18f1878ac641c9dff9ae3c69d4b1c",
+      "name": "计划部",
+      "path": "计划部"
+    },
+    {
+      "department_id": "od-b0816b5d910e69d441d8dbffb9253f35",
+      "name": "设计部",
+      "path": "设计部"
+    },
+    {
+      "department_id": "od-9f3c11c1db9a513520a5bdae6350c73a",
+      "name": "证券事务组",
+      "path": "证券事务组"
+    },
+    {
+      "department_id": "od-2c0bf991e0b608110fdc558188f948ac",
+      "name": "财经BP组",
+      "path": "财经BP组"
+    },
+    {
+      "department_id": "od-7da7ed6e2f8d4014969d997e7b4faf36",
+      "name": "财经中心",
+      "path": "财经中心"
+    },
+    {
+      "department_id": "od-88ca157a59730e7a40ef6b1cfc3e2a09",
+      "name": "质量代表组",
+      "path": "质量代表组"
+    },
+    {
+      "department_id": "od-e451542ef735b7c97c98dcf24e150401",
+      "name": "质量部",
+      "path": "质量部"
+    },
+    {
+      "department_id": "od-2295dcc624847d67ab4019f92559a36e",
+      "name": "资产费用组",
+      "path": "资产费用组"
+    },
+    {
+      "department_id": "od-3918a4a15b491abbb5ab880f667fe5b2",
+      "name": "资金管理组",
+      "path": "资金管理组"
+    },
+    {
+      "department_id": "od-35d3951cd13bbceaa705479d93557ba7",
+      "name": "软件平台架构部",
+      "path": "软件平台架构部"
+    },
+    {
+      "department_id": "od-b5d68400954d5ac54cf34c5602d46444",
+      "name": "通用互联团队",
+      "path": "通用互联团队"
+    },
+    {
+      "department_id": "od-ff77e52a3b4034517440b475eaa93e40",
+      "name": "通用交互团队",
+      "path": "通用交互团队"
+    },
+    {
+      "department_id": "od-2f3b4aa135c682dcf06b79b2f1f75642",
+      "name": "通用导航及底盘团队",
+      "path": "通用导航及底盘团队"
+    },
+    {
+      "department_id": "od-bfcfddba8937ae033c6b8cb39dd673be",
+      "name": "通用调度团队",
+      "path": "通用调度团队"
+    },
+    {
+      "department_id": "od-7a40267218206322d45019f97af915a5",
+      "name": "采购代表组",
+      "path": "采购代表组"
+    },
+    {
+      "department_id": "od-89b909bd6f20be58d79447ab6849221e",
+      "name": "采购开发组",
+      "path": "采购开发组"
+    },
+    {
+      "department_id": "od-fba6a8915868e0848e1b05c4746457db",
+      "name": "采购执行组",
+      "path": "采购执行组"
+    },
+    {
+      "department_id": "od-7366fcf482e4c8888cf056284375545d",
+      "name": "采购部",
+      "path": "采购部"
+    },
+    {
+      "department_id": "od-765675a5d4d0c3ca7ee16d82c6fa48ff",
+      "name": "销售运营组",
+      "path": "销售运营组"
+    },
+    {
+      "department_id": "od-378c31db8e26cd113be254dc2df6f2b4",
+      "name": "集成供应链中心",
+      "path": "集成供应链中心"
+    },
+    {
+      "department_id": "od-afbc99967b2a7e0da04bf386f98ccaba",
+      "name": "需求计划组",
+      "path": "需求计划组"
+    },
+    {
+      "department_id": "od-a2c548735f75b8570dd50a401976f71f",
+      "name": "韩国战队",
+      "path": "韩国战队"
+    },
+    {
+      "department_id": "od-2217d5098e1354df11fd65da0c674c7c",
+      "name": "韩国服务组",
+      "path": "韩国服务组"
+    },
+    {
+      "department_id": "od-ecf2a9c63443b1c26699dcec07008209",
+      "name": "项目交付组",
+      "path": "项目交付组"
+    },
+    {
+      "department_id": "od-2215f5418e37914d077f58727c5490e3",
+      "name": "项目成员挂靠",
+      "path": "项目成员挂靠"
+    },
+    {
+      "department_id": "od-8124ad934359df9c746a59be11916dcd",
+      "name": "项目管理部",
+      "path": "项目管理部"
+    },
+    {
+      "department_id": "od-247c1809ab3a0fde82c875ffa05e7de9",
+      "name": "马来战队",
+      "path": "马来战队"
+    }
+  ],
+  "row_count": 178
+}
