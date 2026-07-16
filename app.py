@@ -90,6 +90,7 @@ TRANSACTION_HEADERS = [
 
 DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
+MAX_REQUEST_LINE_COUNT = 20
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
@@ -2285,6 +2286,8 @@ def submit_feishu_material_request(
     valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少填写一条数量大于 0 的物料明细。")
+    if len(valid_lines) > MAX_REQUEST_LINE_COUNT:
+        raise RuntimeError(f"一次申请最多可提交 {MAX_REQUEST_LINE_COUNT} 条物料明细。")
     submission_token = str(request_payload.get("submission_token") or "").strip()
     existing_submission = find_completed_submission(submission_token)
     if existing_submission is not None:
@@ -3698,7 +3701,7 @@ def get_row_count() -> int:
     return int(
         st.radio(
             "本次填写物料种类数",
-            list(range(1, 11)),
+            list(range(1, MAX_REQUEST_LINE_COUNT + 1)),
             index=2,
             horizontal=True,
             key="request_line_count",
@@ -3815,7 +3818,11 @@ def render_change_form(show_title: bool = True) -> None:
     attachment_note = "\n".join(file.name for file in uploaded_files) if uploaded_files else ""
 
     with st.container(border=True):
-        render_section_header("03", "物料明细 Material Details", "一次申请可登记 1 至 10 种物料")
+        render_section_header(
+            "03",
+            "物料明细 Material Details",
+            f"一次申请可登记 1 至 {MAX_REQUEST_LINE_COUNT} 种物料",
+        )
         row_count = get_row_count()
         for index in range(row_count):
             if index:
