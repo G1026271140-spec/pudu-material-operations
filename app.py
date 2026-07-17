@@ -98,6 +98,9 @@ DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
 MAX_REQUEST_LINE_COUNT = 20
 ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料数据库", "品类管理"})
+MANAGEMENT_NAVIGATION_KEY = "management_section"
+MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
+MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "修改与撤回")
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
@@ -1566,9 +1569,12 @@ def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
 
 def navigate_to_management_section(key: str, section: str, label: str, icon: str) -> None:
     current_view = str(st.query_params.get("view", ""))
-    active = not current_view and str(st.session_state.get("management_section", "库存登记")) == section
+    active = (
+        not current_view
+        and str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记")) == section
+    )
     if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
-        st.session_state["management_section"] = section
+        set_management_section(section)
         st.query_params.clear()
         st.rerun()
 
@@ -3850,6 +3856,21 @@ def auth_gate() -> bool:
 
 def management_section_requires_admin(section: object) -> bool:
     return str(section or "") in ADMIN_MANAGEMENT_SECTIONS
+
+
+def set_management_section(section: object, *, sync_workbench_control: bool = True) -> str:
+    """Keep navigation state independent from the request-page radio widget."""
+    normalized = str(section or "库存登记")
+    st.session_state[MANAGEMENT_NAVIGATION_KEY] = normalized
+    if sync_workbench_control and normalized in MANAGEMENT_WORKBENCH_SECTIONS:
+        st.session_state[MANAGEMENT_WORKBENCH_CONTROL_KEY] = normalized
+    return normalized
+
+
+def sync_management_section_from_workbench_control() -> None:
+    selected = st.session_state.get(MANAGEMENT_WORKBENCH_CONTROL_KEY, "库存登记")
+    if selected in MANAGEMENT_WORKBENCH_SECTIONS:
+        set_management_section(selected, sync_workbench_control=False)
 
 
 def admin_auth_gate() -> bool:
@@ -6220,10 +6241,19 @@ def render_inventory_view() -> None:
 
 
 def render_management_page() -> None:
-    current_section = str(st.session_state.get("management_section", "库存登记"))
+    current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
     if current_section == "新增物料品类":
         current_section = "品类管理"
-        st.session_state["management_section"] = current_section
+    if current_section not in {
+        "库存登记",
+        "品类管理",
+        "物料数据库",
+        "修改与撤回",
+    }:
+        current_section = "库存登记"
+    # This write keeps the app-level navigation state alive while pages such as
+    # category management render no workbench radio control.
+    set_management_section(current_section)
     if (
         current_section == "库存登记"
         and st.session_state.get("request_form_stage") == "review"
@@ -6254,16 +6284,17 @@ def render_management_page() -> None:
         render_page_cache_toolbar("material_database")
         render_material_database_page()
         return
-    if current_section not in {"库存登记", "修改与撤回"}:
-        current_section = "库存登记"
-        st.session_state["management_section"] = current_section
+    if st.session_state.get(MANAGEMENT_WORKBENCH_CONTROL_KEY) not in MANAGEMENT_WORKBENCH_SECTIONS:
+        st.session_state[MANAGEMENT_WORKBENCH_CONTROL_KEY] = current_section
     management_section = st.radio(
         "管理功能",
-        ["库存登记", "修改与撤回"],
+        MANAGEMENT_WORKBENCH_SECTIONS,
         horizontal=True,
         label_visibility="collapsed",
-        key="management_section",
+        key=MANAGEMENT_WORKBENCH_CONTROL_KEY,
+        on_change=sync_management_section_from_workbench_control,
     )
+    set_management_section(management_section, sync_workbench_control=False)
     render_page_cache_toolbar(
         {
             "库存登记": "request",
