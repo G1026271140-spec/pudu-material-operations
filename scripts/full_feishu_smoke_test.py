@@ -236,7 +236,7 @@ class SmokeTest:
                 }
                 for index, material in enumerate(materials, 1)
             ]
-            created_no, line_count = app.submit_feishu_material_request(payload, lines)
+            created_no, line_count, _ = app.submit_feishu_material_request(payload, lines)
         finally:
             app.next_request_no = original_next
         self.clear_cache()

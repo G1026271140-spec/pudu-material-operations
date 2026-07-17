@@ -167,6 +167,34 @@ class FeishuBitableClient:
             },
         )
 
+    def send_text_message(
+        self,
+        receive_id: str,
+        text: str,
+        *,
+        receive_id_type: str = "open_id",
+    ) -> str:
+        normalized_receive_id = receive_id.strip()
+        normalized_text = text.strip()
+        if not normalized_receive_id:
+            raise FeishuBitableError("Feishu message receive_id cannot be empty.")
+        if not normalized_text:
+            raise FeishuBitableError("Feishu message text cannot be empty.")
+        response = self._request(
+            "POST",
+            "/im/v1/messages",
+            params={"receive_id_type": receive_id_type},
+            payload={
+                "receive_id": normalized_receive_id,
+                "msg_type": "text",
+                "content": json.dumps({"text": normalized_text}, ensure_ascii=False),
+            },
+        )
+        message_id = str(response.get("data", {}).get("message_id", "")).strip()
+        if not message_id:
+            raise FeishuBitableError("Feishu did not return a message_id.")
+        return message_id
+
     def batch_create_records(self, table_id: str, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         response = self._request(
             "POST",

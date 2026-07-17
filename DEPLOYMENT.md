@@ -30,17 +30,22 @@ INVENTORY_VIEW_PASSWORD = "376493"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
+STREAMLIT_APP_URL = "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
 ```
 
 缺少任意一项飞书配置时，应用会直接停止并提示补齐配置。
+`STREAMLIT_APP_URL` 用于机器人消息中的审批链接；当前生产地址已内置，可不配置，应用地址变更时再覆盖。
 
 ## 飞书权限
 
 飞书应用需要：
 
 - 开通多维表格读写相关权限。
+- 添加“机器人”应用能力，并开通“以应用的身份发消息”权限（`im:message:send_as_bot`）。
 - 在开发者后台发布/生效权限变更。
 - 在目标多维表格右上角 `... -> 更多 -> 添加文档应用` 中添加该应用。
+
+营销物料申请成功后，机器人会自动私聊“用户权限表”内角色为“管理员”且“是否启用”为“是”的账号。机器人提醒失败不会影响申请单和申请明细的写入。
 
 应用会按名称读取以下表：
 
@@ -50,6 +55,7 @@ FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
 - 物料申请单
 - 申请明细
 - 库存批量操作
+- 用户权限表
 
 ## 下载备份
 

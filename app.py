@@ -40,8 +40,12 @@ REQUEST_LINE_TABLE_NAME = "申请明细"
 MATERIAL_TABLE_NAME = "物料主数据"
 CATEGORY_TABLE_NAME = "物料品类"
 LEDGER_TABLE_NAME = "库存流水"
+USER_PERMISSION_TABLE_NAME = "用户权限表"
 REQUEST_NO_PREFIX = "REQ"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
+DEFAULT_STREAMLIT_APP_URL = (
+    "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
+)
 REQUEST_STATUS_PENDING = "待审批"
 REQUEST_STATUS_PARTIAL = "部分发放"
 REQUEST_STATUS_ISSUED = "已发放"
@@ -2536,10 +2540,92 @@ def request_note_text(request_payload: dict[str, object], attachment_note: str =
     return "\n".join(f"{label}：{str(value).strip()}" for label, value in parts if str(value or "").strip())
 
 
+def feishu_person_open_ids(fields: dict, names: list[str]) -> list[str]:
+    open_ids: list[str] = []
+    for name in names:
+        value = fields.get(name)
+        items = value if isinstance(value, list) else ([value] if value else [])
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            open_id = str(item.get("open_id") or item.get("id") or "").strip()
+            if open_id.startswith("ou_") and open_id not in open_ids:
+                open_ids.append(open_id)
+    return open_ids
+
+
+def enabled_admin_open_ids() -> list[str]:
+    open_ids: list[str] = []
+    for row in fresh_feishu_rows(USER_PERMISSION_TABLE_NAME):
+        fields = feishu_fields(row)
+        role = feishu_text(fields, "角色").strip()
+        enabled = feishu_text(fields, "是否启用").strip().casefold()
+        if role != "管理员" or enabled not in {"是", "启用", "true", "1", "yes"}:
+            continue
+        for open_id in feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]):
+            if open_id not in open_ids:
+                open_ids.append(open_id)
+    return open_ids
+
+
+def material_approval_url() -> str:
+    base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).strip()
+    return f"{base_url.rstrip('/')}/?view=approval"
+
+
+def material_request_notification_text(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> str:
+    valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
+    total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
+    details = [
+        (
+            f"{index}. {str(line.get('product') or '-')} / "
+            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{str(line.get('language') or NO_LANGUAGE_TEXT)} × {int(line.get('quantity') or 0)}"
+        )
+        for index, line in enumerate(valid_lines, start=1)
+    ]
+    parts = [
+        "【新的营销物料申请待处理】",
+        f"申请单号：{request_no}",
+        f"申请人：{str(request_payload.get('requester') or '-')}",
+        f"申请部门：{str(request_payload.get('department') or '-')}",
+        f"客户/国家：{str(request_payload.get('customer_name') or '-')} / {str(request_payload.get('country') or '-')}",
+        f"物料用途：{str(request_payload.get('material_usage') or '-')}",
+        f"申请合计：{len(valid_lines)} 种，共 {total_quantity} 件",
+        "",
+        *details,
+        "",
+        "请打开审批与发放页面处理：",
+        material_approval_url(),
+    ]
+    return "\n".join(parts)
+
+
+def notify_enabled_admins_of_material_request(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> int:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送机器人提醒。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    text = material_request_notification_text(request_no, request_payload, lines)
+    for open_id in recipients:
+        client.send_text_message(open_id, text)
+    return len(recipients)
+
+
 def submit_feishu_material_request(
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
-) -> tuple[str, int]:
+) -> tuple[str, int, bool]:
     refresh_feishu_schema_cache()
     valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
     if not valid_lines:
@@ -2550,7 +2636,7 @@ def submit_feishu_material_request(
     existing_submission = find_completed_submission(submission_token)
     if existing_submission is not None:
         existing_row, existing_line_count = existing_submission
-        return feishu_text(feishu_fields(existing_row), "申请单号"), existing_line_count
+        return feishu_text(feishu_fields(existing_row), "申请单号"), existing_line_count, False
 
     material_index = material_lookup_by_key()
     seen_keys: set[tuple[str, str, str]] = set()
@@ -2686,7 +2772,7 @@ def submit_feishu_material_request(
 
     client = feishu_client()
     if client is None:
-        return request_no, 0
+        return request_no, 0, True
     created_line_records: list[dict] = []
     try:
         for start in range(0, len(line_records), 500):
@@ -2706,9 +2792,11 @@ def submit_feishu_material_request(
             pass
         raise
     canonical_row, _ = reconcile_submission_duplicates(submission_token, request_record_id)
+    created_new_request = True
     if canonical_row is not None:
         request_no = feishu_text(feishu_fields(canonical_row), "申请单号") or request_no
-    return request_no, len(line_records)
+        created_new_request = feishu_record_id(canonical_row) == request_record_id
+    return request_no, len(line_records), created_new_request
 
 
 def feishu_person_text(fields: dict, names: list[str]) -> str:
@@ -4478,14 +4566,39 @@ def render_request_review() -> None:
         with st.spinner("正在提交申请，请勿重复点击..."):
             with DATA_LOCK:
                 try:
-                    request_no, line_count = submit_feishu_material_request(draft, lines)
+                    request_no, line_count, created_new_request = submit_feishu_material_request(
+                        draft,
+                        lines,
+                    )
                 except Exception as exc:
                     st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
                     st.exception(exc)
                     return
+        notification_count = 0
+        notification_warning = ""
+        if created_new_request:
+            with st.spinner("申请已提交，正在通知审批人......"):
+                try:
+                    notification_count = notify_enabled_admins_of_material_request(
+                        request_no,
+                        draft,
+                        lines,
+                    )
+                except Exception as exc:
+                    notification_warning = (
+                        "申请已成功，但机器人提醒发送失败。管理员可在审批页查看申请，"
+                        f"并检查机器人权限或用户权限表：{exc}"
+                    )
         st.cache_data.clear()
         clear_request_application_state()
-        st.session_state["request_submit_message"] = f"已提交申请单 {request_no}，共 {line_count} 条申请明细。"
+        notification_text = (
+            f"机器人已提醒 {notification_count} 位管理员。" if notification_count else ""
+        )
+        st.session_state["request_submit_message"] = (
+            f"已提交申请单 {request_no}，共 {line_count} 条申请明细。{notification_text}"
+        )
+        if notification_warning:
+            st.session_state["request_submit_warning"] = notification_warning
         st.session_state["request_scroll_to_top"] = True
         st.rerun()
 
@@ -4742,6 +4855,9 @@ def render_change_form(show_title: bool = True) -> None:
     message = st.session_state.pop("request_submit_message", "")
     if message:
         st.success(message)
+    warning = st.session_state.pop("request_submit_warning", "")
+    if warning:
+        st.warning(warning)
 
     with st.container(border=True):
         render_section_header("01", "申请与业务信息", "填写领取申请的基础信息")
