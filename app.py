@@ -2554,18 +2554,98 @@ def feishu_person_open_ids(fields: dict, names: list[str]) -> list[str]:
     return open_ids
 
 
-def enabled_admin_open_ids() -> list[str]:
+def feishu_choice_values(fields: dict, name: str) -> list[str]:
+    value = fields.get(name)
+    items = value if isinstance(value, list) else ([value] if value not in (None, "") else [])
+    choices: list[str] = []
+    for item in items:
+        if isinstance(item, dict):
+            text_arr = item.get("text_arr") or []
+            choice = str(
+                item.get("name")
+                or item.get("value")
+                or item.get("text")
+                or (text_arr[0] if text_arr else "")
+            ).strip()
+        else:
+            choice = str(item).strip()
+        if choice and choice not in choices:
+            choices.append(choice)
+    return choices
+
+
+def feishu_permission_enabled(fields: dict) -> bool:
+    enabled_values = {
+        value.casefold() for value in feishu_choice_values(fields, "是否启用")
+    }
+    return bool(enabled_values & {"是", "启用", "true", "1", "yes"})
+
+
+def enabled_role_open_ids(role_name: str) -> list[str]:
     open_ids: list[str] = []
     for row in fresh_feishu_rows(USER_PERMISSION_TABLE_NAME):
         fields = feishu_fields(row)
-        role = feishu_text(fields, "角色").strip()
-        enabled = feishu_text(fields, "是否启用").strip().casefold()
-        if role != "管理员" or enabled not in {"是", "启用", "true", "1", "yes"}:
+        roles = set(feishu_choice_values(fields, "角色"))
+        if role_name not in roles or not feishu_permission_enabled(fields):
             continue
         for open_id in feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]):
             if open_id not in open_ids:
                 open_ids.append(open_id)
     return open_ids
+
+
+def enabled_admin_open_ids() -> list[str]:
+    return enabled_role_open_ids("管理员")
+
+
+def enabled_sales_open_ids() -> list[str]:
+    return enabled_role_open_ids("销售")
+
+
+def next_user_permission_number(rows: list[dict]) -> str:
+    numbers: list[int] = []
+    for row in rows:
+        raw_number = feishu_text(feishu_fields(row), "用户编号").strip()
+        if raw_number.isdigit():
+            numbers.append(int(raw_number))
+    return str(max(numbers, default=0) + 1)
+
+
+def ensure_requester_sales_permission(request_payload: dict[str, object]) -> str:
+    requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
+    if not requester_open_id.startswith("ou_"):
+        raise RuntimeError("申请人未关联有效的飞书账号，无法自动加入销售权限。")
+
+    rows = fresh_feishu_rows(USER_PERMISSION_TABLE_NAME)
+    for row in rows:
+        fields = feishu_fields(row)
+        if requester_open_id not in feishu_person_open_ids(
+            fields, ["用户账号", "用户", "成员"]
+        ):
+            continue
+        roles = feishu_choice_values(fields, "角色")
+        if "销售" in roles:
+            return "existing"
+        record_id = feishu_record_id(row)
+        if not record_id:
+            raise RuntimeError("申请人的权限记录缺少记录 ID，无法补充销售身份。")
+        feishu_update_record_fields(
+            USER_PERMISSION_TABLE_NAME,
+            record_id,
+            {"角色": [*roles, "销售"]},
+        )
+        return "updated"
+
+    new_fields: dict[str, object] = {
+        "用户编号": next_user_permission_number(rows),
+        "用户账号": [{"id": requester_open_id}],
+        "角色": ["销售"],
+        "是否启用": "是",
+    }
+    created = feishu_create_record(USER_PERMISSION_TABLE_NAME, new_fields)
+    if not created:
+        raise RuntimeError("写入用户权限表失败。")
+    return "created"
 
 
 def material_approval_url() -> str:
@@ -2620,6 +2700,89 @@ def notify_enabled_admins_of_material_request(
     for open_id in recipients:
         client.send_text_message(open_id, text)
     return len(recipients)
+
+
+def sales_request_received_notification_text(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> str:
+    valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
+    total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
+    return "\n".join(
+        [
+            "【营销物料申请已进入处理流程】",
+            f"申请单号：{request_no}",
+            f"申请人：{str(request_payload.get('requester') or '-')}",
+            f"物料用途：{str(request_payload.get('material_usage') or '-')}",
+            f"申请合计：{len(valid_lines)} 种，共 {total_quantity} 件",
+            "",
+            "管理员已收到申请，请等待审批与发放结果。",
+        ]
+    )
+
+
+def notify_sales_request_received(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> int:
+    requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
+    if not requester_open_id or requester_open_id not in set(enabled_sales_open_ids()):
+        return 0
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送销售申请回执。")
+    client.send_text_message(
+        requester_open_id,
+        sales_request_received_notification_text(request_no, request_payload, lines),
+    )
+    return 1
+
+
+def sales_request_completed_notification_text(
+    request: dict[str, object],
+    lines: list[dict[str, object]],
+    note: str,
+) -> str:
+    status = str(request.get("status") or REQUEST_STATUS_ISSUED)
+    details = [
+        (
+            f"{index}. {str(line.get('product') or '-')} / "
+            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{str(line.get('language') or NO_LANGUAGE_TEXT)}："
+            f"申请 {int(line.get('quantity') or 0)}，实际发放 {int(line.get('actual_issue_qty') or 0)}"
+        )
+        for index, line in enumerate(lines, start=1)
+    ]
+    parts = [
+        "【营销物料申请审批已完成】",
+        f"申请单号：{str(request.get('request_no') or '-')}",
+        f"审批结果：{status}",
+        "",
+        *details,
+    ]
+    if note.strip():
+        parts.extend(["", f"审批/发放备注：{note.strip()}"])
+    return "\n".join(parts)
+
+
+def notify_sales_request_completed(
+    request: dict[str, object],
+    lines: list[dict[str, object]],
+    note: str,
+) -> int:
+    requester_open_id = str(request.get("requester_open_id") or "").strip()
+    if not requester_open_id or requester_open_id not in set(enabled_sales_open_ids()):
+        return 0
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送销售审批反馈。")
+    client.send_text_message(
+        requester_open_id,
+        sales_request_completed_notification_text(request, lines, note),
+    )
+    return 1
 
 
 def submit_feishu_material_request(
@@ -2831,12 +2994,14 @@ def load_feishu_request_records() -> list[dict[str, object]]:
         request_no = feishu_text(fields, "申请单号")
         if not request_no:
             continue
+        requester_open_ids = feishu_person_open_ids(fields, ["申请人", "申请人姓名"])
         records.append(
             {
                 "record_id": feishu_record_id(row),
                 "request_no": request_no,
                 "title": feishu_text(fields, "标题"),
                 "requester": request_applicant_text(fields),
+                "requester_open_id": requester_open_ids[0] if requester_open_ids else "",
                 "department": feishu_text_any(fields, ["申请部门/区域", "申请部门|区域", "申请部门"]),
                 "position": feishu_text_any(fields, ["岗位", "职位"]),
                 "customer_name": feishu_text(fields, "客户名称"),
@@ -4575,7 +4740,17 @@ def render_request_review() -> None:
                     st.exception(exc)
                     return
         notification_count = 0
+        sales_receipt_count = 0
+        sales_permission_result = ""
         notification_warning = ""
+        try:
+            with DATA_LOCK:
+                sales_permission_result = ensure_requester_sales_permission(draft)
+        except Exception as exc:
+            notification_warning = (
+                "申请已成功，但申请人的销售权限自动登记失败："
+                f"{exc}"
+            )
         if created_new_request:
             with st.spinner("申请已提交，正在通知审批人......"):
                 try:
@@ -4585,15 +4760,33 @@ def render_request_review() -> None:
                         lines,
                     )
                 except Exception as exc:
-                    notification_warning = (
+                    admin_warning = (
                         "申请已成功，但机器人提醒发送失败。管理员可在审批页查看申请，"
                         f"并检查机器人权限或用户权限表：{exc}"
+                    )
+                    notification_warning = "；".join(
+                        item for item in [notification_warning, admin_warning] if item
+                    )
+                try:
+                    sales_receipt_count = notify_sales_request_received(
+                        request_no,
+                        draft,
+                        lines,
+                    )
+                except Exception as exc:
+                    sales_warning = f"申请人回执发送失败：{exc}"
+                    notification_warning = "；".join(
+                        item for item in [notification_warning, sales_warning] if item
                     )
         st.cache_data.clear()
         clear_request_application_state()
         notification_text = (
             f"机器人已提醒 {notification_count} 位管理员。" if notification_count else ""
         )
+        if sales_receipt_count:
+            notification_text += "已向申请人发送处理回执。"
+        if sales_permission_result in {"created", "updated"}:
+            notification_text += "已自动登记申请人的销售身份。"
         st.session_state["request_submit_message"] = (
             f"已提交申请单 {request_no}，共 {line_count} 条申请明细。{notification_text}"
         )
@@ -6137,10 +6330,39 @@ def render_pending_approval_requests(
                 st.error("审批发放失败。请检查实际发放数量、申请明细字段和飞书写入权限。")
                 st.exception(exc)
                 return
-        refresh_page_cache_after_write("approval", update_request_form=True)
-        st.session_state["approval_issue_message"] = (
-            f"已完成申请单 {selected_request['request_no']} 的审批，新增 {len(logs)} 条库存流水。"
+        completion_notification_count = 0
+        completion_notification_warning = ""
+        updated_request = dict(selected_request)
+        updated_request["status"] = (
+            REQUEST_STATUS_ISSUED
+            if issue_lines
+            and all(
+                int(line.get("actual_issue_qty") or 0) >= int(line.get("quantity") or 0)
+                for line in issue_lines
+            )
+            else REQUEST_STATUS_PARTIAL
         )
+        with st.spinner("审批已保存，正在向申请人发送结果......"):
+            try:
+                completion_notification_count = notify_sales_request_completed(
+                    updated_request,
+                    issue_lines,
+                    issue_note,
+                )
+            except Exception as exc:
+                completion_notification_warning = (
+                    f"审批已成功，但申请人结果通知发送失败：{exc}"
+                )
+        refresh_page_cache_after_write("approval", update_request_form=True)
+        notification_text = (
+            "已向申请人发送审批结果。" if completion_notification_count else ""
+        )
+        st.session_state["approval_issue_message"] = (
+            f"已完成申请单 {selected_request['request_no']} 的审批，"
+            f"新增 {len(logs)} 条库存流水。{notification_text}"
+        )
+        if completion_notification_warning:
+            st.session_state["approval_issue_warning"] = completion_notification_warning
         st.rerun()
 
 
@@ -6237,6 +6459,9 @@ def render_approval_view() -> None:
     message = st.session_state.pop("approval_issue_message", "")
     if message:
         st.success(message)
+    warning = st.session_state.pop("approval_issue_warning", "")
+    if warning:
+        st.warning(warning)
 
     with st.spinner("物料数据加载中，请稍后......"):
         requests = load_feishu_request_records()

@@ -33,7 +33,7 @@ class BotNotificationTests(unittest.TestCase):
                 "record_id": "admin-enabled",
                 "fields": {
                     "用户账号": [{"id": "ou_admin"}],
-                    "角色": "管理员",
+                    "角色": ["管理员", "销售"],
                     "是否启用": "是",
                 },
             },
@@ -60,6 +60,105 @@ class BotNotificationTests(unittest.TestCase):
 
         self.assertEqual(recipients, ["ou_admin"])
         fresh_rows.assert_called_once_with(app.USER_PERMISSION_TABLE_NAME)
+
+    def test_multi_select_roles_are_recognized(self) -> None:
+        rows = [
+            {
+                "record_id": "multi-role-user",
+                "fields": {
+                    "用户账号": [{"id": "ou_both"}],
+                    "角色": ["销售", "管理员"],
+                    "是否启用": "是",
+                },
+            }
+        ]
+
+        with patch.object(app, "fresh_feishu_rows", return_value=rows):
+            self.assertEqual(app.enabled_admin_open_ids(), ["ou_both"])
+        with patch.object(app, "fresh_feishu_rows", return_value=rows):
+            self.assertEqual(app.enabled_sales_open_ids(), ["ou_both"])
+
+    def test_enabled_sales_are_read_from_permission_table(self) -> None:
+        rows = [
+            {
+                "record_id": "sales-enabled",
+                "fields": {
+                    "用户账号": [{"id": "ou_sales"}],
+                    "角色": "销售",
+                    "是否启用": "是",
+                },
+            },
+            {
+                "record_id": "admin-enabled",
+                "fields": {
+                    "用户账号": [{"id": "ou_admin"}],
+                    "角色": "管理员",
+                    "是否启用": "是",
+                },
+            },
+        ]
+
+        with patch.object(app, "fresh_feishu_rows", return_value=rows):
+            recipients = app.enabled_sales_open_ids()
+
+        self.assertEqual(recipients, ["ou_sales"])
+
+    def test_new_applicant_is_created_with_sales_role_only(self) -> None:
+        rows = [
+            {
+                "record_id": "existing-admin",
+                "fields": {
+                    "用户编号": "2",
+                    "用户账号": [{"id": "ou_admin"}],
+                    "角色": ["管理员", "销售"],
+                    "是否启用": "是",
+                },
+            }
+        ]
+        created = {"record_id": "new-sales"}
+        with (
+            patch.object(app, "fresh_feishu_rows", return_value=rows),
+            patch.object(app, "feishu_create_record", return_value=created) as create_record,
+        ):
+            result = app.ensure_requester_sales_permission(
+                {"requester_open_id": "ou_new_sales"}
+            )
+
+        self.assertEqual(result, "created")
+        create_record.assert_called_once_with(
+            app.USER_PERMISSION_TABLE_NAME,
+            {
+                "用户编号": "3",
+                "用户账号": [{"id": "ou_new_sales"}],
+                "角色": ["销售"],
+                "是否启用": "是",
+            },
+        )
+        self.assertNotIn("管理员", create_record.call_args.args[1]["角色"])
+
+    def test_existing_sales_applicant_is_not_duplicated(self) -> None:
+        rows = [
+            {
+                "record_id": "existing-sales",
+                "fields": {
+                    "用户账号": [{"id": "ou_sales"}],
+                    "角色": ["销售"],
+                    "是否启用": "是",
+                },
+            }
+        ]
+        with (
+            patch.object(app, "fresh_feishu_rows", return_value=rows),
+            patch.object(app, "feishu_create_record") as create_record,
+            patch.object(app, "feishu_update_record_fields") as update_record,
+        ):
+            result = app.ensure_requester_sales_permission(
+                {"requester_open_id": "ou_sales"}
+            )
+
+        self.assertEqual(result, "existing")
+        create_record.assert_not_called()
+        update_record.assert_not_called()
 
     def test_notification_contains_summary_and_approval_link(self) -> None:
         payload = {
@@ -100,6 +199,78 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(client.send_text_message.call_count, 2)
         client.send_text_message.assert_any_call("ou-a", "提醒")
         client.send_text_message.assert_any_call("ou-b", "提醒")
+
+    def test_request_received_notification_only_goes_to_enabled_sales_applicant(self) -> None:
+        client = Mock()
+        payload = {"requester_open_id": "ou_sales"}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_sales_open_ids", return_value=["ou_sales"]),
+            patch.object(app, "sales_request_received_notification_text", return_value="处理中"),
+        ):
+            count = app.notify_sales_request_received("REQ-1", payload, [])
+
+        self.assertEqual(count, 1)
+        client.send_text_message.assert_called_once_with("ou_sales", "处理中")
+
+        client.reset_mock()
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_sales_open_ids", return_value=["ou_other_sales"]),
+        ):
+            count = app.notify_sales_request_received("REQ-1", payload, [])
+
+        self.assertEqual(count, 0)
+        client.send_text_message.assert_not_called()
+
+    def test_completed_notification_contains_requested_and_actual_quantities(self) -> None:
+        request = {
+            "request_no": "REQ-1",
+            "status": app.REQUEST_STATUS_PARTIAL,
+        }
+        lines = [
+            {
+                "product": "产品折页",
+                "model": "BellaBot",
+                "language": "英语",
+                "quantity": 5,
+                "actual_issue_qty": 3,
+            }
+        ]
+
+        text = app.sales_request_completed_notification_text(request, lines, "剩余待采购")
+
+        self.assertIn(app.REQUEST_STATUS_PARTIAL, text)
+        self.assertIn("申请 5，实际发放 3", text)
+        self.assertIn("剩余待采购", text)
+
+    def test_completed_notification_only_goes_to_original_sales_applicant(self) -> None:
+        client = Mock()
+        request = {"requester_open_id": "ou_sales", "request_no": "REQ-1"}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_sales_open_ids", return_value=["ou_sales"]),
+            patch.object(app, "sales_request_completed_notification_text", return_value="已完成"),
+        ):
+            count = app.notify_sales_request_completed(request, [], "")
+
+        self.assertEqual(count, 1)
+        client.send_text_message.assert_called_once_with("ou_sales", "已完成")
+
+    def test_request_records_keep_applicant_open_id_for_completion_feedback(self) -> None:
+        rows = [
+            {
+                "record_id": "request-a",
+                "fields": {
+                    "申请单号": "REQ-1",
+                    "申请人": [{"id": "ou_sales", "name": "销售甲"}],
+                },
+            }
+        ]
+        with patch.object(app, "feishu_rows", return_value=rows):
+            records = app.load_feishu_request_records()
+
+        self.assertEqual(records[0]["requester_open_id"], "ou_sales")
 
     def test_reused_submission_is_not_marked_as_new(self) -> None:
         existing_row = {
