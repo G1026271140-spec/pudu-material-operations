@@ -3593,6 +3593,7 @@ def build_category_inventory_plan(
     carry_model: str = "",
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
+    target_values: dict[tuple[str, str], dict[str, object]] | None = None,
     referenced_ids: set[str] | None = None,
 ) -> dict:
     product = target_product.strip()
@@ -3621,6 +3622,7 @@ def build_category_inventory_plan(
         grouped.setdefault((target_model, target_language), []).append(dict(source))
 
     initial_quantities = initial_quantities or {}
+    target_values = target_values or {}
     referenced_ids = referenced_ids or set()
     targets: list[dict] = []
     source_to_target_key: dict[str, tuple[str, str]] = {}
@@ -3670,6 +3672,19 @@ def build_category_inventory_plan(
                     if str(item.get("customs_code") or "").strip()
                 ]
             )
+            customs_code = (
+                str((keeper or {}).get("customs_code") or "").strip()
+                or (customs_values[0] if customs_values else "")
+            )
+            override = dict(target_values.get(key) or {})
+            override_quantity = override.get("quantity")
+            if override_quantity is not None and not pd.isna(override_quantity):
+                quantity = int(override_quantity)
+            override_unit_price = override.get("unit_price")
+            if override_unit_price is not None and not pd.isna(override_unit_price):
+                unit_price = float(override_unit_price)
+            if "customs_code" in override:
+                customs_code = str(override.get("customs_code") or "").strip()
             keeper_id = str((keeper or {}).get("record_id") or "")
             source_ids = [str(item.get("record_id") or "") for item in sources if item.get("record_id")]
             for source_id in source_ids:
@@ -3686,18 +3701,17 @@ def build_category_inventory_plan(
                     "quantity": quantity,
                     "unit_price": unit_price,
                     "remark": "\n".join(remarks),
-                    "customs_code": (
-                        str((keeper or {}).get("customs_code") or "").strip()
-                        or (customs_values[0] if customs_values else "")
-                    ),
+                    "customs_code": customs_code,
                     "material_code": str((keeper or {}).get("material_code") or ""),
                     "keeper_id": keeper_id,
                     "source_ids": source_ids,
                     "is_new": not sources,
-                    "action": "新增" if not sources else ("合并" if len(sources) > 1 else "保留"),
+                    "action": "新增" if not sources else ("重组" if len(sources) > 1 else "保留"),
                 }
             )
 
+    current_quantity = sum(int(record.get("quantity") or 0) for record in records)
+    target_quantity = sum(int(target["quantity"] or 0) for target in targets)
     return {
         "product": product,
         "models": models,
@@ -3710,7 +3724,30 @@ def build_category_inventory_plan(
         "create_count": sum(1 for target in targets if target["is_new"]),
         "delete_count": len(unique_preserve(delete_ids)),
         "merge_count": merge_count,
+        "current_quantity": current_quantity,
+        "target_quantity": target_quantity,
+        "quantity_difference": target_quantity - current_quantity,
+        "discarded_quantity": max(current_quantity - target_quantity, 0),
     }
+
+
+def category_inventory_target_values(editor_df: pd.DataFrame) -> dict[tuple[str, str], dict[str, object]]:
+    values: dict[tuple[str, str], dict[str, object]] = {}
+    for row in editor_df.to_dict("records"):
+        model = str(row.get("产品型号") or "").strip()
+        language = str(row.get("语种") or "").strip()
+        quantity = row.get("库存数量")
+        if not model or not language:
+            raise ValueError("产品型号和语种不能为空。")
+        if quantity is None or pd.isna(quantity):
+            raise ValueError(f"请填写 {model} / {language} 的库存数量。")
+        unit_price = row.get("单价")
+        values[(model, language)] = {
+            "quantity": int(quantity),
+            "unit_price": 0.0 if unit_price is None or pd.isna(unit_price) else float(unit_price),
+            "customs_code": str(row.get("海关编码") or "").strip(),
+        }
+    return values
 
 
 def count_feishu_item_transactions(
@@ -4038,6 +4075,7 @@ def sync_feishu_category_inventory(
     carry_model: str = "",
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
+    target_values: dict[tuple[str, str], dict[str, object]] | None = None,
 ) -> dict:
     client = feishu_client()
     if client is None:
@@ -4093,6 +4131,7 @@ def sync_feishu_category_inventory(
         carry_model=carry_model,
         carry_language=carry_language,
         initial_quantities=initial_quantities,
+        target_values=target_values,
         referenced_ids=referenced_ids,
     )
 
@@ -5574,13 +5613,13 @@ def render_add_category_form() -> None:
         no_model = rule_col_a.checkbox(
             "该品类无需产品型号",
             value=current_no_model,
-            help="勾选后产品型号统一为“无需型号”，现有型号库存会自动归并。",
+            help="勾选后产品型号统一为“无需型号”，库存数量可在下方组合表中重新分配。",
             key=f"category_no_model_{editor_key}",
         )
         no_language = rule_col_b.checkbox(
             "该品类无需语种",
             value=current_no_language,
-            help="勾选后语种统一为“无需语种”，现有语种库存会自动归并。",
+            help="勾选后语种统一为“无需语种”，库存数量可在下方组合表中重新分配。",
             key=f"category_no_language_{editor_key}",
         )
 
@@ -5646,16 +5685,16 @@ def render_add_category_form() -> None:
         removed_languages = [language for language in current_languages if language not in languages]
         if current_records and models and removed_models:
             carry_model = st.selectbox(
-                "被取消型号的库存归并到 *",
+                "被取消型号的历史关联迁移到 *",
                 models,
-                help="被取消型号对应的库存、申请明细和流水关联会迁移到这里。",
+                help="这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。",
                 key=f"category_carry_model_{editor_key}",
             )
         if current_records and languages and removed_languages:
             carry_language = st.selectbox(
-                "被取消语种的库存归并到 *",
+                "被取消语种的历史关联迁移到 *",
                 languages,
-                help="被取消语种对应的库存、申请明细和流水关联会迁移到这里。",
+                help="这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。",
                 key=f"category_carry_language_{editor_key}",
             )
 
@@ -5673,40 +5712,42 @@ def render_add_category_form() -> None:
             except ValueError as exc:
                 st.error(str(exc))
 
-        initial_quantities: dict[tuple[str, str], int] = {}
+        target_values: dict[tuple[str, str], dict[str, object]] = {}
+        discard_confirmed = True
         if plan is not None:
-            new_targets = [target for target in plan["targets"] if target["is_new"]]
-            if new_targets:
-                st.markdown(f"**{ui_text('新增组合初始库存')}**")
-                st.caption("只需填写新增组合；已有或归并组合会沿用并汇总当前库存。库存允许为负数。")
-                initial_df = pd.DataFrame(
-                    [
-                        {
-                            "产品型号": target["model"],
-                            "语种": target["language"],
-                            "初始库存": 0,
-                        }
-                        for target in new_targets
-                    ]
-                )
-                signature = uuid.uuid5(
-                    uuid.NAMESPACE_URL,
-                    "|".join(f"{target['model']}::{target['language']}" for target in new_targets),
-                ).hex[:12]
-                edited_initial_df = st.data_editor(
-                    initial_df,
-                    width="stretch",
-                    hide_index=True,
-                    disabled=["产品型号", "语种"],
-                    column_config={
-                        "初始库存": st.column_config.NumberColumn("初始库存", step=1, format="%d")
-                    },
-                    key=f"category_initial_stock_{editor_key}_{signature}",
-                )
-                initial_quantities = {
-                    (str(row["产品型号"]), str(row["语种"])): int(row["初始库存"] or 0)
-                    for row in edited_initial_df.to_dict("records")
-                }
+            st.markdown(f"**{ui_text('库存组合明细')}**")
+            st.caption("可直接填写每个组合的最终库存、单价和海关编码；单价与海关编码可留空。")
+            target_df = pd.DataFrame(
+                [
+                    {
+                        "产品型号": target["model"],
+                        "语种": target["language"],
+                        "库存数量": int(target["quantity"]),
+                        "单价": float(target["unit_price"]) if target["unit_price"] else None,
+                        "海关编码": target["customs_code"],
+                        "处理方式": target["action"],
+                    }
+                    for target in plan["targets"]
+                ]
+            )
+            signature = uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                "|".join(f"{target['model']}::{target['language']}" for target in plan["targets"]),
+            ).hex[:12]
+            edited_target_df = st.data_editor(
+                target_df,
+                width="stretch",
+                hide_index=True,
+                disabled=["产品型号", "语种", "处理方式"],
+                column_config={
+                    "库存数量": st.column_config.NumberColumn("库存数量 *", step=1, format="%d", required=True),
+                    "单价": st.column_config.NumberColumn("单价", min_value=0.0, step=0.01, format="%.2f"),
+                    "海关编码": st.column_config.TextColumn("海关编码"),
+                },
+                key=f"category_target_inventory_{editor_key}_{signature}",
+            )
+            try:
+                target_values = category_inventory_target_values(edited_target_df)
                 plan = build_category_inventory_plan(
                     current_records,
                     product,
@@ -5714,26 +5755,30 @@ def render_add_category_form() -> None:
                     languages,
                     carry_model=carry_model,
                     carry_language=carry_language,
-                    initial_quantities=initial_quantities,
+                    target_values=target_values,
                 )
+            except (TypeError, ValueError) as exc:
+                st.error(str(exc))
+                plan = None
 
-            metric_a, metric_b, metric_c, metric_d = st.columns(4)
-            metric_a.metric("当前组合", plan["current_count"])
-            metric_b.metric("目标组合", plan["target_count"])
-            metric_c.metric("新增组合", plan["create_count"])
-            metric_d.metric("合并/删除行", plan["delete_count"])
-            preview_df = pd.DataFrame(
-                [
-                    {
-                        "产品型号": target["model"],
-                        "语种": target["language"],
-                        "结果库存": int(target["quantity"]),
-                        "处理方式": target["action"],
-                    }
-                    for target in plan["targets"]
-                ]
-            )
-            st.dataframe(preview_df, width="stretch", hide_index=True, height=min(420, 38 * len(preview_df) + 40))
+            if plan is not None:
+                metric_a, metric_b, metric_c, metric_d = st.columns(4)
+                metric_a.metric("当前组合", plan["current_count"])
+                metric_b.metric("目标组合", plan["target_count"])
+                metric_c.metric("新增组合", plan["create_count"])
+                metric_d.metric("移除旧行", plan["delete_count"])
+                quantity_a, quantity_b, quantity_c = st.columns(3)
+                quantity_a.metric("当前库存合计", f"{plan['current_quantity']:,}")
+                quantity_b.metric("目标库存合计", f"{plan['target_quantity']:,}")
+                quantity_c.metric("库存数量差额", f"{plan['quantity_difference']:+,}")
+                if plan["discarded_quantity"] > 0:
+                    st.warning(f"将直接舍弃 {plan['discarded_quantity']:,} 件未分配库存，此操作保存后不可自动恢复。")
+                    discard_confirmed = st.checkbox(
+                        "确认直接舍弃未分配库存",
+                        key=f"category_discard_confirm_{editor_key}_{signature}",
+                    )
+                elif plan["quantity_difference"] > 0 and current_records:
+                    st.info(f"目标库存将比当前库存增加 {plan['quantity_difference']:,} 件。")
 
         confirmed = st.checkbox(
             "我已确认以上品类配置和库存组合",
@@ -5757,6 +5802,10 @@ def render_add_category_form() -> None:
             st.error("请至少保留或新增一个产品型号，或勾选“无需产品型号”。")
         elif not languages:
             st.error("请至少保留或新增一个语种，或勾选“无需语种”。")
+        elif plan is None:
+            st.error("请检查库存组合中的数量、单价和海关编码。")
+        elif plan["discarded_quantity"] > 0 and not discard_confirmed:
+            st.warning("请确认直接舍弃未分配库存。")
         elif not confirmed:
             st.warning("请先确认品类配置和库存组合。")
         else:
@@ -5773,7 +5822,7 @@ def render_add_category_form() -> None:
                             category_record_id=category_id,
                             carry_model=carry_model,
                             carry_language=carry_language,
-                            initial_quantities=initial_quantities,
+                            target_values=target_values,
                         )
                     except Exception as exc:
                         st.error("保存品类配置失败。数据未全部同步，请刷新页面检查飞书字段和关联后重试。")
@@ -5782,8 +5831,8 @@ def render_add_category_form() -> None:
             refresh_page_cache_after_write("category", update_request_form=True)
             st.session_state["category_added_message"] = (
                 f"物料品类“{product}”已保存：目标组合 {result['target_count']} 条，"
-                f"新增 {result['created_count']} 条，归并删除 {result['deleted_count']} 条，"
-                f"迁移关联 {result['relation_update_count']} 条。"
+                f"新增 {result['created_count']} 条，移除旧行 {result['deleted_count']} 条，"
+                f"迁移关联 {result['relation_update_count']} 条，库存差额 {result['quantity_difference']:+,}。"
             )
             st.rerun()
 

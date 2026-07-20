@@ -1,5 +1,7 @@
 import unittest
 
+import pandas as pd
+
 import app
 
 
@@ -11,6 +13,7 @@ def inventory_record(
     *,
     material_code: str = "",
     unit_price: float = 0,
+    customs_code: str = "",
 ) -> dict:
     return {
         "record_id": record_id,
@@ -21,7 +24,7 @@ def inventory_record(
         "quantity": quantity,
         "unit_price": unit_price,
         "remark": "",
-        "customs_code": "",
+        "customs_code": customs_code,
     }
 
 
@@ -93,6 +96,67 @@ class CategoryInventoryPlanTests(unittest.TestCase):
         self.assertEqual(target["quantity"], 4)
         self.assertEqual(target["unit_price"], 15)
         self.assertEqual(plan["delete_count"], 1)
+
+    def test_target_values_allow_custom_quantity_split_price_and_customs_code(self) -> None:
+        records = [inventory_record("1", app.NO_MODEL_TEXT, "英语", 100, unit_price=8)]
+
+        plan = app.build_category_inventory_plan(
+            records,
+            "旧品类",
+            ["M1", "M2"],
+            ["英语"],
+            carry_model="M1",
+            target_values={
+                ("M1", "英语"): {"quantity": 40, "unit_price": 6.5, "customs_code": "HS-1"},
+                ("M2", "英语"): {"quantity": 60, "unit_price": 7.5, "customs_code": ""},
+            },
+        )
+
+        targets = {target["key"]: target for target in plan["targets"]}
+        self.assertEqual(targets[("M1", "英语")]["quantity"], 40)
+        self.assertEqual(targets[("M1", "英语")]["unit_price"], 6.5)
+        self.assertEqual(targets[("M1", "英语")]["customs_code"], "HS-1")
+        self.assertEqual(targets[("M2", "英语")]["quantity"], 60)
+        self.assertEqual(plan["quantity_difference"], 0)
+        self.assertEqual(plan["discarded_quantity"], 0)
+
+    def test_target_values_allow_unallocated_inventory_to_be_discarded(self) -> None:
+        records = [inventory_record("1", "M1", "英语", 100)]
+
+        plan = app.build_category_inventory_plan(
+            records,
+            "旧品类",
+            ["M1"],
+            ["英语"],
+            target_values={("M1", "英语"): {"quantity": 25, "unit_price": None, "customs_code": None}},
+        )
+
+        self.assertEqual(plan["current_quantity"], 100)
+        self.assertEqual(plan["target_quantity"], 25)
+        self.assertEqual(plan["quantity_difference"], -75)
+        self.assertEqual(plan["discarded_quantity"], 75)
+        self.assertEqual(plan["targets"][0]["unit_price"], 0.0)
+        self.assertEqual(plan["targets"][0]["customs_code"], "")
+
+    def test_editor_values_require_quantity_and_allow_optional_price_and_customs_code(self) -> None:
+        values = app.category_inventory_target_values(
+            pd.DataFrame(
+                [
+                    {
+                        "产品型号": "M1",
+                        "语种": "英语",
+                        "库存数量": -10,
+                        "单价": None,
+                        "海关编码": None,
+                    }
+                ]
+            )
+        )
+
+        self.assertEqual(
+            values,
+            {("M1", "英语"): {"quantity": -10, "unit_price": 0.0, "customs_code": ""}},
+        )
 
     def test_relation_updates_repoint_deleted_material_ids(self) -> None:
         rows = [

@@ -261,6 +261,13 @@ EN_DISPLAY_TEXT = {
     "目标组合": "Target Combinations",
     "新增组合": "New Combinations",
     "合并/删除行": "Rows to Merge / Delete",
+    "库存组合明细": "Inventory Combination Details",
+    "移除旧行": "Removed Existing Rows",
+    "当前库存合计": "Current Inventory Total",
+    "目标库存合计": "Target Inventory Total",
+    "库存数量差额": "Inventory Quantity Difference",
+    "库存数量 *": "Inventory Quantity *",
+    "重组": "Reconfigured",
     "无需型号": "No Model Required",
     "无需语种": "No Language Required",
     "物料品类名称": "Material Category Name",
@@ -281,6 +288,8 @@ EN_DISPLAY_TEXT = {
     "被取消语种的库存归并到": "Merge inventory from removed languages into",
     "被取消型号的库存归并到 *": "Merge inventory from removed models into *",
     "被取消语种的库存归并到 *": "Merge inventory from removed languages into *",
+    "被取消型号的历史关联迁移到 *": "Move historical links from removed models to *",
+    "被取消语种的历史关联迁移到 *": "Move historical links from removed languages to *",
     "新增组合初始库存": "Initial Quantity for New Combinations",
     "审批通过数量": "Approved Quantity",
     "原流水ID": "Original Transaction ID",
@@ -344,6 +353,7 @@ EN_DISPLAY_TEXT = {
     "撤回当前品类": "Revoke Current Category",
     "确认撤回该品类": "Confirm Category Revocation",
     "我已确认以上品类配置和库存组合": "I confirm the category settings and inventory combinations above",
+    "确认直接舍弃未分配库存": "Confirm discarding unallocated inventory",
     "保存实际发放并扣减库存": "Save Issuance & Update Inventory",
     "仅看非零库存": "Show Non-zero Inventory Only",
     "显示全部库存组合": "Show All Inventory Combinations",
@@ -362,6 +372,15 @@ EN_DISPLAY_TEXT = {
     ),
     "勾选后语种统一为“无需语种”，现有语种库存会自动归并。": (
         "When selected, all languages use No Language Required and existing language inventory is merged automatically."
+    ),
+    "勾选后产品型号统一为“无需型号”，库存数量可在下方组合表中重新分配。": (
+        "When selected, the product model becomes No Model Required; redistribute quantities in the table below."
+    ),
+    "勾选后语种统一为“无需语种”，库存数量可在下方组合表中重新分配。": (
+        "When selected, the language becomes No Language Required; redistribute quantities in the table below."
+    ),
+    "这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。": (
+        "This only controls where request and transaction links move; enter inventory quantities in the table below."
     ),
     "单个附件不超过 20 MB，最多上传 100 个。": "Each attachment must be 20 MB or smaller, with up to 100 files.",
     "被取消型号对应的库存、申请明细和流水关联会迁移到这里。": (
@@ -459,6 +478,13 @@ EN_DISPLAY_TEXT = {
     ),
     "只需填写新增组合；已有或归并组合会沿用并汇总当前库存。库存允许为负数。": (
         "Enter quantities only for new combinations. Existing or merged combinations retain and aggregate their current inventory. Negative quantities are allowed."
+    ),
+    "可直接填写每个组合的最终库存、单价和海关编码；单价与海关编码可留空。": (
+        "Enter the final quantity, unit price, and customs code for each combination; unit price and customs code are optional."
+    ),
+    "请确认直接舍弃未分配库存。": "Confirm that unallocated inventory should be discarded.",
+    "请检查库存组合中的数量、单价和海关编码。": (
+        "Check the quantity, unit price, and customs code in the inventory combinations."
     ),
     "勾选一条有效记录可编辑；勾选多条有效记录可批量撤回。": (
         "Select one valid record to edit, or multiple valid records to revoke them in bulk."
@@ -736,6 +762,28 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
             f'Material category "{match.group(1)}" was saved: {match.group(2)} target combinations, '
             f"{match.group(3)} created, {match.group(4)} merged/deleted, and {match.group(5)} links migrated."
         ),
+    ),
+    (
+        re.compile(r"^物料品类“(.*)”已保存：目标组合 (.+?) 条，新增 (.+?) 条，移除旧行 (.+?) 条，迁移关联 (.+?) 条，库存差额 (.+?)。$"),
+        lambda match: (
+            f'Material category "{match.group(1)}" was saved: {match.group(2)} target combinations, '
+            f"{match.group(3)} created, {match.group(4)} existing rows removed, {match.group(5)} links migrated, "
+            f"and an inventory difference of {match.group(6)}."
+        ),
+    ),
+    (
+        re.compile(r"^将直接舍弃 (.+?) 件未分配库存，此操作保存后不可自动恢复。$"),
+        lambda match: (
+            f"{match.group(1)} units of unallocated inventory will be discarded and cannot be restored automatically after saving."
+        ),
+    ),
+    (
+        re.compile(r"^目标库存将比当前库存增加 (.+?) 件。$"),
+        lambda match: f"Target inventory will increase by {match.group(1)} units.",
+    ),
+    (
+        re.compile(r"^请填写 (.+?) / (.+?) 的库存数量。$"),
+        lambda match: f"Enter the inventory quantity for {match.group(1)} / {match.group(2)}.",
     ),
     (
         re.compile(r"^已撤回物料品类“(.*)”。$"),

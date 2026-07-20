@@ -52,6 +52,23 @@ class UiInternationalizationTests(unittest.TestCase):
             "产品折页(Single Product Brochure)",
         )
 
+    def test_category_inventory_reconfiguration_copy_is_translated(self) -> None:
+        self.assertEqual(
+            translate_ui_text("库存组合明细", LANGUAGE_EN),
+            "Inventory Combination Details",
+        )
+        self.assertEqual(
+            translate_ui_text("确认直接舍弃未分配库存", LANGUAGE_EN),
+            "Confirm discarding unallocated inventory",
+        )
+        self.assertEqual(
+            translate_ui_text(
+                "将直接舍弃 75 件未分配库存，此操作保存后不可自动恢复。",
+                LANGUAGE_EN,
+            ),
+            "75 units of unallocated inventory will be discarded and cannot be restored automatically after saving.",
+        )
+
     def test_column_localization_does_not_rename_or_modify_data(self) -> None:
         source = pd.DataFrame(
             [
