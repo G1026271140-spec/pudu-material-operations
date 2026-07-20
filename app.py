@@ -5203,8 +5203,8 @@ def render_change_form(show_title: bool = True) -> None:
         middle_cols[0].markdown(
             """
             <div class="pudu-required-hint">
-                收件人信息：请写明快递地址（包含收件人信息，邮编，具体地址）<br>
-                Please specify the delivery address (including recipient information, postal code, and specific address)
+                <strong>收件人信息：请写明快递地址（包含收件人信息，邮编，具体地址）</strong><br>
+                <strong>Please specify the delivery address (including recipient information, postal code, and specific address)</strong>
             </div>
             """,
             unsafe_allow_html=True,
