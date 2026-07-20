@@ -263,6 +263,7 @@ EN_DISPLAY_TEXT = {
     # Form controls and commands.
     "请输入查看密码": "Enter access password",
     "请输入管理员密码": "Enter administrator password",
+    "解锁": "Unlock",
     "密码不正确": "Incorrect password",
     "选择申请单": "Select Request",
     "查看历史审批明细": "View Approval Details",

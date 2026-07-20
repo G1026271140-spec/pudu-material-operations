@@ -1213,7 +1213,14 @@ def count_feishu_table(table_name: str) -> int:
 
 
 def render_storage_diagnostics() -> None:
-    with st.sidebar.expander("系统连接", expanded=False):
+    is_unlocked = bool(st.session_state.get("admin_unlocked"))
+    with st.sidebar.expander(
+        "系统连接",
+        expanded=False,
+        icon=":material/settings:" if is_unlocked else ":material/lock:",
+    ):
+        if not sidebar_admin_auth_gate("storage_diagnostics"):
+            return
         st.write(f"当前存储：**{storage_mode_label()}**")
         st.write(f"FEISHU_APP_ID：{'已读取' if bool(feishu_app_id()) else '未读取'}")
         st.write(f"FEISHU_APP_SECRET：{'已读取' if bool(feishu_app_secret()) else '未读取'}")
@@ -4267,6 +4274,62 @@ def admin_auth_gate() -> bool:
     return False
 
 
+def sidebar_admin_auth_gate(key_prefix: str) -> bool:
+    if st.session_state.get("admin_unlocked"):
+        return True
+    password = st.text_input(
+        "请输入管理员密码",
+        type="password",
+        key=f"{key_prefix}_admin_password",
+    )
+    if st.button(
+        "解锁",
+        key=f"{key_prefix}_admin_unlock",
+        icon=":material/lock_open:",
+        width="stretch",
+    ):
+        if password == get_approval_password():
+            st.session_state["admin_unlocked"] = True
+            st.rerun()
+        st.error("密码不正确")
+    return False
+
+
+def render_github_cache_publish() -> None:
+    if not st.session_state.get("admin_unlocked"):
+        with st.expander(
+            "手动发布静态缓存",
+            expanded=False,
+            icon=":material/lock:",
+        ):
+            sidebar_admin_auth_gate("github_cache_publish")
+        return
+    if github_cache_refresh_token():
+        if st.button(
+            "发布 GitHub 静态缓存",
+            key="sidebar_publish_github_cache",
+            icon=":material/cloud_upload:",
+            width="stretch",
+        ):
+            with st.spinner("正在提交 GitHub 缓存发布任务，请稍后......"):
+                try:
+                    trigger_github_cache_refresh()
+                except Exception as exc:
+                    st.error(str(exc))
+                else:
+                    st.session_state["github_cache_refresh_message"] = (
+                        "GitHub 静态缓存更新任务已提交，完成后应用将自动重新部署。"
+                    )
+                    st.rerun()
+        return
+    st.link_button(
+        "手动发布静态缓存",
+        GITHUB_CACHE_WORKFLOW_URL,
+        icon=":material/open_in_new:",
+        width="stretch",
+    )
+
+
 def render_sidebar_link() -> None:
     with st.sidebar:
         current_view = str(st.query_params.get("view", ""))
@@ -4353,30 +4416,7 @@ def render_sidebar_link() -> None:
         github_message = st.session_state.pop("github_cache_refresh_message", "")
         if github_message:
             st.success(github_message)
-        if github_cache_refresh_token() and st.session_state.get("admin_unlocked"):
-            if st.button(
-                "发布 GitHub 静态缓存",
-                key="sidebar_publish_github_cache",
-                icon=":material/cloud_upload:",
-                width="stretch",
-            ):
-                with st.spinner("正在提交 GitHub 缓存发布任务，请稍后......"):
-                    try:
-                        trigger_github_cache_refresh()
-                    except Exception as exc:
-                        st.error(str(exc))
-                    else:
-                        st.session_state["github_cache_refresh_message"] = (
-                            "GitHub 静态缓存更新任务已提交，完成后应用将自动重新部署。"
-                        )
-                        st.rerun()
-        else:
-            st.link_button(
-                "手动发布静态缓存",
-                GITHUB_CACHE_WORKFLOW_URL,
-                icon=":material/open_in_new:",
-                width="stretch",
-            )
+        render_github_cache_publish()
         st.markdown(
             f"""
             <div class="pudu-sidebar-status">
