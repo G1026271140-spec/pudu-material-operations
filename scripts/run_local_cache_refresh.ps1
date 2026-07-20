@@ -57,8 +57,14 @@ function Invoke-CheckedCommand {
     )
 
     Write-RunnerLog ("> {0} {1}" -f (Split-Path -Leaf $FilePath), ($Arguments -join " "))
-    $output = @(& $FilePath @Arguments 2>&1)
-    $commandExitCode = $LASTEXITCODE
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = @(& $FilePath @Arguments 2>&1)
+        $commandExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
     foreach ($line in $output) {
         Write-RunnerLog ([string]$line)
     }
