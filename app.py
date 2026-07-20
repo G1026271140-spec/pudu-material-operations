@@ -53,6 +53,7 @@ MODEL_TABLE_NAME = "产品型号"
 LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
+UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
@@ -1139,6 +1140,14 @@ def set_first_plain_field(
             return
 
 
+def set_feishu_unit_price(
+    table_name: str,
+    fields: dict[str, object],
+    value: object,
+) -> None:
+    set_first_plain_field(table_name, fields, list(UNIT_PRICE_FIELD_CANDIDATES), value)
+
+
 def set_first_person_or_plain_field(
     table_name: str,
     fields: dict[str, object],
@@ -1370,6 +1379,19 @@ def is_default_no_language_product(product: str) -> bool:
 def parse_custom_values(raw_text: str) -> list[str]:
     parts = re.split(r"[\n,，;；、]+", raw_text)
     return unique_preserve(parts)
+
+
+def parse_optional_unit_price(raw_value: object) -> float | None:
+    text = str(raw_value or "").strip()
+    if not text:
+        return None
+    try:
+        value = float(text)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("单价（美元）必须填写有效数字。") from exc
+    if value < 0:
+        raise ValueError("单价（美元）不能小于 0。")
+    return value
 
 
 def sort_languages(languages: list[str]) -> list[str]:
@@ -2318,6 +2340,13 @@ def feishu_int_any(fields: dict, names: list[str], default: int = 0) -> int:
     return default
 
 
+def feishu_float_any(fields: dict, names: list[str], default: float = 0.0) -> float:
+    for name in names:
+        if name in fields:
+            return feishu_float(fields, name, default)
+    return default
+
+
 def feishu_link_ids_any(fields: dict, names: list[str]) -> list[str]:
     for name in names:
         ids = feishu_link_ids(fields, name)
@@ -2458,7 +2487,7 @@ def feishu_inventory_dataframe_from_rows(rows: list[dict]) -> pd.DataFrame:
         if normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
             continue
         quantity = feishu_int(fields, "当前库存")
-        unit_price = feishu_float(fields, "单价")
+        unit_price = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
         data.append(
             [
                 material_code,
@@ -3643,7 +3672,7 @@ def parse_feishu_inventory_record(row: dict) -> dict | None:
     if not material_code or not category:
         return None
     quantity = feishu_int(fields, "当前库存")
-    unit_price = feishu_float(fields, "单价")
+    unit_price = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
     return {
         "record_id": feishu_record_id(row),
         "material_code": material_code,
@@ -3690,6 +3719,7 @@ def load_feishu_category_records() -> list[dict]:
         product = feishu_text(fields, "物料品类")
         if not product:
             continue
+        unit_price_text = feishu_text_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
         records.append(
             {
                 "record_id": feishu_record_id(row),
@@ -3701,6 +3731,8 @@ def load_feishu_category_records() -> list[dict]:
                     and is_default_no_language_product(product)
                 ),
                 "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
+                "unit_price": parse_optional_unit_price(unit_price_text),
+                "customs_code": feishu_text(fields, "海关编码"),
                 "created_at": feishu_text(fields, "创建时间"),
                 "remark": feishu_text(fields, "备注"),
             }
@@ -4140,11 +4172,11 @@ def update_feishu_inventory_item(
         "物料品类": product.strip(),
         "产品型号": model,
         "语种": language.strip(),
-        "单价": float(unit_price or 0),
         "备注": remark.strip(),
         "海关编码": customs_code.strip(),
         "品类关联": [category_record_id] if category_record_id else [],
     }
+    set_feishu_unit_price(MATERIAL_TABLE_NAME, update_fields, float(unit_price or 0))
     add_material_model_link(update_fields, model, link_field, model_ids)
     feishu_update_record_fields(MATERIAL_TABLE_NAME, record_id, update_fields)
 
@@ -4242,6 +4274,8 @@ def sync_feishu_category_inventory(
     target_models: list[str],
     target_languages: list[str],
     category_status: str = STATUS_ACTIVE,
+    category_unit_price: float | None = None,
+    category_customs_code: str = "",
     category_record_id: str = "",
     model_renames: dict[str, str] | None = None,
     carry_model: str = "",
@@ -4256,6 +4290,8 @@ def sync_feishu_category_inventory(
     old_product = old_product.strip()
     new_product = new_product.strip()
     category_status = normalize_enabled_status(category_status)
+    category_unit_price = None if category_unit_price is None else float(category_unit_price)
+    category_customs_code = category_customs_code.strip()
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
 
@@ -4312,20 +4348,26 @@ def sync_feishu_category_inventory(
 
     created_category = False
     if not category_record_id:
+        category_fields: dict[str, object] = {
+            "物料品类": new_product,
+            "是否无需型号": "是" if no_model else "否",
+            "是否无需语种": "是" if no_language else "否",
+            "启用状态": category_status,
+            "库存行数": plan["target_count"],
+            "产品型号数量": len(plan["models"]),
+            "语种数量": len(plan["languages"]),
+            "备注": "",
+        }
+        set_feishu_unit_price(CATEGORY_TABLE_NAME, category_fields, category_unit_price)
+        set_first_plain_field(
+            CATEGORY_TABLE_NAME,
+            category_fields,
+            ["海关编码"],
+            category_customs_code,
+        )
         created = feishu_batch_create_records(
-            "物料品类",
-            [
-                {
-                    "物料品类": new_product,
-                    "是否无需型号": "是" if no_model else "否",
-                    "是否无需语种": "是" if no_language else "否",
-                    "启用状态": category_status,
-                    "库存行数": plan["target_count"],
-                    "产品型号数量": len(plan["models"]),
-                    "语种数量": len(plan["languages"]),
-                    "备注": "",
-                }
-            ],
+            CATEGORY_TABLE_NAME,
+            [category_fields],
         )
         category_record_id = feishu_record_id(created[0] if created else {})
         if not category_record_id:
@@ -4345,11 +4387,11 @@ def sync_feishu_category_inventory(
             "语种": target["language"],
             "当前库存": int(target["quantity"]),
             "备注": target["remark"],
-            "单价": float(target["unit_price"]),
             "海关编码": target["customs_code"],
             "启用状态": target["status"],
             "品类关联": [category_record_id],
         }
+        set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
         add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
         create_fields.append(fields)
 
@@ -4371,11 +4413,11 @@ def sync_feishu_category_inventory(
             "语种": target["language"],
             "当前库存": int(target["quantity"]),
             "备注": target["remark"],
-            "单价": float(target["unit_price"]),
             "海关编码": target["customs_code"],
             "启用状态": target["status"],
             "品类关联": [category_record_id],
         }
+        set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
         add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
         keeper_updates.append({"record_id": target["keeper_id"], "fields": fields})
     feishu_batch_update_record_fields("物料主数据", keeper_updates)
@@ -4391,19 +4433,23 @@ def sync_feishu_category_inventory(
         relation_update_count += feishu_batch_update_record_fields(table_name, updates)
 
     deleted_count = feishu_batch_delete_record_ids("物料主数据", plan["delete_ids"])
-    feishu_update_record_fields(
-        "物料品类",
-        category_record_id,
-        {
-            "物料品类": new_product,
-            "是否无需型号": "是" if no_model else "否",
-            "是否无需语种": "是" if no_language else "否",
-            "启用状态": category_status,
-            "库存行数": plan["target_count"],
-            "产品型号数量": len(plan["models"]),
-            "语种数量": len(plan["languages"]),
-        },
+    category_update_fields: dict[str, object] = {
+        "物料品类": new_product,
+        "是否无需型号": "是" if no_model else "否",
+        "是否无需语种": "是" if no_language else "否",
+        "启用状态": category_status,
+        "库存行数": plan["target_count"],
+        "产品型号数量": len(plan["models"]),
+        "语种数量": len(plan["languages"]),
+    }
+    set_feishu_unit_price(CATEGORY_TABLE_NAME, category_update_fields, category_unit_price)
+    set_first_plain_field(
+        CATEGORY_TABLE_NAME,
+        category_update_fields,
+        ["海关编码"],
+        category_customs_code,
     )
+    feishu_update_record_fields(CATEGORY_TABLE_NAME, category_record_id, category_update_fields)
 
     return {
         **plan,
@@ -4478,10 +4524,10 @@ def add_feishu_material_category_payload(
             "语种": str(row[3]),
             "当前库存": int(row[4]),
             "备注": "",
-            "单价": float(row[5] or 0),
             "启用状态": STATUS_ACTIVE,
             "品类关联": [category_record_id] if category_record_id else [],
         }
+        set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(row[5] or 0))
         add_material_model_link(fields, str(row[2]) or NO_MODEL_TEXT, model_link_field, model_record_ids)
         records.append(fields)
 
@@ -5778,6 +5824,8 @@ def render_add_category_form() -> None:
         bool(current_languages) and set(current_languages) == {NO_LANGUAGE_TEXT}
     )
     current_category_status = normalize_enabled_status((selected_category or {}).get("status"))
+    current_category_unit_price = (selected_category or {}).get("unit_price")
+    current_category_customs_code = str((selected_category or {}).get("customs_code") or "")
     editor_key = category_id or "new"
 
     with st.container(border=True):
@@ -5787,7 +5835,11 @@ def render_add_category_form() -> None:
             placeholder="例如：新版宣传册(New Brochure)",
             key=f"category_name_{editor_key}",
         ).strip()
-        category_status = st.radio(
+        metadata_status_col, metadata_price_col, metadata_customs_col = st.columns(
+            [1.2, 1, 1.2],
+            vertical_alignment="bottom",
+        )
+        category_status = metadata_status_col.radio(
             "品类启用状态 *",
             list(MATERIAL_STATUS_OPTIONS),
             index=list(MATERIAL_STATUS_OPTIONS).index(current_category_status),
@@ -5795,6 +5847,28 @@ def render_add_category_form() -> None:
             help="停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。",
             key=f"category_status_{editor_key}",
         )
+        category_unit_price_text = metadata_price_col.text_input(
+            "单价（美元）",
+            value=""
+            if current_category_unit_price is None
+            else f"{float(current_category_unit_price):g}",
+            placeholder="可选，例如：0.06",
+            key=f"category_unit_price_{editor_key}",
+        )
+        category_customs_code = metadata_customs_col.text_input(
+            "海关编码",
+            value=current_category_customs_code,
+            placeholder="可选，例如：4911101000",
+            key=f"category_customs_code_{editor_key}",
+        ).strip()
+        category_metadata_error = ""
+        try:
+            category_unit_price = parse_optional_unit_price(category_unit_price_text)
+        except ValueError as exc:
+            category_unit_price = None
+            category_metadata_error = str(exc)
+            st.error(category_metadata_error)
+        st.caption("单价和海关编码可留空；新增库存组合默认继承这里的值，也可在下方单独调整。")
         rule_col_a, rule_col_b = st.columns(2)
         no_model = rule_col_a.checkbox(
             "该品类无需产品型号",
@@ -5973,7 +6047,7 @@ def render_add_category_form() -> None:
             )
 
         plan: dict | None = None
-        if product and models and languages and not model_rename_error:
+        if product and models and languages and not model_rename_error and not category_metadata_error:
             try:
                 plan = build_category_inventory_plan(
                     current_records,
@@ -5998,6 +6072,13 @@ def render_add_category_form() -> None:
             ).hex[:12]
             target_state_key = f"category_target_values_{editor_key}_{signature}"
             revision_key = f"category_target_revision_{editor_key}_{signature}"
+            defaults_state_key = f"category_target_defaults_{editor_key}_{signature}"
+            category_defaults = {
+                "unit_price": float(category_unit_price or 0),
+                "customs_code": category_customs_code,
+                "status": category_status,
+            }
+            previous_category_defaults = st.session_state.get(defaults_state_key)
             saved_target_values = st.session_state.get(target_state_key, {})
             revision = int(st.session_state.get(revision_key, 0) or 0)
             valid_target_keys = {target["key"] for target in plan["targets"]}
@@ -6013,9 +6094,21 @@ def render_add_category_form() -> None:
             base_target_values = {
                 target["key"]: {
                     "quantity": int(target["quantity"]),
-                    "unit_price": float(target["unit_price"] or 0),
-                    "customs_code": str(target["customs_code"] or ""),
-                    "status": normalize_enabled_status(target["status"]),
+                    "unit_price": float(
+                        category_defaults["unit_price"]
+                        if target["is_new"]
+                        else target["unit_price"] or 0
+                    ),
+                    "customs_code": str(
+                        category_defaults["customs_code"]
+                        if target["is_new"]
+                        else target["customs_code"] or ""
+                    ),
+                    "status": normalize_enabled_status(
+                        category_defaults["status"]
+                        if target["is_new"]
+                        else target["status"]
+                    ),
                 }
                 for target in plan["targets"]
             }
@@ -6044,6 +6137,27 @@ def render_add_category_form() -> None:
                     values["status"] = normalize_enabled_status(st.session_state[status_key])
                 if category_status == STATUS_INACTIVE:
                     values["status"] = STATUS_INACTIVE
+
+            if (
+                not is_edit
+                and isinstance(previous_category_defaults, dict)
+                and previous_category_defaults != category_defaults
+            ):
+                previous_price = float(previous_category_defaults.get("unit_price") or 0)
+                previous_customs = str(previous_category_defaults.get("customs_code") or "")
+                previous_status = normalize_enabled_status(previous_category_defaults.get("status"))
+                for values in target_values.values():
+                    if float(values.get("unit_price") or 0) == previous_price:
+                        values["unit_price"] = category_defaults["unit_price"]
+                    if str(values.get("customs_code") or "") == previous_customs:
+                        values["customs_code"] = category_defaults["customs_code"]
+                    if normalize_enabled_status(values.get("status")) == previous_status:
+                        values["status"] = category_defaults["status"]
+                st.session_state[target_state_key] = target_values
+                st.session_state[defaults_state_key] = category_defaults
+                st.session_state[revision_key] = revision + 1
+                st.rerun()
+            st.session_state[defaults_state_key] = category_defaults
 
             plan = build_category_inventory_plan(
                 current_records,
@@ -6222,6 +6336,8 @@ def render_add_category_form() -> None:
             st.error("请至少保留或新增一个产品型号，或勾选“无需产品型号”。")
         elif not languages:
             st.error("请至少保留或新增一个语种，或勾选“无需语种”。")
+        elif category_metadata_error:
+            st.error(category_metadata_error)
         elif plan is None:
             st.error("请检查库存组合中的数量、单价、海关编码和启用状态。")
         elif plan["discarded_quantity"] > 0 and not discard_confirmed:
@@ -6240,6 +6356,8 @@ def render_add_category_form() -> None:
                             target_models=models,
                             target_languages=languages,
                             category_status=category_status,
+                            category_unit_price=category_unit_price,
+                            category_customs_code=category_customs_code,
                             category_record_id=category_id,
                             model_renames=model_renames,
                             carry_model=carry_model,

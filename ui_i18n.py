@@ -210,6 +210,7 @@ EN_DISPLAY_TEXT = {
     "变更后数量": "Quantity After",
     "现存物料数量": "Current Quantity",
     "单价": "Unit Price",
+    "单价（美元）": "Unit Price (USD)",
     "现存物料总价值": "Total Inventory Value",
     "最后更新时间": "Last Updated",
     "物料编码": "Material Code",
@@ -388,6 +389,8 @@ EN_DISPLAY_TEXT = {
     "请选择飞书部门": "Select a Feishu department",
     "全部申请人": "All applicants",
     "可选": "Optional",
+    "可选，例如：0.06": "Optional, e.g. 0.06",
+    "可选，例如：4911101000": "Optional, e.g. 4911101000",
     "物料编码 / 品类 / 型号 / 语种": "Material code / category / model / language",
     "请写明快递地址（包含收件人信息、邮编、具体地址）": (
         "Enter the delivery address, including recipient information, postal code, and street address"
@@ -412,6 +415,9 @@ EN_DISPLAY_TEXT = {
     ),
     "停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。": (
         "Inactive categories are hidden from material requests while historical inventory and requests remain available."
+    ),
+    "单价和海关编码可留空；新增库存组合默认继承这里的值，也可在下方单独调整。": (
+        "Unit price and customs code are optional. New inventory combinations inherit these defaults and can be adjusted individually below."
     ),
     "品类停用时，旗下所有库存组合会同步停用；重新启用品类后可再选择需要启用的库存行。": (
         "When a category is inactive, all of its inventory combinations are also deactivated. After reactivating the category, choose which inventory rows to enable."
@@ -541,6 +547,8 @@ EN_DISPLAY_TEXT = {
     "请检查库存组合中的数量、单价、海关编码和启用状态。": (
         "Check the quantity, unit price, customs code, and status in the inventory combinations."
     ),
+    "单价（美元）必须填写有效数字。": "Unit price (USD) must be a valid number.",
+    "单价（美元）不能小于 0。": "Unit price (USD) cannot be negative.",
     "请先在库存组合明细中勾选至少一行。": (
         "Select at least one row in the inventory combination details first."
     ),

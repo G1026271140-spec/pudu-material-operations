@@ -23,6 +23,17 @@ def material_row(record_id: str, product: str, status: str | None) -> dict:
 
 
 class MaterialActivationTests(unittest.TestCase):
+    def test_unit_price_writer_uses_current_usd_field_name(self) -> None:
+        fields: dict[str, object] = {}
+        with patch.object(
+            app,
+            "feishu_table_fields",
+            return_value={"单价（美元）": {"type": 2}},
+        ):
+            app.set_feishu_unit_price(app.MATERIAL_TABLE_NAME, fields, 0.06)
+
+        self.assertEqual(fields, {"单价（美元）": 0.06})
+
     def test_inventory_dataframe_excludes_inactive_and_keeps_legacy_blank_rows(self) -> None:
         df = app.feishu_inventory_dataframe_from_rows(
             [
@@ -33,6 +44,14 @@ class MaterialActivationTests(unittest.TestCase):
         )
 
         self.assertEqual(df["物料编码"].tolist(), ["MAT-1", "MAT-3"])
+
+    def test_inventory_dataframe_prefers_current_usd_unit_price_field(self) -> None:
+        row = material_row("1", "启用品类", app.STATUS_ACTIVE)
+        row["fields"]["单价（美元）"] = 3.5
+
+        df = app.feishu_inventory_dataframe_from_rows([row])
+
+        self.assertEqual(float(df.iloc[0][app.PRICE_COL]), 3.5)
 
     def test_request_options_require_active_category_and_active_inventory(self) -> None:
         categories = [

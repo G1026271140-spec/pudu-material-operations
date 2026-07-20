@@ -31,6 +31,17 @@ def inventory_record(
 
 
 class CategoryInventoryPlanTests(unittest.TestCase):
+    def test_optional_category_unit_price_accepts_blank_and_nonnegative_values(self) -> None:
+        self.assertIsNone(app.parse_optional_unit_price(""))
+        self.assertEqual(app.parse_optional_unit_price("0"), 0)
+        self.assertEqual(app.parse_optional_unit_price("0.06"), 0.06)
+
+    def test_optional_category_unit_price_rejects_invalid_or_negative_values(self) -> None:
+        with self.assertRaisesRegex(ValueError, "有效数字"):
+            app.parse_optional_unit_price("USD 1")
+        with self.assertRaisesRegex(ValueError, "不能小于 0"):
+            app.parse_optional_unit_price("-0.01")
+
     def test_model_rename_updates_all_language_rows_without_recreating_inventory(self) -> None:
         records = [
             inventory_record("1", "BG1", "English", 10, unit_price=12.5, customs_code="HS-1"),
