@@ -1281,6 +1281,13 @@ def material_record_is_active(record: dict) -> bool:
     return normalize_enabled_status(record.get("status")) == STATUS_ACTIVE
 
 
+def enforce_category_inventory_status(plan: dict, category_status: object) -> dict:
+    if normalize_enabled_status(category_status) == STATUS_INACTIVE:
+        for target in list(plan.get("targets") or []):
+            target["status"] = STATUS_INACTIVE
+    return plan
+
+
 def normalize_option_label(value: object) -> str:
     return re.sub(r"\s+", " ", str(value).strip())
 
@@ -4197,6 +4204,7 @@ def sync_feishu_category_inventory(
         target_values=target_values,
         referenced_ids=referenced_ids,
     )
+    plan = enforce_category_inventory_status(plan, category_status)
 
     created_category = False
     if not category_record_id:
@@ -5815,6 +5823,7 @@ def render_add_category_form() -> None:
                     carry_language=carry_language,
                     target_values=saved_target_values,
                 )
+            plan = enforce_category_inventory_status(plan, category_status)
             target_df = pd.DataFrame(
                 [
                     {
@@ -5831,11 +5840,14 @@ def render_add_category_form() -> None:
                 ]
             )
             revision = int(st.session_state.get(revision_key, 0) or 0)
+            disabled_target_columns = ["产品型号", "语种", "处理方式"]
+            if category_status == STATUS_INACTIVE:
+                disabled_target_columns.append("启用状态")
             edited_target_df = st.data_editor(
                 target_df,
                 width="stretch",
                 hide_index=True,
-                disabled=["产品型号", "语种", "处理方式"],
+                disabled=disabled_target_columns,
                 column_config={
                     "选择": st.column_config.CheckboxColumn("选择"),
                     "库存数量": st.column_config.NumberColumn("库存数量 *", step=1, format="%d", required=True),
@@ -5861,6 +5873,7 @@ def render_add_category_form() -> None:
                     carry_language=carry_language,
                     target_values=target_values,
                 )
+                plan = enforce_category_inventory_status(plan, category_status)
             except (TypeError, ValueError) as exc:
                 st.error(str(exc))
                 plan = None
@@ -5871,28 +5884,31 @@ def render_add_category_form() -> None:
                     for row in edited_target_df.to_dict("records")
                     if bool(row.get("选择"))
                 ]
-                batch_status_col, batch_button_col = st.columns([1, 1], vertical_alignment="bottom")
-                batch_status = batch_status_col.selectbox(
-                    "批量设置启用状态",
-                    list(MATERIAL_STATUS_OPTIONS),
-                    key=f"category_batch_status_{editor_key}_{signature}",
-                )
-                if batch_button_col.button(
-                    "应用到已勾选库存行",
-                    icon=":material/checklist:",
-                    width="stretch",
-                    key=f"category_apply_batch_status_{editor_key}_{signature}",
-                ):
-                    if not selected_target_keys:
-                        st.warning("请先在库存组合明细中勾选至少一行。")
-                    else:
-                        for target_key in selected_target_keys:
-                            if target_key in target_values:
-                                target_values[target_key]["status"] = batch_status
-                        st.session_state[target_state_key] = target_values
-                        st.session_state[revision_key] = revision + 1
-                        st.rerun()
-                st.caption("批量设置会先更新当前表格，点击下方保存品类配置后才会同步至飞书。")
+                if category_status == STATUS_INACTIVE:
+                    st.info("品类停用时，旗下所有库存组合会同步停用；重新启用品类后可再选择需要启用的库存行。")
+                else:
+                    batch_status_col, batch_button_col = st.columns([1, 1], vertical_alignment="bottom")
+                    batch_status = batch_status_col.selectbox(
+                        "批量设置启用状态",
+                        list(MATERIAL_STATUS_OPTIONS),
+                        key=f"category_batch_status_{editor_key}_{signature}",
+                    )
+                    if batch_button_col.button(
+                        "应用到已勾选库存行",
+                        icon=":material/checklist:",
+                        width="stretch",
+                        key=f"category_apply_batch_status_{editor_key}_{signature}",
+                    ):
+                        if not selected_target_keys:
+                            st.warning("请先在库存组合明细中勾选至少一行。")
+                        else:
+                            for target_key in selected_target_keys:
+                                if target_key in target_values:
+                                    target_values[target_key]["status"] = batch_status
+                            st.session_state[target_state_key] = target_values
+                            st.session_state[revision_key] = revision + 1
+                            st.rerun()
+                    st.caption("批量设置会先更新当前表格，点击下方保存品类配置后才会同步至飞书。")
 
                 metric_a, metric_b, metric_c, metric_d = st.columns(4)
                 metric_a.metric("当前组合", plan["current_count"])

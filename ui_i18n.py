@@ -392,6 +392,9 @@ EN_DISPLAY_TEXT = {
     "停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。": (
         "Inactive categories are hidden from material requests while historical inventory and requests remain available."
     ),
+    "品类停用时，旗下所有库存组合会同步停用；重新启用品类后可再选择需要启用的库存行。": (
+        "When a category is inactive, all of its inventory combinations are also deactivated. After reactivating the category, choose which inventory rows to enable."
+    ),
     "这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。": (
         "This only controls where request and transaction links move; enter inventory quantities in the table below."
     ),
