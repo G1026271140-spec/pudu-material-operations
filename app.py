@@ -116,6 +116,15 @@ MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "修改与撤回")
+MATERIAL_DASHBOARD_MODULES = (
+    "概览指标",
+    "品类库存数量",
+    "品类库存价值",
+    "语种分布",
+    "库存预警",
+)
+MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存")
+DEFAULT_LOW_STOCK_THRESHOLD = 100
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
@@ -1604,6 +1613,93 @@ def apply_inventory_filters(
     if only_stocked:
         mask &= df[QTY_COL] != 0
     return df[mask]
+
+
+def material_dashboard_dataframe(records: list[dict]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "记录ID": str(row.get("record_id") or ""),
+                "物料编码": str(row.get("material_code") or ""),
+                "物料品类": str(row.get("category") or ""),
+                "产品型号": str(row.get("model") or NO_MODEL_TEXT),
+                "语种": str(row.get("language") or ""),
+                "库存数量": int(row.get("quantity") or 0),
+                "单价": float(row.get("unit_price") or 0),
+                "总价值": float(row.get("total_value") or 0),
+            }
+            for row in records
+        ],
+        columns=["记录ID", "物料编码", "物料品类", "产品型号", "语种", "库存数量", "单价", "总价值"],
+    )
+
+
+def material_stock_status(quantity: object, low_stock_threshold: int) -> str:
+    normalized_quantity = int(quantity or 0)
+    if normalized_quantity < 0:
+        return "负库存"
+    if normalized_quantity == 0:
+        return "零库存"
+    if normalized_quantity <= max(int(low_stock_threshold), 0):
+        return "低库存"
+    return "正常库存"
+
+
+def apply_material_dashboard_filters(
+    df: pd.DataFrame,
+    *,
+    categories: list[str],
+    models: list[str],
+    languages: list[str],
+    stock_statuses: list[str],
+    low_stock_threshold: int,
+) -> pd.DataFrame:
+    filtered = df.copy()
+    filtered["库存状态"] = filtered["库存数量"].map(
+        lambda quantity: material_stock_status(quantity, low_stock_threshold)
+    )
+    if categories:
+        filtered = filtered[filtered["物料品类"].isin(categories)]
+    if models:
+        filtered = filtered[filtered["产品型号"].isin(models)]
+    if languages:
+        filtered = filtered[filtered["语种"].isin(languages)]
+    if stock_statuses:
+        filtered = filtered[filtered["库存状态"].isin(stock_statuses)]
+    return filtered.reset_index(drop=True)
+
+
+def material_dashboard_summary(df: pd.DataFrame) -> dict[str, float | int]:
+    if df.empty:
+        return {
+            "combination_count": 0,
+            "quantity_sum": 0,
+            "total_value": 0.0,
+            "negative_count": 0,
+            "zero_count": 0,
+        }
+    return {
+        "combination_count": len(df),
+        "quantity_sum": int(df["库存数量"].sum()),
+        "total_value": float(df["总价值"].sum()),
+        "negative_count": int((df["库存数量"] < 0).sum()),
+        "zero_count": int((df["库存数量"] == 0).sum()),
+    }
+
+
+def material_dashboard_grouped_data(
+    df: pd.DataFrame,
+    group_column: str,
+    value_column: str,
+    *,
+    limit: int = 12,
+) -> pd.DataFrame:
+    if df.empty:
+        return pd.DataFrame(columns=[group_column, value_column])
+    grouped = df.groupby(group_column, as_index=False, dropna=False)[value_column].sum()
+    grouped["_sort"] = grouped[value_column].abs()
+    grouped = grouped.sort_values(["_sort", group_column], ascending=[False, True]).head(limit)
+    return grouped.drop(columns=["_sort"]).reset_index(drop=True)
 
 
 def navigate_to_inventory(key: str, label: str = "查看实时库存表") -> None:
@@ -6050,17 +6146,185 @@ def render_transaction_admin() -> None:
         st.caption("勾选一条有效记录可编辑；勾选多条有效记录可批量撤回。")
 
 
-def render_material_data_admin() -> None:
-    render_section_header("01", "库存行维护", "搜索、编辑或删除物料主数据记录")
+def normalize_multiselect_state(key: str, options: list[str]) -> None:
+    current = st.session_state.get(key)
+    if not isinstance(current, (list, tuple, set)):
+        return
+    normalized = [str(value) for value in current if str(value) in options]
+    if list(current) != normalized:
+        st.session_state[key] = normalized
+
+
+def render_material_dashboard(records: list[dict]) -> list[dict]:
+    render_section_header("01", "库存数据看板", "自定义查看库存规模、价值分布和预警状态")
+    dashboard_df = material_dashboard_dataframe(records)
+    if dashboard_df.empty:
+        st.info("暂无物料数据可供分析。")
+        return []
+
+    with st.expander("看板设置", expanded=False, icon=":material/tune:"):
+        enabled_modules = st.multiselect(
+            "显示内容",
+            list(MATERIAL_DASHBOARD_MODULES),
+            default=list(MATERIAL_DASHBOARD_MODULES),
+            key="material_dashboard_modules",
+        )
+        low_stock_threshold = int(
+            st.number_input(
+                "低库存阈值",
+                min_value=0,
+                value=DEFAULT_LOW_STOCK_THRESHOLD,
+                step=10,
+                key="material_dashboard_low_stock_threshold",
+            )
+        )
+
+    filter_columns = st.columns([2.1, 1.55, 1.55, 1.4])
+    category_options = sorted(dashboard_df["物料品类"].dropna().astype(str).unique().tolist())
+    normalize_multiselect_state("material_dashboard_categories", category_options)
+    selected_categories = filter_columns[0].multiselect(
+        "物料品类",
+        category_options,
+        key="material_dashboard_categories",
+        placeholder="全部品类",
+    )
+
+    model_scope = (
+        dashboard_df[dashboard_df["物料品类"].isin(selected_categories)]
+        if selected_categories
+        else dashboard_df
+    )
+    model_options = sorted(model_scope["产品型号"].dropna().astype(str).unique().tolist())
+    normalize_multiselect_state("material_dashboard_models", model_options)
+    selected_models = filter_columns[1].multiselect(
+        "产品型号",
+        model_options,
+        key="material_dashboard_models",
+        placeholder="全部型号",
+    )
+
+    language_scope = model_scope[model_scope["产品型号"].isin(selected_models)] if selected_models else model_scope
+    language_options = sort_languages(language_scope["语种"].dropna().astype(str).unique().tolist())
+    normalize_multiselect_state("material_dashboard_languages", language_options)
+    selected_languages = filter_columns[2].multiselect(
+        "语种",
+        language_options,
+        key="material_dashboard_languages",
+        placeholder="全部语种",
+    )
+    selected_statuses = filter_columns[3].multiselect(
+        "库存状态",
+        list(MATERIAL_STOCK_STATUSES),
+        key="material_dashboard_stock_statuses",
+        placeholder="全部状态",
+    )
+
+    filtered_df = apply_material_dashboard_filters(
+        dashboard_df,
+        categories=selected_categories,
+        models=selected_models,
+        languages=selected_languages,
+        stock_statuses=selected_statuses,
+        low_stock_threshold=low_stock_threshold,
+    )
+    st.caption(f"当前看板与下方明细联动，共显示 {len(filtered_df):,} 条库存组合。")
+
+    if "概览指标" in enabled_modules:
+        summary = material_dashboard_summary(filtered_df)
+        metric_columns = st.columns(5)
+        metric_columns[0].metric("库存组合数", f"{summary['combination_count']:,}", border=True)
+        metric_columns[1].metric("库存总数量", f"{summary['quantity_sum']:,}", border=True)
+        metric_columns[2].metric("库存总价值", f"{summary['total_value']:,.2f}", border=True)
+        metric_columns[3].metric("负库存行", f"{summary['negative_count']:,}", border=True)
+        metric_columns[4].metric("零库存行", f"{summary['zero_count']:,}", border=True)
+
+    chart_specs: list[tuple[str, pd.DataFrame, str, str, str]] = []
+    if "品类库存数量" in enabled_modules:
+        chart_specs.append(
+            (
+                "品类库存数量",
+                material_dashboard_grouped_data(filtered_df, "物料品类", "库存数量"),
+                "物料品类",
+                "库存数量",
+                "#176B87",
+            )
+        )
+    if "品类库存价值" in enabled_modules:
+        chart_specs.append(
+            (
+                "品类库存价值",
+                material_dashboard_grouped_data(filtered_df, "物料品类", "总价值"),
+                "物料品类",
+                "总价值",
+                "#138A8A",
+            )
+        )
+    if "语种分布" in enabled_modules:
+        chart_specs.append(
+            (
+                "语种库存分布",
+                material_dashboard_grouped_data(filtered_df, "语种", "库存数量"),
+                "语种",
+                "库存数量",
+                "#E06B4F",
+            )
+        )
+
+    for start in range(0, len(chart_specs), 2):
+        batch = chart_specs[start : start + 2]
+        chart_columns = st.columns(len(batch))
+        for chart_column, (title, chart_df, x_column, y_column, color) in zip(chart_columns, batch):
+            with chart_column:
+                st.markdown(f"**{ui_text(title)}**")
+                if chart_df.empty:
+                    st.info("当前筛选无可展示数据。")
+                    continue
+                localized_x = ui_text(x_column)
+                localized_y = ui_text(y_column)
+                localized_chart_df = chart_df.rename(columns={x_column: localized_x, y_column: localized_y})
+                st.bar_chart(
+                    localized_chart_df,
+                    x=localized_x,
+                    y=localized_y,
+                    color=color,
+                    height=290,
+                    width="stretch",
+                )
+
+    if "库存预警" in enabled_modules:
+        st.markdown(f"**{ui_text('库存预警')}**")
+        alert_df = filtered_df[filtered_df["库存状态"] != "正常库存"].copy()
+        if alert_df.empty:
+            st.success("当前筛选下没有库存预警。")
+        else:
+            status_order = {"负库存": 0, "零库存": 1, "低库存": 2}
+            alert_df["_status_order"] = alert_df["库存状态"].map(status_order).fillna(9)
+            alert_df = alert_df.sort_values(["_status_order", "库存数量", "物料品类"]).drop(
+                columns=["_status_order"]
+            )
+            st.dataframe(
+                alert_df[["库存状态", "物料编码", "物料品类", "产品型号", "语种", "库存数量"]],
+                width="stretch",
+                hide_index=True,
+                height=min(320, 38 + 35 * max(min(len(alert_df), 8), 1)),
+            )
+
+    selected_ids = set(filtered_df["记录ID"].astype(str).tolist())
+    return [row for row in records if str(row.get("record_id") or "") in selected_ids]
+
+
+def render_material_data_admin(records: list[dict] | None = None) -> None:
+    render_section_header("02", "库存行维护", "搜索、编辑或删除物料主数据记录")
     message = st.session_state.pop("material_admin_message", "")
     if message:
         st.success(message)
 
     search_text = st.text_input("搜索库存行", key="item_search_text", placeholder="物料编码 / 品类 / 型号 / 语种")
-    with st.spinner("物料数据加载中，请稍后......"):
-        records = load_feishu_inventory_records()
+    if records is None:
+        with st.spinner("物料数据加载中，请稍后......"):
+            records = load_feishu_inventory_records()
     if not records:
-        st.info("暂无物料行。")
+        st.info("当前看板筛选下暂无物料行。")
         return
 
     record_map = {row["record_id"]: row for row in records}
@@ -6400,7 +6664,10 @@ def render_material_database_page() -> None:
             icon=":material/open_in_new:",
             width="stretch",
         )
-    render_material_data_admin()
+    with st.spinner("物料数据加载中，请稍后......"):
+        records = load_feishu_inventory_records()
+    filtered_records = render_material_dashboard(records)
+    render_material_data_admin(filtered_records)
 
 
 def apply_changes(changes: list[dict[str, object]]) -> None:

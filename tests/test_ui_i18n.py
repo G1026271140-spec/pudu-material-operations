@@ -38,6 +38,20 @@ class UiInternationalizationTests(unittest.TestCase):
             "产品折页(Single Product Brochure)",
         )
 
+    def test_dashboard_copy_translates_without_changing_filter_values(self) -> None:
+        self.assertEqual(
+            translate_ui_text("库存数据看板", LANGUAGE_EN),
+            "Inventory Dashboard",
+        )
+        self.assertEqual(
+            translate_ui_text("负库存", LANGUAGE_EN),
+            "Negative Inventory",
+        )
+        self.assertEqual(
+            translate_ui_text("产品折页(Single Product Brochure)", LANGUAGE_EN),
+            "产品折页(Single Product Brochure)",
+        )
+
     def test_column_localization_does_not_rename_or_modify_data(self) -> None:
         source = pd.DataFrame(
             [
