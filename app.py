@@ -5799,13 +5799,13 @@ def render_add_category_form() -> None:
         no_model = rule_col_a.checkbox(
             "该品类无需产品型号",
             value=current_no_model,
-            help="勾选后产品型号统一为“无需型号”，库存数量可在下方组合表中重新分配。",
+            help="勾选后产品型号统一为“无需型号”，库存数量可在下方库存组合编辑区重新分配。",
             key=f"category_no_model_{editor_key}",
         )
         no_language = rule_col_b.checkbox(
             "该品类无需语种",
             value=current_no_language,
-            help="勾选后语种统一为“无需语种”，库存数量可在下方组合表中重新分配。",
+            help="勾选后语种统一为“无需语种”，库存数量可在下方库存组合编辑区重新分配。",
             key=f"category_no_language_{editor_key}",
         )
 
@@ -5857,28 +5857,76 @@ def render_add_category_form() -> None:
         model_renames: dict[str, str] = {}
         model_rename_error = ""
         editable_current_models = [model for model in current_models if model != NO_MODEL_TEXT]
+        rename_state_key = f"category_model_rename_state_{editor_key}"
+        rename_state = {
+            str(source): str(target)
+            for source, target in dict(st.session_state.get(rename_state_key, {}) or {}).items()
+            if str(source) in editable_current_models and str(target).strip()
+        }
         if is_edit and editable_current_models and not no_model:
-            st.markdown(f"**{ui_text('修改已有型号')}**")
-            st.caption("修改后会同步更新当前品类下所有对应库存行；库存、单价、海关编码、启用状态和历史关联保持不变。")
-            model_rename_df = pd.DataFrame(
-                [
-                    {"当前型号": model, "修改后型号": model}
-                    for model in editable_current_models
-                ]
-            )
-            edited_model_rename_df = st.data_editor(
-                model_rename_df,
-                width="stretch",
-                hide_index=True,
-                disabled=["当前型号"],
-                column_config={
-                    "当前型号": st.column_config.TextColumn("当前型号"),
-                    "修改后型号": st.column_config.TextColumn("修改后型号 *", required=True),
-                },
-                key=f"category_model_renames_{editor_key}",
-            )
+            with st.expander("修改已有型号", expanded=False):
+                st.caption("一次选择一个型号进行修改；应用后可继续选择其他型号，库存和历史关联保持不变。")
+                rename_select_col, rename_input_col, rename_button_col = st.columns(
+                    [1.1, 1.5, 0.7],
+                    vertical_alignment="bottom",
+                )
+                rename_source = rename_select_col.selectbox(
+                    "选择要修改的型号",
+                    editable_current_models,
+                    key=f"category_model_rename_source_{editor_key}",
+                )
+                rename_token = uuid.uuid5(uuid.NAMESPACE_URL, rename_source).hex[:10]
+                rename_target = rename_input_col.text_input(
+                    "新的型号名称 *",
+                    value=rename_state.get(rename_source, rename_source),
+                    key=f"category_model_rename_target_{editor_key}_{rename_token}",
+                ).strip()
+                if rename_button_col.button(
+                    "应用改名",
+                    icon=":material/edit:",
+                    width="stretch",
+                    key=f"category_apply_model_rename_{editor_key}",
+                ):
+                    candidate_state = dict(rename_state)
+                    if rename_target == rename_source:
+                        candidate_state.pop(rename_source, None)
+                    else:
+                        candidate_state[rename_source] = rename_target
+                    try:
+                        category_model_rename_values(
+                            pd.DataFrame(
+                                [
+                                    {
+                                        "当前型号": model,
+                                        "修改后型号": candidate_state.get(model, model),
+                                    }
+                                    for model in editable_current_models
+                                ]
+                            )
+                        )
+                    except ValueError as exc:
+                        st.error(str(exc))
+                    else:
+                        st.session_state[rename_state_key] = candidate_state
+                        st.rerun()
+                if rename_state:
+                    st.info(
+                        f"{ui_text('已设置')}："
+                        + "；".join(f"{source} → {target}" for source, target in rename_state.items())
+                    )
+                    st.caption("需要取消某项改名时，将新的型号名称改回原型号并再次应用。")
             try:
-                all_model_renames = category_model_rename_values(edited_model_rename_df)
+                all_model_renames = category_model_rename_values(
+                    pd.DataFrame(
+                        [
+                            {
+                                "当前型号": model,
+                                "修改后型号": rename_state.get(model, model),
+                            }
+                            for model in editable_current_models
+                        ]
+                    )
+                )
                 model_renames = {
                     source: target
                     for source, target in all_model_renames.items()
@@ -5913,14 +5961,14 @@ def render_add_category_form() -> None:
             carry_model = st.selectbox(
                 "被取消型号的历史关联迁移到 *",
                 models,
-                help="这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。",
+                help="这里只决定申请明细和流水的关联去向；库存数量请在下方库存组合编辑区填写。",
                 key=f"category_carry_model_{editor_key}",
             )
         if current_records and languages and removed_languages:
             carry_language = st.selectbox(
                 "被取消语种的历史关联迁移到 *",
                 languages,
-                help="这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。",
+                help="这里只决定申请明细和流水的关联去向；库存数量请在下方库存组合编辑区填写。",
                 key=f"category_carry_language_{editor_key}",
             )
 
@@ -5942,8 +5990,8 @@ def render_add_category_form() -> None:
         target_values: dict[tuple[str, str], dict[str, object]] = {}
         discard_confirmed = True
         if plan is not None:
-            st.markdown(f"**{ui_text('库存组合明细')}**")
-            st.caption("可填写每个组合的最终库存、单价、海关编码和启用状态；单价与海关编码可留空。")
+            st.markdown(f"**{ui_text('库存组合编辑')}**")
+            st.caption("选择一个型号和语种后编辑对应库存组合；切换到其他组合时，已经填写的内容会自动保留。")
             signature = uuid.uuid5(
                 uuid.NAMESPACE_URL,
                 "|".join(f"{target['model']}::{target['language']}" for target in plan["targets"]),
@@ -5951,110 +5999,184 @@ def render_add_category_form() -> None:
             target_state_key = f"category_target_values_{editor_key}_{signature}"
             revision_key = f"category_target_revision_{editor_key}_{signature}"
             saved_target_values = st.session_state.get(target_state_key, {})
-            if isinstance(saved_target_values, dict) and saved_target_values:
-                valid_target_keys = {target["key"] for target in plan["targets"]}
-                saved_target_values = {
+            revision = int(st.session_state.get(revision_key, 0) or 0)
+            valid_target_keys = {target["key"] for target in plan["targets"]}
+            saved_target_values = (
+                {
                     key: dict(value)
                     for key, value in saved_target_values.items()
                     if key in valid_target_keys and isinstance(value, dict)
                 }
-                plan = build_category_inventory_plan(
-                    current_records,
-                    product,
-                    models,
-                    languages,
-                    model_renames=model_renames,
-                    carry_model=carry_model,
-                    carry_language=carry_language,
-                    target_values=saved_target_values,
-                )
+                if isinstance(saved_target_values, dict)
+                else {}
+            )
+            base_target_values = {
+                target["key"]: {
+                    "quantity": int(target["quantity"]),
+                    "unit_price": float(target["unit_price"] or 0),
+                    "customs_code": str(target["customs_code"] or ""),
+                    "status": normalize_enabled_status(target["status"]),
+                }
+                for target in plan["targets"]
+            }
+            target_values = {
+                key: {**value, **dict(saved_target_values.get(key) or {})}
+                for key, value in base_target_values.items()
+            }
+
+            for target_key, values in target_values.items():
+                target_token = uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"{target_key[0]}::{target_key[1]}",
+                ).hex[:10]
+                widget_prefix = f"category_combo_{editor_key}_{signature}_{revision}_{target_token}"
+                quantity_key = f"{widget_prefix}_quantity"
+                unit_price_key = f"{widget_prefix}_unit_price"
+                customs_key = f"{widget_prefix}_customs"
+                status_key = f"{widget_prefix}_status"
+                if quantity_key in st.session_state:
+                    values["quantity"] = int(st.session_state[quantity_key])
+                if unit_price_key in st.session_state:
+                    values["unit_price"] = float(st.session_state[unit_price_key] or 0)
+                if customs_key in st.session_state:
+                    values["customs_code"] = str(st.session_state[customs_key] or "").strip()
+                if status_key in st.session_state:
+                    values["status"] = normalize_enabled_status(st.session_state[status_key])
+                if category_status == STATUS_INACTIVE:
+                    values["status"] = STATUS_INACTIVE
+
+            plan = build_category_inventory_plan(
+                current_records,
+                product,
+                models,
+                languages,
+                model_renames=model_renames,
+                carry_model=carry_model,
+                carry_language=carry_language,
+                target_values=target_values,
+            )
             plan = enforce_category_inventory_status(plan, category_status)
-            target_df = pd.DataFrame(
-                [
-                    {
-                        "选择": False,
-                        "产品型号": target["model"],
-                        "语种": target["language"],
-                        "库存数量": int(target["quantity"]),
-                        "单价": float(target["unit_price"]) if target["unit_price"] else None,
-                        "海关编码": target["customs_code"],
-                        "启用状态": target["status"],
-                        "处理方式": target["action"],
-                    }
-                    for target in plan["targets"]
-                ]
+
+            selector_model_col, selector_language_col = st.columns(2)
+            selected_target_model = selector_model_col.selectbox(
+                "选择要编辑的产品型号",
+                models,
+                key=f"category_combo_model_{editor_key}_{signature}",
             )
-            revision = int(st.session_state.get(revision_key, 0) or 0)
-            disabled_target_columns = ["产品型号", "语种", "处理方式"]
-            if category_status == STATUS_INACTIVE:
-                disabled_target_columns.append("启用状态")
-            edited_target_df = st.data_editor(
-                target_df,
-                width="stretch",
-                hide_index=True,
-                disabled=disabled_target_columns,
-                column_config={
-                    "选择": st.column_config.CheckboxColumn("选择"),
-                    "库存数量": st.column_config.NumberColumn("库存数量 *", step=1, format="%d", required=True),
-                    "单价": st.column_config.NumberColumn("单价", min_value=0.0, step=0.01, format="%.2f"),
-                    "海关编码": st.column_config.TextColumn("海关编码"),
-                    "启用状态": st.column_config.SelectboxColumn(
-                        "启用状态 *",
-                        options=list(MATERIAL_STATUS_OPTIONS),
-                        required=True,
-                    ),
-                },
-                key=f"category_target_inventory_{editor_key}_{signature}_{revision}",
+            selected_target_language = selector_language_col.selectbox(
+                "选择要编辑的语种",
+                languages,
+                key=f"category_combo_language_{editor_key}_{signature}",
             )
-            try:
-                target_values = category_inventory_target_values(edited_target_df)
-                st.session_state[target_state_key] = target_values
-                plan = build_category_inventory_plan(
-                    current_records,
-                    product,
-                    models,
-                    languages,
-                    model_renames=model_renames,
-                    carry_model=carry_model,
-                    carry_language=carry_language,
-                    target_values=target_values,
-                )
-                plan = enforce_category_inventory_status(plan, category_status)
-            except (TypeError, ValueError) as exc:
-                st.error(str(exc))
-                plan = None
+            selected_target_key = (selected_target_model, selected_target_language)
+            selected_target = next(
+                target for target in plan["targets"] if target["key"] == selected_target_key
+            )
+            selected_values = target_values[selected_target_key]
+            selected_token = uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                f"{selected_target_model}::{selected_target_language}",
+            ).hex[:10]
+            selected_widget_prefix = (
+                f"category_combo_{editor_key}_{signature}_{revision}_{selected_token}"
+            )
+            st.caption(
+                f"{ui_text('当前组合处理方式')}：{ui_text(str(selected_target['action']))}"
+            )
+            quantity_col, price_col, customs_col, status_col = st.columns(
+                [1, 1, 1.4, 1.2],
+                vertical_alignment="bottom",
+            )
+            selected_quantity = quantity_col.number_input(
+                "库存数量 *",
+                value=int(selected_values["quantity"]),
+                step=1,
+                key=f"{selected_widget_prefix}_quantity",
+            )
+            selected_unit_price = price_col.number_input(
+                "单价",
+                min_value=0.0,
+                value=float(selected_values["unit_price"] or 0),
+                step=0.01,
+                format="%.2f",
+                key=f"{selected_widget_prefix}_unit_price",
+            )
+            selected_customs_code = customs_col.text_input(
+                "海关编码",
+                value=str(selected_values["customs_code"] or ""),
+                key=f"{selected_widget_prefix}_customs",
+            )
+            selected_status = status_col.radio(
+                "启用状态 *",
+                list(MATERIAL_STATUS_OPTIONS),
+                index=list(MATERIAL_STATUS_OPTIONS).index(
+                    STATUS_INACTIVE
+                    if category_status == STATUS_INACTIVE
+                    else normalize_enabled_status(selected_values["status"])
+                ),
+                horizontal=True,
+                disabled=category_status == STATUS_INACTIVE,
+                key=f"{selected_widget_prefix}_status",
+            )
+            target_values[selected_target_key] = {
+                "quantity": int(selected_quantity),
+                "unit_price": float(selected_unit_price),
+                "customs_code": selected_customs_code.strip(),
+                "status": STATUS_INACTIVE
+                if category_status == STATUS_INACTIVE
+                else normalize_enabled_status(selected_status),
+            }
+            st.session_state[target_state_key] = target_values
+            plan = build_category_inventory_plan(
+                current_records,
+                product,
+                models,
+                languages,
+                model_renames=model_renames,
+                carry_model=carry_model,
+                carry_language=carry_language,
+                target_values=target_values,
+            )
+            plan = enforce_category_inventory_status(plan, category_status)
 
             if plan is not None:
-                selected_target_keys = [
-                    (str(row.get("产品型号") or ""), str(row.get("语种") or ""))
-                    for row in edited_target_df.to_dict("records")
-                    if bool(row.get("选择"))
-                ]
                 if category_status == STATUS_INACTIVE:
                     st.info("品类停用时，旗下所有库存组合会同步停用；重新启用品类后可再选择需要启用的库存行。")
                 else:
-                    batch_status_col, batch_button_col = st.columns([1, 1], vertical_alignment="bottom")
-                    batch_status = batch_status_col.selectbox(
-                        "批量设置启用状态",
-                        list(MATERIAL_STATUS_OPTIONS),
-                        key=f"category_batch_status_{editor_key}_{signature}",
-                    )
-                    if batch_button_col.button(
-                        "应用到已勾选库存行",
-                        icon=":material/checklist:",
-                        width="stretch",
-                        key=f"category_apply_batch_status_{editor_key}_{signature}",
-                    ):
-                        if not selected_target_keys:
-                            st.warning("请先在库存组合明细中勾选至少一行。")
-                        else:
-                            for target_key in selected_target_keys:
-                                if target_key in target_values:
-                                    target_values[target_key]["status"] = batch_status
-                            st.session_state[target_state_key] = target_values
-                            st.session_state[revision_key] = revision + 1
-                            st.rerun()
-                    st.caption("批量设置会先更新当前表格，点击下方保存品类配置后才会同步至飞书。")
+                    with st.expander("批量调整库存状态", expanded=False):
+                        target_key_by_label = {
+                            f"{target['model']} · {target['language']}": target["key"]
+                            for target in plan["targets"]
+                        }
+                        batch_target_labels = st.multiselect(
+                            "选择库存组合",
+                            list(target_key_by_label),
+                            key=f"category_batch_targets_{editor_key}_{signature}_{revision}",
+                        )
+                        batch_status_col, batch_button_col = st.columns(
+                            [1, 1],
+                            vertical_alignment="bottom",
+                        )
+                        batch_status = batch_status_col.selectbox(
+                            "批量设置启用状态",
+                            list(MATERIAL_STATUS_OPTIONS),
+                            key=f"category_batch_status_{editor_key}_{signature}",
+                        )
+                        if batch_button_col.button(
+                            "应用到所选库存组合",
+                            icon=":material/checklist:",
+                            width="stretch",
+                            key=f"category_apply_batch_status_{editor_key}_{signature}",
+                        ):
+                            if not batch_target_labels:
+                                st.warning("请先选择至少一个库存组合。")
+                            else:
+                                for label in batch_target_labels:
+                                    target_values[target_key_by_label[label]]["status"] = batch_status
+                                st.session_state[target_state_key] = target_values
+                                st.session_state[revision_key] = revision + 1
+                                st.rerun()
+                        st.caption("批量设置只更新当前页面状态，保存品类配置后才会同步至飞书。")
 
                 metric_a, metric_b, metric_c, metric_d = st.columns(4)
                 metric_a.metric("当前组合", plan["current_count"])

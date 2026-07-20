@@ -276,6 +276,8 @@ EN_DISPLAY_TEXT = {
     "启用状态 *": "Enabled Status *",
     "品类启用状态 *": "Category Status *",
     "重组": "Reconfigured",
+    "保留": "Retained",
+    "新增": "New",
     "无需型号": "No Model Required",
     "无需语种": "No Language Required",
     "物料品类名称": "Material Category Name",
@@ -292,6 +294,10 @@ EN_DISPLAY_TEXT = {
     "新增型号": "Add Models",
     "新增自定义语种": "Add Custom Languages",
     "修改已有型号": "Rename Existing Models",
+    "选择要修改的型号": "Select a Model to Rename",
+    "新的型号名称 *": "New Model Name *",
+    "应用改名": "Apply Rename",
+    "已设置": "Applied",
     "当前型号": "Current Model",
     "修改后型号": "Updated Model",
     "修改后型号 *": "Updated Model *",
@@ -368,6 +374,13 @@ EN_DISPLAY_TEXT = {
     "我已确认以上品类配置和库存组合": "I confirm the category settings and inventory combinations above",
     "确认直接舍弃未分配库存": "Confirm discarding unallocated inventory",
     "批量设置启用状态": "Set Status in Bulk",
+    "库存组合编辑": "Edit Inventory Combinations",
+    "选择要编辑的产品型号": "Select a Product Model",
+    "选择要编辑的语种": "Select a Language",
+    "当前组合处理方式": "Current Combination Action",
+    "批量调整库存状态": "Update Inventory Status in Bulk",
+    "选择库存组合": "Select Inventory Combinations",
+    "应用到所选库存组合": "Apply to Selected Combinations",
     "应用到已勾选库存行": "Apply to Selected Inventory Rows",
     "保存实际发放并扣减库存": "Save Issuance & Update Inventory",
     "仅看非零库存": "Show Non-zero Inventory Only",
@@ -391,11 +404,11 @@ EN_DISPLAY_TEXT = {
     "勾选后语种统一为“无需语种”，现有语种库存会自动归并。": (
         "When selected, all languages use No Language Required and existing language inventory is merged automatically."
     ),
-    "勾选后产品型号统一为“无需型号”，库存数量可在下方组合表中重新分配。": (
-        "When selected, the product model becomes No Model Required; redistribute quantities in the table below."
+    "勾选后产品型号统一为“无需型号”，库存数量可在下方库存组合编辑区重新分配。": (
+        "When selected, the product model becomes No Model Required; redistribute quantities in the inventory combination editor below."
     ),
-    "勾选后语种统一为“无需语种”，库存数量可在下方组合表中重新分配。": (
-        "When selected, the language becomes No Language Required; redistribute quantities in the table below."
+    "勾选后语种统一为“无需语种”，库存数量可在下方库存组合编辑区重新分配。": (
+        "When selected, the language becomes No Language Required; redistribute quantities in the inventory combination editor below."
     ),
     "停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。": (
         "Inactive categories are hidden from material requests while historical inventory and requests remain available."
@@ -403,8 +416,20 @@ EN_DISPLAY_TEXT = {
     "品类停用时，旗下所有库存组合会同步停用；重新启用品类后可再选择需要启用的库存行。": (
         "When a category is inactive, all of its inventory combinations are also deactivated. After reactivating the category, choose which inventory rows to enable."
     ),
-    "这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。": (
-        "This only controls where request and transaction links move; enter inventory quantities in the table below."
+    "这里只决定申请明细和流水的关联去向；库存数量请在下方库存组合编辑区填写。": (
+        "This only controls where request and transaction links move; enter inventory quantities in the inventory combination editor below."
+    ),
+    "一次选择一个型号进行修改；应用后可继续选择其他型号，库存和历史关联保持不变。": (
+        "Rename one model at a time. After applying a rename, select another model; inventory and historical links remain unchanged."
+    ),
+    "需要取消某项改名时，将新的型号名称改回原型号并再次应用。": (
+        "To cancel a rename, change the new model name back to the original and apply it again."
+    ),
+    "选择一个型号和语种后编辑对应库存组合；切换到其他组合时，已经填写的内容会自动保留。": (
+        "Select a model and language to edit one inventory combination. Your entries are preserved when switching combinations."
+    ),
+    "批量设置只更新当前页面状态，保存品类配置后才会同步至飞书。": (
+        "Bulk updates remain on this page until you save the category settings, then they are synchronized to Feishu."
     ),
     "单个附件不超过 20 MB，最多上传 100 个。": "Each attachment must be 20 MB or smaller, with up to 100 files.",
     "被取消型号对应的库存、申请明细和流水关联会迁移到这里。": (
