@@ -19,6 +19,14 @@ from feishu_bitable import FeishuBitableClient, FeishuBitableConfig, FeishuBitab
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
+from ui_i18n import (
+    LANGUAGE_EN,
+    LANGUAGE_ZH,
+    SUPPORTED_UI_LANGUAGES,
+    install_streamlit_ui_translation,
+    normalize_ui_language,
+    translate_ui_text,
+)
 
 
 DEFAULT_PASSWORD = "376493"
@@ -106,6 +114,7 @@ ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料数据库", "品类管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "修改与撤回")
+UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
@@ -136,6 +145,17 @@ PAGE_CACHE_TABLES = {
     "approval": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME),
     "inventory": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
 }
+
+
+def get_ui_language() -> str:
+    try:
+        return normalize_ui_language(st.session_state.get(UI_LANGUAGE_SESSION_KEY, LANGUAGE_ZH))
+    except (AttributeError, KeyError):
+        return LANGUAGE_ZH
+
+
+def ui_text(value: object) -> str:
+    return str(translate_ui_text(value, get_ui_language()))
 
 
 def inject_global_styles() -> None:
@@ -803,6 +823,10 @@ def inject_global_styles() -> None:
 
 
 def render_page_header(title: str, kicker: str, subtitle: str, status: str = "飞书数据已连接") -> None:
+    title = ui_text(title)
+    kicker = ui_text(kicker)
+    subtitle = ui_text(subtitle)
+    status = ui_text(status)
     st.markdown(
         f"""
         <div class="pudu-page-header">
@@ -819,6 +843,8 @@ def render_page_header(title: str, kicker: str, subtitle: str, status: str = "�
 
 
 def render_section_header(index: str, title: str, description: str = "") -> None:
+    title = ui_text(title)
+    description = ui_text(description)
     tone = {
         "01": "navy",
         "02": "teal",
@@ -4252,16 +4278,27 @@ def render_sidebar_link() -> None:
             )
             brand_icon_col.image(str(APP_ICON_PATH), width=64)
             brand_text_col.markdown(
-                """
-                    <div class="pudu-brand-name">营销物料中心</div>
+                f"""
+                    <div class="pudu-brand-name">{escape(ui_text("营销物料中心"))}</div>
                     <div class="pudu-brand-subtitle">PUDU Material Operations</div>
                 """,
                 unsafe_allow_html=True,
             )
         st.markdown(
-            """
-            <div class="pudu-sidebar-label">工作台导航</div>
-            """,
+            f'<div class="pudu-sidebar-label">{escape(ui_text("语言设置"))}</div>',
+            unsafe_allow_html=True,
+        )
+        st.radio(
+            "界面语言",
+            SUPPORTED_UI_LANGUAGES,
+            key=UI_LANGUAGE_SESSION_KEY,
+            format_func=lambda language: "中文" if language == LANGUAGE_ZH else "English",
+            horizontal=True,
+            label_visibility="collapsed",
+        )
+        st.divider()
+        st.markdown(
+            f'<div class="pudu-sidebar-label">{escape(ui_text("工作台导航"))}</div>',
             unsafe_allow_html=True,
         )
         navigate_to_management_section(
@@ -4293,7 +4330,10 @@ def render_sidebar_link() -> None:
             ":material/category:",
         )
         st.divider()
-        st.markdown('<div class="pudu-sidebar-label">数据同步</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="pudu-sidebar-label">{escape(ui_text("数据同步"))}</div>',
+            unsafe_allow_html=True,
+        )
         if st.button(
             "更新全部数据缓存",
             key="sidebar_refresh_data",
@@ -4338,10 +4378,10 @@ def render_sidebar_link() -> None:
                 width="stretch",
             )
         st.markdown(
-            """
+            f"""
             <div class="pudu-sidebar-status">
                 <span class="pudu-status-dot"></span>
-                飞书多维表格连接已配置
+                {escape(ui_text("飞书多维表格连接已配置"))}
             </div>
             """,
             unsafe_allow_html=True,
@@ -4357,7 +4397,7 @@ def build_request_title(material_usage: object, requester: object) -> str:
 
 def required_field_label(container: object, label: str) -> None:
     container.markdown(
-        f'<div class="pudu-field-label">{escape(label)} <span class="pudu-required-star">*</span></div>',
+        f'<div class="pudu-field-label">{escape(ui_text(label))} <span class="pudu-required-star">*</span></div>',
         unsafe_allow_html=True,
     )
 
@@ -4728,7 +4768,7 @@ def render_request_review_field(container: object, label: str, value: object) ->
     container.markdown(
         f"""
         <div class="pudu-review-field">
-            <span>{escape(label)}</span>
+            <span>{escape(ui_text(label))}</span>
             <strong>{display_value}</strong>
         </div>
         """,
@@ -4750,12 +4790,15 @@ def render_request_review() -> None:
         if isinstance(attachment, dict)
     ]
     total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+    material_types_label = escape(ui_text("物料种类"))
+    total_quantity_label = escape(ui_text("申请总数量"))
+    attachment_count_label = escape(ui_text("附件数量"))
     st.markdown(
         f"""
         <div class="pudu-review-metrics">
-            <div class="pudu-review-metric"><span>物料种类</span><strong>{len(lines)}</strong></div>
-            <div class="pudu-review-metric"><span>申请总数量</span><strong>{total_quantity}</strong></div>
-            <div class="pudu-review-metric"><span>附件数量</span><strong>{len(attachments)}</strong></div>
+            <div class="pudu-review-metric"><span>{material_types_label}</span><strong>{len(lines)}</strong></div>
+            <div class="pudu-review-metric"><span>{total_quantity_label}</span><strong>{total_quantity}</strong></div>
+            <div class="pudu-review-metric"><span>{attachment_count_label}</span><strong>{len(attachments)}</strong></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -4766,7 +4809,7 @@ def render_request_review() -> None:
         st.markdown(
             f"""
             <div class="pudu-generated-title">
-                <span>申请标题</span>
+                <span>{escape(ui_text("申请标题"))}</span>
                 <strong>{escape(str(draft.get("title") or ""))}</strong>
             </div>
             """,
@@ -4911,7 +4954,7 @@ def render_request_material_builder(
     with st.container(border=True):
         render_section_header(
             "02",
-            "物料申请清单 Material List",
+            "物料申请清单",
             f"逐条添加物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
         )
         if not products:
@@ -5053,7 +5096,7 @@ def render_request_material_builder(
         st.markdown(
             f"""
             <div class="pudu-material-list-status">
-                <span>申请物料清单</span>
+                <span>{escape(ui_text("申请物料清单"))}</span>
                 <strong>{len(lines)} / {MAX_REQUEST_LINE_COUNT}</strong>
             </div>
             """,
@@ -5162,16 +5205,16 @@ def render_change_form(show_title: bool = True) -> None:
             top_cols[0],
             top_cols[1],
         )
-        required_field_label(top_cols[2], "客户名称 Customer Name")
+        required_field_label(top_cols[2], "客户名称")
         customer_name = top_cols[2].text_input(
-            "客户名称 Customer Name",
+            "客户名称",
             key="request_customer_name",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        required_field_label(top_cols[3], "国家 Country")
+        required_field_label(top_cols[3], "国家")
         country = top_cols[3].text_input(
-            "国家 Country",
+            "国家",
             key="request_country",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
@@ -5183,7 +5226,7 @@ def render_change_form(show_title: bool = True) -> None:
         st.markdown(
             f"""
             <div class="pudu-generated-title">
-                <span>申请标题</span>
+                <span>{escape(ui_text("申请标题"))}</span>
                 <strong>{escape(generated_title)}</strong>
             </div>
             """,
@@ -5191,29 +5234,33 @@ def render_change_form(show_title: bool = True) -> None:
         )
 
         middle_cols = st.columns([2.4, 1])
-        required_field_label(middle_cols[0], "收件人信息 Recipient Information")
+        required_field_label(middle_cols[0], "收件人信息")
         recipient_info = middle_cols[0].text_area(
-            "收件人信息 Recipient Information",
+            "收件人信息",
             placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
             height=84,
             key="request_recipient_info",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        recipient_hint = (
+            "Please specify the delivery address (including recipient information, postal code, and specific address)"
+            if get_ui_language() == LANGUAGE_EN
+            else "收件人信息：请写明快递地址（包含收件人信息，邮编，具体地址）"
+        )
         middle_cols[0].markdown(
-            """
+            f"""
             <div class="pudu-required-hint">
-                <strong>收件人信息：请写明快递地址（包含收件人信息，邮编，具体地址）</strong><br>
-                <strong>Please specify the delivery address (including recipient information, postal code, and specific address)</strong>
+                <strong>{escape(recipient_hint)}</strong>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        required_field_label(middle_cols[1], "运费的承担者 Freight Payer")
+        required_field_label(middle_cols[1], "运费的承担者")
         if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
             st.session_state["request_freight_payer"] = FREIGHT_PAYER_OPTIONS[0]
         freight_payer = middle_cols[1].selectbox(
-            "运费的承担者 Freight Payer",
+            "运费的承担者",
             FREIGHT_PAYER_OPTIONS,
             key="request_freight_payer",
             label_visibility="collapsed",
@@ -5221,26 +5268,30 @@ def render_change_form(show_title: bool = True) -> None:
         )
 
         bottom_cols = st.columns([2.4, 1])
-        required_field_label(bottom_cols[0], "物料用途 Material Usage")
+        required_field_label(bottom_cols[0], "物料用途")
         material_usage = bottom_cols[0].text_area(
-            "物料用途 Material Usage",
+            "物料用途",
             placeholder="活动物料请注明具体活动名称",
             height=76,
             key="request_material_usage",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        usage_hint = (
+            "For promotional materials, please specify the exact name of the event."
+            if get_ui_language() == LANGUAGE_EN
+            else "物料用途：活动物料请注明具体活动名称"
+        )
         bottom_cols[0].markdown(
-            """
+            f"""
             <div class="pudu-required-hint">
-                <strong>物料用途：活动物料请注明具体活动名称</strong><br>
-                <strong>For promotional materials, please specify the exact name of the event.</strong>
+                <strong>{escape(usage_hint)}</strong>
             </div>
             """,
             unsafe_allow_html=True,
         )
         bottom_cols[1].markdown(
-            '<div class="pudu-field-label">相关附件 Relevant Attachments</div>',
+            f'<div class="pudu-field-label">{escape(ui_text("相关附件"))}</div>',
             unsafe_allow_html=True,
         )
         upload_version = int(st.session_state.get("request_attachment_upload_version", 0))
@@ -5486,7 +5537,7 @@ def render_add_category_form() -> None:
         if plan is not None:
             new_targets = [target for target in plan["targets"] if target["is_new"]]
             if new_targets:
-                st.markdown("**新增组合初始库存**")
+                st.markdown(f"**{ui_text('新增组合初始库存')}**")
                 st.caption("只需填写新增组合；已有或归并组合会沿用并汇总当前库存。库存允许为负数。")
                 initial_df = pd.DataFrame(
                     [
@@ -6774,8 +6825,9 @@ def render_management_page() -> None:
 
 
 def main() -> None:
+    install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
-        page_title="营销物料中心",
+        page_title=ui_text("营销物料中心"),
         page_icon=str(APP_ICON_PATH) if APP_ICON_PATH.exists() else ":material/inventory_2:",
         layout="wide",
         initial_sidebar_state="auto",
