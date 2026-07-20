@@ -6414,13 +6414,14 @@ def render_pending_approval_requests(
             next_line["previous_actual_issue_qty"] = int(line.get("actual_issue_qty") or 0)
             next_line["actual_issue_qty"] = int(row.get("实际发放数量") or 0)
             issue_lines.append(next_line)
-        with DATA_LOCK:
-            try:
-                logs = issue_request_lines(selected_request, issue_lines, issue_note)
-            except Exception as exc:
-                st.error("审批发放失败。请检查实际发放数量、申请明细字段和飞书写入权限。")
-                st.exception(exc)
-                return
+        with st.spinner("正在发放并更新库存，请稍后......"):
+            with DATA_LOCK:
+                try:
+                    logs = issue_request_lines(selected_request, issue_lines, issue_note)
+                except Exception as exc:
+                    st.error("审批发放失败。请检查实际发放数量、申请明细字段和飞书写入权限。")
+                    st.exception(exc)
+                    return
         completion_notification_count = 0
         completion_notification_warning = ""
         updated_request = dict(selected_request)
