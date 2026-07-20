@@ -72,7 +72,7 @@ class NoLanguageRuleTests(unittest.TestCase):
         )
 
         self.assertFalse(disabled)
-        self.assertEqual(languages, ["英语(English)"])
+        self.assertEqual(languages, ["英语(English)", "德语(German)"])
 
     def test_normal_category_keeps_scoped_languages(self) -> None:
         disabled, languages = app.product_language_state(

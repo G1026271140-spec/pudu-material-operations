@@ -149,16 +149,17 @@ APPROVAL_LIVE_DATA_KEY = "approval_live_data"
 LAST_APP_VIEW_KEY = "last_app_view"
 ALL_PAGE_CACHE_TABLES = (
     CATEGORY_TABLE_NAME,
+    MODEL_TABLE_NAME,
     MATERIAL_TABLE_NAME,
     LEDGER_TABLE_NAME,
     REQUEST_TABLE_NAME,
     REQUEST_LINE_TABLE_NAME,
 )
 PAGE_CACHE_TABLES = {
-    "request": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME),
-    "category": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "request": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
-    "material_database": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "material_database": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "approval": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME),
     "inventory": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
 }
@@ -1412,6 +1413,24 @@ def sort_languages(languages: list[str]) -> list[str]:
     )
 
 
+def sort_models(models: list[str]) -> list[str]:
+    """Keep related model families together while sorting numeric suffixes naturally."""
+    unique_models = unique_preserve(
+        [model for model in models if str(model).strip() and str(model).strip() != NO_MODEL_TEXT]
+    )
+
+    def model_key(model: str) -> tuple[object, ...]:
+        normalized = re.sub(r"^PUDU\s+", "", model.strip(), flags=re.IGNORECASE)
+        parts = re.split(r"(\d+)", normalized.casefold())
+        natural_parts = tuple(
+            (1, int(part)) if part.isdigit() else (0, part)
+            for part in parts
+        )
+        return natural_parts + ((2, model.casefold()),)
+
+    return sorted(unique_models, key=model_key)
+
+
 def build_inventory_selection_context() -> dict[str, object]:
     options = load_options()
     inventory_df = load_inventory()
@@ -1447,7 +1466,7 @@ def build_inventory_selection_context() -> dict[str, object]:
 
     return {
         "products": options["products"],
-        "models": options["models"],
+        "models": sort_models(options["models"]),
         "languages": sort_languages(options["languages"]),
         "no_model_product_keys": {normalize_option_label(product) for product in options["no_model_products"]},
         "no_language_product_keys": no_language_product_keys,
@@ -1468,7 +1487,23 @@ def product_model_state(product: str, selection_context: dict[str, object]) -> t
     is_no_model_product = product_key in selection_context["no_model_product_keys"] or (
         product_key in selection_context["inventory_product_keys"] and not scoped_models
     )
-    return bool(is_no_model_product), list(scoped_models)
+    all_models = sort_models(list(selection_context.get("models") or []))
+    return bool(is_no_model_product), all_models or sort_models(list(scoped_models))
+
+
+def selection_context_has_inventory_combination(
+    selection_context: dict[str, object],
+    product: str,
+    model: str,
+    language: str,
+) -> bool:
+    product_key = normalize_option_label(product)
+    model_key = normalize_option_label(model or NO_MODEL_TEXT)
+    scoped_languages = dict(selection_context.get("product_model_languages") or {}).get(
+        (product_key, model_key),
+        [],
+    )
+    return str(language).strip() in {str(value).strip() for value in scoped_languages}
 
 
 def product_language_options(
@@ -1480,16 +1515,8 @@ def product_language_options(
     product_key = normalize_option_label(product)
     if product_key in selection_context.get("no_language_product_keys", set()):
         return [NO_LANGUAGE_TEXT]
-    model_key = normalize_option_label(model or NO_MODEL_TEXT)
-    product_model_languages = selection_context["product_model_languages"]
-    product_languages = selection_context["product_languages"]
-
-    scoped_languages = product_model_languages.get((product_key, model_key), [])  # type: ignore[union-attr]
-    if not scoped_languages:
-        scoped_languages = product_languages.get(product_key, [])  # type: ignore[union-attr]
-    if not scoped_languages:
-        scoped_languages = fallback_languages or list(selection_context["languages"])
-    return sort_languages(list(scoped_languages))
+    available_languages = fallback_languages or list(selection_context["languages"])
+    return sort_languages(list(available_languages))
 
 
 def product_language_state(
@@ -1542,7 +1569,7 @@ def request_form_cache_from_inventory(
         "configured_language_products": unique_preserve(
             list(options.get("configured_language_products") or [])
         ),
-        "models": unique_preserve(list(options.get("models") or [])),
+        "models": sort_models(list(options.get("models") or [])),
         "languages": sort_languages(list(options.get("languages") or [])),
         "inventory_rows": rows,
         "row_count": len(rows),
@@ -1631,7 +1658,10 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
             product_model_languages.setdefault((product_key, model_key), []).append(language)
 
     products = unique_preserve(list(cache_data.get("products") or []) + [str(item.get("product") or "") for item in rows if isinstance(item, dict)])
-    models = unique_preserve(list(cache_data.get("models") or []) + [str(item.get("model") or "") for item in rows if isinstance(item, dict)])
+    models = sort_models(
+        list(cache_data.get("models") or [])
+        + [str(item.get("model") or "") for item in rows if isinstance(item, dict)]
+    )
     languages = sort_languages(unique_preserve(list(cache_data.get("languages") or []) + [str(item.get("language") or "") for item in rows if isinstance(item, dict)]))
     configured_language_product_keys = {
         normalize_option_label(product)
@@ -1648,7 +1678,7 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
 
     return {
         "products": products,
-        "models": [model for model in models if model and model != NO_MODEL_TEXT],
+        "models": models,
         "languages": languages,
         "no_model_product_keys": {
             normalize_option_label(product) for product in list(cache_data.get("no_model_products") or [])
@@ -2182,12 +2212,22 @@ def fetch_approval_live_data() -> dict[str, object]:
     request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
     line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
     material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
     return {
         "request_rows": request_rows,
         "line_rows": line_rows,
         "material_rows": material_rows,
+        "category_rows": category_rows,
+        "model_rows": model_rows,
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "row_count": len(request_rows) + len(line_rows) + len(material_rows),
+        "row_count": (
+            len(request_rows)
+            + len(line_rows)
+            + len(material_rows)
+            + len(category_rows)
+            + len(model_rows)
+        ),
     }
 
 
@@ -2514,7 +2554,11 @@ def load_feishu_inventory() -> pd.DataFrame:
     return feishu_inventory_dataframe_from_rows(feishu_rows(MATERIAL_TABLE_NAME))
 
 
-def feishu_options_from_rows(categories: list[dict], inventory_df: pd.DataFrame) -> dict:
+def feishu_options_from_rows(
+    categories: list[dict],
+    inventory_df: pd.DataFrame,
+    model_rows: list[dict] | None = None,
+) -> dict:
     category_products: list[str] = []
     category_status_by_product: dict[str, str] = {}
     no_model_products: list[str] = []
@@ -2544,19 +2588,22 @@ def feishu_options_from_rows(categories: list[dict], inventory_df: pd.DataFrame)
     )
     inventory_product_set = set(inventory_products)
     products = [product for product in category_products if product in inventory_product_set]
-    products.extend(
-        product
-        for product in inventory_products
-        if product not in category_status_by_product and product not in set(products)
-    )
     inventory_no_model_products = (
         unique_preserve(list(inventory_df.loc[inventory_df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str)))
         if not inventory_df.empty
         else []
     )
-    models = unique_preserve(
+    inventory_models = (
         [value for value in inventory_df[MODEL_COL].astype(str) if value and value != NO_MODEL_TEXT]
-    ) if not inventory_df.empty else []
+        if not inventory_df.empty
+        else []
+    )
+    dimension_models = [
+        feishu_text(feishu_fields(row), "产品型号")
+        for row in list(model_rows or [])
+        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
+    ]
+    models = sort_models(dimension_models or inventory_models)
     languages = unique_preserve(list(inventory_df[LANGUAGE_COL].astype(str))) if not inventory_df.empty else []
     if not inventory_df.empty:
         for product, product_df in inventory_df.groupby(PRODUCT_COL):
@@ -2582,6 +2629,7 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
     return feishu_options_from_rows(
         load_feishu_rows_snapshot(CATEGORY_TABLE_NAME, app_id, app_secret, app_token),
         load_feishu_inventory_snapshot(app_id, app_secret, app_token),
+        load_feishu_rows_snapshot(MODEL_TABLE_NAME, app_id, app_secret, app_token),
     )
 
 
@@ -2589,6 +2637,7 @@ def load_feishu_options() -> dict:
     return feishu_options_from_rows(
         feishu_rows(CATEGORY_TABLE_NAME),
         load_feishu_inventory(),
+        feishu_rows(MODEL_TABLE_NAME),
     )
 
 
@@ -3139,7 +3188,18 @@ def submit_feishu_material_request(
         existing_row, existing_line_count = existing_submission
         return feishu_text(feishu_fields(existing_row), "申请单号"), existing_line_count, False
 
-    material_index = material_lookup_by_key()
+    material_rows = feishu_material_rows()
+    raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
+    material_index = {
+        (str(record["category"]), str(record["model"]), str(record["language"])): raw_material_by_id[
+            str(record["record_id"])
+        ]
+        for record in feishu_inventory_records_from_rows(
+            material_rows,
+            feishu_category_rows(),
+            active_only=True,
+        )
+    }
     seen_keys: set[tuple[str, str, str]] = set()
     prepared_lines: list[dict[str, object]] = []
     for item in valid_lines:
@@ -3243,7 +3303,6 @@ def submit_feishu_material_request(
 
     line_records: list[dict[str, object]] = []
     for index, item in enumerate(prepared_lines, start=1):
-        material_record_id = str(item["material_record_id"])
         line_fields: dict[str, object] = {
             "明细编号": f"{request_no}-{index:02d}",
             "申请数量": int(item["quantity"]),
@@ -3254,21 +3313,18 @@ def submit_feishu_material_request(
             "备注": item["remark"],
         }
         set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["申请单号"], request_no)
-        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["物料品类"], item["product"])
-        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["产品型号"], item["model"])
-        set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["语种"], item["language"])
+        set_request_line_material_fields(
+            line_fields,
+            material_index[(str(item["product"]), str(item["model"]), str(item["language"]))],
+            str(item["product"]),
+            str(item["model"]),
+            str(item["language"]),
+        )
         set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["物料数量"], int(item["quantity"]))
         for request_field in ["所属申请单", "申请单"]:
             if feishu_has_field(REQUEST_LINE_TABLE_NAME, request_field):
                 line_fields[request_field] = request_no if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, request_field) else [request_record_id]
                 break
-        for material_field in ["物料", "物料编码"]:
-            if feishu_has_field(REQUEST_LINE_TABLE_NAME, material_field):
-                line_fields[material_field] = (
-                    item["material_code"]
-                    if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, material_field)
-                    else [material_record_id]
-                )
         line_records.append(line_fields)
 
     client = feishu_client()
@@ -3351,6 +3407,28 @@ def request_applicant_text(fields: dict) -> str:
     return request_note_values(fields).get("申请人", "")
 
 
+def set_request_line_material_fields(
+    fields: dict[str, object],
+    material_row: dict,
+    product: str,
+    model: str,
+    language: str,
+) -> None:
+    material_record_id = feishu_record_id(material_row)
+    material_code = feishu_text(feishu_fields(material_row), "物料编码")
+    set_first_plain_field(REQUEST_LINE_TABLE_NAME, fields, ["物料品类"], product)
+    set_first_plain_field(REQUEST_LINE_TABLE_NAME, fields, ["产品型号"], model or NO_MODEL_TEXT)
+    set_first_plain_field(REQUEST_LINE_TABLE_NAME, fields, ["语种"], language)
+    for material_field in ["物料", "物料编码"]:
+        if not feishu_has_field(REQUEST_LINE_TABLE_NAME, material_field):
+            continue
+        fields[material_field] = (
+            material_code
+            if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, material_field)
+            else [material_record_id]
+        )
+
+
 def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     source_rows = rows if rows is not None else feishu_rows(REQUEST_TABLE_NAME)
@@ -3406,6 +3484,9 @@ def load_feishu_request_line_records(
         product = feishu_text(fields, "物料品类") or feishu_text(material_fields, "物料品类")
         model = feishu_text(fields, "产品型号") or feishu_text(material_fields, "产品型号") or NO_MODEL_TEXT
         language = feishu_text(fields, "语种") or feishu_text(material_fields, "语种")
+        actual_product = feishu_text(fields, "实际发放物料品类") or product
+        actual_model = feishu_text(fields, "实际发放产品型号") or model
+        actual_language = feishu_text(fields, "实际发放语种") or language
         quantity = feishu_int_any(fields, ["申请数量", "物料数量"])
         if not product or not language or quantity <= 0:
             continue
@@ -3420,10 +3501,15 @@ def load_feishu_request_line_records(
                 "product": product,
                 "model": model,
                 "language": language,
+                "actual_product": actual_product,
+                "actual_model": actual_model,
+                "actual_language": actual_language,
+                "actual_material_code": feishu_text(fields, "实际发放物料编码"),
                 "quantity": quantity,
                 "usage": feishu_text(fields, "物料用途"),
                 "remark": feishu_text(fields, "备注"),
                 "stock_snapshot": feishu_int(fields, "提交时库存快照"),
+                "current_stock": feishu_int(material_fields, "当前库存"),
                 "approved_qty": approved_qty,
                 "actual_issue_qty": actual_qty,
                 "status": feishu_text(fields, "明细状态") or REQUEST_LINE_STATUS_PENDING,
@@ -3489,7 +3575,20 @@ def issue_request_lines(
     client = feishu_client()
     if client is None:
         return []
-    inventory_index = material_lookup_by_key()
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
+    active_material_records = feishu_inventory_records_from_rows(
+        material_rows,
+        category_rows,
+        active_only=True,
+    )
+    inventory_index = {
+        (str(record["category"]), str(record["model"]), str(record["language"])): raw_material_by_id[
+            str(record["record_id"])
+        ]
+        for record in active_material_records
+    }
     logs: list[list[object]] = []
     now = datetime.now()
     request_record_id = str(request["record_id"])
@@ -3503,6 +3602,24 @@ def issue_request_lines(
         previous_actual_qty = int(line.get("previous_actual_issue_qty") or 0)
         if actual_qty < previous_actual_qty:
             raise RuntimeError(f"{line['product']} / {line['model']} / {line['language']} 实际发放数量不能小于已记录数量。")
+        material_key = (
+            str(line.get("product") or "").strip(),
+            str(line.get("model") or NO_MODEL_TEXT).strip() or NO_MODEL_TEXT,
+            str(line.get("language") or "").strip(),
+        )
+        material_row = inventory_index.get(material_key)
+        if material_row is None:
+            raise RuntimeError(f"未找到启用的物料组合：{' / '.join(material_key)}")
+        next_material_id = feishu_record_id(material_row)
+        previous_material_key = (
+            str(line.get("previous_product") or line.get("product") or "").strip(),
+            str(line.get("previous_model") or line.get("model") or NO_MODEL_TEXT).strip() or NO_MODEL_TEXT,
+            str(line.get("previous_language") or line.get("language") or "").strip(),
+        )
+        if previous_actual_qty > 0 and previous_material_key != material_key:
+            raise RuntimeError("已经发生部分发放的明细不能再更换物料组合，请新建申请明细处理。")
+        line["resolved_material_row"] = material_row
+        line["material_record_id"] = next_material_id
 
     for line in edited_lines:
         actual_qty = int(line.get("actual_issue_qty") or 0)
@@ -3511,20 +3628,10 @@ def issue_request_lines(
             continue
         previous_actual_qty = int(line.get("previous_actual_issue_qty") or 0)
         issue_delta = actual_qty - previous_actual_qty
+        material_row = dict(line["resolved_material_row"])
+        material_record_id = feishu_record_id(material_row)
         if issue_delta > 0:
-            material_record_id = str(line.get("material_record_id") or "")
-            material_row = None
-            if material_record_id:
-                material_row = find_feishu_material_by_id(material_record_id)
-            if material_row is None:
-                material_row = inventory_index.get(
-                    (str(line["product"]), str(line["model"]) or NO_MODEL_TEXT, str(line["language"]))
-                )
-            if material_row is None:
-                raise RuntimeError(f"未找到物料组合：{line['product']} / {line['model']} / {line['language']}")
-
             material_fields = feishu_fields(material_row)
-            material_record_id = feishu_record_id(material_row)
             before_quantity = feishu_int(material_fields, "当前库存")
             after_quantity = before_quantity - issue_delta
 
@@ -3563,16 +3670,41 @@ def issue_request_lines(
             )
 
         line_status = REQUEST_LINE_STATUS_ISSUED if actual_qty >= requested_qty else REQUEST_LINE_STATUS_PARTIAL
+        line_update_fields: dict[str, object] = {
+            "实际发放数量": actual_qty,
+            "审批通过数量": actual_qty,
+            "明细状态": line_status,
+            "发放时间": feishu_datetime_value(REQUEST_LINE_TABLE_NAME, "发放时间", now),
+            "缺货说明": note.strip() if actual_qty < requested_qty else "",
+        }
+        set_first_plain_field(
+            REQUEST_LINE_TABLE_NAME,
+            line_update_fields,
+            ["实际发放物料品类"],
+            str(line["product"]),
+        )
+        set_first_plain_field(
+            REQUEST_LINE_TABLE_NAME,
+            line_update_fields,
+            ["实际发放产品型号"],
+            str(line["model"]),
+        )
+        set_first_plain_field(
+            REQUEST_LINE_TABLE_NAME,
+            line_update_fields,
+            ["实际发放语种"],
+            str(line["language"]),
+        )
+        set_first_plain_field(
+            REQUEST_LINE_TABLE_NAME,
+            line_update_fields,
+            ["实际发放物料编码"],
+            feishu_text(feishu_fields(material_row), "物料编码"),
+        )
         feishu_update_record_fields(
             REQUEST_LINE_TABLE_NAME,
             str(line["record_id"]),
-            {
-                "实际发放数量": actual_qty,
-                "审批通过数量": actual_qty,
-                "明细状态": line_status,
-                "发放时间": feishu_datetime_value(REQUEST_LINE_TABLE_NAME, "发放时间", now),
-                "缺货说明": note.strip() if actual_qty < requested_qty else "",
-            },
+            line_update_fields,
         )
 
     all_line_ids = {str(line["record_id"]) for line in edited_lines}
@@ -3688,10 +3820,15 @@ def parse_feishu_inventory_record(row: dict) -> dict | None:
     }
 
 
-def load_feishu_inventory_records(*, active_only: bool = False) -> list[dict]:
+def feishu_inventory_records_from_rows(
+    material_rows: list[dict],
+    category_rows: list[dict] | None = None,
+    *,
+    active_only: bool = False,
+) -> list[dict]:
     records = [
         parsed
-        for row in feishu_material_rows()
+        for row in material_rows
         if (parsed := parse_feishu_inventory_record(row)) is not None
     ]
     if active_only:
@@ -3699,7 +3836,7 @@ def load_feishu_inventory_records(*, active_only: bool = False) -> list[dict]:
             feishu_text(feishu_fields(row), "物料品类"): normalize_enabled_status(
                 feishu_text(feishu_fields(row), "启用状态")
             )
-            for row in feishu_category_rows()
+            for row in list(category_rows or [])
             if feishu_text(feishu_fields(row), "物料品类")
         }
         records = [
@@ -3710,6 +3847,14 @@ def load_feishu_inventory_records(*, active_only: bool = False) -> list[dict]:
         ]
     records.sort(key=lambda item: (item["category"], item["model"], item["language"], item["material_code"]))
     return records
+
+
+def load_feishu_inventory_records(*, active_only: bool = False) -> list[dict]:
+    return feishu_inventory_records_from_rows(
+        feishu_material_rows(),
+        feishu_category_rows(),
+        active_only=active_only,
+    )
 
 
 def load_feishu_category_records() -> list[dict]:
@@ -5469,6 +5614,12 @@ def render_request_material_builder(
                 "quantity": int(quantity),
                 "remark": str(remark or "").strip(),
             }
+            combination_exists = selection_context_has_inventory_combination(
+                selection_context,
+                str(next_line["product"]),
+                str(next_line["model"]),
+                str(next_line["language"]),
+            )
             duplicate_index = next(
                 (
                     index
@@ -5478,7 +5629,9 @@ def render_request_material_builder(
                 ),
                 None,
             )
-            if duplicate_index is not None:
+            if not combination_exists:
+                st.warning("该品类、型号和语种的库存组合不存在或已停用，请重新选择。")
+            elif duplicate_index is not None:
                 st.warning(f"该物料组合已在清单第 {duplicate_index + 1} 行，请直接修改原行。")
             else:
                 next_lines = [dict(line) for line in lines]
@@ -7308,6 +7461,55 @@ def request_lines_for_request(
     return result
 
 
+def approval_inventory_context(live_data: dict[str, object]) -> dict[str, object]:
+    material_rows = list(live_data.get("material_rows") or [])
+    category_rows = list(live_data.get("category_rows") or [])
+    model_rows = list(live_data.get("model_rows") or [])
+    active_categories = {
+        feishu_text(feishu_fields(row), "物料品类")
+        for row in category_rows
+        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
+        and feishu_text(feishu_fields(row), "物料品类")
+    }
+    records = [
+        record
+        for record in feishu_inventory_records_from_rows(
+            material_rows,
+            category_rows,
+            active_only=True,
+        )
+        if str(record["category"]) in active_categories
+    ]
+    models = sort_models(
+        [
+            feishu_text(feishu_fields(row), "产品型号")
+            for row in model_rows
+            if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
+        ]
+        or [str(record["model"]) for record in records]
+    )
+    return {
+        "records": records,
+        "by_key": {
+            (str(record["category"]), str(record["model"]), str(record["language"])): record
+            for record in records
+        },
+        "products": sorted(unique_preserve([str(record["category"]) for record in records])),
+        "models": models,
+        "languages": sort_languages(unique_preserve([str(record["language"]) for record in records])),
+    }
+
+
+def inventory_is_insufficient(requested_quantity: object, current_quantity: object) -> bool:
+    return int(requested_quantity or 0) > int(current_quantity or 0)
+
+
+def approval_shortage_row_style(row: pd.Series) -> list[str]:
+    if str(row.get("库存状态", "")).startswith("库存不足"):
+        return ["background-color: #FEE2E2; color: #991B1B; font-weight: 600"] * len(row)
+    return [""] * len(row)
+
+
 def render_approval_request_context(request: dict[str, object], lines: list[dict[str, object]]) -> None:
     detail_col_a, detail_col_b, detail_col_c = st.columns(3)
     detail_col_a.metric("申请单号", str(request["request_no"]))
@@ -7333,6 +7535,7 @@ def partial_approval_row_style(row: pd.Series, status_column: str) -> list[str]:
 def render_pending_approval_requests(
     active_requests: list[dict[str, object]],
     request_line_map: dict[str, list[dict[str, object]]],
+    inventory_context: dict[str, object],
 ) -> None:
     if not active_requests:
         st.info("暂无待审批或待发放的申请明细。")
@@ -7353,31 +7556,103 @@ def render_pending_approval_requests(
 
     render_approval_request_context(selected_request, selected_lines)
 
+    inventory_by_key = dict(inventory_context.get("by_key") or {})
     table_df = pd.DataFrame(
         [
             {
                 "记录ID": line["record_id"],
-                "物料品类": line["product"],
-                "产品型号": line["model"],
-                "语种": line["language"],
+                "申请物料品类": line["product"],
+                "申请产品型号": line["model"],
+                "申请语种": line["language"],
                 "申请数量": int(line["quantity"]),
-                "当前库存快照": int(line.get("stock_snapshot") or 0),
+                "当前库存": int(
+                    inventory_by_key.get(
+                        (str(line["product"]), str(line["model"]), str(line["language"])),
+                        {"quantity": line.get("current_stock") or 0},
+                    ).get("quantity")
+                    or 0
+                ),
+                "库存状态": (
+                    "库存不足"
+                    if inventory_is_insufficient(
+                        line["quantity"],
+                        inventory_by_key.get(
+                            (str(line["product"]), str(line["model"]), str(line["language"])),
+                            {"quantity": line.get("current_stock") or 0},
+                        ).get("quantity"),
+                    )
+                    else "库存充足"
+                ),
                 "备注": line.get("remark") or line.get("usage", ""),
-                "明细状态": line.get("status", ""),
+                "实际发放品类": line.get("actual_product") or line["product"],
+                "实际发放型号": line.get("actual_model") or line["model"],
+                "实际发放语种": line.get("actual_language") or line["language"],
                 "实际发放数量": int(line.get("actual_issue_qty") or line.get("quantity") or 0),
             }
             for line in selected_lines
         ]
     )
 
+    shortage_rows = table_df[table_df["库存状态"] == "库存不足"]
+    if not shortage_rows.empty:
+        shortage_text = "；".join(
+            f"{row['申请物料品类']} / {row['申请产品型号']} / {row['申请语种']}："
+            f"申请 {int(row['申请数量'])}，当前库存 {int(row['当前库存'])}"
+            for row in shortage_rows.to_dict("records")
+        )
+        st.error(f"库存不足：{shortage_text}。仍可调整实际发放物料或数量后继续审批。")
+
+    product_options = sorted(
+        unique_preserve(
+            list(inventory_context.get("products") or [])
+            + list(table_df["实际发放品类"].astype(str))
+        )
+    )
+    model_options = unique_preserve(
+        [NO_MODEL_TEXT]
+        + sort_models(
+            list(inventory_context.get("models") or [])
+            + list(table_df["实际发放型号"].astype(str))
+        )
+    )
+    language_options = sort_languages(
+        unique_preserve(
+            list(inventory_context.get("languages") or [])
+            + list(table_df["实际发放语种"].astype(str))
+        )
+    )
+
     with st.form(f"approval_issue_form_{selected_request['record_id']}"):
         edited_df = st.data_editor(
-            table_df,
+            table_df.style.apply(approval_shortage_row_style, axis=1),
             width="stretch",
             hide_index=True,
             height=360,
-            disabled=[column for column in table_df.columns if column != "实际发放数量"],
+            disabled=[
+                column
+                for column in table_df.columns
+                if column
+                not in {"实际发放品类", "实际发放型号", "实际发放语种", "实际发放数量"}
+            ],
             column_config={
+                "实际发放品类": st.column_config.SelectboxColumn(
+                    "实际发放品类",
+                    options=product_options,
+                    required=True,
+                    width="large",
+                ),
+                "实际发放型号": st.column_config.SelectboxColumn(
+                    "实际发放型号",
+                    options=model_options,
+                    required=True,
+                    width="medium",
+                ),
+                "实际发放语种": st.column_config.SelectboxColumn(
+                    "实际发放语种",
+                    options=language_options,
+                    required=True,
+                    width="medium",
+                ),
                 "实际发放数量": st.column_config.NumberColumn(
                     "实际发放数量",
                     help="填写实际发放数量并保存后，系统会按该数量更新物料库存。",
@@ -7405,8 +7680,25 @@ def render_pending_approval_requests(
                 continue
             next_line = dict(line)
             next_line["previous_actual_issue_qty"] = int(line.get("actual_issue_qty") or 0)
+            next_line["previous_product"] = str(line.get("actual_product") or line["product"])
+            next_line["previous_model"] = str(line.get("actual_model") or line["model"])
+            next_line["previous_language"] = str(line.get("actual_language") or line["language"])
+            next_line["product"] = str(row.get("实际发放品类") or "").strip()
+            next_line["model"] = str(row.get("实际发放型号") or NO_MODEL_TEXT).strip() or NO_MODEL_TEXT
+            next_line["language"] = str(row.get("实际发放语种") or "").strip()
             next_line["actual_issue_qty"] = int(row.get("实际发放数量") or 0)
             issue_lines.append(next_line)
+        invalid_lines = [
+            line
+            for line in issue_lines
+            if (str(line["product"]), str(line["model"]), str(line["language"])) not in inventory_by_key
+        ]
+        if invalid_lines:
+            invalid_text = "；".join(
+                f"{line['product']} / {line['model']} / {line['language']}" for line in invalid_lines
+            )
+            st.error(f"以下实际发放组合不存在或已停用：{invalid_text}")
+            return
         with st.spinner("正在发放并更新库存，请稍后......"):
             with DATA_LOCK:
                 try:
@@ -7507,6 +7799,9 @@ def render_approval_history(
                 "物料品类": line.get("product") or "-",
                 "产品型号": line.get("model") or NO_MODEL_TEXT,
                 "语种": line.get("language") or "-",
+                "实际发放品类": line.get("actual_product") or line.get("product") or "-",
+                "实际发放型号": line.get("actual_model") or line.get("model") or NO_MODEL_TEXT,
+                "实际发放语种": line.get("actual_language") or line.get("language") or "-",
                 "申请数量": int(line.get("quantity") or 0),
                 "审批通过数量": int(line.get("approved_qty") or 0),
                 "实际发放数量": int(line.get("actual_issue_qty") or 0),
@@ -7554,6 +7849,7 @@ def render_approval_view(*, refresh_on_open: bool = False) -> None:
         list(live_data.get("line_rows") or []),
         list(live_data.get("material_rows") or []),
     )
+    inventory_context = approval_inventory_context(live_data)
     pending_line_statuses = {REQUEST_LINE_STATUS_PENDING, "待发放", "已通过", ""}
     completed_line_statuses = {REQUEST_LINE_STATUS_PARTIAL, REQUEST_LINE_STATUS_ISSUED}
     completed_request_statuses = {
@@ -7595,7 +7891,7 @@ def render_approval_view(*, refresh_on_open: bool = False) -> None:
 
     pending_tab, history_tab = st.tabs(["待审批发放", "历史审批记录"])
     with pending_tab:
-        render_pending_approval_requests(active_requests, active_line_map)
+        render_pending_approval_requests(active_requests, active_line_map, inventory_context)
     with history_tab:
         render_approval_history(history_requests, history_line_map)
 

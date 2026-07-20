@@ -69,8 +69,30 @@ class MaterialActivationTests(unittest.TestCase):
 
         options = app.feishu_options_from_rows(categories, inventory_df)
 
-        self.assertEqual(options["products"], ["启用品类", "未配置品类"])
+        self.assertEqual(options["products"], ["启用品类"])
         self.assertNotIn("停用品类", options["products"])
+        self.assertNotIn("未配置品类", options["products"])
+
+    def test_request_models_come_from_active_model_dimension_and_sort_by_family(self) -> None:
+        categories = [
+            {"record_id": "c1", "fields": {"物料品类": "启用品类", "启用状态": app.STATUS_ACTIVE}},
+        ]
+        inventory_df = pd.DataFrame(
+            [
+                ["MAT-1", "启用品类", "Legacy", "英语", 10, 0, 0, ""],
+            ],
+            columns=app.INVENTORY_HEADERS,
+        )
+        model_rows = [
+            {"record_id": "m1", "fields": {"产品型号": "MT1 Vac", "启用状态": app.STATUS_ACTIVE}},
+            {"record_id": "m2", "fields": {"产品型号": "MT1", "启用状态": app.STATUS_ACTIVE}},
+            {"record_id": "m3", "fields": {"产品型号": "MT1 Max", "启用状态": app.STATUS_ACTIVE}},
+            {"record_id": "m4", "fields": {"产品型号": "Retired", "启用状态": app.STATUS_INACTIVE}},
+        ]
+
+        options = app.feishu_options_from_rows(categories, inventory_df, model_rows)
+
+        self.assertEqual(options["models"], ["MT1", "MT1 Max", "MT1 Vac"])
 
     def test_dashboard_excludes_inactive_inventory_records(self) -> None:
         records = [
@@ -143,6 +165,27 @@ class MaterialActivationTests(unittest.TestCase):
 
         self.assertEqual(cache["row_count"], 1)
         self.assertEqual(cache["inventory_rows"][0]["product"], "启用品类")
+
+    def test_request_combination_must_exist_in_active_inventory_rows(self) -> None:
+        context = app.request_form_cache_to_selection_context(
+            {
+                "products": ["品类A"],
+                "models": ["M1", "M2"],
+                "languages": ["英语", "法语"],
+                "inventory_rows": [
+                    {
+                        "material_code": "MAT-1",
+                        "product": "品类A",
+                        "model": "M1",
+                        "language": "英语",
+                        "quantity": 0,
+                    }
+                ],
+            }
+        )
+
+        self.assertTrue(app.selection_context_has_inventory_combination(context, "品类A", "M1", "英语"))
+        self.assertFalse(app.selection_context_has_inventory_combination(context, "品类A", "M2", "法语"))
 
 
 if __name__ == "__main__":

@@ -142,6 +142,8 @@ EN_DISPLAY_TEXT = {
     "语种库存分布": "Inventory by Language",
     "库存预警": "Inventory Alerts",
     "库存状态": "Inventory Status",
+    "库存不足": "Insufficient Inventory",
+    "库存充足": "Sufficient Inventory",
     "负库存": "Negative Inventory",
     "零库存": "Zero Inventory",
     "低库存": "Low Inventory",
@@ -198,6 +200,15 @@ EN_DISPLAY_TEXT = {
     "序号": "No.",
     "申请数量": "Requested Quantity",
     "实际发放数量": "Actual Issued Quantity",
+    "申请物料品类": "Requested Category",
+    "申请产品型号": "Requested Model",
+    "申请语种": "Requested Language",
+    "实际发放品类": "Issued Category",
+    "实际发放型号": "Issued Model",
+    "实际发放语种": "Issued Language",
+    "实际发放物料编码": "Issued Material Code",
+    "实际发放物料品类": "Issued Material Category",
+    "实际发放产品型号": "Issued Product Model",
     "当前库存快照": "Current Inventory Snapshot",
     "明细状态": "Line Status",
     "明细数": "Line Count",
@@ -647,6 +658,9 @@ EN_DISPLAY_TEXT = {
     ),
     "新的物料编码已经存在。": "The new material code already exists.",
     "新的“品类 + 型号 + 语种”组合已经存在。": "The new category, model, and language combination already exists.",
+    "该品类、型号和语种的库存组合不存在或已停用，请重新选择。": (
+        "This category, model, and language combination does not exist or is inactive. Select another combination."
+    ),
     "该品类已有具体产品型号，不能直接改为无需型号。": (
         "This category has specific product models and cannot be changed directly to No Model Required."
     ),
@@ -892,6 +906,17 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
     (
         re.compile(r"^审批已成功，但申请人结果通知发送失败：(.*)$"),
         lambda match: f"Approval succeeded, but the result could not be sent to the applicant: {match.group(1)}",
+    ),
+    (
+        re.compile(r"^库存不足：(.*)。仍可调整实际发放物料或数量后继续审批。$"),
+        lambda match: (
+            f"Insufficient inventory: {match.group(1)}. "
+            "You can still adjust the issued material or quantity and continue approval."
+        ),
+    ),
+    (
+        re.compile(r"^以下实际发放组合不存在或已停用：(.*)$"),
+        lambda match: f"These issued material combinations do not exist or are inactive: {match.group(1)}",
     ),
     (
         re.compile(r"^以下库存行不能删除：(.*)$"),
