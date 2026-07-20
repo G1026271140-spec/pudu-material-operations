@@ -1,11 +1,6 @@
 name: Refresh static data cache
 
 on:
-  schedule:
-    - cron: "30 10 * * *"
-      timezone: "Asia/Shanghai"
-    - cron: "30 16 * * *"
-      timezone: "Asia/Shanghai"
   workflow_dispatch:
   repository_dispatch:
     types:

@@ -59,6 +59,23 @@ FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
 
 多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址。所有库存读取、登记、新增品类和流水写入都会访问同一个飞书多维表格。
 
+## 本地静态缓存任务
+
+Windows 本地缓存节点每天 `10:30` 和 `16:30` 从飞书生成最新静态缓存，并推送到 GitHub `master`。安装或重新配置：
+
+```powershell
+.\scripts\install_local_cache_task.ps1
+```
+
+安装内容：
+
+- 计划任务：`PUDU Material Cache Refresh`
+- 独立运行目录：`%LOCALAPPDATA%\PuduMaterialCacheRunner`
+- 桌面手动入口：`Update PUDU Static Cache.lnk`
+- 运行日志：`%LOCALAPPDATA%\PuduMaterialCacheRunner\logs\latest.log`
+
+任务支持锁屏运行、从睡眠中唤醒和错过计划后补跑；电脑关机时无法执行。GitHub Actions 工作流保留手动触发作为备用，不再承担定时更新。
+
 ## 迁移与导出文件
 
 `data/` 和 `outputs/` 下的 Excel/CSV 文件只作为历史导入、迁移模板或下载导出使用，不再作为应用运行时数据库。
