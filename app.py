@@ -643,6 +643,18 @@ def inject_global_styles() -> None:
             color: var(--pudu-red);
             font-weight: 700;
         }
+        .pudu-required-hint {
+            margin: 0.4rem 0 0;
+            padding: 0.45rem 0.6rem;
+            border-left: 3px solid var(--pudu-red);
+            background: #FFF1F0;
+            color: #B42318;
+            font-size: 0.76rem;
+            line-height: 1.5;
+        }
+        .pudu-required-hint strong {
+            font-weight: 700;
+        }
         .pudu-generated-title {
             display: flex;
             align-items: center;
@@ -5188,6 +5200,15 @@ def render_change_form(show_title: bool = True) -> None:
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        middle_cols[0].markdown(
+            """
+            <div class="pudu-required-hint">
+                收件人信息：请写明快递地址（包含收件人信息，邮编，具体地址）<br>
+                Please specify the delivery address (including recipient information, postal code, and specific address)
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         required_field_label(middle_cols[1], "运费的承担者 Freight Payer")
         if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
             st.session_state["request_freight_payer"] = FREIGHT_PAYER_OPTIONS[0]
@@ -5208,6 +5229,15 @@ def render_change_form(show_title: bool = True) -> None:
             key="request_material_usage",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
+        )
+        bottom_cols[0].markdown(
+            """
+            <div class="pudu-required-hint">
+                <strong>物料用途：活动物料请注明具体活动名称</strong><br>
+                <strong>For promotional materials, please specify the exact name of the event.</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
         bottom_cols[1].markdown(
             '<div class="pudu-field-label">相关附件 Relevant Attachments</div>',
