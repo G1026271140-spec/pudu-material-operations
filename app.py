@@ -4,6 +4,7 @@ import json
 import os
 import re
 import threading
+import time
 import uuid
 from datetime import date, datetime, timedelta
 from html import escape
@@ -112,6 +113,7 @@ DATA_CACHE_TTL_SECONDS = 30
 MAX_REQUEST_LINE_COUNT = 20
 ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料数据库", "品类管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
+MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "修改与撤回")
 UI_LANGUAGE_SESSION_KEY = "ui_language"
@@ -1630,6 +1632,8 @@ def navigate_to_management_section(key: str, section: str, label: str, icon: str
     )
     if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
         set_management_section(section)
+        if section == "物料数据库":
+            st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = section
         st.query_params.clear()
         st.rerun()
 
@@ -6864,6 +6868,22 @@ def render_management_page() -> None:
         render_edit_revert_page()
 
 
+def render_management_page_with_navigation_loading() -> None:
+    loading_section = str(st.session_state.pop(MANAGEMENT_NAVIGATION_LOADING_KEY, ""))
+    if loading_section != "物料数据库":
+        render_management_page()
+        return
+
+    started_at = time.monotonic()
+    with st.spinner("物料数据加载中，请稍后......"):
+        render_management_page()
+        # Streamlit delays short-lived spinners to prevent flicker. Keep this
+        # navigation overlay alive long enough to provide visible feedback.
+        remaining = 0.75 - (time.monotonic() - started_at)
+        if remaining > 0:
+            time.sleep(remaining)
+
+
 def main() -> None:
     install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
@@ -6887,7 +6907,7 @@ def main() -> None:
         elif view == "approval":
             render_approval_view(refresh_on_open=entering_approval)
         else:
-            render_management_page()
+            render_management_page_with_navigation_loading()
     except FeishuBitableError as exc:
         render_feishu_error(exc)
 

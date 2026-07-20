@@ -20,6 +20,46 @@ class AdminAccessTests(unittest.TestCase):
         self.assertFalse(app.management_section_requires_admin("修改与撤回"))
         self.assertFalse(app.management_section_requires_admin(""))
 
+    def test_material_database_navigation_requests_fullscreen_loading(self) -> None:
+        session_state: dict[str, object] = {}
+        query_params = MagicMock()
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(app.st, "query_params", query_params),
+            patch.object(app.st, "button", return_value=True),
+            patch.object(app.st, "rerun") as rerun,
+        ):
+            app.navigate_to_management_section(
+                "sidebar_open_material_database",
+                "物料数据库",
+                "物料数据库",
+                ":material/database:",
+            )
+
+        self.assertEqual(
+            session_state[app.MANAGEMENT_NAVIGATION_LOADING_KEY],
+            "物料数据库",
+        )
+        query_params.clear.assert_called_once_with()
+        rerun.assert_called_once_with()
+
+    def test_other_navigation_does_not_request_database_loading_overlay(self) -> None:
+        session_state: dict[str, object] = {}
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(app.st, "query_params", MagicMock()),
+            patch.object(app.st, "button", return_value=True),
+            patch.object(app.st, "rerun"),
+        ):
+            app.navigate_to_management_section(
+                "sidebar_open_request",
+                "库存登记",
+                "库存登记",
+                ":material/edit_note:",
+            )
+
+        self.assertNotIn(app.MANAGEMENT_NAVIGATION_LOADING_KEY, session_state)
+
     def test_locked_cache_publish_does_not_expose_github_link(self) -> None:
         expander = MagicMock()
         expander.__enter__.return_value = expander
