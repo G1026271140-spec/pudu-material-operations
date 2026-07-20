@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-07-20 09:07:08",
+  "generated_at": "2026-07-20 03:07:43",
   "tables": {
     "物料品类": [
       {
@@ -10054,14 +10054,18 @@
           "备注": "",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpSbLhAGpa9"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1000",
+          "当前库存": "950",
           "海关编码": null,
           "物料品类": "产品折页(Single Product Brochure)",
           "物料品类 2": [
@@ -10076,10 +10080,14 @@
           "物料编码": "MAT-0161",
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpS8vVyGP2x"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260720-001-01",
+              "text_arr": [
+                "REQ-20260720-001-01"
+              ],
               "type": "text"
             }
           ],
@@ -21407,17 +21415,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvpeTgufrWfI"
+                "recvpeTgufrWfI",
+                "recvpSbN0ey9Bw"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "990",
+          "当前库存": "890",
           "海关编码": null,
           "物料品类": "工业产品线手册（Industrial Product Line Brochure）",
           "物料品类 2": [
@@ -21433,12 +21443,14 @@
           "申请明细": [
             {
               "record_ids": [
-                "recvoG3gHngXlZ"
+                "recvoG3gHngXlZ",
+                "recvpS8vVyOK6g"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260707-002-03",
+              "text": "REQ-20260707-002-03,REQ-20260720-001-02",
               "text_arr": [
-                "REQ-20260707-002-03"
+                "REQ-20260707-002-03",
+                "REQ-20260720-001-02"
               ],
               "type": "text"
             }
@@ -21954,14 +21966,18 @@
           "备注": "",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpSbOCCoabh"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1000",
+          "当前库存": "900",
           "海关编码": null,
           "物料品类": "清洁产品线手册（Cleaning Product Line Brochure）",
           "物料品类 2": [
@@ -21976,10 +21992,14 @@
           "物料编码": "MAT-0381",
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpS8vVyQnJu"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260720-001-03",
+              "text_arr": [
+                "REQ-20260720-001-03"
+              ],
               "type": "text"
             }
           ],
@@ -23046,14 +23066,18 @@
           "备注": "",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpScPcc1brN"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1000",
+          "当前库存": "800",
           "海关编码": null,
           "物料品类": "产品易拉宝(Product Roll-Up)",
           "物料品类 2": [
@@ -35325,17 +35349,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvpeTiNIsK45"
+                "recvpeTiNIsK45",
+                "recvpScNesBT3h"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "996",
+          "当前库存": "796",
           "海关编码": null,
           "物料品类": "定制LOGO书包(Customized PUDU bag)",
           "物料品类 2": [
@@ -37889,20 +37915,308 @@
         },
         "id": "recvpffR4jAC7G",
         "record_id": "recvpffR4jAC7G"
+      },
+      {
+        "fields": {
+          "产品型号": "BG1",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvpS8vVyGP2x"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260720-001-01",
+              "text_arr": [
+                "REQ-20260720-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1784511346208,
+          "变更前数量": "1000",
+          "变更后数量": "950",
+          "备注": "申请单 REQ-20260720-001 实际发放；已发放",
+          "幂等键": "issue:recvpS8vVyGP2x:50",
+          "库存变化": "-50",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "50",
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "产品折页(Single Product Brochure)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfwrV"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0161",
+              "text_arr": [
+                "MAT-0161"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvpSbLhAGpa9",
+        "record_id": "recvpSbLhAGpa9"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvpS8vVyOK6g"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260720-001-02",
+              "text_arr": [
+                "REQ-20260720-001-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1784511346208,
+          "变更前数量": "990",
+          "变更后数量": "890",
+          "备注": "申请单 REQ-20260720-001 实际发放；已发放",
+          "幂等键": "issue:recvpS8vVyOK6g:100",
+          "库存变化": "-100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "工业产品线手册（Industrial Product Line Brochure）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYuQ"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0371",
+              "text_arr": [
+                "MAT-0371"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvpSbN0ey9Bw",
+        "record_id": "recvpSbN0ey9Bw"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvpS8vVyQnJu"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260720-001-03",
+              "text_arr": [
+                "REQ-20260720-001-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1784511346208,
+          "变更前数量": "1000",
+          "变更后数量": "900",
+          "备注": "申请单 REQ-20260720-001 实际发放；已发放",
+          "幂等键": "issue:recvpS8vVyQnJu:100",
+          "库存变化": "-100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "清洁产品线手册（Cleaning Product Line Brochure）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfZIj"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0381",
+              "text_arr": [
+                "MAT-0381"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvpSbOCCoabh",
+        "record_id": "recvpSbOCCoabh"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvpfgshxBliC"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260713-001-01",
+              "text_arr": [
+                "REQ-20260713-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1784511591843,
+          "变更前数量": "996",
+          "变更后数量": "796",
+          "备注": "申请单 REQ-20260713-001 实际发放",
+          "幂等键": "issue:recvpfgshxBliC:200",
+          "库存变化": "-200",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "200",
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "定制LOGO书包(Customized PUDU bag)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khySI"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0961",
+              "text_arr": [
+                "MAT-0961"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvpScNesBT3h",
+        "record_id": "recvpScNesBT3h"
+      },
+      {
+        "fields": {
+          "产品型号": "BellaBot",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvpfgshxKpcB"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260713-001-02",
+              "text_arr": [
+                "REQ-20260713-001-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1784511591843,
+          "变更前数量": "1000",
+          "变更后数量": "800",
+          "备注": "申请单 REQ-20260713-001 实际发放",
+          "幂等键": "issue:recvpfgshxKpcB:200",
+          "库存变化": "-200",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "200",
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "产品易拉宝(Product Roll-Up)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kg2lQ"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0401",
+              "text_arr": [
+                "MAT-0401"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvpScPcc1brN",
+        "record_id": "recvpScPcc1brN"
       }
     ],
     "物料申请单": [
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": 2248531200000,
           "标题": null,
           "物料用途": null,
@@ -37927,7 +38241,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXT8o",
         "record_id": "rec27JD2WHXT8o"
@@ -37935,14 +38250,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -37959,7 +38277,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXTqy",
         "record_id": "rec27JD2WHXTqy"
@@ -37967,14 +38286,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -37991,7 +38313,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXTz5",
         "record_id": "rec27JD2WHXTz5"
@@ -37999,14 +38322,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38023,7 +38349,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXTGF",
         "record_id": "rec27JD2WHXTGF"
@@ -38031,14 +38358,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38055,7 +38385,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXTOF",
         "record_id": "rec27JD2WHXTOF"
@@ -38063,14 +38394,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38087,7 +38421,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXTVX",
         "record_id": "rec27JD2WHXTVX"
@@ -38095,14 +38430,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38119,7 +38457,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXU3o",
         "record_id": "rec27JD2WHXU3o"
@@ -38127,14 +38466,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38151,7 +38493,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXUaQ",
         "record_id": "rec27JD2WHXUaQ"
@@ -38159,14 +38502,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38183,7 +38529,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXUig",
         "record_id": "rec27JD2WHXUig"
@@ -38191,14 +38538,17 @@
       {
         "fields": {
           "业务类型": null,
+          "国家": null,
           "备注": null,
           "审批意见": null,
           "审批时间": null,
           "审批状态": null,
+          "客户名称": null,
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": null,
+          "收件人信息": null,
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38215,7 +38565,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": null
         },
         "id": "rec27JD2WHXUpq",
         "record_id": "rec27JD2WHXUpq"
@@ -38223,14 +38574,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "1111",
           "备注": "客户名称：1111\n国家：1111\n收件人信息：111111\n运费承担者：市场部承担\n申请人：111\n岗位：111\n相关附件：沙利文上海营业执照.pdf",
           "审批意见": null,
           "审批时间": 1783930510335,
           "审批状态": "已发放",
+          "客户名称": "1111",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783415761731,
+          "收件人信息": "111111",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38251,7 +38605,8 @@
             }
           ],
           "申请部门|区域": "111",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoG2NjCwe1W",
         "record_id": "recvoG2NjCwe1W"
@@ -38259,14 +38614,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "1111",
           "备注": "客户名称：1111\n国家：1111\n收件人信息：111111\n运费承担者：市场部承担\n申请人：111\n岗位：111\n相关附件：沙利文上海营业执照.pdf",
           "审批意见": null,
           "审批时间": 1783930636765,
           "审批状态": "已发放",
+          "客户名称": "1111",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783415871929,
+          "收件人信息": "111111",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38295,7 +38653,8 @@
             }
           ],
           "申请部门|区域": "111",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoG3fTruczq",
         "record_id": "recvoG3fTruczq"
@@ -38303,14 +38662,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "222",
           "备注": "客户名称：222\n国家：222\n收件人信息：222\n运费承担者：市场部承担\n申请人：222\n岗位：222",
           "审批意见": null,
           "审批时间": 1783930582427,
           "审批状态": "已发放",
+          "客户名称": "222",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783416313007,
+          "收件人信息": "222",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38333,7 +38695,8 @@
             }
           ],
           "申请部门|区域": "222",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoG56Gkrhgn",
         "record_id": "recvoG56Gkrhgn"
@@ -38341,14 +38704,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "222",
           "备注": "客户名称：222\n国家：222\n收件人信息：222\n运费承担者：市场部承担\n申请人：222\n岗位：222",
           "审批意见": null,
           "审批时间": null,
           "审批状态": "待审批",
+          "客户名称": "222",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783416439727,
+          "收件人信息": "222",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38365,7 +38731,8 @@
             }
           ],
           "申请部门|区域": "222",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoG5DEEbvmg",
         "record_id": "recvoG5DEEbvmg"
@@ -38373,14 +38740,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "222",
           "备注": "客户名称：222\n国家：222\n收件人信息：222\n运费承担者：市场部承担\n申请人：222\n岗位：222",
           "审批意见": null,
           "审批时间": null,
           "审批状态": "待审批",
+          "客户名称": "222",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783416482812,
+          "收件人信息": "222",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38397,7 +38767,8 @@
             }
           ],
           "申请部门|区域": "222",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoG5ONoFS1z",
         "record_id": "recvoG5ONoFS1z"
@@ -38405,14 +38776,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "222",
           "备注": "客户名称：222\n国家：222\n收件人信息：222\n运费承担者：市场部承担\n申请人：222\n岗位：222",
           "审批意见": null,
           "审批时间": null,
           "审批状态": "待审批",
+          "客户名称": "222",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783416887976,
+          "收件人信息": "222",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38429,7 +38803,8 @@
             }
           ],
           "申请部门|区域": "222",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoG7waCggiF",
         "record_id": "recvoG7waCggiF"
@@ -38437,14 +38812,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "EN",
           "备注": "客户名称：cbt\n国家：EN\n收件人信息：暂无\n运费承担者：市场部承担\n申请人：ghy\n岗位：123",
           "审批意见": null,
           "审批时间": 1783936043966,
           "审批状态": "已发放",
+          "客户名称": "cbt",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783480891588,
+          "收件人信息": "暂无",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38465,7 +38843,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoKs4whC2Dk",
         "record_id": "recvoKs4whC2Dk"
@@ -38473,14 +38852,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "EN",
           "备注": "客户名称：cbt\n国家：EN\n收件人信息：暂无\n运费承担者：市场部承担\n申请人：ghy1\n岗位：1232",
           "审批意见": null,
           "审批时间": null,
           "审批状态": "待审批",
+          "客户名称": "cbt",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783481324947,
+          "收件人信息": "暂无",
           "期望发放日期": null,
           "标题": null,
           "物料用途": null,
@@ -38497,7 +38879,8 @@
             }
           ],
           "申请部门|区域": "2",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoKtThDrpIr",
         "record_id": "recvoKtThDrpIr"
@@ -38505,14 +38888,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "1",
           "备注": "客户名称：1\n国家：1\n收件人信息：1\n运费承担者：申请部门承担\n物料用途：1\n申请人：1",
           "审批意见": null,
           "审批时间": 1783491364519,
           "审批状态": "已发放",
+          "客户名称": "1",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783490494079,
+          "收件人信息": "1",
           "期望发放日期": null,
           "标题": null,
           "物料用途": "1",
@@ -38533,7 +38919,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "申请部门承担"
         },
         "id": "recvoL6mvAGyQ0",
         "record_id": "recvoL6mvAGyQ0"
@@ -38541,14 +38928,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "4",
           "备注": "客户名称：4\n国家：4\n收件人信息：4\n运费承担者：市场部承担\n物料用途：4\n申请人：4\n岗位：4",
           "审批意见": null,
           "审批时间": 1783586337091,
           "审批状态": "部分发放",
+          "客户名称": "4",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783586206097,
+          "收件人信息": "4",
           "期望发放日期": null,
           "标题": null,
           "物料用途": "4",
@@ -38569,7 +38959,8 @@
             }
           ],
           "申请部门|区域": "4",
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "市场部承担"
         },
         "id": "recvoRzXFH2PRI",
         "record_id": "recvoRzXFH2PRI"
@@ -38577,14 +38968,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "UK",
           "备注": "客户名称：CCQ\n国家：UK\n收件人信息：广东省东莞市石排镇莲湖路1号卓越科技园嘉洲帽厂二楼 \n郑裕春    15812495461       1102113738@qq.com\n运费承担者：申请部门承担\n物料用途：IFA展会使用\n申请人：高鸿源",
           "审批意见": null,
-          "审批时间": null,
-          "审批状态": "待审批",
+          "审批时间": 1784511591843,
+          "审批状态": "已发放",
+          "客户名称": "CCQ",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": null,
           "提交时间": 1783936187755,
+          "收件人信息": "广东省东莞市石排镇莲湖路1号卓越科技园嘉洲帽厂二楼 \n郑裕春    15812495461       1102113738@qq.com",
           "期望发放日期": null,
           "标题": "IFA展会使用-高鸿源-营销物料领取",
           "物料用途": "IFA展会使用",
@@ -38607,7 +39001,8 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "申请部门承担"
         },
         "id": "recvpfgrKks59l",
         "record_id": "recvpfgrKks59l"
@@ -38615,14 +39010,17 @@
       {
         "fields": {
           "业务类型": "物料领取",
+          "国家": "Argentina",
           "备注": "客户名称：Jaldien S.A.\n国家：Argentina\n收件人信息：收件人： Santiago Salinas\n邮箱：ssalinas@linkbotics.mobi\n电话：+54 9 11 3453-3352\n地址：OTTO KRAUSE 4996 (1667) ，TORTUGUITAS ，PROVINCIA DE BUENOS AIRES，ARGENTINA\n城市：Buenos Aires\n运费承担者：其他\n物料用途：阿根廷线下物流展会Logsti-k给代理的物料支持\n申请人：戴欣蓓",
           "审批意见": null,
           "审批时间": null,
           "审批状态": "待审批",
+          "客户名称": "Jaldien S.A.",
           "市场负责人": null,
           "库存流水": null,
           "提交幂等键": "784e1be3b77245b7810f350c485a3aa8",
           "提交时间": 1784194612285,
+          "收件人信息": "收件人： Santiago Salinas\n邮箱：ssalinas@linkbotics.mobi\n电话：+54 9 11 3453-3352\n地址：OTTO KRAUSE 4996 (1667) ，TORTUGUITAS ，PROVINCIA DE BUENOS AIRES，ARGENTINA\n城市：Buenos Aires",
           "期望发放日期": null,
           "标题": "阿根廷线下物流展会Logsti-k给代理的物料支持-戴欣蓓-营销物料领取",
           "物料用途": "阿根廷线下物流展会Logsti-k给代理的物料支持",
@@ -38647,10 +39045,63 @@
             }
           ],
           "申请部门|区域": null,
-          "相关附件": null
+          "相关附件": null,
+          "运费承担者": "其他"
         },
         "id": "recvpwKMh1FSCQ",
         "record_id": "recvpwKMh1FSCQ"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "国家": "USA",
+          "备注": "客户名称：Impact\n国家：USA\n收件人信息：300 Wilson Road #800 Griffin, GA 30224\nVance Tiller\n7049308818\nvtiller@impactws.com\n运费承担者：普渡付款(PUDU)\n物料用途：拉美活动\n申请人：高鸿源",
+          "审批意见": "已发放",
+          "审批时间": 1784511346208,
+          "审批状态": "已发放",
+          "客户名称": "Impact",
+          "市场负责人": null,
+          "库存流水": null,
+          "提交幂等键": "d4c598d06b15459ea81f72cba3c48d79",
+          "提交时间": 1784510567369,
+          "收件人信息": "300 Wilson Road #800 Griffin, GA 30224\nVance Tiller\n7049308818\nvtiller@impactws.com",
+          "期望发放日期": null,
+          "标题": "拉美活动-高鸿源-营销物料领取",
+          "物料用途": "拉美活动",
+          "用途|活动": "拉美活动",
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012o_f0dcd27f-b0a5-421e-a9e4-95741c712e0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "申请单号": "REQ-20260720-001",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvpS8vVyGP2x",
+                "recvpS8vVyOK6g",
+                "recvpS8vVyQnJu"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260720-001-01,REQ-20260720-001-02,REQ-20260720-001-03",
+              "text_arr": [
+                "REQ-20260720-001-01",
+                "REQ-20260720-001-02",
+                "REQ-20260720-001-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请部门|区域": "市场营销部",
+          "相关附件": null,
+          "运费承担者": "普渡付款(PUDU)"
+        },
+        "id": "recvpS8uRrHMq1",
+        "record_id": "recvpS8uRrHMq1"
       }
     ],
     "申请明细": [
@@ -40517,16 +40968,20 @@
           ],
           "出库流水编号": null,
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1784511591843",
           "备注": null,
-          "实际发放数量": "0",
+          "实际发放数量": "200",
           "审批通过数量": "200",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpScNesBT3h"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
@@ -40544,7 +40999,7 @@
             }
           ],
           "提交时库存快照": "996",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260713-001-01",
           "物料品类": [
             {
@@ -40606,16 +41061,20 @@
           ],
           "出库流水编号": null,
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1784511591843",
           "备注": null,
-          "实际发放数量": "0",
+          "实际发放数量": "200",
           "审批通过数量": "200",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvpScPcc1brN"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
@@ -40633,7 +41092,7 @@
             }
           ],
           "提交时库存快照": "1000",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260713-001-02",
           "物料品类": [
             {
@@ -40939,14 +41398,293 @@
         },
         "id": "recvpwKNozEevu",
         "record_id": "recvpwKNozEevu"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": "1784511346208",
+          "备注": null,
+          "实际发放数量": "50",
+          "审批通过数量": "50",
+          "库存流水": [
+            {
+              "record_ids": [
+                "recvpSbLhAGpa9"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvpS8uRrHMq1"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260720-001",
+              "text_arr": [
+                "REQ-20260720-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "1000",
+          "明细状态": "已发放",
+          "明细编号": "REQ-20260720-001-01",
+          "物料品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfwrV"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0161",
+              "text_arr": [
+                "MAT-0161"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "50",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvpS8vVyGP2x",
+        "record_id": "recvpS8vVyGP2x"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": "1784511346208",
+          "备注": null,
+          "实际发放数量": "100",
+          "审批通过数量": "100",
+          "库存流水": [
+            {
+              "record_ids": [
+                "recvpSbN0ey9Bw"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvpS8uRrHMq1"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260720-001",
+              "text_arr": [
+                "REQ-20260720-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "990",
+          "明细状态": "已发放",
+          "明细编号": "REQ-20260720-001-02",
+          "物料品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYuQ"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0371",
+              "text_arr": [
+                "MAT-0371"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "100",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvpS8vVyOK6g",
+        "record_id": "recvpS8vVyOK6g"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": "1784511346208",
+          "备注": null,
+          "实际发放数量": "100",
+          "审批通过数量": "100",
+          "库存流水": [
+            {
+              "record_ids": [
+                "recvpSbOCCoabh"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvpS8uRrHMq1"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260720-001",
+              "text_arr": [
+                "REQ-20260720-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "1000",
+          "明细状态": "已发放",
+          "明细编号": "REQ-20260720-001-03",
+          "物料品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfZIj"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0381",
+              "text_arr": [
+                "MAT-0381"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "100",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvpS8vVyQnJu",
+        "record_id": "recvpS8vVyQnJu"
       }
     ]
   },
   "row_counts": {
     "物料品类": 17,
     "物料主数据": 643,
-    "库存流水": 22,
-    "物料申请单": 22,
-    "申请明细": 26
+    "库存流水": 27,
+    "物料申请单": 23,
+    "申请明细": 29
   }
 }
