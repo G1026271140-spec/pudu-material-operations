@@ -14,6 +14,7 @@ def inventory_record(
     material_code: str = "",
     unit_price: float = 0,
     customs_code: str = "",
+    status: str = app.STATUS_ACTIVE,
 ) -> dict:
     return {
         "record_id": record_id,
@@ -25,6 +26,7 @@ def inventory_record(
         "unit_price": unit_price,
         "remark": "",
         "customs_code": customs_code,
+        "status": status,
     }
 
 
@@ -155,8 +157,37 @@ class CategoryInventoryPlanTests(unittest.TestCase):
 
         self.assertEqual(
             values,
-            {("M1", "英语"): {"quantity": -10, "unit_price": 0.0, "customs_code": ""}},
+            {
+                ("M1", "英语"): {
+                    "quantity": -10,
+                    "unit_price": 0.0,
+                    "customs_code": "",
+                    "status": app.STATUS_ACTIVE,
+                }
+            },
         )
+
+    def test_inventory_status_is_preserved_and_can_be_overridden(self) -> None:
+        records = [inventory_record("1", "M1", "英语", 100, status=app.STATUS_INACTIVE)]
+
+        original_plan = app.build_category_inventory_plan(records, "旧品类", ["M1"], ["英语"])
+        enabled_plan = app.build_category_inventory_plan(
+            records,
+            "旧品类",
+            ["M1"],
+            ["英语"],
+            target_values={
+                ("M1", "英语"): {
+                    "quantity": 100,
+                    "unit_price": 0,
+                    "customs_code": "",
+                    "status": app.STATUS_ACTIVE,
+                }
+            },
+        )
+
+        self.assertEqual(original_plan["targets"][0]["status"], app.STATUS_INACTIVE)
+        self.assertEqual(enabled_plan["targets"][0]["status"], app.STATUS_ACTIVE)
 
     def test_relation_updates_repoint_deleted_material_ids(self) -> None:
         rows = [

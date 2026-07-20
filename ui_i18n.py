@@ -126,6 +126,12 @@ EN_DISPLAY_TEXT = {
     "自定义查看库存规模、价值分布和预警状态": (
         "Customize inventory scale, value distribution, and alert views"
     ),
+    "仅统计启用库存行，并自定义查看库存规模、价值分布和预警状态": (
+        "Analyze active inventory rows only, with customizable scale, value, and alert views"
+    ),
+    "仅展示启用库存行；搜索、编辑或删除物料主数据记录": (
+        "Show active inventory rows only; search, edit, or delete material master records"
+    ),
     "看板设置": "Dashboard Settings",
     "显示内容": "Visible Modules",
     "低库存阈值": "Low-stock Threshold",
@@ -267,6 +273,8 @@ EN_DISPLAY_TEXT = {
     "目标库存合计": "Target Inventory Total",
     "库存数量差额": "Inventory Quantity Difference",
     "库存数量 *": "Inventory Quantity *",
+    "启用状态 *": "Enabled Status *",
+    "品类启用状态 *": "Category Status *",
     "重组": "Reconfigured",
     "无需型号": "No Model Required",
     "无需语种": "No Language Required",
@@ -354,6 +362,8 @@ EN_DISPLAY_TEXT = {
     "确认撤回该品类": "Confirm Category Revocation",
     "我已确认以上品类配置和库存组合": "I confirm the category settings and inventory combinations above",
     "确认直接舍弃未分配库存": "Confirm discarding unallocated inventory",
+    "批量设置启用状态": "Set Status in Bulk",
+    "应用到已勾选库存行": "Apply to Selected Inventory Rows",
     "保存实际发放并扣减库存": "Save Issuance & Update Inventory",
     "仅看非零库存": "Show Non-zero Inventory Only",
     "显示全部库存组合": "Show All Inventory Combinations",
@@ -378,6 +388,9 @@ EN_DISPLAY_TEXT = {
     ),
     "勾选后语种统一为“无需语种”，库存数量可在下方组合表中重新分配。": (
         "When selected, the language becomes No Language Required; redistribute quantities in the table below."
+    ),
+    "停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。": (
+        "Inactive categories are hidden from material requests while historical inventory and requests remain available."
     ),
     "这里只决定申请明细和流水的关联去向；库存数量请在下方组合表中填写。": (
         "This only controls where request and transaction links move; enter inventory quantities in the table below."
@@ -482,9 +495,21 @@ EN_DISPLAY_TEXT = {
     "可直接填写每个组合的最终库存、单价和海关编码；单价与海关编码可留空。": (
         "Enter the final quantity, unit price, and customs code for each combination; unit price and customs code are optional."
     ),
+    "可填写每个组合的最终库存、单价、海关编码和启用状态；单价与海关编码可留空。": (
+        "Enter the final quantity, unit price, customs code, and status for each combination; unit price and customs code are optional."
+    ),
     "请确认直接舍弃未分配库存。": "Confirm that unallocated inventory should be discarded.",
     "请检查库存组合中的数量、单价和海关编码。": (
         "Check the quantity, unit price, and customs code in the inventory combinations."
+    ),
+    "请检查库存组合中的数量、单价、海关编码和启用状态。": (
+        "Check the quantity, unit price, customs code, and status in the inventory combinations."
+    ),
+    "请先在库存组合明细中勾选至少一行。": (
+        "Select at least one row in the inventory combination details first."
+    ),
+    "批量设置会先更新当前表格，点击下方保存品类配置后才会同步至飞书。": (
+        "Bulk changes update the current table first and sync to Feishu only after you save the category settings below."
     ),
     "勾选一条有效记录可编辑；勾选多条有效记录可批量撤回。": (
         "Select one valid record to edit, or multiple valid records to revoke them in bulk."
@@ -657,6 +682,19 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
     (
         re.compile(r"^当前看板与下方明细联动，共显示 (.+?) 条库存组合。$"),
         lambda match: f"The dashboard and details are linked; {match.group(1)} inventory combinations are shown.",
+    ),
+    (
+        re.compile(r"^发现 (.+?) 条启用库存预警：负库存 (.+?) 条，零库存 (.+?) 条，低库存 (.+?) 条。$"),
+        lambda match: (
+            f"Found {match.group(1)} alerts among active inventory: {match.group(2)} negative, "
+            f"{match.group(3)} zero, and {match.group(4)} low-inventory rows."
+        ),
+    ),
+    (
+        re.compile(r"^启用库存组合 (.+?) 条；停用库存组合 (.+?) 条。$"),
+        lambda match: (
+            f"Active inventory combinations: {match.group(1)}; inactive combinations: {match.group(2)}."
+        ),
     ),
     (
         re.compile(r"^下载文件生成时间：(.+?)。筛选条件变化后请重新生成。$"),

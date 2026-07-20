@@ -68,6 +68,23 @@ class UiInternationalizationTests(unittest.TestCase):
             ),
             "75 units of unallocated inventory will be discarded and cannot be restored automatically after saving.",
         )
+        self.assertEqual(
+            translate_ui_text("批量设置启用状态", LANGUAGE_EN),
+            "Set Status in Bulk",
+        )
+        self.assertEqual(
+            translate_ui_text("启用库存组合 12 条；停用库存组合 3 条。", LANGUAGE_EN),
+            "Active inventory combinations: 12; inactive combinations: 3.",
+        )
+
+    def test_active_inventory_alert_copy_is_translated(self) -> None:
+        self.assertEqual(
+            translate_ui_text(
+                "发现 8 条启用库存预警：负库存 2 条，零库存 1 条，低库存 5 条。",
+                LANGUAGE_EN,
+            ),
+            "Found 8 alerts among active inventory: 2 negative, 1 zero, and 5 low-inventory rows.",
+        )
 
     def test_column_localization_does_not_rename_or_modify_data(self) -> None:
         source = pd.DataFrame(

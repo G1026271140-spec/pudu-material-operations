@@ -51,6 +51,9 @@ MATERIAL_TABLE_NAME = "物料主数据"
 CATEGORY_TABLE_NAME = "物料品类"
 LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
+STATUS_ACTIVE = "启用"
+STATUS_INACTIVE = "停用"
+MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
 REQUEST_NO_PREFIX = "REQ"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
 DEFAULT_STREAMLIT_APP_URL = (
@@ -1270,6 +1273,14 @@ def unique_preserve(values: list[str]) -> list[str]:
     return result
 
 
+def normalize_enabled_status(value: object) -> str:
+    return STATUS_INACTIVE if str(value or "").strip() == STATUS_INACTIVE else STATUS_ACTIVE
+
+
+def material_record_is_active(record: dict) -> bool:
+    return normalize_enabled_status(record.get("status")) == STATUS_ACTIVE
+
+
 def normalize_option_label(value: object) -> str:
     return re.sub(r"\s+", " ", str(value).strip())
 
@@ -1408,8 +1419,14 @@ def request_form_cache_from_inventory(
     source: str,
 ) -> dict[str, object]:
     rows: list[dict[str, object]] = []
-    if not inventory_df.empty:
-        for item in inventory_df.fillna("").itertuples(index=False):
+    enabled_products = set(str(product) for product in list(options.get("products") or []))
+    enabled_inventory_df = (
+        inventory_df[inventory_df[PRODUCT_COL].astype(str).isin(enabled_products)]
+        if not inventory_df.empty
+        else inventory_df
+    )
+    if not enabled_inventory_df.empty:
+        for item in enabled_inventory_df.fillna("").itertuples(index=False):
             rows.append(
                 {
                     "material_code": str(item[0]),
@@ -1629,6 +1646,7 @@ def material_dashboard_dataframe(records: list[dict]) -> pd.DataFrame:
                 "总价值": float(row.get("total_value") or 0),
             }
             for row in records
+            if material_record_is_active(row)
         ],
         columns=["记录ID", "物料编码", "物料品类", "产品型号", "语种", "库存数量", "单价", "总价值"],
     )
@@ -2363,6 +2381,8 @@ def feishu_inventory_dataframe_from_rows(rows: list[dict]) -> pd.DataFrame:
         category = feishu_text(fields, "物料品类")
         if not material_code or not category:
             continue
+        if normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
+            continue
         quantity = feishu_int(fields, "当前库存")
         unit_price = feishu_float(fields, "单价")
         data.append(
@@ -2392,15 +2412,21 @@ def load_feishu_inventory() -> pd.DataFrame:
 
 
 def feishu_options_from_rows(categories: list[dict], inventory_df: pd.DataFrame) -> dict:
-    products: list[str] = []
+    category_products: list[str] = []
+    category_status_by_product: dict[str, str] = {}
     no_model_products: list[str] = []
     no_language_products: list[str] = []
     configured_language_products: list[str] = []
     for row in categories:
         fields = feishu_fields(row)
         product = feishu_text(fields, "物料品类")
+        category_status = normalize_enabled_status(feishu_text(fields, "启用状态"))
         if product:
-            products.append(product)
+            category_status_by_product[product] = category_status
+        if category_status != STATUS_ACTIVE:
+            continue
+        if product:
+            category_products.append(product)
         if feishu_text(fields, "是否无需型号") == "是":
             no_model_products.append(product)
         no_language_value = feishu_text(fields, "是否无需语种")
@@ -2408,8 +2434,18 @@ def feishu_options_from_rows(categories: list[dict], inventory_df: pd.DataFrame)
             configured_language_products.append(product)
         if no_language_value == "是" or (not no_language_value and is_default_no_language_product(product)):
             no_language_products.append(product)
-    if not products and not inventory_df.empty:
-        products = unique_preserve(list(inventory_df[PRODUCT_COL].astype(str)))
+    inventory_products = (
+        unique_preserve(list(inventory_df[PRODUCT_COL].astype(str)))
+        if not inventory_df.empty
+        else []
+    )
+    inventory_product_set = set(inventory_products)
+    products = [product for product in category_products if product in inventory_product_set]
+    products.extend(
+        product
+        for product in inventory_products
+        if product not in category_status_by_product and product not in set(products)
+    )
     inventory_no_model_products = (
         unique_preserve(list(inventory_df.loc[inventory_df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str)))
         if not inventory_df.empty
@@ -3545,15 +3581,30 @@ def parse_feishu_inventory_record(row: dict) -> dict | None:
         "total_value": quantity * unit_price,
         "remark": feishu_text(fields, "备注"),
         "customs_code": feishu_text(fields, "海关编码"),
+        "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
     }
 
 
-def load_feishu_inventory_records() -> list[dict]:
+def load_feishu_inventory_records(*, active_only: bool = False) -> list[dict]:
     records = [
         parsed
         for row in feishu_material_rows()
         if (parsed := parse_feishu_inventory_record(row)) is not None
     ]
+    if active_only:
+        category_status_by_name = {
+            feishu_text(feishu_fields(row), "物料品类"): normalize_enabled_status(
+                feishu_text(feishu_fields(row), "启用状态")
+            )
+            for row in feishu_category_rows()
+            if feishu_text(feishu_fields(row), "物料品类")
+        }
+        records = [
+            record
+            for record in records
+            if material_record_is_active(record)
+            and category_status_by_name.get(str(record["category"]), STATUS_ACTIVE) == STATUS_ACTIVE
+        ]
     records.sort(key=lambda item: (item["category"], item["model"], item["language"], item["material_code"]))
     return records
 
@@ -3575,7 +3626,7 @@ def load_feishu_category_records() -> list[dict]:
                     not feishu_text(fields, "是否无需语种")
                     and is_default_no_language_product(product)
                 ),
-                "status": feishu_text(fields, "启用状态"),
+                "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
                 "created_at": feishu_text(fields, "创建时间"),
                 "remark": feishu_text(fields, "备注"),
             }
@@ -3676,6 +3727,11 @@ def build_category_inventory_plan(
                 str((keeper or {}).get("customs_code") or "").strip()
                 or (customs_values[0] if customs_values else "")
             )
+            status = (
+                STATUS_ACTIVE
+                if not sources or any(material_record_is_active(source) for source in sources)
+                else STATUS_INACTIVE
+            )
             override = dict(target_values.get(key) or {})
             override_quantity = override.get("quantity")
             if override_quantity is not None and not pd.isna(override_quantity):
@@ -3685,6 +3741,8 @@ def build_category_inventory_plan(
                 unit_price = float(override_unit_price)
             if "customs_code" in override:
                 customs_code = str(override.get("customs_code") or "").strip()
+            if "status" in override:
+                status = normalize_enabled_status(override.get("status"))
             keeper_id = str((keeper or {}).get("record_id") or "")
             source_ids = [str(item.get("record_id") or "") for item in sources if item.get("record_id")]
             for source_id in source_ids:
@@ -3702,6 +3760,7 @@ def build_category_inventory_plan(
                     "unit_price": unit_price,
                     "remark": "\n".join(remarks),
                     "customs_code": customs_code,
+                    "status": status,
                     "material_code": str((keeper or {}).get("material_code") or ""),
                     "keeper_id": keeper_id,
                     "source_ids": source_ids,
@@ -3742,10 +3801,12 @@ def category_inventory_target_values(editor_df: pd.DataFrame) -> dict[tuple[str,
         if quantity is None or pd.isna(quantity):
             raise ValueError(f"请填写 {model} / {language} 的库存数量。")
         unit_price = row.get("单价")
+        status = normalize_enabled_status(row.get("启用状态"))
         values[(model, language)] = {
             "quantity": int(quantity),
             "unit_price": 0.0 if unit_price is None or pd.isna(unit_price) else float(unit_price),
             "customs_code": str(row.get("海关编码") or "").strip(),
+            "status": status,
         }
     return values
 
@@ -4071,6 +4132,7 @@ def sync_feishu_category_inventory(
     no_language: bool,
     target_models: list[str],
     target_languages: list[str],
+    category_status: str = STATUS_ACTIVE,
     category_record_id: str = "",
     carry_model: str = "",
     carry_language: str = "",
@@ -4083,6 +4145,7 @@ def sync_feishu_category_inventory(
 
     old_product = old_product.strip()
     new_product = new_product.strip()
+    category_status = normalize_enabled_status(category_status)
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
 
@@ -4144,7 +4207,7 @@ def sync_feishu_category_inventory(
                     "物料品类": new_product,
                     "是否无需型号": "是" if no_model else "否",
                     "是否无需语种": "是" if no_language else "否",
-                    "启用状态": "启用",
+                    "启用状态": category_status,
                     "库存行数": plan["target_count"],
                     "产品型号数量": len(plan["models"]),
                     "语种数量": len(plan["languages"]),
@@ -4172,6 +4235,7 @@ def sync_feishu_category_inventory(
                 "备注": target["remark"],
                 "单价": float(target["unit_price"]),
                 "海关编码": target["customs_code"],
+                "启用状态": target["status"],
                 "品类关联": [category_record_id],
             }
         )
@@ -4199,6 +4263,7 @@ def sync_feishu_category_inventory(
                     "备注": target["remark"],
                     "单价": float(target["unit_price"]),
                     "海关编码": target["customs_code"],
+                    "启用状态": target["status"],
                     "品类关联": [category_record_id],
                 },
             }
@@ -4223,7 +4288,7 @@ def sync_feishu_category_inventory(
             "物料品类": new_product,
             "是否无需型号": "是" if no_model else "否",
             "是否无需语种": "是" if no_language else "否",
-            "启用状态": "启用",
+            "启用状态": category_status,
             "库存行数": plan["target_count"],
             "产品型号数量": len(plan["models"]),
             "语种数量": len(plan["languages"]),
@@ -4304,6 +4369,7 @@ def add_feishu_material_category_payload(
                 "当前库存": int(row[4]),
                 "备注": "",
                 "单价": float(row[5] or 0),
+                "启用状态": STATUS_ACTIVE,
                 "品类关联": [category_record_id] if category_record_id else [],
             }
         )
@@ -5600,6 +5666,7 @@ def render_add_category_form() -> None:
     current_no_language = bool((selected_category or {}).get("no_language")) or (
         bool(current_languages) and set(current_languages) == {NO_LANGUAGE_TEXT}
     )
+    current_category_status = normalize_enabled_status((selected_category or {}).get("status"))
     editor_key = category_id or "new"
 
     with st.container(border=True):
@@ -5609,6 +5676,14 @@ def render_add_category_form() -> None:
             placeholder="例如：新版宣传册(New Brochure)",
             key=f"category_name_{editor_key}",
         ).strip()
+        category_status = st.radio(
+            "品类启用状态 *",
+            list(MATERIAL_STATUS_OPTIONS),
+            index=list(MATERIAL_STATUS_OPTIONS).index(current_category_status),
+            horizontal=True,
+            help="停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。",
+            key=f"category_status_{editor_key}",
+        )
         rule_col_a, rule_col_b = st.columns(2)
         no_model = rule_col_a.checkbox(
             "该品类无需产品型号",
@@ -5716,38 +5791,67 @@ def render_add_category_form() -> None:
         discard_confirmed = True
         if plan is not None:
             st.markdown(f"**{ui_text('库存组合明细')}**")
-            st.caption("可直接填写每个组合的最终库存、单价和海关编码；单价与海关编码可留空。")
+            st.caption("可填写每个组合的最终库存、单价、海关编码和启用状态；单价与海关编码可留空。")
+            signature = uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                "|".join(f"{target['model']}::{target['language']}" for target in plan["targets"]),
+            ).hex[:12]
+            target_state_key = f"category_target_values_{editor_key}_{signature}"
+            revision_key = f"category_target_revision_{editor_key}_{signature}"
+            saved_target_values = st.session_state.get(target_state_key, {})
+            if isinstance(saved_target_values, dict) and saved_target_values:
+                valid_target_keys = {target["key"] for target in plan["targets"]}
+                saved_target_values = {
+                    key: dict(value)
+                    for key, value in saved_target_values.items()
+                    if key in valid_target_keys and isinstance(value, dict)
+                }
+                plan = build_category_inventory_plan(
+                    current_records,
+                    product,
+                    models,
+                    languages,
+                    carry_model=carry_model,
+                    carry_language=carry_language,
+                    target_values=saved_target_values,
+                )
             target_df = pd.DataFrame(
                 [
                     {
+                        "选择": False,
                         "产品型号": target["model"],
                         "语种": target["language"],
                         "库存数量": int(target["quantity"]),
                         "单价": float(target["unit_price"]) if target["unit_price"] else None,
                         "海关编码": target["customs_code"],
+                        "启用状态": target["status"],
                         "处理方式": target["action"],
                     }
                     for target in plan["targets"]
                 ]
             )
-            signature = uuid.uuid5(
-                uuid.NAMESPACE_URL,
-                "|".join(f"{target['model']}::{target['language']}" for target in plan["targets"]),
-            ).hex[:12]
+            revision = int(st.session_state.get(revision_key, 0) or 0)
             edited_target_df = st.data_editor(
                 target_df,
                 width="stretch",
                 hide_index=True,
                 disabled=["产品型号", "语种", "处理方式"],
                 column_config={
+                    "选择": st.column_config.CheckboxColumn("选择"),
                     "库存数量": st.column_config.NumberColumn("库存数量 *", step=1, format="%d", required=True),
                     "单价": st.column_config.NumberColumn("单价", min_value=0.0, step=0.01, format="%.2f"),
                     "海关编码": st.column_config.TextColumn("海关编码"),
+                    "启用状态": st.column_config.SelectboxColumn(
+                        "启用状态 *",
+                        options=list(MATERIAL_STATUS_OPTIONS),
+                        required=True,
+                    ),
                 },
-                key=f"category_target_inventory_{editor_key}_{signature}",
+                key=f"category_target_inventory_{editor_key}_{signature}_{revision}",
             )
             try:
                 target_values = category_inventory_target_values(edited_target_df)
+                st.session_state[target_state_key] = target_values
                 plan = build_category_inventory_plan(
                     current_records,
                     product,
@@ -5762,6 +5866,34 @@ def render_add_category_form() -> None:
                 plan = None
 
             if plan is not None:
+                selected_target_keys = [
+                    (str(row.get("产品型号") or ""), str(row.get("语种") or ""))
+                    for row in edited_target_df.to_dict("records")
+                    if bool(row.get("选择"))
+                ]
+                batch_status_col, batch_button_col = st.columns([1, 1], vertical_alignment="bottom")
+                batch_status = batch_status_col.selectbox(
+                    "批量设置启用状态",
+                    list(MATERIAL_STATUS_OPTIONS),
+                    key=f"category_batch_status_{editor_key}_{signature}",
+                )
+                if batch_button_col.button(
+                    "应用到已勾选库存行",
+                    icon=":material/checklist:",
+                    width="stretch",
+                    key=f"category_apply_batch_status_{editor_key}_{signature}",
+                ):
+                    if not selected_target_keys:
+                        st.warning("请先在库存组合明细中勾选至少一行。")
+                    else:
+                        for target_key in selected_target_keys:
+                            if target_key in target_values:
+                                target_values[target_key]["status"] = batch_status
+                        st.session_state[target_state_key] = target_values
+                        st.session_state[revision_key] = revision + 1
+                        st.rerun()
+                st.caption("批量设置会先更新当前表格，点击下方保存品类配置后才会同步至飞书。")
+
                 metric_a, metric_b, metric_c, metric_d = st.columns(4)
                 metric_a.metric("当前组合", plan["current_count"])
                 metric_b.metric("目标组合", plan["target_count"])
@@ -5771,6 +5903,10 @@ def render_add_category_form() -> None:
                 quantity_a.metric("当前库存合计", f"{plan['current_quantity']:,}")
                 quantity_b.metric("目标库存合计", f"{plan['target_quantity']:,}")
                 quantity_c.metric("库存数量差额", f"{plan['quantity_difference']:+,}")
+                enabled_count = sum(1 for target in plan["targets"] if target["status"] == STATUS_ACTIVE)
+                st.caption(
+                    f"启用库存组合 {enabled_count:,} 条；停用库存组合 {plan['target_count'] - enabled_count:,} 条。"
+                )
                 if plan["discarded_quantity"] > 0:
                     st.warning(f"将直接舍弃 {plan['discarded_quantity']:,} 件未分配库存，此操作保存后不可自动恢复。")
                     discard_confirmed = st.checkbox(
@@ -5803,7 +5939,7 @@ def render_add_category_form() -> None:
         elif not languages:
             st.error("请至少保留或新增一个语种，或勾选“无需语种”。")
         elif plan is None:
-            st.error("请检查库存组合中的数量、单价和海关编码。")
+            st.error("请检查库存组合中的数量、单价、海关编码和启用状态。")
         elif plan["discarded_quantity"] > 0 and not discard_confirmed:
             st.warning("请确认直接舍弃未分配库存。")
         elif not confirmed:
@@ -5819,6 +5955,7 @@ def render_add_category_form() -> None:
                             no_language=no_language,
                             target_models=models,
                             target_languages=languages,
+                            category_status=category_status,
                             category_record_id=category_id,
                             carry_model=carry_model,
                             carry_language=carry_language,
@@ -6205,7 +6342,7 @@ def normalize_multiselect_state(key: str, options: list[str]) -> None:
 
 
 def render_material_dashboard(records: list[dict]) -> list[dict]:
-    render_section_header("01", "库存数据看板", "自定义查看库存规模、价值分布和预警状态")
+    render_section_header("01", "库存数据看板", "仅统计启用库存行，并自定义查看库存规模、价值分布和预警状态")
     dashboard_df = material_dashboard_dataframe(records)
     if dashboard_df.empty:
         st.info("暂无物料数据可供分析。")
@@ -6278,6 +6415,36 @@ def render_material_dashboard(records: list[dict]) -> list[dict]:
     )
     st.caption(f"当前看板与下方明细联动，共显示 {len(filtered_df):,} 条库存组合。")
 
+    if "库存预警" in enabled_modules:
+        alert_df = filtered_df[filtered_df["库存状态"] != "正常库存"].copy()
+        with st.container(border=True):
+            st.markdown(f"### {ui_text('库存预警')}")
+            if alert_df.empty:
+                st.success("当前筛选下没有库存预警。")
+            else:
+                status_order = {"负库存": 0, "零库存": 1, "低库存": 2}
+                alert_df["_status_order"] = alert_df["库存状态"].map(status_order).fillna(9)
+                alert_df = alert_df.sort_values(["_status_order", "库存数量", "物料品类"]).drop(
+                    columns=["_status_order"]
+                )
+                negative_count = int((alert_df["库存状态"] == "负库存").sum())
+                zero_count = int((alert_df["库存状态"] == "零库存").sum())
+                low_count = int((alert_df["库存状态"] == "低库存").sum())
+                alert_message = (
+                    f"发现 {len(alert_df):,} 条启用库存预警：负库存 {negative_count:,} 条，"
+                    f"零库存 {zero_count:,} 条，低库存 {low_count:,} 条。"
+                )
+                if negative_count or zero_count:
+                    st.error(alert_message)
+                else:
+                    st.warning(alert_message)
+                st.dataframe(
+                    alert_df[["库存状态", "物料编码", "物料品类", "产品型号", "语种", "库存数量"]],
+                    width="stretch",
+                    hide_index=True,
+                    height=min(320, 38 + 35 * max(min(len(alert_df), 8), 1)),
+                )
+
     if "概览指标" in enabled_modules:
         summary = material_dashboard_summary(filtered_df)
         metric_columns = st.columns(5)
@@ -6340,30 +6507,12 @@ def render_material_dashboard(records: list[dict]) -> list[dict]:
                     width="stretch",
                 )
 
-    if "库存预警" in enabled_modules:
-        st.markdown(f"**{ui_text('库存预警')}**")
-        alert_df = filtered_df[filtered_df["库存状态"] != "正常库存"].copy()
-        if alert_df.empty:
-            st.success("当前筛选下没有库存预警。")
-        else:
-            status_order = {"负库存": 0, "零库存": 1, "低库存": 2}
-            alert_df["_status_order"] = alert_df["库存状态"].map(status_order).fillna(9)
-            alert_df = alert_df.sort_values(["_status_order", "库存数量", "物料品类"]).drop(
-                columns=["_status_order"]
-            )
-            st.dataframe(
-                alert_df[["库存状态", "物料编码", "物料品类", "产品型号", "语种", "库存数量"]],
-                width="stretch",
-                hide_index=True,
-                height=min(320, 38 + 35 * max(min(len(alert_df), 8), 1)),
-            )
-
     selected_ids = set(filtered_df["记录ID"].astype(str).tolist())
     return [row for row in records if str(row.get("record_id") or "") in selected_ids]
 
 
 def render_material_data_admin(records: list[dict] | None = None) -> None:
-    render_section_header("02", "库存行维护", "搜索、编辑或删除物料主数据记录")
+    render_section_header("02", "库存行维护", "仅展示启用库存行；搜索、编辑或删除物料主数据记录")
     message = st.session_state.pop("material_admin_message", "")
     if message:
         st.success(message)
@@ -6371,7 +6520,7 @@ def render_material_data_admin(records: list[dict] | None = None) -> None:
     search_text = st.text_input("搜索库存行", key="item_search_text", placeholder="物料编码 / 品类 / 型号 / 语种")
     if records is None:
         with st.spinner("物料数据加载中，请稍后......"):
-            records = load_feishu_inventory_records()
+            records = load_feishu_inventory_records(active_only=True)
     if not records:
         st.info("当前看板筛选下暂无物料行。")
         return
@@ -6714,7 +6863,7 @@ def render_material_database_page() -> None:
             width="stretch",
         )
     with st.spinner("物料数据加载中，请稍后......"):
-        records = load_feishu_inventory_records()
+        records = load_feishu_inventory_records(active_only=True)
     filtered_records = render_material_dashboard(records)
     render_material_data_admin(filtered_records)
 
