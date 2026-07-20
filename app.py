@@ -119,6 +119,8 @@ REQUEST_FORM_CACHE_STATE: dict[str, object] = {
     "error": "",
     "updated_at": "",
 }
+APPROVAL_LIVE_DATA_KEY = "approval_live_data"
+LAST_APP_VIEW_KEY = "last_app_view"
 ALL_PAGE_CACHE_TABLES = (
     CATEGORY_TABLE_NAME,
     MATERIAL_TABLE_NAME,
@@ -1917,6 +1919,54 @@ def render_page_cache_toolbar(page_key: str) -> None:
         st.rerun()
 
 
+def fetch_approval_live_data() -> dict[str, object]:
+    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
+    line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    return {
+        "request_rows": request_rows,
+        "line_rows": line_rows,
+        "material_rows": material_rows,
+        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "row_count": len(request_rows) + len(line_rows) + len(material_rows),
+    }
+
+
+def render_approval_live_toolbar(*, refresh_on_open: bool) -> dict[str, object]:
+    message = st.session_state.pop("approval_live_refresh_message", "")
+    if message:
+        st.success(message)
+    warning = st.session_state.pop("post_write_cache_warning", "")
+    if warning:
+        st.warning(warning)
+
+    live_data = st.session_state.get(APPROVAL_LIVE_DATA_KEY)
+    if refresh_on_open or not isinstance(live_data, dict):
+        with st.spinner("正在读取飞书审批数据，请稍后......"):
+            live_data = fetch_approval_live_data()
+        st.session_state[APPROVAL_LIVE_DATA_KEY] = live_data
+
+    status_col, button_col = st.columns([5, 1.35], vertical_alignment="center")
+    status_col.caption(
+        "数据来源：飞书实时数据　更新时间："
+        f"{str(live_data.get('updated_at') or '未记录')}"
+    )
+    if button_col.button(
+        "刷新实时数据",
+        key="refresh_approval_live_data",
+        icon=":material/refresh:",
+        width="stretch",
+    ):
+        with st.spinner("正在重新读取飞书审批数据，请稍后......"):
+            live_data = fetch_approval_live_data()
+        st.session_state[APPROVAL_LIVE_DATA_KEY] = live_data
+        st.session_state["approval_live_refresh_message"] = (
+            f"审批数据已刷新，共读取 {int(live_data.get('row_count') or 0)} 条记录。"
+        )
+        st.rerun()
+    return live_data
+
+
 def refresh_page_cache_after_write(page_key: str, *, update_request_form: bool = False) -> None:
     try:
         refresh_page_cache_tables(PAGE_CACHE_TABLES[page_key])
@@ -2982,23 +3032,51 @@ def feishu_person_text(fields: dict, names: list[str]) -> str:
     return ""
 
 
+REQUEST_NOTE_LABELS = (
+    "客户名称",
+    "国家",
+    "收件人信息",
+    "运费承担者",
+    "物料用途",
+    "申请人",
+    "相关附件",
+)
+
+
+def request_note_values(fields: dict) -> dict[str, str]:
+    note = feishu_text(fields, "备注")
+    if not note:
+        return {}
+    labels_pattern = "|".join(re.escape(label) for label in REQUEST_NOTE_LABELS)
+    pattern = re.compile(
+        rf"^(?P<label>{labels_pattern})[：:][ \t]*(?P<value>.*?)"
+        rf"(?=^(?:{labels_pattern})[：:]|\Z)",
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    return {
+        match.group("label"): match.group("value").strip()
+        for match in pattern.finditer(note)
+        if match.group("value").strip()
+    }
+
+
 def request_applicant_text(fields: dict) -> str:
     requester = feishu_person_text(fields, ["申请人", "申请人姓名"])
     if requester:
         return requester
-    note = feishu_text(fields, "备注")
-    match = re.search(r"(?:^|\n)\s*申请人[：:]\s*([^\n]+)", note)
-    return match.group(1).strip() if match else ""
+    return request_note_values(fields).get("申请人", "")
 
 
-def load_feishu_request_records() -> list[dict[str, object]]:
+def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
-    for row in feishu_rows(REQUEST_TABLE_NAME):
+    source_rows = rows if rows is not None else feishu_rows(REQUEST_TABLE_NAME)
+    for row in source_rows:
         fields = feishu_fields(row)
         request_no = feishu_text(fields, "申请单号")
         if not request_no:
             continue
         requester_open_ids = feishu_person_open_ids(fields, ["申请人", "申请人姓名"])
+        note_values = request_note_values(fields)
         records.append(
             {
                 "record_id": feishu_record_id(row),
@@ -3008,11 +3086,15 @@ def load_feishu_request_records() -> list[dict[str, object]]:
                 "requester_open_id": requester_open_ids[0] if requester_open_ids else "",
                 "department": feishu_text_any(fields, ["申请部门/区域", "申请部门|区域", "申请部门"]),
                 "position": feishu_text_any(fields, ["岗位", "职位"]),
-                "customer_name": feishu_text(fields, "客户名称"),
-                "country": feishu_text(fields, "国家"),
-                "recipient_info": feishu_text(fields, "收件人信息"),
-                "freight_payer": feishu_text_any(fields, ["运费的承担者", "运费承担者"]),
-                "material_usage": feishu_text_any(fields, ["物料用途", "用途/活动", "用途|活动"]),
+                "customer_name": feishu_text(fields, "客户名称")
+                or note_values.get("客户名称", ""),
+                "country": feishu_text(fields, "国家") or note_values.get("国家", ""),
+                "recipient_info": feishu_text(fields, "收件人信息")
+                or note_values.get("收件人信息", ""),
+                "freight_payer": feishu_text_any(fields, ["运费的承担者", "运费承担者"])
+                or note_values.get("运费承担者", ""),
+                "material_usage": feishu_text_any(fields, ["物料用途", "用途/活动", "用途|活动"])
+                or note_values.get("物料用途", ""),
                 "status": feishu_text(fields, "审批状态"),
                 "submitted_at": feishu_datetime_text(fields.get("提交时间", "")),
                 "approved_at": feishu_datetime_text(fields.get("审批时间", "")),
@@ -3023,10 +3105,15 @@ def load_feishu_request_records() -> list[dict[str, object]]:
     return records
 
 
-def load_feishu_request_line_records() -> list[dict[str, object]]:
-    material_by_id = {feishu_record_id(row): row for row in feishu_material_rows()}
+def load_feishu_request_line_records(
+    rows: list[dict] | None = None,
+    material_rows: list[dict] | None = None,
+) -> list[dict[str, object]]:
+    source_material_rows = material_rows if material_rows is not None else feishu_material_rows()
+    material_by_id = {feishu_record_id(row): row for row in source_material_rows}
     records: list[dict[str, object]] = []
-    for row in feishu_rows(REQUEST_LINE_TABLE_NAME):
+    source_rows = rows if rows is not None else feishu_rows(REQUEST_LINE_TABLE_NAME)
+    for row in source_rows:
         fields = feishu_fields(row)
         request_ids = feishu_link_ids_any(fields, ["所属申请单", "申请单"])
         material_ids = feishu_link_ids_any(fields, ["物料", "物料编码"])
@@ -6358,6 +6445,7 @@ def render_pending_approval_requests(
                     f"审批已成功，但申请人结果通知发送失败：{exc}"
                 )
         refresh_page_cache_after_write("approval", update_request_form=True)
+        st.session_state.pop(APPROVAL_LIVE_DATA_KEY, None)
         notification_text = (
             "已向申请人发送审批结果。" if completion_notification_count else ""
         )
@@ -6450,7 +6538,7 @@ def render_approval_history(
     )
 
 
-def render_approval_view() -> None:
+def render_approval_view(*, refresh_on_open: bool = False) -> None:
     render_page_header(
         "营销物料审批与发放",
         "审批工作台",
@@ -6458,7 +6546,7 @@ def render_approval_view() -> None:
     )
     if not admin_auth_gate():
         return
-    render_page_cache_toolbar("approval")
+    live_data = render_approval_live_toolbar(refresh_on_open=refresh_on_open)
 
     message = st.session_state.pop("approval_issue_message", "")
     if message:
@@ -6467,9 +6555,11 @@ def render_approval_view() -> None:
     if warning:
         st.warning(warning)
 
-    with st.spinner("物料数据加载中，请稍后......"):
-        requests = load_feishu_request_records()
-        all_lines = load_feishu_request_line_records()
+    requests = load_feishu_request_records(list(live_data.get("request_rows") or []))
+    all_lines = load_feishu_request_line_records(
+        list(live_data.get("line_rows") or []),
+        list(live_data.get("material_rows") or []),
+    )
     pending_line_statuses = {REQUEST_LINE_STATUS_PENDING, "待发放", "已通过", ""}
     completed_line_statuses = {REQUEST_LINE_STATUS_PARTIAL, REQUEST_LINE_STATUS_ISSUED}
     completed_request_statuses = {
@@ -6664,12 +6754,15 @@ def main() -> None:
     render_sidebar_link()
     render_storage_diagnostics()
 
-    view = st.query_params.get("view", "")
+    view = str(st.query_params.get("view", ""))
+    previous_view = str(st.session_state.get(LAST_APP_VIEW_KEY, ""))
+    entering_approval = view == "approval" and previous_view != "approval"
+    st.session_state[LAST_APP_VIEW_KEY] = view
     try:
         if view == "inventory":
             render_inventory_view()
         elif view == "approval":
-            render_approval_view()
+            render_approval_view(refresh_on_open=entering_approval)
         else:
             render_management_page()
     except FeishuBitableError as exc:
