@@ -49,8 +49,10 @@ REQUEST_TABLE_NAME = "物料申请单"
 REQUEST_LINE_TABLE_NAME = "申请明细"
 MATERIAL_TABLE_NAME = "物料主数据"
 CATEGORY_TABLE_NAME = "物料品类"
+MODEL_TABLE_NAME = "产品型号"
 LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
+MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
@@ -1209,6 +1211,71 @@ def feishu_batch_delete_record_ids(table_name: str, record_ids: list[str]) -> in
     for start in range(0, len(normalized_ids), 500):
         client.batch_delete_records(feishu_table_id(table_name), normalized_ids[start : start + 500])
     return len(normalized_ids)
+
+
+def material_model_link_field_name() -> str:
+    fields = feishu_table_fields(MATERIAL_TABLE_NAME)
+    for field_name in MODEL_LINK_FIELD_CANDIDATES:
+        if field_name in fields and fields[field_name].get("type") in {18, 21}:
+            return field_name
+    return ""
+
+
+def ensure_feishu_model_records(models: list[str]) -> tuple[str, dict[str, str]]:
+    normalized_models = unique_preserve(
+        [str(model).strip() or NO_MODEL_TEXT for model in models if str(model).strip()]
+    )
+    link_field = material_model_link_field_name()
+    if normalized_models and not link_field:
+        refresh_feishu_schema_cache()
+        link_field = material_model_link_field_name()
+    if not normalized_models or not link_field:
+        return link_field, {}
+    if MODEL_TABLE_NAME not in feishu_schema().get("tables", {}):
+        refresh_feishu_schema_cache()
+    if MODEL_TABLE_NAME not in feishu_schema().get("tables", {}):
+        return link_field, {}
+
+    rows = fresh_feishu_rows(MODEL_TABLE_NAME)
+    model_ids: dict[str, str] = {}
+    max_code = 0
+    for row in rows:
+        fields = feishu_fields(row)
+        model = feishu_text(fields, "产品型号").strip()
+        record_id = feishu_record_id(row)
+        if model and record_id and model not in model_ids:
+            model_ids[model] = record_id
+        code = feishu_text(fields, "产品型号编码").strip()
+        if code.isdigit():
+            max_code = max(max_code, int(code))
+
+    missing_models = [model for model in normalized_models if model not in model_ids]
+    if missing_models:
+        records = [
+            {
+                "产品型号编码": str(max_code + index),
+                "产品型号": model,
+                "启用状态": STATUS_ACTIVE,
+            }
+            for index, model in enumerate(missing_models, start=1)
+        ]
+        created = feishu_batch_create_records(MODEL_TABLE_NAME, records)
+        for model, row in zip(missing_models, created):
+            record_id = feishu_record_id(row)
+            if record_id:
+                model_ids[model] = record_id
+    return link_field, {model: model_ids[model] for model in normalized_models if model in model_ids}
+
+
+def add_material_model_link(
+    fields: dict[str, object],
+    model: str,
+    link_field: str,
+    model_ids: dict[str, str],
+) -> None:
+    model_record_id = model_ids.get(model.strip() or NO_MODEL_TEXT, "")
+    if link_field and model_record_id:
+        fields[link_field] = [model_record_id]
 
 
 def storage_mode_label() -> str:
@@ -4067,20 +4134,19 @@ def update_feishu_inventory_item(
         language.strip() == NO_LANGUAGE_TEXT,
     )
     category_record_id = feishu_record_id(category_record)
-    client.update_record(
-        feishu_table_id("物料主数据"),
-        record_id,
-        {
-            "物料编码": material_code.strip(),
-            "物料品类": product.strip(),
-            "产品型号": model,
-            "语种": language.strip(),
-            "单价": float(unit_price or 0),
-            "备注": remark.strip(),
-            "海关编码": customs_code.strip(),
-            "品类关联": [category_record_id] if category_record_id else [],
-        },
-    )
+    link_field, model_ids = ensure_feishu_model_records([model])
+    update_fields: dict[str, object] = {
+        "物料编码": material_code.strip(),
+        "物料品类": product.strip(),
+        "产品型号": model,
+        "语种": language.strip(),
+        "单价": float(unit_price or 0),
+        "备注": remark.strip(),
+        "海关编码": customs_code.strip(),
+        "品类关联": [category_record_id] if category_record_id else [],
+    }
+    add_material_model_link(update_fields, model, link_field, model_ids)
+    feishu_update_record_fields(MATERIAL_TABLE_NAME, record_id, update_fields)
 
 
 def delete_feishu_category(product: str, category_record_id: str) -> None:
@@ -4113,19 +4179,27 @@ def update_feishu_category(
             "是否无需语种": "是" if no_language else "否",
         },
     )
-    for row in feishu_material_rows():
-        fields = feishu_fields(row)
-        if feishu_text(fields, "物料品类") != old_product:
-            continue
+    category_material_rows = [
+        row
+        for row in feishu_material_rows()
+        if feishu_text(feishu_fields(row), "物料品类") == old_product
+    ]
+    target_models = [
+        NO_MODEL_TEXT if no_model else (feishu_text(feishu_fields(row), "产品型号") or NO_MODEL_TEXT)
+        for row in category_material_rows
+    ]
+    link_field, model_ids = ensure_feishu_model_records(target_models)
+    for row, target_model in zip(category_material_rows, target_models):
         update_fields: dict[str, object] = {
             "物料品类": new_product,
             "品类关联": [category_record_id],
         }
         if no_model:
             update_fields["产品型号"] = NO_MODEL_TEXT
+        add_material_model_link(update_fields, target_model, link_field, model_ids)
         if no_language:
             update_fields["语种"] = NO_LANGUAGE_TEXT
-        client.update_record(feishu_table_id("物料主数据"), feishu_record_id(row), update_fields)
+        feishu_update_record_fields(MATERIAL_TABLE_NAME, feishu_record_id(row), update_fields)
 
 
 def next_material_codes_from_records(records: list[dict], count: int) -> list[str]:
@@ -4258,25 +4332,26 @@ def sync_feishu_category_inventory(
             raise RuntimeError("创建物料品类后未返回记录 ID。")
         created_category = True
 
+    model_link_field, model_record_ids = ensure_feishu_model_records(plan["models"])
     new_targets = [target for target in plan["targets"] if target["is_new"]]
     new_codes = next_material_codes_from_records(all_inventory, len(new_targets))
     create_fields: list[dict[str, object]] = []
     for target, material_code in zip(new_targets, new_codes):
         target["material_code"] = material_code
-        create_fields.append(
-            {
-                "物料编码": material_code,
-                "物料品类": new_product,
-                "产品型号": target["model"],
-                "语种": target["language"],
-                "当前库存": int(target["quantity"]),
-                "备注": target["remark"],
-                "单价": float(target["unit_price"]),
-                "海关编码": target["customs_code"],
-                "启用状态": target["status"],
-                "品类关联": [category_record_id],
-            }
-        )
+        fields: dict[str, object] = {
+            "物料编码": material_code,
+            "物料品类": new_product,
+            "产品型号": target["model"],
+            "语种": target["language"],
+            "当前库存": int(target["quantity"]),
+            "备注": target["remark"],
+            "单价": float(target["unit_price"]),
+            "海关编码": target["customs_code"],
+            "启用状态": target["status"],
+            "品类关联": [category_record_id],
+        }
+        add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
+        create_fields.append(fields)
 
     created_material_rows: list[dict] = []
     for start in range(0, len(create_fields), 500):
@@ -4290,22 +4365,19 @@ def sync_feishu_category_inventory(
     for target in plan["targets"]:
         if target["is_new"]:
             continue
-        keeper_updates.append(
-            {
-                "record_id": target["keeper_id"],
-                "fields": {
-                    "物料品类": new_product,
-                    "产品型号": target["model"],
-                    "语种": target["language"],
-                    "当前库存": int(target["quantity"]),
-                    "备注": target["remark"],
-                    "单价": float(target["unit_price"]),
-                    "海关编码": target["customs_code"],
-                    "启用状态": target["status"],
-                    "品类关联": [category_record_id],
-                },
-            }
-        )
+        fields = {
+            "物料品类": new_product,
+            "产品型号": target["model"],
+            "语种": target["language"],
+            "当前库存": int(target["quantity"]),
+            "备注": target["remark"],
+            "单价": float(target["unit_price"]),
+            "海关编码": target["customs_code"],
+            "启用状态": target["status"],
+            "品类关联": [category_record_id],
+        }
+        add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
+        keeper_updates.append({"record_id": target["keeper_id"], "fields": fields})
     feishu_batch_update_record_fields("物料主数据", keeper_updates)
 
     target_id_by_key = {target["key"]: str(target["keeper_id"]) for target in plan["targets"]}
@@ -4397,24 +4469,25 @@ def add_feishu_material_category_payload(
         )
 
     records: list[dict[str, object]] = []
+    model_link_field, model_record_ids = ensure_feishu_model_records(models)
     for row in df[INVENTORY_HEADERS].itertuples(index=False):
-        records.append(
-            {
-                "物料编码": str(row[0]),
-                "物料品类": str(row[1]),
-                "产品型号": str(row[2]) or NO_MODEL_TEXT,
-                "语种": str(row[3]),
-                "当前库存": int(row[4]),
-                "备注": "",
-                "单价": float(row[5] or 0),
-                "启用状态": STATUS_ACTIVE,
-                "品类关联": [category_record_id] if category_record_id else [],
-            }
-        )
+        fields: dict[str, object] = {
+            "物料编码": str(row[0]),
+            "物料品类": str(row[1]),
+            "产品型号": str(row[2]) or NO_MODEL_TEXT,
+            "语种": str(row[3]),
+            "当前库存": int(row[4]),
+            "备注": "",
+            "单价": float(row[5] or 0),
+            "启用状态": STATUS_ACTIVE,
+            "品类关联": [category_record_id] if category_record_id else [],
+        }
+        add_material_model_link(fields, str(row[2]) or NO_MODEL_TEXT, model_link_field, model_record_ids)
+        records.append(fields)
 
     inserted = 0
     for start in range(0, len(records), 500):
-        created = client.batch_create_records(feishu_table_id("物料主数据"), records[start : start + 500])
+        created = feishu_batch_create_records(MATERIAL_TABLE_NAME, records[start : start + 500])
         inserted += len(created)
     return inserted
 

@@ -120,6 +120,7 @@ class NoLanguageRuleTests(unittest.TestCase):
             patch.object(app, "find_feishu_category_record", return_value={"record_id": "category-a"}),
             patch.object(app, "feishu_update_record_fields") as update_category,
             patch.object(app, "feishu_table_id", return_value="material-table"),
+            patch.object(app, "ensure_feishu_model_records", return_value=("", {})),
         ):
             inserted = app.add_feishu_material_category_payload(
                 "活动礼品",
