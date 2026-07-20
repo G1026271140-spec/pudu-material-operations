@@ -3648,6 +3648,7 @@ def build_category_inventory_plan(
     target_models: list[str],
     target_languages: list[str],
     *,
+    model_renames: dict[str, str] | None = None,
     carry_model: str = "",
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
@@ -3664,6 +3665,11 @@ def build_category_inventory_plan(
     if not languages:
         raise ValueError("目标语种不能为空。")
 
+    model_renames = {
+        str(source).strip(): str(target).strip()
+        for source, target in (model_renames or {}).items()
+        if str(source).strip() and str(target).strip() and str(source).strip() != str(target).strip()
+    }
     carry_model = carry_model.strip() or models[0]
     carry_language = carry_language.strip() or languages[0]
     if carry_model not in models:
@@ -3675,7 +3681,8 @@ def build_category_inventory_plan(
     for source in records:
         source_model = str(source.get("model") or NO_MODEL_TEXT).strip() or NO_MODEL_TEXT
         source_language = str(source.get("language") or "").strip()
-        target_model = source_model if source_model in models else carry_model
+        renamed_source_model = model_renames.get(source_model, source_model)
+        target_model = renamed_source_model if renamed_source_model in models else carry_model
         target_language = source_language if source_language in languages else carry_language
         grouped.setdefault((target_model, target_language), []).append(dict(source))
 
@@ -3782,6 +3789,7 @@ def build_category_inventory_plan(
         "product": product,
         "models": models,
         "languages": languages,
+        "model_renames": model_renames,
         "targets": targets,
         "source_to_target_key": source_to_target_key,
         "delete_ids": unique_preserve(delete_ids),
@@ -3795,6 +3803,26 @@ def build_category_inventory_plan(
         "quantity_difference": target_quantity - current_quantity,
         "discarded_quantity": max(current_quantity - target_quantity, 0),
     }
+
+
+def category_model_rename_values(editor_df: pd.DataFrame) -> dict[str, str]:
+    model_renames: dict[str, str] = {}
+    final_names: list[str] = []
+    for row in editor_df.to_dict("records"):
+        current_model = str(row.get("当前型号") or "").strip()
+        updated_model = str(row.get("修改后型号") or "").strip()
+        if not current_model:
+            continue
+        if not updated_model:
+            raise ValueError(f"请填写“{current_model}”修改后的型号名称。")
+        if updated_model == NO_MODEL_TEXT:
+            raise ValueError("如需取消产品型号，请使用“该品类无需产品型号”选项。")
+        final_names.append(updated_model)
+        if current_model != updated_model:
+            model_renames[current_model] = updated_model
+    if len(final_names) != len(set(final_names)):
+        raise ValueError("修改后的产品型号不能与其他已有型号重名。")
+    return model_renames
 
 
 def category_inventory_target_values(editor_df: pd.DataFrame) -> dict[tuple[str, str], dict[str, object]]:
@@ -4141,6 +4169,7 @@ def sync_feishu_category_inventory(
     target_languages: list[str],
     category_status: str = STATUS_ACTIVE,
     category_record_id: str = "",
+    model_renames: dict[str, str] | None = None,
     carry_model: str = "",
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
@@ -4198,6 +4227,7 @@ def sync_feishu_category_inventory(
         new_product,
         models,
         languages,
+        model_renames=model_renames,
         carry_model=carry_model,
         carry_language=carry_language,
         initial_quantities=initial_quantities,
@@ -5729,7 +5759,7 @@ def render_add_category_form() -> None:
             key=f"category_models_{editor_key}",
         )
         custom_models_text = model_col.text_area(
-            "新增自定义型号",
+            "新增型号",
             placeholder="可用逗号、分号、顿号或换行分隔",
             disabled=no_model,
             height=86,
@@ -5751,10 +5781,45 @@ def render_add_category_form() -> None:
             key=f"category_custom_languages_{editor_key}",
         )
 
+        model_renames: dict[str, str] = {}
+        model_rename_error = ""
+        editable_current_models = [model for model in current_models if model != NO_MODEL_TEXT]
+        if is_edit and editable_current_models and not no_model:
+            st.markdown(f"**{ui_text('修改已有型号')}**")
+            st.caption("修改后会同步更新当前品类下所有对应库存行；库存、单价、海关编码、启用状态和历史关联保持不变。")
+            model_rename_df = pd.DataFrame(
+                [
+                    {"当前型号": model, "修改后型号": model}
+                    for model in editable_current_models
+                ]
+            )
+            edited_model_rename_df = st.data_editor(
+                model_rename_df,
+                width="stretch",
+                hide_index=True,
+                disabled=["当前型号"],
+                column_config={
+                    "当前型号": st.column_config.TextColumn("当前型号"),
+                    "修改后型号": st.column_config.TextColumn("修改后型号 *", required=True),
+                },
+                key=f"category_model_renames_{editor_key}",
+            )
+            try:
+                all_model_renames = category_model_rename_values(edited_model_rename_df)
+                model_renames = {
+                    source: target
+                    for source, target in all_model_renames.items()
+                    if source in selected_models
+                }
+            except ValueError as exc:
+                model_rename_error = str(exc)
+                st.error(model_rename_error)
+
+        renamed_selected_models = [model_renames.get(model, model) for model in selected_models]
         models = (
             [NO_MODEL_TEXT]
             if no_model
-            else unique_preserve(selected_models + parse_custom_values(custom_models_text))
+            else unique_preserve(renamed_selected_models + parse_custom_values(custom_models_text))
         )
         languages = (
             [NO_LANGUAGE_TEXT]
@@ -5764,7 +5829,12 @@ def render_add_category_form() -> None:
 
         carry_model = models[0] if models else ""
         carry_language = languages[0] if languages else ""
-        removed_models = [model for model in current_models if model not in models]
+        renamed_source_models = set(model_renames)
+        removed_models = [
+            model
+            for model in current_models
+            if model not in models and model not in renamed_source_models
+        ]
         removed_languages = [language for language in current_languages if language not in languages]
         if current_records and models and removed_models:
             carry_model = st.selectbox(
@@ -5782,13 +5852,14 @@ def render_add_category_form() -> None:
             )
 
         plan: dict | None = None
-        if product and models and languages:
+        if product and models and languages and not model_rename_error:
             try:
                 plan = build_category_inventory_plan(
                     current_records,
                     product,
                     models,
                     languages,
+                    model_renames=model_renames,
                     carry_model=carry_model,
                     carry_language=carry_language,
                 )
@@ -5819,6 +5890,7 @@ def render_add_category_form() -> None:
                     product,
                     models,
                     languages,
+                    model_renames=model_renames,
                     carry_model=carry_model,
                     carry_language=carry_language,
                     target_values=saved_target_values,
@@ -5869,6 +5941,7 @@ def render_add_category_form() -> None:
                     product,
                     models,
                     languages,
+                    model_renames=model_renames,
                     carry_model=carry_model,
                     carry_language=carry_language,
                     target_values=target_values,
@@ -5973,6 +6046,7 @@ def render_add_category_form() -> None:
                             target_languages=languages,
                             category_status=category_status,
                             category_record_id=category_id,
+                            model_renames=model_renames,
                             carry_model=carry_model,
                             carry_language=carry_language,
                             target_values=target_values,

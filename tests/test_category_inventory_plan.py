@@ -31,6 +31,73 @@ def inventory_record(
 
 
 class CategoryInventoryPlanTests(unittest.TestCase):
+    def test_model_rename_updates_all_language_rows_without_recreating_inventory(self) -> None:
+        records = [
+            inventory_record("1", "BG1", "English", 10, unit_price=12.5, customs_code="HS-1"),
+            inventory_record(
+                "2",
+                "BG1",
+                "French",
+                20,
+                unit_price=15,
+                customs_code="HS-2",
+                status=app.STATUS_INACTIVE,
+            ),
+        ]
+
+        plan = app.build_category_inventory_plan(
+            records,
+            "Existing Category",
+            ["BG1 Pro"],
+            ["English", "French"],
+            model_renames={"BG1": "BG1 Pro"},
+        )
+
+        targets = {target["language"]: target for target in plan["targets"]}
+        self.assertEqual(plan["create_count"], 0)
+        self.assertEqual(plan["delete_count"], 0)
+        self.assertEqual(targets["English"]["keeper_id"], "1")
+        self.assertEqual(targets["English"]["quantity"], 10)
+        self.assertEqual(targets["English"]["unit_price"], 12.5)
+        self.assertEqual(targets["French"]["keeper_id"], "2")
+        self.assertEqual(targets["French"]["customs_code"], "HS-2")
+        self.assertEqual(targets["French"]["status"], app.STATUS_INACTIVE)
+        self.assertEqual(
+            plan["source_to_target_key"],
+            {"1": ("BG1 Pro", "English"), "2": ("BG1 Pro", "French")},
+        )
+
+    def test_model_rename_editor_rejects_duplicate_final_names(self) -> None:
+        with self.assertRaisesRegex(ValueError, "不能与其他已有型号重名"):
+            app.category_model_rename_values(
+                pd.DataFrame(
+                    [
+                        {"当前型号": "M1", "修改后型号": "M2"},
+                        {"当前型号": "M2", "修改后型号": "M2"},
+                    ]
+                )
+            )
+
+    def test_model_rename_editor_returns_only_changed_models(self) -> None:
+        renames = app.category_model_rename_values(
+            pd.DataFrame(
+                [
+                    {"当前型号": "M1", "修改后型号": "M1 Pro"},
+                    {"当前型号": "M2", "修改后型号": "M2"},
+                ]
+            )
+        )
+
+        self.assertEqual(renames, {"M1": "M1 Pro"})
+
+    def test_model_rename_editor_rejects_reserved_no_model_value(self) -> None:
+        with self.assertRaisesRegex(ValueError, "无需产品型号"):
+            app.category_model_rename_values(
+                pd.DataFrame(
+                    [{"当前型号": "M1", "修改后型号": app.NO_MODEL_TEXT}]
+                )
+            )
+
     def test_rename_preserves_existing_combinations(self) -> None:
         records = [
             inventory_record("1", "M1", "英语", 10),

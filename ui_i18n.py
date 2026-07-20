@@ -289,7 +289,12 @@ EN_DISPLAY_TEXT = {
     "自定义产品型号": "Custom Product Models",
     "自定义语种": "Custom Languages",
     "新增自定义型号": "Add Custom Models",
+    "新增型号": "Add Models",
     "新增自定义语种": "Add Custom Languages",
+    "修改已有型号": "Rename Existing Models",
+    "当前型号": "Current Model",
+    "修改后型号": "Updated Model",
+    "修改后型号 *": "Updated Model *",
     "该品类无需产品型号": "This category does not require a product model",
     "该品类无需语种": "This category does not require a language",
     "被取消型号的库存归并到": "Merge inventory from removed models into",
@@ -377,6 +382,9 @@ EN_DISPLAY_TEXT = {
     "活动物料请注明具体活动名称": "Specify the exact event name for promotional materials",
     "可用逗号、分号、顿号或换行分隔": "Separate entries with commas, semicolons, or line breaks",
     "例如：新版宣传册(New Brochure)": "Example: New Brochure",
+    "修改后会同步更新当前品类下所有对应库存行；库存、单价、海关编码、启用状态和历史关联保持不变。": (
+        "Renaming updates every matching inventory row in this category while preserving quantity, unit price, customs code, status, and historical links."
+    ),
     "勾选后产品型号统一为“无需型号”，现有型号库存会自动归并。": (
         "When selected, all models use No Model Required and existing model inventory is merged automatically."
     ),
@@ -541,6 +549,12 @@ EN_DISPLAY_TEXT = {
     ),
     "请至少保留或新增一个产品型号，或勾选“无需产品型号”。": (
         "Keep or add at least one product model, or select No Model Required."
+    ),
+    "修改后的产品型号不能与其他已有型号重名。": (
+        "The updated product model cannot duplicate another existing model."
+    ),
+    "如需取消产品型号，请使用“该品类无需产品型号”选项。": (
+        "To remove product models, use the This category does not require a product model option."
     ),
     "请至少保留或新增一个语种，或勾选“无需语种”。": (
         "Keep or add at least one language, or select No Language Required."
