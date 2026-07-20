@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import uuid
@@ -843,9 +844,12 @@ def get_approval_password() -> str:
 
 def get_secret_value(name: str, default: str = "") -> str:
     try:
-        return str(st.secrets.get(name, default)).strip()
+        secret_value = st.secrets.get(name)
     except (FileNotFoundError, KeyError, AttributeError):
-        return default
+        secret_value = None
+    if secret_value not in (None, ""):
+        return str(secret_value).strip()
+    return str(os.getenv(name, default)).strip()
 
 
 def github_cache_refresh_token() -> str:
