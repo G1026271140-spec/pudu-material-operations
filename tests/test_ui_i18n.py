@@ -33,6 +33,7 @@ class UiInternationalizationTests(unittest.TestCase):
 
     def test_chinese_mode_normalizes_bilingual_ui_headers_only(self) -> None:
         self.assertEqual(translate_ui_text("客户名称 Customer Name", LANGUAGE_ZH), "客户名称")
+        self.assertEqual(translate_ui_text("库存登记", LANGUAGE_ZH), "物料申领")
         self.assertEqual(
             translate_ui_text("产品折页(Single Product Brochure)", LANGUAGE_ZH),
             "产品折页(Single Product Brochure)",

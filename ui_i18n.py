@@ -26,6 +26,7 @@ ZH_DISPLAY_TEXT = {
     "产品型号(Product Model)": "产品型号",
     "语种(Language)": "语种",
     "现存物料数量(Material Quantity)": "现存物料数量",
+    "库存登记": "物料申领",
 }
 
 
