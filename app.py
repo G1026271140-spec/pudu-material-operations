@@ -764,6 +764,10 @@ def inject_global_styles() -> None:
             font-size: 0.78rem;
         }
         .pudu-field-label {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.25rem 0.65rem;
             color: var(--pudu-ink);
             font-size: 0.82rem;
             font-weight: 540;
@@ -773,17 +777,12 @@ def inject_global_styles() -> None:
             color: var(--pudu-red);
             font-weight: 700;
         }
-        .pudu-required-hint {
-            margin: 0.4rem 0 0;
-            padding: 0.45rem 0.6rem;
-            border-left: 3px solid var(--pudu-red);
-            background: #FFF1F0;
+        .pudu-inline-required-hint {
             color: #B42318;
             font-size: 0.76rem;
-            line-height: 1.5;
-        }
-        .pudu-required-hint strong {
             font-weight: 700;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
         }
         .pudu-generated-title {
             display: flex;
@@ -5325,9 +5324,17 @@ def build_request_title(material_usage: object, requester: object) -> str:
     return f"{usage_text}-{requester_text}-营销物料领取"
 
 
-def required_field_label(container: object, label: str) -> None:
+def required_field_label(container: object, label: str, hint: str = "") -> None:
+    hint_html = (
+        f'<span class="pudu-inline-required-hint">{escape(hint)}</span>'
+        if hint.strip()
+        else ""
+    )
     container.markdown(
-        f'<div class="pudu-field-label">{escape(ui_text(label))} <span class="pudu-required-star">*</span></div>',
+        (
+            f'<div class="pudu-field-label"><span>{escape(ui_text(label))} '
+            f'<span class="pudu-required-star">*</span></span>{hint_html}</div>'
+        ),
         unsafe_allow_html=True,
     )
 
@@ -6187,7 +6194,12 @@ def render_change_form(show_title: bool = True) -> None:
         )
 
         middle_cols = st.columns([2.4, 1])
-        required_field_label(middle_cols[0], "收件人信息")
+        recipient_hint = (
+            "Please specify the delivery address (including recipient information, postal code, and specific address)"
+            if get_ui_language() == LANGUAGE_EN
+            else "请写明快递地址（包含收件人信息，邮编，具体地址）"
+        )
+        required_field_label(middle_cols[0], "收件人信息", recipient_hint)
         recipient_info = middle_cols[0].text_area(
             "收件人信息",
             placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
@@ -6195,19 +6207,6 @@ def render_change_form(show_title: bool = True) -> None:
             key="request_recipient_info",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
-        )
-        recipient_hint = (
-            "Please specify the delivery address (including recipient information, postal code, and specific address)"
-            if get_ui_language() == LANGUAGE_EN
-            else "收件人信息：请写明快递地址（包含收件人信息，邮编，具体地址）"
-        )
-        middle_cols[0].markdown(
-            f"""
-            <div class="pudu-required-hint">
-                <strong>{escape(recipient_hint)}</strong>
-            </div>
-            """,
-            unsafe_allow_html=True,
         )
         required_field_label(middle_cols[1], "运费的承担者")
         if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
@@ -6221,7 +6220,12 @@ def render_change_form(show_title: bool = True) -> None:
         )
 
         bottom_cols = st.columns([2.4, 1])
-        required_field_label(bottom_cols[0], "物料用途")
+        usage_hint = (
+            "For promotional materials, please specify the exact name of the event."
+            if get_ui_language() == LANGUAGE_EN
+            else "活动物料请注明具体活动名称"
+        )
+        required_field_label(bottom_cols[0], "物料用途", usage_hint)
         material_usage = bottom_cols[0].text_area(
             "物料用途",
             placeholder="活动物料请注明具体活动名称",
@@ -6229,19 +6233,6 @@ def render_change_form(show_title: bool = True) -> None:
             key="request_material_usage",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
-        )
-        usage_hint = (
-            "For promotional materials, please specify the exact name of the event."
-            if get_ui_language() == LANGUAGE_EN
-            else "物料用途：活动物料请注明具体活动名称"
-        )
-        bottom_cols[0].markdown(
-            f"""
-            <div class="pudu-required-hint">
-                <strong>{escape(usage_hint)}</strong>
-            </div>
-            """,
-            unsafe_allow_html=True,
         )
         bottom_cols[1].markdown(
             f'<div class="pudu-field-label">{escape(ui_text("相关附件"))}</div>',
