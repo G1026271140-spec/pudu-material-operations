@@ -5108,14 +5108,14 @@ def render_sidebar_link() -> None:
                 unsafe_allow_html=True,
             )
         st.markdown(
-            f'<div class="pudu-sidebar-label">{escape(ui_text("语言设置"))}</div>',
+            '<div class="pudu-sidebar-label">语言设置 / Language</div>',
             unsafe_allow_html=True,
         )
         st.radio(
-            "界面语言",
+            "界面语言 / Interface Language",
             SUPPORTED_UI_LANGUAGES,
             key=UI_LANGUAGE_SESSION_KEY,
-            format_func=lambda language: "中文" if language == LANGUAGE_ZH else "English",
+            format_func=lambda language: "中文 / Chinese" if language == LANGUAGE_ZH else "English / 英文",
             horizontal=True,
             label_visibility="collapsed",
         )
