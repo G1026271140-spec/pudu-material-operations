@@ -60,6 +60,8 @@ STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
 INVENTORY_ZERO_SINCE_FIELD = "库存归零时间"
 INVENTORY_AUTO_DISABLE_DAYS = 14
+CATEGORY_CREATE_STAGE_KEY = "category_create_stage"
+CATEGORY_CREATE_DRAFT_KEY = "category_create_draft"
 REQUEST_NO_PREFIX = "REQ"
 RESTOCK_NO_PREFIX = "RST"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
@@ -5068,13 +5070,54 @@ def category_inventory_target_values(editor_df: pd.DataFrame) -> dict[tuple[str,
         if quantity is None or pd.isna(quantity):
             raise ValueError(f"请填写 {model} / {language} 的库存数量。")
         unit_price = row.get("单价")
+        normalized_unit_price = (
+            0.0 if unit_price is None or pd.isna(unit_price) else float(unit_price)
+        )
+        if normalized_unit_price < 0:
+            raise ValueError(f"{model} / {language} 的单价不能小于 0。")
         status = normalize_enabled_status(row.get("启用状态"))
         values[(model, language)] = {
             "quantity": int(quantity),
-            "unit_price": 0.0 if unit_price is None or pd.isna(unit_price) else float(unit_price),
+            "unit_price": normalized_unit_price,
             "customs_code": str(row.get("海关编码") or "").strip(),
             "status": status,
         }
+    return values
+
+
+def category_inventory_preview_dataframe(targets: list[dict]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "序号": index,
+                "产品型号": str(target.get("model") or NO_MODEL_TEXT),
+                "语种": str(target.get("language") or NO_LANGUAGE_TEXT),
+                "库存数量": int(target.get("quantity") or 0),
+                "单价": float(target.get("unit_price") or 0),
+                "海关编码": str(target.get("customs_code") or ""),
+                "启用状态": normalize_enabled_status(target.get("status")),
+            }
+            for index, target in enumerate(targets, start=1)
+        ],
+        columns=["序号", "产品型号", "语种", "库存数量", "单价", "海关编码", "启用状态"],
+    )
+
+
+def category_inventory_preview_values(
+    editor_df: pd.DataFrame,
+    expected_keys: list[tuple[str, str]],
+    category_status: object,
+) -> dict[tuple[str, str], dict[str, object]]:
+    values = category_inventory_target_values(editor_df)
+    normalized_expected_keys = [
+        (str(model).strip(), str(language).strip())
+        for model, language in expected_keys
+    ]
+    if len(values) != len(editor_df) or set(values) != set(normalized_expected_keys):
+        raise ValueError("预览库存行与目标型号、语种组合不一致，请返回修改后重新预览。")
+    if normalize_enabled_status(category_status) == STATUS_INACTIVE:
+        for item in values.values():
+            item["status"] = STATUS_INACTIVE
     return values
 
 
@@ -7443,7 +7486,232 @@ def render_restock_form() -> None:
         st.rerun()
 
 
+def clear_new_category_creation_state() -> None:
+    prefixes = (
+        "category_name_new",
+        "category_status_new",
+        "category_unit_price_new",
+        "category_customs_code_new",
+        "category_no_model_new",
+        "category_no_language_new",
+        "category_models_new",
+        "category_custom_models_new",
+        "category_languages_new",
+        "category_custom_languages_new",
+        "category_target_values_new_",
+        "category_target_revision_new_",
+        "category_target_defaults_new_",
+        "category_combo_new_",
+        "category_batch_targets_new_",
+        "category_batch_status_new_",
+        "category_apply_batch_status_new_",
+        "category_discard_confirm_new_",
+        "category_confirm_new",
+        "category_submit_new",
+        "category_create_preview_",
+    )
+    for key in list(st.session_state):
+        if str(key).startswith(prefixes):
+            st.session_state.pop(key, None)
+    st.session_state.pop(CATEGORY_CREATE_STAGE_KEY, None)
+    st.session_state.pop(CATEGORY_CREATE_DRAFT_KEY, None)
+
+
+def restore_new_category_creation_state(
+    draft: dict,
+    target_values: dict[tuple[str, str], dict[str, object]],
+) -> None:
+    allowed_form_keys = {
+        "category_name_new",
+        "category_status_new",
+        "category_unit_price_new",
+        "category_customs_code_new",
+        "category_no_model_new",
+        "category_no_language_new",
+        "category_models_new",
+        "category_custom_models_new",
+        "category_languages_new",
+        "category_custom_languages_new",
+    }
+    form_state = draft.get("form_state")
+    if isinstance(form_state, dict):
+        for key, value in form_state.items():
+            normalized_key = str(key)
+            if normalized_key in allowed_form_keys:
+                st.session_state[normalized_key] = value
+
+    target_state_key = str(draft.get("target_state_key") or "")
+    revision_key = str(draft.get("revision_key") or "")
+    if target_state_key:
+        st.session_state[target_state_key] = target_values
+    if revision_key:
+        st.session_state[revision_key] = int(st.session_state.get(revision_key, 0) or 0) + 1
+
+
+def render_new_category_review() -> None:
+    draft = st.session_state.get(CATEGORY_CREATE_DRAFT_KEY)
+    if not isinstance(draft, dict):
+        st.session_state[CATEGORY_CREATE_STAGE_KEY] = "edit"
+        st.rerun()
+
+    targets = [
+        dict(target)
+        for target in list(draft.get("targets") or [])
+        if isinstance(target, dict)
+    ]
+    expected_keys = [
+        (str(target.get("model") or ""), str(target.get("language") or ""))
+        for target in targets
+    ]
+    if not targets or any(not model or not language for model, language in expected_keys):
+        st.session_state[CATEGORY_CREATE_STAGE_KEY] = "edit"
+        st.session_state.pop(CATEGORY_CREATE_DRAFT_KEY, None)
+        st.rerun()
+
+    product = str(draft.get("product") or "")
+    category_status = normalize_enabled_status(draft.get("category_status"))
+    preview_df = category_inventory_preview_dataframe(targets)
+
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("目标库存行", f"{len(preview_df):,}")
+    metric_b.metric("产品型号数量", f"{len(list(draft.get('models') or [])):,}")
+    metric_c.metric("语种数量", f"{len(list(draft.get('languages') or [])):,}")
+
+    with st.container(border=True):
+        render_section_header("01", "品类信息确认", "确认基础信息后编辑每一条新增库存行")
+        info_cols = st.columns(4)
+        render_request_review_field(info_cols[0], "物料品类", product)
+        render_request_review_field(info_cols[1], "品类启用状态", category_status)
+        render_request_review_field(
+            info_cols[2],
+            "产品型号规则",
+            NO_MODEL_TEXT if draft.get("no_model") else f"{len(list(draft.get('models') or []))} 个型号",
+        )
+        render_request_review_field(
+            info_cols[3],
+            "语种规则",
+            NO_LANGUAGE_TEXT
+            if draft.get("no_language")
+            else f"{len(list(draft.get('languages') or []))} 个语种",
+        )
+
+    with st.container(border=True):
+        render_section_header(
+            "02",
+            "新增库存行预览",
+            "逐行填写初始库存数量；确认创建前不会写入飞书",
+        )
+        disabled_columns = ["序号", "产品型号", "语种"]
+        if category_status == STATUS_INACTIVE:
+            disabled_columns.append("启用状态")
+        edited_df = st.data_editor(
+            preview_df,
+            width="stretch",
+            hide_index=True,
+            num_rows="fixed",
+            disabled=disabled_columns,
+            height=min(860, max(185, 38 * (len(preview_df) + 1) + 20)),
+            row_height=34,
+            column_config={
+                "序号": st.column_config.NumberColumn("序号", width="small"),
+                "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
+                "语种": st.column_config.TextColumn("语种", width="medium"),
+                "库存数量": st.column_config.NumberColumn(
+                    "库存数量",
+                    required=True,
+                    step=1,
+                    format="%d",
+                    width="small",
+                ),
+                "单价": st.column_config.NumberColumn(
+                    "单价",
+                    min_value=0.0,
+                    step=0.01,
+                    format="%.2f",
+                    width="small",
+                ),
+                "海关编码": st.column_config.TextColumn("海关编码", width="medium"),
+                "启用状态": st.column_config.SelectboxColumn(
+                    "启用状态",
+                    options=list(MATERIAL_STATUS_OPTIONS),
+                    required=True,
+                    width="small",
+                ),
+            },
+            key=f"category_create_preview_editor_{draft.get('preview_token')}",
+        )
+        current_total = int(pd.to_numeric(edited_df["库存数量"], errors="coerce").fillna(0).sum())
+        st.caption(f"当前共 {len(edited_df):,} 条库存行，初始库存合计 {current_total:,}。")
+
+    try:
+        edited_values = category_inventory_preview_values(
+            edited_df,
+            expected_keys,
+            category_status,
+        )
+        preview_error = ""
+    except ValueError as exc:
+        edited_values = {}
+        preview_error = str(exc)
+        st.error(preview_error)
+
+    back_col, _, confirm_col = st.columns([1.1, 2.2, 1.5])
+    if back_col.button(
+        "返回修改",
+        key="category_create_preview_back",
+        icon=":material/arrow_back:",
+        width="stretch",
+    ):
+        if preview_error:
+            st.warning("请先修正库存行数据后再返回。")
+            return
+        restore_new_category_creation_state(draft, edited_values)
+        st.session_state[CATEGORY_CREATE_STAGE_KEY] = "edit"
+        st.session_state.pop(CATEGORY_CREATE_DRAFT_KEY, None)
+        st.rerun()
+
+    if confirm_col.button(
+        "确认创建品类",
+        key="category_create_preview_confirm",
+        type="primary",
+        icon=":material/check_circle:",
+        width="stretch",
+    ):
+        if preview_error:
+            st.warning("请先修正全部库存行后再确认创建。")
+            return
+        with st.spinner("正在创建物料品类和库存行，请勿关闭页面......"):
+            with DATA_LOCK:
+                try:
+                    result = sync_feishu_category_inventory(
+                        old_product="",
+                        new_product=product,
+                        no_model=bool(draft.get("no_model")),
+                        no_language=bool(draft.get("no_language")),
+                        target_models=list(draft.get("models") or []),
+                        target_languages=list(draft.get("languages") or []),
+                        category_status=category_status,
+                        category_unit_price=draft.get("category_unit_price"),
+                        category_customs_code=str(draft.get("category_customs_code") or ""),
+                        target_values=edited_values,
+                    )
+                except Exception as exc:
+                    st.error("创建物料品类失败，尚未完成全部库存行写入。请检查飞书数据后重试。")
+                    st.exception(exc)
+                    return
+        refresh_page_cache_after_write("category", update_request_form=True)
+        clear_new_category_creation_state()
+        st.session_state["category_added_message"] = (
+            f"物料品类“{product}”已创建，共生成 {result['created_count']} 条库存行，"
+            f"初始库存合计 {result['target_quantity']:,}。"
+        )
+        st.rerun()
+
+
 def render_add_category_form() -> None:
+    if st.session_state.get(CATEGORY_CREATE_STAGE_KEY) == "review":
+        render_new_category_review()
+        return
     with st.spinner("物料数据加载中，请稍后......"):
         options = load_options()
         categories = load_feishu_category_records()
@@ -7495,37 +7763,55 @@ def render_add_category_form() -> None:
     editor_key = category_id or "new"
 
     with st.container(border=True):
+        product_key = f"category_name_{editor_key}"
         product = st.text_input(
             "物料品类名称 *",
-            value=old_product,
             placeholder="例如：新版宣传册(New Brochure)",
-            key=f"category_name_{editor_key}",
+            key=product_key,
+            **({} if product_key in st.session_state else {"value": old_product}),
         ).strip()
         metadata_status_col, metadata_price_col, metadata_customs_col = st.columns(
             [1.2, 1, 1.2],
             vertical_alignment="bottom",
         )
+        category_status_key = f"category_status_{editor_key}"
         category_status = metadata_status_col.radio(
             "品类启用状态 *",
             list(MATERIAL_STATUS_OPTIONS),
-            index=list(MATERIAL_STATUS_OPTIONS).index(current_category_status),
             horizontal=True,
             help="停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。",
-            key=f"category_status_{editor_key}",
+            key=category_status_key,
+            **(
+                {}
+                if category_status_key in st.session_state
+                else {"index": list(MATERIAL_STATUS_OPTIONS).index(current_category_status)}
+            ),
         )
+        category_unit_price_key = f"category_unit_price_{editor_key}"
         category_unit_price_text = metadata_price_col.text_input(
             "单价（美元）",
-            value=""
-            if current_category_unit_price is None
-            else f"{float(current_category_unit_price):g}",
             placeholder="可选，例如：0.06",
-            key=f"category_unit_price_{editor_key}",
+            key=category_unit_price_key,
+            **(
+                {}
+                if category_unit_price_key in st.session_state
+                else {
+                    "value": ""
+                    if current_category_unit_price is None
+                    else f"{float(current_category_unit_price):g}"
+                }
+            ),
         )
+        category_customs_key = f"category_customs_code_{editor_key}"
         category_customs_code = metadata_customs_col.text_input(
             "海关编码",
-            value=current_category_customs_code,
             placeholder="可选，例如：4911101000",
-            key=f"category_customs_code_{editor_key}",
+            key=category_customs_key,
+            **(
+                {}
+                if category_customs_key in st.session_state
+                else {"value": current_category_customs_code}
+            ),
         ).strip()
         category_metadata_error = ""
         try:
@@ -7536,17 +7822,23 @@ def render_add_category_form() -> None:
             st.error(category_metadata_error)
         st.caption("单价和海关编码可留空；新增库存组合默认继承这里的值，也可在下方单独调整。")
         rule_col_a, rule_col_b = st.columns(2)
+        no_model_key = f"category_no_model_{editor_key}"
         no_model = rule_col_a.checkbox(
             "该品类无需产品型号",
-            value=current_no_model,
             help="勾选后产品型号统一为“无需型号”，库存数量可在下方库存组合编辑区重新分配。",
-            key=f"category_no_model_{editor_key}",
+            key=no_model_key,
+            **({} if no_model_key in st.session_state else {"value": current_no_model}),
         )
+        no_language_key = f"category_no_language_{editor_key}"
         no_language = rule_col_b.checkbox(
             "该品类无需语种",
-            value=current_no_language,
             help="勾选后语种统一为“无需语种”，库存数量可在下方库存组合编辑区重新分配。",
-            key=f"category_no_language_{editor_key}",
+            key=no_language_key,
+            **(
+                {}
+                if no_language_key in st.session_state
+                else {"value": current_no_language}
+            ),
         )
 
         available_models = unique_preserve(
@@ -7563,13 +7855,18 @@ def render_add_category_form() -> None:
         default_languages = [language for language in current_languages if language != NO_LANGUAGE_TEXT]
 
         model_col, language_col = st.columns(2)
+        selected_models_key = f"category_models_{editor_key}"
         selected_models = model_col.multiselect(
             "产品型号 *",
             available_models,
-            default=default_models,
             disabled=no_model,
             help="编辑时会自动勾选当前型号；取消勾选即可移除该型号。",
-            key=f"category_models_{editor_key}",
+            key=selected_models_key,
+            **(
+                {}
+                if selected_models_key in st.session_state
+                else {"default": default_models}
+            ),
         )
         custom_models_text = model_col.text_area(
             "新增型号",
@@ -7578,13 +7875,18 @@ def render_add_category_form() -> None:
             height=86,
             key=f"category_custom_models_{editor_key}",
         )
+        selected_languages_key = f"category_languages_{editor_key}"
         selected_languages = language_col.multiselect(
             "语种 *",
             available_languages,
-            default=default_languages,
             disabled=no_language,
             help="编辑时会自动勾选当前语种；取消勾选即可移除该语种。",
-            key=f"category_languages_{editor_key}",
+            key=selected_languages_key,
+            **(
+                {}
+                if selected_languages_key in st.session_state
+                else {"default": default_languages}
+            ),
         )
         custom_languages_text = language_col.text_area(
             "新增自定义语种",
@@ -7728,6 +8030,8 @@ def render_add_category_form() -> None:
                 st.error(str(exc))
 
         target_values: dict[tuple[str, str], dict[str, object]] = {}
+        target_state_key = ""
+        revision_key = ""
         discard_confirmed = True
         if plan is not None:
             st.markdown(f"**{ui_text('库存组合编辑')}**")
@@ -7980,10 +8284,14 @@ def render_add_category_form() -> None:
                 elif plan["quantity_difference"] > 0 and current_records:
                     st.info(f"目标库存将比当前库存增加 {plan['quantity_difference']:,} 件。")
 
-        confirmed = st.checkbox(
-            "我已确认以上品类配置和库存组合",
-            key=f"category_confirm_{editor_key}",
-        )
+        if is_edit:
+            confirmed = st.checkbox(
+                "我已确认以上品类配置和库存组合",
+                key=f"category_confirm_{editor_key}",
+            )
+        else:
+            confirmed = True
+            st.caption("点击创建物料品类后，将先进入全部新增库存行预览页；最终确认前不会写入飞书。")
         submitted = st.button(
             "保存品类配置" if is_edit else "创建物料品类",
             type="primary",
@@ -8008,8 +8316,37 @@ def render_add_category_form() -> None:
             st.error("请检查库存组合中的数量、单价、海关编码和启用状态。")
         elif plan["discarded_quantity"] > 0 and not discard_confirmed:
             st.warning("请确认直接舍弃未分配库存。")
-        elif not confirmed:
+        elif is_edit and not confirmed:
             st.warning("请先确认品类配置和库存组合。")
+        elif not is_edit:
+            st.session_state[CATEGORY_CREATE_DRAFT_KEY] = {
+                "product": product,
+                "no_model": no_model,
+                "no_language": no_language,
+                "models": list(models),
+                "languages": list(languages),
+                "category_status": category_status,
+                "category_unit_price": category_unit_price,
+                "category_customs_code": category_customs_code,
+                "targets": [dict(target) for target in plan["targets"]],
+                "target_state_key": target_state_key,
+                "revision_key": revision_key,
+                "form_state": {
+                    "category_name_new": product,
+                    "category_status_new": category_status,
+                    "category_unit_price_new": category_unit_price_text,
+                    "category_customs_code_new": category_customs_code,
+                    "category_no_model_new": no_model,
+                    "category_no_language_new": no_language,
+                    "category_models_new": list(selected_models),
+                    "category_custom_models_new": custom_models_text,
+                    "category_languages_new": list(selected_languages),
+                    "category_custom_languages_new": custom_languages_text,
+                },
+                "preview_token": uuid.uuid4().hex,
+            }
+            st.session_state[CATEGORY_CREATE_STAGE_KEY] = "review"
+            st.rerun()
         else:
             with st.spinner("正在保存品类配置并同步关联数据，请勿关闭页面......"):
                 with DATA_LOCK:

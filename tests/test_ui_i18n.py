@@ -99,6 +99,29 @@ class UiInternationalizationTests(unittest.TestCase):
             ),
         )
 
+    def test_new_category_inventory_preview_copy_is_translated(self) -> None:
+        self.assertEqual(
+            translate_ui_text("新增库存行预览", LANGUAGE_EN),
+            "New Inventory Row Preview",
+        )
+        self.assertEqual(
+            translate_ui_text(
+                "当前共 8 条库存行，初始库存合计 125。",
+                LANGUAGE_EN,
+            ),
+            "8 inventory rows; initial inventory total: 125.",
+        )
+        self.assertEqual(
+            translate_ui_text(
+                "物料品类“新品类”已创建，共生成 8 条库存行，初始库存合计 125。",
+                LANGUAGE_EN,
+            ),
+            (
+                'Material category "新品类" was created with 8 inventory rows '
+                "and an initial inventory total of 125."
+            ),
+        )
+
     def test_column_localization_does_not_rename_or_modify_data(self) -> None:
         source = pd.DataFrame(
             [

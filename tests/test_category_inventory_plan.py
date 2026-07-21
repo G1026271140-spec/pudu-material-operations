@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -244,6 +245,158 @@ class CategoryInventoryPlanTests(unittest.TestCase):
                 }
             },
         )
+
+    def test_new_category_preview_lists_every_target_and_keeps_quantities(self) -> None:
+        plan = app.build_category_inventory_plan(
+            [],
+            "新品类",
+            ["M1", "M2"],
+            ["英语", "韩语"],
+            target_values={
+                ("M1", "英语"): {"quantity": 10, "unit_price": 1.5},
+                ("M1", "韩语"): {"quantity": -2, "unit_price": 2.5},
+                ("M2", "英语"): {"quantity": 30, "unit_price": 3.5},
+                ("M2", "韩语"): {"quantity": 40, "unit_price": 4.5},
+            },
+        )
+
+        preview = app.category_inventory_preview_dataframe(plan["targets"])
+
+        self.assertEqual(len(preview), 4)
+        self.assertEqual(preview["序号"].tolist(), [1, 2, 3, 4])
+        self.assertEqual(preview["库存数量"].tolist(), [10, -2, 30, 40])
+        self.assertEqual(
+            list(zip(preview["产品型号"], preview["语种"])),
+            [("M1", "英语"), ("M1", "韩语"), ("M2", "英语"), ("M2", "韩语")],
+        )
+
+    def test_new_category_preview_values_use_each_edited_quantity(self) -> None:
+        preview = pd.DataFrame(
+            [
+                {
+                    "序号": 1,
+                    "产品型号": "M1",
+                    "语种": "英语",
+                    "库存数量": 25,
+                    "单价": 1.25,
+                    "海关编码": "HS-1",
+                    "启用状态": app.STATUS_ACTIVE,
+                },
+                {
+                    "序号": 2,
+                    "产品型号": "M2",
+                    "语种": "韩语",
+                    "库存数量": -5,
+                    "单价": 0,
+                    "海关编码": "",
+                    "启用状态": app.STATUS_INACTIVE,
+                },
+            ]
+        )
+
+        values = app.category_inventory_preview_values(
+            preview,
+            [("M1", "英语"), ("M2", "韩语")],
+            app.STATUS_ACTIVE,
+        )
+
+        self.assertEqual(values[("M1", "英语")]["quantity"], 25)
+        self.assertEqual(values[("M1", "英语")]["unit_price"], 1.25)
+        self.assertEqual(values[("M1", "英语")]["customs_code"], "HS-1")
+        self.assertEqual(values[("M2", "韩语")]["quantity"], -5)
+        self.assertEqual(values[("M2", "韩语")]["status"], app.STATUS_INACTIVE)
+
+    def test_inactive_new_category_forces_all_preview_rows_inactive(self) -> None:
+        preview = pd.DataFrame(
+            [
+                {
+                    "产品型号": "M1",
+                    "语种": "英语",
+                    "库存数量": 10,
+                    "单价": 0,
+                    "海关编码": "",
+                    "启用状态": app.STATUS_ACTIVE,
+                }
+            ]
+        )
+
+        values = app.category_inventory_preview_values(
+            preview,
+            [("M1", "英语")],
+            app.STATUS_INACTIVE,
+        )
+
+        self.assertEqual(values[("M1", "英语")]["status"], app.STATUS_INACTIVE)
+
+    def test_new_category_preview_rejects_missing_or_negative_price_rows(self) -> None:
+        missing = pd.DataFrame(
+            [
+                {
+                    "产品型号": "M1",
+                    "语种": "英语",
+                    "库存数量": 10,
+                    "单价": 0,
+                    "海关编码": "",
+                    "启用状态": app.STATUS_ACTIVE,
+                }
+            ]
+        )
+        negative_price = missing.copy()
+        negative_price.loc[0, "单价"] = -1
+
+        with self.assertRaisesRegex(ValueError, "组合不一致"):
+            app.category_inventory_preview_values(
+                missing,
+                [("M1", "英语"), ("M2", "韩语")],
+                app.STATUS_ACTIVE,
+            )
+        with self.assertRaisesRegex(ValueError, "单价不能小于 0"):
+            app.category_inventory_preview_values(
+                negative_price,
+                [("M1", "英语")],
+                app.STATUS_ACTIVE,
+            )
+
+    def test_return_from_new_category_preview_restores_full_form_and_inventory_state(self) -> None:
+        session_state: dict[str, object] = {"target_revision": 2}
+        form_state = {
+            "category_name_new": "新品类",
+            "category_status_new": app.STATUS_ACTIVE,
+            "category_unit_price_new": "1.25",
+            "category_customs_code_new": "HS-1",
+            "category_no_model_new": True,
+            "category_no_language_new": True,
+            "category_models_new": [],
+            "category_custom_models_new": "",
+            "category_languages_new": [],
+            "category_custom_languages_new": "",
+            "untrusted_widget_key": "ignored",
+        }
+        target_values = {
+            (app.NO_MODEL_TEXT, app.NO_LANGUAGE_TEXT): {
+                "quantity": 37,
+                "unit_price": 1.25,
+                "customs_code": "HS-1",
+                "status": app.STATUS_ACTIVE,
+            }
+        }
+
+        with patch.object(app.st, "session_state", session_state):
+            app.restore_new_category_creation_state(
+                {
+                    "form_state": form_state,
+                    "target_state_key": "target_values",
+                    "revision_key": "target_revision",
+                },
+                target_values,
+            )
+
+        self.assertEqual(session_state["category_name_new"], "新品类")
+        self.assertTrue(session_state["category_no_model_new"])
+        self.assertTrue(session_state["category_no_language_new"])
+        self.assertEqual(session_state["target_values"], target_values)
+        self.assertEqual(session_state["target_revision"], 3)
+        self.assertNotIn("untrusted_widget_key", session_state)
 
     def test_inventory_status_is_preserved_and_can_be_overridden(self) -> None:
         records = [inventory_record("1", "M1", "英语", 100, status=app.STATUS_INACTIVE)]

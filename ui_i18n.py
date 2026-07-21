@@ -266,6 +266,7 @@ EN_DISPLAY_TEXT = {
     "语种数量": "Language Count",
     "库存数量": "Inventory Quantity",
     "库存行数": "Inventory Row Count",
+    "目标库存行": "Target Inventory Rows",
     "当前库存": "Current Inventory",
     "提交时库存快照": "Inventory at Submission",
     "总价值": "Total Value",
@@ -322,6 +323,9 @@ EN_DISPLAY_TEXT = {
     "库存数量 *": "Inventory Quantity *",
     "启用状态 *": "Enabled Status *",
     "品类启用状态 *": "Category Status *",
+    "品类启用状态": "Category Status",
+    "产品型号规则": "Product Model Rule",
+    "语种规则": "Language Rule",
     "重组": "Reconfigured",
     "保留": "Retained",
     "新增": "New",
@@ -333,6 +337,31 @@ EN_DISPLAY_TEXT = {
     "编辑现有品类": "Edit Existing Category",
     "保存品类配置": "Save Category Settings",
     "创建物料品类": "Create Material Category",
+    "品类信息确认": "Confirm Category Information",
+    "确认基础信息后编辑每一条新增库存行": (
+        "Confirm the category settings, then edit every new inventory row"
+    ),
+    "新增库存行预览": "New Inventory Row Preview",
+    "逐行填写初始库存数量；确认创建前不会写入飞书": (
+        "Enter the initial quantity for each row. Nothing is written to Feishu before confirmation"
+    ),
+    "确认创建品类": "Confirm Category Creation",
+    "点击创建物料品类后，将先进入全部新增库存行预览页；最终确认前不会写入飞书。": (
+        "Creating a category first opens a preview of all new inventory rows. Nothing is written to Feishu before final confirmation."
+    ),
+    "正在创建物料品类和库存行，请勿关闭页面......": (
+        "Creating the material category and inventory rows. Keep this page open..."
+    ),
+    "创建物料品类失败，尚未完成全部库存行写入。请检查飞书数据后重试。": (
+        "The material category could not be fully created. Check the Feishu data and try again."
+    ),
+    "预览库存行与目标型号、语种组合不一致，请返回修改后重新预览。": (
+        "The preview rows do not match the target model and language combinations. Return to edit and preview again."
+    ),
+    "请先修正库存行数据后再返回。": "Correct the inventory row data before returning.",
+    "请先修正全部库存行后再确认创建。": (
+        "Correct every inventory row before confirming creation."
+    ),
     "选择已有产品型号": "Select Existing Product Models",
     "选择已有语种": "Select Existing Languages",
     "自定义产品型号": "Custom Product Models",
@@ -929,6 +958,10 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
         lambda match: f"Enter the inventory quantity for {match.group(1)} / {match.group(2)}.",
     ),
     (
+        re.compile(r"^(.+?) / (.+?) 的单价不能小于 0。$"),
+        lambda match: f"The unit price for {match.group(1)} / {match.group(2)} cannot be negative.",
+    ),
+    (
         re.compile(r"^已撤回物料品类“(.*)”。$"),
         lambda match: f'Revoked material category "{match.group(1)}".',
     ),
@@ -954,6 +987,27 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
             f"Insufficient inventory: {match.group(1)}. "
             "You can still adjust the issued material or quantity and continue approval."
         ),
+    ),
+    (
+        re.compile(r"^物料品类“(.*)”已创建，共生成 (.+?) 条库存行，初始库存合计 (.+?)。$"),
+        lambda match: (
+            f'Material category "{match.group(1)}" was created with {match.group(2)} inventory rows '
+            f"and an initial inventory total of {match.group(3)}."
+        ),
+    ),
+    (
+        re.compile(r"^当前共 (.+?) 条库存行，初始库存合计 (.+?)。$"),
+        lambda match: (
+            f"{match.group(1)} inventory rows; initial inventory total: {match.group(2)}."
+        ),
+    ),
+    (
+        re.compile(r"^(.+?) 个型号$"),
+        lambda match: f"{match.group(1)} models",
+    ),
+    (
+        re.compile(r"^(.+?) 个语种$"),
+        lambda match: f"{match.group(1)} languages",
     ),
     (
         re.compile(r"^以下实际发放组合不存在或已停用：(.*)$"),
