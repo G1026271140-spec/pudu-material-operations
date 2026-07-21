@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-21 11:22:14",
+  "generated_at": "2026-07-21 16:31:22",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -19,6 +19,12 @@
       "department_id": "od-099e7b86d7cb90491876968defc380c5",
       "name": "CAO",
       "path": "CAO",
+      "parent_department_id": ""
+    },
+    {
+      "department_id": "od-3d5cdc839a981f2cdd959484763640b6",
+      "name": "COE",
+      "path": "COE",
       "parent_department_id": ""
     },
     {
@@ -253,12 +259,6 @@
       "department_id": "od-c66cd8d7e00d195dfb1a1ef9f337409e",
       "name": "NPI组",
       "path": "NPI组",
-      "parent_department_id": ""
-    },
-    {
-      "department_id": "od-e1ee40bc646bf97402cc006645379aba",
-      "name": "OTD&REC部",
-      "path": "OTD&REC部",
       "parent_department_id": ""
     },
     {
@@ -616,6 +616,12 @@
       "parent_department_id": ""
     },
     {
+      "department_id": "od-e1ee40bc646bf97402cc006645379aba",
+      "name": "招聘部",
+      "path": "招聘部",
+      "parent_department_id": ""
+    },
+    {
       "department_id": "od-75d6b33abad414680ad52fde19e35e5a",
       "name": "收入成本核算组",
       "path": "收入成本核算组",
@@ -667,6 +673,12 @@
       "department_id": "od-b17d75858b35d6e9f37ecbac8012b60d",
       "name": "机械平台部",
       "path": "机械平台部",
+      "parent_department_id": ""
+    },
+    {
+      "department_id": "od-54989923ac5367b9c79a6692ff383d77",
+      "name": "校招组",
+      "path": "校招组",
       "parent_department_id": ""
     },
     {
@@ -874,6 +886,12 @@
       "parent_department_id": ""
     },
     {
+      "department_id": "od-8c5ed2e15421f3b5d65be5fcf6da0124",
+      "name": "营销招聘组",
+      "path": "营销招聘组",
+      "parent_department_id": ""
+    },
+    {
       "department_id": "od-d08d7dd9bd9eff22e6c9c8f18681cea6",
       "name": "营销运营组",
       "path": "营销运营组",
@@ -1036,6 +1054,12 @@
       "parent_department_id": ""
     },
     {
+      "department_id": "od-6ae6cb1fa6655a41401da78f8e07c6c1",
+      "name": "非营销招聘组",
+      "path": "非营销招聘组",
+      "parent_department_id": ""
+    },
+    {
       "department_id": "od-a2c548735f75b8570dd50a401976f71f",
       "name": "韩国战队",
       "path": "韩国战队",
@@ -1072,7 +1096,7 @@
       "parent_department_id": ""
     }
   ],
-  "row_count": 178,
+  "row_count": 182,
   "users": [
     {
       "open_id": "ou_050624eb0b61caa9754a4f8de5454040",
@@ -1271,7 +1295,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -2084,10 +2108,10 @@
       "open_id": "ou_40f9ab586192355eb87bbaeb42a1a052",
       "name": "俞慧",
       "department_ids": [
-        "od-9a46491ced317ade510565011c2e1004"
+        "od-3d5cdc839a981f2cdd959484763640b6"
       ],
       "department_paths": [
-        "组织与人才发展中心"
+        "COE"
       ]
     },
     {
@@ -2820,10 +2844,12 @@
       "open_id": "ou_bc1bd60a01b58efeed7b750499b0710f",
       "name": "刘方",
       "department_ids": [
+        "od-3d5cdc839a981f2cdd959484763640b6",
         "od-eee1fccff5628c10729f806e17daedc7",
         "od-9a46491ced317ade510565011c2e1004"
       ],
       "department_paths": [
+        "COE",
         "HRBP部",
         "组织与人才发展中心"
       ]
@@ -3203,7 +3229,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -3253,7 +3279,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -4000,10 +4026,12 @@
       "open_id": "ou_e826a2f216173c69bbb5d22c697dff44",
       "name": "吴金峰",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-e1ee40bc646bf97402cc006645379aba",
+        "od-8c5ed2e15421f3b5d65be5fcf6da0124"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部",
+        "营销招聘组"
       ]
     },
     {
@@ -4553,7 +4581,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -7997,7 +8025,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -8589,7 +8617,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -8915,7 +8943,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -10261,7 +10289,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -11336,10 +11364,12 @@
       "open_id": "ou_81ab054ffe94058791a8247b5bde2773",
       "name": "王可欣",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-e1ee40bc646bf97402cc006645379aba",
+        "od-54989923ac5367b9c79a6692ff383d77"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部",
+        "校招组"
       ]
     },
     {
@@ -11733,7 +11763,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -12523,7 +12553,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -12665,7 +12695,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -13299,7 +13329,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -13895,7 +13925,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -13997,7 +14027,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -14057,7 +14087,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -14214,10 +14244,10 @@
       "open_id": "ou_c6ed84c03ef34cd14a9d670303514007",
       "name": "谢小慧",
       "department_ids": [
-        "od-eee1fccff5628c10729f806e17daedc7"
+        "od-3d5cdc839a981f2cdd959484763640b6"
       ],
       "department_paths": [
-        "HRBP部"
+        "COE"
       ]
     },
     {
@@ -15199,7 +15229,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -15941,7 +15971,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
@@ -16076,10 +16106,12 @@
       "open_id": "ou_393430fc5a3d8792391a955881ec5b49",
       "name": "陈彦",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-e1ee40bc646bf97402cc006645379aba",
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部",
+        "非营销招聘组"
       ]
     },
     {
@@ -17754,10 +17786,10 @@
       "open_id": "ou_710c15cde7ffe5bc6fd7263f1c2bca8a",
       "name": "黄洁仪",
       "department_ids": [
-        "od-9a46491ced317ade510565011c2e1004"
+        "od-3d5cdc839a981f2cdd959484763640b6"
       ],
       "department_paths": [
-        "组织与人才发展中心"
+        "COE"
       ]
     },
     {
@@ -17981,7 +18013,7 @@
         "od-e1ee40bc646bf97402cc006645379aba"
       ],
       "department_paths": [
-        "OTD&REC部"
+        "招聘部"
       ]
     },
     {
