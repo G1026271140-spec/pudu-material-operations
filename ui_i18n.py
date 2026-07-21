@@ -43,6 +43,7 @@ EN_DISPLAY_TEXT = {
     "品类管理": "Category Management",
     "修改与撤回": "Edit & Revoke",
     "数据同步": "Data Sync",
+    "数据与系统": "Data & System",
     "更新全部数据缓存": "Refresh All Data",
     "发布 GitHub 静态缓存": "Publish GitHub Static Cache",
     "手动发布静态缓存": "Publish Static Cache Manually",

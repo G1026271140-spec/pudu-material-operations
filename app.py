@@ -359,6 +359,19 @@ def inject_global_styles() -> None:
             margin: 0.15rem 0 0.5rem;
             text-transform: uppercase;
         }
+        .st-key-sidebar_data_system_group {
+            gap: 0.65rem !important;
+            padding: 0.8rem;
+            border: 1px solid var(--pudu-line);
+            border-radius: 8px;
+            background: #FFFFFF;
+        }
+        .st-key-sidebar_data_system_group .pudu-sidebar-label {
+            margin: 0 0 0.15rem;
+        }
+        .st-key-sidebar_data_system_group [data-testid="stExpander"] {
+            margin-top: 0.1rem;
+        }
         .pudu-sidebar-status {
             display: flex;
             align-items: center;
@@ -370,6 +383,9 @@ def inject_global_styles() -> None:
             background: var(--pudu-teal-soft);
             color: var(--pudu-muted) !important;
             font-size: 0.78rem;
+        }
+        .st-key-sidebar_data_system_group .pudu-sidebar-status {
+            margin-top: 0;
         }
         .pudu-status-dot {
             width: 8px;
@@ -1407,9 +1423,10 @@ def count_feishu_table(table_name: str) -> int:
     return len(client.list_records(feishu_table_id(table_name)))
 
 
-def render_storage_diagnostics() -> None:
+def render_storage_diagnostics(parent: object | None = None) -> None:
     is_unlocked = bool(st.session_state.get("admin_unlocked"))
-    with st.sidebar.expander(
+    expander_parent = parent if parent is not None else st.sidebar
+    with expander_parent.expander(
         "系统连接",
         expanded=False,
         icon=":material/settings:" if is_unlocked else ":material/lock:",
@@ -5164,40 +5181,42 @@ def render_sidebar_link() -> None:
             ":material/category:",
         )
         st.divider()
-        st.markdown(
-            f'<div class="pudu-sidebar-label">{escape(ui_text("数据同步"))}</div>',
-            unsafe_allow_html=True,
-        )
-        if st.button(
-            "更新全部数据缓存",
-            key="sidebar_refresh_data",
-            icon=":material/refresh:",
-            width="stretch",
-        ):
-            with st.spinner("全部页面数据同步中，请稍后......"):
-                try:
-                    result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
-                    refresh_request_form_cache_from_page_data()
-                    refresh_contact_departments_from_feishu()
-                except Exception as exc:
-                    st.error("数据库同步失败。")
-                    st.exception(exc)
-                else:
-                    st.success(f"全部页面数据已同步，共 {result['row_count']} 条记录。")
-        github_message = st.session_state.pop("github_cache_refresh_message", "")
-        if github_message:
-            st.success(github_message)
-        with st.container(key="sidebar_cache_publish"):
-            render_github_cache_publish()
-        st.markdown(
-            f"""
-            <div class="pudu-sidebar-status">
-                <span class="pudu-status-dot"></span>
-                {escape(ui_text("飞书多维表格连接已配置"))}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        with st.container(key="sidebar_data_system_group"):
+            st.markdown(
+                f'<div class="pudu-sidebar-label">{escape(ui_text("数据与系统"))}</div>',
+                unsafe_allow_html=True,
+            )
+            if st.button(
+                "更新全部数据缓存",
+                key="sidebar_refresh_data",
+                icon=":material/refresh:",
+                width="stretch",
+            ):
+                with st.spinner("全部页面数据同步中，请稍后......"):
+                    try:
+                        result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
+                        refresh_request_form_cache_from_page_data()
+                        refresh_contact_departments_from_feishu()
+                    except Exception as exc:
+                        st.error("数据库同步失败。")
+                        st.exception(exc)
+                    else:
+                        st.success(f"全部页面数据已同步，共 {result['row_count']} 条记录。")
+            github_message = st.session_state.pop("github_cache_refresh_message", "")
+            if github_message:
+                st.success(github_message)
+            with st.container(key="sidebar_cache_publish"):
+                render_github_cache_publish()
+            st.markdown(
+                f"""
+                <div class="pudu-sidebar-status">
+                    <span class="pudu-status-dot"></span>
+                    {escape(ui_text("飞书多维表格连接已配置"))}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            render_storage_diagnostics(st)
         st.divider()
 
 
@@ -8417,7 +8436,6 @@ def main() -> None:
     inject_global_styles()
     stop_on_invalid_feishu_config()
     render_sidebar_link()
-    render_storage_diagnostics()
 
     view = str(st.query_params.get("view", ""))
     previous_view = str(st.session_state.get(LAST_APP_VIEW_KEY, ""))
