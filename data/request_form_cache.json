@@ -1,33 +1,33 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-20 18:47:21",
+  "generated_at": "2026-07-21 11:16:44",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
     "工业产品线手册IR（Industrial Product Line Brochure）",
     "清洁产品线手册CR（Cleaning Product Line Brochure）",
+    "配送线产品手册DR(Delivery Robot Product Brochure)",
+    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
-    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "配送线产品手册DR(Delivery Robot Product Brochure)",
-    "具身线产品手册ER(Embodied AI Robot Product Brochure)"
+    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)"
   ],
   "no_model_products": [
     "品牌手册(Product Brochure (All\nBanner)）",
     "工业产品线手册IR（Industrial Product Line Brochure）",
     "清洁产品线手册CR（Cleaning Product Line Brochure）",
+    "配送线产品手册DR(Delivery Robot Product Brochure)",
+    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
     "展会服装（Clothes）",
-    "配送线产品手册DR(Delivery Robot Product Brochure)",
-    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "展会服装"
   ],
   "no_language_products": [
@@ -43,6 +43,8 @@
     "品牌手册(Product Brochure (All\nBanner)）",
     "工业产品线手册IR（Industrial Product Line Brochure）",
     "清洁产品线手册CR（Cleaning Product Line Brochure）",
+    "配送线产品手册DR(Delivery Robot Product Brochure)",
+    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
@@ -50,9 +52,7 @@
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "展会服装（Clothes）",
-    "配送线产品手册DR(Delivery Robot Product Brochure)",
-    "具身线产品手册ER(Embodied AI Robot Product Brochure)"
+    "展会服装（Clothes）"
   ],
   "models": [
     "BellaBot",

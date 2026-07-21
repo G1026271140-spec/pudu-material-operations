@@ -398,6 +398,7 @@ EN_DISPLAY_TEXT = {
     "仅看非零库存": "Show Non-zero Inventory Only",
     "显示全部库存组合": "Show All Inventory Combinations",
     "请选择飞书部门": "Select a Feishu department",
+    "输入姓名搜索申请人": "Search applicant by name",
     "全部申请人": "All applicants",
     "可选": "Optional",
     "可选，例如：0.06": "Optional, e.g. 0.06",

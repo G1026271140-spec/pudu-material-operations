@@ -29,6 +29,54 @@ class ContactDirectoryTests(unittest.TestCase):
         }
         self.assertEqual(paths["od-child"], "营销中心 / 海外销售部")
 
+    def test_directory_cache_merges_users_and_keeps_department_labels(self) -> None:
+        cache = app.contact_department_cache_from_rows(
+            [
+                {
+                    "open_department_id": "od-sales",
+                    "name": "销售部",
+                    "parent_department_id": "0",
+                },
+                {
+                    "open_department_id": "od-marketing",
+                    "name": "市场部",
+                    "parent_department_id": "0",
+                },
+            ],
+            source="test",
+            department_users={
+                "od-sales": [{"open_id": "ou-example", "name": "张三"}],
+                "od-marketing": [{"open_id": "ou-example", "name": "张三"}],
+            },
+        )
+
+        self.assertEqual(cache["user_count"], 1)
+        self.assertEqual(
+            cache["users"][0]["department_ids"],
+            ["od-marketing", "od-sales"],
+        )
+        self.assertEqual(
+            cache["users"][0]["department_paths"],
+            ["市场部", "销售部"],
+        )
+
+    def test_selecting_applicant_autofills_department(self) -> None:
+        session_state = {
+            "request_requester_open_id": "ou-example",
+            "request_department_id": None,
+            app.REQUEST_CONTACT_USER_LOOKUP_KEY: {
+                "ou-example": {
+                    "department_ids": ["od-sales"],
+                }
+            },
+        }
+
+        with patch.object(app.st, "session_state", session_state):
+            app.sync_request_department_from_selected_applicant()
+
+        self.assertEqual(session_state["request_department_id"], "od-sales")
+        self.assertTrue(session_state["request_form_cache_locked"])
+
     def test_contact_client_keeps_query_params_across_pages(self) -> None:
         client = FeishuBitableClient(FeishuBitableConfig("app", "secret", "token"))
         client._request = Mock(

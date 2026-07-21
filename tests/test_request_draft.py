@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -30,6 +31,39 @@ def valid_draft() -> dict[str, object]:
 class RequestDraftTests(unittest.TestCase):
     def test_freight_payer_options_include_pudu(self) -> None:
         self.assertIn("普渡付款(PUDU)", app.FREIGHT_PAYER_OPTIONS)
+        self.assertEqual(app.DEFAULT_FREIGHT_PAYER, "普渡付款(PUDU)")
+
+    def test_new_request_defaults_to_pudu_freight_payer(self) -> None:
+        session_state: dict[str, object] = {}
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(app, "get_secret_value", side_effect=lambda _name, default="": default),
+        ):
+            app.initialize_request_form_state()
+
+        self.assertEqual(session_state["request_freight_payer"], "普渡付款(PUDU)")
+
+    def test_product_line_manuals_are_displayed_together(self) -> None:
+        products = app.sort_request_products(
+            [
+                "产品单页(Product Flyer)",
+                "工业产品线手册IR(Industrial Product Line Brochure)",
+                "清洁产品线手册CR(Cleaning Product Line Brochure)",
+                "产品易拉宝(Product Roll-Up)",
+                "配送线产品手册DR(Delivery Robot Product Brochure)",
+                "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+            ]
+        )
+
+        self.assertEqual(
+            products[1:5],
+            [
+                "工业产品线手册IR(Industrial Product Line Brochure)",
+                "清洁产品线手册CR(Cleaning Product Line Brochure)",
+                "配送线产品手册DR(Delivery Robot Product Brochure)",
+                "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+            ],
+        )
 
     def test_valid_draft_passes_without_errors(self) -> None:
         self.assertEqual(app.validate_request_draft(valid_draft()), [])

@@ -26,6 +26,7 @@ def main() -> int:
         "contact_departments_cache_written",
         app.CONTACT_DEPARTMENT_STATIC_CACHE_PATH,
         f"rows={cache.get('row_count')}",
+        f"users={cache.get('user_count')}",
         f"generated_at={cache.get('generated_at')}",
     )
     return 0

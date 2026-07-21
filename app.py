@@ -6,6 +6,7 @@ import re
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from html import escape
 from io import BytesIO
@@ -75,6 +76,13 @@ FREIGHT_PAYER_OPTIONS = [
     "普渡付款(PUDU)",
     "其他",
 ]
+DEFAULT_FREIGHT_PAYER = "普渡付款(PUDU)"
+REQUEST_MANUAL_PRODUCT_ORDER = (
+    "工业产品线手册IR",
+    "清洁产品线手册CR",
+    "配送线产品手册DR",
+    "具身线产品手册ER",
+)
 MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
 MAX_ATTACHMENTS_PER_REQUEST = 100
 GITHUB_REPOSITORY = "G1026271140-spec/pudu-material-inventory"
@@ -132,6 +140,7 @@ MATERIAL_DASHBOARD_MODULES = (
 MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存")
 DEFAULT_LOW_STOCK_THRESHOLD = 100
 UI_LANGUAGE_SESSION_KEY = "ui_language"
+REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
@@ -1431,6 +1440,26 @@ def sort_models(models: list[str]) -> list[str]:
     return sorted(unique_models, key=model_key)
 
 
+def sort_request_products(products: list[str]) -> list[str]:
+    """Keep the four product-line manuals together without reordering other categories."""
+    unique_products = unique_preserve(products)
+    grouped_products: list[str] = []
+    grouped_indices: list[int] = []
+    for prefix in REQUEST_MANUAL_PRODUCT_ORDER:
+        for index, product in enumerate(unique_products):
+            if product.startswith(prefix):
+                grouped_products.append(product)
+                grouped_indices.append(index)
+                break
+    if not grouped_products:
+        return unique_products
+
+    grouped_set = set(grouped_products)
+    remaining = [product for product in unique_products if product not in grouped_set]
+    insert_at = min(grouped_indices)
+    return remaining[:insert_at] + grouped_products + remaining[insert_at:]
+
+
 def build_inventory_selection_context() -> dict[str, object]:
     options = load_options()
     inventory_df = load_inventory()
@@ -1563,7 +1592,7 @@ def request_form_cache_from_inventory(
         "schema_version": 1,
         "source": source,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "products": unique_preserve(list(options.get("products") or [])),
+        "products": sort_request_products(list(options.get("products") or [])),
         "no_model_products": unique_preserve(list(options.get("no_model_products") or [])),
         "no_language_products": unique_preserve(list(options.get("no_language_products") or [])),
         "configured_language_products": unique_preserve(
@@ -1657,7 +1686,10 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
             product_languages.setdefault(product_key, []).append(language)
             product_model_languages.setdefault((product_key, model_key), []).append(language)
 
-    products = unique_preserve(list(cache_data.get("products") or []) + [str(item.get("product") or "") for item in rows if isinstance(item, dict)])
+    products = sort_request_products(
+        list(cache_data.get("products") or [])
+        + [str(item.get("product") or "") for item in rows if isinstance(item, dict)]
+    )
     models = sort_models(
         list(cache_data.get("models") or [])
         + [str(item.get("model") or "") for item in rows if isinstance(item, dict)]
@@ -1699,6 +1731,25 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
 
 def mark_request_form_dirty() -> None:
     st.session_state["request_form_cache_locked"] = True
+
+
+def sync_request_department_from_selected_applicant() -> None:
+    mark_request_form_dirty()
+    open_id = str(st.session_state.get("request_requester_open_id") or "")
+    user_lookup = st.session_state.get(REQUEST_CONTACT_USER_LOOKUP_KEY)
+    if not open_id or not isinstance(user_lookup, dict):
+        return
+    user = user_lookup.get(open_id)
+    if not isinstance(user, dict):
+        return
+    department_ids = [
+        str(value)
+        for value in list(user.get("department_ids") or [])
+        if str(value).strip()
+    ]
+    current_department_id = str(st.session_state.get("request_department_id") or "")
+    if department_ids and current_department_id not in department_ids:
+        st.session_state["request_department_id"] = department_ids[0]
 
 
 def get_request_form_selection_context() -> dict[str, object]:
@@ -2034,6 +2085,7 @@ def contact_department_cache_from_rows(
     rows: list[dict[str, object]],
     *,
     source: str,
+    department_users: dict[str, list[dict[str, object]]] | None = None,
 ) -> dict[str, object]:
     departments_by_id: dict[str, dict[str, str]] = {}
     for row in rows:
@@ -2070,16 +2122,61 @@ def contact_department_cache_from_rows(
             "department_id": department_id,
             "name": department["name"],
             "path": department_path(department_id),
+            "parent_department_id": department["parent_department_id"],
         }
         for department_id, department in departments_by_id.items()
     ]
     departments.sort(key=lambda item: str(item["path"]).casefold())
+    department_path_by_id = {
+        str(item["department_id"]): str(item["path"])
+        for item in departments
+    }
+    users_by_open_id: dict[str, dict[str, object]] = {}
+    for department in departments:
+        department_id = str(department["department_id"])
+        user_rows = dict(department_users or {}).get(department_id, [])
+        department_path_value = department_path_by_id.get(department_id, "")
+        for row in user_rows:
+            open_id = str(row.get("open_id") or "").strip()
+            name = str(row.get("name") or "").strip()
+            if not open_id or not name:
+                continue
+            user = users_by_open_id.setdefault(
+                open_id,
+                {
+                    "open_id": open_id,
+                    "name": name,
+                    "department_ids": [],
+                    "department_paths": [],
+                },
+            )
+            department_ids = user["department_ids"]
+            department_paths = user["department_paths"]
+            if isinstance(department_ids, list) and department_id not in department_ids:
+                department_ids.append(department_id)
+            if (
+                isinstance(department_paths, list)
+                and department_path_value
+                and department_path_value not in department_paths
+            ):
+                department_paths.append(department_path_value)
+
+    users = sorted(
+        users_by_open_id.values(),
+        key=lambda item: (
+            str(item.get("name") or "").casefold(),
+            " / ".join(str(value) for value in item.get("department_paths", [])),
+            str(item.get("open_id") or ""),
+        ),
+    )
     return {
         "schema_version": 1,
         "source": source,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "departments": departments,
         "row_count": len(departments),
+        "users": users,
+        "user_count": len(users),
     }
 
 
@@ -2087,9 +2184,33 @@ def build_live_contact_department_cache() -> dict[str, object]:
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法读取通讯录部门。")
+    department_rows = client.list_contact_departments()
+    department_ids = unique_preserve(
+        [
+            str(row.get("open_department_id") or row.get("department_id") or "").strip()
+            for row in department_rows
+        ]
+    )
+    department_ids = [department_id for department_id in department_ids if department_id]
+    department_users: dict[str, list[dict[str, object]]] = {}
+    if department_ids:
+        client.tenant_access_token()
+        max_workers = min(8, len(department_ids))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_department = {
+                executor.submit(client.list_department_users, department_id): department_id
+                for department_id in department_ids
+            }
+            for future in as_completed(future_to_department):
+                department_id = future_to_department[future]
+                try:
+                    department_users[department_id] = list(future.result())
+                except FeishuBitableError:
+                    department_users[department_id] = []
     return contact_department_cache_from_rows(
-        client.list_contact_departments(),
+        department_rows,
         source="live_feishu",
+        department_users=department_users,
     )
 
 
@@ -2102,17 +2223,24 @@ def load_static_contact_department_cache() -> dict[str, object]:
             "generated_at": "",
             "departments": [],
             "row_count": 0,
+            "users": [],
+            "user_count": 0,
         }
     return json.loads(CONTACT_DEPARTMENT_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
 
 
-def get_contact_departments() -> list[dict[str, str]]:
+def get_contact_directory_cache() -> dict[str, object]:
     cached = st.session_state.get("contact_department_cache_data")
     if not isinstance(cached, dict):
         cached = load_static_contact_department_cache()
         if not list(cached.get("departments") or []):
             cached = build_live_contact_department_cache()
         st.session_state["contact_department_cache_data"] = cached
+    return cached
+
+
+def get_contact_departments() -> list[dict[str, str]]:
+    cached = get_contact_directory_cache()
     return [
         {
             "department_id": str(item.get("department_id") or ""),
@@ -2121,6 +2249,28 @@ def get_contact_departments() -> list[dict[str, str]]:
         }
         for item in list(cached.get("departments") or [])
         if isinstance(item, dict) and str(item.get("department_id") or "").strip()
+    ]
+
+
+def get_contact_users() -> list[dict[str, object]]:
+    cached = get_contact_directory_cache()
+    return [
+        {
+            "open_id": str(item.get("open_id") or ""),
+            "name": str(item.get("name") or ""),
+            "department_ids": [
+                str(value)
+                for value in list(item.get("department_ids") or [])
+                if str(value).strip()
+            ],
+            "department_paths": [
+                str(value)
+                for value in list(item.get("department_paths") or [])
+                if str(value).strip()
+            ],
+        }
+        for item in list(cached.get("users") or [])
+        if isinstance(item, dict) and str(item.get("open_id") or "").strip()
     ]
 
 
@@ -2587,7 +2737,9 @@ def feishu_options_from_rows(
         else []
     )
     inventory_product_set = set(inventory_products)
-    products = [product for product in category_products if product in inventory_product_set]
+    products = sort_request_products(
+        [product for product in category_products if product in inventory_product_set]
+    )
     inventory_no_model_products = (
         unique_preserve(list(inventory_df.loc[inventory_df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str)))
         if not inventory_df.empty
@@ -2612,7 +2764,7 @@ def feishu_options_from_rows(
                 no_language_products.append(str(product))
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "products": unique_preserve(products),
+        "products": sort_request_products(products),
         "no_model_products": unique_preserve(no_model_products + inventory_no_model_products),
         "no_language_products": unique_preserve(no_language_products),
         "configured_language_products": unique_preserve(configured_language_products),
@@ -4960,7 +5112,7 @@ def initialize_request_form_state() -> None:
         "request_customer_name": "",
         "request_country": "",
         "request_recipient_info": "",
-        "request_freight_payer": FREIGHT_PAYER_OPTIONS[0],
+        "request_freight_payer": DEFAULT_FREIGHT_PAYER,
         "request_material_usage": "",
         "request_material_lines": [],
         "request_saved_attachments": [],
@@ -4983,6 +5135,7 @@ def render_request_contact_fields(
     required_field_label(requester_col, "申请人")
     try:
         departments = get_contact_departments()
+        directory_users = get_contact_users()
     except Exception as exc:
         st.warning(f"飞书通讯录暂时不可用，已切换为手动填写：{exc}")
         department = department_col.text_input(
@@ -5029,12 +5182,19 @@ def render_request_contact_fields(
     )
     st.session_state["request_department"] = department
 
-    users: list[dict[str, str]] = []
+    users: list[dict[str, object]] = list(directory_users)
     user_error = ""
-    if department_id:
+    if not users and department_id:
         try:
             with st.spinner("正在读取部门成员，请稍后......"):
-                users = load_contact_department_users(str(department_id))
+                users = [
+                    {
+                        **item,
+                        "department_ids": [str(department_id)],
+                        "department_paths": [department],
+                    }
+                    for item in load_contact_department_users(str(department_id))
+                ]
         except Exception as exc:
             user_error = str(exc)
     user_by_id = {
@@ -5050,9 +5210,14 @@ def render_request_contact_fields(
     def user_label(open_id: object) -> str:
         item = user_by_id.get(str(open_id), {})
         name = str(item.get("name") or open_id)
-        return f"{name} · {str(open_id)[-6:]}" if name_counts.get(name, 0) > 1 else name
+        department_paths = unique_preserve(
+            [str(value) for value in list(item.get("department_paths") or [])]
+        )
+        label = f"{name} · {'、'.join(department_paths)}" if department_paths else name
+        return f"{label} · {str(open_id)[-6:]}" if name_counts.get(name, 0) > 1 else label
 
     user_options = list(user_by_id)
+    st.session_state[REQUEST_CONTACT_USER_LOOKUP_KEY] = user_by_id
     current_open_id = st.session_state.get("request_requester_open_id")
     if current_open_id not in user_options:
         st.session_state["request_requester_open_id"] = None
@@ -5062,10 +5227,12 @@ def render_request_contact_fields(
         index=None,
         key="request_requester_open_id",
         format_func=user_label,
-        placeholder="请先选择部门" if not department_id else "请选择飞书员工",
+        placeholder="输入姓名搜索申请人" if directory_users else (
+            "请先选择部门" if not department_id else "请选择飞书员工"
+        ),
         disabled=not user_options,
         label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
+        on_change=sync_request_department_from_selected_applicant,
     )
     requester = (
         str(user_by_id.get(str(requester_open_id), {}).get("name") or "")
@@ -5813,7 +5980,7 @@ def render_change_form(show_title: bool = True) -> None:
         )
         required_field_label(middle_cols[1], "运费的承担者")
         if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
-            st.session_state["request_freight_payer"] = FREIGHT_PAYER_OPTIONS[0]
+            st.session_state["request_freight_payer"] = DEFAULT_FREIGHT_PAYER
         freight_payer = middle_cols[1].selectbox(
             "运费的承担者",
             FREIGHT_PAYER_OPTIONS,
