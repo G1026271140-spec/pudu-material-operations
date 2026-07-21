@@ -201,12 +201,17 @@ EN_DISPLAY_TEXT = {
     "备注": "Remarks",
     "序号": "No.",
     "申请数量": "Requested Quantity",
+    "库存情况": "Inventory Status",
     "实际发放数量": "Actual Issued Quantity",
     "申请物料品类": "Requested Category",
     "申请产品型号": "Requested Model",
     "申请语种": "Requested Language",
     "实际发放品类": "Issued Category",
     "实际发放信息": "Actual Issuance",
+    "实际发放编辑": "Actual Issuance Editing",
+    "请根据申请明细填写实际发放物料与数量": (
+        "Enter the actual issued materials and quantities based on the request details"
+    ),
     "实际发放型号": "Issued Model",
     "实际发放语种": "Issued Language",
     "实际发放物料编码": "Issued Material Code",

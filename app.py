@@ -675,25 +675,19 @@ def inject_global_styles() -> None:
             background: #FEE2E2;
             color: #991B1B;
         }
-        .pudu-approval-field-label,
         .pudu-approval-control-label {
             margin-bottom: 0.2rem;
             color: var(--pudu-muted);
             font-size: 0.72rem;
             font-weight: 620;
         }
-        .pudu-approval-field-value {
-            min-height: 1.45rem;
-            color: var(--pudu-ink);
-            font-size: 0.84rem;
+        .pudu-approval-line-reference {
+            min-height: 2.1rem;
+            padding: 0.15rem 0 0.55rem;
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
             line-height: 1.45;
             overflow-wrap: anywhere;
-        }
-        .pudu-approval-actual-heading {
-            margin-top: 0.15rem;
-            color: var(--pudu-teal);
-            font-size: 0.76rem;
-            font-weight: 700;
         }
         [data-testid="stTabs"] [data-baseweb="tab-list"] {
             gap: 0.25rem;
@@ -7778,17 +7772,6 @@ def approval_shortage_row_style(row: pd.Series) -> list[str]:
     return [""] * len(row)
 
 
-def render_approval_readonly_field(container: object, label: str, value: object) -> None:
-    display_value = str(value or "-")
-    container.markdown(
-        f"""
-        <div class="pudu-approval-field-label">{escape(ui_text(label))}</div>
-        <div class="pudu-approval-field-value">{escape(display_value)}</div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
 def render_approval_control_label(container: object, label: str) -> None:
     container.markdown(
         f'<div class="pudu-approval-control-label">{escape(ui_text(label))}</div>',
@@ -7885,6 +7868,30 @@ def render_pending_approval_requests(
         ]
     )
 
+    preview_df = pd.DataFrame(
+        [
+            {
+                "序号": index,
+                "物料品类": row["申请物料品类"],
+                "产品型号": row["申请产品型号"],
+                "语种": row["申请语种"],
+                "申请数量": int(row["申请数量"]),
+                "库存情况": f"{ui_text(str(row['库存状态']))} / {int(row['当前库存'])}",
+                "备注": row.get("备注") or "-",
+            }
+            for index, row in enumerate(table_df.to_dict("records"), start=1)
+        ]
+    )
+    with st.container(border=True):
+        render_section_header("02", "申请物料清单", f"共 {len(preview_df)} 种物料")
+        st.dataframe(
+            preview_df,
+            width="stretch",
+            hide_index=True,
+            height=min(820, max(150, 38 * (len(preview_df) + 1) + 18)),
+            row_height=34,
+        )
+
     shortage_rows = table_df[table_df["库存状态"] == "库存不足"]
     if not shortage_rows.empty:
         shortage_text = "；".join(
@@ -7914,6 +7921,7 @@ def render_pending_approval_requests(
         )
     )
 
+    render_section_header("03", "实际发放编辑", "请根据申请明细填写实际发放物料与数量")
     edited_rows: list[dict[str, object]] = []
     with st.form(f"approval_issue_form_{selected_request['record_id']}"):
         for row_index, row in enumerate(table_df.to_dict("records"), start=1):
@@ -7933,21 +7941,11 @@ def render_pending_approval_requests(
                         <span class="pudu-approval-line-title">{escape(ui_text("明细编号"))} {row_index:02d}</span>
                         <span class="{badge_class}">{escape(ui_text(str(row["库存状态"])))}</span>
                     </div>
+                    <div class="pudu-approval-line-reference">
+                        {escape(str(row["申请物料品类"]))} / {escape(str(row["申请产品型号"]))} /
+                        {escape(str(row["申请语种"]))} · {escape(ui_text("申请数量"))} {int(row["申请数量"])}
+                    </div>
                     """,
-                    unsafe_allow_html=True,
-                )
-
-                request_cols = st.columns([2.8, 1.25, 1.35, 0.7, 0.75], gap="small")
-                render_approval_readonly_field(request_cols[0], "申请物料品类", row["申请物料品类"])
-                render_approval_readonly_field(request_cols[1], "申请产品型号", row["申请产品型号"])
-                render_approval_readonly_field(request_cols[2], "申请语种", row["申请语种"])
-                render_approval_readonly_field(request_cols[3], "申请数量", int(row["申请数量"]))
-                render_approval_readonly_field(request_cols[4], "当前库存", int(row["当前库存"]))
-                if str(row.get("备注") or "").strip():
-                    st.caption(f"备注：{row['备注']}")
-
-                st.markdown(
-                    f'<div class="pudu-approval-actual-heading">{escape(ui_text("实际发放信息"))}</div>',
                     unsafe_allow_html=True,
                 )
                 actual_cols = st.columns([2.8, 1.25, 1.35, 0.7], gap="small")
