@@ -58,6 +58,8 @@ UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
+INVENTORY_ZERO_SINCE_FIELD = "库存归零时间"
+INVENTORY_AUTO_DISABLE_DAYS = 14
 REQUEST_NO_PREFIX = "REQ"
 RESTOCK_NO_PREFIX = "RST"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
@@ -2699,6 +2701,160 @@ def is_blank_feishu_transaction(fields: dict) -> bool:
     return not product and model == NO_MODEL_TEXT and not language and quantity == 0 and not note
 
 
+def inventory_maintenance_datetime(value: object) -> datetime | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    if isinstance(value, dict):
+        value = value.get("text") or value.get("value") or ""
+    if value in (None, ""):
+        return None
+    try:
+        numeric_value = float(value)
+    except (TypeError, ValueError):
+        numeric_value = 0.0
+    if numeric_value:
+        try:
+            divisor = 1000 if abs(numeric_value) >= 10_000_000_000 else 1
+            return datetime.fromtimestamp(numeric_value / divisor).replace(microsecond=0)
+        except (OSError, OverflowError, ValueError):
+            return None
+    parsed = parse_datetime(value)
+    if parsed is None:
+        return None
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone().replace(tzinfo=None)
+    return parsed.replace(microsecond=0)
+
+
+def inventory_maintenance_datetime_text(value: datetime) -> str:
+    return value.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def inventory_material_key(fields: dict) -> tuple[str, str, str]:
+    return (
+        feishu_text(fields, "物料品类").strip(),
+        (feishu_text(fields, "产品型号").strip() or NO_MODEL_TEXT),
+        (feishu_text(fields, "语种").strip() or NO_LANGUAGE_TEXT),
+    )
+
+
+def latest_inventory_change_times(
+    material_rows: list[dict],
+    ledger_rows: list[dict],
+) -> dict[str, datetime]:
+    material_ids_by_key: dict[tuple[str, str, str], list[str]] = {}
+    for row in material_rows:
+        record_id = feishu_record_id(row)
+        if not record_id:
+            continue
+        material_ids_by_key.setdefault(
+            inventory_material_key(feishu_fields(row)), []
+        ).append(record_id)
+
+    latest_by_material_id: dict[str, datetime] = {}
+    for row in ledger_rows:
+        fields = feishu_fields(row)
+        if (
+            is_blank_feishu_transaction(fields)
+            or feishu_transaction_status(fields) != "有效"
+            or feishu_transaction_delta(fields) == 0
+        ):
+            continue
+        occurred_at = inventory_maintenance_datetime(fields.get("发生时间"))
+        if occurred_at is None:
+            continue
+        material_ids = feishu_link_ids_any(fields, ["物料编码", "物料"])
+        if not material_ids:
+            fallback_ids = material_ids_by_key.get(inventory_material_key(fields), [])
+            material_ids = fallback_ids if len(fallback_ids) == 1 else []
+        for material_id in material_ids:
+            previous = latest_by_material_id.get(material_id)
+            if previous is None or occurred_at > previous:
+                latest_by_material_id[material_id] = occurred_at
+    return latest_by_material_id
+
+
+def inventory_status_row_summary(
+    row: dict,
+    *,
+    zero_since: datetime | None = None,
+) -> dict[str, object]:
+    fields = feishu_fields(row)
+    return {
+        "record_id": feishu_record_id(row),
+        "material_code": feishu_text(fields, "物料编码") or "-",
+        "product": feishu_text(fields, "物料品类") or "-",
+        "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+        "language": feishu_text(fields, "语种") or NO_LANGUAGE_TEXT,
+        "quantity": feishu_int(fields, "当前库存"),
+        "zero_since": inventory_maintenance_datetime_text(zero_since) if zero_since else "",
+    }
+
+
+def plan_inventory_status_maintenance(
+    material_rows: list[dict],
+    ledger_rows: list[dict],
+    *,
+    now: datetime | None = None,
+    inactivity_days: int = INVENTORY_AUTO_DISABLE_DAYS,
+) -> dict[str, object]:
+    checked_at = (now or datetime.now()).replace(microsecond=0)
+    cutoff = checked_at - timedelta(days=max(1, int(inactivity_days)))
+    latest_changes = latest_inventory_change_times(material_rows, ledger_rows)
+    updates: list[dict[str, object]] = []
+    enabled_rows: list[dict[str, object]] = []
+    disabled_rows: list[dict[str, object]] = []
+    initialized_zero_rows = 0
+
+    for row in material_rows:
+        record_id = feishu_record_id(row)
+        if not record_id:
+            continue
+        fields = feishu_fields(row)
+        quantity = feishu_int(fields, "当前库存")
+        status = normalize_enabled_status(feishu_text(fields, "启用状态"))
+        zero_since_raw = feishu_text(fields, INVENTORY_ZERO_SINCE_FIELD).strip()
+        zero_since = inventory_maintenance_datetime(zero_since_raw)
+        latest_change = latest_changes.get(record_id)
+        update_fields: dict[str, object] = {}
+
+        if quantity != 0:
+            if status != STATUS_ACTIVE:
+                update_fields["启用状态"] = STATUS_ACTIVE
+                enabled_rows.append(inventory_status_row_summary(row))
+            if zero_since_raw:
+                update_fields[INVENTORY_ZERO_SINCE_FIELD] = ""
+        else:
+            anchor = zero_since
+            if latest_change is not None and (anchor is None or latest_change > anchor):
+                anchor = latest_change
+                update_fields[INVENTORY_ZERO_SINCE_FIELD] = inventory_maintenance_datetime_text(anchor)
+            elif anchor is None:
+                anchor = checked_at
+                update_fields[INVENTORY_ZERO_SINCE_FIELD] = inventory_maintenance_datetime_text(anchor)
+                initialized_zero_rows += 1
+
+            if status == STATUS_ACTIVE and anchor < cutoff:
+                update_fields["启用状态"] = STATUS_INACTIVE
+                disabled_rows.append(inventory_status_row_summary(row, zero_since=anchor))
+
+        if update_fields:
+            updates.append({"record_id": record_id, "fields": update_fields})
+
+    return {
+        "checked_at": inventory_maintenance_datetime_text(checked_at),
+        "cutoff": inventory_maintenance_datetime_text(cutoff),
+        "updates": updates,
+        "enabled_rows": enabled_rows,
+        "disabled_rows": disabled_rows,
+        "initialized_zero_rows": initialized_zero_rows,
+        "material_count": len(material_rows),
+        "ledger_count": len(ledger_rows),
+    }
+
+
 def feishu_material_rows() -> list[dict]:
     return feishu_rows("物料主数据")
 
@@ -3752,6 +3908,159 @@ def notify_enabled_admins_of_restock(
     for open_id in recipients:
         client.send_interactive_message(open_id, card)
     return len(recipients)
+
+
+def ensure_inventory_zero_since_field() -> bool:
+    refresh_feishu_schema_cache()
+    if feishu_has_field(MATERIAL_TABLE_NAME, INVENTORY_ZERO_SINCE_FIELD):
+        return False
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建库存归零时间字段。")
+    client.create_field(
+        feishu_table_id(MATERIAL_TABLE_NAME),
+        INVENTORY_ZERO_SINCE_FIELD,
+        1,
+    )
+    refresh_feishu_schema_cache()
+    if not feishu_has_field(MATERIAL_TABLE_NAME, INVENTORY_ZERO_SINCE_FIELD):
+        raise RuntimeError("物料主数据的库存归零时间字段创建失败。")
+    return True
+
+
+def inventory_auto_disable_notification_card(
+    rows: list[dict[str, object]],
+    checked_at: str,
+) -> dict[str, object]:
+    visible_rows = rows[:40]
+    elements: list[dict[str, object]] = [
+        {
+            "tag": "markdown",
+            "content": (
+                f"**自动停用 {len(rows)} 条库存行**\n"
+                f"检查时间：{_feishu_card_plain_text(checked_at, max_length=100)}\n"
+                f"规则：当前库存为 0，且超过 {INVENTORY_AUTO_DISABLE_DAYS} 天没有有效库存数量变化。"
+            ),
+        },
+        {"tag": "hr"},
+        {"tag": "markdown", "content": "**停用明细**"},
+    ]
+    for index, row in enumerate(visible_rows, start=1):
+        detail = (
+            f"{index:02d}. {_feishu_card_plain_text(row.get('material_code'), max_length=100)} | "
+            f"{_feishu_card_plain_text(row.get('product'), max_length=250)} / "
+            f"{_feishu_card_plain_text(row.get('model') or NO_MODEL_TEXT, max_length=160)} / "
+            f"{_feishu_card_plain_text(row.get('language') or NO_LANGUAGE_TEXT, max_length=160)}\n"
+            f"库存：0；归零计时：{_feishu_card_plain_text(row.get('zero_since'), max_length=100)}"
+        )
+        elements.append(
+            {
+                "tag": "div",
+                "text": {"tag": "plain_text", "content": detail},
+            }
+        )
+    if len(rows) > len(visible_rows):
+        elements.append(
+            {
+                "tag": "markdown",
+                "content": f"另有 **{len(rows) - len(visible_rows)}** 条，请在物料主数据中查看。",
+            }
+        )
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "red",
+            "title": {"tag": "plain_text", "content": "零库存行已自动停用"},
+        },
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_inventory_auto_disable(
+    rows: list[dict[str, object]],
+    checked_at: str,
+) -> int:
+    if not rows:
+        return 0
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送库存停用通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    card = inventory_auto_disable_notification_card(rows, checked_at)
+    for open_id in recipients:
+        client.send_interactive_message(open_id, card)
+    return len(recipients)
+
+
+def maintain_inventory_status(
+    *,
+    now: datetime | None = None,
+    inactivity_days: int = INVENTORY_AUTO_DISABLE_DAYS,
+) -> dict[str, object]:
+    field_created = ensure_inventory_zero_since_field()
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    if not material_rows:
+        raise RuntimeError("物料主数据没有返回任何记录，已停止库存状态维护。")
+    ledger_rows = fresh_feishu_rows(LEDGER_TABLE_NAME)
+    plan = plan_inventory_status_maintenance(
+        material_rows,
+        ledger_rows,
+        now=now,
+        inactivity_days=inactivity_days,
+    )
+    updates = list(plan["updates"])
+    updated_count = (
+        feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, updates)
+        if updates
+        else 0
+    )
+    if updated_count != len(updates):
+        raise RuntimeError(
+            f"库存状态维护只更新了 {updated_count}/{len(updates)} 条记录，已停止后续操作。"
+        )
+
+    disabled_rows = list(plan["disabled_rows"])
+    notification_count = 0
+    if disabled_rows:
+        try:
+            notification_count = notify_enabled_admins_of_inventory_auto_disable(
+                disabled_rows,
+                str(plan["checked_at"]),
+            )
+        except Exception as exc:
+            rollback_records = [
+                {
+                    "record_id": str(row.get("record_id") or ""),
+                    "fields": {"启用状态": STATUS_ACTIVE},
+                }
+                for row in disabled_rows
+                if str(row.get("record_id") or "")
+            ]
+            rolled_back = feishu_batch_update_record_fields(
+                MATERIAL_TABLE_NAME,
+                rollback_records,
+            )
+            st.cache_data.clear()
+            raise RuntimeError(
+                f"库存行停用通知发送失败，已恢复 {rolled_back}/{len(rollback_records)} 条记录：{exc}"
+            ) from exc
+
+    st.cache_data.clear()
+    return {
+        "checked_at": plan["checked_at"],
+        "field_created": field_created,
+        "material_count": plan["material_count"],
+        "ledger_count": plan["ledger_count"],
+        "updated_count": updated_count,
+        "enabled_count": len(plan["enabled_rows"]),
+        "disabled_count": len(disabled_rows),
+        "initialized_zero_count": plan["initialized_zero_rows"],
+        "notification_count": notification_count,
+        "enabled_rows": plan["enabled_rows"],
+        "disabled_rows": disabled_rows,
+    }
 
 
 def sales_request_received_notification_text(
@@ -5586,6 +5895,7 @@ def render_sidebar_link() -> None:
             ):
                 with st.spinner("全部页面数据同步中，请稍后......"):
                     try:
+                        maintenance = maintain_inventory_status()
                         result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
                         refresh_request_form_cache_from_page_data()
                         refresh_contact_departments_from_feishu()
@@ -5593,7 +5903,11 @@ def render_sidebar_link() -> None:
                         st.error("数据库同步失败。")
                         st.exception(exc)
                     else:
-                        st.success(f"全部页面数据已同步，共 {result['row_count']} 条记录。")
+                        st.success(
+                            f"全部页面数据已同步，共 {result['row_count']} 条记录；"
+                            f"自动启用 {maintenance['enabled_count']} 条，"
+                            f"自动停用 {maintenance['disabled_count']} 条。"
+                        )
             github_message = st.session_state.pop("github_cache_refresh_message", "")
             if github_message:
                 st.success(github_message)

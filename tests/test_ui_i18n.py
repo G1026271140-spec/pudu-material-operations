@@ -87,6 +87,18 @@ class UiInternationalizationTests(unittest.TestCase):
             "Found 8 alerts among active inventory: 2 negative, 1 zero, and 5 low-inventory rows.",
         )
 
+    def test_inventory_maintenance_refresh_result_is_translated(self) -> None:
+        self.assertEqual(
+            translate_ui_text(
+                "全部页面数据已同步，共 681 条记录；自动启用 2 条，自动停用 3 条。",
+                LANGUAGE_EN,
+            ),
+            (
+                "All page data is synced. 681 records loaded; "
+                "2 automatically enabled and 3 automatically disabled."
+            ),
+        )
+
     def test_column_localization_does_not_rename_or_modify_data(self) -> None:
         source = pd.DataFrame(
             [

@@ -173,6 +173,9 @@ try {
             Set-Content -LiteralPath $requirementsStamp -Value $requirementsHash -Encoding ASCII
         }
 
+        Write-RunnerLog "Maintaining inventory row status before refreshing static cache."
+        Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
+
         Write-RunnerLog "Refreshing shared material request and purchase restock option cache."
         foreach ($generator in @(
             "scripts/generate_page_data_cache.py",

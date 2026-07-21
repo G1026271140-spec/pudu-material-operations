@@ -803,8 +803,11 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
         lambda match: f"Downloads generated at {match.group(1)}. Regenerate them after changing filters.",
     ),
     (
-        re.compile(r"^全部页面数据已同步，共 (.+?) 条记录。$"),
-        lambda match: f"All page data is synced. {match.group(1)} records loaded.",
+        re.compile(r"^全部页面数据已同步，共 (.+?) 条记录；自动启用 (.+?) 条，自动停用 (.+?) 条。$"),
+        lambda match: (
+            f"All page data is synced. {match.group(1)} records loaded; "
+            f"{match.group(2)} automatically enabled and {match.group(3)} automatically disabled."
+        ),
     ),
     (
         re.compile(r"^本页数据已刷新，共同步 (.+?) 条记录。$"),
