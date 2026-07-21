@@ -173,6 +173,7 @@ try {
             Set-Content -LiteralPath $requirementsStamp -Value $requirementsHash -Encoding ASCII
         }
 
+        Write-RunnerLog "Refreshing shared material request and purchase restock option cache."
         foreach ($generator in @(
             "scripts/generate_page_data_cache.py",
             "scripts/generate_request_form_cache.py",

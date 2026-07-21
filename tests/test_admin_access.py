@@ -12,15 +12,14 @@ class AdminAccessTests(unittest.TestCase):
         )
 
     def test_protected_management_sections_share_admin_gate(self) -> None:
-        self.assertTrue(app.management_section_requires_admin("物料数据库"))
-        self.assertTrue(app.management_section_requires_admin("品类管理"))
+        self.assertTrue(app.management_section_requires_admin("物料管理"))
 
     def test_request_pages_remain_unprotected(self) -> None:
         self.assertFalse(app.management_section_requires_admin("库存登记"))
         self.assertFalse(app.management_section_requires_admin("修改与撤回"))
         self.assertFalse(app.management_section_requires_admin(""))
 
-    def test_material_database_navigation_requests_fullscreen_loading(self) -> None:
+    def test_material_management_navigation_requests_fullscreen_loading(self) -> None:
         session_state: dict[str, object] = {}
         query_params = MagicMock()
         with (
@@ -30,15 +29,15 @@ class AdminAccessTests(unittest.TestCase):
             patch.object(app.st, "rerun") as rerun,
         ):
             app.navigate_to_management_section(
-                "sidebar_open_material_database",
-                "物料数据库",
-                "物料数据库",
-                ":material/database:",
+                "sidebar_open_material_management",
+                "物料管理",
+                "物料管理",
+                ":material/inventory_2:",
             )
 
         self.assertEqual(
             session_state[app.MANAGEMENT_NAVIGATION_LOADING_KEY],
-            "物料数据库",
+            "物料管理",
         )
         query_params.clear.assert_called_once_with()
         rerun.assert_called_once_with()

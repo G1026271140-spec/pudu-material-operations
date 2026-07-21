@@ -24,7 +24,7 @@ def main() -> int:
         encoding="utf-8",
     )
     print(
-        "request_form_cache_written",
+        "request_and_restock_form_cache_written",
         app.REQUEST_FORM_STATIC_CACHE_PATH,
         f"rows={cache.get('row_count')}",
         f"generated_at={cache.get('generated_at')}",

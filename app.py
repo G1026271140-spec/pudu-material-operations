@@ -59,6 +59,7 @@ STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
 REQUEST_NO_PREFIX = "REQ"
+RESTOCK_NO_PREFIX = "RST"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
 DEFAULT_STREAMLIT_APP_URL = (
     "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
@@ -125,11 +126,13 @@ TRANSACTION_HEADERS = [
 DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = 30
 MAX_REQUEST_LINE_COUNT = 20
-ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料数据库", "品类管理"})
+ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "修改与撤回")
+MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
+MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理", "物料数据库")
 MATERIAL_DASHBOARD_MODULES = (
     "概览指标",
     "品类库存数量",
@@ -166,6 +169,7 @@ ALL_PAGE_CACHE_TABLES = (
 )
 PAGE_CACHE_TABLES = {
     "request": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "restock": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
     "material_database": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
@@ -300,6 +304,9 @@ def inject_global_styles() -> None:
         .st-key-sidebar_open_material_database button {
             border-left: 3px solid var(--pudu-teal) !important;
         }
+        .st-key-sidebar_open_material_management button {
+            border-left: 3px solid var(--pudu-teal) !important;
+        }
         .st-key-sidebar_open_category button {
             border-left: 3px solid var(--pudu-gold) !important;
         }
@@ -314,6 +321,11 @@ def inject_global_styles() -> None:
             opacity: 1;
         }
         .st-key-sidebar_open_material_database button:disabled {
+            background: var(--pudu-teal-soft) !important;
+            color: #116A6E !important;
+            opacity: 1;
+        }
+        .st-key-sidebar_open_material_management button:disabled {
             background: var(--pudu-teal-soft) !important;
             color: #116A6E !important;
             opacity: 1;
@@ -1851,6 +1863,15 @@ def get_request_form_selection_context() -> dict[str, object]:
     return request_form_cache_to_selection_context(dict(st.session_state["request_form_cache_data"]))
 
 
+def get_restock_selection_context() -> dict[str, object]:
+    state = request_form_cache_state()
+    live_data = state.get("data") if isinstance(state.get("data"), dict) else None
+    runtime_data = request_form_cache_from_runtime_page_data()
+    static_data = load_static_request_form_cache()
+    selected_data = runtime_data or live_data or static_data
+    return request_form_cache_to_selection_context(dict(selected_data))
+
+
 def format_datetime(value: object) -> str:
     parsed = pd.to_datetime(value, errors="coerce")
     if pd.isna(parsed):
@@ -2006,7 +2027,7 @@ def navigate_to_management_section(key: str, section: str, label: str, icon: str
     )
     if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
         set_management_section(section)
-        if section == "物料数据库":
+        if section == "物料管理":
             st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = section
         st.query_params.clear()
         st.rerun()
@@ -2255,6 +2276,7 @@ def contact_department_cache_from_rows(
     return {
         "schema_version": 1,
         "source": source,
+        "consumers": ["material_request", "inventory_restock"],
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "departments": departments,
         "row_count": len(departments),
@@ -2320,6 +2342,7 @@ def load_static_contact_department_cache() -> dict[str, object]:
         return {
             "schema_version": 1,
             "source": "empty",
+            "consumers": ["material_request", "inventory_restock"],
             "generated_at": "",
             "departments": [],
             "row_count": 0,
@@ -2937,6 +2960,49 @@ def feishu_ledger_type(action: str) -> str:
     return action
 
 
+def build_feishu_ledger_fields(
+    material_record_id: str,
+    action: str,
+    product: str,
+    model: str,
+    language: str,
+    quantity: int,
+    before_quantity: int,
+    after_quantity: int,
+    note: str,
+    occurred_at: datetime,
+    *,
+    status: str = "有效",
+    original_ledger_id: str = "",
+    source_request_id: str = "",
+    source_line_id: str = "",
+    source_request_no: str = "",
+    idempotency_key: str = "",
+) -> dict[str, object]:
+    fields: dict[str, object] = {
+        "发生时间": feishu_timestamp(occurred_at),
+        "流水类型": feishu_ledger_type(action),
+        "物料编码": [material_record_id],
+        "物料品类": product,
+        "产品型号": model or NO_MODEL_TEXT,
+        "语种": language,
+        "数量": int(quantity),
+        "变更前数量": int(before_quantity),
+        "变更后数量": int(after_quantity),
+        "库存变化": int(after_quantity) - int(before_quantity),
+        "幂等键": idempotency_key or f"streamlit:{uuid.uuid4().hex}",
+        "操作状态": status,
+        "备注": note,
+        "关联申请单": [source_request_id] if source_request_id else None,
+        "关联申请明细": [source_line_id] if source_line_id else None,
+        "关联明细": [source_line_id] if source_line_id else None,
+        "关联申请单号": source_request_no or None,
+    }
+    if original_ledger_id:
+        fields["原流水ID"] = original_ledger_id
+    return fields
+
+
 def create_feishu_ledger(
     material_record_id: str,
     action: str,
@@ -2959,27 +3025,24 @@ def create_feishu_ledger(
     client = feishu_client()
     if client is None:
         return None
-    fields: dict[str, object] = {
-        "发生时间": feishu_timestamp(occurred_at),
-        "流水类型": feishu_ledger_type(action),
-        "物料编码": [material_record_id],
-        "物料品类": product,
-        "产品型号": model or NO_MODEL_TEXT,
-        "语种": language,
-        "数量": int(quantity),
-        "变更前数量": int(before_quantity),
-        "变更后数量": int(after_quantity),
-        "库存变化": int(after_quantity) - int(before_quantity),
-        "幂等键": idempotency_key or f"streamlit:{uuid.uuid4().hex}",
-        "操作状态": status,
-        "备注": note,
-        "关联申请单": [source_request_id] if source_request_id else None,
-        "关联申请明细": [source_line_id] if source_line_id else None,
-        "关联明细": [source_line_id] if source_line_id else None,
-        "关联申请单号": source_request_no or None,
-    }
-    if original_ledger_id:
-        fields["原流水ID"] = original_ledger_id
+    fields = build_feishu_ledger_fields(
+        material_record_id,
+        action,
+        product,
+        model,
+        language,
+        quantity,
+        before_quantity,
+        after_quantity,
+        note,
+        occurred_at,
+        status=status,
+        original_ledger_id=original_ledger_id,
+        source_request_id=source_request_id,
+        source_line_id=source_line_id,
+        source_request_no=source_request_no,
+        idempotency_key=idempotency_key,
+    )
 
     created = feishu_batch_create_records("库存流水", [fields])
     return created[0] if created else None
@@ -3049,6 +3112,149 @@ def apply_feishu_changes(changes: list[dict[str, object]]) -> list[list[object]]
             ]
         )
     return logs
+
+
+def build_restock_no(submission_token: object, occurred_at: datetime | None = None) -> str:
+    timestamp = occurred_at or datetime.now()
+    token = re.sub(r"[^A-Za-z0-9]", "", str(submission_token or "")).upper()
+    suffix = token[:6] or uuid.uuid4().hex[:6].upper()
+    return f"{RESTOCK_NO_PREFIX}-{timestamp.strftime('%Y%m%d')}-{suffix}"
+
+
+def validate_restock_draft(draft: dict[str, object]) -> list[str]:
+    errors: list[str] = []
+    if not str(draft.get("operator") or "").strip():
+        errors.append("请填写补库人")
+    lines = [line for line in list(draft.get("lines") or []) if isinstance(line, dict)]
+    if not lines:
+        errors.append("请至少加入一种补库物料")
+        return errors
+    if len(lines) > MAX_REQUEST_LINE_COUNT:
+        errors.append(f"一次补库最多可添加 {MAX_REQUEST_LINE_COUNT} 种物料")
+    seen: set[tuple[str, str, str]] = set()
+    for index, line in enumerate(lines, start=1):
+        key = request_material_key(line)
+        if not all(key):
+            errors.append(f"第 {index} 条补库明细缺少品类、型号或语种")
+        if int(line.get("quantity") or 0) <= 0:
+            errors.append(f"第 {index} 条补库数量必须大于 0")
+        if key in seen:
+            errors.append(f"第 {index} 条补库物料重复，请合并数量")
+        seen.add(key)
+    return errors
+
+
+def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]]:
+    errors = validate_restock_draft(draft)
+    if errors:
+        raise RuntimeError("；".join(errors))
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法保存采购补库。")
+
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
+    active_records = feishu_inventory_records_from_rows(
+        material_rows,
+        category_rows,
+        active_only=True,
+    )
+    active_by_key = {
+        (
+            str(record.get("category") or ""),
+            str(record.get("model") or NO_MODEL_TEXT),
+            str(record.get("language") or NO_LANGUAGE_TEXT),
+        ): record
+        for record in active_records
+    }
+    restock_no = str(draft.get("restock_no") or "").strip()
+    operator = str(draft.get("operator") or "").strip()
+    purchase_order_no = str(draft.get("purchase_order_no") or "").strip()
+    overall_note = str(draft.get("note") or "").strip()
+    submission_token = str(draft.get("submission_token") or "").strip() or uuid.uuid4().hex
+    occurred_at = datetime.now()
+    prepared: list[dict[str, object]] = []
+    for index, line in enumerate(list(draft.get("lines") or []), start=1):
+        if not isinstance(line, dict):
+            continue
+        product, model, language = request_material_key(line)
+        record = active_by_key.get((product, model, language))
+        if record is None:
+            raise RuntimeError(f"补库物料不存在或已停用：{product} / {model} / {language}")
+        record_id = str(record.get("record_id") or "")
+        raw_row = raw_material_by_id.get(record_id, {})
+        before_quantity = feishu_int(feishu_fields(raw_row), "当前库存")
+        quantity = int(line.get("quantity") or 0)
+        after_quantity = before_quantity + quantity
+        line_note = str(line.get("remark") or "").strip()
+        note_parts = [f"补库单 {restock_no}", f"补库人：{operator}"]
+        if purchase_order_no:
+            note_parts.append(f"采购单号：{purchase_order_no}")
+        if overall_note:
+            note_parts.append(f"补库说明：{overall_note}")
+        if line_note:
+            note_parts.append(f"明细备注：{line_note}")
+        prepared.append(
+            {
+                "record_id": record_id,
+                "material_code": str(record.get("material_code") or ""),
+                "product": product,
+                "model": model,
+                "language": language,
+                "quantity": quantity,
+                "before_quantity": before_quantity,
+                "after_quantity": after_quantity,
+                "remark": line_note,
+                "ledger_note": "；".join(note_parts),
+                "idempotency_key": f"restock:{submission_token}:{index}",
+            }
+        )
+
+    inventory_updates = [
+        {
+            "record_id": str(item["record_id"]),
+            "fields": {"当前库存": int(item["after_quantity"])},
+        }
+        for item in prepared
+    ]
+    rollback_updates = [
+        {
+            "record_id": str(item["record_id"]),
+            "fields": {"当前库存": int(item["before_quantity"])},
+        }
+        for item in prepared
+    ]
+    ledger_fields = [
+        build_feishu_ledger_fields(
+            str(item["record_id"]),
+            ACTION_PURCHASE,
+            str(item["product"]),
+            str(item["model"]),
+            str(item["language"]),
+            int(item["quantity"]),
+            int(item["before_quantity"]),
+            int(item["after_quantity"]),
+            str(item["ledger_note"]),
+            occurred_at,
+            idempotency_key=str(item["idempotency_key"]),
+        )
+        for item in prepared
+    ]
+    try:
+        updated_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, inventory_updates)
+        if updated_count != len(prepared):
+            raise RuntimeError("物料主数据未完整更新。")
+        created_ledgers = feishu_batch_create_records(LEDGER_TABLE_NAME, ledger_fields)
+        if len(created_ledgers) != len(prepared):
+            raise RuntimeError("库存流水未完整写入。")
+    except Exception:
+        try:
+            feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, rollback_updates)
+        except Exception:
+            pass
+        raise
+    return prepared
 
 
 def next_request_no() -> str:
@@ -3458,6 +3664,91 @@ def notify_enabled_admins_of_material_request(
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = material_request_notification_card(request_no, request_payload, lines)
+    for open_id in recipients:
+        client.send_interactive_message(open_id, card)
+    return len(recipients)
+
+
+def material_restock_notification_card(
+    draft: dict[str, object],
+    lines: list[dict[str, object]],
+) -> dict[str, object]:
+    total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+
+    def short_field(label: str, value: object) -> dict[str, object]:
+        return {
+            "is_short": True,
+            "text": {
+                "tag": "plain_text",
+                "content": f"{label}\n{_feishu_card_plain_text(value, max_length=500)}",
+            },
+        }
+
+    elements: list[dict[str, object]] = [
+        {"tag": "markdown", "content": "**补库信息**"},
+        {
+            "tag": "div",
+            "fields": [
+                short_field("补库单号", draft.get("restock_no")),
+                short_field("补库人", draft.get("operator")),
+                short_field("采购单号", draft.get("purchase_order_no") or "-"),
+                short_field("补库合计", f"{len(lines)} 种，共 {total_quantity} 件"),
+            ],
+        },
+    ]
+    note = str(draft.get("note") or "").strip()
+    if note:
+        elements.extend(
+            [
+                {"tag": "markdown", "content": "**补库说明**"},
+                {
+                    "tag": "div",
+                    "text": {
+                        "tag": "plain_text",
+                        "content": _feishu_card_plain_text(note),
+                    },
+                },
+            ]
+        )
+    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**补库明细**"}])
+    for index, line in enumerate(lines, start=1):
+        detail = (
+            f"{index:02d}. {_feishu_card_plain_text(line.get('product'), max_length=300)} / "
+            f"{_feishu_card_plain_text(line.get('model') or NO_MODEL_TEXT, max_length=200)} / "
+            f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)}\n"
+            f"补库 {int(line.get('quantity') or 0)}，库存 "
+            f"{int(line.get('before_quantity') or 0)} → {int(line.get('after_quantity') or 0)}"
+        )
+        remark = str(line.get("remark") or "").strip()
+        if remark:
+            detail += f"\n备注：{_feishu_card_plain_text(remark, max_length=500)}"
+        elements.append(
+            {
+                "tag": "div",
+                "text": {"tag": "plain_text", "content": detail},
+            }
+        )
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "green",
+            "title": {"tag": "plain_text", "content": "采购补库已完成"},
+        },
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_restock(
+    draft: dict[str, object],
+    lines: list[dict[str, object]],
+) -> int:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送补库通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    card = material_restock_notification_card(draft, lines)
     for open_id in recipients:
         client.send_interactive_message(open_id, card)
     return len(recipients)
@@ -5276,16 +5567,10 @@ def render_sidebar_link() -> None:
         else:
             navigate_to_approval("sidebar_open_approval", "审批与发放")
         navigate_to_management_section(
-            "sidebar_open_category",
-            "品类管理",
-            "品类管理",
-            ":material/category:",
-        )
-        navigate_to_management_section(
-            "sidebar_open_material_database",
-            "物料数据库",
-            "物料数据库",
-            ":material/database:",
+            "sidebar_open_material_management",
+            "物料管理",
+            "物料管理",
+            ":material/inventory_2:",
         )
         st.divider()
         with st.container(key="sidebar_data_system_group"):
@@ -6316,6 +6601,531 @@ def render_change_form(show_title: bool = True) -> None:
         st.session_state["request_form_stage"] = "review"
         st.session_state["request_scroll_to_top"] = True
         mark_request_form_dirty()
+        st.rerun()
+
+
+def initialize_restock_form_state() -> None:
+    defaults: dict[str, object] = {
+        "restock_operator": "",
+        "restock_purchase_order_no": "",
+        "restock_note": "",
+        "restock_lines": [],
+        "restock_form_stage": "edit",
+        "restock_material_table_version": 0,
+        "restock_material_edit_index": None,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+    if "restock_submission_token" not in st.session_state:
+        st.session_state["restock_submission_token"] = uuid.uuid4().hex
+
+
+def clear_restock_form_state() -> None:
+    for key in list(st.session_state):
+        if str(key).startswith("restock_"):
+            st.session_state.pop(key, None)
+
+
+def get_restock_material_lines() -> list[dict[str, object]]:
+    raw_lines = st.session_state.get("restock_lines")
+    if not isinstance(raw_lines, list):
+        raw_lines = []
+    lines = [
+        {
+            "product": str(item.get("product") or "").strip(),
+            "model": str(item.get("model") or "").strip() or NO_MODEL_TEXT,
+            "language": str(item.get("language") or "").strip() or NO_LANGUAGE_TEXT,
+            "quantity": int(item.get("quantity") or 0),
+            "remark": str(item.get("remark") or "").strip(),
+        }
+        for item in raw_lines
+        if isinstance(item, dict)
+    ]
+    st.session_state["restock_lines"] = lines
+    return lines
+
+
+def prepare_restock_line_editor_state() -> None:
+    load_data = st.session_state.pop("restock_line_editor_load", None)
+    if isinstance(load_data, dict):
+        st.session_state["restock_material_edit_index"] = int(load_data.get("index", -1))
+        st.session_state["restock_line_product"] = str(load_data.get("product") or "")
+        st.session_state["restock_line_model"] = str(load_data.get("model") or NO_MODEL_TEXT)
+        st.session_state["restock_line_language"] = str(
+            load_data.get("language") or NO_LANGUAGE_TEXT
+        )
+        st.session_state["restock_line_quantity"] = max(1, int(load_data.get("quantity") or 1))
+        st.session_state["restock_line_remark"] = str(load_data.get("remark") or "")
+        return
+    if st.session_state.pop("restock_line_editor_reset", False):
+        for key in (
+            "restock_line_product",
+            "restock_line_model",
+            "restock_line_language",
+            "restock_line_quantity",
+            "restock_line_remark",
+        ):
+            st.session_state.pop(key, None)
+        st.session_state["restock_material_edit_index"] = None
+
+
+def restock_scoped_models(
+    selection_context: dict[str, object],
+    product: str,
+) -> tuple[bool, list[str]]:
+    product_key = normalize_option_label(product)
+    scoped_models = list(
+        dict(selection_context.get("product_models") or {}).get(product_key, [])
+    )
+    is_no_model = product_key in set(selection_context.get("no_model_product_keys") or set())
+    if is_no_model or not scoped_models:
+        return True, [NO_MODEL_TEXT]
+    return False, sort_models(scoped_models)
+
+
+def restock_scoped_languages(
+    selection_context: dict[str, object],
+    product: str,
+    model: str,
+) -> tuple[bool, list[str]]:
+    product_key = normalize_option_label(product)
+    model_key = normalize_option_label(model or NO_MODEL_TEXT)
+    is_no_language = product_key in set(
+        selection_context.get("no_language_product_keys") or set()
+    )
+    if is_no_language:
+        return True, [NO_LANGUAGE_TEXT]
+    scoped_languages = list(
+        dict(selection_context.get("product_model_languages") or {}).get(
+            (product_key, model_key),
+            [],
+        )
+    )
+    return False, sort_languages(scoped_languages)
+
+
+def restock_inventory_snapshot(
+    selection_context: dict[str, object],
+) -> dict[tuple[str, str, str], int]:
+    snapshot: dict[tuple[str, str, str], int] = {}
+    inventory_df = selection_context.get("inventory_df")
+    if not isinstance(inventory_df, pd.DataFrame) or inventory_df.empty:
+        return snapshot
+    for row in inventory_df.to_dict("records"):
+        key = (
+            str(row.get("product") or row.get(PRODUCT_COL) or "").strip(),
+            str(row.get("model") or row.get(MODEL_COL) or NO_MODEL_TEXT).strip()
+            or NO_MODEL_TEXT,
+            str(row.get("language") or row.get(LANGUAGE_COL) or NO_LANGUAGE_TEXT).strip()
+            or NO_LANGUAGE_TEXT,
+        )
+        quantity = row.get("quantity", row.get(QTY_COL, 0))
+        snapshot[key] = int(quantity or 0)
+    return snapshot
+
+
+def render_restock_material_builder(
+    selection_context: dict[str, object],
+) -> list[dict[str, object]]:
+    prepare_restock_line_editor_state()
+    lines = get_restock_material_lines()
+    products = list(selection_context.get("products") or [])
+    with st.container(border=True):
+        render_section_header(
+            "02",
+            "采购补库清单",
+            f"逐条添加启用物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
+        )
+        if not products:
+            st.error("当前没有可补库的启用物料，请先刷新数据或在品类管理中启用库存行。")
+            return lines
+
+        editor_index_value = st.session_state.get("restock_material_edit_index")
+        editor_index = (
+            int(editor_index_value)
+            if isinstance(editor_index_value, int) and 0 <= editor_index_value < len(lines)
+            else None
+        )
+        editor_cols = st.columns(
+            [2.2, 1.7, 1.5, 0.85, 1.5, 1.15],
+            gap="small",
+            vertical_alignment="bottom",
+        )
+        product_col, model_col, language_col, quantity_col, remark_col, action_col = editor_cols
+        required_field_label(product_col, "物料品类")
+        if st.session_state.get("restock_line_product") not in products:
+            st.session_state["restock_line_product"] = products[0]
+        product = product_col.selectbox(
+            "物料品类",
+            products,
+            key="restock_line_product",
+            label_visibility="collapsed",
+        )
+        no_model, model_options = restock_scoped_models(selection_context, product)
+        if st.session_state.get("restock_line_model") not in model_options:
+            st.session_state["restock_line_model"] = model_options[0]
+        required_field_label(model_col, "产品型号")
+        model = model_col.selectbox(
+            "产品型号",
+            model_options,
+            key="restock_line_model",
+            disabled=no_model,
+            label_visibility="collapsed",
+        )
+        no_language, language_options = restock_scoped_languages(
+            selection_context,
+            product,
+            model,
+        )
+        if not language_options:
+            language_options = [NO_LANGUAGE_TEXT]
+        if st.session_state.get("restock_line_language") not in language_options:
+            st.session_state["restock_line_language"] = language_options[0]
+        required_field_label(language_col, "语种")
+        language = language_col.selectbox(
+            "语种",
+            language_options,
+            key="restock_line_language",
+            disabled=no_language,
+            label_visibility="collapsed",
+        )
+        required_field_label(quantity_col, "补库数量")
+        quantity = quantity_col.number_input(
+            "补库数量",
+            min_value=1,
+            max_value=1_000_000,
+            value=1,
+            step=1,
+            key="restock_line_quantity",
+            label_visibility="collapsed",
+        )
+        remark = remark_col.text_input(
+            "明细备注",
+            key="restock_line_remark",
+            placeholder="可选",
+        )
+        action_clicked = action_col.button(
+            "保存修改" if editor_index is not None else "加入清单",
+            key="restock_add_material",
+            type="primary",
+            icon=":material/save:" if editor_index is not None else ":material/add:",
+            disabled=editor_index is None and len(lines) >= MAX_REQUEST_LINE_COUNT,
+            width="stretch",
+        )
+        if editor_index is not None and action_col.button(
+            "取消编辑",
+            key="restock_cancel_material_edit",
+            type="tertiary",
+            icon=":material/close:",
+            width="stretch",
+        ):
+            st.session_state["restock_line_editor_reset"] = True
+            st.rerun()
+
+        if action_clicked:
+            next_line = {
+                "product": product,
+                "model": model or NO_MODEL_TEXT,
+                "language": language or NO_LANGUAGE_TEXT,
+                "quantity": int(quantity),
+                "remark": str(remark or "").strip(),
+            }
+            duplicate_index = next(
+                (
+                    index
+                    for index, line in enumerate(lines)
+                    if request_material_key(line) == request_material_key(next_line)
+                    and index != editor_index
+                ),
+                None,
+            )
+            if not selection_context_has_inventory_combination(
+                selection_context,
+                product,
+                model,
+                language,
+            ):
+                st.warning("该品类、型号和语种的库存组合不存在或已停用，请重新选择。")
+            elif duplicate_index is not None:
+                st.warning(f"该物料组合已在清单第 {duplicate_index + 1} 行，请直接修改原行。")
+            else:
+                next_lines = [dict(line) for line in lines]
+                if editor_index is None:
+                    next_lines.append(next_line)
+                else:
+                    next_lines[editor_index] = next_line
+                st.session_state["restock_lines"] = next_lines
+                st.session_state["restock_material_table_version"] = (
+                    int(st.session_state.get("restock_material_table_version", 0)) + 1
+                )
+                st.session_state["restock_line_editor_reset"] = True
+                st.rerun()
+
+        lines = get_restock_material_lines()
+        st.markdown(
+            f"""
+            <div class="pudu-material-list-status">
+                <span>{escape(ui_text("采购补库清单"))}</span>
+                <strong>{len(lines)} / {MAX_REQUEST_LINE_COUNT}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if not lines:
+            st.info("尚未添加补库物料。")
+            return lines
+
+        table_version = int(st.session_state.get("restock_material_table_version", 0))
+        edited_df = st.data_editor(
+            request_material_table_dataframe(lines).rename(columns={"数量": "补库数量"}),
+            width="stretch",
+            hide_index=True,
+            height=min(520, max(140, 38 * (len(lines) + 1) + 22)),
+            row_height=34,
+            disabled=["序号", "物料品类", "产品型号", "语种"],
+            column_config={
+                "选择": st.column_config.CheckboxColumn("选择", width="small"),
+                "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
+                "物料品类": st.column_config.TextColumn("物料品类", width="large"),
+                "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
+                "语种": st.column_config.TextColumn("语种", width="medium"),
+                "补库数量": st.column_config.NumberColumn(
+                    "补库数量",
+                    min_value=1,
+                    max_value=1_000_000,
+                    step=1,
+                    format="%d",
+                    width="small",
+                ),
+                "备注": st.column_config.TextColumn("备注", width="medium"),
+            },
+            key=f"restock_material_table_{table_version}",
+        )
+        normalized_df = edited_df.rename(columns={"补库数量": "数量"})
+        updated_lines, selected_indices = apply_request_material_table_edits(lines, normalized_df)
+        if updated_lines != lines:
+            st.session_state["restock_lines"] = updated_lines
+            lines = updated_lines
+
+        edit_col, delete_col, _ = st.columns([1.1, 1.1, 3])
+        if edit_col.button(
+            "编辑选中",
+            key="restock_edit_selected_material",
+            icon=":material/edit:",
+            disabled=len(selected_indices) != 1,
+            width="stretch",
+        ):
+            selected_index = selected_indices[0]
+            st.session_state["restock_line_editor_load"] = {
+                "index": selected_index,
+                **lines[selected_index],
+            }
+            st.session_state["restock_material_table_version"] = table_version + 1
+            st.rerun()
+        if delete_col.button(
+            "删除选中",
+            key="restock_delete_selected_material",
+            icon=":material/delete:",
+            disabled=not selected_indices,
+            width="stretch",
+        ):
+            selected_set = set(selected_indices)
+            st.session_state["restock_lines"] = [
+                line for index, line in enumerate(lines) if index not in selected_set
+            ]
+            st.session_state["restock_material_table_version"] = table_version + 1
+            if editor_index in selected_set:
+                st.session_state["restock_line_editor_reset"] = True
+            st.rerun()
+    return lines
+
+
+def restore_restock_form_from_draft(draft: dict[str, object]) -> None:
+    st.session_state["restock_operator"] = str(draft.get("operator") or "")
+    st.session_state["restock_purchase_order_no"] = str(
+        draft.get("purchase_order_no") or ""
+    )
+    st.session_state["restock_note"] = str(draft.get("note") or "")
+    st.session_state["restock_lines"] = [
+        dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)
+    ]
+    st.session_state["restock_form_stage"] = "edit"
+    st.session_state["restock_material_table_version"] = (
+        int(st.session_state.get("restock_material_table_version", 0)) + 1
+    )
+    st.session_state["restock_line_editor_reset"] = True
+    st.session_state.pop("restock_draft_payload", None)
+
+
+def render_restock_review() -> None:
+    draft = st.session_state.get("restock_draft_payload")
+    if not isinstance(draft, dict):
+        st.session_state["restock_form_stage"] = "edit"
+        st.rerun()
+    lines = [dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)]
+    total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("补库单号", str(draft.get("restock_no") or "-"))
+    metric_b.metric("补库物料种类", f"{len(lines):,}")
+    metric_c.metric("补库总数量", f"{total_quantity:,}")
+    with st.container(border=True):
+        render_section_header("01", "补库信息确认", "请核对补库信息和全部明细后再确认")
+        info_cols = st.columns(3)
+        render_request_review_field(info_cols[0], "补库人", draft.get("operator"))
+        render_request_review_field(info_cols[1], "采购单号", draft.get("purchase_order_no") or "-")
+        render_request_review_field(info_cols[2], "补库说明", draft.get("note") or "-")
+    with st.container(border=True):
+        render_section_header("02", "补库明细预览", f"共 {len(lines)} 种物料")
+        preview_df = pd.DataFrame(
+            [
+                {
+                    "序号": index + 1,
+                    "物料品类": line.get("product") or "",
+                    "产品型号": line.get("model") or NO_MODEL_TEXT,
+                    "语种": line.get("language") or NO_LANGUAGE_TEXT,
+                    "缓存库存": int(line.get("snapshot_quantity") or 0),
+                    "补库数量": int(line.get("quantity") or 0),
+                    "预计补库后库存": int(line.get("snapshot_quantity") or 0)
+                    + int(line.get("quantity") or 0),
+                    "备注": line.get("remark") or "",
+                }
+                for index, line in enumerate(lines)
+            ]
+        )
+        st.dataframe(
+            preview_df,
+            width="stretch",
+            hide_index=True,
+            height=min(820, max(150, 38 * (len(preview_df) + 1) + 18)),
+            row_height=34,
+        )
+        st.caption("预览使用当前页面缓存；确认补库时会重新读取飞书实时库存并计算最终数量。")
+
+    back_col, _, confirm_col = st.columns([1.1, 2.2, 1.4])
+    if back_col.button(
+        "返回修改",
+        key="restock_review_back",
+        icon=":material/arrow_back:",
+        width="stretch",
+    ):
+        restore_restock_form_from_draft(draft)
+        st.rerun()
+    if confirm_col.button(
+        "确认补库",
+        key="restock_review_confirm",
+        type="primary",
+        icon=":material/add_box:",
+        width="stretch",
+    ):
+        errors = validate_restock_draft(draft)
+        if errors:
+            st.warning("；".join(errors))
+            return
+        with st.spinner("正在补充库存并写入库存流水，请稍后......"):
+            with DATA_LOCK:
+                try:
+                    completed_lines = submit_inventory_restock(draft)
+                except Exception as exc:
+                    st.error("采购补库失败。请检查物料状态、库存字段和飞书写入权限。")
+                    st.exception(exc)
+                    return
+        notification_count = 0
+        notification_warning = ""
+        with st.spinner("补库已完成，正在通知管理员......"):
+            try:
+                notification_count = notify_enabled_admins_of_restock(draft, completed_lines)
+            except Exception as exc:
+                notification_warning = f"补库已完成，但管理员通知发送失败：{exc}"
+        refresh_page_cache_after_write("restock", update_request_form=True)
+        restock_no = str(draft.get("restock_no") or "")
+        clear_restock_form_state()
+        st.session_state["restock_submit_message"] = (
+            f"补库单 {restock_no} 已完成，共补充 {len(completed_lines)} 种、"
+            f"{sum(int(line.get('quantity') or 0) for line in completed_lines)} 件物料。"
+            + (f"已通知 {notification_count} 位管理员。" if notification_count else "")
+        )
+        if notification_warning:
+            st.session_state["restock_submit_warning"] = notification_warning
+        st.rerun()
+
+
+def render_restock_form() -> None:
+    initialize_restock_form_state()
+    message = st.session_state.pop("restock_submit_message", "")
+    warning = st.session_state.pop("restock_submit_warning", "")
+    if message:
+        st.success(message)
+    if warning:
+        st.warning(warning)
+    if st.session_state.get("restock_form_stage") == "review":
+        render_restock_review()
+        return
+    with st.spinner("物料数据加载中，请稍后......"):
+        selection_context = get_restock_selection_context()
+    with st.container(border=True):
+        render_section_header("01", "采购补库信息", "填写补库基础信息并逐条添加采购物料")
+        info_cols = st.columns([1.2, 1.2, 2.2])
+        required_field_label(info_cols[0], "补库人")
+        operator = info_cols[0].text_input(
+            "补库人",
+            key="restock_operator",
+            label_visibility="collapsed",
+        )
+        info_cols[1].markdown(
+            f'<div class="pudu-field-label">{escape(ui_text("采购单号"))}</div>',
+            unsafe_allow_html=True,
+        )
+        purchase_order_no = info_cols[1].text_input(
+            "采购单号",
+            key="restock_purchase_order_no",
+            placeholder="可选",
+            label_visibility="collapsed",
+        )
+        info_cols[2].markdown(
+            f'<div class="pudu-field-label">{escape(ui_text("补库说明"))}</div>',
+            unsafe_allow_html=True,
+        )
+        note = info_cols[2].text_input(
+            "补库说明",
+            key="restock_note",
+            placeholder="可选",
+            label_visibility="collapsed",
+        )
+        restock_no = build_restock_no(st.session_state["restock_submission_token"])
+        st.caption(f"补库单号：{restock_no}")
+
+    lines = render_restock_material_builder(selection_context)
+    _, preview_col = st.columns([3, 1.25])
+    if preview_col.button(
+        "预览并核对补库",
+        key="restock_preview",
+        type="primary",
+        icon=":material/preview:",
+        width="stretch",
+    ):
+        snapshot = restock_inventory_snapshot(selection_context)
+        preview_lines = [
+            {
+                **dict(line),
+                "snapshot_quantity": snapshot.get(request_material_key(line), 0),
+            }
+            for line in lines
+        ]
+        draft = {
+            "restock_no": restock_no,
+            "operator": operator,
+            "purchase_order_no": purchase_order_no,
+            "note": note,
+            "submission_token": st.session_state["restock_submission_token"],
+            "lines": preview_lines,
+        }
+        errors = validate_restock_draft(draft)
+        if errors:
+            st.warning("；".join(errors))
+            return
+        st.session_state["restock_draft_payload"] = draft
+        st.session_state["restock_form_stage"] = "review"
         st.rerun()
 
 
@@ -8439,11 +9249,14 @@ def render_inventory_view() -> None:
 def render_management_page() -> None:
     current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
     if current_section == "新增物料品类":
-        current_section = "品类管理"
+        st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = "品类管理"
+        current_section = "物料管理"
+    elif current_section in {"品类管理", "物料数据库"}:
+        st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = current_section
+        current_section = "物料管理"
     if current_section not in {
         "库存登记",
-        "品类管理",
-        "物料数据库",
+        "物料管理",
         "修改与撤回",
     }:
         current_section = "库存登记"
@@ -8464,21 +9277,36 @@ def render_management_page() -> None:
         return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
-        "品类管理": ("物料品类管理", "基础数据", "新增或调整物料品类、型号、语种和库存组合。"),
-        "物料数据库": ("物料数据库", "基础数据", "搜索、编辑或删除物料主数据记录。"),
+        "物料管理": ("物料管理", "库存工作台", "采购补库、品类维护与物料数据库统一管理。"),
         "修改与撤回": ("提交记录修改与撤回", "管理工作台", "筛选、修正或撤回库存提交记录。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
     if management_section_requires_admin(current_section) and not admin_auth_gate():
         return
-    if current_section == "品类管理":
-        render_page_cache_toolbar("category")
-        render_add_category_form()
-        return
-    if current_section == "物料数据库":
-        render_page_cache_toolbar("material_database")
-        render_material_database_page()
+    if current_section == "物料管理":
+        if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) not in MATERIAL_MANAGEMENT_SECTIONS:
+            st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = MATERIAL_MANAGEMENT_SECTIONS[0]
+        material_section = st.radio(
+            "物料管理功能",
+            MATERIAL_MANAGEMENT_SECTIONS,
+            horizontal=True,
+            label_visibility="collapsed",
+            key=MATERIAL_MANAGEMENT_CONTROL_KEY,
+        )
+        render_page_cache_toolbar(
+            {
+                "采购补库": "restock",
+                "品类管理": "category",
+                "物料数据库": "material_database",
+            }[material_section]
+        )
+        if material_section == "采购补库":
+            render_restock_form()
+        elif material_section == "品类管理":
+            render_add_category_form()
+        else:
+            render_material_database_page()
         return
     if st.session_state.get(MANAGEMENT_WORKBENCH_CONTROL_KEY) not in MANAGEMENT_WORKBENCH_SECTIONS:
         st.session_state[MANAGEMENT_WORKBENCH_CONTROL_KEY] = current_section
@@ -8505,7 +9333,7 @@ def render_management_page() -> None:
 
 def render_management_page_with_navigation_loading() -> None:
     loading_section = str(st.session_state.pop(MANAGEMENT_NAVIGATION_LOADING_KEY, ""))
-    if loading_section != "物料数据库":
+    if loading_section != "物料管理":
         render_management_page()
         return
 

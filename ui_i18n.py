@@ -39,6 +39,8 @@ EN_DISPLAY_TEXT = {
     "工作台导航": "Workspace Navigation",
     "库存登记": "Material Request",
     "审批与发放": "Approval & Issuance",
+    "物料管理": "Material Management",
+    "采购补库": "Purchase Restock",
     "物料数据库": "Material Database",
     "品类管理": "Category Management",
     "修改与撤回": "Edit & Revoke",
@@ -75,6 +77,7 @@ EN_DISPLAY_TEXT = {
     "查看实时库存表": "View Live Inventory",
     "打开审批发放页": "Open Approval & Issuance",
     "管理功能": "Workspace View",
+    "物料管理功能": "Material Management View",
 
     # Page headers and section titles.
     "飞书数据已连接": "Feishu data connected",
@@ -174,6 +177,20 @@ EN_DISPLAY_TEXT = {
     "库存总价值": "Total Inventory Value",
     "品类基础信息": "Category Details",
     "配置品类名称、型号规则和可用语种": "Configure the category name, model rules, and languages",
+    "库存工作台": "Inventory Workspace",
+    "采购补库、品类维护与物料数据库统一管理。": (
+        "Manage purchase restocking, categories, and the material database in one workspace."
+    ),
+    "采购补库信息": "Purchase Restock Information",
+    "填写补库基础信息并逐条添加采购物料": (
+        "Enter restock information and add purchased materials line by line"
+    ),
+    "采购补库清单": "Purchase Restock List",
+    "补库信息确认": "Restock Review",
+    "请核对补库信息和全部明细后再确认": (
+        "Review the restock information and all lines before confirming"
+    ),
+    "补库明细预览": "Restock Line Preview",
 
     # Field labels and table headers.
     "申请信息": "Request Information",
@@ -183,6 +200,16 @@ EN_DISPLAY_TEXT = {
     "申请单号": "Request No.",
     "申请部门": "Requesting Department",
     "申请人": "Applicant",
+    "补库人": "Restock Operator",
+    "补库单号": "Restock No.",
+    "采购单号": "Purchase Order No.",
+    "补库说明": "Restock Notes",
+    "补库数量": "Restock Quantity",
+    "补库总数量": "Total Restock Quantity",
+    "补库物料种类": "Restock Material Types",
+    "缓存库存": "Cached Inventory",
+    "预计补库后库存": "Expected Inventory After Restock",
+    "明细备注": "Line Remarks",
     "岗位": "Position",
     "客户名称": "Customer Name",
     "国家": "Country",
@@ -343,6 +370,8 @@ EN_DISPLAY_TEXT = {
     "返回修改": "Back to Edit",
     "确认提交": "Confirm & Submit",
     "预览并核对申请": "Review Request",
+    "预览并核对补库": "Review Restock",
+    "确认补库": "Confirm Restock",
     "物料品类名称 *": "Material Category Name *",
     "产品型号 *": "Product Models *",
     "语种 *": "Languages *",
