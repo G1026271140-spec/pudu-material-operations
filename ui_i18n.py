@@ -204,6 +204,7 @@ EN_DISPLAY_TEXT = {
     "申请产品型号": "Requested Model",
     "申请语种": "Requested Language",
     "实际发放品类": "Issued Category",
+    "实际发放信息": "Actual Issuance",
     "实际发放型号": "Issued Model",
     "实际发放语种": "Issued Language",
     "实际发放物料编码": "Issued Material Code",

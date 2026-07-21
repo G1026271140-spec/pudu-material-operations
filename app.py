@@ -606,6 +606,90 @@ def inject_global_styles() -> None:
             overflow: hidden;
             background: #FFFFFF;
         }
+        .pudu-fixed-recipient {
+            display: grid;
+            grid-template-columns: minmax(110px, 0.18fr) 1fr;
+            gap: 0.75rem;
+            align-items: start;
+            margin: 0.65rem 0 0.95rem;
+            padding: 0.8rem 0.95rem;
+            border: 1px solid #C4E0DC;
+            border-left: 3px solid var(--pudu-teal);
+            border-radius: 8px;
+            background: var(--pudu-teal-soft);
+        }
+        .pudu-fixed-recipient-label {
+            color: var(--pudu-teal);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .pudu-fixed-recipient-value {
+            color: var(--pudu-ink);
+            font-size: 0.88rem;
+            line-height: 1.55;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+        .pudu-approval-line-marker {
+            display: none;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-approval-line-marker) > [data-testid="stVerticalBlock"] {
+            gap: 0.45rem;
+            padding: 0.8rem 0.9rem;
+            border-color: var(--pudu-line) !important;
+            border-radius: 8px !important;
+            background: #FFFFFF;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-approval-line-shortage) > [data-testid="stVerticalBlock"] {
+            border-color: #F2B8B5 !important;
+            border-left: 3px solid #D14343 !important;
+            background: #FFF8F7;
+        }
+        .pudu-approval-line-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding-bottom: 0.42rem;
+            border-bottom: 1px solid var(--pudu-line);
+        }
+        .pudu-approval-line-title {
+            color: var(--pudu-ink);
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+        .pudu-approval-stock-badge {
+            padding: 0.18rem 0.45rem;
+            border-radius: 5px;
+            background: #E5F4EF;
+            color: #166A52;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .pudu-approval-stock-badge.is-shortage {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .pudu-approval-field-label,
+        .pudu-approval-control-label {
+            margin-bottom: 0.2rem;
+            color: var(--pudu-muted);
+            font-size: 0.72rem;
+            font-weight: 620;
+        }
+        .pudu-approval-field-value {
+            min-height: 1.45rem;
+            color: var(--pudu-ink);
+            font-size: 0.84rem;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+        .pudu-approval-actual-heading {
+            margin-top: 0.15rem;
+            color: var(--pudu-teal);
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
         [data-testid="stTabs"] [data-baseweb="tab-list"] {
             gap: 0.25rem;
             border-bottom: 1px solid var(--pudu-line);
@@ -7694,6 +7778,24 @@ def approval_shortage_row_style(row: pd.Series) -> list[str]:
     return [""] * len(row)
 
 
+def render_approval_readonly_field(container: object, label: str, value: object) -> None:
+    display_value = str(value or "-")
+    container.markdown(
+        f"""
+        <div class="pudu-approval-field-label">{escape(ui_text(label))}</div>
+        <div class="pudu-approval-field-value">{escape(display_value)}</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_approval_control_label(container: object, label: str) -> None:
+    container.markdown(
+        f'<div class="pudu-approval-control-label">{escape(ui_text(label))}</div>',
+        unsafe_allow_html=True,
+    )
+
+
 def render_approval_request_context(request: dict[str, object], lines: list[dict[str, object]]) -> None:
     detail_col_a, detail_col_b, detail_col_c = st.columns(3)
     detail_col_a.metric("申请单号", str(request["request_no"]))
@@ -7705,9 +7807,15 @@ def render_approval_request_context(request: dict[str, object], lines: list[dict
     )
     if request.get("material_usage"):
         st.caption(f"物料用途：{request['material_usage']}")
-    if request.get("recipient_info"):
-        with st.expander("收件人信息"):
-            st.write(request["recipient_info"])
+    st.markdown(
+        f"""
+        <div class="pudu-fixed-recipient">
+            <div class="pudu-fixed-recipient-label">{escape(ui_text("收件人信息"))}</div>
+            <div class="pudu-fixed-recipient-value">{escape(str(request.get("recipient_info") or "-"))}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def partial_approval_row_style(row: pd.Series, status_column: str) -> list[str]:
@@ -7806,47 +7914,101 @@ def render_pending_approval_requests(
         )
     )
 
+    edited_rows: list[dict[str, object]] = []
     with st.form(f"approval_issue_form_{selected_request['record_id']}"):
-        edited_df = st.data_editor(
-            table_df.style.apply(approval_shortage_row_style, axis=1),
-            width="stretch",
-            hide_index=True,
-            height=360,
-            disabled=[
-                column
-                for column in table_df.columns
-                if column
-                not in {"实际发放品类", "实际发放型号", "实际发放语种", "实际发放数量"}
-            ],
-            column_config={
-                "实际发放品类": st.column_config.SelectboxColumn(
+        for row_index, row in enumerate(table_df.to_dict("records"), start=1):
+            line_id = str(row["记录ID"])
+            is_shortage = str(row.get("库存状态") or "") == "库存不足"
+            with st.container(border=True):
+                marker_class = (
+                    "pudu-approval-line-marker pudu-approval-line-shortage"
+                    if is_shortage
+                    else "pudu-approval-line-marker"
+                )
+                badge_class = "pudu-approval-stock-badge is-shortage" if is_shortage else "pudu-approval-stock-badge"
+                st.markdown(
+                    f"""
+                    <span class="{marker_class}"></span>
+                    <div class="pudu-approval-line-heading">
+                        <span class="pudu-approval-line-title">{escape(ui_text("明细编号"))} {row_index:02d}</span>
+                        <span class="{badge_class}">{escape(ui_text(str(row["库存状态"])))}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                request_cols = st.columns([2.8, 1.25, 1.35, 0.7, 0.75], gap="small")
+                render_approval_readonly_field(request_cols[0], "申请物料品类", row["申请物料品类"])
+                render_approval_readonly_field(request_cols[1], "申请产品型号", row["申请产品型号"])
+                render_approval_readonly_field(request_cols[2], "申请语种", row["申请语种"])
+                render_approval_readonly_field(request_cols[3], "申请数量", int(row["申请数量"]))
+                render_approval_readonly_field(request_cols[4], "当前库存", int(row["当前库存"]))
+                if str(row.get("备注") or "").strip():
+                    st.caption(f"备注：{row['备注']}")
+
+                st.markdown(
+                    f'<div class="pudu-approval-actual-heading">{escape(ui_text("实际发放信息"))}</div>',
+                    unsafe_allow_html=True,
+                )
+                actual_cols = st.columns([2.8, 1.25, 1.35, 0.7], gap="small")
+                product_key = f"approval_actual_product_{selected_request['record_id']}_{line_id}"
+                model_key = f"approval_actual_model_{selected_request['record_id']}_{line_id}"
+                language_key = f"approval_actual_language_{selected_request['record_id']}_{line_id}"
+                quantity_key = f"approval_actual_quantity_{selected_request['record_id']}_{line_id}"
+                initial_product = str(row.get("实际发放品类") or product_options[0])
+                initial_model = str(row.get("实际发放型号") or model_options[0])
+                initial_language = str(row.get("实际发放语种") or language_options[0])
+                if st.session_state.get(product_key) not in product_options:
+                    st.session_state[product_key] = initial_product if initial_product in product_options else product_options[0]
+                if st.session_state.get(model_key) not in model_options:
+                    st.session_state[model_key] = initial_model if initial_model in model_options else model_options[0]
+                if st.session_state.get(language_key) not in language_options:
+                    st.session_state[language_key] = (
+                        initial_language if initial_language in language_options else language_options[0]
+                    )
+                if quantity_key not in st.session_state:
+                    st.session_state[quantity_key] = int(row.get("实际发放数量") or 0)
+
+                render_approval_control_label(actual_cols[0], "实际发放品类")
+                actual_product = actual_cols[0].selectbox(
                     "实际发放品类",
-                    options=product_options,
-                    required=True,
-                    width="large",
-                ),
-                "实际发放型号": st.column_config.SelectboxColumn(
+                    product_options,
+                    key=product_key,
+                    label_visibility="collapsed",
+                )
+                render_approval_control_label(actual_cols[1], "实际发放型号")
+                actual_model = actual_cols[1].selectbox(
                     "实际发放型号",
-                    options=model_options,
-                    required=True,
-                    width="medium",
-                ),
-                "实际发放语种": st.column_config.SelectboxColumn(
+                    model_options,
+                    key=model_key,
+                    label_visibility="collapsed",
+                )
+                render_approval_control_label(actual_cols[2], "实际发放语种")
+                actual_language = actual_cols[2].selectbox(
                     "实际发放语种",
-                    options=language_options,
-                    required=True,
-                    width="medium",
-                ),
-                "实际发放数量": st.column_config.NumberColumn(
+                    language_options,
+                    key=language_key,
+                    label_visibility="collapsed",
+                )
+                render_approval_control_label(actual_cols[3], "实际发放数量")
+                actual_quantity = actual_cols[3].number_input(
                     "实际发放数量",
-                    help="填写实际发放数量并保存后，系统会按该数量更新物料库存。",
                     min_value=0,
                     max_value=1_000_000,
                     step=1,
+                    key=quantity_key,
+                    label_visibility="collapsed",
+                    help="填写实际发放数量并保存后，系统会按该数量更新物料库存。",
                 )
-            },
-            key=f"approval_issue_editor_{selected_request['record_id']}",
-        )
+                edited_rows.append(
+                    {
+                        "记录ID": line_id,
+                        "实际发放品类": actual_product,
+                        "实际发放型号": actual_model,
+                        "实际发放语种": actual_language,
+                        "实际发放数量": int(actual_quantity),
+                    }
+                )
         issue_note = st.text_input("审批/发放备注", key=f"approval_issue_note_{selected_request['record_id']}")
         submitted = st.form_submit_button(
             "保存实际发放并扣减库存",
@@ -7856,7 +8018,7 @@ def render_pending_approval_requests(
         )
 
     if submitted:
-        edited_by_id = {str(row["记录ID"]): row for row in edited_df.to_dict("records")}
+        edited_by_id = {str(row["记录ID"]): row for row in edited_rows}
         issue_lines: list[dict[str, object]] = []
         for line in selected_lines:
             row = edited_by_id.get(str(line["record_id"]))
