@@ -360,39 +360,17 @@ def inject_global_styles() -> None:
             text-transform: uppercase;
         }
         .st-key-sidebar_data_system_group {
-            gap: 0.65rem !important;
-            padding: 0.8rem;
-            border: 1px solid var(--pudu-line);
-            border-radius: 8px;
-            background: #FFFFFF;
+            gap: 0.75rem !important;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
         }
         .st-key-sidebar_data_system_group .pudu-sidebar-label {
-            margin: 0 0 0.15rem;
+            margin: 0.15rem 0 0.5rem;
         }
         .st-key-sidebar_data_system_group [data-testid="stExpander"] {
-            margin-top: 0.1rem;
-        }
-        .pudu-sidebar-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            padding: 0.75rem;
-            border: 1px solid var(--pudu-line-soft);
-            border-radius: 8px;
-            background: var(--pudu-teal-soft);
-            color: var(--pudu-muted) !important;
-            font-size: 0.78rem;
-        }
-        .st-key-sidebar_data_system_group .pudu-sidebar-status {
-            margin-top: 0;
-        }
-        .pudu-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--pudu-green);
-            flex: 0 0 auto;
+            margin-top: 0.5rem;
         }
         .pudu-page-header {
             display: flex;
@@ -5207,15 +5185,6 @@ def render_sidebar_link() -> None:
                 st.success(github_message)
             with st.container(key="sidebar_cache_publish"):
                 render_github_cache_publish()
-            st.markdown(
-                f"""
-                <div class="pudu-sidebar-status">
-                    <span class="pudu-status-dot"></span>
-                    {escape(ui_text("飞书多维表格连接已配置"))}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
             render_storage_diagnostics(st)
         st.divider()
 

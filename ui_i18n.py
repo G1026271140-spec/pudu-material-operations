@@ -47,7 +47,6 @@ EN_DISPLAY_TEXT = {
     "更新全部数据缓存": "Refresh All Data",
     "发布 GitHub 静态缓存": "Publish GitHub Static Cache",
     "手动发布静态缓存": "Publish Static Cache Manually",
-    "飞书多维表格连接已配置": "Feishu Bitable connection configured",
     "系统连接": "System Connection",
     "检查连接并刷新数据": "Check Connection & Refresh",
     "飞书多维表格连接成功": "Feishu Bitable connected",
