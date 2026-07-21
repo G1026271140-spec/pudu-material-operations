@@ -175,6 +175,47 @@ class BotNotificationTests(unittest.TestCase):
         create_record.assert_not_called()
         update_record.assert_not_called()
 
+    def test_existing_user_keeps_roles_when_sales_role_is_added(self) -> None:
+        rows = [
+            {
+                "record_id": "existing-user",
+                "fields": {
+                    "用户账号": [{"id": "ou_existing"}],
+                    "角色": ["管理员"],
+                    "是否启用": "是",
+                },
+            }
+        ]
+        with (
+            patch.object(app, "fresh_feishu_rows", return_value=rows),
+            patch.object(app, "feishu_create_record") as create_record,
+            patch.object(app, "feishu_update_record_fields") as update_record,
+        ):
+            result = app.ensure_requester_sales_permission(
+                {"requester_open_id": "ou_existing"}
+            )
+
+        self.assertEqual(result, "updated")
+        create_record.assert_not_called()
+        update_record.assert_called_once_with(
+            app.USER_PERMISSION_TABLE_NAME,
+            "existing-user",
+            {"角色": ["管理员", "销售"]},
+        )
+
+    def test_invalid_applicant_open_id_never_writes_permission_record(self) -> None:
+        with (
+            patch.object(app, "fresh_feishu_rows") as fresh_rows,
+            patch.object(app, "feishu_create_record") as create_record,
+            patch.object(app, "feishu_update_record_fields") as update_record,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "未关联有效的飞书账号"):
+                app.ensure_requester_sales_permission({"requester_open_id": ""})
+
+        fresh_rows.assert_not_called()
+        create_record.assert_not_called()
+        update_record.assert_not_called()
+
     def test_notification_contains_summary_and_approval_link(self) -> None:
         payload = {
             "requester": "销售甲",
