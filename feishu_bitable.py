@@ -195,6 +195,33 @@ class FeishuBitableClient:
             raise FeishuBitableError("Feishu did not return a message_id.")
         return message_id
 
+    def send_interactive_message(
+        self,
+        receive_id: str,
+        card: dict[str, Any],
+        *,
+        receive_id_type: str = "open_id",
+    ) -> str:
+        normalized_receive_id = receive_id.strip()
+        if not normalized_receive_id:
+            raise FeishuBitableError("Feishu message receive_id cannot be empty.")
+        if not card:
+            raise FeishuBitableError("Feishu interactive card cannot be empty.")
+        response = self._request(
+            "POST",
+            "/im/v1/messages",
+            params={"receive_id_type": receive_id_type},
+            payload={
+                "receive_id": normalized_receive_id,
+                "msg_type": "interactive",
+                "content": json.dumps(card, ensure_ascii=False),
+            },
+        )
+        message_id = str(response.get("data", {}).get("message_id", "")).strip()
+        if not message_id:
+            raise FeishuBitableError("Feishu did not return a message_id.")
+        return message_id
+
     def batch_create_records(self, table_id: str, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         response = self._request(
             "POST",

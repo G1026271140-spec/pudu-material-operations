@@ -27,6 +27,21 @@ class BotNotificationTests(unittest.TestCase):
             {"text": "申请提醒"},
         )
 
+    def test_client_sends_interactive_message_to_open_id(self) -> None:
+        client = FeishuBitableClient(FeishuBitableConfig("app", "secret", "token"))
+        client._request = Mock(return_value={"data": {"message_id": "om-card"}})
+        card = {"header": {"title": {"tag": "plain_text", "content": "申请单"}}}
+
+        message_id = client.send_interactive_message("ou-admin", card)
+
+        self.assertEqual(message_id, "om-card")
+        call = client._request.call_args
+        self.assertEqual(call.args[:2], ("POST", "/im/v1/messages"))
+        self.assertEqual(call.kwargs["params"], {"receive_id_type": "open_id"})
+        self.assertEqual(call.kwargs["payload"]["receive_id"], "ou-admin")
+        self.assertEqual(call.kwargs["payload"]["msg_type"], "interactive")
+        self.assertEqual(json.loads(call.kwargs["payload"]["content"]), card)
+
     def test_only_enabled_administrators_are_notification_recipients(self) -> None:
         rows = [
             {
@@ -186,19 +201,69 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn("产品折页 / BellaBot / 英语 × 3", text)
         self.assertIn("https://example.test/?view=approval", text)
 
+    def test_notification_card_contains_full_request_and_approval_button(self) -> None:
+        payload = {
+            "title": "展会使用-销售甲-营销物料领取",
+            "requester": "销售甲",
+            "department": "海外销售部",
+            "customer_name": "示例客户",
+            "country": "德国",
+            "recipient_info": "销售甲，12345，示例地址",
+            "freight_payer": "普渡付款(PUDU)",
+            "material_usage": "柏林展会",
+            "attachments": [{"name": "收件信息.pdf"}],
+        }
+        lines = [
+            {
+                "product": "产品折页",
+                "model": "BellaBot",
+                "language": "英语",
+                "quantity": 3,
+                "remark": "现场派发",
+            }
+        ]
+
+        with patch.object(
+            app,
+            "material_approval_url",
+            return_value="https://example.test/?view=approval",
+        ):
+            card = app.material_request_notification_card("REQ-1", payload, lines)
+
+        serialized = json.dumps(card, ensure_ascii=False)
+        self.assertEqual(card["header"]["template"], "orange")
+        for expected in (
+            "REQ-1",
+            "销售甲",
+            "海外销售部",
+            "示例客户",
+            "德国",
+            "销售甲，12345，示例地址",
+            "普渡付款(PUDU)",
+            "柏林展会",
+            "收件信息.pdf",
+            "产品折页 / BellaBot / 英语 × 3",
+            "现场派发",
+        ):
+            self.assertIn(expected, serialized)
+        action = card["elements"][-1]["actions"][0]
+        self.assertEqual(action["url"], "https://example.test/?view=approval")
+        self.assertEqual(action["type"], "primary")
+
     def test_notify_sends_once_to_each_enabled_administrator(self) -> None:
         client = Mock()
+        card = {"header": {"template": "orange"}}
         with (
             patch.object(app, "feishu_client", return_value=client),
             patch.object(app, "enabled_admin_open_ids", return_value=["ou-a", "ou-b"]),
-            patch.object(app, "material_request_notification_text", return_value="提醒"),
+            patch.object(app, "material_request_notification_card", return_value=card),
         ):
             count = app.notify_enabled_admins_of_material_request("REQ-1", {}, [])
 
         self.assertEqual(count, 2)
-        self.assertEqual(client.send_text_message.call_count, 2)
-        client.send_text_message.assert_any_call("ou-a", "提醒")
-        client.send_text_message.assert_any_call("ou-b", "提醒")
+        self.assertEqual(client.send_interactive_message.call_count, 2)
+        client.send_interactive_message.assert_any_call("ou-a", card)
+        client.send_interactive_message.assert_any_call("ou-b", card)
 
     def test_request_received_notification_only_goes_to_enabled_sales_applicant(self) -> None:
         client = Mock()
@@ -243,6 +308,27 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn(app.REQUEST_STATUS_PARTIAL, text)
         self.assertIn("申请 5，实际发放 3", text)
         self.assertIn("剩余待采购", text)
+
+    def test_completed_notification_shows_changed_actual_material(self) -> None:
+        request = {"request_no": "REQ-1", "status": app.REQUEST_STATUS_ISSUED}
+        lines = [
+            {
+                "product": "产品折页",
+                "model": "BellaBot",
+                "language": "英语",
+                "quantity": 5,
+                "actual_product": "产品单页",
+                "actual_model": "KettyBot Pro",
+                "actual_language": "德语",
+                "actual_issue_qty": 6,
+            }
+        ]
+
+        text = app.sales_request_completed_notification_text(request, lines, "替换发放")
+
+        self.assertIn("申请：产品折页 / BellaBot / 英语 × 5", text)
+        self.assertIn("实际发放：产品单页 / KettyBot Pro / 德语 × 6", text)
+        self.assertIn("替换发放", text)
 
     def test_completed_notification_only_goes_to_original_sales_applicant(self) -> None:
         client = Mock()

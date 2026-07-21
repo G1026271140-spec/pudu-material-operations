@@ -3325,6 +3325,128 @@ def material_request_notification_text(
     return "\n".join(parts)
 
 
+def _feishu_card_plain_text(value: object, *, max_length: int = 1600) -> str:
+    text = str(value or "-").strip() or "-"
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    return text[:max_length]
+
+
+def material_request_notification_card(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> dict[str, object]:
+    valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
+    total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
+    attachments = list(request_payload.get("attachments") or [])
+    attachment_names = [
+        _feishu_card_plain_text(
+            attachment.get("name") if isinstance(attachment, dict) else attachment,
+            max_length=200,
+        )
+        for attachment in attachments
+    ]
+
+    def short_field(label: str, value: object) -> dict[str, object]:
+        return {
+            "is_short": True,
+            "text": {
+                "tag": "plain_text",
+                "content": f"{label}\n{_feishu_card_plain_text(value, max_length=500)}",
+            },
+        }
+
+    elements: list[dict[str, object]] = [
+        {"tag": "markdown", "content": "**申请信息**"},
+        {
+            "tag": "div",
+            "fields": [
+                short_field("申请单号", request_no),
+                short_field("申请人", request_payload.get("requester")),
+                short_field("申请部门", request_payload.get("department")),
+                short_field("标题", request_payload.get("title")),
+                short_field("客户名称", request_payload.get("customer_name")),
+                short_field("国家", request_payload.get("country")),
+                short_field("运费承担者", request_payload.get("freight_payer")),
+                short_field("申请合计", f"{len(valid_lines)} 种，共 {total_quantity} 件"),
+            ],
+        },
+        {"tag": "hr"},
+        {"tag": "markdown", "content": "**收件人信息**"},
+        {
+            "tag": "div",
+            "text": {
+                "tag": "plain_text",
+                "content": _feishu_card_plain_text(request_payload.get("recipient_info")),
+            },
+        },
+        {"tag": "markdown", "content": "**物料用途**"},
+        {
+            "tag": "div",
+            "text": {
+                "tag": "plain_text",
+                "content": _feishu_card_plain_text(request_payload.get("material_usage")),
+            },
+        },
+    ]
+    if attachment_names:
+        elements.extend(
+            [
+                {"tag": "markdown", "content": "**相关附件**"},
+                {
+                    "tag": "div",
+                    "text": {
+                        "tag": "plain_text",
+                        "content": "、".join(attachment_names),
+                    },
+                },
+            ]
+        )
+
+    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**物料明细**"}])
+    for index, line in enumerate(valid_lines, start=1):
+        detail = (
+            f"{index:02d}. {_feishu_card_plain_text(line.get('product'), max_length=300)} / "
+            f"{_feishu_card_plain_text(line.get('model') or NO_MODEL_TEXT, max_length=200)} / "
+            f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)} "
+            f"× {int(line.get('quantity') or 0)}"
+        )
+        remark = str(line.get("remark") or "").strip()
+        if remark:
+            detail += f"\n备注：{_feishu_card_plain_text(remark, max_length=500)}"
+        elements.append(
+            {
+                "tag": "div",
+                "text": {"tag": "plain_text", "content": detail},
+            }
+        )
+
+    elements.extend(
+        [
+            {"tag": "hr"},
+            {
+                "tag": "action",
+                "actions": [
+                    {
+                        "tag": "button",
+                        "text": {"tag": "plain_text", "content": "打开审批与发放"},
+                        "type": "primary",
+                        "url": material_approval_url(),
+                    }
+                ],
+            },
+        ]
+    )
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "orange",
+            "title": {"tag": "plain_text", "content": "新的营销物料申请待处理"},
+        },
+        "elements": elements,
+    }
+
+
 def notify_enabled_admins_of_material_request(
     request_no: str,
     request_payload: dict[str, object],
@@ -3336,9 +3458,9 @@ def notify_enabled_admins_of_material_request(
     recipients = enabled_admin_open_ids()
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
-    text = material_request_notification_text(request_no, request_payload, lines)
+    card = material_request_notification_card(request_no, request_payload, lines)
     for open_id in recipients:
-        client.send_text_message(open_id, text)
+        client.send_interactive_message(open_id, card)
     return len(recipients)
 
 
@@ -3386,15 +3508,29 @@ def sales_request_completed_notification_text(
     note: str,
 ) -> str:
     status = str(request.get("status") or REQUEST_STATUS_ISSUED)
-    details = [
-        (
-            f"{index}. {str(line.get('product') or '-')} / "
+    details: list[str] = []
+    for index, line in enumerate(lines, start=1):
+        requested_material = (
+            f"{str(line.get('product') or '-')} / "
             f"{str(line.get('model') or NO_MODEL_TEXT)} / "
-            f"{str(line.get('language') or NO_LANGUAGE_TEXT)}："
-            f"申请 {int(line.get('quantity') or 0)}，实际发放 {int(line.get('actual_issue_qty') or 0)}"
+            f"{str(line.get('language') or NO_LANGUAGE_TEXT)}"
         )
-        for index, line in enumerate(lines, start=1)
-    ]
+        actual_material = (
+            f"{str(line.get('actual_product') or line.get('product') or '-')} / "
+            f"{str(line.get('actual_model') or line.get('model') or NO_MODEL_TEXT)} / "
+            f"{str(line.get('actual_language') or line.get('language') or NO_LANGUAGE_TEXT)}"
+        )
+        requested_quantity = int(line.get("quantity") or 0)
+        actual_quantity = int(line.get("actual_issue_qty") or 0)
+        if requested_material == actual_material:
+            details.append(
+                f"{index}. {requested_material}：申请 {requested_quantity}，实际发放 {actual_quantity}"
+            )
+        else:
+            details.append(
+                f"{index}. 申请：{requested_material} × {requested_quantity}\n"
+                f"   实际发放：{actual_material} × {actual_quantity}"
+            )
     parts = [
         "【营销物料申请审批已完成】",
         f"申请单号：{str(request.get('request_no') or '-')}",
