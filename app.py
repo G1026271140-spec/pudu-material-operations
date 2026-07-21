@@ -5169,16 +5169,16 @@ def render_sidebar_link() -> None:
         else:
             navigate_to_approval("sidebar_open_approval", "审批与发放")
         navigate_to_management_section(
-            "sidebar_open_material_database",
-            "物料数据库",
-            "物料数据库",
-            ":material/database:",
-        )
-        navigate_to_management_section(
             "sidebar_open_category",
             "品类管理",
             "品类管理",
             ":material/category:",
+        )
+        navigate_to_management_section(
+            "sidebar_open_material_database",
+            "物料数据库",
+            "物料数据库",
+            ":material/database:",
         )
         st.divider()
         with st.container(key="sidebar_data_system_group"):
