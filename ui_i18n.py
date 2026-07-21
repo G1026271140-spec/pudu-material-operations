@@ -32,6 +32,7 @@ ZH_DISPLAY_TEXT = {
 EN_DISPLAY_TEXT = {
     # Brand, navigation, and shared controls.
     "营销物料中心": "Marketing Materials Center",
+    "营销物料管理系统": "Marketing Materials System",
     "界面语言": "Interface Language",
     "语言设置": "Language",
     "工作台导航": "Workspace Navigation",

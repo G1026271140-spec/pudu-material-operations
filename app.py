@@ -259,7 +259,10 @@ def inject_global_styles() -> None:
             color: var(--pudu-muted);
         }
         [data-testid="stSidebarContent"] {
-            padding-top: 1.25rem;
+            padding-top: 0;
+        }
+        [data-testid="stSidebarUserContent"] {
+            padding-top: 1rem !important;
         }
         [data-testid="stSidebar"] hr {
             margin: 1rem 0;
@@ -278,6 +281,14 @@ def inject_global_styles() -> None:
             background: var(--pudu-blue-soft);
             border-color: #9FB8CB;
             color: var(--pudu-blue);
+        }
+        .st-key-sidebar_cache_publish [data-testid="stLinkButton"] > a,
+        .st-key-sidebar_cache_publish .stButton > button {
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        .st-key-sidebar_cache_publish [data-testid="stExpander"] summary > span {
+            justify-content: center !important;
         }
         .st-key-sidebar_open_request button {
             border-left: 3px solid var(--pudu-navy) !important;
@@ -5102,7 +5113,7 @@ def render_sidebar_link() -> None:
             brand_icon_col.image(str(APP_ICON_PATH), width=64)
             brand_text_col.markdown(
                 f"""
-                    <div class="pudu-brand-name">{escape(ui_text("营销物料中心"))}</div>
+                    <div class="pudu-brand-name">{escape(ui_text("营销物料管理系统"))}</div>
                     <div class="pudu-brand-subtitle">PUDU Material Operations</div>
                 """,
                 unsafe_allow_html=True,
@@ -5176,7 +5187,8 @@ def render_sidebar_link() -> None:
         github_message = st.session_state.pop("github_cache_refresh_message", "")
         if github_message:
             st.success(github_message)
-        render_github_cache_publish()
+        with st.container(key="sidebar_cache_publish"):
+            render_github_cache_publish()
         st.markdown(
             f"""
             <div class="pudu-sidebar-status">
@@ -8397,7 +8409,7 @@ def render_management_page_with_navigation_loading() -> None:
 def main() -> None:
     install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
-        page_title=ui_text("营销物料中心"),
+        page_title=ui_text("营销物料管理系统"),
         page_icon=str(APP_ICON_PATH) if APP_ICON_PATH.exists() else ":material/inventory_2:",
         layout="wide",
         initial_sidebar_state="auto",
