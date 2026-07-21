@@ -2195,18 +2195,35 @@ def build_live_contact_department_cache() -> dict[str, object]:
     department_users: dict[str, list[dict[str, object]]] = {}
     if department_ids:
         client.tenant_access_token()
+
+        def load_department_users_with_retry(department_id: str) -> list[dict[str, object]]:
+            last_error: Exception | None = None
+            for attempt in range(3):
+                try:
+                    return list(client.list_department_users(department_id))
+                except (FeishuBitableError, OSError) as exc:
+                    last_error = exc
+                    if attempt < 2:
+                        time.sleep(0.5 * (attempt + 1))
+            raise RuntimeError(f"读取部门成员失败：{department_id}") from last_error
+
         max_workers = min(8, len(department_ids))
+        failed_department_ids: list[str] = []
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_department = {
-                executor.submit(client.list_department_users, department_id): department_id
+                executor.submit(load_department_users_with_retry, department_id): department_id
                 for department_id in department_ids
             }
             for future in as_completed(future_to_department):
                 department_id = future_to_department[future]
                 try:
                     department_users[department_id] = list(future.result())
-                except FeishuBitableError:
-                    department_users[department_id] = []
+                except RuntimeError:
+                    failed_department_ids.append(department_id)
+        if failed_department_ids:
+            raise RuntimeError(
+                f"{len(failed_department_ids)} 个部门成员读取失败，已保留原通讯录缓存，请稍后重试。"
+            )
     return contact_department_cache_from_rows(
         department_rows,
         source="live_feishu",

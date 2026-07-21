@@ -77,6 +77,29 @@ class ContactDirectoryTests(unittest.TestCase):
         self.assertEqual(session_state["request_department_id"], "od-sales")
         self.assertTrue(session_state["request_form_cache_locked"])
 
+    def test_live_directory_retries_transient_department_timeout(self) -> None:
+        client = Mock()
+        client.list_contact_departments.return_value = [
+            {
+                "open_department_id": "od-sales",
+                "name": "销售部",
+                "parent_department_id": "0",
+            }
+        ]
+        client.list_department_users.side_effect = [
+            TimeoutError("temporary timeout"),
+            [{"open_id": "ou-example", "name": "张三"}],
+        ]
+
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app.time, "sleep"),
+        ):
+            cache = app.build_live_contact_department_cache()
+
+        self.assertEqual(cache["user_count"], 1)
+        self.assertEqual(client.list_department_users.call_count, 2)
+
     def test_contact_client_keeps_query_params_across_pages(self) -> None:
         client = FeishuBitableClient(FeishuBitableConfig("app", "secret", "token"))
         client._request = Mock(
