@@ -5872,6 +5872,17 @@ def sync_management_section_from_workbench_control() -> None:
         set_management_section(selected, sync_workbench_control=False)
 
 
+def request_material_management_navigation_loading() -> None:
+    selected = str(st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY, ""))
+    if selected in MATERIAL_MANAGEMENT_SECTIONS:
+        st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = selected
+
+
+def management_navigation_uses_loading_overlay(section: object) -> bool:
+    normalized = str(section or "")
+    return normalized == "物料管理" or normalized in MATERIAL_MANAGEMENT_SECTIONS
+
+
 def admin_auth_gate() -> bool:
     if st.session_state.get("admin_unlocked"):
         return True
@@ -10016,6 +10027,7 @@ def render_management_page() -> None:
             horizontal=True,
             label_visibility="collapsed",
             key=MATERIAL_MANAGEMENT_CONTROL_KEY,
+            on_change=request_material_management_navigation_loading,
         )
         render_page_cache_toolbar(
             {
@@ -10056,7 +10068,7 @@ def render_management_page() -> None:
 
 def render_management_page_with_navigation_loading() -> None:
     loading_section = str(st.session_state.pop(MANAGEMENT_NAVIGATION_LOADING_KEY, ""))
-    if loading_section != "物料管理":
+    if not management_navigation_uses_loading_overlay(loading_section):
         render_management_page()
         return
 

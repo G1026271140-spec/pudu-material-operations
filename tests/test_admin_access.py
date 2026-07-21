@@ -59,6 +59,24 @@ class AdminAccessTests(unittest.TestCase):
 
         self.assertNotIn(app.MANAGEMENT_NAVIGATION_LOADING_KEY, session_state)
 
+    def test_internal_material_navigation_requests_fullscreen_loading(self) -> None:
+        session_state: dict[str, object] = {
+            app.MATERIAL_MANAGEMENT_CONTROL_KEY: "物料数据库",
+        }
+        with patch.object(app.st, "session_state", session_state):
+            app.request_material_management_navigation_loading()
+
+        self.assertEqual(
+            session_state[app.MANAGEMENT_NAVIGATION_LOADING_KEY],
+            "物料数据库",
+        )
+
+    def test_all_material_management_pages_use_loading_overlay(self) -> None:
+        self.assertTrue(app.management_navigation_uses_loading_overlay("物料管理"))
+        for section in app.MATERIAL_MANAGEMENT_SECTIONS:
+            self.assertTrue(app.management_navigation_uses_loading_overlay(section))
+        self.assertFalse(app.management_navigation_uses_loading_overlay("库存登记"))
+
     def test_locked_cache_publish_does_not_expose_github_link(self) -> None:
         expander = MagicMock()
         expander.__enter__.return_value = expander
