@@ -42,6 +42,37 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(call.kwargs["payload"]["msg_type"], "interactive")
         self.assertEqual(json.loads(call.kwargs["payload"]["content"]), card)
 
+    def test_compat_sender_supports_cached_client_without_message_methods(self) -> None:
+        legacy_client = Mock(spec=["_request"])
+        legacy_client._request.side_effect = [
+            {"data": {"message_id": "om-card"}},
+            {"data": {"message_id": "om-text"}},
+        ]
+        card = {"header": {"title": {"tag": "plain_text", "content": "补库单"}}}
+
+        card_message_id = app.send_feishu_interactive_message(
+            legacy_client,
+            "ou-admin",
+            card,
+        )
+        text_message_id = app.send_feishu_text_message(
+            legacy_client,
+            "ou-sales",
+            "处理完成",
+        )
+
+        self.assertEqual(card_message_id, "om-card")
+        self.assertEqual(text_message_id, "om-text")
+        card_call, text_call = legacy_client._request.call_args_list
+        self.assertEqual(card_call.args[:2], ("POST", "/im/v1/messages"))
+        self.assertEqual(card_call.kwargs["payload"]["msg_type"], "interactive")
+        self.assertEqual(json.loads(card_call.kwargs["payload"]["content"]), card)
+        self.assertEqual(text_call.kwargs["payload"]["msg_type"], "text")
+        self.assertEqual(
+            json.loads(text_call.kwargs["payload"]["content"]),
+            {"text": "处理完成"},
+        )
+
     def test_only_enabled_administrators_are_notification_recipients(self) -> None:
         rows = [
             {

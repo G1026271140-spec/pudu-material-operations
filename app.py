@@ -3810,6 +3810,76 @@ def material_request_notification_card(
     }
 
 
+def _send_feishu_message_compat(
+    client: object,
+    receive_id: str,
+    message_type: str,
+    content: dict[str, object],
+    *,
+    receive_id_type: str = "open_id",
+) -> str:
+    normalized_receive_id = str(receive_id or "").strip()
+    if not normalized_receive_id:
+        raise FeishuBitableError("Feishu message receive_id cannot be empty.")
+
+    method_name = (
+        "send_interactive_message"
+        if message_type == "interactive"
+        else "send_text_message"
+    )
+    sender = getattr(client, method_name, None)
+    if callable(sender):
+        payload = content if message_type == "interactive" else str(content.get("text") or "")
+        if receive_id_type == "open_id":
+            return sender(normalized_receive_id, payload)
+        return sender(normalized_receive_id, payload, receive_id_type=receive_id_type)
+
+    request_method = getattr(client, "_request", None)
+    if not callable(request_method):
+        raise FeishuBitableError(f"Feishu client cannot send {message_type} messages.")
+    response = request_method(
+        "POST",
+        "/im/v1/messages",
+        params={"receive_id_type": receive_id_type},
+        payload={
+            "receive_id": normalized_receive_id,
+            "msg_type": message_type,
+            "content": json.dumps(content, ensure_ascii=False),
+        },
+    )
+    message_id = str(response.get("data", {}).get("message_id", "")).strip()
+    if not message_id:
+        raise FeishuBitableError("Feishu did not return a message_id.")
+    return message_id
+
+
+def send_feishu_interactive_message(
+    client: object,
+    receive_id: str,
+    card: dict[str, object],
+) -> str:
+    if not card:
+        raise FeishuBitableError("Feishu interactive card cannot be empty.")
+    return _send_feishu_message_compat(
+        client,
+        receive_id,
+        "interactive",
+        card,
+    )
+
+
+def send_feishu_text_message(client: object, receive_id: str, text: str) -> str:
+    normalized_text = str(text or "").strip()
+    if not normalized_text:
+        raise FeishuBitableError("Feishu message text cannot be empty.")
+    return _send_feishu_message_compat(
+        client,
+        receive_id,
+        "text",
+        {"text": normalized_text},
+    )
+
+
 def notify_enabled_admins_of_material_request(
     request_no: str,
     request_payload: dict[str, object],
@@ -3823,7 +3893,7 @@ def notify_enabled_admins_of_material_request(
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = material_request_notification_card(request_no, request_payload, lines)
     for open_id in recipients:
-        client.send_interactive_message(open_id, card)
+        send_feishu_interactive_message(client, open_id, card)
     return len(recipients)
 
 
@@ -3908,7 +3978,7 @@ def notify_enabled_admins_of_restock(
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = material_restock_notification_card(draft, lines)
     for open_id in recipients:
-        client.send_interactive_message(open_id, card)
+        send_feishu_interactive_message(client, open_id, card)
     return len(recipients)
 
 
@@ -3992,7 +4062,7 @@ def notify_enabled_admins_of_inventory_auto_disable(
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = inventory_auto_disable_notification_card(rows, checked_at)
     for open_id in recipients:
-        client.send_interactive_message(open_id, card)
+        send_feishu_interactive_message(client, open_id, card)
     return len(recipients)
 
 
@@ -4096,7 +4166,8 @@ def notify_sales_request_received(
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法发送销售申请回执。")
-    client.send_text_message(
+    send_feishu_text_message(
+        client,
         requester_open_id,
         sales_request_received_notification_text(request_no, request_payload, lines),
     )
@@ -4155,7 +4226,8 @@ def notify_sales_request_completed(
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法发送销售审批反馈。")
-    client.send_text_message(
+    send_feishu_text_message(
+        client,
         requester_open_id,
         sales_request_completed_notification_text(request, lines, note),
     )
