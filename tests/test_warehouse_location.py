@@ -96,6 +96,10 @@ class WarehouseLocationTests(unittest.TestCase):
                 "Floor area, right wall (rear half)",
             )
 
+    def test_warehouse_anchor_slug_is_stable(self) -> None:
+        self.assertEqual(app.warehouse_anchor_slug("H001"), "h001")
+        self.assertEqual(app.warehouse_anchor_slug(" M01L-04 "), "m01l-04")
+
 
 if __name__ == "__main__":
     unittest.main()

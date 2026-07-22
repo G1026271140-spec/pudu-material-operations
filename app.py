@@ -10452,7 +10452,13 @@ def warehouse_row_level_label(row_code: str) -> str:
     return "最上层" if level == 1 else f"第 {level} 层"
 
 
-def render_warehouse_floor_map(shelves: list[dict]) -> None:
+def warehouse_anchor_slug(shelf_code: object) -> str:
+    return re.sub(r"[^a-z0-9-]+", "-", str(shelf_code or "").strip().casefold()).strip("-")
+
+
+def render_warehouse_floor_map(
+    shelves: list[dict], *, highlight_matches: bool = False
+) -> None:
     english = get_ui_language() == LANGUAGE_EN
     labels = {
         "aria": "Warehouse shelf location diagram showing shelves in the current filter" if english else "仓库货架位置示意图，标出当前筛选结果中的货架位置",
@@ -10486,14 +10492,23 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
         safe_code = escape(shelf_code)
         safe_location = escape(location)
         pin_label = escape(f"{shelf_code[:1]}{int(shelf_code[1:] or '0')}")
+        anchor_slug = warehouse_anchor_slug(shelf_code)
+        marker_class = "warehouse-marker is-filter-match" if highlight_matches else "warehouse-marker"
+        link_label = escape(
+            f"View images for shelf {shelf_code}"
+            if english
+            else f"查看货架 {shelf_code} 的图片"
+        )
         markers.append(
-            f'<g class="warehouse-marker">'
+            f'<g id="map-{anchor_slug}" class="{marker_class}">'
+            f'<a href="#gallery-{anchor_slug}" aria-label="{link_label}">'
             f'<path d="M {pin_x} {pin_y} L {line_end_x} {label_y - 5}" stroke="{color}" stroke-width="2" fill="none" />'
-            f'<circle cx="{pin_x}" cy="{pin_y}" r="15" fill="{color}" stroke="#ffffff" stroke-width="4" />'
+            f'<circle class="match-ring" cx="{pin_x}" cy="{pin_y}" r="23" />'
+            f'<circle class="shelf-pin" cx="{pin_x}" cy="{pin_y}" r="15" fill="{color}" stroke="#ffffff" stroke-width="4" />'
             f'<text x="{pin_x}" y="{pin_y + 4}" text-anchor="middle" class="pin-text">{pin_label}</text>'
             f'<text x="{label_x}" y="{label_y - 10}" text-anchor="{label_anchor}" class="label-code">{safe_code}</text>'
             f'<text x="{label_x}" y="{label_y + 9}" text-anchor="{label_anchor}" class="label-location">{safe_location}</text>'
-            '</g>'
+            '</a></g>'
         )
     map_html = f"""
     <div class="warehouse-map-wrap" role="img" aria-label="{escape(labels['aria'])}">
@@ -10502,12 +10517,19 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
         <svg class="warehouse-map" viewBox="0 0 900 900" xmlns="http://www.w3.org/2000/svg">
           <style>
             .warehouse-map {{ font-family: Inter, "Microsoft YaHei", sans-serif; }}
-            .warehouse-outline {{ fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; }}
+            .warehouse-outline {{ fill: #e5e7eb; stroke: #94a3b8; stroke-width: 2; }}
             .zone {{ fill: #e8f4f5; stroke: #b8dfe2; stroke-width: 1.5; }}
             .zone-text {{ fill: #64748b; font-size: 13px; font-weight: 600; }}
             .pin-text {{ fill: white; font-size: 10px; font-weight: 800; }}
             .label-code {{ fill: #0f172a; font-size: 15px; font-weight: 800; }}
             .label-location {{ fill: #334155; font-size: 12px; }}
+            .warehouse-marker a {{ cursor: pointer; text-decoration: none; }}
+            .warehouse-marker a:hover .label-code,
+            .warehouse-marker a:focus .label-code {{ fill: #087f8c; text-decoration: underline; }}
+            .match-ring {{ fill: none; stroke: transparent; stroke-width: 4; }}
+            .warehouse-marker.is-filter-match .match-ring {{ stroke: #f59e0b; stroke-dasharray: 5 3; }}
+            .warehouse-marker:target .match-ring {{ stroke: #f97316; stroke-width: 7; stroke-dasharray: none; }}
+            .warehouse-marker:target .label-code {{ fill: #c2410c; }}
           </style>
           <rect x="200" y="120" width="500" height="650" rx="18" class="warehouse-outline" />
           <rect x="340" y="290" width="220" height="310" rx="12" class="zone" />
@@ -10533,6 +10555,11 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
       .warehouse-map-title span {{ color:#64748b; font-size:.82rem; }}
       .warehouse-map-scroll {{ overflow-x:auto; margin-top:.5rem; }}
       .warehouse-map {{ display:block; min-width:620px; width:100%; max-height:820px; height:auto; }}
+      .warehouse-gallery-anchor {{ scroll-margin-top: 5rem; height: 0; overflow: hidden; }}
+      .warehouse-gallery-anchor:target {{ height: auto; margin-bottom: .55rem; padding: .55rem .75rem; border-left: 4px solid #f97316; border-radius: 6px; background: #fff7ed; color: #9a3412; font-weight: 700; }}
+      .warehouse-gallery-anchor:target::after {{ content: attr(data-highlight-label); }}
+      .warehouse-map-return {{ display:inline-block; margin-bottom:.45rem; color:#087f8c !important; font-size:.84rem; font-weight:700; text-decoration:none !important; }}
+      .warehouse-map-return:hover {{ text-decoration:underline !important; }}
       @media (max-width: 720px) {{ .warehouse-map-title {{ flex-direction:column; gap:.2rem; }} }}
     </style>
     """
@@ -10633,7 +10660,10 @@ def render_warehouse_location_view() -> None:
             shelf_code="" if selected_shelf == "全部货架" else selected_shelf,
         )
     )
-    render_warehouse_floor_map(filtered)
+    render_warehouse_floor_map(
+        filtered,
+        highlight_matches=bool(str(query or "").strip() or selected_shelf != "全部货架"),
+    )
     render_section_header(
         "01",
         "Location Gallery" if english else "位置图片集锦",
@@ -10650,6 +10680,18 @@ def render_warehouse_location_view() -> None:
     for index, shelf in enumerate(filtered):
         with gallery_columns[index % 3].container(border=True):
             shelf_code = str(shelf.get("shelf_code") or "未编号")
+            anchor_slug = warehouse_anchor_slug(shelf_code)
+            located_label = (
+                f"Located shelf {shelf_code}"
+                if english
+                else f"已定位到货架 {shelf_code}"
+            )
+            return_label = "Locate on map" if english else "在地图中定位"
+            st.markdown(
+                f'<div id="gallery-{anchor_slug}" class="warehouse-gallery-anchor" data-highlight-label="{escape(located_label)}"></div>'
+                f'<a class="warehouse-map-return" href="#map-{anchor_slug}">↥ {escape(return_label)}</a>',
+                unsafe_allow_html=True,
+            )
             st.subheader(shelf_code)
             location = warehouse_display_text(shelf.get("ground_location") or "位置待补充")
             st.caption(f":material/location_on: {location}")
