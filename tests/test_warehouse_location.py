@@ -68,6 +68,18 @@ class WarehouseLocationTests(unittest.TestCase):
         self.assertNotIn('"quantity"', serialized)
         self.assertGreater(len(cache.get("shelves") or []), 0)
 
+    def test_shelves_with_materials_are_sorted_first(self) -> None:
+        shelves = [
+            {"shelf_code": "H004", "materials": [], "rows": []},
+            {"shelf_code": "H001", "materials": [], "rows": [{"materials": [{"material_code": "A"}]}]},
+            {"shelf_code": "G003", "materials": [{"material_code": "B"}, {"material_code": "C"}], "rows": []},
+        ]
+
+        result = app.sort_warehouse_location_shelves(shelves)
+
+        self.assertEqual([item["shelf_code"] for item in result], ["G003", "H001", "H004"])
+        self.assertEqual(app.warehouse_shelf_material_count(result[0]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -99,8 +99,8 @@ EN_DISPLAY_TEXT = {
         "Search storage locations by material, model, language, shelf, or location description."
     ),
     "静态位置缓存": "Static Location Cache",
-    "本页面仅用于查询物料存放位置，不展示库存数量。如需拿取物料，请先提交物料申请。": (
-        "This page only shows storage locations and does not display inventory quantities. Submit a material request before collecting any items."
+    "本页面仅用于查询物料存放位置。如需拿取物料，请先提交物料申请。": (
+        "This page only shows storage locations. Submit a material request before collecting any items."
     ),
     "搜索物料或位置": "Search Materials or Locations",
     "筛选货架": "Filter Shelf",

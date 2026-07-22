@@ -10311,6 +10311,27 @@ def warehouse_material_search_text(material: dict[str, object]) -> str:
     ).casefold()
 
 
+def warehouse_shelf_material_count(shelf: dict[str, object]) -> int:
+    direct_count = len(list(shelf.get("materials") or []))
+    row_count = sum(
+        len(list(row.get("materials") or []))
+        for row in list(shelf.get("rows") or [])
+        if isinstance(row, dict)
+    )
+    return direct_count + row_count
+
+
+def sort_warehouse_location_shelves(shelves: list[dict]) -> list[dict]:
+    return sorted(
+        shelves,
+        key=lambda shelf: (
+            warehouse_shelf_material_count(shelf) == 0,
+            -warehouse_shelf_material_count(shelf),
+            str(shelf.get("shelf_code") or ""),
+        ),
+    )
+
+
 def filter_warehouse_location_shelves(
     shelves: list[dict],
     *,
@@ -10364,6 +10385,107 @@ def filter_warehouse_location_shelves(
     return results
 
 
+WAREHOUSE_MAP_POINTS = {
+    "H001": (210, 285, 145, 285),
+    "H002": (295, 285, 325, 155),
+    "H003": (470, 345, 410, 380),
+    "H004": (650, 260, 835, 245),
+    "H005": (470, 400, 470, 475),
+    "H006": (680, 135, 835, 85),
+    "G001": (230, 395, 145, 400),
+    "G002": (750, 365, 835, 390),
+    "G003": (750, 175, 835, 165),
+    "G004": (245, 185, 145, 175),
+    "G005": (570, 125, 635, 50),
+}
+
+WAREHOUSE_MAP_LABEL_ANCHORS = {
+    "H003": "middle",
+    "H005": "middle",
+    "G005": "middle",
+}
+
+
+def render_warehouse_floor_map(shelves: list[dict]) -> None:
+    markers: list[str] = []
+    for shelf in shelves:
+        shelf_code = str(shelf.get("shelf_code") or "").strip()
+        if shelf_code not in WAREHOUSE_MAP_POINTS:
+            continue
+        pin_x, pin_y, label_x, label_y = WAREHOUSE_MAP_POINTS[shelf_code]
+        material_count = warehouse_shelf_material_count(shelf)
+        location = str(shelf.get("ground_location") or "位置待补充").strip()
+        color = "#087f8c" if material_count else "#94a3b8"
+        label_anchor = WAREHOUSE_MAP_LABEL_ANCHORS.get(
+            shelf_code, "start" if label_x > pin_x else "end"
+        )
+        line_end_x = (
+            label_x
+            if label_anchor == "middle"
+            else label_x - 8 if label_anchor == "start" else label_x + 8
+        )
+        safe_code = escape(shelf_code)
+        safe_location = escape(location)
+        count_label = "有物料" if material_count else "暂无关联物料"
+        markers.append(
+            f'<g class="warehouse-marker">'
+            f'<path d="M {pin_x} {pin_y} L {line_end_x} {label_y - 5}" stroke="{color}" stroke-width="2" fill="none" />'
+            f'<circle cx="{pin_x}" cy="{pin_y}" r="15" fill="{color}" stroke="#ffffff" stroke-width="4" />'
+            f'<text x="{pin_x}" y="{pin_y + 4}" text-anchor="middle" class="pin-text">{safe_code[-2:]}</text>'
+            f'<text x="{label_x}" y="{label_y - 10}" text-anchor="{label_anchor}" class="label-code">{safe_code}</text>'
+            f'<text x="{label_x}" y="{label_y + 9}" text-anchor="{label_anchor}" class="label-location">{safe_location}</text>'
+            f'<text x="{label_x}" y="{label_y + 27}" text-anchor="{label_anchor}" class="label-count">{count_label}</text>'
+            '</g>'
+        )
+    map_html = f"""
+    <div class="warehouse-map-wrap" role="img" aria-label="仓库货架位置示意图，标出当前筛选结果中的货架位置">
+      <div class="warehouse-map-title"><strong>仓库货架位置示意图</strong><span>按位置描述绘制，非精确比例</span></div>
+      <div class="warehouse-map-scroll">
+        <svg class="warehouse-map" viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            .warehouse-map {{ font-family: Inter, "Microsoft YaHei", sans-serif; }}
+            .warehouse-outline {{ fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; }}
+            .zone {{ fill: #e8f4f5; stroke: #b8dfe2; stroke-width: 1.5; }}
+            .zone-text {{ fill: #64748b; font-size: 13px; font-weight: 600; }}
+            .pin-text {{ fill: white; font-size: 10px; font-weight: 800; }}
+            .label-code {{ fill: #0f172a; font-size: 15px; font-weight: 800; }}
+            .label-location {{ fill: #334155; font-size: 12px; }}
+            .label-count {{ fill: #64748b; font-size: 11px; }}
+          </style>
+          <rect x="150" y="90" width="640" height="335" rx="18" class="warehouse-outline" />
+          <rect x="300" y="185" width="340" height="145" rx="12" class="zone" />
+          <text x="470" y="252" text-anchor="middle" class="zone-text">中央货架区</text>
+          <text x="470" y="275" text-anchor="middle" class="zone-text">四周为环形过道</text>
+          <text x="470" y="175" text-anchor="middle" class="zone-text">北侧过道</text>
+          <text x="575" y="385" text-anchor="middle" class="zone-text">南侧过道</text>
+          <text x="280" y="260" text-anchor="middle" class="zone-text" transform="rotate(-90 280 260)">西侧过道</text>
+          <text x="660" y="260" text-anchor="middle" class="zone-text" transform="rotate(90 660 260)">东侧过道</text>
+          <path d="M 365 90 L 365 78 M 405 90 L 405 78 M 445 90 L 445 78 M 485 90 L 485 78 M 525 90 L 525 78 M 565 90 L 565 78" stroke="#4aa9b2" stroke-width="6" />
+          <text x="465" y="78" text-anchor="middle" class="zone-text">北侧窗户</text>
+          <path d="M 205 425 L 205 458 L 250 458" fill="none" stroke="#087f8c" stroke-width="5" />
+          <path d="M 250 443 L 272 458 L 250 473" fill="none" stroke="#087f8c" stroke-width="3" />
+          <text x="172" y="488" text-anchor="start" class="zone-text">仓库入口（西侧南延长线）</text>
+          {''.join(markers)}
+        </svg>
+      </div>
+      <div class="warehouse-map-legend"><span><i class="has-material"></i>有物料</span><span><i class="no-material"></i>暂无关联物料</span></div>
+    </div>
+    <style>
+      .warehouse-map-wrap {{ margin: .5rem 0 1.25rem; padding: 1rem; border: 1px solid #d9e2ec; border-radius: 14px; background: white; }}
+      .warehouse-map-title {{ display:flex; justify-content:space-between; gap:1rem; color:#0f172a; }}
+      .warehouse-map-title span {{ color:#64748b; font-size:.82rem; }}
+      .warehouse-map-scroll {{ overflow-x:auto; margin-top:.5rem; }}
+      .warehouse-map {{ display:block; min-width:760px; width:100%; height:auto; }}
+      .warehouse-map-legend {{ display:flex; gap:1rem; color:#475569; font-size:.82rem; }}
+      .warehouse-map-legend i {{ display:inline-block; width:.65rem; height:.65rem; border-radius:50%; margin-right:.35rem; }}
+      .warehouse-map-legend .has-material {{ background:#087f8c; }}
+      .warehouse-map-legend .no-material {{ background:#94a3b8; }}
+      @media (max-width: 720px) {{ .warehouse-map-title {{ flex-direction:column; gap:.2rem; }} }}
+    </style>
+    """
+    st.markdown(map_html, unsafe_allow_html=True)
+
+
 def render_warehouse_materials(materials: list[dict]) -> None:
     if not materials:
         st.caption("暂无关联物料明细")
@@ -10412,7 +10534,7 @@ def render_warehouse_location_view() -> None:
     )
     cache = load_warehouse_location_cache()
     shelves = [dict(item) for item in list(cache.get("shelves") or []) if isinstance(item, dict)]
-    st.info("本页面仅用于查询物料存放位置，不展示库存数量。如需拿取物料，请先提交物料申请。")
+    st.info("本页面仅用于查询物料存放位置。如需拿取物料，请先提交物料申请。")
     generated_at = str(cache.get("generated_at") or "未记录")
     st.caption(f"位置数据来源：人工发布的静态缓存　更新时间：{generated_at}　页面不会自动同步飞书数据。")
     with st.container(border=True):
@@ -10431,11 +10553,14 @@ def render_warehouse_location_view() -> None:
             shelf_options,
             key="warehouse_location_shelf_filter",
         )
-    filtered = filter_warehouse_location_shelves(
-        shelves,
-        query=query,
-        shelf_code="" if selected_shelf == "全部货架" else selected_shelf,
+    filtered = sort_warehouse_location_shelves(
+        filter_warehouse_location_shelves(
+            shelves,
+            query=query,
+            shelf_code="" if selected_shelf == "全部货架" else selected_shelf,
+        )
     )
+    render_warehouse_floor_map(filtered)
     render_section_header("01", "位置图片集锦", f"共找到 {len(filtered)} 个货架位置")
     if not filtered:
         st.warning("没有找到匹配的位置，请尝试物料名称、型号、语种或货架编号。")
