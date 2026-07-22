@@ -6281,33 +6281,37 @@ def render_sidebar_link() -> None:
                 f'<div class="pudu-sidebar-label">{escape(ui_text("数据与系统"))}</div>',
                 unsafe_allow_html=True,
             )
-            if st.button(
-                "更新全部数据缓存",
-                key="sidebar_refresh_data",
-                icon=":material/refresh:",
-                width="stretch",
-            ):
-                with st.spinner("全部页面数据同步中，请稍后......"):
-                    try:
-                        maintenance = maintain_inventory_status()
-                        result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
-                        refresh_request_form_cache_from_page_data()
-                        refresh_contact_departments_from_feishu()
-                    except Exception as exc:
-                        st.error("数据库同步失败。")
-                        st.exception(exc)
-                    else:
-                        st.success(
-                            f"全部页面数据已同步，共 {result['row_count']} 条记录；"
-                            f"自动启用 {maintenance['enabled_count']} 条，"
-                            f"自动停用 {maintenance['disabled_count']} 条。"
-                        )
-            github_message = st.session_state.pop("github_cache_refresh_message", "")
-            if github_message:
-                st.success(github_message)
-            with st.container(key="sidebar_cache_publish"):
-                render_github_cache_publish()
-            render_storage_diagnostics(st)
+            if not st.session_state.get("admin_unlocked"):
+                with st.expander("数据与系统工具", expanded=False, icon=":material/lock:"):
+                    sidebar_admin_auth_gate("data_system_tools")
+            else:
+                if st.button(
+                    "更新全部数据缓存",
+                    key="sidebar_refresh_data",
+                    icon=":material/refresh:",
+                    width="stretch",
+                ):
+                    with st.spinner("全部页面数据同步中，请稍后......"):
+                        try:
+                            maintenance = maintain_inventory_status()
+                            result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
+                            refresh_request_form_cache_from_page_data()
+                            refresh_contact_departments_from_feishu()
+                        except Exception as exc:
+                            st.error("数据库同步失败。")
+                            st.exception(exc)
+                        else:
+                            st.success(
+                                f"全部页面数据已同步，共 {result['row_count']} 条记录；"
+                                f"自动启用 {maintenance['enabled_count']} 条，"
+                                f"自动停用 {maintenance['disabled_count']} 条。"
+                            )
+                github_message = st.session_state.pop("github_cache_refresh_message", "")
+                if github_message:
+                    st.success(github_message)
+                with st.container(key="sidebar_cache_publish"):
+                    render_github_cache_publish()
+                render_storage_diagnostics(st)
         st.divider()
 
 
