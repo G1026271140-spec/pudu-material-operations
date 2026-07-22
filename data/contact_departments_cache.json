@@ -1,7 +1,11 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-21 16:31:22",
+  "consumers": [
+    "material_request",
+    "inventory_restock"
+  ],
+  "generated_at": "2026-07-22 10:31:43",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1292,10 +1296,10 @@
       "open_id": "ou_ee232aa5095d81dd45d9cc3cd0f2f44e",
       "name": "丁香怡",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-54989923ac5367b9c79a6692ff383d77"
       ],
       "department_paths": [
-        "招聘部"
+        "校招组"
       ]
     },
     {
@@ -3226,10 +3230,10 @@
       "open_id": "ou_73fed17a777c5729a7cf52173e96137a",
       "name": "刘铭祈",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -3276,10 +3280,10 @@
       "open_id": "ou_7f6c3e9346c66627978a37d4d00d514c",
       "name": "劳振佳",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -4026,11 +4030,9 @@
       "open_id": "ou_e826a2f216173c69bbb5d22c697dff44",
       "name": "吴金峰",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba",
         "od-8c5ed2e15421f3b5d65be5fcf6da0124"
       ],
       "department_paths": [
-        "招聘部",
         "营销招聘组"
       ]
     },
@@ -4578,10 +4580,10 @@
       "open_id": "ou_c730ab0100ce5fff82273b350c147b92",
       "name": "喻亚飞",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -8022,10 +8024,10 @@
       "open_id": "ou_e2c61abb71ef84d1d6374c83e4d714b6",
       "name": "李丽芳",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -8614,10 +8616,10 @@
       "open_id": "ou_57a6f200084e7140ba38350b2ff76e31",
       "name": "李晓纯",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-54989923ac5367b9c79a6692ff383d77"
       ],
       "department_paths": [
-        "招聘部"
+        "校招组"
       ]
     },
     {
@@ -8940,10 +8942,10 @@
       "open_id": "ou_89f246b7c57c8bf554c3599b656c3efd",
       "name": "李芊芊",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -10286,10 +10288,10 @@
       "open_id": "ou_03108da047b39027c0d87759a0f07263",
       "name": "欧超",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -10420,16 +10422,6 @@
       ],
       "department_paths": [
         "IRPBU硬件组"
-      ]
-    },
-    {
-      "open_id": "ou_ecbe1d849623c0e089ee73da3330128d",
-      "name": "毛孝晓",
-      "department_ids": [
-        "od-05b225f00ac533c63b0f954e0e58df2d"
-      ],
-      "department_paths": [
-        "CRPBU机械组"
       ]
     },
     {
@@ -11364,11 +11356,9 @@
       "open_id": "ou_81ab054ffe94058791a8247b5bde2773",
       "name": "王可欣",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba",
         "od-54989923ac5367b9c79a6692ff383d77"
       ],
       "department_paths": [
-        "招聘部",
         "校招组"
       ]
     },
@@ -11760,10 +11750,10 @@
       "open_id": "ou_811b0debcb6bdeba86093266608b483a",
       "name": "王浩岚",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-8c5ed2e15421f3b5d65be5fcf6da0124"
       ],
       "department_paths": [
-        "招聘部"
+        "营销招聘组"
       ]
     },
     {
@@ -12550,10 +12540,10 @@
       "open_id": "ou_89644d9b7b7e0d2434b9b6f52fb4572c",
       "name": "粟婕",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -12692,10 +12682,10 @@
       "open_id": "ou_605f9ea59d04bd2444cf75cfac8746b5",
       "name": "罗梦碟",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -13326,10 +13316,10 @@
       "open_id": "ou_c6cbdc8a7d02bf56bdbb9fa37e0caa0b",
       "name": "胥伟",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -13922,10 +13912,10 @@
       "open_id": "ou_ed45460f1cb9a1375f467e8b6f3e1c1a",
       "name": "袁向娜",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-54989923ac5367b9c79a6692ff383d77"
       ],
       "department_paths": [
-        "招聘部"
+        "校招组"
       ]
     },
     {
@@ -14024,10 +14014,10 @@
       "open_id": "ou_2a8e77d69f3ec838f4bae05289b2d791",
       "name": "裴慧子",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -14084,10 +14074,10 @@
       "open_id": "ou_a3a67d36b6450683310d2684110ed183",
       "name": "詹烽楠",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -14332,16 +14322,6 @@
       ],
       "department_paths": [
         "GRPBU电机组"
-      ]
-    },
-    {
-      "open_id": "ou_bde602592f2159ad24f69ea4527edfa9",
-      "name": "谭天义",
-      "department_ids": [
-        "od-e9be822e07696582ef8c156ffbc06d39"
-      ],
-      "department_paths": [
-        "GRPBU硬件组"
       ]
     },
     {
@@ -15064,10 +15044,12 @@
       "open_id": "ou_931596bbbba0ded064ab1dc2e18c663d",
       "name": "郑丞烨",
       "department_ids": [
-        "od-3dd1486ac774c442539f2658feefbf00"
+        "od-3dd1486ac774c442539f2658feefbf00",
+        "od-2215f5418e37914d077f58727c5490e3"
       ],
       "department_paths": [
-        "基座模型部"
+        "基座模型部",
+        "项目成员挂靠"
       ]
     },
     {
@@ -15968,10 +15950,10 @@
       "open_id": "ou_e75f0bddad4d8e342e4593aba4718b91",
       "name": "陈可心",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-54989923ac5367b9c79a6692ff383d77"
       ],
       "department_paths": [
-        "招聘部"
+        "校招组"
       ]
     },
     {
@@ -18010,10 +17992,10 @@
       "open_id": "ou_ac0df3d501ef00bec971e9e9ff32c50e",
       "name": "黎敏钰",
       "department_ids": [
-        "od-e1ee40bc646bf97402cc006645379aba"
+        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
       ],
       "department_paths": [
-        "招聘部"
+        "非营销招聘组"
       ]
     },
     {
@@ -18109,5 +18091,5 @@
       ]
     }
   ],
-  "user_count": 1656
+  "user_count": 1654
 }

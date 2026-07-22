@@ -1,12 +1,10 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-21 16:30:57",
+  "generated_at": "2026-07-22 10:31:25",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
-    "工业产品线手册IR（Industrial Product Line Brochure）",
-    "清洁产品线手册CR（Cleaning Product Line Brochure）",
     "配送线产品手册DR(Delivery Robot Product Brochure)",
     "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
@@ -19,8 +17,8 @@
   ],
   "no_model_products": [
     "品牌手册(Product Brochure (All\nBanner)）",
-    "工业产品线手册IR（Industrial Product Line Brochure）",
-    "清洁产品线手册CR（Cleaning Product Line Brochure）",
+    "工业产品线手册IR(Industrial Product Line Brochure）",
+    "清洁产品线手册CR(Cleaning Product Line Brochure）",
     "配送线产品手册DR(Delivery Robot Product Brochure)",
     "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
@@ -28,6 +26,8 @@
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
     "展会服装（Clothes）",
+    "工业产品线手册IR（Industrial Product Line Brochure）",
+    "清洁产品线手册CR（Cleaning Product Line Brochure）",
     "展会服装"
   ],
   "no_language_products": [
@@ -41,8 +41,8 @@
   "configured_language_products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
-    "工业产品线手册IR（Industrial Product Line Brochure）",
-    "清洁产品线手册CR（Cleaning Product Line Brochure）",
+    "工业产品线手册IR(Industrial Product Line Brochure）",
+    "清洁产品线手册CR(Cleaning Product Line Brochure）",
     "配送线产品手册DR(Delivery Robot Product Brochure)",
     "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
@@ -450,7 +450,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "SH1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 100
+      "quantity": 1100
     },
     {
       "material_code": "MAT-0270",
@@ -945,104 +945,6 @@
     {
       "material_code": "MAT-0370",
       "product": "品牌手册(Product Brochure (All\nBanner)）",
-      "model": "无需型号",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0371",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 80
-    },
-    {
-      "material_code": "MAT-0372",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0373",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0374",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0375",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0379",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0380",
-      "product": "工业产品线手册IR（Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0381",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
-      "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 360
-    },
-    {
-      "material_code": "MAT-0382",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
-      "model": "无需型号",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0383",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
-      "model": "无需型号",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0384",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
-      "model": "无需型号",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0385",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
-      "model": "无需型号",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0389",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0390",
-      "product": "清洁产品线手册CR（Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "意大利语(Italian)",
       "quantity": 0
@@ -1927,7 +1829,7 @@
       "product": "公仔(Plush Toy)",
       "model": "CC1 PRO",
       "language": "无需语种",
-      "quantity": 0
+      "quantity": 100
     },
     {
       "material_code": "MAT-0711",
@@ -2413,6 +2315,6 @@
       "quantity": 600
     }
   ],
-  "row_count": 331,
+  "row_count": 317,
   "built_from": "live_feishu"
 }
