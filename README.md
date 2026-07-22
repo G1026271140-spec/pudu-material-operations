@@ -67,6 +67,8 @@ Windows 本地缓存节点每天 `10:30` 和 `16:30` 从飞书生成最新静态
 
 “物料仓库位置查询”使用独立的人工发布静态缓存，不参与上述定时任务，也不参与应用内“更新全部数据缓存”。仅在明确需要更新位置文字或图片时手动运行 `python scripts/generate_warehouse_location_cache.py` 并发布生成的缓存与图片。
 
+Windows 本地电脑另有 `PUDU Streamlit Nightly Wake` 定时任务，每天 23:20 使用无界面 Edge 检查生产应用；如遇休眠页会自动点击唤醒，并在 `work/streamlit-wake.log` 记录应用就绪结果。该任务只访问线上页面，不刷新飞书或静态缓存。
+
 ```powershell
 .\scripts\install_local_cache_task.ps1
 ```
