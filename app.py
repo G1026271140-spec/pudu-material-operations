@@ -51,9 +51,11 @@ REQUEST_LINE_TABLE_NAME = "申请明细"
 MATERIAL_TABLE_NAME = "物料主数据"
 CATEGORY_TABLE_NAME = "物料品类"
 MODEL_TABLE_NAME = "产品型号"
+LANGUAGE_TABLE_NAME = "物料语种"
 LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
+LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
 UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
@@ -166,20 +168,22 @@ LAST_APP_VIEW_KEY = "last_app_view"
 ALL_PAGE_CACHE_TABLES = (
     CATEGORY_TABLE_NAME,
     MODEL_TABLE_NAME,
+    LANGUAGE_TABLE_NAME,
     MATERIAL_TABLE_NAME,
     LEDGER_TABLE_NAME,
     REQUEST_TABLE_NAME,
     REQUEST_LINE_TABLE_NAME,
 )
 PAGE_CACHE_TABLES = {
-    "request": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME),
-    "restock": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
-    "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "request": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "restock": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
-    "material_database": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "material_database": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "approval": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME),
-    "inventory": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "inventory": (CATEGORY_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
 }
+OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
 
 
 def get_ui_language() -> str:
@@ -1338,6 +1342,14 @@ def material_model_link_field_name() -> str:
     return ""
 
 
+def material_language_link_field_name() -> str:
+    fields = feishu_table_fields(MATERIAL_TABLE_NAME)
+    for field_name in LANGUAGE_LINK_FIELD_CANDIDATES:
+        if field_name in fields and fields[field_name].get("type") in {18, 21}:
+            return field_name
+    return ""
+
+
 def ensure_feishu_model_records(models: list[str]) -> tuple[str, dict[str, str]]:
     normalized_models = unique_preserve(
         [str(model).strip() or NO_MODEL_TEXT for model in models if str(model).strip()]
@@ -1393,6 +1405,69 @@ def add_material_model_link(
     model_record_id = model_ids.get(model.strip() or NO_MODEL_TEXT, "")
     if link_field and model_record_id:
         fields[link_field] = [model_record_id]
+
+
+def feishu_language_name(fields: dict) -> str:
+    return feishu_text(fields, "语言种类").strip() or feishu_text(fields, "语种").strip()
+
+
+def ensure_feishu_language_records(languages: list[str]) -> tuple[str, dict[str, str]]:
+    normalized_languages = unique_preserve(
+        [str(language).strip() or NO_LANGUAGE_TEXT for language in languages if str(language).strip()]
+    )
+    link_field = material_language_link_field_name()
+    if normalized_languages and not link_field:
+        refresh_feishu_schema_cache()
+        link_field = material_language_link_field_name()
+    if not normalized_languages or not link_field:
+        return link_field, {}
+    if LANGUAGE_TABLE_NAME not in feishu_schema().get("tables", {}):
+        refresh_feishu_schema_cache()
+    if LANGUAGE_TABLE_NAME not in feishu_schema().get("tables", {}):
+        return link_field, {}
+
+    try:
+        rows = fresh_feishu_rows(LANGUAGE_TABLE_NAME)
+    except FeishuBitableError:
+        return link_field, {}
+
+    language_ids: dict[str, str] = {}
+    for row in rows:
+        language = feishu_language_name(feishu_fields(row))
+        record_id = feishu_record_id(row)
+        if language and record_id and language not in language_ids:
+            language_ids[language] = record_id
+
+    missing_languages = [language for language in normalized_languages if language not in language_ids]
+    if missing_languages:
+        records = [
+            {
+                "语言种类": language,
+                "启用状态": STATUS_ACTIVE,
+            }
+            for language in missing_languages
+        ]
+        created = feishu_batch_create_records(LANGUAGE_TABLE_NAME, records)
+        for language, row in zip(missing_languages, created):
+            record_id = feishu_record_id(row)
+            if record_id:
+                language_ids[language] = record_id
+    return link_field, {
+        language: language_ids[language]
+        for language in normalized_languages
+        if language in language_ids
+    }
+
+
+def add_material_language_link(
+    fields: dict[str, object],
+    language: str,
+    link_field: str,
+    language_ids: dict[str, str],
+) -> None:
+    language_record_id = language_ids.get(language.strip() or NO_LANGUAGE_TEXT, "")
+    if link_field and language_record_id:
+        fields[link_field] = [language_record_id]
 
 
 def storage_mode_label() -> str:
@@ -2143,9 +2218,27 @@ def fresh_feishu_rows(table_name: str) -> list[dict]:
     return client.list_records(feishu_table_id(table_name))
 
 
+def safe_fresh_feishu_rows(table_name: str) -> list[dict]:
+    try:
+        return fresh_feishu_rows(table_name)
+    except FeishuBitableError:
+        if table_name in OPTIONAL_PAGE_CACHE_TABLES:
+            return []
+        raise
+
+
+def safe_feishu_rows(table_name: str) -> list[dict]:
+    try:
+        return feishu_rows(table_name)
+    except FeishuBitableError:
+        if table_name in OPTIONAL_PAGE_CACHE_TABLES:
+            return []
+        raise
+
+
 def refresh_page_cache_tables(table_names: list[str] | tuple[str, ...]) -> dict[str, object]:
     normalized_names = unique_preserve([str(table_name) for table_name in table_names])
-    refreshed_tables = {table_name: fresh_feishu_rows(table_name) for table_name in normalized_names}
+    refreshed_tables = {table_name: safe_fresh_feishu_rows(table_name) for table_name in normalized_names}
     refreshed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     runtime_cache = page_data_runtime_cache()
     runtime_lock = runtime_cache["lock"]
@@ -2179,7 +2272,7 @@ def page_cache_status(table_names: list[str] | tuple[str, ...]) -> tuple[str, st
 
 
 def build_page_data_static_snapshot() -> dict[str, object]:
-    tables = {table_name: fresh_feishu_rows(table_name) for table_name in ALL_PAGE_CACHE_TABLES}
+    tables = {table_name: safe_fresh_feishu_rows(table_name) for table_name in ALL_PAGE_CACHE_TABLES}
     return {
         "schema_version": 1,
         "source": "live_feishu",
@@ -2989,6 +3082,7 @@ def feishu_options_from_rows(
     categories: list[dict],
     inventory_df: pd.DataFrame,
     model_rows: list[dict] | None = None,
+    language_rows: list[dict] | None = None,
 ) -> dict:
     category_products: list[str] = []
     category_status_by_product: dict[str, str] = {}
@@ -3037,7 +3131,17 @@ def feishu_options_from_rows(
         if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
     ]
     models = sort_models(dimension_models or inventory_models)
-    languages = unique_preserve(list(inventory_df[LANGUAGE_COL].astype(str))) if not inventory_df.empty else []
+    inventory_languages = (
+        unique_preserve(list(inventory_df[LANGUAGE_COL].astype(str)))
+        if not inventory_df.empty
+        else []
+    )
+    dimension_languages = [
+        feishu_language_name(feishu_fields(row))
+        for row in list(language_rows or [])
+        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
+    ]
+    languages = sort_languages(dimension_languages or inventory_languages)
     if not inventory_df.empty:
         for product, product_df in inventory_df.groupby(PRODUCT_COL):
             product_languages = {str(value).strip() for value in product_df[LANGUAGE_COL] if str(value).strip()}
@@ -3063,14 +3167,16 @@ def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -
         load_feishu_rows_snapshot(CATEGORY_TABLE_NAME, app_id, app_secret, app_token),
         load_feishu_inventory_snapshot(app_id, app_secret, app_token),
         load_feishu_rows_snapshot(MODEL_TABLE_NAME, app_id, app_secret, app_token),
+        page_data_cache_rows(LANGUAGE_TABLE_NAME),
     )
 
 
 def load_feishu_options() -> dict:
     return feishu_options_from_rows(
-        feishu_rows(CATEGORY_TABLE_NAME),
+        safe_feishu_rows(CATEGORY_TABLE_NAME),
         load_feishu_inventory(),
-        feishu_rows(MODEL_TABLE_NAME),
+        safe_feishu_rows(MODEL_TABLE_NAME),
+        safe_feishu_rows(LANGUAGE_TABLE_NAME),
     )
 
 
@@ -5415,6 +5521,7 @@ def update_feishu_inventory_item(
     )
     category_record_id = feishu_record_id(category_record)
     link_field, model_ids = ensure_feishu_model_records([model])
+    language_link_field, language_ids = ensure_feishu_language_records([language])
     update_fields: dict[str, object] = {
         "物料编码": material_code.strip(),
         "物料品类": product.strip(),
@@ -5426,6 +5533,7 @@ def update_feishu_inventory_item(
     }
     set_feishu_unit_price(MATERIAL_TABLE_NAME, update_fields, float(unit_price or 0))
     add_material_model_link(update_fields, model, link_field, model_ids)
+    add_material_language_link(update_fields, language, language_link_field, language_ids)
     feishu_update_record_fields(MATERIAL_TABLE_NAME, record_id, update_fields)
 
 
@@ -5469,7 +5577,12 @@ def update_feishu_category(
         for row in category_material_rows
     ]
     link_field, model_ids = ensure_feishu_model_records(target_models)
-    for row, target_model in zip(category_material_rows, target_models):
+    target_languages = [
+        NO_LANGUAGE_TEXT if no_language else (feishu_text(feishu_fields(row), "语种") or NO_LANGUAGE_TEXT)
+        for row in category_material_rows
+    ]
+    language_link_field, language_ids = ensure_feishu_language_records(target_languages)
+    for row, target_model, target_language in zip(category_material_rows, target_models, target_languages):
         update_fields: dict[str, object] = {
             "物料品类": new_product,
             "品类关联": [category_record_id],
@@ -5479,6 +5592,7 @@ def update_feishu_category(
         add_material_model_link(update_fields, target_model, link_field, model_ids)
         if no_language:
             update_fields["语种"] = NO_LANGUAGE_TEXT
+        add_material_language_link(update_fields, target_language, language_link_field, language_ids)
         feishu_update_record_fields(MATERIAL_TABLE_NAME, feishu_record_id(row), update_fields)
 
 
@@ -5623,6 +5737,7 @@ def sync_feishu_category_inventory(
         created_category = True
 
     model_link_field, model_record_ids = ensure_feishu_model_records(plan["models"])
+    language_link_field, language_record_ids = ensure_feishu_language_records(plan["languages"])
     new_targets = [target for target in plan["targets"] if target["is_new"]]
     new_codes = next_material_codes_from_records(all_inventory, len(new_targets))
     create_fields: list[dict[str, object]] = []
@@ -5641,6 +5756,7 @@ def sync_feishu_category_inventory(
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
         add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
+        add_material_language_link(fields, target["language"], language_link_field, language_record_ids)
         create_fields.append(fields)
 
     created_material_rows: list[dict] = []
@@ -5667,6 +5783,7 @@ def sync_feishu_category_inventory(
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
         add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
+        add_material_language_link(fields, target["language"], language_link_field, language_record_ids)
         keeper_updates.append({"record_id": target["keeper_id"], "fields": fields})
     feishu_batch_update_record_fields("物料主数据", keeper_updates)
 
@@ -5764,6 +5881,7 @@ def add_feishu_material_category_payload(
 
     records: list[dict[str, object]] = []
     model_link_field, model_record_ids = ensure_feishu_model_records(models)
+    language_link_field, language_record_ids = ensure_feishu_language_records(languages)
     for row in df[INVENTORY_HEADERS].itertuples(index=False):
         fields: dict[str, object] = {
             "物料编码": str(row[0]),
@@ -5777,6 +5895,7 @@ def add_feishu_material_category_payload(
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(row[5] or 0))
         add_material_model_link(fields, str(row[2]) or NO_MODEL_TEXT, model_link_field, model_record_ids)
+        add_material_language_link(fields, str(row[3]) or NO_LANGUAGE_TEXT, language_link_field, language_record_ids)
         records.append(fields)
 
     inserted = 0

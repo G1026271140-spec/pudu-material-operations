@@ -94,6 +94,28 @@ class MaterialActivationTests(unittest.TestCase):
 
         self.assertEqual(options["models"], ["MT1", "MT1 Max", "MT1 Vac"])
 
+    def test_request_languages_come_from_active_language_dimension(self) -> None:
+        categories = [
+            {"record_id": "c1", "fields": {"物料品类": "启用品类", "启用状态": app.STATUS_ACTIVE}},
+        ]
+        inventory_df = pd.DataFrame(
+            [
+                ["MAT-1", "启用品类", "M1", "库存旧语种", 10, 0, 0, ""],
+            ],
+            columns=app.INVENTORY_HEADERS,
+        )
+        language_rows = [
+            {"record_id": "l1", "fields": {"语言种类": "英语(English)", "启用状态": app.STATUS_ACTIVE}},
+            {"record_id": "l2", "fields": {"语言种类": "韩语(Korean)", "启用状态": app.STATUS_ACTIVE}},
+            {"record_id": "l3", "fields": {"语言种类": "停用语种", "启用状态": app.STATUS_INACTIVE}},
+        ]
+
+        options = app.feishu_options_from_rows(categories, inventory_df, language_rows=language_rows)
+
+        self.assertEqual(options["languages"], ["英语(English)", "韩语(Korean)"])
+        self.assertNotIn("库存旧语种", options["languages"])
+        self.assertNotIn("停用语种", options["languages"])
+
     def test_dashboard_excludes_inactive_inventory_records(self) -> None:
         records = [
             {
