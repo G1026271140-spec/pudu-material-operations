@@ -9,6 +9,47 @@ from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 
 
 class BotNotificationTests(unittest.TestCase):
+    def test_category_edit_card_is_wide_and_contains_change_details(self) -> None:
+        draft = {
+            "old_product": "旧冰箱贴",
+            "product": "新冰箱贴",
+            "edited_at": "2026-07-22 10:00:00",
+            "current_records": [{
+                "model": "BellaBot", "language": "英语", "quantity": 10,
+                "unit_price": 1.5, "customs_code": "A1", "status": app.STATUS_ACTIVE,
+            }],
+            "targets": [{
+                "model": "BellaBot", "language": "英语", "quantity": 15,
+                "unit_price": 2, "customs_code": "A2", "status": app.STATUS_INACTIVE,
+            }],
+        }
+        result = {
+            "target_count": 1, "created_count": 0, "deleted_count": 0,
+            "quantity_difference": 5,
+        }
+
+        card = app.category_edit_notification_card(draft, result)
+        serialized = json.dumps(card, ensure_ascii=False)
+
+        self.assertTrue(card["config"]["wide_screen_mode"])
+        self.assertEqual(card["header"]["template"], "blue")
+        for expected in ("旧冰箱贴", "新冰箱贴", "BellaBot / 英语", "10 → 15", "1.5 → 2"):
+            self.assertIn(expected, serialized)
+
+    def test_category_edit_notification_goes_to_each_enabled_admin(self) -> None:
+        client = Mock()
+        card = {"config": {"wide_screen_mode": True}}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-a", "ou-b"]),
+            patch.object(app, "category_edit_notification_card", return_value=card),
+        ):
+            count = app.notify_enabled_admins_of_category_edit({}, {})
+
+        self.assertEqual(count, 2)
+        client.send_interactive_message.assert_any_call("ou-a", card)
+        client.send_interactive_message.assert_any_call("ou-b", card)
+
     def test_client_sends_text_message_to_open_id(self) -> None:
         client = FeishuBitableClient(FeishuBitableConfig("app", "secret", "token"))
         client._request = Mock(

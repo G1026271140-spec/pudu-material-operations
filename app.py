@@ -64,6 +64,8 @@ INVENTORY_ZERO_SINCE_FIELD = "库存归零时间"
 INVENTORY_AUTO_DISABLE_DAYS = 14
 CATEGORY_CREATE_STAGE_KEY = "category_create_stage"
 CATEGORY_CREATE_DRAFT_KEY = "category_create_draft"
+CATEGORY_EDIT_STAGE_KEY = "category_edit_stage"
+CATEGORY_EDIT_DRAFT_KEY = "category_edit_draft"
 REQUEST_NO_PREFIX = "REQ"
 RESTOCK_NO_PREFIX = "RST"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
@@ -4088,6 +4090,101 @@ def notify_enabled_admins_of_restock(
     return len(recipients)
 
 
+def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object]]:
+    """Return human-readable before/after rows for category edit review and cards."""
+    current_by_key = {
+        (str(row.get("model") or NO_MODEL_TEXT), str(row.get("language") or NO_LANGUAGE_TEXT)): row
+        for row in list(draft.get("current_records") or [])
+        if isinstance(row, dict)
+    }
+    rows: list[dict[str, object]] = []
+    for target in list(draft.get("targets") or []):
+        if not isinstance(target, dict):
+            continue
+        key = (str(target.get("model") or NO_MODEL_TEXT), str(target.get("language") or NO_LANGUAGE_TEXT))
+        before = current_by_key.get(key)
+        before_quantity = int(before.get("quantity") or 0) if before else 0
+        after_quantity = int(target.get("quantity") or 0)
+        before_status = normalize_enabled_status(before.get("status")) if before else "-"
+        after_status = normalize_enabled_status(target.get("status"))
+        action = "新增" if before is None else ("修改" if (
+            before_quantity != after_quantity
+            or float(before.get("unit_price") or 0) != float(target.get("unit_price") or 0)
+            or str(before.get("customs_code") or "") != str(target.get("customs_code") or "")
+            or before_status != after_status
+        ) else "保留")
+        rows.append({
+            "操作": action,
+            "产品型号": key[0],
+            "语种": key[1],
+            "库存变化": f"{before_quantity} → {after_quantity}" if before else f"新增 {after_quantity}",
+            "单价变化": f"{float(before.get('unit_price') or 0):g} → {float(target.get('unit_price') or 0):g}" if before else f"新增 {float(target.get('unit_price') or 0):g}",
+            "状态变化": f"{before_status} → {after_status}" if before else f"新增 {after_status}",
+            "海关编码": str(target.get("customs_code") or "-") or "-",
+        })
+    target_keys = {
+        (str(target.get("model") or NO_MODEL_TEXT), str(target.get("language") or NO_LANGUAGE_TEXT))
+        for target in list(draft.get("targets") or []) if isinstance(target, dict)
+    }
+    for key, before in current_by_key.items():
+        if key not in target_keys:
+            rows.append({
+                "操作": "移除/迁移", "产品型号": key[0], "语种": key[1],
+                "库存变化": f"{int(before.get('quantity') or 0)} → 0", "单价变化": "-",
+                "状态变化": f"{normalize_enabled_status(before.get('status'))} → 移除", "海关编码": "-",
+            })
+    return rows
+
+
+def category_edit_notification_card(
+    draft: dict[str, object],
+    result: dict[str, object],
+) -> dict[str, object]:
+    rows = category_edit_change_rows(draft)
+    changed_rows = [row for row in rows if row["操作"] != "保留"]
+    elements: list[dict[str, object]] = [{
+        "tag": "markdown",
+        "content": (
+            f"**品类：** {_feishu_card_plain_text(draft.get('old_product'))} → "
+            f"{_feishu_card_plain_text(draft.get('product'))}\n"
+            f"**修改时间：** {_feishu_card_plain_text(draft.get('edited_at'))}\n"
+            f"**结果：** 目标组合 {int(result.get('target_count') or 0)} 条，"
+            f"新增 {int(result.get('created_count') or 0)} 条，移除 {int(result.get('deleted_count') or 0)} 条，"
+            f"库存差额 {int(result.get('quantity_difference') or 0):+,}"
+        ),
+    }, {"tag": "hr"}, {"tag": "markdown", "content": "**编辑修改明细**"}]
+    for index, row in enumerate(changed_rows[:40], start=1):
+        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
+            f"{index:02d}. [{row['操作']}] {row['产品型号']} / {row['语种']}\n"
+            f"库存：{row['库存变化']}；单价：{row['单价变化']}；状态：{row['状态变化']}；"
+            f"海关编码：{row['海关编码']}"
+        )}})
+    if not changed_rows:
+        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "库存组合明细无字段变化。"}})
+    if len(changed_rows) > 40:
+        elements.append({"tag": "markdown", "content": f"另有 **{len(changed_rows) - 40}** 条修改，请在品类管理中查看。"})
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {"template": "blue", "title": {"tag": "plain_text", "content": "物料品类编辑已完成"}},
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_category_edit(
+    draft: dict[str, object], result: dict[str, object]
+) -> int:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送品类编辑通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    card = category_edit_notification_card(draft, result)
+    for open_id in recipients:
+        send_feishu_interactive_message(client, open_id, card)
+    return len(recipients)
+
+
 def ensure_inventory_zero_since_field() -> bool:
     refresh_feishu_schema_cache()
     if feishu_has_field(MATERIAL_TABLE_NAME, INVENTORY_ZERO_SINCE_FIELD):
@@ -7750,6 +7847,59 @@ def restore_new_category_creation_state(
         st.session_state[revision_key] = int(st.session_state.get(revision_key, 0) or 0) + 1
 
 
+def render_category_edit_review() -> None:
+    draft = st.session_state.get(CATEGORY_EDIT_DRAFT_KEY)
+    if not isinstance(draft, dict):
+        st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
+        st.rerun()
+    rows = category_edit_change_rows(draft)
+    changed_count = sum(1 for row in rows if row["操作"] != "保留")
+    render_section_header("01", "品类修改明细确认", "确认后才会保存至飞书，并向全部启用管理员发送修改卡片")
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("修改明细", f"{changed_count:,}")
+    metric_b.metric("目标组合", f"{len(list(draft.get('targets') or [])):,}")
+    metric_c.metric("库存差额", f"{int(draft.get('quantity_difference') or 0):+,}")
+    with st.container(border=True):
+        info_cols = st.columns(3)
+        render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
+        render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
+        render_request_review_field(info_cols[2], "品类状态", draft.get("category_status"))
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True, height=min(720, max(180, 38 * (len(rows) + 1))))
+    st.info("点击“确认保存修改”后将立即写入飞书；完成后页面顶部会显示全宽结果提示，并通知管理员。")
+    back_col, _, confirm_col = st.columns([1.1, 2.2, 1.5])
+    if back_col.button("返回修改", icon=":material/arrow_back:", width="stretch", key="category_edit_review_back"):
+        st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
+        st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
+        st.rerun()
+    if confirm_col.button("确认保存修改", type="primary", icon=":material/check_circle:", width="stretch", key="category_edit_review_confirm"):
+        with st.spinner("正在保存品类配置并发送管理员通知，请勿关闭页面......"):
+            with DATA_LOCK:
+                try:
+                    result = sync_feishu_category_inventory(**dict(draft["sync_args"]))
+                except Exception as exc:
+                    st.error("保存品类配置失败。数据未全部同步，请刷新页面检查飞书字段和关联后重试。")
+                    st.exception(exc)
+                    return
+            notification_count = 0
+            notification_warning = ""
+            try:
+                notification_count = notify_enabled_admins_of_category_edit(draft, result)
+            except Exception as exc:
+                notification_warning = f"品类已保存，但管理员通知发送失败：{exc}"
+        refresh_page_cache_after_write("category", update_request_form=True)
+        st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
+        st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
+        st.session_state["category_added_message"] = (
+            f"物料品类“{draft['product']}”已保存：目标组合 {result['target_count']} 条，"
+            f"新增 {result['created_count']} 条，移除旧行 {result['deleted_count']} 条，"
+            f"迁移关联 {result['relation_update_count']} 条，库存差额 {result['quantity_difference']:+,}。"
+            + (f" 已通知 {notification_count} 位管理员。" if notification_count else "")
+        )
+        if notification_warning:
+            st.session_state["category_admin_warning"] = notification_warning
+        st.rerun()
+
+
 def render_new_category_review() -> None:
     draft = st.session_state.get(CATEGORY_CREATE_DRAFT_KEY)
     if not isinstance(draft, dict):
@@ -7911,6 +8061,9 @@ def render_new_category_review() -> None:
 
 
 def render_add_category_form() -> None:
+    if st.session_state.get(CATEGORY_EDIT_STAGE_KEY) == "review":
+        render_category_edit_review()
+        return
     if st.session_state.get(CATEGORY_CREATE_STAGE_KEY) == "review":
         render_new_category_review()
         return
@@ -7924,6 +8077,9 @@ def render_add_category_form() -> None:
     )
     if message:
         st.success(message)
+    warning = st.session_state.pop("category_admin_warning", "")
+    if warning:
+        st.warning(warning)
 
     render_section_header("01", "物料品类管理", "新增或调整品类名称、型号、语种和对应库存组合")
     mode = st.radio(
@@ -8550,35 +8706,23 @@ def render_add_category_form() -> None:
             st.session_state[CATEGORY_CREATE_STAGE_KEY] = "review"
             st.rerun()
         else:
-            with st.spinner("正在保存品类配置并同步关联数据，请勿关闭页面......"):
-                with DATA_LOCK:
-                    try:
-                        result = sync_feishu_category_inventory(
-                            old_product=old_product,
-                            new_product=product,
-                            no_model=no_model,
-                            no_language=no_language,
-                            target_models=models,
-                            target_languages=languages,
-                            category_status=category_status,
-                            category_unit_price=category_unit_price,
-                            category_customs_code=category_customs_code,
-                            category_record_id=category_id,
-                            model_renames=model_renames,
-                            carry_model=carry_model,
-                            carry_language=carry_language,
-                            target_values=target_values,
-                        )
-                    except Exception as exc:
-                        st.error("保存品类配置失败。数据未全部同步，请刷新页面检查飞书字段和关联后重试。")
-                        st.exception(exc)
-                        return
-            refresh_page_cache_after_write("category", update_request_form=True)
-            st.session_state["category_added_message"] = (
-                f"物料品类“{product}”已保存：目标组合 {result['target_count']} 条，"
-                f"新增 {result['created_count']} 条，移除旧行 {result['deleted_count']} 条，"
-                f"迁移关联 {result['relation_update_count']} 条，库存差额 {result['quantity_difference']:+,}。"
-            )
+            sync_args = {
+                "old_product": old_product, "new_product": product, "no_model": no_model,
+                "no_language": no_language, "target_models": list(models),
+                "target_languages": list(languages), "category_status": category_status,
+                "category_unit_price": category_unit_price, "category_customs_code": category_customs_code,
+                "category_record_id": category_id, "model_renames": dict(model_renames),
+                "carry_model": carry_model, "carry_language": carry_language,
+                "target_values": {key: dict(value) for key, value in target_values.items()},
+            }
+            st.session_state[CATEGORY_EDIT_DRAFT_KEY] = {
+                "old_product": old_product, "product": product, "category_status": category_status,
+                "edited_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "current_records": [dict(row) for row in current_records],
+                "targets": [dict(target) for target in plan["targets"]],
+                "quantity_difference": plan["quantity_difference"], "sync_args": sync_args,
+            }
+            st.session_state[CATEGORY_EDIT_STAGE_KEY] = "review"
             st.rerun()
 
     if is_edit and selected_category is not None:
