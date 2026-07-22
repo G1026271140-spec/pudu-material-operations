@@ -36,6 +36,31 @@ class BotNotificationTests(unittest.TestCase):
         for expected in ("旧冰箱贴", "新冰箱贴", "BellaBot / 英语", "10 → 15", "1.5 → 2"):
             self.assertIn(expected, serialized)
 
+    def test_category_edit_change_rows_marks_unchanged_fields_and_keeps_unchanged_rows_filterable(self) -> None:
+        draft = {
+            "current_records": [
+                {"model": "BG1", "language": "英语", "quantity": 10, "unit_price": 1.5,
+                 "customs_code": "A1", "status": app.STATUS_ACTIVE},
+                {"model": "BG1", "language": "日语", "quantity": 0, "unit_price": 1.5,
+                 "customs_code": "A1", "status": app.STATUS_ACTIVE},
+            ],
+            "targets": [
+                {"model": "BG1", "language": "英语", "quantity": 20, "unit_price": 1.5,
+                 "customs_code": "A1", "status": app.STATUS_ACTIVE},
+                {"model": "BG1", "language": "日语", "quantity": 0, "unit_price": 1.5,
+                 "customs_code": "A1", "status": app.STATUS_ACTIVE},
+            ],
+        }
+
+        rows = app.category_edit_change_rows(draft)
+        changed_rows = [row for row in rows if row["操作"] != "保留"]
+
+        self.assertEqual(len(changed_rows), 1)
+        self.assertEqual(changed_rows[0]["库存变化"], "10 → 20")
+        self.assertEqual(changed_rows[0]["单价变化"], "—")
+        self.assertEqual(changed_rows[0]["状态变化"], "—")
+        self.assertEqual(changed_rows[0]["海关编码变化"], "—")
+
     def test_category_edit_notification_goes_to_each_enabled_admin(self) -> None:
         client = Mock()
         card = {"config": {"wide_screen_mode": True}}

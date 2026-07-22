@@ -4105,22 +4105,42 @@ def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object
         before = current_by_key.get(key)
         before_quantity = int(before.get("quantity") or 0) if before else 0
         after_quantity = int(target.get("quantity") or 0)
+        before_unit_price = float(before.get("unit_price") or 0) if before else 0.0
+        after_unit_price = float(target.get("unit_price") or 0)
+        before_customs_code = str(before.get("customs_code") or "") if before else ""
+        after_customs_code = str(target.get("customs_code") or "")
         before_status = normalize_enabled_status(before.get("status")) if before else "-"
         after_status = normalize_enabled_status(target.get("status"))
         action = "新增" if before is None else ("修改" if (
             before_quantity != after_quantity
-            or float(before.get("unit_price") or 0) != float(target.get("unit_price") or 0)
-            or str(before.get("customs_code") or "") != str(target.get("customs_code") or "")
+            or before_unit_price != after_unit_price
+            or before_customs_code != after_customs_code
             or before_status != after_status
         ) else "保留")
         rows.append({
             "操作": action,
             "产品型号": key[0],
             "语种": key[1],
-            "库存变化": f"{before_quantity} → {after_quantity}" if before else f"新增 {after_quantity}",
-            "单价变化": f"{float(before.get('unit_price') or 0):g} → {float(target.get('unit_price') or 0):g}" if before else f"新增 {float(target.get('unit_price') or 0):g}",
-            "状态变化": f"{before_status} → {after_status}" if before else f"新增 {after_status}",
-            "海关编码": str(target.get("customs_code") or "-") or "-",
+            "库存变化": (
+                f"新增 {after_quantity}" if before is None
+                else f"{before_quantity} → {after_quantity}" if before_quantity != after_quantity
+                else "—"
+            ),
+            "单价变化": (
+                f"新增 {after_unit_price:g}" if before is None
+                else f"{before_unit_price:g} → {after_unit_price:g}" if before_unit_price != after_unit_price
+                else "—"
+            ),
+            "状态变化": (
+                f"新增 {after_status}" if before is None
+                else f"{before_status} → {after_status}" if before_status != after_status
+                else "—"
+            ),
+            "海关编码变化": (
+                f"新增 {after_customs_code or '-'}" if before is None
+                else f"{before_customs_code or '-'} → {after_customs_code or '-'}"
+                if before_customs_code != after_customs_code else "—"
+            ),
         })
     target_keys = {
         (str(target.get("model") or NO_MODEL_TEXT), str(target.get("language") or NO_LANGUAGE_TEXT))
@@ -4131,7 +4151,7 @@ def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object
             rows.append({
                 "操作": "移除/迁移", "产品型号": key[0], "语种": key[1],
                 "库存变化": f"{int(before.get('quantity') or 0)} → 0", "单价变化": "-",
-                "状态变化": f"{normalize_enabled_status(before.get('status'))} → 移除", "海关编码": "-",
+                "状态变化": f"{normalize_enabled_status(before.get('status'))} → 移除", "海关编码变化": "-",
             })
     return rows
 
@@ -4157,7 +4177,7 @@ def category_edit_notification_card(
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
             f"{index:02d}. [{row['操作']}] {row['产品型号']} / {row['语种']}\n"
             f"库存：{row['库存变化']}；单价：{row['单价变化']}；状态：{row['状态变化']}；"
-            f"海关编码：{row['海关编码']}"
+            f"海关编码：{row['海关编码变化']}"
         )}})
     if not changed_rows:
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "库存组合明细无字段变化。"}})
@@ -7853,7 +7873,8 @@ def render_category_edit_review() -> None:
         st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
         st.rerun()
     rows = category_edit_change_rows(draft)
-    changed_count = sum(1 for row in rows if row["操作"] != "保留")
+    changed_rows = [row for row in rows if row["操作"] != "保留"]
+    changed_count = len(changed_rows)
     render_section_header("01", "品类修改明细确认", "确认后才会保存至飞书，并向全部启用管理员发送修改卡片")
     metric_a, metric_b, metric_c = st.columns(3)
     metric_a.metric("修改明细", f"{changed_count:,}")
@@ -7864,7 +7885,15 @@ def render_category_edit_review() -> None:
         render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
         render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
         render_request_review_field(info_cols[2], "品类状态", draft.get("category_status"))
-        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True, height=min(720, max(180, 38 * (len(rows) + 1))))
+        if changed_rows:
+            st.dataframe(
+                pd.DataFrame(changed_rows),
+                width="stretch",
+                hide_index=True,
+                height=min(720, max(180, 38 * (len(changed_rows) + 1))),
+            )
+        else:
+            st.info("库存组合没有发生变化；请返回检查是否只修改了品类名称或基础配置。")
     st.info("点击“确认保存修改”后将立即写入飞书；完成后页面顶部会显示全宽结果提示，并通知管理员。")
     back_col, _, confirm_col = st.columns([1.1, 2.2, 1.5])
     if back_col.button("返回修改", icon=":material/arrow_back:", width="stretch", key="category_edit_review_back"):
