@@ -29,6 +29,23 @@ def valid_draft() -> dict[str, object]:
 
 
 class RequestDraftTests(unittest.TestCase):
+    def test_english_request_options_show_only_parenthesized_english_name(self) -> None:
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN):
+            self.assertEqual(
+                app.request_option_display_label("产品单页(Product Flyer)"),
+                "Product Flyer",
+            )
+            self.assertEqual(
+                app.request_option_display_label("简中(Simplified Chinese)"),
+                "Simplified Chinese",
+            )
+            self.assertEqual(app.request_option_display_label("BellaBot"), "BellaBot")
+
+    def test_chinese_request_options_keep_original_business_value(self) -> None:
+        value = "产品单页(Product Flyer)"
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
+            self.assertEqual(app.request_option_display_label(value), value)
+
     def test_freight_payer_options_include_pudu(self) -> None:
         self.assertIn("普渡付款(PUDU)", app.FREIGHT_PAYER_OPTIONS)
         self.assertEqual(app.DEFAULT_FREIGHT_PAYER, "普渡付款(PUDU)")

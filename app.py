@@ -202,6 +202,16 @@ def ui_text(value: object) -> str:
     return str(translate_ui_text(value, get_ui_language()))
 
 
+def request_option_display_label(value: object) -> str:
+    text = str(value or "").strip()
+    if get_ui_language() != LANGUAGE_EN:
+        return text
+    english_parts = re.findall(r"[（(]([^()（）]*[A-Za-z][^()（）]*)[）)]", text)
+    if english_parts:
+        return english_parts[-1].strip()
+    return str(translate_ui_text(text, LANGUAGE_EN))
+
+
 def inject_global_styles() -> None:
     st.markdown(
         """
@@ -6506,6 +6516,9 @@ def prepare_request_line_editor_state() -> None:
         )
         st.session_state["request_line_quantity"] = max(1, int(load_data.get("quantity") or 1))
         st.session_state["request_line_remark"] = str(load_data.get("remark", ""))
+        for field in ("product", "model", "language"):
+            for language_code in SUPPORTED_UI_LANGUAGES:
+                st.session_state.pop(f"request_line_{field}_{language_code}", None)
         return
     if st.session_state.pop("request_line_editor_reset", False):
         for key in (
@@ -6516,6 +6529,9 @@ def prepare_request_line_editor_state() -> None:
             "request_line_remark",
         ):
             st.session_state.pop(key, None)
+        for field in ("product", "model", "language"):
+            for language_code in SUPPORTED_UI_LANGUAGES:
+                st.session_state.pop(f"request_line_{field}_{language_code}", None)
         st.session_state["request_material_edit_index"] = None
 
 
@@ -6910,13 +6926,21 @@ def render_request_material_builder(
         product_col, model_col, language_col, quantity_col, remark_col, action_col = editor_cols
 
         required_field_label(product_col, "物料品类")
+        product_widget_key = f"request_line_product_{get_ui_language()}"
+        if st.session_state.get(product_widget_key) not in products:
+            current_product = st.session_state.get("request_line_product")
+            st.session_state[product_widget_key] = (
+                current_product if current_product in products else products[0]
+            )
         product = product_col.selectbox(
             "物料品类",
             products,
-            key="request_line_product",
+            key=product_widget_key,
+            format_func=request_option_display_label,
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        st.session_state["request_line_product"] = product
         is_no_model_product, scoped_models = product_model_state(product, selection_context)
         if is_no_model_product:
             model_options = [NO_MODEL_TEXT]
@@ -6924,17 +6948,23 @@ def render_request_material_builder(
             model_options = unique_preserve(scoped_models)
         else:
             model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
-        if st.session_state.get("request_line_model") not in model_options:
-            st.session_state["request_line_model"] = model_options[0]
+        model_widget_key = f"request_line_model_{get_ui_language()}"
+        if st.session_state.get(model_widget_key) not in model_options:
+            current_model = st.session_state.get("request_line_model")
+            st.session_state[model_widget_key] = (
+                current_model if current_model in model_options else model_options[0]
+            )
         required_field_label(model_col, "产品型号")
         model = model_col.selectbox(
             "产品型号",
             model_options,
-            key="request_line_model",
+            key=model_widget_key,
+            format_func=request_option_display_label,
             disabled=is_no_model_product,
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        st.session_state["request_line_model"] = model
 
         is_no_language_product, language_options = product_language_state(
             product,
@@ -6942,19 +6972,25 @@ def render_request_material_builder(
             selection_context,
             languages,
         )
-        if st.session_state.get("request_line_language") not in language_options:
-            st.session_state["request_line_language"] = (
-                language_options[0] if language_options else NO_LANGUAGE_TEXT
+        language_widget_key = f"request_line_language_{get_ui_language()}"
+        if st.session_state.get(language_widget_key) not in language_options:
+            current_language = st.session_state.get("request_line_language")
+            st.session_state[language_widget_key] = (
+                current_language
+                if current_language in language_options
+                else language_options[0] if language_options else NO_LANGUAGE_TEXT
             )
         required_field_label(language_col, "语种")
         language = language_col.selectbox(
             "语种",
             language_options,
-            key="request_line_language",
+            key=language_widget_key,
+            format_func=request_option_display_label,
             disabled=is_no_language_product,
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        st.session_state["request_line_language"] = language
 
         required_field_label(quantity_col, "数量")
         quantity = quantity_col.number_input(
