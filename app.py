@@ -10386,17 +10386,17 @@ def filter_warehouse_location_shelves(
 
 
 WAREHOUSE_MAP_POINTS = {
-    "H001": (210, 285, 145, 285),
-    "H002": (295, 285, 325, 155),
-    "H003": (470, 345, 410, 380),
-    "H004": (650, 260, 835, 245),
-    "H005": (470, 400, 470, 475),
-    "H006": (680, 135, 835, 85),
-    "G001": (230, 395, 145, 400),
-    "G002": (750, 365, 835, 390),
-    "G003": (750, 175, 835, 165),
-    "G004": (245, 185, 145, 175),
-    "G005": (570, 125, 635, 50),
+    "H001": (235, 470, 160, 470),
+    "H002": (325, 470, 345, 405),
+    "H003": (450, 620, 390, 660),
+    "H004": (575, 470, 740, 455),
+    "H005": (450, 735, 450, 835),
+    "H006": (600, 175, 740, 135),
+    "G001": (235, 650, 160, 650),
+    "G002": (665, 640, 740, 650),
+    "G003": (665, 300, 740, 285),
+    "G004": (235, 270, 160, 270),
+    "G005": (520, 170, 520, 70),
 }
 
 WAREHOUSE_MAP_LABEL_ANCHORS = {
@@ -10413,9 +10413,8 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
         if shelf_code not in WAREHOUSE_MAP_POINTS:
             continue
         pin_x, pin_y, label_x, label_y = WAREHOUSE_MAP_POINTS[shelf_code]
-        material_count = warehouse_shelf_material_count(shelf)
         location = str(shelf.get("ground_location") or "位置待补充").strip()
-        color = "#087f8c" if material_count else "#94a3b8"
+        color = "#087f8c"
         label_anchor = WAREHOUSE_MAP_LABEL_ANCHORS.get(
             shelf_code, "start" if label_x > pin_x else "end"
         )
@@ -10426,7 +10425,6 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
         )
         safe_code = escape(shelf_code)
         safe_location = escape(location)
-        count_label = "有物料" if material_count else "暂无关联物料"
         markers.append(
             f'<g class="warehouse-marker">'
             f'<path d="M {pin_x} {pin_y} L {line_end_x} {label_y - 5}" stroke="{color}" stroke-width="2" fill="none" />'
@@ -10434,14 +10432,13 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
             f'<text x="{pin_x}" y="{pin_y + 4}" text-anchor="middle" class="pin-text">{safe_code[-2:]}</text>'
             f'<text x="{label_x}" y="{label_y - 10}" text-anchor="{label_anchor}" class="label-code">{safe_code}</text>'
             f'<text x="{label_x}" y="{label_y + 9}" text-anchor="{label_anchor}" class="label-location">{safe_location}</text>'
-            f'<text x="{label_x}" y="{label_y + 27}" text-anchor="{label_anchor}" class="label-count">{count_label}</text>'
             '</g>'
         )
     map_html = f"""
     <div class="warehouse-map-wrap" role="img" aria-label="仓库货架位置示意图，标出当前筛选结果中的货架位置">
       <div class="warehouse-map-title"><strong>仓库货架位置示意图</strong><span>按位置描述绘制，非精确比例</span></div>
       <div class="warehouse-map-scroll">
-        <svg class="warehouse-map" viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg">
+        <svg class="warehouse-map" viewBox="0 0 900 900" xmlns="http://www.w3.org/2000/svg">
           <style>
             .warehouse-map {{ font-family: Inter, "Microsoft YaHei", sans-serif; }}
             .warehouse-outline {{ fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; }}
@@ -10450,36 +10447,31 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
             .pin-text {{ fill: white; font-size: 10px; font-weight: 800; }}
             .label-code {{ fill: #0f172a; font-size: 15px; font-weight: 800; }}
             .label-location {{ fill: #334155; font-size: 12px; }}
-            .label-count {{ fill: #64748b; font-size: 11px; }}
           </style>
-          <rect x="150" y="90" width="640" height="335" rx="18" class="warehouse-outline" />
-          <rect x="300" y="185" width="340" height="145" rx="12" class="zone" />
-          <text x="470" y="252" text-anchor="middle" class="zone-text">中央货架区</text>
-          <text x="470" y="275" text-anchor="middle" class="zone-text">四周为环形过道</text>
-          <text x="470" y="175" text-anchor="middle" class="zone-text">北侧过道</text>
-          <text x="575" y="385" text-anchor="middle" class="zone-text">南侧过道</text>
-          <text x="280" y="260" text-anchor="middle" class="zone-text" transform="rotate(-90 280 260)">西侧过道</text>
-          <text x="660" y="260" text-anchor="middle" class="zone-text" transform="rotate(90 660 260)">东侧过道</text>
-          <path d="M 365 90 L 365 78 M 405 90 L 405 78 M 445 90 L 445 78 M 485 90 L 485 78 M 525 90 L 525 78 M 565 90 L 565 78" stroke="#4aa9b2" stroke-width="6" />
-          <text x="465" y="78" text-anchor="middle" class="zone-text">北侧窗户</text>
-          <path d="M 205 425 L 205 458 L 250 458" fill="none" stroke="#087f8c" stroke-width="5" />
-          <path d="M 250 443 L 272 458 L 250 473" fill="none" stroke="#087f8c" stroke-width="3" />
-          <text x="172" y="488" text-anchor="start" class="zone-text">仓库入口（西侧南延长线）</text>
+          <rect x="200" y="120" width="500" height="650" rx="18" class="warehouse-outline" />
+          <rect x="340" y="290" width="220" height="310" rx="12" class="zone" />
+          <text x="450" y="435" text-anchor="middle" class="zone-text">中央货架区</text>
+          <text x="450" y="458" text-anchor="middle" class="zone-text">四周为环形过道</text>
+          <text x="450" y="265" text-anchor="middle" class="zone-text">北侧过道</text>
+          <text x="520" y="690" text-anchor="middle" class="zone-text">南侧过道</text>
+          <text x="315" y="445" text-anchor="middle" class="zone-text" transform="rotate(-90 315 445)">西侧过道</text>
+          <text x="585" y="445" text-anchor="middle" class="zone-text" transform="rotate(90 585 445)">东侧过道</text>
+          <line x1="215" y1="120" x2="685" y2="120" stroke="#4aa9b2" stroke-width="9" />
+          <path d="M 250 110 L 250 130 M 300 110 L 300 130 M 350 110 L 350 130 M 400 110 L 400 130 M 450 110 L 450 130 M 500 110 L 500 130 M 550 110 L 550 130 M 600 110 L 600 130 M 650 110 L 650 130" stroke="#ffffff" stroke-width="2" />
+          <text x="450" y="95" text-anchor="middle" class="zone-text">北侧整面窗户</text>
+          <path d="M 235 770 L 235 810 L 285 810" fill="none" stroke="#087f8c" stroke-width="5" />
+          <path d="M 285 795 L 307 810 L 285 825" fill="none" stroke="#087f8c" stroke-width="3" />
+          <text x="195" y="858" text-anchor="start" class="zone-text">仓库入口（11F 西北角）</text>
           {''.join(markers)}
         </svg>
       </div>
-      <div class="warehouse-map-legend"><span><i class="has-material"></i>有物料</span><span><i class="no-material"></i>暂无关联物料</span></div>
     </div>
     <style>
       .warehouse-map-wrap {{ margin: .5rem 0 1.25rem; padding: 1rem; border: 1px solid #d9e2ec; border-radius: 14px; background: white; }}
       .warehouse-map-title {{ display:flex; justify-content:space-between; gap:1rem; color:#0f172a; }}
       .warehouse-map-title span {{ color:#64748b; font-size:.82rem; }}
       .warehouse-map-scroll {{ overflow-x:auto; margin-top:.5rem; }}
-      .warehouse-map {{ display:block; min-width:760px; width:100%; height:auto; }}
-      .warehouse-map-legend {{ display:flex; gap:1rem; color:#475569; font-size:.82rem; }}
-      .warehouse-map-legend i {{ display:inline-block; width:.65rem; height:.65rem; border-radius:50%; margin-right:.35rem; }}
-      .warehouse-map-legend .has-material {{ background:#087f8c; }}
-      .warehouse-map-legend .no-material {{ background:#94a3b8; }}
+      .warehouse-map {{ display:block; min-width:620px; width:100%; max-height:820px; height:auto; }}
       @media (max-width: 720px) {{ .warehouse-map-title {{ flex-direction:column; gap:.2rem; }} }}
     </style>
     """
