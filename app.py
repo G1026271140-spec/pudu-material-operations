@@ -10405,15 +10405,75 @@ WAREHOUSE_MAP_LABEL_ANCHORS = {
     "G005": "middle",
 }
 
+WAREHOUSE_ENGLISH_TEXT = {
+    "进门左侧": "Left side after entering",
+    "进门右侧（左列）": "Right side after entering (left column)",
+    "进门右侧（前列）": "Right side after entering (front row)",
+    "进门右侧（右列）": "Right side after entering (right column)",
+    "进门后侧": "Rear area after entering",
+    "靠窗后侧": "Rear area by the windows",
+    "（地面）进门左下": "Floor area, lower left by entrance",
+    "（地面）右侧靠墙（前半）": "Floor area, right wall (front half)",
+    "（地面）右侧靠墙（后半）": "Floor area, right wall (rear half)",
+    "（地面）左侧货架后方": "Floor area, behind the left shelves",
+    "（地面）靠窗后侧": "Floor area, rear by the windows",
+    "中文货架，从上到下依次为产品单页、品牌手册、易拉宝": "Chinese materials shelf: product flyers, brand brochures, and roll-up banners from top to bottom.",
+    "小语种货架，二层德语法语、三层西语意大利、四层韩语和备货箱": "Language shelf: German and French on Level 2, Spanish and Italian on Level 3, and Korean plus reserve boxes on Level 4.",
+    "英文货架": "English materials shelf",
+    "背靠背，每面从上到下分类。": "Back-to-back shelving, categorized from top to bottom on each side.",
+    "英文品牌手册+四条工业线手册": "English brand brochures and brochures for four industrial product lines.",
+    "左侧靠墙两列为小语种折页物料； 地面为英文单页备货。": "The two columns by the left wall store multilingual leaflets; reserve English flyers are stored on the floor.",
+    "左侧靠墙两列为小语种折页物料; 地面为英文单页备货。": "The two columns by the left wall store multilingual leaflets; reserve English flyers are stored on the floor.",
+    "笔记本礼盒、公仔和无纺布袋": "Notebook gift boxes, plush toys, and non-woven bags.",
+}
+
+
+def warehouse_display_text(value: object) -> str:
+    text = str(value or "").strip()
+    compact_text = " ".join(text.split())
+    if get_ui_language() == LANGUAGE_EN:
+        return WAREHOUSE_ENGLISH_TEXT.get(
+            text,
+            WAREHOUSE_ENGLISH_TEXT.get(
+                compact_text,
+                str(translate_ui_text(compact_text, LANGUAGE_EN)),
+            ),
+        )
+    return text
+
+
+def warehouse_row_level_label(row_code: str) -> str:
+    match = re.search(r"(?:^|[-_])0?([1-9]\d*)$", str(row_code or "").strip())
+    if not match:
+        return ""
+    level = int(match.group(1))
+    if get_ui_language() == LANGUAGE_EN:
+        return "Top Level" if level == 1 else f"Level {level}"
+    return "最上层" if level == 1 else f"第 {level} 层"
+
 
 def render_warehouse_floor_map(shelves: list[dict]) -> None:
+    english = get_ui_language() == LANGUAGE_EN
+    labels = {
+        "aria": "Warehouse shelf location diagram showing shelves in the current filter" if english else "仓库货架位置示意图，标出当前筛选结果中的货架位置",
+        "title": "Warehouse Shelf Location Diagram" if english else "仓库货架位置示意图",
+        "caveat": "Based on location descriptions; not to scale" if english else "按位置描述绘制，非精确比例",
+        "center": "Central Shelving Area" if english else "中央货架区",
+        "ring": "Ring-shaped aisles on all four sides" if english else "四周为环形过道",
+        "north": "North Aisle" if english else "北侧过道",
+        "south": "South Aisle" if english else "南侧过道",
+        "west": "West Aisle" if english else "西侧过道",
+        "east": "East Aisle" if english else "东侧过道",
+        "windows": "Full-width windows along the north wall" if english else "北侧整面窗户",
+        "entrance": "Warehouse Entrance (11F Northwest Corner)" if english else "仓库入口（11F 西北角）",
+    }
     markers: list[str] = []
     for shelf in shelves:
         shelf_code = str(shelf.get("shelf_code") or "").strip()
         if shelf_code not in WAREHOUSE_MAP_POINTS:
             continue
         pin_x, pin_y, label_x, label_y = WAREHOUSE_MAP_POINTS[shelf_code]
-        location = str(shelf.get("ground_location") or "位置待补充").strip()
+        location = warehouse_display_text(shelf.get("ground_location") or "位置待补充")
         color = "#087f8c"
         label_anchor = WAREHOUSE_MAP_LABEL_ANCHORS.get(
             shelf_code, "start" if label_x > pin_x else "end"
@@ -10425,18 +10485,19 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
         )
         safe_code = escape(shelf_code)
         safe_location = escape(location)
+        pin_label = escape(f"{shelf_code[:1]}{int(shelf_code[1:] or '0')}")
         markers.append(
             f'<g class="warehouse-marker">'
             f'<path d="M {pin_x} {pin_y} L {line_end_x} {label_y - 5}" stroke="{color}" stroke-width="2" fill="none" />'
             f'<circle cx="{pin_x}" cy="{pin_y}" r="15" fill="{color}" stroke="#ffffff" stroke-width="4" />'
-            f'<text x="{pin_x}" y="{pin_y + 4}" text-anchor="middle" class="pin-text">{safe_code[-2:]}</text>'
+            f'<text x="{pin_x}" y="{pin_y + 4}" text-anchor="middle" class="pin-text">{pin_label}</text>'
             f'<text x="{label_x}" y="{label_y - 10}" text-anchor="{label_anchor}" class="label-code">{safe_code}</text>'
             f'<text x="{label_x}" y="{label_y + 9}" text-anchor="{label_anchor}" class="label-location">{safe_location}</text>'
             '</g>'
         )
     map_html = f"""
-    <div class="warehouse-map-wrap" role="img" aria-label="仓库货架位置示意图，标出当前筛选结果中的货架位置">
-      <div class="warehouse-map-title"><strong>仓库货架位置示意图</strong><span>按位置描述绘制，非精确比例</span></div>
+    <div class="warehouse-map-wrap" role="img" aria-label="{escape(labels['aria'])}">
+      <div class="warehouse-map-title"><strong>{escape(labels['title'])}</strong><span>{escape(labels['caveat'])}</span></div>
       <div class="warehouse-map-scroll">
         <svg class="warehouse-map" viewBox="0 0 900 900" xmlns="http://www.w3.org/2000/svg">
           <style>
@@ -10450,18 +10511,18 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
           </style>
           <rect x="200" y="120" width="500" height="650" rx="18" class="warehouse-outline" />
           <rect x="340" y="290" width="220" height="310" rx="12" class="zone" />
-          <text x="450" y="435" text-anchor="middle" class="zone-text">中央货架区</text>
-          <text x="450" y="458" text-anchor="middle" class="zone-text">四周为环形过道</text>
-          <text x="450" y="265" text-anchor="middle" class="zone-text">北侧过道</text>
-          <text x="520" y="690" text-anchor="middle" class="zone-text">南侧过道</text>
-          <text x="315" y="445" text-anchor="middle" class="zone-text" transform="rotate(-90 315 445)">西侧过道</text>
-          <text x="585" y="445" text-anchor="middle" class="zone-text" transform="rotate(90 585 445)">东侧过道</text>
+          <text x="450" y="435" text-anchor="middle" class="zone-text">{escape(labels['center'])}</text>
+          <text x="450" y="458" text-anchor="middle" class="zone-text">{escape(labels['ring'])}</text>
+          <text x="450" y="265" text-anchor="middle" class="zone-text">{escape(labels['north'])}</text>
+          <text x="520" y="690" text-anchor="middle" class="zone-text">{escape(labels['south'])}</text>
+          <text x="315" y="445" text-anchor="middle" class="zone-text" transform="rotate(-90 315 445)">{escape(labels['west'])}</text>
+          <text x="585" y="445" text-anchor="middle" class="zone-text" transform="rotate(90 585 445)">{escape(labels['east'])}</text>
           <line x1="215" y1="120" x2="685" y2="120" stroke="#4aa9b2" stroke-width="9" />
           <path d="M 250 110 L 250 130 M 300 110 L 300 130 M 350 110 L 350 130 M 400 110 L 400 130 M 450 110 L 450 130 M 500 110 L 500 130 M 550 110 L 550 130 M 600 110 L 600 130 M 650 110 L 650 130" stroke="#ffffff" stroke-width="2" />
-          <text x="450" y="95" text-anchor="middle" class="zone-text">北侧整面窗户</text>
+          <text x="450" y="95" text-anchor="middle" class="zone-text">{escape(labels['windows'])}</text>
           <path d="M 235 770 L 235 810 L 285 810" fill="none" stroke="#087f8c" stroke-width="5" />
           <path d="M 285 795 L 307 810 L 285 825" fill="none" stroke="#087f8c" stroke-width="3" />
-          <text x="195" y="858" text-anchor="start" class="zone-text">仓库入口（11F 西北角）</text>
+          <text x="195" y="858" text-anchor="start" class="zone-text">{escape(labels['entrance'])}</text>
           {''.join(markers)}
         </svg>
       </div>
@@ -10480,7 +10541,11 @@ def render_warehouse_floor_map(shelves: list[dict]) -> None:
 
 def render_warehouse_materials(materials: list[dict]) -> None:
     if not materials:
-        st.caption("暂无关联物料明细")
+        st.caption(
+            "No linked material details"
+            if get_ui_language() == LANGUAGE_EN
+            else "暂无关联物料明细"
+        )
         return
     for material in materials:
         st.markdown(
@@ -10505,7 +10570,11 @@ def render_cached_warehouse_images(images: list[dict], caption: str) -> None:
         and (Path(__file__).resolve().parent / str(image.get("path") or "")).exists()
     ]
     if not valid_images:
-        st.caption("暂无位置图片")
+        st.caption(
+            "No location images"
+            if get_ui_language() == LANGUAGE_EN
+            else "暂无位置图片"
+        )
         return
     image_columns = st.columns(min(3, len(valid_images)))
     for index, image in enumerate(valid_images):
@@ -10518,6 +10587,7 @@ def render_cached_warehouse_images(images: list[dict], caption: str) -> None:
 
 
 def render_warehouse_location_view() -> None:
+    english = get_ui_language() == LANGUAGE_EN
     render_page_header(
         "物料仓库位置查询",
         "仓库位置图集",
@@ -10527,13 +10597,21 @@ def render_warehouse_location_view() -> None:
     cache = load_warehouse_location_cache()
     shelves = [dict(item) for item in list(cache.get("shelves") or []) if isinstance(item, dict)]
     st.info("本页面仅用于查询物料存放位置。如需拿取物料，请先提交物料申请。")
-    generated_at = str(cache.get("generated_at") or "未记录")
-    st.caption(f"位置数据来源：人工发布的静态缓存　更新时间：{generated_at}　页面不会自动同步飞书数据。")
+    generated_at = str(cache.get("generated_at") or ("Not recorded" if english else "未记录"))
+    st.caption(
+        f"Source: manually published static cache  Updated: {generated_at}  This page does not automatically sync Feishu data."
+        if english
+        else f"位置数据来源：人工发布的静态缓存　更新时间：{generated_at}　页面不会自动同步飞书数据。"
+    )
     with st.container(border=True):
         search_col, shelf_col = st.columns([2.4, 1])
         query = search_col.text_input(
             "搜索物料或位置",
-            placeholder="输入物料品类、型号、语种、物料编码、货架编号或位置",
+            placeholder=(
+                "Enter material category, model, language, code, shelf, or location"
+                if english
+                else "输入物料品类、型号、语种、物料编码、货架编号或位置"
+            ),
             key="warehouse_location_query",
             icon=":material/search:",
         )
@@ -10543,7 +10621,10 @@ def render_warehouse_location_view() -> None:
         selected_shelf = shelf_col.selectbox(
             "筛选货架",
             shelf_options,
-            key="warehouse_location_shelf_filter",
+            key=f"warehouse_location_shelf_filter_{get_ui_language()}",
+            format_func=lambda option: (
+                "All Shelves" if english and option == "全部货架" else option
+            ),
         )
     filtered = sort_warehouse_location_shelves(
         filter_warehouse_location_shelves(
@@ -10553,31 +10634,53 @@ def render_warehouse_location_view() -> None:
         )
     )
     render_warehouse_floor_map(filtered)
-    render_section_header("01", "位置图片集锦", f"共找到 {len(filtered)} 个货架位置")
+    render_section_header(
+        "01",
+        "Location Gallery" if english else "位置图片集锦",
+        f"{len(filtered)} shelf locations found" if english else f"共找到 {len(filtered)} 个货架位置",
+    )
     if not filtered:
-        st.warning("没有找到匹配的位置，请尝试物料名称、型号、语种或货架编号。")
+        st.warning(
+            "No matching locations found. Try a material name, model, language, or shelf code."
+            if english
+            else "没有找到匹配的位置，请尝试物料名称、型号、语种或货架编号。"
+        )
         return
     gallery_columns = st.columns(3)
     for index, shelf in enumerate(filtered):
         with gallery_columns[index % 3].container(border=True):
             shelf_code = str(shelf.get("shelf_code") or "未编号")
             st.subheader(shelf_code)
-            location = str(shelf.get("ground_location") or "位置待补充")
+            location = warehouse_display_text(shelf.get("ground_location") or "位置待补充")
             st.caption(f":material/location_on: {location}")
             render_cached_warehouse_images(list(shelf.get("images") or []), shelf_code)
-            description = str(shelf.get("description") or "").strip()
+            description = warehouse_display_text(shelf.get("description") or "")
             if description:
                 st.write(description)
             direct_materials = list(shelf.get("visible_materials", shelf.get("materials") or []))
             if direct_materials:
-                with st.expander(f"货架关联物料（{len(direct_materials)}）"):
+                direct_label = (
+                    f"Shelf Materials ({len(direct_materials)})"
+                    if get_ui_language() == LANGUAGE_EN
+                    else f"货架关联物料（{len(direct_materials)}）"
+                )
+                with st.expander(direct_label):
                     render_warehouse_materials(direct_materials)
             visible_rows = list(shelf.get("visible_rows", shelf.get("rows") or []))
             for row in visible_rows:
                 row_code = str(row.get("row_code") or "未编号货架行")
                 row_materials = list(row.get("visible_materials", row.get("materials") or []))
-                with st.expander(f"{row_code} · {len(row_materials)} 项物料"):
-                    row_description = str(row.get("description") or "").strip()
+                level_label = warehouse_row_level_label(row_code)
+                row_label_parts = [row_code]
+                if level_label:
+                    row_label_parts.append(level_label)
+                row_label_parts.append(
+                    f"{len(row_materials)} material types"
+                    if get_ui_language() == LANGUAGE_EN
+                    else f"{len(row_materials)} 项物料"
+                )
+                with st.expander(" · ".join(row_label_parts)):
+                    row_description = warehouse_display_text(row.get("description") or "")
                     if row_description:
                         st.write(row_description)
                     render_cached_warehouse_images(list(row.get("images") or []), row_code)

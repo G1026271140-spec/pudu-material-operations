@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from unittest.mock import patch
 
 import app
 
@@ -79,6 +80,21 @@ class WarehouseLocationTests(unittest.TestCase):
 
         self.assertEqual([item["shelf_code"] for item in result], ["G003", "H001", "H004"])
         self.assertEqual(app.warehouse_shelf_material_count(result[0]), 2)
+
+    def test_warehouse_rows_are_labeled_as_levels(self) -> None:
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
+            self.assertEqual(app.warehouse_row_level_label("W-01"), "最上层")
+            self.assertEqual(app.warehouse_row_level_label("MM1-04"), "第 4 层")
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN):
+            self.assertEqual(app.warehouse_row_level_label("W-01"), "Top Level")
+            self.assertEqual(app.warehouse_row_level_label("M01L-03"), "Level 3")
+
+    def test_warehouse_location_text_has_english_translation(self) -> None:
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN):
+            self.assertEqual(
+                app.warehouse_display_text("（地面）右侧靠墙（后半）"),
+                "Floor area, right wall (rear half)",
+            )
 
 
 if __name__ == "__main__":
