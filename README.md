@@ -69,6 +69,8 @@ Windows 本地缓存节点每天 `10:30` 和 `16:30` 从飞书生成最新静态
 
 Windows 本地电脑另有 `PUDU Streamlit Nightly Wake` 定时任务，每天 23:20 使用无界面 Edge 检查生产应用；如遇休眠页会自动点击唤醒，并在 `work/streamlit-wake.log` 记录应用就绪结果。该任务只访问线上页面，不刷新飞书或静态缓存。
 
+如需手动执行，可双击桌面的 `PUDU Streamlit Manual Wake` 快捷方式。重新创建快捷方式时，运行 `scripts/install_streamlit_wake_shortcut.ps1` 即可。
+
 ```powershell
 .\scripts\install_local_cache_task.ps1
 ```
