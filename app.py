@@ -10399,12 +10399,6 @@ WAREHOUSE_MAP_POINTS = {
     "G005": (520, 170, 520, 70),
 }
 
-WAREHOUSE_MAP_LABEL_ANCHORS = {
-    "H003": "middle",
-    "H005": "middle",
-    "G005": "middle",
-}
-
 WAREHOUSE_ENGLISH_TEXT = {
     "进门左侧": "Left side after entering",
     "进门右侧（左列）": "Right side after entering (left column)",
@@ -10472,46 +10466,34 @@ def render_warehouse_floor_map(
         "east": "East Aisle" if english else "东侧过道",
         "windows": "Full-width windows along the north wall" if english else "北侧整面窗户",
         "entrance": "Warehouse Entrance (11F Northwest Corner)" if english else "仓库入口（11F 西北角）",
+        "view_images": "View Images" if english else "查看图片",
+        "expand": "Expand shelf details" if english else "展开货架详情",
     }
     markers: list[str] = []
     for shelf in shelves:
         shelf_code = str(shelf.get("shelf_code") or "").strip()
         if shelf_code not in WAREHOUSE_MAP_POINTS:
             continue
-        pin_x, pin_y, label_x, label_y = WAREHOUSE_MAP_POINTS[shelf_code]
+        pin_x, pin_y, _, _ = WAREHOUSE_MAP_POINTS[shelf_code]
         location = warehouse_display_text(shelf.get("ground_location") or "位置待补充")
-        color = "#087f8c"
-        label_anchor = WAREHOUSE_MAP_LABEL_ANCHORS.get(
-            shelf_code, "start" if label_x > pin_x else "end"
-        )
-        line_end_x = (
-            label_x
-            if label_anchor == "middle"
-            else label_x - 8 if label_anchor == "start" else label_x + 8
-        )
         safe_code = escape(shelf_code)
         safe_location = escape(location)
-        pin_label = escape(f"{shelf_code[:1]}{int(shelf_code[1:] or '0')}")
         anchor_slug = warehouse_anchor_slug(shelf_code)
         marker_class = "warehouse-marker is-filter-match" if highlight_matches else "warehouse-marker"
-        link_label = escape(
-            f"View images for shelf {shelf_code}"
-            if english
-            else f"查看货架 {shelf_code} 的图片"
-        )
+        card_x = pin_x - 34
+        card_y = pin_y - 18
         markers.append(
             f'<g id="map-{anchor_slug}" class="{marker_class}">'
-            f'<a href="#gallery-{anchor_slug}" aria-label="{link_label}">'
-            f'<path d="M {pin_x} {pin_y} L {line_end_x} {label_y - 5}" stroke="{color}" stroke-width="2" fill="none" />'
-            f'<circle class="match-ring" cx="{pin_x}" cy="{pin_y}" r="23" />'
-            f'<circle class="shelf-pin" cx="{pin_x}" cy="{pin_y}" r="15" fill="{color}" stroke="#ffffff" stroke-width="4" />'
-            f'<text x="{pin_x}" y="{pin_y + 4}" text-anchor="middle" class="pin-text">{pin_label}</text>'
-            f'<text x="{label_x}" y="{label_y - 10}" text-anchor="{label_anchor}" class="label-code">{safe_code}</text>'
-            f'<text x="{label_x}" y="{label_y + 9}" text-anchor="{label_anchor}" class="label-location">{safe_location}</text>'
-            '</a></g>'
+            f'<foreignObject x="{card_x}" y="{card_y}" width="190" height="125" overflow="visible">'
+            f'<div xmlns="http://www.w3.org/1999/xhtml" class="shelf-map-card-shell">'
+            f'<details class="shelf-map-card">'
+            f'<summary aria-label="{escape(labels["expand"])} {safe_code}"><span>{safe_code}</span><b aria-hidden="true">⌄</b></summary>'
+            f'<div class="shelf-map-card-body"><p>{safe_location}</p>'
+            f'<a href="#gallery-{anchor_slug}">{escape(labels["view_images"])} ↓</a></div>'
+            f'</details></div></foreignObject></g>'
         )
     map_html = f"""
-    <div class="warehouse-map-wrap" role="img" aria-label="{escape(labels['aria'])}">
+    <div class="warehouse-map-wrap" role="group" aria-label="{escape(labels['aria'])}">
       <div class="warehouse-map-title"><strong>{escape(labels['title'])}</strong><span>{escape(labels['caveat'])}</span></div>
       <div class="warehouse-map-scroll">
         <svg class="warehouse-map" viewBox="0 0 900 900" xmlns="http://www.w3.org/2000/svg">
@@ -10520,16 +10502,6 @@ def render_warehouse_floor_map(
             .warehouse-outline {{ fill: #e5e7eb; stroke: #94a3b8; stroke-width: 2; }}
             .zone {{ fill: #e8f4f5; stroke: #b8dfe2; stroke-width: 1.5; }}
             .zone-text {{ fill: #64748b; font-size: 13px; font-weight: 600; }}
-            .pin-text {{ fill: white; font-size: 10px; font-weight: 800; }}
-            .label-code {{ fill: #0f172a; font-size: 15px; font-weight: 800; }}
-            .label-location {{ fill: #334155; font-size: 12px; }}
-            .warehouse-marker a {{ cursor: pointer; text-decoration: none; }}
-            .warehouse-marker a:hover .label-code,
-            .warehouse-marker a:focus .label-code {{ fill: #087f8c; text-decoration: underline; }}
-            .match-ring {{ fill: none; stroke: transparent; stroke-width: 4; }}
-            .warehouse-marker.is-filter-match .match-ring {{ stroke: #f59e0b; stroke-dasharray: 5 3; }}
-            .warehouse-marker:target .match-ring {{ stroke: #f97316; stroke-width: 7; stroke-dasharray: none; }}
-            .warehouse-marker:target .label-code {{ fill: #c2410c; }}
           </style>
           <rect x="200" y="120" width="500" height="650" rx="18" class="warehouse-outline" />
           <rect x="340" y="290" width="220" height="310" rx="12" class="zone" />
@@ -10555,12 +10527,26 @@ def render_warehouse_floor_map(
       .warehouse-map-title span {{ color:#64748b; font-size:.82rem; }}
       .warehouse-map-scroll {{ overflow-x:auto; margin-top:.5rem; }}
       .warehouse-map {{ display:block; min-width:620px; width:100%; max-height:820px; height:auto; }}
+      .shelf-map-card-shell {{ position:relative; width:max-content; font-family:Inter,"Microsoft YaHei",sans-serif; }}
+      .shelf-map-card {{ width:68px; border:2px solid #087f8c; border-radius:9px; background:#fff; box-shadow:0 2px 7px rgba(15,23,42,.15); color:#0f172a; transition:width .16s ease, box-shadow .16s ease; }}
+      .shelf-map-card[open] {{ position:relative; z-index:20; width:170px; box-shadow:0 8px 20px rgba(15,23,42,.22); }}
+      .shelf-map-card summary {{ display:flex; align-items:center; justify-content:space-between; gap:.35rem; padding:7px 9px; cursor:pointer; list-style:none; font-size:13px; font-weight:800; line-height:1.15; }}
+      .shelf-map-card summary::-webkit-details-marker {{ display:none; }}
+      .shelf-map-card summary b {{ color:#087f8c; font-size:14px; transition:transform .16s ease; }}
+      .shelf-map-card[open] summary b {{ transform:rotate(180deg); }}
+      .shelf-map-card-body {{ padding:0 9px 9px; border-top:1px solid #dbe5e8; }}
+      .shelf-map-card-body p {{ margin:7px 0; color:#475569; font-size:11px; line-height:1.35; }}
+      .shelf-map-card-body a {{ color:#087f8c !important; font-size:11px; font-weight:800; text-decoration:none !important; }}
+      .shelf-map-card-body a:hover {{ text-decoration:underline !important; }}
+      .warehouse-marker.is-filter-match .shelf-map-card {{ border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.25); }}
+      .warehouse-marker:target .shelf-map-card {{ border-color:#f97316; box-shadow:0 0 0 5px rgba(249,115,22,.28),0 8px 20px rgba(15,23,42,.2); }}
       .warehouse-gallery-anchor {{ scroll-margin-top: 5rem; height: 0; overflow: hidden; }}
       .warehouse-gallery-anchor:target {{ height: auto; margin-bottom: .55rem; padding: .55rem .75rem; border-left: 4px solid #f97316; border-radius: 6px; background: #fff7ed; color: #9a3412; font-weight: 700; }}
       .warehouse-gallery-anchor:target::after {{ content: attr(data-highlight-label); }}
       .warehouse-map-return {{ display:inline-block; margin-bottom:.45rem; color:#087f8c !important; font-size:.84rem; font-weight:700; text-decoration:none !important; }}
       .warehouse-map-return:hover {{ text-decoration:underline !important; }}
       @media (max-width: 720px) {{ .warehouse-map-title {{ flex-direction:column; gap:.2rem; }} }}
+      @media (prefers-reduced-motion: reduce) {{ .shelf-map-card, .shelf-map-card summary b {{ transition:none; }} }}
     </style>
     """
     st.markdown(map_html, unsafe_allow_html=True)
