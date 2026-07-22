@@ -1,0 +1,804 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-22 16:59:36",
+  "source": "manual_feishu_snapshot",
+  "shelves": [
+    {
+      "shelf_id": "recvoKiL5qHATm",
+      "shelf_code": "H001",
+      "ground_location": "进门左侧",
+      "description": "中文货架，从上到下依次为产品单页、品牌手册、易拉宝",
+      "images": [
+        {
+          "path": "assets/warehouse_locations/shelf-h001-01-84963dcfeaff.webp",
+          "name": "20260722-112601.jpg"
+        }
+      ],
+      "materials": [],
+      "rows": [
+        {
+          "row_code": "W-01",
+          "description": "",
+          "images": [],
+          "materials": []
+        },
+        {
+          "row_code": "W-02",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-w-02-01-b0f7eab94cde.webp",
+              "name": "1dd033b788f998ea730f53aa5d1056eb.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-w-02-02-20cf3fa596f0.webp",
+              "name": "c6da82c4955c198915ee90d9fd93f0c9.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-w-02-03-a68a80b85dcd.webp",
+              "name": "a64ee937b7c5394b4563a1fe93cb0297.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-0209",
+              "category": "产品单页(Product Flyer )",
+              "model": "PuduBot 2",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0249",
+              "category": "产品单页(Product Flyer )",
+              "model": "PUDU CC1",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0259",
+              "category": "产品单页(Product Flyer )",
+              "model": "Bellabot pro",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0269",
+              "category": "产品单页(Product Flyer )",
+              "model": "SH1",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0279",
+              "category": "产品单页(Product Flyer )",
+              "model": "T300",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0289",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0309",
+              "category": "产品单页(Product Flyer )",
+              "model": "CC1 PRO",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0319",
+              "category": "产品单页(Product Flyer )",
+              "model": "T600",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0329",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1 Vac",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0339",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1 Max",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0349",
+              "category": "产品单页(Product Flyer )",
+              "model": "BG1",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0998",
+              "category": "产品单页(Product Flyer )",
+              "model": "D5",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1008",
+              "category": "产品单页(Product Flyer )",
+              "model": "D7",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1018",
+              "category": "产品单页(Product Flyer )",
+              "model": "D9",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1027",
+              "category": "产品单页(Product Flyer )",
+              "model": "SwiftBot Neo",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1028",
+              "category": "产品单页(Product Flyer )",
+              "model": "FlashBot Lite",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1029",
+              "category": "产品单页(Product Flyer )",
+              "model": "Flash Arm",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1030",
+              "category": "产品单页(Product Flyer )",
+              "model": "T300 Conveyor",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1031",
+              "category": "产品单页(Product Flyer )",
+              "model": "HolaBot Pro",
+              "language": "简中(Simplified Chinese)"
+            }
+          ]
+        },
+        {
+          "row_code": "W-03",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-w-03-01-9f10761e957e.webp",
+              "name": "634e50ae4c73328c29b9387ee26c891e.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-w-03-02-63cd0580aed9.webp",
+              "name": "5c05fc45208158d397c5b0ae89501c2e.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-w-03-03-c02828b50d29.webp",
+              "name": "59bff2795a2e168b67cd02243899994d.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-0998",
+              "category": "产品单页(Product Flyer )",
+              "model": "D5",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1008",
+              "category": "产品单页(Product Flyer )",
+              "model": "D7",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1027",
+              "category": "产品单页(Product Flyer )",
+              "model": "SwiftBot Neo",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1030",
+              "category": "产品单页(Product Flyer )",
+              "model": "T300 Conveyor",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0369",
+              "category": "品牌手册(Product Brochure (All\nBanner)）",
+              "model": "无需型号",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0349",
+              "category": "产品单页(Product Flyer )",
+              "model": "BG1",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0339",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1 Max",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0259",
+              "category": "产品单页(Product Flyer )",
+              "model": "Bellabot pro",
+              "language": "简中(Simplified Chinese)"
+            }
+          ]
+        },
+        {
+          "row_code": "W-04",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-w-04-01-afe1241e035e.webp",
+              "name": "bc5876910df1fbfb2857d7408a1c2f8d.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-w-04-02-e28746d03e34.webp",
+              "name": "d440cc4c72da64d24724aed7b9db9192.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-0239",
+              "category": "产品单页(Product Flyer )",
+              "model": "PUDU HolaBot",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-1028",
+              "category": "产品单页(Product Flyer )",
+              "model": "FlashBot Lite",
+              "language": "简中(Simplified Chinese)"
+            },
+            {
+              "material_code": "MAT-0419",
+              "category": "产品易拉宝(Product Roll-Up)",
+              "model": "KettyBot Pro",
+              "language": "简中(Simplified Chinese)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shelf_id": "recvoKiL5qndaW",
+      "shelf_code": "H002",
+      "ground_location": "进门右侧（左列）",
+      "description": "小语种货架，二层德语法语、三层西语意大利、四层韩语和备货箱",
+      "images": [
+        {
+          "path": "assets/warehouse_locations/shelf-h002-01-e1e4727a7a06.webp",
+          "name": "20260722-112618.jpg"
+        }
+      ],
+      "materials": [],
+      "rows": [
+        {
+          "row_code": "M01L-01",
+          "description": "",
+          "images": [],
+          "materials": []
+        },
+        {
+          "row_code": "M01L-02",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-m01l-02-01-56674545d3a6.webp",
+              "name": "ab6ef59c4befb4b583ce6b97a5eb2128.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-m01l-02-02-a6b15b9eb966.webp",
+              "name": "1b4b2cff971129f83da12d443ccd6a24.jpg"
+            }
+          ],
+          "materials": []
+        },
+        {
+          "row_code": "M01L-03",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-m01l-03-01-653ea2eab705.webp",
+              "name": "093bcc19469c054bb7c3ff0d285bb5ed.jpg"
+            },
+            {
+              "path": "assets/warehouse_locations/row-m01l-03-02-1eb4dda7874d.webp",
+              "name": "979f60232c662189aae7c6c69f5f04cc.jpg"
+            }
+          ],
+          "materials": []
+        },
+        {
+          "row_code": "M01L-04",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-m01l-04-01-192207638348.webp",
+              "name": "cce8ee1fd7dab9bbd9c871f36b670b49.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-1026",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1 Vac",
+              "language": "韩语(Korean)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shelf_id": "recvoKiL5q9KQW",
+      "shelf_code": "H003",
+      "ground_location": "进门右侧（前列）",
+      "description": "英文货架",
+      "images": [
+        {
+          "path": "assets/warehouse_locations/shelf-h003-01-0bcf8375288c.webp",
+          "name": "20260722-112605.jpg"
+        }
+      ],
+      "materials": [],
+      "rows": [
+        {
+          "row_code": "MM1-01",
+          "description": "",
+          "images": [],
+          "materials": []
+        },
+        {
+          "row_code": "MM1-02",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-mm1-02-01-4f031b673b40.webp",
+              "name": "1533e2761aeb4e64b50c1c94f1e728a3.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-0021",
+              "category": "产品折页(Single Product Brochure)",
+              "model": "PuduBot 2",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0041",
+              "category": "产品折页(Single Product Brochure)",
+              "model": "SwiftBot",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0091",
+              "category": "产品折页(Single Product Brochure)",
+              "model": "T300",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0051",
+              "category": "产品折页(Single Product Brochure)",
+              "model": "PUDU HolaBot",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0181",
+              "category": "产品单页(Product Flyer )",
+              "model": "BellaBot",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0191",
+              "category": "产品单页(Product Flyer )",
+              "model": "KettyBot Pro",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0201",
+              "category": "产品单页(Product Flyer )",
+              "model": "PuduBot 2",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0311",
+              "category": "产品单页(Product Flyer )",
+              "model": "T600",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-1023",
+              "category": "产品单页(Product Flyer )",
+              "model": "FlashBot Max",
+              "language": "英语(English)"
+            }
+          ]
+        },
+        {
+          "row_code": "MM1-03",
+          "description": "",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-mm1-03-01-4dfbcc29b442.webp",
+              "name": "bf967f949640fc390c3ea67c05daaaf6.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-0241",
+              "category": "产品单页(Product Flyer )",
+              "model": "PUDU CC1",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0261",
+              "category": "产品单页(Product Flyer )",
+              "model": "SH1",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0271",
+              "category": "产品单页(Product Flyer )",
+              "model": "T300",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0281",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0301",
+              "category": "产品单页(Product Flyer )",
+              "model": "CC1 PRO",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0311",
+              "category": "产品单页(Product Flyer )",
+              "model": "T600",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0321",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1 Vac",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0331",
+              "category": "产品单页(Product Flyer )",
+              "model": "MT1 Max",
+              "language": "英语(English)"
+            },
+            {
+              "material_code": "MAT-0341",
+              "category": "产品单页(Product Flyer )",
+              "model": "BG1",
+              "language": "英语(English)"
+            }
+          ]
+        },
+        {
+          "row_code": "MM1-04",
+          "description": "冰箱贴按塑料袋进行分类。",
+          "images": [
+            {
+              "path": "assets/warehouse_locations/row-mm1-04-01-b75540066dcf.webp",
+              "name": "f914eb744b506b58fa4b004890dff716.jpg"
+            }
+          ],
+          "materials": [
+            {
+              "material_code": "MAT-0761",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "BellaBot",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-0821",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "PUDU CC1",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-0831",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "Bellabot pro",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-0851",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "T300",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-0861",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "MT1",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-0921",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "BG1",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-1032",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "D5",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-1033",
+              "category": "冰箱贴( Fridge Magnet)",
+              "model": "D7",
+              "language": "无需语种"
+            },
+            {
+              "material_code": "MAT-0371",
+              "category": "工业产品线手册IR（Industrial Product Line Brochure）",
+              "model": "无需型号",
+              "language": "英语(English)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shelf_id": "recvoKiL5qB8oR",
+      "shelf_code": "H004",
+      "ground_location": "进门右侧（右列）",
+      "description": "",
+      "images": [],
+      "materials": [],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5qMrMM",
+      "shelf_code": "H005",
+      "ground_location": "进门后侧",
+      "description": "",
+      "images": [],
+      "materials": [],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5qsH2d",
+      "shelf_code": "H006",
+      "ground_location": "靠窗后侧",
+      "description": "",
+      "images": [],
+      "materials": [],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5q5NPb",
+      "shelf_code": "G001",
+      "ground_location": "（地面）进门左下",
+      "description": "英文品牌手册+四条工业线手册",
+      "images": [
+        {
+          "path": "assets/warehouse_locations/shelf-g001-01-d12918d886e3.webp",
+          "name": "0c6412fee7abfb2b4a4d514b548278de.jpg"
+        },
+        {
+          "path": "assets/warehouse_locations/shelf-g001-02-f9f297e79c0b.webp",
+          "name": "b0762b4353e5ecef9ef2eec9f0aaa454.jpg"
+        },
+        {
+          "path": "assets/warehouse_locations/shelf-g001-03-15e14fe6ea66.webp",
+          "name": "1f64b5f1acf53a262e85b7c97d87b2b3.jpg"
+        }
+      ],
+      "materials": [
+        {
+          "material_code": "MAT-0361",
+          "category": "品牌手册(Product Brochure (All\nBanner)）",
+          "model": "无需型号",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0371",
+          "category": "工业产品线手册IR（Industrial Product Line Brochure）",
+          "model": "无需型号",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0381",
+          "category": "清洁产品线手册CR（Cleaning Product Line Brochure）",
+          "model": "无需型号",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-1024",
+          "category": "配送线产品手册DR(Delivery Robot Product Brochure)",
+          "model": "无需型号",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-1025",
+          "category": "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+          "model": "无需型号",
+          "language": "英语(English)"
+        }
+      ],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5qI8Ee",
+      "shelf_code": "G002",
+      "ground_location": "（地面）右侧靠墙（前半）",
+      "description": "左侧靠墙两列为小语种折页物料；\n地面为英文单页备货。",
+      "images": [
+        {
+          "path": "assets/warehouse_locations/shelf-g002-01-156bb3709b3c.webp",
+          "name": "ed0a0680c0eb772b1ed5e118b0610d88.jpg"
+        },
+        {
+          "path": "assets/warehouse_locations/shelf-g002-02-e1e1cb7b4446.webp",
+          "name": "0ed45ed1d7828636704841cd0c69fba2.jpg"
+        }
+      ],
+      "materials": [
+        {
+          "material_code": "MAT-0181",
+          "category": "产品单页(Product Flyer )",
+          "model": "BellaBot",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0191",
+          "category": "产品单页(Product Flyer )",
+          "model": "KettyBot Pro",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0201",
+          "category": "产品单页(Product Flyer )",
+          "model": "PuduBot 2",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0241",
+          "category": "产品单页(Product Flyer )",
+          "model": "PUDU CC1",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0261",
+          "category": "产品单页(Product Flyer )",
+          "model": "SH1",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0271",
+          "category": "产品单页(Product Flyer )",
+          "model": "T300",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0281",
+          "category": "产品单页(Product Flyer )",
+          "model": "MT1",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0301",
+          "category": "产品单页(Product Flyer )",
+          "model": "CC1 PRO",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0311",
+          "category": "产品单页(Product Flyer )",
+          "model": "T600",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0321",
+          "category": "产品单页(Product Flyer )",
+          "model": "MT1 Vac",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0331",
+          "category": "产品单页(Product Flyer )",
+          "model": "MT1 Max",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0341",
+          "category": "产品单页(Product Flyer )",
+          "model": "BG1",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-1000",
+          "category": "产品单页(Product Flyer )",
+          "model": "D5",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-1023",
+          "category": "产品单页(Product Flyer )",
+          "model": "FlashBot Max",
+          "language": "英语(English)"
+        }
+      ],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5qseVu",
+      "shelf_code": "G003",
+      "ground_location": "（地面）右侧靠墙（后半）",
+      "description": "笔记本礼盒、公仔和无纺布袋",
+      "images": [
+        {
+          "path": "assets/warehouse_locations/shelf-g003-01-fe685b4bcc15.webp",
+          "name": "fb33e8c9760d507744909e42385f64a3.jpg"
+        },
+        {
+          "path": "assets/warehouse_locations/shelf-g003-02-4d11a58b6944.webp",
+          "name": "2213b53c410c740a5e12348021278925.jpg"
+        },
+        {
+          "path": "assets/warehouse_locations/shelf-g003-03-7d48427e78ad.webp",
+          "name": "f9df5d77e670931f0e2b621e8863ab2f.jpg"
+        },
+        {
+          "path": "assets/warehouse_locations/shelf-g003-04-80bdfa5007b1.webp",
+          "name": "b9e65a35c41976992630ad1b1619cf19.jpg"
+        }
+      ],
+      "materials": [
+        {
+          "material_code": "MAT-0631",
+          "category": "公仔(Plush Toy)",
+          "model": "PUDU HolaBot",
+          "language": "无需语种"
+        },
+        {
+          "material_code": "MAT-0701",
+          "category": "公仔(Plush Toy)",
+          "model": "CC1 PRO",
+          "language": "无需语种"
+        },
+        {
+          "material_code": "MAT-0951",
+          "category": "普渡logo无纺布手提袋(PUDU logo bag)",
+          "model": "无需型号",
+          "language": "英语(English)"
+        },
+        {
+          "material_code": "MAT-0941",
+          "category": "笔记本礼盒(Notebook Gift Box)",
+          "model": "无需型号",
+          "language": "无需语种"
+        }
+      ],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5qfTZ9",
+      "shelf_code": "G004",
+      "ground_location": "（地面）左侧货架后方",
+      "description": "",
+      "images": [],
+      "materials": [],
+      "rows": []
+    },
+    {
+      "shelf_id": "recvoKiL5qFLJ4",
+      "shelf_code": "G005",
+      "ground_location": "（地面）靠窗后侧",
+      "description": "",
+      "images": [],
+      "materials": [],
+      "rows": []
+    }
+  ]
+}

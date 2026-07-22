@@ -40,6 +40,7 @@ EN_DISPLAY_TEXT = {
     "库存登记": "Material Request",
     "审批与发放": "Approval & Issuance",
     "物料管理": "Material Management",
+    "物料仓库位置查询": "Warehouse Location Search",
     "采购补库": "Purchase Restock",
     "物料数据库": "Material Database",
     "品类管理": "Category Management",
@@ -93,6 +94,18 @@ EN_DISPLAY_TEXT = {
     ),
     "等待确认": "Awaiting Confirmation",
     "物料品类管理": "Material Category Management",
+    "仓库位置图集": "Warehouse Location Gallery",
+    "按物料、型号、语种、货架编号或位置说明查询存放位置。": (
+        "Search storage locations by material, model, language, shelf, or location description."
+    ),
+    "静态位置缓存": "Static Location Cache",
+    "本页面仅用于查询物料存放位置，不展示库存数量。如需拿取物料，请先提交物料申请。": (
+        "This page only shows storage locations and does not display inventory quantities. Submit a material request before collecting any items."
+    ),
+    "搜索物料或位置": "Search Materials or Locations",
+    "筛选货架": "Filter Shelf",
+    "全部货架": "All Shelves",
+    "位置图片集锦": "Location Gallery",
     "基础数据": "Master Data",
     "新增或调整物料品类、型号、语种和库存组合。": (
         "Add or update material categories, models, languages, and inventory combinations."

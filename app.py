@@ -154,6 +154,9 @@ UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
+WAREHOUSE_LOCATION_CACHE_PATH = (
+    Path(__file__).resolve().parent / "data" / "warehouse_location_cache.json"
+)
 CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
     Path(__file__).resolve().parent / "data" / "contact_departments_cache.json"
 )
@@ -2091,6 +2094,21 @@ def navigate_to_inventory(key: str, label: str = "查看实时库存表") -> Non
 def navigate_to_approval(key: str, label: str = "打开审批发放页") -> None:
     if st.button(label, key=key, icon=":material/fact_check:", width="stretch"):
         st.query_params["view"] = "approval"
+        st.rerun()
+
+
+def navigate_to_warehouse_locations(
+    key: str, label: str = "物料仓库位置查询"
+) -> None:
+    current_view = str(st.query_params.get("view", ""))
+    if st.button(
+        label,
+        key=key,
+        icon=":material/location_on:",
+        disabled=current_view == "warehouse",
+        width="stretch",
+    ):
+        st.query_params["view"] = "warehouse"
         st.rerun()
 
 
@@ -6227,6 +6245,10 @@ def render_sidebar_link() -> None:
             "库存登记",
             ":material/edit_note:",
         )
+        navigate_to_warehouse_locations(
+            "sidebar_open_warehouse_locations",
+            "物料仓库位置查询",
+        )
         if current_view == "approval":
             st.button(
                 "审批与发放",
@@ -10272,6 +10294,179 @@ def render_inventory_view() -> None:
     render_download_center(df, filtered)
 
 
+@st.cache_data(show_spinner=False)
+def load_warehouse_location_cache() -> dict[str, object]:
+    if not WAREHOUSE_LOCATION_CACHE_PATH.exists():
+        return {"schema_version": 1, "generated_at": "", "shelves": []}
+    data = json.loads(WAREHOUSE_LOCATION_CACHE_PATH.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not isinstance(data.get("shelves"), list):
+        raise RuntimeError("仓库位置静态缓存文件格式不正确。")
+    return data
+
+
+def warehouse_material_search_text(material: dict[str, object]) -> str:
+    return " ".join(
+        str(material.get(key) or "")
+        for key in ("material_code", "category", "model", "language")
+    ).casefold()
+
+
+def filter_warehouse_location_shelves(
+    shelves: list[dict],
+    *,
+    query: str = "",
+    shelf_code: str = "",
+) -> list[dict]:
+    normalized_query = str(query or "").strip().casefold()
+    normalized_shelf = str(shelf_code or "").strip()
+    results: list[dict] = []
+    for source in shelves:
+        shelf = dict(source)
+        if normalized_shelf and str(shelf.get("shelf_code") or "") != normalized_shelf:
+            continue
+        shelf_text = " ".join(
+            str(shelf.get(key) or "")
+            for key in ("shelf_code", "ground_location", "description")
+        ).casefold()
+        direct_materials = [dict(item) for item in list(shelf.get("materials") or [])]
+        rows = [dict(item) for item in list(shelf.get("rows") or [])]
+        if not normalized_query or normalized_query in shelf_text:
+            shelf["visible_materials"] = direct_materials
+            shelf["visible_rows"] = rows
+            results.append(shelf)
+            continue
+        visible_materials = [
+            material
+            for material in direct_materials
+            if normalized_query in warehouse_material_search_text(material)
+        ]
+        visible_rows: list[dict] = []
+        for row in rows:
+            row_text = " ".join(
+                str(row.get(key) or "") for key in ("row_code", "description")
+            ).casefold()
+            materials = [dict(item) for item in list(row.get("materials") or [])]
+            matching_materials = [
+                material
+                for material in materials
+                if normalized_query in warehouse_material_search_text(material)
+            ]
+            if normalized_query in row_text:
+                row["visible_materials"] = materials
+                visible_rows.append(row)
+            elif matching_materials:
+                row["visible_materials"] = matching_materials
+                visible_rows.append(row)
+        if visible_materials or visible_rows:
+            shelf["visible_materials"] = visible_materials
+            shelf["visible_rows"] = visible_rows
+            results.append(shelf)
+    return results
+
+
+def render_warehouse_materials(materials: list[dict]) -> None:
+    if not materials:
+        st.caption("暂无关联物料明细")
+        return
+    for material in materials:
+        st.markdown(
+            " · ".join(
+                value
+                for value in [
+                    str(material.get("category") or ""),
+                    str(material.get("model") or ""),
+                    str(material.get("language") or ""),
+                    str(material.get("material_code") or ""),
+                ]
+                if value
+            )
+        )
+
+
+def render_cached_warehouse_images(images: list[dict], caption: str) -> None:
+    valid_images = [
+        image
+        for image in images
+        if isinstance(image, dict)
+        and (Path(__file__).resolve().parent / str(image.get("path") or "")).exists()
+    ]
+    if not valid_images:
+        st.caption("暂无位置图片")
+        return
+    image_columns = st.columns(min(3, len(valid_images)))
+    for index, image in enumerate(valid_images):
+        image_path = Path(__file__).resolve().parent / str(image.get("path") or "")
+        image_columns[index % len(image_columns)].image(
+            str(image_path),
+            caption=f"{caption} · {index + 1}",
+            width="stretch",
+        )
+
+
+def render_warehouse_location_view() -> None:
+    render_page_header(
+        "物料仓库位置查询",
+        "仓库位置图集",
+        "按物料、型号、语种、货架编号或位置说明查询存放位置。",
+        status="静态位置缓存",
+    )
+    cache = load_warehouse_location_cache()
+    shelves = [dict(item) for item in list(cache.get("shelves") or []) if isinstance(item, dict)]
+    st.info("本页面仅用于查询物料存放位置，不展示库存数量。如需拿取物料，请先提交物料申请。")
+    generated_at = str(cache.get("generated_at") or "未记录")
+    st.caption(f"位置数据来源：人工发布的静态缓存　更新时间：{generated_at}　页面不会自动同步飞书数据。")
+    with st.container(border=True):
+        search_col, shelf_col = st.columns([2.4, 1])
+        query = search_col.text_input(
+            "搜索物料或位置",
+            placeholder="输入物料品类、型号、语种、物料编码、货架编号或位置",
+            key="warehouse_location_query",
+            icon=":material/search:",
+        )
+        shelf_options = ["全部货架"] + sorted(
+            str(shelf.get("shelf_code") or "") for shelf in shelves if shelf.get("shelf_code")
+        )
+        selected_shelf = shelf_col.selectbox(
+            "筛选货架",
+            shelf_options,
+            key="warehouse_location_shelf_filter",
+        )
+    filtered = filter_warehouse_location_shelves(
+        shelves,
+        query=query,
+        shelf_code="" if selected_shelf == "全部货架" else selected_shelf,
+    )
+    render_section_header("01", "位置图片集锦", f"共找到 {len(filtered)} 个货架位置")
+    if not filtered:
+        st.warning("没有找到匹配的位置，请尝试物料名称、型号、语种或货架编号。")
+        return
+    gallery_columns = st.columns(3)
+    for index, shelf in enumerate(filtered):
+        with gallery_columns[index % 3].container(border=True):
+            shelf_code = str(shelf.get("shelf_code") or "未编号")
+            st.subheader(shelf_code)
+            location = str(shelf.get("ground_location") or "位置待补充")
+            st.caption(f":material/location_on: {location}")
+            render_cached_warehouse_images(list(shelf.get("images") or []), shelf_code)
+            description = str(shelf.get("description") or "").strip()
+            if description:
+                st.write(description)
+            direct_materials = list(shelf.get("visible_materials", shelf.get("materials") or []))
+            if direct_materials:
+                with st.expander(f"货架关联物料（{len(direct_materials)}）"):
+                    render_warehouse_materials(direct_materials)
+            visible_rows = list(shelf.get("visible_rows", shelf.get("rows") or []))
+            for row in visible_rows:
+                row_code = str(row.get("row_code") or "未编号货架行")
+                row_materials = list(row.get("visible_materials", row.get("materials") or []))
+                with st.expander(f"{row_code} · {len(row_materials)} 项物料"):
+                    row_description = str(row.get("description") or "").strip()
+                    if row_description:
+                        st.write(row_description)
+                    render_cached_warehouse_images(list(row.get("images") or []), row_code)
+                    render_warehouse_materials(row_materials)
+
+
 def render_management_page() -> None:
     current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
     if current_section == "新增物料品类":
@@ -10393,6 +10588,8 @@ def main() -> None:
     try:
         if view == "inventory":
             render_inventory_view()
+        elif view == "warehouse":
+            render_warehouse_location_view()
         elif view == "approval":
             render_approval_view(refresh_on_open=entering_approval)
         else:
