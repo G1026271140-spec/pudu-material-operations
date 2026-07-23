@@ -406,15 +406,16 @@ class BotNotificationTests(unittest.TestCase):
     def test_request_received_notification_only_goes_to_enabled_sales_applicant(self) -> None:
         client = Mock()
         payload = {"requester_open_id": "ou_sales"}
+        card = {"header": {"template": "blue"}}
         with (
             patch.object(app, "feishu_client", return_value=client),
             patch.object(app, "enabled_sales_open_ids", return_value=["ou_sales"]),
-            patch.object(app, "sales_request_received_notification_text", return_value="处理中"),
+            patch.object(app, "sales_request_received_notification_card", return_value=card),
         ):
             count = app.notify_sales_request_received("REQ-1", payload, [])
 
         self.assertEqual(count, 1)
-        client.send_text_message.assert_called_once_with("ou_sales", "处理中")
+        client.send_interactive_message.assert_called_once_with("ou_sales", card)
 
         client.reset_mock()
         with (
@@ -424,7 +425,29 @@ class BotNotificationTests(unittest.TestCase):
             count = app.notify_sales_request_received("REQ-1", payload, [])
 
         self.assertEqual(count, 0)
-        client.send_text_message.assert_not_called()
+        client.send_interactive_message.assert_not_called()
+
+    def test_foreign_applicant_receives_english_request_card(self) -> None:
+        payload = {
+            "requester": "John Smith",
+            "material_usage": "Trade show",
+        }
+        card = app.sales_request_received_notification_card(
+            "REQ-EN-1", payload, [{"quantity": 3}]
+        )
+        serialized = json.dumps(card, ensure_ascii=False)
+
+        self.assertEqual(card["header"]["title"]["content"], "Material Request Received")
+        self.assertIn("Request No.: REQ-EN-1", serialized)
+        self.assertIn("Applicant: John Smith", serialized)
+        self.assertNotIn("申请单号", serialized)
+
+    def test_chinese_applicant_keeps_chinese_request_card(self) -> None:
+        card = app.sales_request_received_notification_card(
+            "REQ-ZH-1", {"requester": "张三"}, [{"quantity": 1}]
+        )
+
+        self.assertEqual(card["header"]["title"]["content"], "营销物料申请已进入处理流程")
 
     def test_completed_notification_contains_requested_and_actual_quantities(self) -> None:
         request = {
@@ -471,15 +494,38 @@ class BotNotificationTests(unittest.TestCase):
     def test_completed_notification_only_goes_to_original_sales_applicant(self) -> None:
         client = Mock()
         request = {"requester_open_id": "ou_sales", "request_no": "REQ-1"}
+        card = {"header": {"template": "green"}}
         with (
             patch.object(app, "feishu_client", return_value=client),
             patch.object(app, "enabled_sales_open_ids", return_value=["ou_sales"]),
-            patch.object(app, "sales_request_completed_notification_text", return_value="已完成"),
+            patch.object(app, "sales_request_completed_notification_card", return_value=card),
         ):
             count = app.notify_sales_request_completed(request, [], "")
 
         self.assertEqual(count, 1)
-        client.send_text_message.assert_called_once_with("ou_sales", "已完成")
+        client.send_interactive_message.assert_called_once_with("ou_sales", card)
+
+    def test_foreign_applicant_receives_english_completed_card(self) -> None:
+        request = {
+            "request_no": "REQ-EN-2",
+            "requester": "John Smith",
+            "status": app.REQUEST_STATUS_PARTIAL,
+        }
+        lines = [{
+            "product": "产品单页(Product Flyer)",
+            "model": "BellaBot",
+            "language": "英语(English)",
+            "quantity": 5,
+            "actual_issue_qty": 3,
+        }]
+
+        card = app.sales_request_completed_notification_card(request, lines, "Pending restock")
+        serialized = json.dumps(card, ensure_ascii=False)
+
+        self.assertEqual(card["header"]["title"]["content"], "Material Request Completed")
+        self.assertIn("Result: Partially Issued", serialized)
+        self.assertIn("Product Flyer / BellaBot / English: requested 5, issued 3", serialized)
+        self.assertNotIn("产品单页", serialized)
 
     def test_request_records_keep_applicant_open_id_for_completion_feedback(self) -> None:
         rows = [

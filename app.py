@@ -4386,13 +4386,40 @@ def maintain_inventory_status(
     }
 
 
+def requester_prefers_english(request_data: dict[str, object]) -> bool:
+    requester = str(request_data.get("requester") or "").strip()
+    return bool(requester) and re.search(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]", requester) is None
+
+
+def english_material_notification_label(value: object) -> str:
+    text = str(value or "-").strip() or "-"
+    english_parts = re.findall(r"[（(]([^()（）]*[A-Za-z][^()（）]*)[）)]", text)
+    if english_parts:
+        return english_parts[-1].strip()
+    return str(translate_ui_text(text, LANGUAGE_EN))
+
+
 def sales_request_received_notification_text(
     request_no: str,
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
+    *,
+    english: bool = False,
 ) -> str:
     valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
     total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
+    if english:
+        return "\n".join(
+            [
+                "Your marketing material request is now being processed.",
+                f"Request No.: {request_no}",
+                f"Applicant: {str(request_payload.get('requester') or '-')}",
+                f"Purpose: {str(request_payload.get('material_usage') or '-')}",
+                f"Total requested: {len(valid_lines)} item types, {total_quantity} units",
+                "",
+                "The administrators have received your request. Please wait for the approval and issuance result.",
+            ]
+        )
     return "\n".join(
         [
             "【营销物料申请已进入处理流程】",
@@ -4406,6 +4433,34 @@ def sales_request_received_notification_text(
     )
 
 
+def sales_request_received_notification_card(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> dict[str, object]:
+    english = requester_prefers_english(request_payload)
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "blue",
+            "title": {
+                "tag": "plain_text",
+                "content": (
+                    "Material Request Received"
+                    if english
+                    else "营销物料申请已进入处理流程"
+                ),
+            },
+        },
+        "elements": [{
+            "tag": "markdown",
+            "content": sales_request_received_notification_text(
+                request_no, request_payload, lines, english=english
+            ),
+        }],
+    }
+
+
 def notify_sales_request_received(
     request_no: str,
     request_payload: dict[str, object],
@@ -4417,10 +4472,10 @@ def notify_sales_request_received(
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法发送销售申请回执。")
-    send_feishu_text_message(
+    send_feishu_interactive_message(
         client,
         requester_open_id,
-        sales_request_received_notification_text(request_no, request_payload, lines),
+        sales_request_received_notification_card(request_no, request_payload, lines),
     )
     return 1
 
@@ -4429,41 +4484,86 @@ def sales_request_completed_notification_text(
     request: dict[str, object],
     lines: list[dict[str, object]],
     note: str,
+    *,
+    english: bool = False,
 ) -> str:
     status = str(request.get("status") or REQUEST_STATUS_ISSUED)
     details: list[str] = []
     for index, line in enumerate(lines, start=1):
+        label = english_material_notification_label if english else lambda value: str(value or "-")
         requested_material = (
-            f"{str(line.get('product') or '-')} / "
-            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
-            f"{str(line.get('language') or NO_LANGUAGE_TEXT)}"
+            f"{label(line.get('product'))} / "
+            f"{label(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{label(line.get('language') or NO_LANGUAGE_TEXT)}"
         )
         actual_material = (
-            f"{str(line.get('actual_product') or line.get('product') or '-')} / "
-            f"{str(line.get('actual_model') or line.get('model') or NO_MODEL_TEXT)} / "
-            f"{str(line.get('actual_language') or line.get('language') or NO_LANGUAGE_TEXT)}"
+            f"{label(line.get('actual_product') or line.get('product'))} / "
+            f"{label(line.get('actual_model') or line.get('model') or NO_MODEL_TEXT)} / "
+            f"{label(line.get('actual_language') or line.get('language') or NO_LANGUAGE_TEXT)}"
         )
         requested_quantity = int(line.get("quantity") or 0)
         actual_quantity = int(line.get("actual_issue_qty") or 0)
         if requested_material == actual_material:
-            details.append(
+            details.append((
+                f"{index}. {requested_material}: requested {requested_quantity}, issued {actual_quantity}"
+                if english else
                 f"{index}. {requested_material}：申请 {requested_quantity}，实际发放 {actual_quantity}"
-            )
+            ))
         else:
-            details.append(
+            details.append((
+                f"{index}. Requested: {requested_material} × {requested_quantity}\n"
+                f"   Issued: {actual_material} × {actual_quantity}"
+                if english else
                 f"{index}. 申请：{requested_material} × {requested_quantity}\n"
                 f"   实际发放：{actual_material} × {actual_quantity}"
-            )
-    parts = [
-        "【营销物料申请审批已完成】",
-        f"申请单号：{str(request.get('request_no') or '-')}",
-        f"审批结果：{status}",
-        "",
-        *details,
-    ]
+            ))
+    if english:
+        parts = [
+            "Your marketing material request has been processed.",
+            f"Request No.: {str(request.get('request_no') or '-')}",
+            f"Result: {translate_ui_text(status, LANGUAGE_EN)}",
+            "",
+            *details,
+        ]
+    else:
+        parts = [
+            "【营销物料申请审批已完成】",
+            f"申请单号：{str(request.get('request_no') or '-')}",
+            f"审批结果：{status}",
+            "",
+            *details,
+        ]
     if note.strip():
-        parts.extend(["", f"审批/发放备注：{note.strip()}"])
+        parts.extend(["", f"Approval / issuance note: {note.strip()}" if english else f"审批/发放备注：{note.strip()}"])
     return "\n".join(parts)
+
+
+def sales_request_completed_notification_card(
+    request: dict[str, object],
+    lines: list[dict[str, object]],
+    note: str,
+) -> dict[str, object]:
+    english = requester_prefers_english(request)
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "green",
+            "title": {
+                "tag": "plain_text",
+                "content": (
+                    "Material Request Completed"
+                    if english
+                    else "营销物料申请审批已完成"
+                ),
+            },
+        },
+        "elements": [{
+            "tag": "markdown",
+            "content": sales_request_completed_notification_text(
+                request, lines, note, english=english
+            ),
+        }],
+    }
 
 
 def notify_sales_request_completed(
@@ -4477,10 +4577,10 @@ def notify_sales_request_completed(
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法发送销售审批反馈。")
-    send_feishu_text_message(
+    send_feishu_interactive_message(
         client,
         requester_open_id,
-        sales_request_completed_notification_text(request, lines, note),
+        sales_request_completed_notification_card(request, lines, note),
     )
     return 1
 
