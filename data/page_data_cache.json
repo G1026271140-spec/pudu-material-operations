@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-07-22 16:31:17",
+  "generated_at": "2026-07-23 10:32:16",
   "tables": {
     "物料品类": [
       {
@@ -21451,10 +21451,14 @@
           "物料编码": "MAT-0181",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -22385,10 +22389,14 @@
           "物料编码": "MAT-0191",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -23319,10 +23327,14 @@
           "物料编码": "MAT-0201",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -27051,10 +27063,14 @@
           "物料编码": "MAT-0241",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -28925,10 +28941,14 @@
           "物料编码": "MAT-0261",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -29867,10 +29887,14 @@
           "物料编码": "MAT-0271",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -30805,10 +30829,14 @@
           "物料编码": "MAT-0281",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -32673,10 +32701,14 @@
           "物料编码": "MAT-0301",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -33613,10 +33645,14 @@
           "物料编码": "MAT-0311",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -34551,10 +34587,14 @@
           "物料编码": "MAT-0321",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -35497,10 +35537,14 @@
           "物料编码": "MAT-0331",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -36441,10 +36485,14 @@
           "物料编码": "MAT-0341",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -38307,10 +38355,14 @@
           "物料编码": "MAT-0361",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5q5NPb"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G001",
+              "text_arr": [
+                "G001"
+              ],
               "type": "text"
             }
           ],
@@ -39251,10 +39303,14 @@
           "物料编码": "MAT-0371",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5q5NPb"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G001",
+              "text_arr": [
+                "G001"
+              ],
               "type": "text"
             }
           ],
@@ -40191,10 +40247,14 @@
           "物料编码": "MAT-0381",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5q5NPb"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G001",
+              "text_arr": [
+                "G001"
+              ],
               "type": "text"
             }
           ],
@@ -59304,10 +59364,14 @@
           "物料编码": "MAT-0631",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qseVu"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G003",
+              "text_arr": [
+                "G003"
+              ],
               "type": "text"
             }
           ],
@@ -59961,10 +60025,14 @@
           "物料编码": "MAT-0701",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qseVu"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G003",
+              "text_arr": [
+                "G003"
+              ],
               "type": "text"
             }
           ],
@@ -62221,10 +62289,14 @@
           "物料编码": "MAT-0941",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qseVu"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G003",
+              "text_arr": [
+                "G003"
+              ],
               "type": "text"
             }
           ],
@@ -62322,10 +62394,14 @@
           "物料编码": "MAT-0951",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qseVu"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G003",
+              "text_arr": [
+                "G003"
+              ],
               "type": "text"
             }
           ],
@@ -66226,10 +66302,14 @@
           "物料编码": "MAT-1000",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -68379,10 +68459,14 @@
           "物料编码": "MAT-1023",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5qI8Ee"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G002",
+              "text_arr": [
+                "G002"
+              ],
               "type": "text"
             }
           ],
@@ -68472,10 +68556,14 @@
           "物料编码": "MAT-1024",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5q5NPb"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G001",
+              "text_arr": [
+                "G001"
+              ],
               "type": "text"
             }
           ],
@@ -68565,10 +68653,14 @@
           "物料编码": "MAT-1025",
           "物料货架": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvoKiL5q5NPb"
+              ],
               "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
+              "text": "G001",
+              "text_arr": [
+                "G001"
+              ],
               "type": "text"
             }
           ],
