@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-23 10:32:48",
+  "generated_at": "2026-07-27 16:32:18",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -1765,13 +1765,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0601",
-      "product": "公仔(Plush Toy)",
-      "model": "PuduBot 2",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0611",
       "product": "公仔(Plush Toy)",
       "model": "FlashBot",
@@ -2332,6 +2325,6 @@
       "quantity": 100
     }
   ],
-  "row_count": 319,
+  "row_count": 318,
   "built_from": "live_feishu"
 }

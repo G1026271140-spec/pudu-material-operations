@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-07-23 10:32:16",
+  "generated_at": "2026-07-27 16:31:45",
   "tables": {
     "物料品类": [
       {
@@ -40502,7 +40502,7 @@
           ],
           "单价（人民币）": 5.416,
           "单价（美元）": "0.8",
-          "启用状态": "启用",
+          "启用状态": "停用",
           "品类关联": [
             {
               "record_ids": [
@@ -53312,10 +53312,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqacdyTofjc"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260723-001-01",
+              "text_arr": [
+                "REQ-20260723-001-01"
+              ],
               "type": "text"
             }
           ],
@@ -56102,10 +56106,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqacdyTQwdi"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260723-001-03",
+              "text_arr": [
+                "REQ-20260723-001-03"
+              ],
               "type": "text"
             }
           ],
@@ -57032,10 +57040,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqacdyTnnkp"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260723-001-02",
+              "text_arr": [
+                "REQ-20260723-001-02"
+              ],
               "type": "text"
             }
           ],
@@ -59037,7 +59049,7 @@
           ],
           "单价（人民币）": 24.9813,
           "单价（美元）": "3.69",
-          "启用状态": "启用",
+          "启用状态": "停用",
           "品类关联": [
             {
               "record_ids": [
@@ -72202,6 +72214,58 @@
         },
         "id": "recvpS8uRrHMq1",
         "record_id": "recvpS8uRrHMq1"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "国家": "USA",
+          "备注": "客户名称：U.S. Business Systems, INC.\n国家：USA\n收件人信息：3221 Southview Dr.\nElkhart, IN 46514\n运费承担者：普渡付款(PUDU)\n物料用途：Elkhart Dealer Open House\n申请人：Kyle Guffey",
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "U.S. Business Systems, INC.",
+          "市场负责人": null,
+          "库存流水": null,
+          "提交幂等键": "84ebbdf403aa4606b93b4b8bfaf7ce41",
+          "提交时间": 1784777422576,
+          "收件人信息": "3221 Southview Dr.\nElkhart, IN 46514",
+          "期望发放日期": null,
+          "标题": "Elkhart Dealer Open House-Kyle Guffey-营销物料领取",
+          "物料用途": "Elkhart Dealer Open House",
+          "用途|活动": "Elkhart Dealer Open House",
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00125_4cebd09a-5be7-4777-bcb4-e0b690f390bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "kbguff@pudutech.com",
+              "en_name": "Kyle Guffey",
+              "id": "ou_2e802d0342ba9f62b88a7144a563f81d",
+              "name": "Kyle Guffey"
+            }
+          ],
+          "申请单号": "REQ-20260723-001",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvqacdyTofjc",
+                "recvqacdyTnnkp",
+                "recvqacdyTQwdi"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260723-001-01,REQ-20260723-001-02,REQ-20260723-001-03",
+              "text_arr": [
+                "REQ-20260723-001-01",
+                "REQ-20260723-001-02",
+                "REQ-20260723-001-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请部门|区域": "美国战队",
+          "相关附件": null,
+          "运费承担者": "普渡付款(PUDU)"
+        },
+        "id": "recvqaccffu4to",
+        "record_id": "recvqaccffu4to"
       }
     ],
     "申请明细": [
@@ -74893,6 +74957,285 @@
         },
         "id": "recvpS8vVyQnJu",
         "record_id": "recvpS8vVyQnJu"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": null,
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvqaccffu4to"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260723-001",
+              "text_arr": [
+                "REQ-20260723-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260723-001-01",
+          "物料品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kghQc"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0521",
+              "text_arr": [
+                "MAT-0521"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvqacdyTofjc",
+        "record_id": "recvqacdyTofjc"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": null,
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvqaccffu4to"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260723-001",
+              "text_arr": [
+                "REQ-20260723-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260723-001-02",
+          "物料品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgnz3"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0561",
+              "text_arr": [
+                "MAT-0561"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvqacdyTnnkp",
+        "record_id": "recvqacdyTnnkp"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": null,
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvqaccffu4to"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260723-001",
+              "text_arr": [
+                "REQ-20260723-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260723-001-03",
+          "物料品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kglUL"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0551",
+              "text_arr": [
+                "MAT-0551"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvqacdyTQwdi",
+        "record_id": "recvqacdyTQwdi"
       }
     ]
   },
@@ -74902,7 +75245,7 @@
     "物料语种": 12,
     "物料主数据": 683,
     "库存流水": 34,
-    "物料申请单": 23,
-    "申请明细": 29
+    "物料申请单": 24,
+    "申请明细": 32
   }
 }
