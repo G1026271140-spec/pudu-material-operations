@@ -75,6 +75,57 @@ class BotNotificationTests(unittest.TestCase):
         client.send_interactive_message.assert_any_call("ou-a", card)
         client.send_interactive_message.assert_any_call("ou-b", card)
 
+    def test_category_create_card_contains_initial_inventory_details(self) -> None:
+        draft = {
+            "product": "新品类",
+            "category_status": app.STATUS_ACTIVE,
+            "created_at": "2026-07-27 18:00:00",
+        }
+        result = {
+            "target_count": 2,
+            "target_quantity": 25,
+            "models": ["M1"],
+            "languages": ["英语", "日语"],
+            "targets": [
+                {
+                    "model": "M1", "language": "英语", "quantity": 20,
+                    "unit_price": 1.5, "customs_code": "4911101000",
+                    "status": app.STATUS_ACTIVE,
+                },
+                {
+                    "model": "M1", "language": "日语", "quantity": 5,
+                    "unit_price": 2, "customs_code": "", "status": app.STATUS_INACTIVE,
+                },
+            ],
+        }
+
+        card = app.category_create_notification_card(draft, result)
+        serialized = json.dumps(card, ensure_ascii=False)
+
+        self.assertTrue(card["config"]["wide_screen_mode"])
+        self.assertEqual(card["header"]["template"], "green")
+        self.assertEqual(card["header"]["title"]["content"], "新物料品类已创建")
+        for expected in (
+            "新品类", "2026-07-27 18:00:00", "库存组合 2 条",
+            "初始库存 25 件", "M1 / 英语", "库存：20", "单价：1.5",
+            "海关编码：4911101000", "M1 / 日语", "状态：停用",
+        ):
+            self.assertIn(expected, serialized)
+
+    def test_category_create_notification_goes_to_each_enabled_admin(self) -> None:
+        client = Mock()
+        card = {"config": {"wide_screen_mode": True}}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-a", "ou-b"]),
+            patch.object(app, "category_create_notification_card", return_value=card),
+        ):
+            count = app.notify_enabled_admins_of_category_create({}, {})
+
+        self.assertEqual(count, 2)
+        client.send_interactive_message.assert_any_call("ou-a", card)
+        client.send_interactive_message.assert_any_call("ou-b", card)
+
     def test_client_sends_text_message_to_open_id(self) -> None:
         client = FeishuBitableClient(FeishuBitableConfig("app", "secret", "token"))
         client._request = Mock(

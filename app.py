@@ -4260,6 +4260,76 @@ def notify_enabled_admins_of_category_edit(
     return len(recipients)
 
 
+def category_create_notification_card(
+    draft: dict[str, object],
+    result: dict[str, object],
+) -> dict[str, object]:
+    targets = [
+        target
+        for target in list(result.get("targets") or [])
+        if isinstance(target, dict)
+    ]
+    elements: list[dict[str, object]] = [
+        {
+            "tag": "markdown",
+            "content": (
+                f"**物料品类：** {_feishu_card_plain_text(draft.get('product'))}\n"
+                f"**创建时间：** {_feishu_card_plain_text(draft.get('created_at'))}\n"
+                f"**品类状态：** {_feishu_card_plain_text(draft.get('category_status'))}\n"
+                f"**创建结果：** 库存组合 {int(result.get('target_count') or 0)} 条，"
+                f"型号 {len(list(result.get('models') or []))} 个，"
+                f"语种 {len(list(result.get('languages') or []))} 个，"
+                f"初始库存 {int(result.get('target_quantity') or 0):,} 件"
+            ),
+        },
+        {"tag": "hr"},
+        {"tag": "markdown", "content": "**新增库存组合明细**"},
+    ]
+    for index, target in enumerate(targets[:40], start=1):
+        elements.append({
+            "tag": "div",
+            "text": {
+                "tag": "plain_text",
+                "content": (
+                    f"{index:02d}. {_feishu_card_plain_text(target.get('model') or NO_MODEL_TEXT)} / "
+                    f"{_feishu_card_plain_text(target.get('language') or NO_LANGUAGE_TEXT)}\n"
+                    f"库存：{int(target.get('quantity') or 0)}；"
+                    f"单价：{float(target.get('unit_price') or 0):g}；"
+                    f"状态：{_feishu_card_plain_text(target.get('status'))}；"
+                    f"海关编码：{_feishu_card_plain_text(target.get('customs_code'))}"
+                ),
+            },
+        })
+    if len(targets) > 40:
+        elements.append({
+            "tag": "markdown",
+            "content": f"另有 **{len(targets) - 40}** 条新增组合，请在品类管理中查看。",
+        })
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "green",
+            "title": {"tag": "plain_text", "content": "新物料品类已创建"},
+        },
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_category_create(
+    draft: dict[str, object], result: dict[str, object]
+) -> int:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送新增品类通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    card = category_create_notification_card(draft, result)
+    for open_id in recipients:
+        send_feishu_interactive_message(client, open_id, card)
+    return len(recipients)
+
+
 def ensure_inventory_zero_since_field() -> bool:
     refresh_feishu_schema_cache()
     if feishu_has_field(MATERIAL_TABLE_NAME, INVENTORY_ZERO_SINCE_FIELD):
@@ -8240,7 +8310,7 @@ def render_new_category_review() -> None:
         if preview_error:
             st.warning("请先修正全部库存行后再确认创建。")
             return
-        with st.spinner("正在创建物料品类和库存行，请勿关闭页面......"):
+        with st.spinner("正在创建物料品类、库存行并发送管理员通知，请勿关闭页面......"):
             with DATA_LOCK:
                 try:
                     result = sync_feishu_category_inventory(
@@ -8259,12 +8329,30 @@ def render_new_category_review() -> None:
                     st.error("创建物料品类失败，尚未完成全部库存行写入。请检查飞书数据后重试。")
                     st.exception(exc)
                     return
+            notification_count = 0
+            notification_warning = ""
+            notification_draft = {
+                **dict(draft),
+                "product": product,
+                "category_status": category_status,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            try:
+                notification_count = notify_enabled_admins_of_category_create(
+                    notification_draft,
+                    result,
+                )
+            except Exception as exc:
+                notification_warning = f"品类已创建，但管理员通知发送失败：{exc}"
         refresh_page_cache_after_write("category", update_request_form=True)
         clear_new_category_creation_state()
         st.session_state["category_added_message"] = (
             f"物料品类“{product}”已创建，共生成 {result['created_count']} 条库存行，"
             f"初始库存合计 {result['target_quantity']:,}。"
+            + (f" 已通知 {notification_count} 位管理员。" if notification_count else "")
         )
+        if notification_warning:
+            st.session_state["category_admin_warning"] = notification_warning
         st.rerun()
 
 
