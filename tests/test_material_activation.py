@@ -34,6 +34,49 @@ class MaterialActivationTests(unittest.TestCase):
 
         self.assertEqual(fields, {"单价（美元）": 0.06})
 
+    def test_customs_code_writer_converts_numeric_text_for_number_field(self) -> None:
+        fields: dict[str, object] = {}
+        with patch.object(
+            app,
+            "feishu_table_fields",
+            return_value={"海关编码": {"type": 2}},
+        ):
+            app.set_feishu_customs_code(app.MATERIAL_TABLE_NAME, fields, "4911101000")
+
+        self.assertEqual(fields, {"海关编码": 4911101000})
+        self.assertIsInstance(fields["海关编码"], int)
+
+    def test_customs_code_writer_omits_blank_number_value(self) -> None:
+        fields: dict[str, object] = {}
+        with patch.object(
+            app,
+            "feishu_table_fields",
+            return_value={"海关编码": {"type": 2}},
+        ):
+            app.set_feishu_customs_code(app.MATERIAL_TABLE_NAME, fields, "")
+
+        self.assertEqual(fields, {})
+
+    def test_customs_code_writer_rejects_text_for_number_field_early(self) -> None:
+        with patch.object(
+            app,
+            "feishu_table_fields",
+            return_value={"海关编码": {"type": 2}},
+        ):
+            with self.assertRaisesRegex(ValueError, "海关编码为数字字段"):
+                app.set_feishu_customs_code(app.MATERIAL_TABLE_NAME, {}, "HS-1")
+
+    def test_customs_code_writer_keeps_text_for_text_field(self) -> None:
+        fields: dict[str, object] = {}
+        with patch.object(
+            app,
+            "feishu_table_fields",
+            return_value={"海关编码": {"type": 1}},
+        ):
+            app.set_feishu_customs_code(app.MATERIAL_TABLE_NAME, fields, "HS-1")
+
+        self.assertEqual(fields, {"海关编码": "HS-1"})
+
     def test_inventory_dataframe_excludes_inactive_and_keeps_legacy_blank_rows(self) -> None:
         df = app.feishu_inventory_dataframe_from_rows(
             [

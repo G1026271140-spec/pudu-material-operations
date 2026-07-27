@@ -1275,6 +1275,33 @@ def set_feishu_unit_price(
     set_first_plain_field(table_name, fields, list(UNIT_PRICE_FIELD_CANDIDATES), value)
 
 
+def set_feishu_customs_code(
+    table_name: str,
+    fields: dict[str, object],
+    value: object,
+) -> None:
+    field_name = "海关编码"
+    if not feishu_has_field(table_name, field_name):
+        return
+    text = str(value or "").strip()
+    if not text:
+        return
+    if feishu_field_type(table_name, field_name) == 2:
+        if re.fullmatch(r"[+-]?\d+", text):
+            fields[field_name] = int(text)
+            return
+        try:
+            number = float(text)
+        except ValueError as exc:
+            raise ValueError("飞书中的海关编码为数字字段，请只填写数字。") from exc
+        if not pd.notna(number) or number in (float("inf"), float("-inf")):
+            raise ValueError("海关编码必须是有效数字。")
+        fields[field_name] = number
+        return
+    if feishu_accepts_plain_value(table_name, field_name):
+        fields[field_name] = text
+
+
 def set_first_person_or_plain_field(
     table_name: str,
     fields: dict[str, object],
@@ -5773,10 +5800,10 @@ def update_feishu_inventory_item(
         "产品型号": model,
         "语种": language.strip(),
         "备注": remark.strip(),
-        "海关编码": customs_code.strip(),
         "品类关联": [category_record_id] if category_record_id else [],
     }
     set_feishu_unit_price(MATERIAL_TABLE_NAME, update_fields, float(unit_price or 0))
+    set_feishu_customs_code(MATERIAL_TABLE_NAME, update_fields, customs_code)
     add_material_model_link(update_fields, model, link_field, model_ids)
     add_material_language_link(update_fields, language, language_link_field, language_ids)
     feishu_update_record_fields(MATERIAL_TABLE_NAME, record_id, update_fields)
@@ -5966,12 +5993,7 @@ def sync_feishu_category_inventory(
             "备注": "",
         }
         set_feishu_unit_price(CATEGORY_TABLE_NAME, category_fields, category_unit_price)
-        set_first_plain_field(
-            CATEGORY_TABLE_NAME,
-            category_fields,
-            ["海关编码"],
-            category_customs_code,
-        )
+        set_feishu_customs_code(CATEGORY_TABLE_NAME, category_fields, category_customs_code)
         created = feishu_batch_create_records(
             CATEGORY_TABLE_NAME,
             [category_fields],
@@ -5995,11 +6017,11 @@ def sync_feishu_category_inventory(
             "语种": target["language"],
             "当前库存": int(target["quantity"]),
             "备注": target["remark"],
-            "海关编码": target["customs_code"],
             "启用状态": target["status"],
             "品类关联": [category_record_id],
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
+        set_feishu_customs_code(MATERIAL_TABLE_NAME, fields, target["customs_code"])
         add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
         add_material_language_link(fields, target["language"], language_link_field, language_record_ids)
         create_fields.append(fields)
@@ -6022,11 +6044,11 @@ def sync_feishu_category_inventory(
             "语种": target["language"],
             "当前库存": int(target["quantity"]),
             "备注": target["remark"],
-            "海关编码": target["customs_code"],
             "启用状态": target["status"],
             "品类关联": [category_record_id],
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
+        set_feishu_customs_code(MATERIAL_TABLE_NAME, fields, target["customs_code"])
         add_material_model_link(fields, target["model"], model_link_field, model_record_ids)
         add_material_language_link(fields, target["language"], language_link_field, language_record_ids)
         keeper_updates.append({"record_id": target["keeper_id"], "fields": fields})
@@ -6053,12 +6075,7 @@ def sync_feishu_category_inventory(
         "语种数量": len(plan["languages"]),
     }
     set_feishu_unit_price(CATEGORY_TABLE_NAME, category_update_fields, category_unit_price)
-    set_first_plain_field(
-        CATEGORY_TABLE_NAME,
-        category_update_fields,
-        ["海关编码"],
-        category_customs_code,
-    )
+    set_feishu_customs_code(CATEGORY_TABLE_NAME, category_update_fields, category_customs_code)
     feishu_update_record_fields(CATEGORY_TABLE_NAME, category_record_id, category_update_fields)
 
     return {
