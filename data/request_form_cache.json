@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-27 16:32:18",
+  "generated_at": "2026-07-28 10:32:08",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -13,7 +13,8 @@
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
-    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)"
+    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
+    "扇子"
   ],
   "no_model_products": [
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -26,6 +27,7 @@
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
     "展会服装（Clothes）",
+    "扇子",
     "工业产品线手册IR（Industrial Product Line Brochure）",
     "清洁产品线手册CR（Cleaning Product Line Brochure）",
     "展会服装"
@@ -36,6 +38,7 @@
     "笔记本礼盒(Notebook Gift Box)",
     "定制LOGO书包(Customized PUDU bag)",
     "展会服装（Clothes）",
+    "扇子",
     "展会服装"
   ],
   "configured_language_products": [
@@ -52,7 +55,8 @@
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "展会服装（Clothes）"
+    "展会服装（Clothes）",
+    "扇子"
   ],
   "models": [
     "BellaBot",
@@ -411,7 +415,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "Bellabot pro",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1050
+      "quantity": 1200
     },
     {
       "material_code": "MAT-0261",
@@ -614,7 +618,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "英语(English)",
-      "quantity": 1800
+      "quantity": 2000
     },
     {
       "material_code": "MAT-0302",
@@ -908,7 +912,7 @@
       "product": "品牌手册(Product Brochure (All\nBanner)）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 1200
+      "quantity": 1500
     },
     {
       "material_code": "MAT-0362",
@@ -943,7 +947,7 @@
       "product": "品牌手册(Product Brochure (All\nBanner)）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 325
+      "quantity": 460
     },
     {
       "material_code": "MAT-0370",
@@ -1993,7 +1997,7 @@
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
       "language": "无需语种",
-      "quantity": 0
+      "quantity": 350
     },
     {
       "material_code": "MAT-0951",
@@ -2133,7 +2137,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "简中(Simplified Chinese)",
-      "quantity": 800
+      "quantity": 1800
     },
     {
       "material_code": "MAT-1000",
@@ -2182,7 +2186,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D7",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1000
+      "quantity": 1800
     },
     {
       "material_code": "MAT-1010",
@@ -2323,8 +2327,22 @@
       "model": "D7",
       "language": "无需语种",
       "quantity": 100
+    },
+    {
+      "material_code": "MAT-1034",
+      "product": "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 135
+    },
+    {
+      "material_code": "MAT-1035",
+      "product": "扇子",
+      "model": "无需型号",
+      "language": "无需语种",
+      "quantity": 200
     }
   ],
-  "row_count": 318,
+  "row_count": 320,
   "built_from": "live_feishu"
 }

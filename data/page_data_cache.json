@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-07-27 16:31:45",
+  "generated_at": "2026-07-28 10:31:37",
   "tables": {
     "物料品类": [
       {
@@ -1118,12 +1118,14 @@
           "物料主数据": [
             {
               "record_ids": [
-                "recvpUi8WJ0MXQ"
+                "recvpUi8WJ0MXQ",
+                "recvqz1mRGnDlf"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-1025",
+              "text": "MAT-1025,MAT-1034",
               "text_arr": [
-                "MAT-1025"
+                "MAT-1025",
+                "MAT-1034"
               ],
               "type": "text"
             }
@@ -1987,6 +1989,47 @@
         },
         "id": "rec27JD20Fj83P",
         "record_id": "rec27JD20Fj83P"
+      },
+      {
+        "fields": {
+          "产品型号数量": "1",
+          "创建时间": null,
+          "单价（人民币）": 0,
+          "单价（美元）": "0",
+          "启用状态": "启用",
+          "备注": null,
+          "库存行数": "1",
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": [
+                "recvqz3Pj6Qmu6"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1035",
+              "text_arr": [
+                "MAT-1035"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料品类": "扇子",
+          "物料品类编码": null,
+          "语种数量": "1"
+        },
+        "id": "recvqz3LUkQpbg",
+        "record_id": "recvqz3LUkQpbg"
       }
     ],
     "产品型号": [
@@ -3702,10 +3745,12 @@
                 "rec27IsS6khBPD",
                 "rec27IsS6khBFt",
                 "recvpUi8WJhrMj",
-                "recvpUi8WJ0MXQ"
+                "recvpUi8WJ0MXQ",
+                "recvqz1mRGnDlf",
+                "recvqz3Pj6Qmu6"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0365,MAT-0398,MAT-0374,MAT-0390,MAT-0388,MAT-0382,MAT-0392,MAT-0372,MAT-0366,MAT-0375,MAT-0384,MAT-0387,MAT-0395,MAT-0362,MAT-0393,MAT-0378,MAT-0380,MAT-0381,MAT-0371,MAT-0400,MAT-0377,MAT-0391,MAT-0364,MAT-0399,MAT-0373,MAT-0397,MAT-0367,MAT-0396,MAT-0369,MAT-0385,MAT-0363,MAT-0386,MAT-0379,MAT-0389,MAT-0370,MAT-0368,MAT-0394,MAT-0376,MAT-0383,MAT-0361,MAT-0953,MAT-0973,MAT-0992,MAT-0959,MAT-0961,MAT-0960,MAT-0951,MAT-0974,MAT-0971,MAT-0976,MAT-0941,MAT-0958,MAT-0991,MAT-0957,MAT-0975,MAT-0954,MAT-0952,MAT-0956,MAT-0977,MAT-0981,MAT-0972,MAT-0955,MAT-0980,MAT-0979,MAT-0978,MAT-1024,MAT-1025",
+              "text": "MAT-0365,MAT-0398,MAT-0374,MAT-0390,MAT-0388,MAT-0382,MAT-0392,MAT-0372,MAT-0366,MAT-0375,MAT-0384,MAT-0387,MAT-0395,MAT-0362,MAT-0393,MAT-0378,MAT-0380,MAT-0381,MAT-0371,MAT-0400,MAT-0377,MAT-0391,MAT-0364,MAT-0399,MAT-0373,MAT-0397,MAT-0367,MAT-0396,MAT-0369,MAT-0385,MAT-0363,MAT-0386,MAT-0379,MAT-0389,MAT-0370,MAT-0368,MAT-0394,MAT-0376,MAT-0383,MAT-0361,MAT-0953,MAT-0973,MAT-0992,MAT-0959,MAT-0961,MAT-0960,MAT-0951,MAT-0974,MAT-0971,MAT-0976,MAT-0941,MAT-0958,MAT-0991,MAT-0957,MAT-0975,MAT-0954,MAT-0952,MAT-0956,MAT-0977,MAT-0981,MAT-0972,MAT-0955,MAT-0980,MAT-0979,MAT-0978,MAT-1024,MAT-1025,MAT-1034,MAT-1035",
               "text_arr": [
                 "MAT-0365",
                 "MAT-0398",
@@ -3773,7 +3818,9 @@
                 "MAT-0979",
                 "MAT-0978",
                 "MAT-1024",
-                "MAT-1025"
+                "MAT-1025",
+                "MAT-1034",
+                "MAT-1035"
               ],
               "type": "text"
             }
@@ -5167,10 +5214,11 @@
                 "recvpUi8WJDQvA",
                 "recvpUi8WJMTgE",
                 "recvpUi8WJUMXR",
-                "recvpUi8WJqqDI"
+                "recvpUi8WJqqDI",
+                "recvqz1mRGnDlf"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0019,MAT-0029,MAT-0039,MAT-0049,MAT-0059,MAT-0069,MAT-0079,MAT-0089,MAT-0099,MAT-0109,MAT-0119,MAT-0129,MAT-0139,MAT-0149,MAT-0159,MAT-0169,MAT-0179,MAT-0189,MAT-0199,MAT-0209,MAT-0219,MAT-0229,MAT-0239,MAT-0249,MAT-0259,MAT-0269,MAT-0279,MAT-0289,MAT-0299,MAT-0309,MAT-0319,MAT-0329,MAT-0339,MAT-0349,MAT-0359,MAT-0369,MAT-0379,MAT-0389,MAT-0399,MAT-0409,MAT-0419,MAT-0429,MAT-0439,MAT-0449,MAT-0459,MAT-0469,MAT-0479,MAT-0489,MAT-0499,MAT-0509,MAT-0519,MAT-0529,MAT-0539,MAT-0549,MAT-0559,MAT-0569,MAT-0579,MAT-0959,MAT-0979,MAT-0009,MAT-0998,MAT-1008,MAT-1018,MAT-1027,MAT-1028,MAT-1029,MAT-1030,MAT-1031",
+              "text": "MAT-0019,MAT-0029,MAT-0039,MAT-0049,MAT-0059,MAT-0069,MAT-0079,MAT-0089,MAT-0099,MAT-0109,MAT-0119,MAT-0129,MAT-0139,MAT-0149,MAT-0159,MAT-0169,MAT-0179,MAT-0189,MAT-0199,MAT-0209,MAT-0219,MAT-0229,MAT-0239,MAT-0249,MAT-0259,MAT-0269,MAT-0279,MAT-0289,MAT-0299,MAT-0309,MAT-0319,MAT-0329,MAT-0339,MAT-0349,MAT-0359,MAT-0369,MAT-0379,MAT-0389,MAT-0399,MAT-0409,MAT-0419,MAT-0429,MAT-0439,MAT-0449,MAT-0459,MAT-0469,MAT-0479,MAT-0489,MAT-0499,MAT-0509,MAT-0519,MAT-0529,MAT-0539,MAT-0549,MAT-0559,MAT-0569,MAT-0579,MAT-0959,MAT-0979,MAT-0009,MAT-0998,MAT-1008,MAT-1018,MAT-1027,MAT-1028,MAT-1029,MAT-1030,MAT-1031,MAT-1034",
               "text_arr": [
                 "MAT-0019",
                 "MAT-0029",
@@ -5239,7 +5287,8 @@
                 "MAT-1028",
                 "MAT-1029",
                 "MAT-1030",
-                "MAT-1031"
+                "MAT-1031",
+                "MAT-1034"
               ],
               "type": "text"
             }
@@ -5464,10 +5513,11 @@
                 "rec27IsS6khySI",
                 "rec27IsS6khCa0",
                 "recvq5oeJMKy7V",
-                "recvq5oeJM08uE"
+                "recvq5oeJM08uE",
+                "recvqz3Pj6Qmu6"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0581,MAT-0591,MAT-0601,MAT-0611,MAT-0621,MAT-0631,MAT-0641,MAT-0651,MAT-0661,MAT-0671,MAT-0681,MAT-0691,MAT-0701,MAT-0711,MAT-0721,MAT-0731,MAT-0741,MAT-0751,MAT-0761,MAT-0771,MAT-0781,MAT-0791,MAT-0801,MAT-0811,MAT-0821,MAT-0831,MAT-0841,MAT-0851,MAT-0861,MAT-0871,MAT-0881,MAT-0891,MAT-0901,MAT-0911,MAT-0921,MAT-0931,MAT-0941,MAT-0961,MAT-0981,MAT-1032,MAT-1033",
+              "text": "MAT-0581,MAT-0591,MAT-0601,MAT-0611,MAT-0621,MAT-0631,MAT-0641,MAT-0651,MAT-0661,MAT-0671,MAT-0681,MAT-0691,MAT-0701,MAT-0711,MAT-0721,MAT-0731,MAT-0741,MAT-0751,MAT-0761,MAT-0771,MAT-0781,MAT-0791,MAT-0801,MAT-0811,MAT-0821,MAT-0831,MAT-0841,MAT-0851,MAT-0861,MAT-0871,MAT-0881,MAT-0891,MAT-0901,MAT-0911,MAT-0921,MAT-0931,MAT-0941,MAT-0961,MAT-0981,MAT-1032,MAT-1033,MAT-1035",
               "text_arr": [
                 "MAT-0581",
                 "MAT-0591",
@@ -5509,7 +5559,8 @@
                 "MAT-0961",
                 "MAT-0981",
                 "MAT-1032",
-                "MAT-1033"
+                "MAT-1033",
+                "MAT-1035"
               ],
               "type": "text"
             }
@@ -28737,14 +28788,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL1O8T9"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1050",
+          "当前库存": "1200",
           "文本 6": null,
           "海关编码": "4911101000",
           "物料品类": "产品单页(Product Flyer )",
@@ -32687,14 +32742,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL17R0l"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1800",
+          "当前库存": "2000",
           "文本 6": null,
           "海关编码": "4911101000",
           "物料品类": "产品单页(Product Flyer )",
@@ -38341,14 +38400,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL1K818"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1200",
+          "当前库存": "1500",
           "文本 6": null,
           "海关编码": "4901990000",
           "物料品类": "品牌手册(Product Brochure (All\nBanner)）",
@@ -39093,14 +39156,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL1ybMs"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "325",
+          "当前库存": "460",
           "文本 6": null,
           "海关编码": "4901990000",
           "物料品类": "品牌手册(Product Brochure (All\nBanner)）",
@@ -62284,17 +62351,21 @@
             }
           ],
           "备注": "",
-          "库存归零时间": "2026-07-21 17:16:19",
+          "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL1hfXM"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "350",
           "文本 6": null,
           "海关编码": "3926100000",
           "物料品类": "笔记本礼盒(Notebook Gift Box)",
@@ -66114,14 +66185,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL1v7SS"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "800",
+          "当前库存": "1800",
           "文本 6": null,
           "海关编码": "4911101000",
           "物料品类": "产品单页(Product Flyer )",
@@ -67054,14 +67129,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvqz0DL1WTGG"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "1000",
+          "当前库存": "1800",
           "文本 6": null,
           "海关编码": "4911101000",
           "物料品类": "产品单页(Product Flyer )",
@@ -69484,6 +69563,192 @@
         },
         "id": "recvq5oeJM08uE",
         "record_id": "recvq5oeJM08uE"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "产品型号 2": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X022",
+              "text_arr": [
+                "X022"
+              ],
+              "type": "text"
+            }
+          ],
+          "仓库物料位置": [
+            {
+              "record_ids": null,
+              "table_id": "tbldA8qhSeIfJp3k",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "单价（人民币）": 0,
+          "单价（美元）": "0",
+          "启用状态": "启用",
+          "品类关联": [
+            {
+              "record_ids": [
+                "recvpUhLWgH8Xp"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "007",
+              "text_arr": [
+                "007"
+              ],
+              "type": "text"
+            }
+          ],
+          "备注": null,
+          "库存归零时间": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "当前库存": "135",
+          "文本 6": null,
+          "海关编码": "4901990000",
+          "物料品类": "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+          "物料编码": "MAT-1034",
+          "物料货架": [
+            {
+              "record_ids": null,
+              "table_id": "tblqz8xmpgtv4Q9C",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": "简中(Simplified Chinese)",
+          "语种关联": [
+            {
+              "record_ids": [
+                "recvq3ZxfSqM9E"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y09",
+              "text_arr": [
+                "Y09"
+              ],
+              "type": "text"
+            }
+          ]
+        },
+        "id": "recvqz1mRGnDlf",
+        "record_id": "recvqz1mRGnDlf"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "产品型号 2": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X022",
+              "text_arr": [
+                "X022"
+              ],
+              "type": "text"
+            }
+          ],
+          "仓库物料位置": [
+            {
+              "record_ids": null,
+              "table_id": "tbldA8qhSeIfJp3k",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "单价（人民币）": 0,
+          "单价（美元）": "0",
+          "启用状态": "启用",
+          "品类关联": [
+            {
+              "record_ids": [
+                "recvqz3LUkQpbg"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "备注": null,
+          "库存归零时间": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "当前库存": "200",
+          "文本 6": null,
+          "海关编码": "3926400000",
+          "物料品类": "扇子",
+          "物料编码": "MAT-1035",
+          "物料货架": [
+            {
+              "record_ids": null,
+              "table_id": "tblqz8xmpgtv4Q9C",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种",
+          "语种关联": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ]
+        },
+        "id": "recvqz3Pj6Qmu6",
+        "record_id": "recvqz3Pj6Qmu6"
       }
     ],
     "库存流水": [
@@ -71312,6 +71577,377 @@
         },
         "id": "recvq5pCbgYCEj",
         "record_id": "recvq5pCbgYCEj"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "1200",
+          "变更后数量": "1500",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:1",
+          "库存变化": "300",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "300",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "品牌手册(Product Brochure (All\nBanner)）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfWRw"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0361",
+              "text_arr": [
+                "MAT-0361"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvqz0DL1K818",
+        "record_id": "recvqz0DL1K818"
+      },
+      {
+        "fields": {
+          "产品型号": "D7",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "1000",
+          "变更后数量": "1800",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:2",
+          "库存变化": "800",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "800",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvpTIQtFlKi4"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1008",
+              "text_arr": [
+                "MAT-1008"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "简中(Simplified Chinese)"
+        },
+        "id": "recvqz0DL1WTGG",
+        "record_id": "recvqz0DL1WTGG"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "325",
+          "变更后数量": "460",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:3",
+          "库存变化": "135",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "135",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "品牌手册(Product Brochure (All\nBanner)）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYem"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0369",
+              "text_arr": [
+                "MAT-0369"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "简中(Simplified Chinese)"
+        },
+        "id": "recvqz0DL1ybMs",
+        "record_id": "recvqz0DL1ybMs"
+      },
+      {
+        "fields": {
+          "产品型号": "Bellabot pro",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "1050",
+          "变更后数量": "1200",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:4",
+          "库存变化": "150",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "150",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfJ68"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0259",
+              "text_arr": [
+                "MAT-0259"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "简中(Simplified Chinese)"
+        },
+        "id": "recvqz0DL1O8T9",
+        "record_id": "recvqz0DL1O8T9"
+      },
+      {
+        "fields": {
+          "产品型号": "CC1 PRO",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "1800",
+          "变更后数量": "2000",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:5",
+          "库存变化": "200",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "200",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfOY3"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0301",
+              "text_arr": [
+                "MAT-0301"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvqz0DL17R0l",
+        "record_id": "recvqz0DL17R0l"
+      },
+      {
+        "fields": {
+          "产品型号": "D5",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "800",
+          "变更后数量": "1800",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:6",
+          "库存变化": "1000",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "1000",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvpTIQtF7VWR"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0998",
+              "text_arr": [
+                "MAT-0998"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "简中(Simplified Chinese)"
+        },
+        "id": "recvqz0DL1v7SS",
+        "record_id": "recvqz0DL1v7SS"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1785144077265,
+          "变更前数量": "0",
+          "变更后数量": "350",
+          "备注": "补库单 RST-20260727-186EEB；补库人：高鸿源",
+          "幂等键": "restock:186eebd279634778ad85036cdc34fd6f:7",
+          "库存变化": "350",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "350",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "笔记本礼盒(Notebook Gift Box)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khvob"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0941",
+              "text_arr": [
+                "MAT-0941"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvqz0DL1hfXM",
+        "record_id": "recvqz0DL1hfXM"
       }
     ],
     "物料申请单": [
@@ -75240,11 +75876,11 @@
     ]
   },
   "row_counts": {
-    "物料品类": 16,
+    "物料品类": 17,
     "产品型号": 28,
     "物料语种": 12,
-    "物料主数据": 683,
-    "库存流水": 34,
+    "物料主数据": 685,
+    "库存流水": 41,
     "物料申请单": 24,
     "申请明细": 32
   }

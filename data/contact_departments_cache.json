@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-07-27 16:32:36",
+  "generated_at": "2026-07-28 10:32:28",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1223,16 +1223,6 @@
       ]
     },
     {
-      "open_id": "ou_4a951dfd898dd2306976fec48791724f",
-      "name": "MinHyeok Jeong",
-      "department_ids": [
-        "od-a2c548735f75b8570dd50a401976f71f"
-      ],
-      "department_paths": [
-        "韩国战队"
-      ]
-    },
-    {
       "open_id": "ou_933b80cda11f7fe8eeaa91d64bf0b10c",
       "name": "Nanda Faherza",
       "department_ids": [
@@ -2254,10 +2244,10 @@
       "open_id": "ou_b662050890dc8c860aff141019404e6f",
       "name": "傅成勇",
       "department_ids": [
-        "od-1810f30e2c5a3663b9bf7b4ab9f8afbd"
+        "od-8882285166a5e51389b4bc0f32a66dac"
       ],
       "department_paths": [
-        "IR业务部"
+        "CR业务部"
       ]
     },
     {
@@ -2586,9 +2576,11 @@
       "open_id": "ou_a8d514f5ddcb7f944deaab31273057f0",
       "name": "刘云鹏",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-f610c7036dc1e1e4dd10f168c41a1d61"
       ],
       "department_paths": [
+        "X LAB",
         "服务代表组"
       ]
     },
@@ -4542,12 +4534,10 @@
       "open_id": "ou_c7685ff2151ad2d685d2da909f138d68",
       "name": "周果",
       "department_ids": [
-        "od-6daa61e0fad320b53db9d267fff19727",
-        "od-57835fdb64fd69a83b124af6f2d26cba"
+        "od-6daa61e0fad320b53db9d267fff19727"
       ],
       "department_paths": [
-        "AI Infra部",
-        "PBG"
+        "AI Infra部"
       ]
     },
     {
@@ -8672,10 +8662,10 @@
       "open_id": "ou_440fa2f0ec30819a24ea888358407f83",
       "name": "李娜",
       "department_ids": [
-        "od-1810f30e2c5a3663b9bf7b4ab9f8afbd"
+        "od-8882285166a5e51389b4bc0f32a66dac"
       ],
       "department_paths": [
-        "IR业务部"
+        "CR业务部"
       ]
     },
     {
@@ -9454,9 +9444,11 @@
       "open_id": "ou_1a258b0209c97e19d35d8b0046a3a8ef",
       "name": "李闻博",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-9185a31353a55b2d9aa44628dcba9757"
       ],
       "department_paths": [
+        "X LAB",
         "服务运营组"
       ]
     },
@@ -14519,6 +14511,16 @@
       ]
     },
     {
+      "open_id": "ou_48c4064004120cb0c49f6b38dd561e24",
+      "name": "袁兴",
+      "department_ids": [
+        "od-3dd1486ac774c442539f2658feefbf00"
+      ],
+      "department_paths": [
+        "基座模型部"
+      ]
+    },
+    {
       "open_id": "ou_08fed581555c7e968d0678e998e3d2bc",
       "name": "袁凯平",
       "department_ids": [
@@ -15770,6 +15772,16 @@
       ],
       "department_paths": [
         "X LAB"
+      ]
+    },
+    {
+      "open_id": "ou_4a951dfd898dd2306976fec48791724f",
+      "name": "郑旻赫",
+      "department_ids": [
+        "od-a2c548735f75b8570dd50a401976f71f"
+      ],
+      "department_paths": [
+        "韩国战队"
       ]
     },
     {
@@ -18861,5 +18873,5 @@
       ]
     }
   ],
-  "user_count": 1731
+  "user_count": 1732
 }
