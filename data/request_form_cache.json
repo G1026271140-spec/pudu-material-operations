@@ -1,10 +1,12 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-28 10:32:08",
+  "generated_at": "2026-07-28 17:45:25",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
+    "工业产品线手册IR(Industrial Product Line Brochure）",
+    "清洁产品线手册CR(Cleaning Product Line Brochure）",
     "配送线产品手册DR(Delivery Robot Product Brochure)",
     "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
@@ -14,6 +16,7 @@
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "定制LOGO书包(Customized PUDU bag)",
     "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
+    "展会服装（Clothes）",
     "扇子"
   ],
   "no_model_products": [
@@ -957,6 +960,97 @@
       "quantity": 0
     },
     {
+      "material_code": "MAT-0371",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "英语(English)",
+      "quantity": 80
+    },
+    {
+      "material_code": "MAT-0372",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0373",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0374",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0375",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0379",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0380",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0381",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "英语(English)",
+      "quantity": 360
+    },
+    {
+      "material_code": "MAT-0382",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0383",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0385",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0389",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0390",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
       "material_code": "MAT-0411",
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "KettyBot Pro",
@@ -1881,46 +1975,11 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0781",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "PuduBot 2",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0791",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "FlashBot",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0801",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "SwiftBot",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0811",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "PUDU HolaBot",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0821",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "PUDU CC1",
       "language": "无需语种",
       "quantity": 150
-    },
-    {
-      "material_code": "MAT-0831",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "Bellabot pro",
-      "language": "无需语种",
-      "quantity": 130
     },
     {
       "material_code": "MAT-0841",
@@ -1944,53 +2003,11 @@
       "quantity": 350
     },
     {
-      "material_code": "MAT-0871",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "新闪电匣",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0881",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "CC1 PRO",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0891",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "T600",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0901",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "MT1 Vac",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0911",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "MT1 Max",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0921",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BG1",
       "language": "无需语种",
       "quantity": 300
-    },
-    {
-      "material_code": "MAT-0931",
-      "product": "冰箱贴( Fridge Magnet)",
-      "model": "ET1",
-      "language": "无需语种",
-      "quantity": 0
     },
     {
       "material_code": "MAT-0941",
@@ -2102,6 +2119,13 @@
       "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
       "model": "无需型号",
       "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-0981",
+      "product": "展会服装（Clothes）",
+      "model": "无需型号",
+      "language": "无需语种",
       "quantity": 0
     },
     {
@@ -2343,6 +2367,6 @@
       "quantity": 200
     }
   ],
-  "row_count": 320,
+  "row_count": 323,
   "built_from": "live_feishu"
 }

@@ -5,6 +5,7 @@ import os
 import re
 import threading
 import time
+import unicodedata
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
@@ -1678,6 +1679,13 @@ def normalize_option_label(value: object) -> str:
     return re.sub(r"\s+", " ", str(value).strip())
 
 
+def normalize_category_match_key(value: object) -> str:
+    """Match category labels even when bilingual suffix formatting differs."""
+    normalized = unicodedata.normalize("NFKC", normalize_option_label(value))
+    base_label = normalized.split("(", 1)[0].strip()
+    return re.sub(r"\s+", "", base_label or normalized).casefold()
+
+
 def request_category_image_path(product: object) -> Path | None:
     normalized_product = normalize_option_label(product).casefold()
     for aliases, filename in REQUEST_CATEGORY_IMAGE_RULES:
@@ -1880,18 +1888,27 @@ def request_form_cache_from_inventory(
     source: str,
 ) -> dict[str, object]:
     rows: list[dict[str, object]] = []
-    enabled_products = set(str(product) for product in list(options.get("products") or []))
-    enabled_inventory_df = (
-        inventory_df[inventory_df[PRODUCT_COL].astype(str).isin(enabled_products)]
-        if not inventory_df.empty
-        else inventory_df
-    )
+    enabled_product_by_key = {
+        normalize_category_match_key(product): str(product)
+        for product in list(options.get("products") or [])
+    }
+    enabled_inventory_df = inventory_df
+    if not inventory_df.empty:
+        enabled_inventory_df = inventory_df[
+            inventory_df[PRODUCT_COL]
+            .map(normalize_category_match_key)
+            .isin(enabled_product_by_key)
+        ]
     if not enabled_inventory_df.empty:
         for item in enabled_inventory_df.fillna("").itertuples(index=False):
+            canonical_product = enabled_product_by_key.get(
+                normalize_category_match_key(item[1]),
+                str(item[1]),
+            )
             rows.append(
                 {
                     "material_code": str(item[0]),
-                    "product": str(item[1]),
+                    "product": canonical_product,
                     "model": str(item[2]) or NO_MODEL_TEXT,
                     "language": str(item[3]),
                     "quantity": int(item[4] or 0),
@@ -3270,9 +3287,15 @@ def feishu_options_from_rows(
         if not inventory_df.empty
         else []
     )
-    inventory_product_set = set(inventory_products)
+    inventory_product_keys = {
+        normalize_category_match_key(product) for product in inventory_products
+    }
     products = sort_request_products(
-        [product for product in category_products if product in inventory_product_set]
+        [
+            product
+            for product in category_products
+            if normalize_category_match_key(product) in inventory_product_keys
+        ]
     )
     inventory_no_model_products = (
         unique_preserve(list(inventory_df.loc[inventory_df[MODEL_COL] == NO_MODEL_TEXT, PRODUCT_COL].astype(str)))

@@ -231,6 +231,34 @@ class MaterialActivationTests(unittest.TestCase):
         self.assertEqual(cache["row_count"], 1)
         self.assertEqual(cache["inventory_rows"][0]["product"], "启用品类")
 
+    def test_category_matching_tolerates_bilingual_suffix_differences(self) -> None:
+        inventory_df = pd.DataFrame(
+            [
+                ["MAT-IR", "工业产品线手册IR（Industrial Product Line Brochure）", "M1", "英语", 10, 0, 0, ""],
+                ["MAT-CLOTHES", "展会服装", "无型号", "无语种", 10, 0, 0, ""],
+            ],
+            columns=app.INVENTORY_HEADERS,
+        )
+        options = {
+            "products": [
+                "工业产品线手册IR(Industrial Product Line Brochure）",
+                "展会服装（Clothes）",
+            ],
+            "no_model_products": [],
+            "no_language_products": [],
+            "configured_language_products": [],
+            "models": ["M1"],
+            "languages": ["英语"],
+        }
+
+        cache = app.request_form_cache_from_inventory(options, inventory_df, source="test")
+
+        self.assertEqual(cache["row_count"], 2)
+        self.assertEqual(
+            [row["product"] for row in cache["inventory_rows"]],
+            options["products"],
+        )
+
     def test_request_combination_must_exist_in_active_inventory_rows(self) -> None:
         context = app.request_form_cache_to_selection_context(
             {
