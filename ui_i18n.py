@@ -138,6 +138,7 @@ EN_DISPLAY_TEXT = {
     ),
     "搜索物料": "Search Materials",
     "输入品类名称搜索": "Search by material category",
+    "暂无图片": "No image available",
     "没有找到匹配的物料，请更换关键词。": (
         "No matching materials found. Try another keyword."
     ),

@@ -5,6 +5,19 @@ import app
 
 
 class RequestCartTests(unittest.TestCase):
+    def test_category_images_match_chinese_and_english_names(self) -> None:
+        chinese_path = app.request_category_image_path("产品单页(Product Flyer)")
+        english_path = app.request_category_image_path("Delivery Robot Product Brochure")
+
+        self.assertIsNotNone(chinese_path)
+        self.assertEqual(chinese_path.name, "product-flyer.webp")
+        self.assertTrue(chinese_path.exists())
+        self.assertIsNotNone(english_path)
+        self.assertEqual(english_path.name, "delivery-brochure.webp")
+
+    def test_category_without_image_uses_placeholder_path(self) -> None:
+        self.assertIsNone(app.request_category_image_path("冰箱贴(Fridge Magnet)"))
+
     def test_catalog_search_matches_bilingual_product_name(self) -> None:
         products = ["产品单页(Product Flyer)", "冰箱贴(Fridge Magnet)"]
 

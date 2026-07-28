@@ -161,6 +161,22 @@ CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
     Path(__file__).resolve().parent / "data" / "contact_departments_cache.json"
 )
 APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
+REQUEST_CATEGORY_IMAGE_DIR = (
+    Path(__file__).resolve().parent / "assets" / "request_categories"
+)
+REQUEST_CATEGORY_IMAGE_RULES = (
+    (("产品单页", "product flyer"), "product-flyer.webp"),
+    (("清洁线产品手册", "cleaning robot product brochure"), "cleaning-brochure.webp"),
+    (("配送线产品手册", "delivery robot product brochure"), "delivery-brochure.webp"),
+    (("具身线产品手册", "embodied ai robot product brochure"), "embodied-brochure.webp"),
+    (("工业线产品手册", "industrial delivery robot"), "industrial-brochure.webp"),
+    (("品牌手册", "product brochure (all banner"), "brand-brochure.webp"),
+    (("易拉宝", "product roll-up"), "product-roll-up.webp"),
+    (("笔记本礼盒", "notebook gift box"), "notebook-gift-box.webp"),
+    (("普渡logo无纺布手提袋", "pudu logo bag"), "pudu-logo-bag.webp"),
+    (("公仔", "plush toy"), "plush-toy.webp"),
+    (("扇子", "fan"), "fan.webp"),
+)
 REQUEST_FORM_CACHE_LOCK = threading.Lock()
 REQUEST_FORM_CACHE_STATE: dict[str, object] = {
     "data": None,
@@ -859,12 +875,31 @@ def inject_global_styles() -> None:
             display: none;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
-            min-height: 126px;
+            min-height: 302px;
             gap: 0.35rem;
             padding: 0.85rem !important;
             border-color: #D8E1E8 !important;
             border-radius: 10px !important;
             background: linear-gradient(145deg, #FFFFFF 0%, #F6FAFC 100%);
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stImage"] img {
+            width: 100%;
+            height: 148px;
+            border: 1px solid #E2E8ED;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .pudu-product-image-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 148px;
+            border: 1px dashed #C8D2DA;
+            border-radius: 8px;
+            background: #F2F5F7;
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
         }
         .pudu-product-card-kicker {
             color: var(--pudu-teal);
@@ -1640,6 +1675,15 @@ def enforce_category_inventory_status(plan: dict, category_status: object) -> di
 
 def normalize_option_label(value: object) -> str:
     return re.sub(r"\s+", " ", str(value).strip())
+
+
+def request_category_image_path(product: object) -> Path | None:
+    normalized_product = normalize_option_label(product).casefold()
+    for aliases, filename in REQUEST_CATEGORY_IMAGE_RULES:
+        if any(alias.casefold() in normalized_product for alias in aliases):
+            path = REQUEST_CATEGORY_IMAGE_DIR / filename
+            return path if path.exists() else None
+    return None
 
 
 def default_no_language_product_keys() -> set[str]:
@@ -7246,6 +7290,25 @@ def render_request_material_builder(
                     ] or [NO_MODEL_TEXT]
                 with card_columns[index % 3].container(border=True):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
+                    category_image_path = request_category_image_path(catalog_product)
+                    if category_image_path:
+                        st.image(
+                            str(category_image_path),
+                            width="stretch",
+                        )
+                    else:
+                        st.markdown(
+                            f"""
+                            <div class="pudu-product-image-placeholder">
+                                {escape(
+                                    "No image available"
+                                    if get_ui_language() == LANGUAGE_EN
+                                    else "暂无图片"
+                                )}
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
                     st.markdown(
                         f"""
                         <div class="pudu-product-card-kicker">{escape(ui_text("物料品类"))}</div>
