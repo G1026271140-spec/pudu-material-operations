@@ -89,6 +89,32 @@ EN_DISPLAY_TEXT = {
         "Enter customer, recipient, and material details, then submit them for approval."
     ),
     "申请信息确认": "Request Review",
+    "物料申请修改与撤回": "Edit or Withdraw Material Requests",
+    "实时读取待审批申请，修改申请信息或撤回申请单。": (
+        "Read pending requests live, edit request details, or withdraw a request."
+    ),
+    "实时读取飞书申请单；仅待审批申请允许修改或撤回": (
+        "Requests are read live from Feishu. Only pending requests can be edited or withdrawn."
+    ),
+    "正在实时读取申请单和申请明细，请稍后......": (
+        "Loading requests and request lines from Feishu..."
+    ),
+    "当前没有可修改或撤回的待审批申请。": "There are no pending requests available to edit or withdraw.",
+    "选择待审批申请单": "Select a Pending Request",
+    "保存申请修改": "Save Request Changes",
+    "正在保存申请修改并同步飞书，请勿关闭页面......": (
+        "Saving request changes to Feishu. Please keep this page open..."
+    ),
+    "撤回这张申请单": "Withdraw This Request",
+    "撤回后该申请单不会再进入审批发放流程。": (
+        "After withdrawal, this request will no longer enter the approval and issuance process."
+    ),
+    "撤回备注": "Withdrawal Note",
+    "确认撤回该申请单": "Confirm withdrawal of this request",
+    "确认撤回": "Confirm Withdrawal",
+    "正在撤回申请单并同步飞书，请勿关闭页面......": (
+        "Withdrawing the request in Feishu. Please keep this page open..."
+    ),
     "提交前核对": "Review Before Submission",
     "确认申请信息和全部物料明细后再同步至飞书。": (
         "Review the request and all material lines before syncing them to Feishu."

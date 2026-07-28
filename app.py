@@ -76,9 +76,11 @@ DEFAULT_STREAMLIT_APP_URL = (
 REQUEST_STATUS_PENDING = "待审批"
 REQUEST_STATUS_PARTIAL = "部分发放"
 REQUEST_STATUS_ISSUED = "已发放"
+REQUEST_STATUS_WITHDRAWN = "已撤回"
 REQUEST_LINE_STATUS_PENDING = "待审批"
 REQUEST_LINE_STATUS_PARTIAL = "部分发放"
 REQUEST_LINE_STATUS_ISSUED = "已发放"
+REQUEST_LINE_STATUS_WITHDRAWN = "已撤回"
 FREIGHT_PAYER_OPTIONS = [
     "申请部门承担",
     "市场部承担",
@@ -6456,7 +6458,10 @@ def request_material_management_navigation_loading() -> None:
 
 def management_navigation_uses_loading_overlay(section: object) -> bool:
     normalized = str(section or "")
-    return normalized == "物料管理" or normalized in MATERIAL_MANAGEMENT_SECTIONS
+    return (
+        normalized in {"物料管理", "修改与撤回"}
+        or normalized in MATERIAL_MANAGEMENT_SECTIONS
+    )
 
 
 def admin_auth_gate() -> bool:
@@ -10124,8 +10129,294 @@ def render_category_admin() -> None:
     else:
         st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
 
+def fetch_request_maintenance_live_data() -> dict[str, object]:
+    """Always read request maintenance data directly from Feishu."""
+    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
+    line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    return {
+        "requests": load_feishu_request_records(request_rows),
+        "lines": load_feishu_request_line_records(line_rows, material_rows),
+        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "row_count": len(request_rows) + len(line_rows),
+    }
+
+
+def update_pending_feishu_request(
+    request: dict[str, object],
+    request_updates: dict[str, object],
+    edited_lines: list[dict[str, object]],
+) -> None:
+    request_id = str(request.get("record_id") or "")
+    request_no = str(request.get("request_no") or "")
+    current_request = next(
+        (
+            row
+            for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
+            if feishu_record_id(row) == request_id
+        ),
+        None,
+    )
+    if current_request is None:
+        raise RuntimeError("申请单不存在或已被删除，请刷新后重试。")
+    if feishu_text(feishu_fields(current_request), "审批状态") != REQUEST_STATUS_PENDING:
+        raise RuntimeError("只有待审批申请可以修改，请刷新后查看最新状态。")
+
+    current_line_rows = [
+        row
+        for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+        if request_id in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
+        or feishu_text_any(feishu_fields(row), ["申请单号", "所属申请单", "申请单"]) == request_no
+    ]
+    allowed_line_ids = {feishu_record_id(row) for row in current_line_rows}
+    line_updates: list[dict] = []
+    for line in edited_lines:
+        line_id = str(line.get("record_id") or "")
+        quantity = int(line.get("quantity") or 0)
+        if line_id not in allowed_line_ids:
+            raise RuntimeError("申请明细已发生变化，请刷新后重试。")
+        if quantity <= 0:
+            raise RuntimeError("申请数量必须大于 0。")
+        line_updates.append(
+            {
+                "record_id": line_id,
+                "fields": {
+                    "申请数量": quantity,
+                    "物料数量": quantity,
+                    "审批通过数量": quantity,
+                    "备注": str(line.get("remark") or "").strip(),
+                },
+            }
+        )
+
+    if not line_updates:
+        raise RuntimeError("申请单至少需要保留一条物料明细。")
+    feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
+    feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
+
+
+def withdraw_pending_feishu_request(request: dict[str, object], note: str = "") -> None:
+    request_id = str(request.get("record_id") or "")
+    request_no = str(request.get("request_no") or "")
+    current_request = next(
+        (
+            row
+            for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
+            if feishu_record_id(row) == request_id
+        ),
+        None,
+    )
+    if current_request is None:
+        raise RuntimeError("申请单不存在或已被删除，请刷新后重试。")
+    current_fields = feishu_fields(current_request)
+    if feishu_text(current_fields, "审批状态") != REQUEST_STATUS_PENDING:
+        raise RuntimeError("只有待审批申请可以撤回，请刷新后查看最新状态。")
+
+    line_updates: list[dict] = []
+    for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME):
+        fields = feishu_fields(row)
+        belongs_to_request = (
+            request_id in feishu_link_ids_any(fields, ["所属申请单", "申请单"])
+            or feishu_text_any(fields, ["申请单号", "所属申请单", "申请单"]) == request_no
+        )
+        if belongs_to_request:
+            line_updates.append(
+                {
+                    "record_id": feishu_record_id(row),
+                    "fields": {"明细状态": REQUEST_LINE_STATUS_WITHDRAWN},
+                }
+            )
+
+    request_fields: dict[str, object] = {"审批状态": REQUEST_STATUS_WITHDRAWN}
+    if note.strip():
+        request_fields["备注"] = append_admin_note(
+            feishu_text(current_fields, "备注"),
+            "撤回备注",
+            note,
+        )
+    feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_fields)
+    if line_updates:
+        feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
+
+
+def render_request_edit_revert_page() -> None:
+    render_section_header("01", "物料申请修改与撤回", "实时读取飞书申请单；仅待审批申请允许修改或撤回")
+    message = st.session_state.pop("request_maintenance_message", "")
+    if message:
+        st.success(message)
+
+    with st.spinner("正在实时读取申请单和申请明细，请稍后......"):
+        live_data = fetch_request_maintenance_live_data()
+    requests = [
+        request
+        for request in list(live_data.get("requests") or [])
+        if str(request.get("status") or "") == REQUEST_STATUS_PENDING
+    ]
+    lines = list(live_data.get("lines") or [])
+    st.caption(
+        "数据来源：飞书实时数据　更新时间："
+        f"{str(live_data.get('updated_at') or '未记录')}"
+    )
+    if not requests:
+        st.info("当前没有可修改或撤回的待审批申请。")
+        return
+
+    requester_options = unique_preserve(
+        [str(request.get("requester") or "未填写申请人") for request in requests]
+    )
+    selected_requester = st.selectbox(
+        "申请人",
+        requester_options,
+        key="request_maintenance_requester",
+    )
+    scoped_requests = [
+        request
+        for request in requests
+        if str(request.get("requester") or "未填写申请人") == selected_requester
+    ]
+    request_by_label = {
+        (
+            f"{request.get('request_no')} · "
+            f"{request.get('submitted_at') or '未记录时间'} · "
+            f"{request.get('customer_name') or request.get('material_usage') or '物料申请'}"
+        ): request
+        for request in scoped_requests
+    }
+    selected_label = st.selectbox(
+        "选择待审批申请单",
+        list(request_by_label),
+        key="request_maintenance_selector",
+    )
+    selected_request = request_by_label[selected_label]
+    selected_lines = request_lines_for_request(selected_request, lines)
+
+    info_col_a, info_col_b = st.columns(2)
+    customer_name = info_col_a.text_input(
+        "客户名称",
+        value=str(selected_request.get("customer_name") or ""),
+        key=f"request_edit_customer_{selected_request['record_id']}",
+    )
+    country = info_col_b.text_input(
+        "国家",
+        value=str(selected_request.get("country") or ""),
+        key=f"request_edit_country_{selected_request['record_id']}",
+    )
+    recipient_info = st.text_area(
+        "收件人信息",
+        value=str(selected_request.get("recipient_info") or ""),
+        key=f"request_edit_recipient_{selected_request['record_id']}",
+    )
+    detail_col_a, detail_col_b = st.columns(2)
+    freight_payer = detail_col_a.text_input(
+        "运费承担者",
+        value=str(selected_request.get("freight_payer") or ""),
+        key=f"request_edit_freight_{selected_request['record_id']}",
+    )
+    material_usage = detail_col_b.text_input(
+        "物料用途",
+        value=str(selected_request.get("material_usage") or ""),
+        key=f"request_edit_usage_{selected_request['record_id']}",
+    )
+
+    line_df = pd.DataFrame(
+        [
+            {
+                "记录ID": line["record_id"],
+                "物料品类": line["product"],
+                "产品型号": line["model"],
+                "语种": line["language"],
+                "申请数量": int(line["quantity"]),
+                "备注": line["remark"],
+            }
+            for line in selected_lines
+            if str(line.get("status") or "") != REQUEST_LINE_STATUS_WITHDRAWN
+        ]
+    )
+    edited_df = st.data_editor(
+        line_df,
+        hide_index=True,
+        width="stretch",
+        disabled=["记录ID", "物料品类", "产品型号", "语种"],
+        column_config={
+            "记录ID": None,
+            "申请数量": st.column_config.NumberColumn("申请数量", min_value=1, step=1, required=True),
+        },
+        key=f"request_line_editor_{selected_request['record_id']}",
+    )
+
+    save_col, withdraw_col = st.columns(2)
+    if save_col.button(
+        "保存申请修改",
+        type="primary",
+        icon=":material/save:",
+        width="stretch",
+        key=f"save_request_edit_{selected_request['record_id']}",
+    ):
+        edited_lines = [
+            {
+                "record_id": str(row["记录ID"]),
+                "quantity": int(row["申请数量"]),
+                "remark": str(row.get("备注") or ""),
+            }
+            for row in edited_df.to_dict("records")
+        ]
+        request_updates = {
+            "客户名称": customer_name.strip(),
+            "国家": country.strip(),
+            "收件人信息": recipient_info.strip(),
+            "运费的承担者": freight_payer.strip(),
+            "运费承担者": freight_payer.strip(),
+            "用途/活动": material_usage.strip(),
+            "用途|活动": material_usage.strip(),
+            "物料用途": material_usage.strip(),
+        }
+        with st.spinner("正在保存申请修改并同步飞书，请勿关闭页面......"):
+            try:
+                with DATA_LOCK:
+                    update_pending_feishu_request(selected_request, request_updates, edited_lines)
+            except Exception as exc:
+                st.error(f"申请修改失败：{exc}")
+                return
+        st.session_state["request_maintenance_message"] = (
+            f"申请单 {selected_request['request_no']} 已保存修改。"
+        )
+        st.rerun()
+
+    with withdraw_col.popover("撤回这张申请单", width="stretch"):
+        st.warning("撤回后该申请单不会再进入审批发放流程。")
+        withdraw_note = st.text_input(
+            "撤回备注",
+            key=f"withdraw_request_note_{selected_request['record_id']}",
+            placeholder="可选",
+        )
+        withdraw_confirmed = st.checkbox(
+            "确认撤回该申请单",
+            key=f"withdraw_request_confirm_{selected_request['record_id']}",
+        )
+        if st.button(
+            "确认撤回",
+            icon=":material/undo:",
+            width="stretch",
+            key=f"withdraw_request_button_{selected_request['record_id']}",
+        ):
+            if not withdraw_confirmed:
+                st.warning("请先勾选确认撤回。")
+            else:
+                with st.spinner("正在撤回申请单并同步飞书，请勿关闭页面......"):
+                    try:
+                        with DATA_LOCK:
+                            withdraw_pending_feishu_request(selected_request, withdraw_note)
+                    except Exception as exc:
+                        st.error(f"申请撤回失败：{exc}")
+                        return
+                st.session_state["request_maintenance_message"] = (
+                    f"申请单 {selected_request['request_no']} 已撤回。"
+                )
+                st.rerun()
+
+
 def render_edit_revert_page() -> None:
-    render_transaction_admin()
+    render_request_edit_revert_page()
 
 
 def render_material_database_page() -> None:
@@ -11231,7 +11522,7 @@ def render_management_page() -> None:
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库、品类维护与物料数据库统一管理。"),
-        "修改与撤回": ("提交记录修改与撤回", "管理工作台", "筛选、修正或撤回库存提交记录。"),
+        "修改与撤回": ("物料申请修改与撤回", "申请工作台", "实时读取待审批申请，修改申请信息或撤回申请单。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
@@ -11273,13 +11564,8 @@ def render_management_page() -> None:
         on_change=sync_management_section_from_workbench_control,
     )
     set_management_section(management_section, sync_workbench_control=False)
-    render_page_cache_toolbar(
-        {
-            "库存登记": "request",
-            "修改与撤回": "maintenance",
-        }[management_section]
-    )
     if management_section == "库存登记":
+        render_page_cache_toolbar("request")
         render_change_form(show_title=False)
     else:
         render_edit_revert_page()

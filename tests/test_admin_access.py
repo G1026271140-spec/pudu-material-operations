@@ -73,6 +73,7 @@ class AdminAccessTests(unittest.TestCase):
 
     def test_all_material_management_pages_use_loading_overlay(self) -> None:
         self.assertTrue(app.management_navigation_uses_loading_overlay("物料管理"))
+        self.assertTrue(app.management_navigation_uses_loading_overlay("修改与撤回"))
         for section in app.MATERIAL_MANAGEMENT_SECTIONS:
             self.assertTrue(app.management_navigation_uses_loading_overlay(section))
         self.assertFalse(app.management_navigation_uses_loading_overlay("库存登记"))

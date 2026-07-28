@@ -7,6 +7,83 @@ import app
 
 
 class ApprovalLiveDataTests(unittest.TestCase):
+    def test_request_maintenance_reads_live_request_tables(self) -> None:
+        rows = {
+            app.REQUEST_TABLE_NAME: [
+                {
+                    "record_id": "request-1",
+                    "fields": {
+                        "申请单号": "REQ-1",
+                        "申请人": "销售甲",
+                        "审批状态": app.REQUEST_STATUS_PENDING,
+                    },
+                }
+            ],
+            app.REQUEST_LINE_TABLE_NAME: [],
+            app.MATERIAL_TABLE_NAME: [],
+        }
+        with patch.object(
+            app,
+            "fresh_feishu_rows",
+            side_effect=lambda table_name: rows[table_name],
+        ) as fresh_rows:
+            live_data = app.fetch_request_maintenance_live_data()
+
+        self.assertEqual(live_data["row_count"], 1)
+        self.assertEqual(live_data["requests"][0]["request_no"], "REQ-1")
+        self.assertEqual(
+            fresh_rows.call_args_list,
+            [
+                call(app.REQUEST_TABLE_NAME),
+                call(app.REQUEST_LINE_TABLE_NAME),
+                call(app.MATERIAL_TABLE_NAME),
+            ],
+        )
+
+    def test_withdraw_pending_request_updates_request_and_lines(self) -> None:
+        request = {"record_id": "request-1", "request_no": "REQ-1"}
+        rows = {
+            app.REQUEST_TABLE_NAME: [
+                {
+                    "record_id": "request-1",
+                    "fields": {
+                        "申请单号": "REQ-1",
+                        "审批状态": app.REQUEST_STATUS_PENDING,
+                    },
+                }
+            ],
+            app.REQUEST_LINE_TABLE_NAME: [
+                {
+                    "record_id": "line-1",
+                    "fields": {
+                        "所属申请单": [{"record_ids": ["request-1"]}],
+                        "明细状态": app.REQUEST_LINE_STATUS_PENDING,
+                    },
+                }
+            ],
+        }
+        with (
+            patch.object(
+                app,
+                "fresh_feishu_rows",
+                side_effect=lambda table_name: rows[table_name],
+            ),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
+        ):
+            app.withdraw_pending_feishu_request(request)
+
+        update_request.assert_called_once_with(
+            app.REQUEST_TABLE_NAME,
+            "request-1",
+            {"审批状态": app.REQUEST_STATUS_WITHDRAWN},
+        )
+        update_lines.assert_called_once()
+        self.assertEqual(
+            update_lines.call_args.args[1][0]["fields"]["明细状态"],
+            app.REQUEST_LINE_STATUS_WITHDRAWN,
+        )
+
     def test_approval_live_data_reads_each_table_directly(self) -> None:
         rows = {
             app.REQUEST_TABLE_NAME: [{"record_id": "request-1", "fields": {}}],
