@@ -1997,6 +1997,15 @@ def mark_request_form_dirty() -> None:
     st.session_state["request_form_cache_locked"] = True
 
 
+def enforce_request_cart_exclusive_multi_select(
+    active_key: str,
+    other_key: str,
+) -> None:
+    mark_request_form_dirty()
+    if st.session_state.get(active_key):
+        st.session_state[other_key] = False
+
+
 def sync_request_department_from_selected_applicant() -> None:
     mark_request_form_dirty()
     open_id = str(st.session_state.get("request_requester_open_id") or "")
@@ -7256,26 +7265,58 @@ def render_request_material_builder(
                             f"#### {escape(request_option_display_label(catalog_product))}",
                             unsafe_allow_html=True,
                         )
+                        model_multi_key = f"request_cart_model_multi_{product_state_key}"
+                        language_multi_key = f"request_cart_language_multi_{product_state_key}"
+                        if len(model_options) <= 1:
+                            st.session_state[model_multi_key] = False
+                        multi_cols = st.columns(2, gap="small")
+                        model_multi = multi_cols[0].toggle(
+                            "型号多选",
+                            key=model_multi_key,
+                            disabled=len(model_options) <= 1,
+                            on_change=enforce_request_cart_exclusive_multi_select,
+                            args=(model_multi_key, language_multi_key),
+                        )
+                        language_multi = multi_cols[1].toggle(
+                            "语种多选",
+                            key=language_multi_key,
+                            on_change=enforce_request_cart_exclusive_multi_select,
+                            args=(language_multi_key, model_multi_key),
+                        )
+                        st.caption(
+                            "型号多选与语种多选不可同时开启；多选时填写的数量将应用到全部所选规格。"
+                        )
+
                         model_widget_key = (
-                            f"request_cart_models_{get_ui_language()}_{product_state_key}"
+                            f"request_cart_models_v2_{'multi' if model_multi else 'single'}_"
+                            f"{get_ui_language()}_{product_state_key}"
                         )
                         current_models = st.session_state.get(model_widget_key)
-                        if not isinstance(current_models, list) or any(
-                            model not in model_options for model in current_models
-                        ):
-                            st.session_state[model_widget_key] = [model_options[0]]
-                        selected_models = st.pills(
+                        if model_multi:
+                            if not isinstance(current_models, list) or any(
+                                model not in model_options for model in current_models
+                            ):
+                                st.session_state[model_widget_key] = [model_options[0]]
+                        elif not isinstance(current_models, str) or current_models not in model_options:
+                            st.session_state[model_widget_key] = model_options[0]
+                        selected_model_values = st.pills(
                             "产品型号",
                             model_options,
-                            selection_mode="multi",
+                            selection_mode="multi" if model_multi else "single",
+                            required=not model_multi,
                             format_func=request_option_display_label,
                             key=model_widget_key,
                             on_change=mark_request_form_dirty,
                             width="stretch",
                         )
+                        selected_models = (
+                            list(selected_model_values or [])
+                            if model_multi
+                            else [selected_model_values] if selected_model_values else []
+                        )
 
                         language_options: list[str] = []
-                        for selected_model in list(selected_models or []):
+                        for selected_model in selected_models:
                             _, scoped_languages = product_language_state(
                                 catalog_product,
                                 selected_model,
@@ -7285,21 +7326,34 @@ def render_request_material_builder(
                             language_options.extend(scoped_languages)
                         language_options = unique_preserve(language_options) or [NO_LANGUAGE_TEXT]
                         language_widget_key = (
-                            f"request_cart_languages_{get_ui_language()}_{product_state_key}"
+                            f"request_cart_languages_v2_{'multi' if language_multi else 'single'}_"
+                            f"{get_ui_language()}_{product_state_key}"
                         )
                         current_languages = st.session_state.get(language_widget_key)
-                        if not isinstance(current_languages, list) or any(
-                            language not in language_options for language in current_languages
+                        if language_multi:
+                            if not isinstance(current_languages, list) or any(
+                                language not in language_options for language in current_languages
+                            ):
+                                st.session_state[language_widget_key] = [language_options[0]]
+                        elif (
+                            not isinstance(current_languages, str)
+                            or current_languages not in language_options
                         ):
-                            st.session_state[language_widget_key] = [language_options[0]]
-                        selected_languages = st.pills(
+                            st.session_state[language_widget_key] = language_options[0]
+                        selected_language_values = st.pills(
                             "语种",
                             language_options,
-                            selection_mode="multi",
+                            selection_mode="multi" if language_multi else "single",
+                            required=not language_multi,
                             format_func=request_option_display_label,
                             key=language_widget_key,
                             on_change=mark_request_form_dirty,
                             width="stretch",
+                        )
+                        selected_languages = (
+                            list(selected_language_values or [])
+                            if language_multi
+                            else [selected_language_values] if selected_language_values else []
                         )
 
                         option_cols = st.columns([0.8, 1.6], gap="small")
@@ -7330,8 +7384,8 @@ def render_request_material_builder(
                             selected_lines = build_request_cart_selection_lines(
                                 selection_context,
                                 catalog_product,
-                                list(selected_models or []),
-                                list(selected_languages or []),
+                                selected_models,
+                                selected_languages,
                                 int(quantity),
                                 str(remark or ""),
                             )

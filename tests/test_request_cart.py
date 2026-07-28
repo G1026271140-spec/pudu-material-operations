@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import app
 
@@ -89,6 +90,22 @@ class RequestCartTests(unittest.TestCase):
         )
         self.assertTrue(all(line["quantity"] == 3 for line in lines))
         self.assertTrue(all(line["remark"] == "展会" for line in lines))
+
+    def test_enabling_one_multi_select_turns_the_other_off(self) -> None:
+        state = {
+            "model_multi": True,
+            "language_multi": True,
+        }
+
+        with patch.object(app.st, "session_state", state):
+            app.enforce_request_cart_exclusive_multi_select(
+                "model_multi",
+                "language_multi",
+            )
+
+        self.assertTrue(state["model_multi"])
+        self.assertFalse(state["language_multi"])
+        self.assertTrue(state["request_form_cache_locked"])
 
 
 if __name__ == "__main__":

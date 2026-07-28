@@ -147,6 +147,12 @@ EN_DISPLAY_TEXT = {
     ),
     "采购车": "Cart",
     "查看采购车": "View Cart",
+    "型号多选": "Select Multiple Models",
+    "语种多选": "Select Multiple Languages",
+    "型号多选与语种多选不可同时开启；多选时填写的数量将应用到全部所选规格。": (
+        "Model and language multi-select cannot be enabled together. "
+        "The quantity entered in multi-select mode applies to every selected option."
+    ),
     "种物料": "material types",
     "件": "units",
     "扇子": "Fan",
