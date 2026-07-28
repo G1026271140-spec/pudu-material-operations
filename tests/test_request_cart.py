@@ -66,6 +66,30 @@ class RequestCartTests(unittest.TestCase):
         self.assertEqual(len(updated), 2)
         self.assertEqual(updated[1], next_line)
 
+    def test_multi_select_only_builds_valid_inventory_combinations(self) -> None:
+        context = {
+            "product_model_languages": {
+                ("产品手册", "P1"): ["英语", "日语"],
+                ("产品手册", "P2"): ["英语"],
+            }
+        }
+
+        lines = app.build_request_cart_selection_lines(
+            context,
+            "产品手册",
+            ["P1", "P2"],
+            ["英语", "日语"],
+            3,
+            "展会",
+        )
+
+        self.assertEqual(
+            [(line["model"], line["language"]) for line in lines],
+            [("P1", "英语"), ("P1", "日语"), ("P2", "英语")],
+        )
+        self.assertTrue(all(line["quantity"] == 3 for line in lines))
+        self.assertTrue(all(line["remark"] == "展会" for line in lines))
+
 
 if __name__ == "__main__":
     unittest.main()

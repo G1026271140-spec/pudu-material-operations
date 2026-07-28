@@ -142,6 +142,9 @@ EN_DISPLAY_TEXT = {
         "No matching materials found. Try another keyword."
     ),
     "采购车为空，请先选择物料。": "Your cart is empty. Choose a material first.",
+    "所选型号和语种之间没有有效的物料组合。": (
+        "No valid material combination exists for the selected models and languages."
+    ),
     "采购车": "Cart",
     "查看采购车": "View Cart",
     "种物料": "material types",

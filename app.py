@@ -6777,6 +6777,33 @@ def add_request_material_to_cart(
     return updated_lines, False
 
 
+def build_request_cart_selection_lines(
+    selection_context: dict[str, object],
+    product: str,
+    selected_models: list[str],
+    selected_languages: list[str],
+    quantity: int,
+    remark: str,
+) -> list[dict[str, object]]:
+    return [
+        {
+            "product": product,
+            "model": model or NO_MODEL_TEXT,
+            "language": language or NO_LANGUAGE_TEXT,
+            "quantity": max(1, int(quantity)),
+            "remark": str(remark or "").strip(),
+        }
+        for model in selected_models
+        for language in selected_languages
+        if selection_context_has_inventory_combination(
+            selection_context,
+            product,
+            model or NO_MODEL_TEXT,
+            language or NO_LANGUAGE_TEXT,
+        )
+    ]
+
+
 def prepare_request_line_editor_state() -> None:
     load_data = st.session_state.pop("request_line_editor_load", None)
     if isinstance(load_data, dict):
@@ -7195,6 +7222,19 @@ def render_request_material_builder(
         else:
             card_columns = st.columns(3, gap="small")
             for index, catalog_product in enumerate(filtered_products):
+                product_state_key = normalize_option_label(catalog_product)
+                is_no_model_product, scoped_models = product_model_state(
+                    catalog_product,
+                    selection_context,
+                )
+                if is_no_model_product:
+                    model_options = [NO_MODEL_TEXT]
+                elif scoped_models:
+                    model_options = unique_preserve(scoped_models)
+                else:
+                    model_options = [
+                        model for model in models if model != NO_MODEL_TEXT
+                    ] or [NO_MODEL_TEXT]
                 with card_columns[index % 3].container(border=True):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
                     st.markdown(
@@ -7206,139 +7246,127 @@ def render_request_material_builder(
                         """,
                         unsafe_allow_html=True,
                     )
-                    if st.button(
+                    with st.popover(
                         "选择规格",
                         key=f"request_catalog_select_{index}_{normalize_option_label(catalog_product)}",
-                        type=(
-                            "primary"
-                            if st.session_state.get("request_catalog_product") == catalog_product
-                            else "secondary"
-                        ),
                         icon=":material/shopping_cart:",
                         width="stretch",
                     ):
-                        st.session_state["request_catalog_product"] = catalog_product
-                        mark_request_form_dirty()
-                        st.rerun()
+                        st.markdown(
+                            f"#### {escape(request_option_display_label(catalog_product))}",
+                            unsafe_allow_html=True,
+                        )
+                        model_widget_key = (
+                            f"request_cart_models_{get_ui_language()}_{product_state_key}"
+                        )
+                        current_models = st.session_state.get(model_widget_key)
+                        if not isinstance(current_models, list) or any(
+                            model not in model_options for model in current_models
+                        ):
+                            st.session_state[model_widget_key] = [model_options[0]]
+                        selected_models = st.pills(
+                            "产品型号",
+                            model_options,
+                            selection_mode="multi",
+                            format_func=request_option_display_label,
+                            key=model_widget_key,
+                            on_change=mark_request_form_dirty,
+                            width="stretch",
+                        )
 
-        product = str(st.session_state.get("request_catalog_product") or "")
-        if product not in products:
-            product = filtered_products[0] if filtered_products else products[0]
-            st.session_state["request_catalog_product"] = product
+                        language_options: list[str] = []
+                        for selected_model in list(selected_models or []):
+                            _, scoped_languages = product_language_state(
+                                catalog_product,
+                                selected_model,
+                                selection_context,
+                                languages,
+                            )
+                            language_options.extend(scoped_languages)
+                        language_options = unique_preserve(language_options) or [NO_LANGUAGE_TEXT]
+                        language_widget_key = (
+                            f"request_cart_languages_{get_ui_language()}_{product_state_key}"
+                        )
+                        current_languages = st.session_state.get(language_widget_key)
+                        if not isinstance(current_languages, list) or any(
+                            language not in language_options for language in current_languages
+                        ):
+                            st.session_state[language_widget_key] = [language_options[0]]
+                        selected_languages = st.pills(
+                            "语种",
+                            language_options,
+                            selection_mode="multi",
+                            format_func=request_option_display_label,
+                            key=language_widget_key,
+                            on_change=mark_request_form_dirty,
+                            width="stretch",
+                        )
 
-        st.divider()
-        st.markdown(
-            f"#### {escape(request_option_display_label(product))}",
-            unsafe_allow_html=True,
-        )
-        is_no_model_product, scoped_models = product_model_state(product, selection_context)
-        if is_no_model_product:
-            model_options = [NO_MODEL_TEXT]
-        elif scoped_models:
-            model_options = unique_preserve(scoped_models)
-        else:
-            model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
-        product_state_key = normalize_option_label(product)
-        model_widget_key = f"request_cart_model_{get_ui_language()}_{product_state_key}"
-        if st.session_state.get(model_widget_key) not in model_options:
-            st.session_state[model_widget_key] = model_options[0]
-
-        option_cols = st.columns([1.6, 1.6, 0.8, 1.6], gap="small", vertical_alignment="bottom")
-        required_field_label(option_cols[0], "产品型号")
-        model = option_cols[0].selectbox(
-            "产品型号",
-            model_options,
-            key=model_widget_key,
-            format_func=request_option_display_label,
-            disabled=is_no_model_product,
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-
-        is_no_language_product, language_options = product_language_state(
-            product,
-            model,
-            selection_context,
-            languages,
-        )
-        language_widget_key = (
-            f"request_cart_language_{get_ui_language()}_{product_state_key}_"
-            f"{normalize_option_label(model)}"
-        )
-        if st.session_state.get(language_widget_key) not in language_options:
-            st.session_state[language_widget_key] = (
-                language_options[0] if language_options else NO_LANGUAGE_TEXT
-            )
-        required_field_label(option_cols[1], "语种")
-        language = option_cols[1].selectbox(
-            "语种",
-            language_options,
-            key=language_widget_key,
-            format_func=request_option_display_label,
-            disabled=is_no_language_product,
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-
-        quantity_key = f"request_cart_quantity_{product_state_key}"
-        required_field_label(option_cols[2], "数量")
-        quantity = option_cols[2].number_input(
-            "数量",
-            min_value=1,
-            max_value=1_000_000,
-            value=1,
-            step=1,
-            key=quantity_key,
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
-        remark_key = f"request_cart_remark_{product_state_key}"
-        remark = option_cols[3].text_input(
-            "备注",
-            key=remark_key,
-            placeholder="可选",
-            on_change=mark_request_form_dirty,
-        )
-
-        _, add_col = st.columns([3, 1.2])
-        action_clicked = add_col.button(
-            "加入采购车",
-            key=f"request_add_to_cart_{product_state_key}",
-            type="primary",
-            icon=":material/add_shopping_cart:",
-            width="stretch",
-        )
-
-        if action_clicked:
-            next_line = {
-                "product": product,
-                "model": model or NO_MODEL_TEXT,
-                "language": language or NO_LANGUAGE_TEXT,
-                "quantity": int(quantity),
-                "remark": str(remark or "").strip(),
-            }
-            combination_exists = selection_context_has_inventory_combination(
-                selection_context,
-                str(next_line["product"]),
-                str(next_line["model"]),
-                str(next_line["language"]),
-            )
-            if not combination_exists:
-                st.warning("该品类、型号和语种的库存组合不存在或已停用，请重新选择。")
-            else:
-                is_existing = any(
-                    request_material_key(line) == request_material_key(next_line) for line in lines
-                )
-                if not is_existing and len(lines) >= MAX_REQUEST_LINE_COUNT:
-                    st.warning(f"采购车最多添加 {MAX_REQUEST_LINE_COUNT} 种物料。")
-                    return lines
-                next_lines, _ = add_request_material_to_cart(lines, next_line)
-                st.session_state["request_material_lines"] = next_lines
-                st.session_state["request_material_table_version"] = (
-                    int(st.session_state.get("request_material_table_version", 0)) + 1
-                )
-                mark_request_form_dirty()
-                st.rerun()
+                        option_cols = st.columns([0.8, 1.6], gap="small")
+                        quantity = option_cols[0].number_input(
+                            "数量",
+                            min_value=1,
+                            max_value=1_000_000,
+                            value=1,
+                            step=1,
+                            key=f"request_cart_quantity_{product_state_key}",
+                            on_change=mark_request_form_dirty,
+                        )
+                        remark = option_cols[1].text_input(
+                            "备注",
+                            key=f"request_cart_remark_{product_state_key}",
+                            placeholder="可选",
+                            on_change=mark_request_form_dirty,
+                        )
+                        action_clicked = st.button(
+                            "加入采购车",
+                            key=f"request_add_to_cart_{product_state_key}",
+                            type="primary",
+                            icon=":material/add_shopping_cart:",
+                            disabled=not selected_models or not selected_languages,
+                            width="stretch",
+                        )
+                        if action_clicked:
+                            selected_lines = build_request_cart_selection_lines(
+                                selection_context,
+                                catalog_product,
+                                list(selected_models or []),
+                                list(selected_languages or []),
+                                int(quantity),
+                                str(remark or ""),
+                            )
+                            if not selected_lines:
+                                st.warning("所选型号和语种之间没有有效的物料组合。")
+                            else:
+                                existing_keys = {request_material_key(line) for line in lines}
+                                new_keys = {
+                                    request_material_key(line)
+                                    for line in selected_lines
+                                    if request_material_key(line) not in existing_keys
+                                }
+                                if len(lines) + len(new_keys) > MAX_REQUEST_LINE_COUNT:
+                                    st.warning(
+                                        f"本次选择会超过采购车 {MAX_REQUEST_LINE_COUNT} 种物料的上限。"
+                                    )
+                                else:
+                                    next_lines = [dict(line) for line in lines]
+                                    for selected_line in selected_lines:
+                                        next_lines, _ = add_request_material_to_cart(
+                                            next_lines,
+                                            selected_line,
+                                        )
+                                    st.session_state["request_material_lines"] = next_lines
+                                    st.session_state["request_material_table_version"] = (
+                                        int(
+                                            st.session_state.get(
+                                                "request_material_table_version",
+                                                0,
+                                            )
+                                        )
+                                        + 1
+                                    )
+                                    mark_request_form_dirty()
+                                    st.rerun()
 
         lines = get_request_material_lines()
         total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
