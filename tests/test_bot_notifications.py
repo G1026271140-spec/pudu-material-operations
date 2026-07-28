@@ -492,6 +492,9 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn("Request No.: REQ-EN-1", serialized)
         self.assertIn("Applicant: John Smith", serialized)
         self.assertNotIn("申请单号", serialized)
+        action = card["elements"][-1]["actions"][0]
+        self.assertEqual(action["text"]["content"], "Modify or withdraw this request")
+        self.assertEqual(action["value"]["language"], "en")
 
     def test_chinese_applicant_keeps_chinese_request_card(self) -> None:
         card = app.sales_request_received_notification_card(
@@ -499,6 +502,16 @@ class BotNotificationTests(unittest.TestCase):
         )
 
         self.assertEqual(card["header"]["title"]["content"], "营销物料申请已进入处理流程")
+        action = card["elements"][-1]["actions"][0]
+        self.assertEqual(action["text"]["content"], "修改或撤回本条申请")
+        self.assertEqual(
+            action["value"],
+            {
+                "action": "open_request_editor",
+                "request_no": "REQ-ZH-1",
+                "language": "zh",
+            },
+        )
 
     def test_completed_notification_contains_requested_and_actual_quantities(self) -> None:
         request = {

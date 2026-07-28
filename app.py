@@ -4698,6 +4698,7 @@ def sales_request_received_notification_card(
     lines: list[dict[str, object]],
 ) -> dict[str, object]:
     english = requester_prefers_english(request_payload)
+    action_text = "Modify or withdraw this request" if english else "修改或撤回本条申请"
     return {
         "config": {"wide_screen_mode": True},
         "header": {
@@ -4711,12 +4712,29 @@ def sales_request_received_notification_card(
                 ),
             },
         },
-        "elements": [{
-            "tag": "markdown",
-            "content": sales_request_received_notification_text(
-                request_no, request_payload, lines, english=english
-            ),
-        }],
+        "elements": [
+            {
+                "tag": "markdown",
+                "content": sales_request_received_notification_text(
+                    request_no, request_payload, lines, english=english
+                ),
+            },
+            {
+                "tag": "action",
+                "actions": [
+                    {
+                        "tag": "button",
+                        "text": {"tag": "plain_text", "content": action_text},
+                        "type": "primary",
+                        "value": {
+                            "action": "open_request_editor",
+                            "request_no": request_no,
+                            "language": "en" if english else "zh",
+                        },
+                    }
+                ],
+            },
+        ],
     }
 
 
