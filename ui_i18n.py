@@ -132,6 +132,21 @@ EN_DISPLAY_TEXT = {
     "填写领取申请的基础信息": "Enter the basic information for this request",
     "物料申请清单": "Material Request List",
     "申请物料清单": "Requested Materials",
+    "选择申请物料": "Choose Materials",
+    "像购物一样选择规格并加入采购车，最多 20 种": (
+        "Choose options and add materials to your cart, up to 20 material types"
+    ),
+    "搜索物料": "Search Materials",
+    "输入品类名称搜索": "Search by material category",
+    "没有找到匹配的物料，请更换关键词。": (
+        "No matching materials found. Try another keyword."
+    ),
+    "采购车为空，请先选择物料。": "Your cart is empty. Choose a material first.",
+    "采购车": "Cart",
+    "查看采购车": "View Cart",
+    "种物料": "material types",
+    "件": "units",
+    "扇子": "Fan",
     "请核对完整申请内容后再提交": "Review the complete request before submission",
     "下载库存数据": "Download Inventory Data",
     "按需生成完整库存、筛选结果和库存流水文件": (
@@ -423,6 +438,8 @@ EN_DISPLAY_TEXT = {
     "取消编辑": "Cancel Editing",
     "保存修改": "Save Changes",
     "加入清单": "Add to List",
+    "选择规格": "Choose Options",
+    "加入采购车": "Add to Cart",
     "编辑选中": "Edit Selected",
     "删除选中": "Delete Selected",
     "清空附件": "Clear Attachments",

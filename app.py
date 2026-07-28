@@ -854,6 +854,54 @@ def inject_global_styles() -> None:
             color: var(--pudu-coral);
             font-size: 0.9rem;
         }
+        .pudu-product-card-marker,
+        .pudu-cart-marker {
+            display: none;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
+            min-height: 126px;
+            gap: 0.35rem;
+            padding: 0.85rem !important;
+            border-color: #D8E1E8 !important;
+            border-radius: 10px !important;
+            background: linear-gradient(145deg, #FFFFFF 0%, #F6FAFC 100%);
+        }
+        .pudu-product-card-kicker {
+            color: var(--pudu-teal);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .pudu-product-card-title {
+            min-height: 2.7rem;
+            color: var(--pudu-ink);
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-cart-marker) > [data-testid="stVerticalBlock"] {
+            gap: 0.55rem;
+            padding: 0.8rem 0.95rem !important;
+            border-color: #B7D9D4 !important;
+            border-radius: 10px !important;
+            background: linear-gradient(90deg, #F0FAF8 0%, #FFFFFF 100%);
+        }
+        .pudu-cart-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .pudu-cart-summary strong {
+            color: var(--pudu-navy);
+            font-size: 1rem;
+        }
+        .pudu-cart-summary span {
+            color: var(--pudu-muted);
+            font-size: 0.8rem;
+        }
         .pudu-review-field {
             min-height: 58px;
             padding: 0.2rem 0.15rem 0.65rem;
@@ -6696,6 +6744,39 @@ def request_material_key(item: dict[str, object]) -> tuple[str, str, str]:
     )
 
 
+def filter_request_catalog_products(products: list[str], query: str) -> list[str]:
+    keyword = normalize_option_label(query).casefold()
+    if not keyword:
+        return list(products)
+    return [
+        product
+        for product in products
+        if keyword in normalize_option_label(product).casefold()
+        or keyword in normalize_option_label(request_option_display_label(product)).casefold()
+    ]
+
+
+def add_request_material_to_cart(
+    lines: list[dict[str, object]],
+    next_line: dict[str, object],
+) -> tuple[list[dict[str, object]], bool]:
+    updated_lines = [dict(line) for line in lines]
+    next_key = request_material_key(next_line)
+    for line in updated_lines:
+        if request_material_key(line) != next_key:
+            continue
+        line["quantity"] = min(
+            1_000_000,
+            max(1, int(line.get("quantity") or 0)) + max(1, int(next_line.get("quantity") or 0)),
+        )
+        next_remark = str(next_line.get("remark", "")).strip()
+        if next_remark:
+            line["remark"] = next_remark
+        return updated_lines, True
+    updated_lines.append(dict(next_line))
+    return updated_lines, False
+
+
 def prepare_request_line_editor_state() -> None:
     load_data = st.session_state.pop("request_line_editor_load", None)
     if isinstance(load_data, dict):
@@ -7090,48 +7171,66 @@ def render_request_material_builder(
     models: list[str],
     languages: list[str],
 ) -> list[dict[str, object]]:
-    prepare_request_line_editor_state()
     lines = get_request_material_lines()
 
     with st.container(border=True):
         render_section_header(
             "02",
-            "物料申请清单",
-            f"逐条添加物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
+            "选择申请物料",
+            f"像购物一样选择规格并加入采购车，最多 {MAX_REQUEST_LINE_COUNT} 种",
         )
         if not products:
             st.error("当前没有可申请的物料品类，请先刷新数据或联系管理员。")
             return lines
 
-        editor_index_value = st.session_state.get("request_material_edit_index")
-        editor_index = (
-            int(editor_index_value)
-            if isinstance(editor_index_value, int) and 0 <= editor_index_value < len(lines)
-            else None
+        search_query = st.text_input(
+            "搜索物料",
+            key="request_catalog_search",
+            placeholder="输入品类名称搜索",
+            icon=":material/search:",
         )
-        editor_cols = st.columns(
-            [2.2, 1.7, 1.5, 0.85, 1.5, 1.15],
-            gap="small",
-            vertical_alignment="bottom",
-        )
-        product_col, model_col, language_col, quantity_col, remark_col, action_col = editor_cols
+        filtered_products = filter_request_catalog_products(products, search_query)
+        if not filtered_products:
+            st.info("没有找到匹配的物料，请更换关键词。")
+        else:
+            card_columns = st.columns(3, gap="small")
+            for index, catalog_product in enumerate(filtered_products):
+                with card_columns[index % 3].container(border=True):
+                    st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
+                    st.markdown(
+                        f"""
+                        <div class="pudu-product-card-kicker">{escape(ui_text("物料品类"))}</div>
+                        <div class="pudu-product-card-title">
+                            {escape(request_option_display_label(catalog_product))}
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                    if st.button(
+                        "选择规格",
+                        key=f"request_catalog_select_{index}_{normalize_option_label(catalog_product)}",
+                        type=(
+                            "primary"
+                            if st.session_state.get("request_catalog_product") == catalog_product
+                            else "secondary"
+                        ),
+                        icon=":material/shopping_cart:",
+                        width="stretch",
+                    ):
+                        st.session_state["request_catalog_product"] = catalog_product
+                        mark_request_form_dirty()
+                        st.rerun()
 
-        required_field_label(product_col, "物料品类")
-        product_widget_key = f"request_line_product_{get_ui_language()}"
-        if st.session_state.get(product_widget_key) not in products:
-            current_product = st.session_state.get("request_line_product")
-            st.session_state[product_widget_key] = (
-                current_product if current_product in products else products[0]
-            )
-        product = product_col.selectbox(
-            "物料品类",
-            products,
-            key=product_widget_key,
-            format_func=request_option_display_label,
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
+        product = str(st.session_state.get("request_catalog_product") or "")
+        if product not in products:
+            product = filtered_products[0] if filtered_products else products[0]
+            st.session_state["request_catalog_product"] = product
+
+        st.divider()
+        st.markdown(
+            f"#### {escape(request_option_display_label(product))}",
+            unsafe_allow_html=True,
         )
-        st.session_state["request_line_product"] = product
         is_no_model_product, scoped_models = product_model_state(product, selection_context)
         if is_no_model_product:
             model_options = [NO_MODEL_TEXT]
@@ -7139,14 +7238,14 @@ def render_request_material_builder(
             model_options = unique_preserve(scoped_models)
         else:
             model_options = [model for model in models if model != NO_MODEL_TEXT] or [NO_MODEL_TEXT]
-        model_widget_key = f"request_line_model_{get_ui_language()}"
+        product_state_key = normalize_option_label(product)
+        model_widget_key = f"request_cart_model_{get_ui_language()}_{product_state_key}"
         if st.session_state.get(model_widget_key) not in model_options:
-            current_model = st.session_state.get("request_line_model")
-            st.session_state[model_widget_key] = (
-                current_model if current_model in model_options else model_options[0]
-            )
-        required_field_label(model_col, "产品型号")
-        model = model_col.selectbox(
+            st.session_state[model_widget_key] = model_options[0]
+
+        option_cols = st.columns([1.6, 1.6, 0.8, 1.6], gap="small", vertical_alignment="bottom")
+        required_field_label(option_cols[0], "产品型号")
+        model = option_cols[0].selectbox(
             "产品型号",
             model_options,
             key=model_widget_key,
@@ -7155,7 +7254,6 @@ def render_request_material_builder(
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        st.session_state["request_line_model"] = model
 
         is_no_language_product, language_options = product_language_state(
             product,
@@ -7163,16 +7261,16 @@ def render_request_material_builder(
             selection_context,
             languages,
         )
-        language_widget_key = f"request_line_language_{get_ui_language()}"
+        language_widget_key = (
+            f"request_cart_language_{get_ui_language()}_{product_state_key}_"
+            f"{normalize_option_label(model)}"
+        )
         if st.session_state.get(language_widget_key) not in language_options:
-            current_language = st.session_state.get("request_line_language")
             st.session_state[language_widget_key] = (
-                current_language
-                if current_language in language_options
-                else language_options[0] if language_options else NO_LANGUAGE_TEXT
+                language_options[0] if language_options else NO_LANGUAGE_TEXT
             )
-        required_field_label(language_col, "语种")
-        language = language_col.selectbox(
+        required_field_label(option_cols[1], "语种")
+        language = option_cols[1].selectbox(
             "语种",
             language_options,
             key=language_widget_key,
@@ -7181,45 +7279,35 @@ def render_request_material_builder(
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        st.session_state["request_line_language"] = language
 
-        required_field_label(quantity_col, "数量")
-        quantity = quantity_col.number_input(
+        quantity_key = f"request_cart_quantity_{product_state_key}"
+        required_field_label(option_cols[2], "数量")
+        quantity = option_cols[2].number_input(
             "数量",
             min_value=1,
             max_value=1_000_000,
             value=1,
             step=1,
-            key="request_line_quantity",
+            key=quantity_key,
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        remark = remark_col.text_input(
+        remark_key = f"request_cart_remark_{product_state_key}"
+        remark = option_cols[3].text_input(
             "备注",
-            key="request_line_remark",
+            key=remark_key,
             placeholder="可选",
             on_change=mark_request_form_dirty,
         )
 
-        action_label = "保存修改" if editor_index is not None else "加入清单"
-        action_icon = ":material/save:" if editor_index is not None else ":material/add:"
-        action_clicked = action_col.button(
-            action_label,
-            key="request_add_material",
+        _, add_col = st.columns([3, 1.2])
+        action_clicked = add_col.button(
+            "加入采购车",
+            key=f"request_add_to_cart_{product_state_key}",
             type="primary",
-            icon=action_icon,
-            disabled=editor_index is None and len(lines) >= MAX_REQUEST_LINE_COUNT,
+            icon=":material/add_shopping_cart:",
             width="stretch",
         )
-        if editor_index is not None and action_col.button(
-            "取消编辑",
-            key="request_cancel_material_edit",
-            type="tertiary",
-            icon=":material/close:",
-            width="stretch",
-        ):
-            st.session_state["request_line_editor_reset"] = True
-            st.rerun()
 
         if action_clicked:
             next_line = {
@@ -7235,110 +7323,92 @@ def render_request_material_builder(
                 str(next_line["model"]),
                 str(next_line["language"]),
             )
-            duplicate_index = next(
-                (
-                    index
-                    for index, line in enumerate(lines)
-                    if request_material_key(line) == request_material_key(next_line)
-                    and index != editor_index
-                ),
-                None,
-            )
             if not combination_exists:
                 st.warning("该品类、型号和语种的库存组合不存在或已停用，请重新选择。")
-            elif duplicate_index is not None:
-                st.warning(f"该物料组合已在清单第 {duplicate_index + 1} 行，请直接修改原行。")
             else:
-                next_lines = [dict(line) for line in lines]
-                if editor_index is None:
-                    next_lines.append(next_line)
-                else:
-                    next_lines[editor_index] = next_line
+                is_existing = any(
+                    request_material_key(line) == request_material_key(next_line) for line in lines
+                )
+                if not is_existing and len(lines) >= MAX_REQUEST_LINE_COUNT:
+                    st.warning(f"采购车最多添加 {MAX_REQUEST_LINE_COUNT} 种物料。")
+                    return lines
+                next_lines, _ = add_request_material_to_cart(lines, next_line)
                 st.session_state["request_material_lines"] = next_lines
                 st.session_state["request_material_table_version"] = (
                     int(st.session_state.get("request_material_table_version", 0)) + 1
                 )
-                st.session_state["request_line_editor_reset"] = True
                 mark_request_form_dirty()
                 st.rerun()
 
         lines = get_request_material_lines()
-        st.markdown(
-            f"""
-            <div class="pudu-material-list-status">
-                <span>{escape(ui_text("申请物料清单"))}</span>
-                <strong>{len(lines)} / {MAX_REQUEST_LINE_COUNT}</strong>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if not lines:
-            st.info("尚未添加申请物料。")
-            return lines
+        total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+        with st.container(border=True):
+            st.markdown('<span class="pudu-cart-marker"></span>', unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class="pudu-cart-summary">
+                    <strong>🛒 {escape(ui_text("采购车"))}</strong>
+                    <span>{len(lines)} {escape(ui_text("种物料"))} ·
+                    {total_quantity} {escape(ui_text("件"))}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-        table_version = int(st.session_state.get("request_material_table_version", 0))
-        edited_df = st.data_editor(
-            request_material_table_dataframe(lines),
-            width="stretch",
-            hide_index=True,
-            height=min(520, max(140, 38 * (len(lines) + 1) + 22)),
-            row_height=34,
-            disabled=["序号", "物料品类", "产品型号", "语种"],
-            column_config={
-                "选择": st.column_config.CheckboxColumn("选择", width="small"),
-                "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
-                "物料品类": st.column_config.TextColumn("物料品类", width="large"),
-                "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
-                "语种": st.column_config.TextColumn("语种", width="medium"),
-                "数量": st.column_config.NumberColumn(
-                    "数量",
-                    min_value=1,
-                    max_value=1_000_000,
-                    step=1,
-                    format="%d",
-                    width="small",
-                ),
-                "备注": st.column_config.TextColumn("备注", width="medium"),
-            },
-            key=f"request_material_table_{table_version}",
-            on_change=mark_request_form_dirty,
-        )
-        updated_lines, selected_indices = apply_request_material_table_edits(lines, edited_df)
-        if updated_lines != lines:
-            st.session_state["request_material_lines"] = updated_lines
-            lines = updated_lines
+        with st.expander(
+            f"{ui_text('查看采购车')} · {len(lines)} / {MAX_REQUEST_LINE_COUNT}",
+            expanded=bool(lines),
+        ):
+            if not lines:
+                st.info("采购车为空，请先选择物料。")
+            else:
+                table_version = int(st.session_state.get("request_material_table_version", 0))
+                edited_df = st.data_editor(
+                    request_material_table_dataframe(lines),
+                    width="stretch",
+                    hide_index=True,
+                    height=min(520, max(140, 38 * (len(lines) + 1) + 22)),
+                    row_height=34,
+                    disabled=["序号", "物料品类", "产品型号", "语种"],
+                    column_config={
+                        "选择": st.column_config.CheckboxColumn("选择", width="small"),
+                        "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
+                        "物料品类": st.column_config.TextColumn("物料品类", width="large"),
+                        "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
+                        "语种": st.column_config.TextColumn("语种", width="medium"),
+                        "数量": st.column_config.NumberColumn(
+                            "数量",
+                            min_value=1,
+                            max_value=1_000_000,
+                            step=1,
+                            format="%d",
+                            width="small",
+                        ),
+                        "备注": st.column_config.TextColumn("备注", width="medium"),
+                    },
+                    key=f"request_material_table_{table_version}",
+                    on_change=mark_request_form_dirty,
+                )
+                updated_lines, selected_indices = apply_request_material_table_edits(lines, edited_df)
+                if updated_lines != lines:
+                    st.session_state["request_material_lines"] = updated_lines
+                    lines = updated_lines
 
-        edit_col, delete_col, _ = st.columns([1.1, 1.1, 3])
-        if edit_col.button(
-            "编辑选中",
-            key="request_edit_selected_material",
-            icon=":material/edit:",
-            disabled=len(selected_indices) != 1,
-            width="stretch",
-        ):
-            selected_index = selected_indices[0]
-            st.session_state["request_line_editor_load"] = {
-                "index": selected_index,
-                **lines[selected_index],
-            }
-            st.session_state["request_material_table_version"] = table_version + 1
-            st.rerun()
-        if delete_col.button(
-            "删除选中",
-            key="request_delete_selected_material",
-            icon=":material/delete:",
-            disabled=not selected_indices,
-            width="stretch",
-        ):
-            selected_set = set(selected_indices)
-            st.session_state["request_material_lines"] = [
-                line for index, line in enumerate(lines) if index not in selected_set
-            ]
-            st.session_state["request_material_table_version"] = table_version + 1
-            if editor_index in selected_set:
-                st.session_state["request_line_editor_reset"] = True
-            mark_request_form_dirty()
-            st.rerun()
+                delete_col, _ = st.columns([1.2, 3])
+                if delete_col.button(
+                    "删除选中",
+                    key="request_delete_selected_material",
+                    icon=":material/delete:",
+                    disabled=not selected_indices,
+                    width="stretch",
+                ):
+                    selected_set = set(selected_indices)
+                    st.session_state["request_material_lines"] = [
+                        line for index, line in enumerate(lines) if index not in selected_set
+                    ]
+                    st.session_state["request_material_table_version"] = table_version + 1
+                    mark_request_form_dirty()
+                    st.rerun()
     return lines
 
 
