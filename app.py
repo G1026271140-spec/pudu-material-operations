@@ -889,8 +889,28 @@ def inject_global_styles() -> None:
             font-size: 0.9rem;
         }
         .pudu-product-card-marker,
-        .pudu-cart-marker {
+        .pudu-cart-marker,
+        .pudu-full-cart-popover-marker {
             display: none;
+        }
+        .st-key-request_compact_cart button {
+            border-color: #C9472D !important;
+            background: #E25B3F !important;
+            color: #FFFFFF !important;
+            font-weight: 750 !important;
+            box-shadow: 0 4px 12px rgba(226, 91, 63, 0.24) !important;
+        }
+        .st-key-request_compact_cart button:hover {
+            border-color: #A93724 !important;
+            background: #C9472D !important;
+            color: #FFFFFF !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
+            width: min(980px, calc(100vw - 2rem)) !important;
+            max-width: min(980px, calc(100vw - 2rem)) !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) > div {
+            width: 100% !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
             min-height: 286px;
@@ -7296,6 +7316,10 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
         key="request_compact_cart",
         width="stretch",
     ):
+        st.markdown(
+            '<span class="pudu-full-cart-popover-marker"></span>',
+            unsafe_allow_html=True,
+        )
         st.caption(
             f"{len(lines)} {ui_text('种物料')} · {total_quantity} {ui_text('件')}"
         )
@@ -7308,7 +7332,7 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
             request_material_table_dataframe(lines),
             width="stretch",
             hide_index=True,
-            height=min(440, max(140, 38 * (len(lines) + 1) + 22)),
+            height=min(720, max(140, 38 * (len(lines) + 1) + 22)),
             row_height=34,
             disabled=["序号", "物料品类", "产品型号", "语种"],
             column_config={
