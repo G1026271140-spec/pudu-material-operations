@@ -21,6 +21,38 @@ class RequestCartTests(unittest.TestCase):
     def test_category_without_image_uses_placeholder_path(self) -> None:
         self.assertIsNone(app.request_category_image_path("定制LOGO书包(Customized PUDU bag)"))
 
+    def test_all_uploaded_category_images_match_current_category_names(self) -> None:
+        expected_images = {
+            "产品单页(Product Flyer )": "product-flyer.webp",
+            "品牌手册(Product Brochure (All Banner)）": "brand-brochure.webp",
+            "工业产品线手册IR(Industrial Product Line Brochure）": "industrial-brochure.webp",
+            "清洁产品线手册CR(Cleaning Product Line Brochure）": "cleaning-brochure.webp",
+            "配送线产品手册DR(Delivery Robot Product Brochure)": "delivery-brochure.webp",
+            "具身线产品手册ER(Embodied AI Robot Product Brochure)": "embodied-brochure.webp",
+            "产品易拉宝(Product Roll-Up)": "product-roll-up.webp",
+            "公仔(Plush Toy)": "plush-toy.webp",
+            "冰箱贴( Fridge Magnet)": "fridge-magnet.webp",
+            "笔记本礼盒(Notebook Gift Box)": "notebook-gift-box.webp",
+            "普渡logo无纺布手提袋(PUDU logo bag)": "pudu-logo-bag.webp",
+            "扇子": "fan.webp",
+        }
+
+        for product, expected_name in expected_images.items():
+            with self.subTest(product=product):
+                image_path = app.request_category_image_path(product)
+                self.assertIsNotNone(image_path)
+                self.assertEqual(image_path.name, expected_name)
+                self.assertTrue(image_path.exists())
+
+    def test_chinese_category_label_hides_bilingual_suffix(self) -> None:
+        with patch.object(app.st, "session_state", {app.UI_LANGUAGE_SESSION_KEY: app.LANGUAGE_ZH}):
+            self.assertEqual(
+                app.request_category_display_label(
+                    "工业产品线手册IR(Industrial Product Line Brochure）"
+                ),
+                "工业产品线手册IR",
+            )
+
     def test_catalog_search_matches_bilingual_product_name(self) -> None:
         products = ["产品单页(Product Flyer)", "冰箱贴(Fridge Magnet)"]
 

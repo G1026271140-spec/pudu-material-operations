@@ -159,6 +159,7 @@ EN_DISPLAY_TEXT = {
     "物料申请清单": "Material Request List",
     "申请物料清单": "Requested Materials",
     "选择申请物料": "Choose Materials",
+    "预览购物车并提交查看": "Review Cart & Continue",
     "像购物一样选择规格并加入采购车，最多 20 种": (
         "Choose options and add materials to your cart, up to 20 material types"
     ),

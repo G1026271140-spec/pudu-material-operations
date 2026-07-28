@@ -169,16 +169,22 @@ REQUEST_CATEGORY_IMAGE_DIR = (
 )
 REQUEST_CATEGORY_IMAGE_RULES = (
     (("产品单页", "product flyer"), "product-flyer.webp"),
-    (("清洁线产品手册", "cleaning robot product brochure"), "cleaning-brochure.webp"),
+    (("品牌手册", "product brochure (all banner"), "brand-brochure.webp"),
+    (
+        ("工业产品线手册", "工业线产品手册", "industrial product line brochure", "industrial delivery robot"),
+        "industrial-brochure.webp",
+    ),
+    (
+        ("清洁产品线手册", "清洁线产品手册", "cleaning product line brochure", "cleaning robot product brochure"),
+        "cleaning-brochure.webp",
+    ),
     (("配送线产品手册", "delivery robot product brochure"), "delivery-brochure.webp"),
     (("具身线产品手册", "embodied ai robot product brochure"), "embodied-brochure.webp"),
-    (("工业线产品手册", "industrial delivery robot"), "industrial-brochure.webp"),
-    (("品牌手册", "product brochure (all banner"), "brand-brochure.webp"),
-    (("易拉宝", "product roll-up"), "product-roll-up.webp"),
+    (("产品易拉宝", "易拉宝", "product roll-up"), "product-roll-up.webp"),
+    (("公仔", "plush toy"), "plush-toy.webp"),
     (("冰箱贴", "fridge magnet"), "fridge-magnet.webp"),
     (("笔记本礼盒", "notebook gift box"), "notebook-gift-box.webp"),
     (("普渡logo无纺布手提袋", "pudu logo bag"), "pudu-logo-bag.webp"),
-    (("公仔", "plush toy"), "plush-toy.webp"),
     (("扇子", "fan"), "fan.webp"),
 )
 REQUEST_FORM_CACHE_LOCK = threading.Lock()
@@ -230,6 +236,14 @@ def request_option_display_label(value: object) -> str:
     if english_parts:
         return english_parts[-1].strip()
     return str(translate_ui_text(text, LANGUAGE_EN))
+
+
+def request_category_display_label(value: object) -> str:
+    text = str(value or "").strip()
+    if get_ui_language() == LANGUAGE_EN:
+        return request_option_display_label(text)
+    chinese_label = re.split(r"[（(]", text, maxsplit=1)[0].strip()
+    return chinese_label or text
 
 
 def inject_global_styles() -> None:
@@ -879,25 +893,26 @@ def inject_global_styles() -> None:
             display: none;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
-            min-height: 302px;
+            min-height: 286px;
             gap: 0.35rem;
-            padding: 0.85rem !important;
+            padding: 0.7rem !important;
             border-color: #D8E1E8 !important;
             border-radius: 10px !important;
             background: linear-gradient(145deg, #FFFFFF 0%, #F6FAFC 100%);
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stImage"] img {
             width: 100%;
-            height: 148px;
+            height: 142px;
             border: 1px solid #E2E8ED;
             border-radius: 8px;
-            object-fit: cover;
+            background: #F7F9FA;
+            object-fit: contain;
         }
         .pudu-product-image-placeholder {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 148px;
+            height: 142px;
             border: 1px dashed #C8D2DA;
             border-radius: 8px;
             background: #F2F5F7;
@@ -913,7 +928,7 @@ def inject_global_styles() -> None:
             text-transform: uppercase;
         }
         .pudu-product-card-title {
-            min-height: 2.7rem;
+            min-height: 2.4rem;
             color: var(--pudu-ink);
             font-size: 0.92rem;
             font-weight: 700;
@@ -6922,7 +6937,7 @@ def request_material_table_dataframe(lines: list[dict[str, object]]) -> pd.DataF
             {
                 "选择": False,
                 "序号": index + 1,
-                "物料品类": line["product"],
+                "物料品类": request_category_display_label(line["product"]),
                 "产品型号": line["model"],
                 "语种": line["language"],
                 "数量": int(line["quantity"]),
@@ -7274,12 +7289,74 @@ def render_request_review() -> None:
         st.rerun()
 
 
+def render_compact_request_cart(container: object, lines: list[dict[str, object]]) -> list[dict[str, object]]:
+    total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+    with container.popover(
+        f"🛒 {len(lines)}",
+        key="request_compact_cart",
+        width="stretch",
+    ):
+        st.caption(
+            f"{len(lines)} {ui_text('种物料')} · {total_quantity} {ui_text('件')}"
+        )
+        if not lines:
+            st.info("采购车为空，请先选择物料。")
+            return lines
+
+        table_version = int(st.session_state.get("request_material_table_version", 0))
+        edited_df = st.data_editor(
+            request_material_table_dataframe(lines),
+            width="stretch",
+            hide_index=True,
+            height=min(440, max(140, 38 * (len(lines) + 1) + 22)),
+            row_height=34,
+            disabled=["序号", "物料品类", "产品型号", "语种"],
+            column_config={
+                "选择": st.column_config.CheckboxColumn("选择", width="small"),
+                "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
+                "物料品类": st.column_config.TextColumn("物料品类", width="large"),
+                "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
+                "语种": st.column_config.TextColumn("语种", width="medium"),
+                "数量": st.column_config.NumberColumn(
+                    "数量",
+                    min_value=1,
+                    max_value=1_000_000,
+                    step=1,
+                    format="%d",
+                    width="small",
+                ),
+                "备注": st.column_config.TextColumn("备注", width="medium"),
+            },
+            key=f"request_material_table_{table_version}",
+            on_change=mark_request_form_dirty,
+        )
+        updated_lines, selected_indices = apply_request_material_table_edits(lines, edited_df)
+        if updated_lines != lines:
+            st.session_state["request_material_lines"] = updated_lines
+            lines = updated_lines
+        if st.button(
+            "删除选中",
+            key="request_delete_selected_material",
+            icon=":material/delete:",
+            disabled=not selected_indices,
+            width="stretch",
+        ):
+            selected_set = set(selected_indices)
+            st.session_state["request_material_lines"] = [
+                line for index, line in enumerate(lines) if index not in selected_set
+            ]
+            st.session_state["request_material_table_version"] = table_version + 1
+            mark_request_form_dirty()
+            st.rerun()
+    return lines
+
+
 def render_request_material_builder(
     selection_context: dict[str, object],
     products: list[str],
     models: list[str],
     languages: list[str],
-) -> list[dict[str, object]]:
+) -> tuple[list[dict[str, object]], bool]:
     lines = get_request_material_lines()
 
     with st.container(border=True):
@@ -7290,19 +7367,32 @@ def render_request_material_builder(
         )
         if not products:
             st.error("当前没有可申请的物料品类，请先刷新数据或联系管理员。")
-            return lines
+            return lines, False
 
-        search_query = st.text_input(
+        search_col, cart_col, preview_col = st.columns(
+            [5.6, 0.72, 1.75],
+            gap="small",
+            vertical_alignment="bottom",
+        )
+        search_query = search_col.text_input(
             "搜索物料",
             key="request_catalog_search",
             placeholder="输入品类名称搜索",
             icon=":material/search:",
         )
+        lines = render_compact_request_cart(cart_col, lines)
+        preview_clicked = preview_col.button(
+            "预览购物车并提交查看",
+            key="request_preview",
+            type="primary",
+            icon=":material/preview:",
+            width="stretch",
+        )
         filtered_products = filter_request_catalog_products(products, search_query)
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")
         else:
-            card_columns = st.columns(3, gap="small")
+            card_columns = st.columns(4, gap="small")
             for index, catalog_product in enumerate(filtered_products):
                 product_state_key = normalize_option_label(catalog_product)
                 is_no_model_product, scoped_models = product_model_state(
@@ -7317,7 +7407,7 @@ def render_request_material_builder(
                     model_options = [
                         model for model in models if model != NO_MODEL_TEXT
                     ] or [NO_MODEL_TEXT]
-                with card_columns[index % 3].container(border=True):
+                with card_columns[index % 4].container(border=True):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
                     category_image_path = request_category_image_path(catalog_product)
                     if category_image_path:
@@ -7342,7 +7432,7 @@ def render_request_material_builder(
                         f"""
                         <div class="pudu-product-card-kicker">{escape(ui_text("物料品类"))}</div>
                         <div class="pudu-product-card-title">
-                            {escape(request_option_display_label(catalog_product))}
+                            {escape(request_category_display_label(catalog_product))}
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -7354,7 +7444,7 @@ def render_request_material_builder(
                         width="stretch",
                     ):
                         st.markdown(
-                            f"#### {escape(request_option_display_label(catalog_product))}",
+                            f"#### {escape(request_category_display_label(catalog_product))}",
                             unsafe_allow_html=True,
                         )
                         model_multi_key = f"request_cart_model_multi_{product_state_key}"
@@ -7515,75 +7605,7 @@ def render_request_material_builder(
                                     st.rerun()
 
         lines = get_request_material_lines()
-        total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
-        with st.container(border=True):
-            st.markdown('<span class="pudu-cart-marker"></span>', unsafe_allow_html=True)
-            st.markdown(
-                f"""
-                <div class="pudu-cart-summary">
-                    <strong>🛒 {escape(ui_text("采购车"))}</strong>
-                    <span>{len(lines)} {escape(ui_text("种物料"))} ·
-                    {total_quantity} {escape(ui_text("件"))}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        with st.expander(
-            f"{ui_text('查看采购车')} · {len(lines)} / {MAX_REQUEST_LINE_COUNT}",
-            expanded=bool(lines),
-        ):
-            if not lines:
-                st.info("采购车为空，请先选择物料。")
-            else:
-                table_version = int(st.session_state.get("request_material_table_version", 0))
-                edited_df = st.data_editor(
-                    request_material_table_dataframe(lines),
-                    width="stretch",
-                    hide_index=True,
-                    height=min(520, max(140, 38 * (len(lines) + 1) + 22)),
-                    row_height=34,
-                    disabled=["序号", "物料品类", "产品型号", "语种"],
-                    column_config={
-                        "选择": st.column_config.CheckboxColumn("选择", width="small"),
-                        "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
-                        "物料品类": st.column_config.TextColumn("物料品类", width="large"),
-                        "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
-                        "语种": st.column_config.TextColumn("语种", width="medium"),
-                        "数量": st.column_config.NumberColumn(
-                            "数量",
-                            min_value=1,
-                            max_value=1_000_000,
-                            step=1,
-                            format="%d",
-                            width="small",
-                        ),
-                        "备注": st.column_config.TextColumn("备注", width="medium"),
-                    },
-                    key=f"request_material_table_{table_version}",
-                    on_change=mark_request_form_dirty,
-                )
-                updated_lines, selected_indices = apply_request_material_table_edits(lines, edited_df)
-                if updated_lines != lines:
-                    st.session_state["request_material_lines"] = updated_lines
-                    lines = updated_lines
-
-                delete_col, _ = st.columns([1.2, 3])
-                if delete_col.button(
-                    "删除选中",
-                    key="request_delete_selected_material",
-                    icon=":material/delete:",
-                    disabled=not selected_indices,
-                    width="stretch",
-                ):
-                    selected_set = set(selected_indices)
-                    st.session_state["request_material_lines"] = [
-                        line for index, line in enumerate(lines) if index not in selected_set
-                    ]
-                    st.session_state["request_material_table_version"] = table_version + 1
-                    mark_request_form_dirty()
-                    st.rerun()
-    return lines
+    return lines, preview_clicked
 
 
 def render_change_form(show_title: bool = True) -> None:
@@ -7729,15 +7751,11 @@ def render_change_form(show_title: bool = True) -> None:
         )
         bottom_cols[1].caption(f"已选择 {attachment_count} 个附件" if attachment_count else "未上传附件")
 
-    lines = render_request_material_builder(selection_context, products, models, languages)
-
-    _, preview_col = st.columns([3, 1.25])
-    preview_clicked = preview_col.button(
-        "预览并核对申请",
-        key="request_preview",
-        type="primary",
-        icon=":material/preview:",
-        width="stretch",
+    lines, preview_clicked = render_request_material_builder(
+        selection_context,
+        products,
+        models,
+        languages,
     )
     if preview_clicked:
         attachments = merge_request_attachments(
@@ -10322,7 +10340,7 @@ def render_request_edit_revert_page() -> None:
         [
             {
                 "记录ID": line["record_id"],
-                "物料品类": line["product"],
+                "物料品类": request_category_display_label(line["product"]),
                 "产品型号": line["model"],
                 "语种": line["language"],
                 "申请数量": int(line["quantity"]),
