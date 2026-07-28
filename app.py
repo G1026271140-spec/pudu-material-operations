@@ -172,6 +172,7 @@ REQUEST_CATEGORY_IMAGE_RULES = (
     (("工业线产品手册", "industrial delivery robot"), "industrial-brochure.webp"),
     (("品牌手册", "product brochure (all banner"), "brand-brochure.webp"),
     (("易拉宝", "product roll-up"), "product-roll-up.webp"),
+    (("冰箱贴", "fridge magnet"), "fridge-magnet.webp"),
     (("笔记本礼盒", "notebook gift box"), "notebook-gift-box.webp"),
     (("普渡logo无纺布手提袋", "pudu logo bag"), "pudu-logo-bag.webp"),
     (("公仔", "plush toy"), "plush-toy.webp"),

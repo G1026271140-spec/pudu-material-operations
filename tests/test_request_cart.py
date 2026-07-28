@@ -14,9 +14,12 @@ class RequestCartTests(unittest.TestCase):
         self.assertTrue(chinese_path.exists())
         self.assertIsNotNone(english_path)
         self.assertEqual(english_path.name, "delivery-brochure.webp")
+        fridge_path = app.request_category_image_path("冰箱贴(Fridge Magnet)")
+        self.assertIsNotNone(fridge_path)
+        self.assertEqual(fridge_path.name, "fridge-magnet.webp")
 
     def test_category_without_image_uses_placeholder_path(self) -> None:
-        self.assertIsNone(app.request_category_image_path("冰箱贴(Fridge Magnet)"))
+        self.assertIsNone(app.request_category_image_path("定制LOGO书包(Customized PUDU bag)"))
 
     def test_catalog_search_matches_bilingual_product_name(self) -> None:
         products = ["产品单页(Product Flyer)", "冰箱贴(Fridge Magnet)"]
