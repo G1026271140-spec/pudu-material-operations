@@ -155,11 +155,20 @@ class RequestCartTests(unittest.TestCase):
         self.assertFalse(state["language_multi"])
         self.assertTrue(state["request_form_cache_locked"])
 
-    def test_cart_fly_animation_waits_for_client_side_motion(self) -> None:
-        with patch.object(app.time, "sleep") as sleep:
-            app.wait_for_request_cart_animation()
+    def test_successful_cart_addition_shows_right_side_toast_once(self) -> None:
+        state = {
+            "request_cart_added_toast": True,
+            app.UI_LANGUAGE_SESSION_KEY: app.LANGUAGE_ZH,
+        }
+        with (
+            patch.object(app.st, "session_state", state),
+            patch.object(app.st, "toast") as toast,
+        ):
+            app.render_request_cart_added_toast()
+            app.render_request_cart_added_toast()
 
-        sleep.assert_called_once_with(app.REQUEST_CART_ANIMATION_SECONDS)
+        toast.assert_called_once_with("已加入购物车", icon="🛒", duration="short")
+        self.assertNotIn("request_cart_added_toast", state)
 
 
 if __name__ == "__main__":

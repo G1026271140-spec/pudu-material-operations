@@ -78,7 +78,6 @@ REQUEST_STATUS_PARTIAL = "部分发放"
 REQUEST_STATUS_ISSUED = "已发放"
 REQUEST_STATUS_WITHDRAWN = "已撤回"
 REQUEST_LINE_STATUS_PENDING = "待审批"
-REQUEST_CART_ANIMATION_SECONDS = 0.82
 REQUEST_LINE_STATUS_PARTIAL = "部分发放"
 REQUEST_LINE_STATUS_ISSUED = "已发放"
 REQUEST_LINE_STATUS_WITHDRAWN = "已撤回"
@@ -895,7 +894,6 @@ def inject_global_styles() -> None:
             display: none;
         }
         .st-key-request_compact_cart button {
-            anchor-name: --pudu-cart-target;
             border-color: #C9472D !important;
             background: #E25B3F !important;
             color: #FFFFFF !important;
@@ -906,61 +904,6 @@ def inject_global_styles() -> None:
             border-color: #A93724 !important;
             background: #C9472D !important;
             color: #FFFFFF !important;
-        }
-        [class*="st-key-request_add_to_cart_"] {
-            overflow: visible !important;
-        }
-        [class*="st-key-request_add_to_cart_"] button {
-            position: relative;
-            anchor-name: --pudu-cart-source;
-            overflow: visible !important;
-        }
-        [class*="st-key-request_add_to_cart_"] button:focus::after {
-            content: "";
-            position: fixed;
-            left: anchor(--pudu-cart-source center);
-            top: anchor(--pudu-cart-source center);
-            width: 18px;
-            height: 18px;
-            margin: -9px 0 0 -9px;
-            z-index: 1000000;
-            pointer-events: none;
-            border: 3px solid #FFFFFF;
-            border-radius: 999px;
-            background: radial-gradient(
-                circle at 32% 28%,
-                #FFD8CF 0 16%,
-                #FF765C 38%,
-                #E25B3F 72%
-            );
-            box-shadow: 0 4px 14px rgba(201, 71, 45, 0.46);
-            animation: pudu-cart-fly-in 680ms cubic-bezier(0.22, 0.74, 0.32, 1)
-                both;
-        }
-        @keyframes pudu-cart-fly-in {
-            0% {
-                left: anchor(--pudu-cart-source center);
-                top: anchor(--pudu-cart-source center);
-                transform: translateY(0) scale(0.7);
-                opacity: 0.15;
-            }
-            18% {
-                opacity: 1;
-            }
-            52% {
-                transform: translate(-8px, -18px) scale(1.12);
-                opacity: 1;
-            }
-            86% {
-                transform: translate(-3px, -5px) scale(0.7);
-                opacity: 0.9;
-            }
-            100% {
-                left: anchor(--pudu-cart-target center);
-                top: anchor(--pudu-cart-target center);
-                transform: translateY(0) scale(0.2);
-                opacity: 0;
-            }
         }
         [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
             width: min(980px, calc(100vw - 2rem)) !important;
@@ -7205,8 +7148,15 @@ def scroll_request_page_to_top_if_needed() -> None:
     )
 
 
-def wait_for_request_cart_animation() -> None:
-    time.sleep(REQUEST_CART_ANIMATION_SECONDS)
+def render_request_cart_added_toast() -> None:
+    if not st.session_state.pop("request_cart_added_toast", False):
+        return
+    message = (
+        "Added to cart"
+        if get_ui_language() == LANGUAGE_EN
+        else "已加入购物车"
+    )
+    st.toast(message, icon="🛒", duration="short")
 
 
 def render_request_review_field(container: object, label: str, value: object) -> None:
@@ -7461,6 +7411,7 @@ def render_request_material_builder(
     languages: list[str],
 ) -> tuple[list[dict[str, object]], bool]:
     lines = get_request_material_lines()
+    render_request_cart_added_toast()
 
     with st.container(border=True):
         render_section_header(
@@ -7705,7 +7656,7 @@ def render_request_material_builder(
                                         + 1
                                     )
                                     mark_request_form_dirty()
-                                    wait_for_request_cart_animation()
+                                    st.session_state["request_cart_added_toast"] = True
                                     st.rerun()
 
         lines = get_request_material_lines()
