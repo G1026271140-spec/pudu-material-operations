@@ -7148,6 +7148,116 @@ def scroll_request_page_to_top_if_needed() -> None:
     )
 
 
+def render_request_cart_fly_animation() -> None:
+    animation_token = str(
+        st.session_state.pop("request_cart_fly_animation", "") or ""
+    )
+    st.html(
+        f"""
+        <script>
+        (() => {{
+            const sourceStorageKey = "pudu-request-cart-fly-source";
+            if (!window.__puduCartFlyCaptureInstalled) {{
+                window.__puduCartFlyCaptureInstalled = true;
+                document.addEventListener("pointerdown", (event) => {{
+                    const button = event.target.closest(
+                        '[class*="st-key-request_add_to_cart_"] button'
+                    );
+                    if (!button) return;
+                    const rect = button.getBoundingClientRect();
+                    sessionStorage.setItem(
+                        sourceStorageKey,
+                        JSON.stringify({{
+                            x: rect.left + rect.width / 2,
+                            y: rect.top + rect.height / 2,
+                        }})
+                    );
+                }}, true);
+            }}
+
+            const animationToken = {json.dumps(animation_token)};
+            if (!animationToken) return;
+            const source = JSON.parse(
+                sessionStorage.getItem(sourceStorageKey) || "null"
+            );
+            sessionStorage.removeItem(sourceStorageKey);
+            if (!source) return;
+
+            const launch = (attempt = 0) => {{
+                const target = document.querySelector(
+                    ".st-key-request_compact_cart button"
+                );
+                if (!target) {{
+                    if (attempt < 20) {{
+                        window.setTimeout(() => launch(attempt + 1), 50);
+                    }}
+                    return;
+                }}
+                const targetRect = target.getBoundingClientRect();
+                const destination = {{
+                    x: targetRect.left + targetRect.width / 2,
+                    y: targetRect.top + targetRect.height / 2,
+                }};
+                const ball = document.createElement("span");
+                ball.setAttribute("aria-hidden", "true");
+                Object.assign(ball.style, {{
+                    position: "fixed",
+                    left: `${{source.x - 9}}px`,
+                    top: `${{source.y - 9}}px`,
+                    width: "18px",
+                    height: "18px",
+                    zIndex: "1000000",
+                    pointerEvents: "none",
+                    border: "3px solid #FFFFFF",
+                    borderRadius: "999px",
+                    background:
+                        "radial-gradient(circle at 32% 28%, #FFD8CF 0 16%, #FF765C 38%, #E25B3F 72%)",
+                    boxShadow: "0 4px 14px rgba(201, 71, 45, 0.46)",
+                }});
+                document.body.appendChild(ball);
+
+                const deltaX = destination.x - source.x;
+                const deltaY = destination.y - source.y;
+                const lift = Math.min(150, Math.max(70, Math.abs(deltaX) * 0.16));
+                const animation = ball.animate(
+                    [
+                        {{ transform: "translate(0, 0) scale(0.72)", opacity: 0.2 }},
+                        {{
+                            transform: `translate(${{deltaX * 0.44}}px, ${{deltaY * 0.44 - lift}}px) scale(1.12)`,
+                            opacity: 1,
+                            offset: 0.46,
+                        }},
+                        {{
+                            transform: `translate(${{deltaX}}px, ${{deltaY}}px) scale(0.32)`,
+                            opacity: 0.15,
+                        }},
+                    ],
+                    {{
+                        duration: 720,
+                        easing: "cubic-bezier(0.22, 0.74, 0.32, 1)",
+                        fill: "forwards",
+                    }}
+                );
+                animation.addEventListener("finish", () => {{
+                    ball.remove();
+                    target.animate(
+                        [
+                            {{ transform: "scale(1)" }},
+                            {{ transform: "scale(1.12)" }},
+                            {{ transform: "scale(1)" }},
+                        ],
+                        {{ duration: 280, easing: "ease-out" }}
+                    );
+                }});
+            }};
+            window.requestAnimationFrame(() => launch());
+        }})();
+        </script>
+        """,
+        unsafe_allow_javascript=True,
+    )
+
+
 def render_request_review_field(container: object, label: str, value: object) -> None:
     display_value = escape(str(value or "-")).replace("\n", "<br>")
     container.markdown(
@@ -7430,6 +7540,7 @@ def render_request_material_builder(
             icon=":material/preview:",
             width="stretch",
         )
+        render_request_cart_fly_animation()
         filtered_products = filter_request_catalog_products(products, search_query)
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")
@@ -7642,6 +7753,9 @@ def render_request_material_builder(
                                             )
                                         )
                                         + 1
+                                    )
+                                    st.session_state["request_cart_fly_animation"] = (
+                                        uuid.uuid4().hex
                                     )
                                     mark_request_form_dirty()
                                     st.rerun()

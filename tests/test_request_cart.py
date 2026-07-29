@@ -155,6 +155,22 @@ class RequestCartTests(unittest.TestCase):
         self.assertFalse(state["language_multi"])
         self.assertTrue(state["request_form_cache_locked"])
 
+    def test_cart_fly_animation_targets_compact_cart_and_consumes_token(self) -> None:
+        state = {"request_cart_fly_animation": "animation-token"}
+
+        with (
+            patch.object(app.st, "session_state", state),
+            patch.object(app.st, "html") as html,
+        ):
+            app.render_request_cart_fly_animation()
+
+        script = html.call_args.args[0]
+        self.assertNotIn("request_cart_fly_animation", state)
+        self.assertIn("animation-token", script)
+        self.assertIn("st-key-request_add_to_cart_", script)
+        self.assertIn(".st-key-request_compact_cart button", script)
+        self.assertIn("ball.animate", script)
+
 
 if __name__ == "__main__":
     unittest.main()
