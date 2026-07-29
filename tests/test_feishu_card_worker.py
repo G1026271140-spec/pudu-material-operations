@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 from scripts import feishu_card_worker as worker
 
@@ -46,6 +47,45 @@ class FeishuCardWorkerTests(unittest.TestCase):
         self.assertIn("确认撤回", serialized)
         self.assertIn("confirm_withdraw", serialized)
         self.assertIn("open_request_editor", serialized)
+
+    def test_request_context_uses_warmed_cache_without_live_read(self) -> None:
+        cached_request = {
+            **self.request,
+            "record_id": "rec_request_1",
+            "requester_open_id": "ou_requester",
+            "status": worker.inventory_app.REQUEST_STATUS_PENDING,
+        }
+        cached_line = {
+            **self.lines[0],
+            "request_no": "REQ-TEST-1",
+            "status": worker.inventory_app.REQUEST_LINE_STATUS_PENDING,
+        }
+        with worker.REQUEST_CACHE_LOCK:
+            original_cache = dict(worker.REQUEST_CACHE)
+            worker.REQUEST_CACHE.clear()
+            worker.REQUEST_CACHE.update(
+                {"requests": [cached_request], "lines": [cached_line]}
+            )
+            worker.REQUEST_CACHE_READY.set()
+        try:
+            with patch.object(
+                worker.inventory_app,
+                "fetch_request_maintenance_live_data",
+                side_effect=AssertionError("live read must not run during callback"),
+            ):
+                request, lines = worker.request_context(
+                    "REQ-TEST-1",
+                    "ou_requester",
+                )
+        finally:
+            with worker.REQUEST_CACHE_LOCK:
+                worker.REQUEST_CACHE.clear()
+                worker.REQUEST_CACHE.update(original_cache)
+                if not original_cache.get("requests") and not original_cache.get("lines"):
+                    worker.REQUEST_CACHE_READY.clear()
+
+        self.assertEqual(request["request_no"], "REQ-TEST-1")
+        self.assertEqual([line["record_id"] for line in lines], ["rec_line_1"])
 
 
 if __name__ == "__main__":

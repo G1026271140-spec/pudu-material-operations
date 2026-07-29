@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import sys
+import threading
+import time
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -22,6 +24,58 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import app as inventory_app
+
+
+REQUEST_CACHE_LOCK = threading.RLock()
+REQUEST_CACHE: dict[str, Any] = {"requests": [], "lines": []}
+REQUEST_CACHE_READY = threading.Event()
+REQUEST_CACHE_REFRESH_SECONDS = 15
+
+
+def refresh_request_cache() -> None:
+    started_at = time.perf_counter()
+    live_data = inventory_app.fetch_request_maintenance_live_data()
+    refreshed = {
+        "requests": [
+            dict(item)
+            for item in list(live_data.get("requests") or [])
+            if isinstance(item, dict)
+        ],
+        "lines": [
+            dict(item)
+            for item in list(live_data.get("lines") or [])
+            if isinstance(item, dict)
+        ],
+    }
+    with REQUEST_CACHE_LOCK:
+        REQUEST_CACHE.clear()
+        REQUEST_CACHE.update(refreshed)
+        REQUEST_CACHE_READY.set()
+    logging.info(
+        "Request cache refreshed: requests=%s lines=%s seconds=%.2f",
+        len(refreshed["requests"]),
+        len(refreshed["lines"]),
+        time.perf_counter() - started_at,
+    )
+
+
+def request_cache_refresh_loop() -> None:
+    while True:
+        time.sleep(REQUEST_CACHE_REFRESH_SECONDS)
+        try:
+            refresh_request_cache()
+        except Exception:
+            logging.exception("Request cache refresh failed")
+
+
+def cached_request_data() -> dict[str, list[dict[str, Any]]]:
+    if not REQUEST_CACHE_READY.is_set():
+        raise RuntimeError("Request data is still loading. Please try again shortly.")
+    with REQUEST_CACHE_LOCK:
+        return {
+            "requests": [dict(item) for item in REQUEST_CACHE["requests"]],
+            "lines": [dict(item) for item in REQUEST_CACHE["lines"]],
+        }
 
 
 def load_credentials() -> tuple[str, str]:
@@ -80,7 +134,7 @@ def request_context(
     request_no: str,
     operator_open_id: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    live_data = inventory_app.fetch_request_maintenance_live_data()
+    live_data = cached_request_data()
     request = next(
         (
             item
@@ -460,6 +514,15 @@ def main() -> int:
         format="%(asctime)s %(levelname)s %(message)s",
     )
     app_id, app_secret = load_credentials()
+    try:
+        refresh_request_cache()
+    except Exception:
+        logging.exception("Initial request cache refresh failed")
+    threading.Thread(
+        target=request_cache_refresh_loop,
+        name="request-cache-refresh",
+        daemon=True,
+    ).start()
     handler = (
         lark.EventDispatcherHandler.builder("", "")
         .register_p2_card_action_trigger(handle_card_action)
