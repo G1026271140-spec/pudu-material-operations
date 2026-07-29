@@ -905,6 +905,36 @@ def inject_global_styles() -> None:
             background: #C9472D !important;
             color: #FFFFFF !important;
         }
+        [data-testid="stToast"] {
+            border: 1px solid #B83A24 !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #F26B4F 0%, #C9472D 100%) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 12px 32px rgba(180, 55, 34, 0.34) !important;
+            animation: pudu-toast-slide-in 420ms cubic-bezier(0.2, 0.82, 0.3, 1)
+                both !important;
+        }
+        [data-testid="stToast"] p,
+        [data-testid="stToast"] span,
+        [data-testid="stToast"] svg {
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+            font-weight: 750 !important;
+        }
+        @keyframes pudu-toast-slide-in {
+            0% {
+                transform: translateX(calc(100% + 42px));
+                opacity: 0;
+            }
+            72% {
+                transform: translateX(-8px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
         [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
             width: min(980px, calc(100vw - 2rem)) !important;
             max-width: min(980px, calc(100vw - 2rem)) !important;
