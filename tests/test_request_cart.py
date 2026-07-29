@@ -167,6 +167,8 @@ class RequestCartTests(unittest.TestCase):
         script = html.call_args.args[0]
         self.assertNotIn("request_cart_fly_animation", state)
         self.assertIn("animation-token", script)
+        self.assertIn("const hostWindow = window.parent", script)
+        self.assertIn("hostDocument.body.appendChild(ball)", script)
         self.assertIn("st-key-request_add_to_cart_", script)
         self.assertIn(".st-key-request_compact_cart button", script)
         self.assertIn("ball.animate", script)

@@ -7156,16 +7156,18 @@ def render_request_cart_fly_animation() -> None:
         f"""
         <script>
         (() => {{
+            const hostWindow = window.parent;
+            const hostDocument = hostWindow.document;
             const sourceStorageKey = "pudu-request-cart-fly-source";
-            if (!window.__puduCartFlyCaptureInstalled) {{
-                window.__puduCartFlyCaptureInstalled = true;
-                document.addEventListener("pointerdown", (event) => {{
+            if (!hostWindow.__puduCartFlyCaptureInstalled) {{
+                hostWindow.__puduCartFlyCaptureInstalled = true;
+                hostDocument.addEventListener("pointerdown", (event) => {{
                     const button = event.target.closest(
                         '[class*="st-key-request_add_to_cart_"] button'
                     );
                     if (!button) return;
                     const rect = button.getBoundingClientRect();
-                    sessionStorage.setItem(
+                    hostWindow.sessionStorage.setItem(
                         sourceStorageKey,
                         JSON.stringify({{
                             x: rect.left + rect.width / 2,
@@ -7178,18 +7180,18 @@ def render_request_cart_fly_animation() -> None:
             const animationToken = {json.dumps(animation_token)};
             if (!animationToken) return;
             const source = JSON.parse(
-                sessionStorage.getItem(sourceStorageKey) || "null"
+                hostWindow.sessionStorage.getItem(sourceStorageKey) || "null"
             );
-            sessionStorage.removeItem(sourceStorageKey);
+            hostWindow.sessionStorage.removeItem(sourceStorageKey);
             if (!source) return;
 
             const launch = (attempt = 0) => {{
-                const target = document.querySelector(
+                const target = hostDocument.querySelector(
                     ".st-key-request_compact_cart button"
                 );
                 if (!target) {{
                     if (attempt < 20) {{
-                        window.setTimeout(() => launch(attempt + 1), 50);
+                        hostWindow.setTimeout(() => launch(attempt + 1), 50);
                     }}
                     return;
                 }}
@@ -7198,7 +7200,7 @@ def render_request_cart_fly_animation() -> None:
                     x: targetRect.left + targetRect.width / 2,
                     y: targetRect.top + targetRect.height / 2,
                 }};
-                const ball = document.createElement("span");
+                const ball = hostDocument.createElement("span");
                 ball.setAttribute("aria-hidden", "true");
                 Object.assign(ball.style, {{
                     position: "fixed",
@@ -7214,7 +7216,7 @@ def render_request_cart_fly_animation() -> None:
                         "radial-gradient(circle at 32% 28%, #FFD8CF 0 16%, #FF765C 38%, #E25B3F 72%)",
                     boxShadow: "0 4px 14px rgba(201, 71, 45, 0.46)",
                 }});
-                document.body.appendChild(ball);
+                hostDocument.body.appendChild(ball);
 
                 const deltaX = destination.x - source.x;
                 const deltaY = destination.y - source.y;
@@ -7250,7 +7252,7 @@ def render_request_cart_fly_animation() -> None:
                     );
                 }});
             }};
-            window.requestAnimationFrame(() => launch());
+            hostWindow.requestAnimationFrame(() => launch());
         }})();
         </script>
         """,
