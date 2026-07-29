@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import app
 
@@ -155,21 +155,11 @@ class RequestCartTests(unittest.TestCase):
         self.assertFalse(state["language_multi"])
         self.assertTrue(state["request_form_cache_locked"])
 
-    def test_cart_fly_animation_targets_compact_cart_and_consumes_token(self) -> None:
-        state = {"request_cart_fly_animation": "animation-token"}
-        container = Mock()
+    def test_cart_fly_animation_waits_for_client_side_motion(self) -> None:
+        with patch.object(app.time, "sleep") as sleep:
+            app.wait_for_request_cart_animation()
 
-        with patch.object(app.st, "session_state", state):
-            app.render_request_cart_fly_animation(container)
-
-        markup = container.markdown.call_args.args[0]
-        self.assertNotIn("request_cart_fly_animation", state)
-        self.assertIn("animation-token", markup)
-        self.assertIn("pudu-cart-fly-ball", markup)
-        container.markdown.assert_called_once_with(
-            markup,
-            unsafe_allow_html=True,
-        )
+        sleep.assert_called_once_with(app.REQUEST_CART_ANIMATION_SECONDS)
 
 
 if __name__ == "__main__":
