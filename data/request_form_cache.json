@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-28 17:45:25",
+  "generated_at": "2026-07-29 17:53:22",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -1982,6 +1982,13 @@
       "quantity": 150
     },
     {
+      "material_code": "MAT-0831",
+      "product": "冰箱贴( Fridge Magnet)",
+      "model": "Bellabot pro",
+      "language": "无需语种",
+      "quantity": 130
+    },
+    {
       "material_code": "MAT-0841",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "SH1",
@@ -2367,6 +2374,6 @@
       "quantity": 200
     }
   ],
-  "row_count": 323,
+  "row_count": 324,
   "built_from": "live_feishu"
 }
