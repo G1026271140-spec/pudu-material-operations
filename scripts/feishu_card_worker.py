@@ -30,6 +30,8 @@ REQUEST_CACHE_LOCK = threading.RLock()
 REQUEST_CACHE: dict[str, Any] = {"requests": [], "lines": []}
 REQUEST_CACHE_READY = threading.Event()
 REQUEST_CACHE_REFRESH_SECONDS = 15
+BACKGROUND_ACTION_LOCK = threading.RLock()
+BACKGROUND_ACTIONS: set[str] = set()
 
 
 def refresh_request_cache() -> None:
@@ -76,6 +78,191 @@ def cached_request_data() -> dict[str, list[dict[str, Any]]]:
             "requests": [dict(item) for item in REQUEST_CACHE["requests"]],
             "lines": [dict(item) for item in REQUEST_CACHE["lines"]],
         }
+
+
+def processing_card(
+    request_no: str,
+    *,
+    english: bool,
+    withdrawing: bool,
+) -> dict[str, Any]:
+    if withdrawing:
+        title = "Withdrawing request" if english else "正在撤回申请"
+        content = (
+            f"Material request **{request_no}** is being withdrawn. The bot will notify you when it finishes."
+            if english
+            else f"正在撤回申请单 **{request_no}**。完成后机器人会发送通知，请勿重复操作。"
+        )
+    else:
+        title = "Saving changes" if english else "正在保存修改"
+        content = (
+            f"Changes to material request **{request_no}** are being saved. The bot will notify you when it finishes."
+            if english
+            else f"正在保存申请单 **{request_no}** 的修改。完成后机器人会发送通知，请勿重复提交。"
+        )
+    return {
+        "schema": "2.0",
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "blue",
+            "title": plain_text(title),
+        },
+        "body": {
+            "elements": [
+                {"tag": "markdown", "content": content},
+            ]
+        },
+    }
+
+
+def send_operator_result(
+    operator_open_id: str,
+    *,
+    english: bool,
+    success_zh: str,
+    success_en: str,
+    error: Exception | None = None,
+) -> None:
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("Feishu message client is not configured.")
+    if error is None:
+        text = success_en if english else success_zh
+    else:
+        text = (
+            f"Operation failed: {error}"
+            if english
+            else f"操作失败：{error}"
+        )
+    client.send_text_message(operator_open_id, text)
+
+
+def update_cached_request_after_save(
+    request_no: str,
+    form: dict[str, Any],
+    edited_lines: list[dict[str, Any]],
+) -> None:
+    line_updates = {
+        str(item.get("record_id") or ""): item
+        for item in edited_lines
+    }
+    with REQUEST_CACHE_LOCK:
+        for request in REQUEST_CACHE["requests"]:
+            if str(request.get("request_no") or "") != request_no:
+                continue
+            request.update(
+                {
+                    "customer_name": str(form.get("customer_name") or "").strip(),
+                    "country": str(form.get("country") or "").strip(),
+                    "recipient_info": str(form.get("recipient_info") or "").strip(),
+                    "freight_payer": str(form.get("freight_payer") or "").strip(),
+                    "material_usage": str(form.get("material_usage") or "").strip(),
+                }
+            )
+        for line in REQUEST_CACHE["lines"]:
+            update = line_updates.get(str(line.get("record_id") or ""))
+            if update is None:
+                continue
+            line["quantity"] = int(update["quantity"])
+            line["remark"] = str(update.get("remark") or "")
+
+
+def update_cached_request_after_withdraw(request_no: str) -> None:
+    with REQUEST_CACHE_LOCK:
+        for request in REQUEST_CACHE["requests"]:
+            if str(request.get("request_no") or "") == request_no:
+                request["status"] = inventory_app.REQUEST_STATUS_WITHDRAWN
+        for line in REQUEST_CACHE["lines"]:
+            if str(line.get("request_no") or "") == request_no:
+                line["status"] = inventory_app.REQUEST_LINE_STATUS_WITHDRAWN
+
+
+def run_background_action(
+    action_key: str,
+    operation: Any,
+) -> bool:
+    with BACKGROUND_ACTION_LOCK:
+        if action_key in BACKGROUND_ACTIONS:
+            return False
+        BACKGROUND_ACTIONS.add(action_key)
+
+    def runner() -> None:
+        try:
+            operation()
+        except Exception:
+            logging.exception("Background card action failed: %s", action_key)
+        finally:
+            with BACKGROUND_ACTION_LOCK:
+                BACKGROUND_ACTIONS.discard(action_key)
+
+    threading.Thread(
+        target=runner,
+        name=f"card-action-{action_key}",
+        daemon=True,
+    ).start()
+    return True
+
+
+def save_request_in_background(
+    request: dict[str, Any],
+    request_no: str,
+    request_updates: dict[str, Any],
+    form: dict[str, Any],
+    edited_lines: list[dict[str, Any]],
+    operator_open_id: str,
+    english: bool,
+) -> None:
+    error: Exception | None = None
+    try:
+        with inventory_app.DATA_LOCK:
+            inventory_app.update_pending_feishu_request(
+                request,
+                request_updates,
+                edited_lines,
+            )
+        update_cached_request_after_save(request_no, form, edited_lines)
+    except Exception as exc:
+        error = exc
+        logging.exception("Saving request failed: %s", request_no)
+    try:
+        send_operator_result(
+            operator_open_id,
+            english=english,
+            success_zh=f"申请单 {request_no} 的修改已保存。",
+            success_en=f"Changes to material request {request_no} have been saved.",
+            error=error,
+        )
+    except Exception:
+        logging.exception("Sending save result failed: %s", request_no)
+
+
+def withdraw_request_in_background(
+    request: dict[str, Any],
+    request_no: str,
+    operator_open_id: str,
+    english: bool,
+) -> None:
+    error: Exception | None = None
+    try:
+        with inventory_app.DATA_LOCK:
+            inventory_app.withdraw_pending_feishu_request(
+                request,
+                "申请人通过机器人卡片撤回",
+            )
+        update_cached_request_after_withdraw(request_no)
+    except Exception as exc:
+        error = exc
+        logging.exception("Withdrawing request failed: %s", request_no)
+    try:
+        send_operator_result(
+            operator_open_id,
+            english=english,
+            success_zh=f"申请单 {request_no} 已撤回。",
+            success_en=f"Material request {request_no} has been withdrawn.",
+            error=error,
+        )
+    except Exception:
+        logging.exception("Sending withdrawal result failed: %s", request_no)
 
 
 def load_credentials() -> tuple[str, str]:
@@ -490,17 +677,38 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
                 "用途／活动": str(form.get("material_usage") or "").strip(),
                 "物料用途": str(form.get("material_usage") or "").strip(),
             }
-            with inventory_app.DATA_LOCK:
-                inventory_app.update_pending_feishu_request(
+            started = run_background_action(
+                f"save:{request_no}",
+                lambda: save_request_in_background(
                     request,
+                    request_no,
                     request_updates,
+                    form,
                     edited_lines,
+                    operator_open_id,
+                    english,
+                ),
+            )
+            if not started:
+                return response(
+                    toast_type="warning",
+                    zh="该申请正在保存，请勿重复提交。",
+                    en="This request is already being saved.",
+                    card=processing_card(
+                        request_no,
+                        english=english,
+                        withdrawing=False,
+                    ),
                 )
             return response(
-                toast_type="success",
-                zh="申请修改已保存。",
-                en="The request changes have been saved.",
-                card=result_card(request_no, english=english, withdrawn=False),
+                toast_type="info",
+                zh="修改已提交，正在后台保存。",
+                en="The changes were submitted and are being saved.",
+                card=processing_card(
+                    request_no,
+                    english=english,
+                    withdrawing=False,
+                ),
             )
         if action_name == "withdraw_request":
             return response(
@@ -510,16 +718,35 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
                 card=confirm_withdraw_card(request_no, english=english),
             )
         if action_name == "confirm_withdraw":
-            with inventory_app.DATA_LOCK:
-                inventory_app.withdraw_pending_feishu_request(
+            started = run_background_action(
+                f"withdraw:{request_no}",
+                lambda: withdraw_request_in_background(
                     request,
-                    "申请人通过机器人卡片撤回",
+                    request_no,
+                    operator_open_id,
+                    english,
+                ),
+            )
+            if not started:
+                return response(
+                    toast_type="warning",
+                    zh="该申请正在撤回，请勿重复操作。",
+                    en="This request is already being withdrawn.",
+                    card=processing_card(
+                        request_no,
+                        english=english,
+                        withdrawing=True,
+                    ),
                 )
             return response(
-                toast_type="success",
-                zh="申请已撤回。",
-                en="The request has been withdrawn.",
-                card=result_card(request_no, english=english, withdrawn=True),
+                toast_type="info",
+                zh="撤回请求已提交，正在后台处理。",
+                en="The withdrawal was submitted and is being processed.",
+                card=processing_card(
+                    request_no,
+                    english=english,
+                    withdrawing=True,
+                ),
             )
         raise RuntimeError("Unknown card action.")
     except PermissionError as exc:

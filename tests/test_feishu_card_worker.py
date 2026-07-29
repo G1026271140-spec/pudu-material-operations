@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import unittest
+import threading
+import time
 from unittest.mock import patch
 
 from scripts import feishu_card_worker as worker
@@ -93,6 +95,41 @@ class FeishuCardWorkerTests(unittest.TestCase):
 
         self.assertEqual(request["request_no"], "REQ-TEST-1")
         self.assertEqual([line["record_id"] for line in lines], ["rec_line_1"])
+
+    def test_processing_card_explains_background_save(self) -> None:
+        card = worker.processing_card(
+            "REQ-TEST-1",
+            english=False,
+            withdrawing=False,
+        )
+
+        serialized = str(card)
+        self.assertIn("正在保存修改", serialized)
+        self.assertIn("完成后机器人会发送通知", serialized)
+
+    def test_background_action_returns_immediately_and_deduplicates(self) -> None:
+        started = threading.Event()
+        release = threading.Event()
+        action_key = "save:REQ-TEST-BACKGROUND"
+
+        def operation() -> None:
+            started.set()
+            release.wait(timeout=2)
+
+        before = time.perf_counter()
+        self.assertTrue(worker.run_background_action(action_key, operation))
+        elapsed = time.perf_counter() - before
+        self.assertTrue(started.wait(timeout=1))
+        self.assertLess(elapsed, 0.2)
+        self.assertFalse(worker.run_background_action(action_key, operation))
+        release.set()
+        for _ in range(20):
+            with worker.BACKGROUND_ACTION_LOCK:
+                if action_key not in worker.BACKGROUND_ACTIONS:
+                    break
+            time.sleep(0.01)
+        with worker.BACKGROUND_ACTION_LOCK:
+            self.assertNotIn(action_key, worker.BACKGROUND_ACTIONS)
 
 
 if __name__ == "__main__":
