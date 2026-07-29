@@ -43,11 +43,40 @@ class FeishuCardWorkerTests(unittest.TestCase):
         self.assertIn("rec_line_1", serialized)
         self.assertEqual(serialized.count("Product Flyer"), 1)
         self.assertIn("Remark (optional)", serialized)
+        self.assertIn("0 = remove", serialized)
         compact_columns = worker.input_columns({}, {}, weights=(1, 2))
         self.assertEqual(
             [column["weight"] for column in compact_columns["columns"]],
             [1, 2],
         )
+
+    def test_cached_request_hides_material_line_removed_by_quantity_zero(self) -> None:
+        cached_line = {
+            **self.lines[0],
+            "request_no": "REQ-TEST-1",
+            "status": worker.inventory_app.REQUEST_LINE_STATUS_PENDING,
+        }
+        with worker.REQUEST_CACHE_LOCK:
+            original_cache = {
+                "requests": list(worker.REQUEST_CACHE["requests"]),
+                "lines": list(worker.REQUEST_CACHE["lines"]),
+            }
+            worker.REQUEST_CACHE["requests"] = [dict(self.request)]
+            worker.REQUEST_CACHE["lines"] = [cached_line]
+        try:
+            worker.update_cached_request_after_save(
+                "REQ-TEST-1",
+                {},
+                [{"record_id": "rec_line_1", "quantity": 0, "remark": ""}],
+            )
+            self.assertEqual(
+                cached_line["status"],
+                worker.inventory_app.REQUEST_LINE_STATUS_WITHDRAWN,
+            )
+        finally:
+            with worker.REQUEST_CACHE_LOCK:
+                worker.REQUEST_CACHE.clear()
+                worker.REQUEST_CACHE.update(original_cache)
 
     def test_withdrawal_requires_explicit_confirmation(self) -> None:
         card = worker.confirm_withdraw_card("REQ-TEST-1", english=False)

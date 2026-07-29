@@ -10271,13 +10271,28 @@ def update_pending_feishu_request(
         if request_id in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
         or feishu_text_any(feishu_fields(row), ["申请单号", "所属申请单", "申请单"]) == request_no
     ]
-    allowed_line_ids = {feishu_record_id(row) for row in current_line_rows}
+    allowed_line_ids = {
+        feishu_record_id(row)
+        for row in current_line_rows
+        if feishu_text(feishu_fields(row), "明细状态") != REQUEST_LINE_STATUS_WITHDRAWN
+    }
     line_updates: list[dict] = []
+    deleted_line_ids: set[str] = set()
     for line in edited_lines:
         line_id = str(line.get("record_id") or "")
         quantity = int(line.get("quantity") or 0)
         if line_id not in allowed_line_ids:
             raise RuntimeError("申请明细已发生变化，请刷新后重试。")
+        delete_requested = bool(line.get("delete")) or quantity == 0
+        if delete_requested:
+            deleted_line_ids.add(line_id)
+            line_updates.append(
+                {
+                    "record_id": line_id,
+                    "fields": {"明细状态": REQUEST_LINE_STATUS_WITHDRAWN},
+                }
+            )
+            continue
         if quantity <= 0:
             raise RuntimeError("申请数量必须大于 0。")
         line_updates.append(
@@ -10292,7 +10307,7 @@ def update_pending_feishu_request(
             }
         )
 
-    if not line_updates:
+    if not line_updates or not (allowed_line_ids - deleted_line_ids):
         raise RuntimeError("申请单至少需要保留一条物料明细。")
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
     feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
@@ -10424,6 +10439,7 @@ def render_request_edit_revert_page() -> None:
     line_df = pd.DataFrame(
         [
             {
+                "删除": False,
                 "记录ID": line["record_id"],
                 "物料品类": request_category_display_label(line["product"]),
                 "产品型号": line["model"],
@@ -10441,6 +10457,11 @@ def render_request_edit_revert_page() -> None:
         width="stretch",
         disabled=["记录ID", "物料品类", "产品型号", "语种"],
         column_config={
+            "删除": st.column_config.CheckboxColumn(
+                "删除",
+                help="勾选后保存，将从该申请中移除这条物料明细。",
+                width="small",
+            ),
             "记录ID": None,
             "申请数量": st.column_config.NumberColumn("申请数量", min_value=1, step=1, required=True),
         },
@@ -10460,6 +10481,7 @@ def render_request_edit_revert_page() -> None:
                 "record_id": str(row["记录ID"]),
                 "quantity": int(row["申请数量"]),
                 "remark": str(row.get("备注") or ""),
+                "delete": bool(row.get("删除")),
             }
             for row in edited_df.to_dict("records")
         ]

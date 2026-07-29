@@ -163,6 +163,9 @@ def update_cached_request_after_save(
             update = line_updates.get(str(line.get("record_id") or ""))
             if update is None:
                 continue
+            if bool(update.get("delete")) or int(update.get("quantity") or 0) == 0:
+                line["status"] = inventory_app.REQUEST_LINE_STATUS_WITHDRAWN
+                continue
             line["quantity"] = int(update["quantity"])
             line["remark"] = str(update.get("remark") or "")
 
@@ -381,9 +384,9 @@ def editor_card(
         {
             "tag": "markdown",
             "content": (
-                f"Edit request **{request_no}** below. All quantities must be positive integers."
+                f"Edit request **{request_no}** below. Enter 0 to remove a material line; at least one line must remain."
                 if english
-                else f"请在下方修改申请单 **{request_no}**。所有数量必须为正整数。"
+                else f"请在下方修改申请单 **{request_no}**。数量填 0 可删除该物料，申请单至少保留一条明细。"
             ),
         }
     ]
@@ -452,7 +455,7 @@ def editor_card(
             input_columns(
                 input_element(
                     f"qty_{index}",
-                    "Quantity" if english else "数量",
+                    "Quantity (0 = remove)" if english else "数量（填 0 删除）",
                     int(line.get("quantity") or 0),
                     required=True,
                 ),
@@ -665,6 +668,7 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
                         "record_id": line_id,
                         "quantity": quantity,
                         "remark": str(form.get(f"remark_{index}") or "").strip(),
+                        "delete": quantity == 0,
                     }
                 )
             request_updates = {

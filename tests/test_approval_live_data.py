@@ -84,6 +84,109 @@ class ApprovalLiveDataTests(unittest.TestCase):
             app.REQUEST_LINE_STATUS_WITHDRAWN,
         )
 
+    def test_pending_request_update_can_remove_one_material_line(self) -> None:
+        request = {"record_id": "request-1", "request_no": "REQ-1"}
+        rows = {
+            app.REQUEST_TABLE_NAME: [
+                {
+                    "record_id": "request-1",
+                    "fields": {
+                        "申请单号": "REQ-1",
+                        "审批状态": app.REQUEST_STATUS_PENDING,
+                    },
+                }
+            ],
+            app.REQUEST_LINE_TABLE_NAME: [
+                {
+                    "record_id": "line-1",
+                    "fields": {
+                        "所属申请单": [{"record_ids": ["request-1"]}],
+                        "明细状态": app.REQUEST_LINE_STATUS_PENDING,
+                    },
+                },
+                {
+                    "record_id": "line-2",
+                    "fields": {
+                        "所属申请单": [{"record_ids": ["request-1"]}],
+                        "明细状态": app.REQUEST_LINE_STATUS_PENDING,
+                    },
+                },
+            ],
+        }
+        with (
+            patch.object(
+                app,
+                "fresh_feishu_rows",
+                side_effect=lambda table_name: rows[table_name],
+            ),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
+        ):
+            app.update_pending_feishu_request(
+                request,
+                {"客户名称": "Updated"},
+                [
+                    {"record_id": "line-1", "quantity": 3, "remark": ""},
+                    {"record_id": "line-2", "quantity": 0, "remark": ""},
+                ],
+            )
+
+        update_request.assert_called_once_with(
+            app.REQUEST_TABLE_NAME,
+            "request-1",
+            {"客户名称": "Updated"},
+        )
+        updates_by_id = {
+            item["record_id"]: item["fields"]
+            for item in update_lines.call_args.args[1]
+        }
+        self.assertEqual(updates_by_id["line-1"]["申请数量"], 3)
+        self.assertEqual(
+            updates_by_id["line-2"],
+            {"明细状态": app.REQUEST_LINE_STATUS_WITHDRAWN},
+        )
+
+    def test_pending_request_update_must_keep_one_material_line(self) -> None:
+        request = {"record_id": "request-1", "request_no": "REQ-1"}
+        rows = {
+            app.REQUEST_TABLE_NAME: [
+                {
+                    "record_id": "request-1",
+                    "fields": {
+                        "申请单号": "REQ-1",
+                        "审批状态": app.REQUEST_STATUS_PENDING,
+                    },
+                }
+            ],
+            app.REQUEST_LINE_TABLE_NAME: [
+                {
+                    "record_id": "line-1",
+                    "fields": {
+                        "所属申请单": [{"record_ids": ["request-1"]}],
+                        "明细状态": app.REQUEST_LINE_STATUS_PENDING,
+                    },
+                }
+            ],
+        }
+        with (
+            patch.object(
+                app,
+                "fresh_feishu_rows",
+                side_effect=lambda table_name: rows[table_name],
+            ),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "至少需要保留一条"):
+                app.update_pending_feishu_request(
+                    request,
+                    {},
+                    [{"record_id": "line-1", "quantity": 0, "remark": ""}],
+                )
+
+        update_request.assert_not_called()
+        update_lines.assert_not_called()
+
     def test_approval_live_data_reads_each_table_directly(self) -> None:
         rows = {
             app.REQUEST_TABLE_NAME: [{"record_id": "request-1", "fields": {}}],
