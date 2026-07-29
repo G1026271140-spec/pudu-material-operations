@@ -936,8 +936,8 @@ def inject_global_styles() -> None:
             }
         }
         [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
-            width: min(980px, calc(100vw - 2rem)) !important;
-            max-width: min(980px, calc(100vw - 2rem)) !important;
+            width: min(1320px, calc(100vw - 2rem)) !important;
+            max-width: min(1320px, calc(100vw - 2rem)) !important;
         }
         [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) > div {
             width: 100% !important;
@@ -7397,7 +7397,7 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
             column_config={
                 "选择": st.column_config.CheckboxColumn("选择", width="small"),
                 "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
-                "物料品类": st.column_config.TextColumn("物料品类", width="large"),
+                "物料品类": st.column_config.TextColumn("物料品类", width="medium"),
                 "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
                 "语种": st.column_config.TextColumn("语种", width="medium"),
                 "数量": st.column_config.NumberColumn(
