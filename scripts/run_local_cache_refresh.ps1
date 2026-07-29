@@ -176,7 +176,7 @@ try {
         Write-RunnerLog "Maintaining inventory row status before refreshing static cache."
         Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
 
-        Write-RunnerLog "Refreshing shared material request and purchase restock option cache."
+        Write-RunnerLog "Refreshing page data, request options, and contact directory cache."
         foreach ($generator in @(
             "scripts/generate_page_data_cache.py",
             "scripts/generate_request_form_cache.py",
@@ -192,14 +192,10 @@ try {
             $FinalMessage = "Static cache is already current; no Git commit was needed."
             Write-RunnerLog $FinalMessage
         } elseif ($diffExitCode -eq 1) {
-            $lastSubject = (@(Invoke-CheckedCommand $git @("log", "-1", "--pretty=%s")) | Select-Object -Last 1).Trim()
-            if ($lastSubject -eq "Refresh static data cache") {
-                Invoke-CheckedCommand $git @("commit", "--amend", "--no-edit", "--no-gpg-sign") | Out-Null
-                Invoke-CheckedCommand $git @("push", "--force-with-lease", "origin", "HEAD:master") | Out-Null
-            } else {
-                Invoke-CheckedCommand $git @("commit", "-m", "Refresh static data cache", "--no-gpg-sign") | Out-Null
-                Invoke-CheckedCommand $git @("push", "origin", "HEAD:master") | Out-Null
-            }
+            Invoke-CheckedCommand $git @(
+                "commit", "-m", "Refresh static data cache", "--no-gpg-sign"
+            ) | Out-Null
+            Invoke-CheckedCommand $git @("push", "origin", "HEAD:master") | Out-Null
             $FinalMessage = "Static cache was refreshed and pushed to GitHub master."
             Write-RunnerLog $FinalMessage
         } else {

@@ -56,11 +56,5 @@ jobs:
             echo "Static cache is already current."
             exit 0
           fi
-          if [ "$(git log -1 --pretty=%s)" = "Refresh static data cache" ] && \
-             [ "$(git log -1 --pretty=%an)" = "github-actions[bot]" ]; then
-            git commit --amend --no-edit
-            git push --force-with-lease origin HEAD:master
-          else
-            git commit -m "Refresh static data cache"
-            git push origin HEAD:master
-          fi
+          git commit -m "Refresh static data cache"
+          git push origin HEAD:master
