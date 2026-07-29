@@ -39,6 +39,13 @@ class FeishuCardWorkerTests(unittest.TestCase):
         self.assertIn("save_request", serialized)
         self.assertIn("withdraw_request", serialized)
         self.assertIn("rec_line_1", serialized)
+        self.assertEqual(serialized.count("Product Flyer"), 1)
+        self.assertIn("Remark (optional)", serialized)
+        compact_columns = worker.input_columns({}, {}, weights=(1, 2))
+        self.assertEqual(
+            [column["weight"] for column in compact_columns["columns"]],
+            [1, 2],
+        )
 
     def test_withdrawal_requires_explicit_confirmation(self) -> None:
         card = worker.confirm_withdraw_card("REQ-TEST-1", english=False)

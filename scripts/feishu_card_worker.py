@@ -110,6 +110,27 @@ def input_element(
     }
 
 
+def input_columns(
+    *elements: dict[str, Any],
+    weights: tuple[int, ...] | None = None,
+) -> dict[str, Any]:
+    column_weights = weights or tuple(1 for _ in elements)
+    return {
+        "tag": "column_set",
+        "flex_mode": "none",
+        "horizontal_spacing": "12px",
+        "columns": [
+            {
+                "tag": "column",
+                "width": "weighted",
+                "weight": column_weights[index],
+                "elements": [element],
+            }
+            for index, element in enumerate(elements)
+        ],
+    }
+
+
 def response(
     *,
     toast_type: str,
@@ -180,15 +201,17 @@ def editor_card(
         }
     ]
     form_elements: list[dict[str, Any]] = [
-        input_element(
-            "customer_name",
-            "Customer name" if english else "客户名称",
-            request.get("customer_name"),
-        ),
-        input_element(
-            "country",
-            "Country" if english else "国家",
-            request.get("country"),
+        input_columns(
+            input_element(
+                "customer_name",
+                "Customer name" if english else "客户名称",
+                request.get("customer_name"),
+            ),
+            input_element(
+                "country",
+                "Country" if english else "国家",
+                request.get("country"),
+            ),
         ),
         input_element(
             "recipient_info",
@@ -196,16 +219,19 @@ def editor_card(
             request.get("recipient_info"),
             required=True,
         ),
-        input_element(
-            "freight_payer",
-            "Freight payer" if english else "运费承担者",
-            request.get("freight_payer"),
-        ),
-        input_element(
-            "material_usage",
-            "Purpose" if english else "物料用途",
-            request.get("material_usage"),
-            required=True,
+        input_columns(
+            input_element(
+                "freight_payer",
+                "Freight payer" if english else "运费承担者",
+                request.get("freight_payer"),
+            ),
+            input_element(
+                "material_usage",
+                "Purpose" if english else "物料用途",
+                request.get("material_usage"),
+                required=True,
+            ),
+            weights=(1, 2),
         ),
     ]
     line_ids: list[str] = []
@@ -233,18 +259,22 @@ def editor_card(
         )
         label = f"{index + 1}. {product} / {model} / {language}"
         form_elements.append(
-            input_element(
-                f"qty_{index}",
-                f"{label} - Quantity" if english else f"{label} - 数量",
-                int(line.get("quantity") or 0),
-                required=True,
-            )
+            {"tag": "markdown", "content": f"**{label}**"}
         )
         form_elements.append(
-            input_element(
-                f"remark_{index}",
-                f"{label} - Remark" if english else f"{label} - 备注",
-                line.get("remark"),
+            input_columns(
+                input_element(
+                    f"qty_{index}",
+                    "Quantity" if english else "数量",
+                    int(line.get("quantity") or 0),
+                    required=True,
+                ),
+                input_element(
+                    f"remark_{index}",
+                    "Remark (optional)" if english else "备注（可选）",
+                    line.get("remark"),
+                ),
+                weights=(1, 2),
             )
         )
     form_elements.append(
