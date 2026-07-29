@@ -7152,7 +7152,7 @@ def render_request_cart_fly_animation() -> None:
     animation_token = str(
         st.session_state.pop("request_cart_fly_animation", "") or ""
     )
-    st.html(
+    st.components.v1.html(
         f"""
         <script>
         (() => {{
@@ -7256,7 +7256,8 @@ def render_request_cart_fly_animation() -> None:
         }})();
         </script>
         """,
-        unsafe_allow_javascript=True,
+        height=0,
+        scrolling=False,
     )
 
 

@@ -160,7 +160,7 @@ class RequestCartTests(unittest.TestCase):
 
         with (
             patch.object(app.st, "session_state", state),
-            patch.object(app.st, "html") as html,
+            patch.object(app.st.components.v1, "html") as html,
         ):
             app.render_request_cart_fly_animation()
 
