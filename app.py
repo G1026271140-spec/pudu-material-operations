@@ -934,7 +934,7 @@ def inject_global_styles() -> None:
                 #E25B3F 72%
             );
             box-shadow: 0 4px 14px rgba(201, 71, 45, 0.46);
-            animation: pudu-cart-fly-in 760ms cubic-bezier(0.22, 0.74, 0.32, 1)
+            animation: pudu-cart-fly-in 680ms cubic-bezier(0.22, 0.74, 0.32, 1)
                 both;
         }
         @keyframes pudu-cart-fly-in {
@@ -948,11 +948,11 @@ def inject_global_styles() -> None:
                 opacity: 1;
             }
             52% {
-                transform: translateY(-110px) scale(1.12);
+                transform: translate(-8px, -18px) scale(1.12);
                 opacity: 1;
             }
             86% {
-                transform: translateY(-8px) scale(0.7);
+                transform: translate(-3px, -5px) scale(0.7);
                 opacity: 0.9;
             }
             100% {
