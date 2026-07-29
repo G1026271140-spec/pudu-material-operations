@@ -905,6 +905,51 @@ def inject_global_styles() -> None:
             background: #C9472D !important;
             color: #FFFFFF !important;
         }
+        [data-testid="stColumn"]:has(.pudu-cart-fly-ball) {
+            position: relative !important;
+            overflow: visible !important;
+        }
+        .pudu-cart-fly-ball {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 18px;
+            height: 18px;
+            z-index: 1000000;
+            pointer-events: none;
+            border: 3px solid #FFFFFF;
+            border-radius: 999px;
+            background: radial-gradient(
+                circle at 32% 28%,
+                #FFD8CF 0 16%,
+                #FF765C 38%,
+                #E25B3F 72%
+            );
+            box-shadow: 0 4px 14px rgba(201, 71, 45, 0.46);
+            animation: pudu-cart-fly-in 780ms cubic-bezier(0.22, 0.74, 0.32, 1)
+                both;
+        }
+        @keyframes pudu-cart-fly-in {
+            0% {
+                transform: translate(-22vw, 34vh) scale(0.7);
+                opacity: 0.15;
+            }
+            18% {
+                opacity: 1;
+            }
+            52% {
+                transform: translate(-10vw, -9vh) scale(1.12);
+                opacity: 1;
+            }
+            86% {
+                transform: translate(-0.8rem, -0.2rem) scale(0.7);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translate(0, 0) scale(0.2);
+                opacity: 0;
+            }
+        }
         [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
             width: min(980px, calc(100vw - 2rem)) !important;
             max-width: min(980px, calc(100vw - 2rem)) !important;
@@ -7148,116 +7193,18 @@ def scroll_request_page_to_top_if_needed() -> None:
     )
 
 
-def render_request_cart_fly_animation() -> None:
+def render_request_cart_fly_animation(container: object) -> None:
     animation_token = str(
         st.session_state.pop("request_cart_fly_animation", "") or ""
     )
-    st.components.v1.html(
-        f"""
-        <script>
-        (() => {{
-            const hostWindow = window.parent;
-            const hostDocument = hostWindow.document;
-            const sourceStorageKey = "pudu-request-cart-fly-source";
-            if (!hostWindow.__puduCartFlyCaptureInstalled) {{
-                hostWindow.__puduCartFlyCaptureInstalled = true;
-                hostDocument.addEventListener("pointerdown", (event) => {{
-                    const button = event.target.closest(
-                        '[class*="st-key-request_add_to_cart_"] button'
-                    );
-                    if (!button) return;
-                    const rect = button.getBoundingClientRect();
-                    hostWindow.sessionStorage.setItem(
-                        sourceStorageKey,
-                        JSON.stringify({{
-                            x: rect.left + rect.width / 2,
-                            y: rect.top + rect.height / 2,
-                        }})
-                    );
-                }}, true);
-            }}
-
-            const animationToken = {json.dumps(animation_token)};
-            if (!animationToken) return;
-            const source = JSON.parse(
-                hostWindow.sessionStorage.getItem(sourceStorageKey) || "null"
-            );
-            hostWindow.sessionStorage.removeItem(sourceStorageKey);
-            if (!source) return;
-
-            const launch = (attempt = 0) => {{
-                const target = hostDocument.querySelector(
-                    ".st-key-request_compact_cart button"
-                );
-                if (!target) {{
-                    if (attempt < 20) {{
-                        hostWindow.setTimeout(() => launch(attempt + 1), 50);
-                    }}
-                    return;
-                }}
-                const targetRect = target.getBoundingClientRect();
-                const destination = {{
-                    x: targetRect.left + targetRect.width / 2,
-                    y: targetRect.top + targetRect.height / 2,
-                }};
-                const ball = hostDocument.createElement("span");
-                ball.setAttribute("aria-hidden", "true");
-                Object.assign(ball.style, {{
-                    position: "fixed",
-                    left: `${{source.x - 9}}px`,
-                    top: `${{source.y - 9}}px`,
-                    width: "18px",
-                    height: "18px",
-                    zIndex: "1000000",
-                    pointerEvents: "none",
-                    border: "3px solid #FFFFFF",
-                    borderRadius: "999px",
-                    background:
-                        "radial-gradient(circle at 32% 28%, #FFD8CF 0 16%, #FF765C 38%, #E25B3F 72%)",
-                    boxShadow: "0 4px 14px rgba(201, 71, 45, 0.46)",
-                }});
-                hostDocument.body.appendChild(ball);
-
-                const deltaX = destination.x - source.x;
-                const deltaY = destination.y - source.y;
-                const lift = Math.min(150, Math.max(70, Math.abs(deltaX) * 0.16));
-                const animation = ball.animate(
-                    [
-                        {{ transform: "translate(0, 0) scale(0.72)", opacity: 0.2 }},
-                        {{
-                            transform: `translate(${{deltaX * 0.44}}px, ${{deltaY * 0.44 - lift}}px) scale(1.12)`,
-                            opacity: 1,
-                            offset: 0.46,
-                        }},
-                        {{
-                            transform: `translate(${{deltaX}}px, ${{deltaY}}px) scale(0.32)`,
-                            opacity: 0.15,
-                        }},
-                    ],
-                    {{
-                        duration: 720,
-                        easing: "cubic-bezier(0.22, 0.74, 0.32, 1)",
-                        fill: "forwards",
-                    }}
-                );
-                animation.addEventListener("finish", () => {{
-                    ball.remove();
-                    target.animate(
-                        [
-                            {{ transform: "scale(1)" }},
-                            {{ transform: "scale(1.12)" }},
-                            {{ transform: "scale(1)" }},
-                        ],
-                        {{ duration: 280, easing: "ease-out" }}
-                    );
-                }});
-            }};
-            hostWindow.requestAnimationFrame(() => launch());
-        }})();
-        </script>
-        """,
-        height=0,
-        scrolling=False,
+    if not animation_token:
+        return
+    container.markdown(
+        (
+            '<span class="pudu-cart-fly-ball" aria-hidden="true" '
+            f'data-animation-token="{escape(animation_token)}"></span>'
+        ),
+        unsafe_allow_html=True,
     )
 
 
@@ -7543,7 +7490,7 @@ def render_request_material_builder(
             icon=":material/preview:",
             width="stretch",
         )
-        render_request_cart_fly_animation()
+        render_request_cart_fly_animation(cart_col)
         filtered_products = filter_request_catalog_products(products, search_query)
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")

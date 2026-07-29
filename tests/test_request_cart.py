@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import app
 
@@ -157,21 +157,19 @@ class RequestCartTests(unittest.TestCase):
 
     def test_cart_fly_animation_targets_compact_cart_and_consumes_token(self) -> None:
         state = {"request_cart_fly_animation": "animation-token"}
+        container = Mock()
 
-        with (
-            patch.object(app.st, "session_state", state),
-            patch.object(app.st.components.v1, "html") as html,
-        ):
-            app.render_request_cart_fly_animation()
+        with patch.object(app.st, "session_state", state):
+            app.render_request_cart_fly_animation(container)
 
-        script = html.call_args.args[0]
+        markup = container.markdown.call_args.args[0]
         self.assertNotIn("request_cart_fly_animation", state)
-        self.assertIn("animation-token", script)
-        self.assertIn("const hostWindow = window.parent", script)
-        self.assertIn("hostDocument.body.appendChild(ball)", script)
-        self.assertIn("st-key-request_add_to_cart_", script)
-        self.assertIn(".st-key-request_compact_cart button", script)
-        self.assertIn("ball.animate", script)
+        self.assertIn("animation-token", markup)
+        self.assertIn("pudu-cart-fly-ball", markup)
+        container.markdown.assert_called_once_with(
+            markup,
+            unsafe_allow_html=True,
+        )
 
 
 if __name__ == "__main__":
