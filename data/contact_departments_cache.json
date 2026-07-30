@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-07-30 10:31:43",
+  "generated_at": "2026-07-30 16:31:34",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -2897,16 +2897,6 @@
       ]
     },
     {
-      "open_id": "ou_76f34b3552c2c8d53f6ff95f709e8d0d",
-      "name": "刘志龙",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_fbd3f07c2d8912867964ca3efcaf2339",
       "name": "刘思李",
       "department_ids": [
@@ -5299,6 +5289,16 @@
       ]
     },
     {
+      "open_id": "ou_110b4cc3617652569ccf470719b60b0a",
+      "name": "孙宇航",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_94ff2844071822e53591e583a6b2f9bf",
       "name": "孙家玲",
       "department_ids": [
@@ -5788,6 +5788,16 @@
       ],
       "department_paths": [
         "CRPBU算法实习生组"
+      ]
+    },
+    {
+      "open_id": "ou_1960d5383eddb34d49352c0721623e9f",
+      "name": "崔艺雯",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
       ]
     },
     {
@@ -7013,16 +7023,6 @@
       ]
     },
     {
-      "open_id": "ou_d294e214f35c0dca0bbd55177986ca84",
-      "name": "张雪瑶",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_31db67347e454879423d66d7cf8093c3",
       "name": "张颖",
       "department_ids": [
@@ -7621,16 +7621,6 @@
       ]
     },
     {
-      "open_id": "ou_5b1d16812246bdf74636ccff5338af36",
-      "name": "戴雪芬",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_909feac1868594447c28dccbe93a07c7",
       "name": "房如川",
       "department_ids": [
@@ -7668,16 +7658,6 @@
       ],
       "department_paths": [
         "CRPBU机电测试组"
-      ]
-    },
-    {
-      "open_id": "ou_3e11e46f7670a31ffce1b2ec7e749505",
-      "name": "文强",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
       ]
     },
     {
@@ -8946,6 +8926,16 @@
       ],
       "department_paths": [
         "IR&GR服务组"
+      ]
+    },
+    {
+      "open_id": "ou_7f27c016432133faa0ad8fbb2bb1f3fc",
+      "name": "李建平",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
       ]
     },
     {
@@ -13293,16 +13283,6 @@
       ]
     },
     {
-      "open_id": "ou_cb317eb20ad9a255befcd8dc2ffe95dc",
-      "name": "管鸿飞",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_ee85c355b7e4e2798f28df6e5dc8c9b0",
       "name": "米越",
       "department_ids": [
@@ -16027,6 +16007,16 @@
       ]
     },
     {
+      "open_id": "ou_5731a5ee750f2a60059199b74182d052",
+      "name": "郑伯洋",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_85b5d2fcb3b5ab0404fc78e67951985f",
       "name": "郑全文",
       "department_ids": [
@@ -17927,16 +17917,6 @@
       ]
     },
     {
-      "open_id": "ou_3f5d0d2d8b420a36b819a5bac8086e16",
-      "name": "顾家源",
-      "department_ids": [
-        "od-b5d68400954d5ac54cf34c5602d46444"
-      ],
-      "department_paths": [
-        "通用互联团队"
-      ]
-    },
-    {
       "open_id": "ou_aa7e36ca853abf37f144ca714cad19de",
       "name": "顾成龙",
       "department_ids": [
@@ -18478,6 +18458,16 @@
       ],
       "department_paths": [
         "IR业务部"
+      ]
+    },
+    {
+      "open_id": "ou_0fc93b5e4bc045a819a62d1a23bf51f7",
+      "name": "黄亚丽",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
       ]
     },
     {
@@ -19203,5 +19193,5 @@
       ]
     }
   ],
-  "user_count": 1765
+  "user_count": 1764
 }

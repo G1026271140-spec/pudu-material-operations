@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-30 10:31:21",
+  "generated_at": "2026-07-30 16:31:15",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -13,11 +13,7 @@
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "定制LOGO书包(Customized PUDU bag)",
-    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "展会服装（Clothes）",
-    "扇子"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_model_products": [
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -27,22 +23,20 @@
     "具身线产品手册ER(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
-    "定制LOGO书包(Customized PUDU bag)",
-    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "展会服装（Clothes）",
-    "扇子",
     "工业产品线手册IR（Industrial Product Line Brochure）",
     "清洁产品线手册CR（Cleaning Product Line Brochure）",
-    "展会服装"
+    "定制LOGO书包(Customized PUDU bag)",
+    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
+    "展会服装",
+    "扇子"
   ],
   "no_language_products": [
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
     "定制LOGO书包(Customized PUDU bag)",
-    "展会服装（Clothes）",
-    "扇子",
-    "展会服装"
+    "展会服装",
+    "扇子"
   ],
   "configured_language_products": [
     "产品单页(Product Flyer )",
@@ -55,11 +49,7 @@
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "定制LOGO书包(Customized PUDU bag)",
-    "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-    "展会服装（Clothes）",
-    "扇子"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "models": [
     "BellaBot",
@@ -110,7 +100,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BellaBot",
       "language": "英语(English)",
-      "quantity": 300
+      "quantity": 301
     },
     {
       "material_code": "MAT-0191",
@@ -2073,69 +2063,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0961",
-      "product": "定制LOGO书包(Customized PUDU bag)",
-      "model": "无需型号",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0971",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0972",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0973",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0974",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0975",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0979",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0980",
-      "product": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
-      "model": "无需型号",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0981",
-      "product": "展会服装（Clothes）",
-      "model": "无需型号",
-      "language": "无需语种",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0994",
       "product": "产品单页(Product Flyer )",
       "model": "D5",
@@ -2365,15 +2292,8 @@
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
       "quantity": 135
-    },
-    {
-      "material_code": "MAT-1035",
-      "product": "扇子",
-      "model": "无需型号",
-      "language": "无需语种",
-      "quantity": 200
     }
   ],
-  "row_count": 324,
+  "row_count": 314,
   "built_from": "live_feishu"
 }
