@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-07-29 17:53:38",
+  "generated_at": "2026-07-30 10:31:43",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -17579,15 +17579,13 @@
         "od-1147a688e929998624f9fd910d185167",
         "od-8f465b8df9bf527951f2c2d6ca9c604e",
         "od-6f1f85c67d26cc11b8f44d75341a19e1",
-        "od-84cba1c1b29ae2abc4157a60fdf713c6",
-        "od-e3748e6fc08cb158a8431b22a028705d"
+        "od-84cba1c1b29ae2abc4157a60fdf713c6"
       ],
       "department_paths": [
         "东莞工厂",
         "九江工厂",
         "制造部",
-        "建湖工厂",
-        "桐乡工厂"
+        "建湖工厂"
       ]
     },
     {
@@ -18859,6 +18857,16 @@
       ]
     },
     {
+      "open_id": "ou_37fd2f81511a9deb85e46cb51f5ab01e",
+      "name": "黄涛",
+      "department_ids": [
+        "od-e3748e6fc08cb158a8431b22a028705d"
+      ],
+      "department_paths": [
+        "桐乡工厂"
+      ]
+    },
+    {
       "open_id": "ou_573187f06cd82cedd8976d85002238db",
       "name": "黄焕炜",
       "department_ids": [
@@ -19195,5 +19203,5 @@
       ]
     }
   ],
-  "user_count": 1764
+  "user_count": 1765
 }
