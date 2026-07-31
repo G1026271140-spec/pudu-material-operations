@@ -4892,6 +4892,47 @@ def notify_sales_request_completed(
     return 1
 
 
+def request_material_match_key(
+    product: object,
+    model: object,
+    language: object,
+) -> tuple[str, str, str]:
+    return (
+        normalize_category_match_key(product),
+        normalize_option_label(model or NO_MODEL_TEXT),
+        normalize_option_label(language),
+    )
+
+
+def build_request_material_index(
+    material_rows: list[dict],
+    category_rows: list[dict],
+) -> dict[tuple[str, str, str], dict]:
+    raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
+    category_status_by_key = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")):
+            normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态"))
+        for row in category_rows
+        if feishu_text(feishu_fields(row), "物料品类")
+    }
+    return {
+        request_material_match_key(
+            record["category"],
+            record["model"],
+            record["language"],
+        ): raw_material_by_id[str(record["record_id"])]
+        for record in feishu_inventory_records_from_rows(
+            material_rows,
+            active_only=False,
+        )
+        if material_record_is_active(record)
+        and category_status_by_key.get(
+            normalize_category_match_key(record["category"]),
+            STATUS_ACTIVE,
+        ) == STATUS_ACTIVE
+    }
+
+
 def submit_feishu_material_request(
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
@@ -4910,16 +4951,7 @@ def submit_feishu_material_request(
 
     material_rows = feishu_material_rows()
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
-    material_index = {
-        (str(record["category"]), str(record["model"]), str(record["language"])): raw_material_by_id[
-            str(record["record_id"])
-        ]
-        for record in feishu_inventory_records_from_rows(
-            material_rows,
-            feishu_category_rows(),
-            active_only=True,
-        )
-    }
+    material_index = build_request_material_index(material_rows, feishu_category_rows())
     seen_keys: set[tuple[str, str, str]] = set()
     prepared_lines: list[dict[str, object]] = []
     for item in valid_lines:
@@ -4930,7 +4962,7 @@ def submit_feishu_material_request(
         quantity = int(item.get("quantity") or 0)
         if not product or not model or not language:
             raise RuntimeError("每条明细都需要填写物料品类、产品型号和语种。")
-        key = (product, model, language)
+        key = request_material_match_key(product, model, language)
         if key in seen_keys:
             raise RuntimeError(f"同一申请单内物料重复，请合并数量：{product} / {model} / {language}")
         seen_keys.add(key)
@@ -5035,7 +5067,7 @@ def submit_feishu_material_request(
         set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["申请单号"], request_no)
         set_request_line_material_fields(
             line_fields,
-            material_index[(str(item["product"]), str(item["model"]), str(item["language"]))],
+            raw_material_by_id[str(item["material_record_id"])],
             str(item["product"]),
             str(item["model"]),
             str(item["language"]),

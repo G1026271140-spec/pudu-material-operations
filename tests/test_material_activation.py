@@ -259,6 +259,41 @@ class MaterialActivationTests(unittest.TestCase):
             options["products"],
         )
 
+    def test_request_submit_index_tolerates_bilingual_parenthesis_differences(self) -> None:
+        material_rows = [
+            {
+                "record_id": "material-cr-zh",
+                "fields": {
+                    "物料编码": "MAT-0389",
+                    "物料品类": "清洁产品线手册CR（Cleaning Product Line Brochure）",
+                    "产品型号": app.NO_MODEL_TEXT,
+                    "语种": "简中(Simplified Chinese)",
+                    "启用状态": app.STATUS_ACTIVE,
+                },
+            }
+        ]
+        category_rows = [
+            {
+                "record_id": "category-cr",
+                "fields": {
+                    "物料品类": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+                    "启用状态": app.STATUS_ACTIVE,
+                },
+            }
+        ]
+
+        material_index = app.build_request_material_index(material_rows, category_rows)
+        lookup_key = app.request_material_match_key(
+            "清洁产品线手册CR(Cleaning Product Line Brochure）",
+            app.NO_MODEL_TEXT,
+            "简中(Simplified Chinese)",
+        )
+
+        self.assertEqual(material_index[lookup_key]["record_id"], "material-cr-zh")
+
+        category_rows[0]["fields"]["启用状态"] = app.STATUS_INACTIVE
+        self.assertEqual(app.build_request_material_index(material_rows, category_rows), {})
+
     def test_request_combination_must_exist_in_active_inventory_rows(self) -> None:
         context = app.request_form_cache_to_selection_context(
             {
