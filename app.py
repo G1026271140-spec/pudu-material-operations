@@ -5135,10 +5135,23 @@ def set_request_line_material_fields(
     language: str,
 ) -> None:
     material_record_id = feishu_record_id(material_row)
-    material_code = feishu_text(feishu_fields(material_row), "物料编码")
-    set_first_plain_field(REQUEST_LINE_TABLE_NAME, fields, ["物料品类"], product)
-    set_first_plain_field(REQUEST_LINE_TABLE_NAME, fields, ["产品型号"], model or NO_MODEL_TEXT)
-    set_first_plain_field(REQUEST_LINE_TABLE_NAME, fields, ["语种"], language)
+    material_fields = feishu_fields(material_row)
+    material_code = feishu_text(material_fields, "物料编码")
+    dimension_fields = (
+        (["品类", "物料品类"], ["品类关联"], product),
+        (["产品型号"], list(MODEL_LINK_FIELD_CANDIDATES), model or NO_MODEL_TEXT),
+        (["语种"], list(LANGUAGE_LINK_FIELD_CANDIDATES), language),
+    )
+    for line_field_candidates, material_link_candidates, display_value in dimension_fields:
+        line_field = first_feishu_field(REQUEST_LINE_TABLE_NAME, line_field_candidates)
+        if not feishu_has_field(REQUEST_LINE_TABLE_NAME, line_field):
+            continue
+        if feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, line_field):
+            fields[line_field] = display_value
+            continue
+        linked_record_ids = feishu_link_ids_any(material_fields, material_link_candidates)
+        if linked_record_ids:
+            fields[line_field] = linked_record_ids
     for material_field in ["物料", "物料编码"]:
         if not feishu_has_field(REQUEST_LINE_TABLE_NAME, material_field):
             continue
