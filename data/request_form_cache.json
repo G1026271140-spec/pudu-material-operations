@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "source": "static_snapshot",
-  "generated_at": "2026-07-31 16:31:25",
+  "generated_at": "2026-08-01 10:31:35",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
     "工业产品线手册IR(Industrial Product Line Brochure）",
     "清洁产品线手册CR(Cleaning Product Line Brochure）",
-    "配送线产品手册DR(Delivery Robot Product Brochure)",
-    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+    "配送线产品手册SR(Delivery Robot Product Brochure)",
+    "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
@@ -19,8 +19,8 @@
     "品牌手册(Product Brochure (All\nBanner)）",
     "工业产品线手册IR(Industrial Product Line Brochure）",
     "清洁产品线手册CR(Cleaning Product Line Brochure）",
-    "配送线产品手册DR(Delivery Robot Product Brochure)",
-    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+    "配送线产品手册SR(Delivery Robot Product Brochure)",
+    "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
     "工业产品线手册IR（Industrial Product Line Brochure）",
@@ -43,8 +43,8 @@
     "品牌手册(Product Brochure (All\nBanner)）",
     "工业产品线手册IR(Industrial Product Line Brochure）",
     "清洁产品线手册CR(Cleaning Product Line Brochure）",
-    "配送线产品手册DR(Delivery Robot Product Brochure)",
-    "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+    "配送线产品手册SR(Delivery Robot Product Brochure)",
+    "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
@@ -2218,14 +2218,14 @@
     },
     {
       "material_code": "MAT-1024",
-      "product": "配送线产品手册DR(Delivery Robot Product Brochure)",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
       "model": "无需型号",
       "language": "英语(English)",
       "quantity": 350
     },
     {
       "material_code": "MAT-1025",
-      "product": "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
       "model": "无需型号",
       "language": "英语(English)",
       "quantity": 360
@@ -2288,7 +2288,7 @@
     },
     {
       "material_code": "MAT-1034",
-      "product": "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
       "quantity": 135
