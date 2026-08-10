@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$SourceRepoPath = (Split-Path -Parent $PSScriptRoot),
+    [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduMaterialCacheRunner"),
     [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
     [string]$TaskName = "PUDU Material Cache Refresh",
@@ -8,6 +8,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if (-not $SourceRepoPath) {
+    $SourceRepoPath = Split-Path -Parent $PSScriptRoot
+}
 $SourceRepoPath = [IO.Path]::GetFullPath($SourceRepoPath)
 $RunnerRoot = [IO.Path]::GetFullPath($RunnerRoot)
 $SourceSecretsPath = Join-Path $SourceRepoPath ".streamlit\secrets.toml"
