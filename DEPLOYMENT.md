@@ -42,8 +42,23 @@ STREAMLIT_APP_URL = "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.stre
 
 - 开通多维表格读写相关权限。
 - 添加“机器人”应用能力，并开通“以应用的身份发消息”权限（`im:message:send_as_bot`）。
+- 开通接收单聊消息（`im:message.p2p_msg:readonly`）、接收群内 @ 机器人消息（`im:message.group_at_msg:readonly`）和读取消息资源（`im:message:readonly`）权限。
+- 开通图片识别权限（`optical_char_recognition:image`）。
+- 在“事件与回调”中选择长连接方式，并订阅“接收消息”事件（`im.message.receive_v1`）。
 - 在开发者后台发布/生效权限变更。
 - 在目标多维表格右上角 `... -> 更多 -> 添加文档应用` 中添加该应用。
+
+### 机器人截图查库存
+
+机器人支持从截图识别物料品类、产品型号、语种和需求数量，实时读取飞书“物料主数据”与“物料品类”，并以 Card 2.0 表格回复库存充足、库存不足、无此组合和相似库存组合。单聊中直接发送截图即可；群聊中需要在同一条富文本消息里 @ 机器人并附上截图。
+
+该功能与交互卡片回调共用 Windows 常驻任务，不由 Streamlit Cloud 进程承载。固定电脑安装或更新任务：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install_feishu_card_worker_task.ps1
+```
+
+计划任务名称默认为 `PUDU Feishu Card Worker`。更新代码后重启该任务即可加载新版本；电脑必须保持联网，任务会在登录时启动并在异常退出后自动重启。
 
 营销物料申请成功后，机器人会自动向“用户权限表”内角色包含“管理员”且“是否启用”为“是”的账号发送申请单卡片。卡片完整展示申请信息、收件信息、物料用途与全部明细，并提供“打开审批与发放”按钮。申请人若尚未登记，应用会新增一条仅包含“销售”身份的启用记录；应用不会自动添加管理员身份。启用的销售会在提交后收到处理回执，并在审批发放完成后收到审批结果、申请明细和实际发放明细。机器人提醒失败不会影响申请或审批数据的写入。
 

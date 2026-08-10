@@ -24,12 +24,17 @@ $settings = New-ScheduledTaskSettingsSet `
     -RestartInterval (New-TimeSpan -Minutes 1) `
     -StartWhenAvailable
 
+$existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+if ($null -ne $existingTask -and $existingTask.State -eq "Running") {
+    Stop-ScheduledTask -TaskName $TaskName
+}
+
 Register-ScheduledTask `
     -TaskName $TaskName `
     -Action $action `
     -Trigger $trigger `
     -Settings $settings `
-    -Description "Keeps the PUDU Feishu interactive-card callback worker online." `
+    -Description "Keeps the PUDU Feishu card callback and inventory screenshot bot online." `
     -Force | Out-Null
 
 Start-ScheduledTask -TaskName $TaskName

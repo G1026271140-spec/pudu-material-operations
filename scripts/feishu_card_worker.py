@@ -16,6 +16,7 @@ from lark_oapi.event.callback.model.p2_card_action_trigger import (
     P2CardActionTrigger,
     P2CardActionTriggerResponse,
 )
+from lark_oapi.api.im.v1 import P2ImMessageReceiveV1
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +25,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import app as inventory_app
+from scripts import inventory_query_bot
 
 
 REQUEST_CACHE_LOCK = threading.RLock()
@@ -32,6 +34,9 @@ REQUEST_CACHE_READY = threading.Event()
 REQUEST_CACHE_REFRESH_SECONDS = 15
 BACKGROUND_ACTION_LOCK = threading.RLock()
 BACKGROUND_ACTIONS: set[str] = set()
+INVENTORY_MESSAGE_LOCK = threading.RLock()
+INVENTORY_MESSAGE_IDS: set[str] = set()
+INVENTORY_MESSAGE_CACHE_LIMIT = 1000
 
 
 def refresh_request_cache() -> None:
@@ -769,6 +774,119 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
         )
 
 
+def reserve_inventory_message(message_id: str) -> bool:
+    with INVENTORY_MESSAGE_LOCK:
+        if message_id in INVENTORY_MESSAGE_IDS:
+            return False
+        if len(INVENTORY_MESSAGE_IDS) >= INVENTORY_MESSAGE_CACHE_LIMIT:
+            INVENTORY_MESSAGE_IDS.clear()
+        INVENTORY_MESSAGE_IDS.add(message_id)
+        return True
+
+
+def inventory_query_error_text(error: Exception) -> str:
+    message = str(error)
+    if "exceeds" in message.lower() or "5 mb" in message.lower():
+        return "截图超过 5 MB，暂时无法识别。请压缩图片后重新发送。"
+    if any(
+        marker in message
+        for marker in (
+            "99991672",
+            "99991679",
+            "optical_char_recognition",
+            "im:message:readonly",
+        )
+    ):
+        return "机器人暂时缺少截图识别或消息读取权限，请联系应用管理员检查权限配置。"
+    return "库存查询暂时失败，请稍后重新发送截图。"
+
+
+def process_inventory_message(message_id: str, image_keys: list[str]) -> None:
+    client = inventory_app.feishu_client()
+    if client is None:
+        logging.error("Inventory query failed: Feishu client is not configured")
+        return
+    try:
+        recognized_text: list[str] = []
+        for image_key in image_keys[:3]:
+            image = client.download_message_resource(message_id, image_key)
+            recognized_text.extend(client.recognize_image_text(image))
+
+        material_rows = inventory_app.fresh_feishu_rows(inventory_app.MATERIAL_TABLE_NAME)
+        category_rows = inventory_app.fresh_feishu_rows(inventory_app.CATEGORY_TABLE_NAME)
+        inventory_records = inventory_app.feishu_inventory_records_from_rows(
+            material_rows,
+            category_rows,
+            active_only=True,
+        )
+        category_names = [
+            inventory_app.feishu_text(inventory_app.feishu_fields(row), "物料品类")
+            for row in category_rows
+            if inventory_app.normalize_enabled_status(
+                inventory_app.feishu_text(inventory_app.feishu_fields(row), "启用状态")
+            )
+            == inventory_app.STATUS_ACTIVE
+        ]
+        queries = inventory_query_bot.parse_inventory_queries(
+            recognized_text,
+            inventory_records,
+            category_names=category_names,
+        )
+        if not queries:
+            client.reply_text_message(
+                message_id,
+                "没有从截图中识别出完整物料信息。请确保每项都包含品类、产品型号、语种和需求数量。",
+                idempotency_key=f"inventory-parse-error:{message_id}",
+            )
+            return
+        results = inventory_query_bot.match_inventory_queries(queries, inventory_records)
+        client.reply_interactive_message(
+            message_id,
+            inventory_query_bot.inventory_result_card(results),
+            idempotency_key=f"inventory-result:{message_id}",
+        )
+        logging.info(
+            "Inventory screenshot processed: message_id=%s images=%s items=%s",
+            message_id,
+            len(image_keys),
+            len(results),
+        )
+    except Exception as exc:
+        logging.exception("Inventory screenshot processing failed: %s", message_id)
+        try:
+            client.reply_text_message(
+                message_id,
+                inventory_query_error_text(exc),
+                idempotency_key=f"inventory-error:{message_id}",
+            )
+        except Exception:
+            logging.exception("Sending inventory query error failed: %s", message_id)
+
+
+def handle_inventory_message(data: P2ImMessageReceiveV1) -> None:
+    event = data.event
+    message = event.message if event else None
+    sender = event.sender if event else None
+    if message is None or (sender is not None and str(sender.sender_type or "") == "bot"):
+        return
+    message_id = str(message.message_id or "").strip()
+    message_type = str(message.message_type or "").strip()
+    chat_type = str(message.chat_type or "").strip()
+    if not message_id or message_type not in {"image", "post"}:
+        return
+    if chat_type == "group" and not list(message.mentions or []):
+        return
+    image_keys = inventory_query_bot.extract_image_keys(message.content)
+    if not image_keys or not reserve_inventory_message(message_id):
+        return
+    threading.Thread(
+        target=process_inventory_message,
+        args=(message_id, image_keys),
+        name=f"inventory-query-{message_id[-8:]}",
+        daemon=True,
+    ).start()
+
+
 def main() -> int:
     logging.basicConfig(
         level=logging.WARNING,
@@ -787,9 +905,10 @@ def main() -> int:
     handler = (
         lark.EventDispatcherHandler.builder("", "")
         .register_p2_card_action_trigger(handle_card_action)
+        .register_p2_im_message_receive_v1(handle_inventory_message)
         .build()
     )
-    logging.info("Starting Feishu card callback worker.")
+    logging.info("Starting Feishu bot worker.")
     ws.Client(
         app_id,
         app_secret,

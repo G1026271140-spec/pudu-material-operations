@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import time
 import uuid
@@ -221,6 +223,121 @@ class FeishuBitableClient:
         if not message_id:
             raise FeishuBitableError("Feishu did not return a message_id.")
         return message_id
+
+    def download_message_resource(
+        self,
+        message_id: str,
+        file_key: str,
+        *,
+        resource_type: str = "image",
+        max_bytes: int = 5 * 1024 * 1024,
+    ) -> bytes:
+        normalized_message_id = message_id.strip()
+        normalized_file_key = file_key.strip()
+        if not normalized_message_id or not normalized_file_key:
+            raise FeishuBitableError("Feishu message_id and file_key cannot be empty.")
+        if max_bytes <= 0:
+            raise FeishuBitableError("Message resource size limit must be positive.")
+
+        path = (
+            f"/im/v1/messages/{parse.quote(normalized_message_id, safe='')}"
+            f"/resources/{parse.quote(normalized_file_key, safe='')}"
+        )
+        url = FEISHU_OPEN_API + path + "?" + parse.urlencode({"type": resource_type})
+        req = request.Request(
+            url,
+            headers={"Authorization": f"Bearer {self.tenant_access_token()}"},
+            method="GET",
+        )
+        try:
+            with request.urlopen(req, timeout=30) as response:
+                content = response.read(max_bytes + 1)
+        except error.HTTPError as exc:
+            text = exc.read().decode("utf-8", errors="replace")
+            raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
+        if len(content) > max_bytes:
+            raise FeishuBitableError(
+                f"Feishu message resource exceeds the {max_bytes} byte limit."
+            )
+        if not content:
+            raise FeishuBitableError("Feishu returned an empty message resource.")
+        return content
+
+    def recognize_image_text(self, content: bytes) -> list[str]:
+        if not content:
+            raise FeishuBitableError("OCR image cannot be empty.")
+        if len(content) > 5 * 1024 * 1024:
+            raise FeishuBitableError("OCR image exceeds Feishu's 5 MB limit.")
+        response = self._request(
+            "POST",
+            "/optical_char_recognition/v1/image/basic_recognize",
+            payload={"image": base64.b64encode(content).decode("ascii")},
+        )
+        return [
+            str(item).strip()
+            for item in list(response.get("data", {}).get("text_list") or [])
+            if str(item).strip()
+        ]
+
+    def reply_text_message(
+        self,
+        message_id: str,
+        text: str,
+        *,
+        idempotency_key: str = "",
+    ) -> str:
+        normalized_text = text.strip()
+        if not normalized_text:
+            raise FeishuBitableError("Feishu reply text cannot be empty.")
+        return self._reply_message(
+            message_id,
+            "text",
+            {"text": normalized_text},
+            idempotency_key=idempotency_key,
+        )
+
+    def reply_interactive_message(
+        self,
+        message_id: str,
+        card: dict[str, Any],
+        *,
+        idempotency_key: str = "",
+    ) -> str:
+        if not card:
+            raise FeishuBitableError("Feishu interactive reply card cannot be empty.")
+        return self._reply_message(
+            message_id,
+            "interactive",
+            card,
+            idempotency_key=idempotency_key,
+        )
+
+    def _reply_message(
+        self,
+        message_id: str,
+        message_type: str,
+        content: dict[str, Any],
+        *,
+        idempotency_key: str,
+    ) -> str:
+        normalized_message_id = message_id.strip()
+        if not normalized_message_id:
+            raise FeishuBitableError("Feishu reply message_id cannot be empty.")
+        stable_key = idempotency_key.strip() or normalized_message_id
+        reply_uuid = "pudu-" + hashlib.sha256(stable_key.encode("utf-8")).hexdigest()[:32]
+        response = self._request(
+            "POST",
+            f"/im/v1/messages/{parse.quote(normalized_message_id, safe='')}/reply",
+            payload={
+                "msg_type": message_type,
+                "content": json.dumps(content, ensure_ascii=False),
+                "uuid": reply_uuid,
+            },
+        )
+        reply_message_id = str(response.get("data", {}).get("message_id", "")).strip()
+        if not reply_message_id:
+            raise FeishuBitableError("Feishu did not return a reply message_id.")
+        return reply_message_id
 
     def batch_create_records(self, table_id: str, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         response = self._request(
