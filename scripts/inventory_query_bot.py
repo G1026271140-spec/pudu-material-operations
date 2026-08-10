@@ -19,6 +19,7 @@ class InventoryQuery:
     model: str
     language: str
     quantity: int
+    search_text: str = ""
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,24 @@ def value_aliases(value: object) -> tuple[str, ...]:
         aliases.extend([NO_MODEL_TEXT, "无需型号", "no model", "none", "n/a"])
     if normalized in {normalized_text(NO_LANGUAGE_TEXT), "nolanguage", "none"}:
         aliases.extend([NO_LANGUAGE_TEXT, "无语种", "no language", "none", "n/a"])
+    language_synonyms = (
+        (("英语", "english"), ("英语", "英文", "English")),
+        (("简体中文", "简中", "simplifiedchinese"), ("简体中文", "简中", "Simplified Chinese")),
+        (("繁体中文", "繁中", "traditionalchinese"), ("繁体中文", "繁中", "Traditional Chinese")),
+        (("法语", "french"), ("法语", "法文", "French")),
+        (("德语", "german"), ("德语", "德文", "German")),
+        (("日语", "japanese"), ("日语", "日文", "Japanese")),
+        (("韩语", "korean"), ("韩语", "韩文", "Korean")),
+        (("西班牙语", "spanish"), ("西班牙语", "西语", "Spanish")),
+        (("葡萄牙语", "portuguese"), ("葡萄牙语", "葡语", "Portuguese")),
+        (("俄语", "russian"), ("俄语", "俄文", "Russian")),
+        (("阿拉伯语", "arabic"), ("阿拉伯语", "阿语", "Arabic")),
+    )
+    base_alias_keys = {normalized_text(alias) for alias in aliases}
+    for keys, synonyms in language_synonyms:
+        key_values = [normalized_text(key) for key in keys]
+        if any(key in base_alias_keys for key in key_values):
+            aliases.extend(synonyms)
 
     unique: list[str] = []
     seen: set[str] = set()
@@ -133,6 +152,7 @@ def has_inventory_query_intent(text: object) -> bool:
             "语种",
             "语言",
             "数量",
+            "查",
             "inventory",
             "stock",
             "quantity",
@@ -141,7 +161,9 @@ def has_inventory_query_intent(text: object) -> bool:
     ):
         return True
     parts = [part for part in re.split(r"[\s,，/／|;；]+", raw_text) if part]
-    return bool(re.search(r"\d", raw_text) and len(parts) >= 4)
+    if re.search(r"\d", raw_text) and len(parts) >= 4:
+        return True
+    return bool(re.fullmatch(r"[A-Za-z][A-Za-z0-9 ._-]{1,40}", raw_text))
 
 
 def _catalog_values(records: Iterable[dict[str, Any]], field: str) -> list[str]:
@@ -315,6 +337,37 @@ def _looks_like_language(text: str) -> bool:
     )
 
 
+def _clean_fuzzy_search_text(text: object) -> str:
+    cleaned = unicodedata.normalize("NFKC", str(text or ""))
+    cleaned = re.sub(r"@_user_\d+", " ", cleaned, flags=re.I)
+    cleaned = re.sub(
+        r"(?:需求数量|申请数量|数量|需要|需求|qty|quantity|count)\s*[:：x×*]?\s*\d+\s*(?:件|个|套|本|张|份|pcs?)?",
+        " ",
+        cleaned,
+        flags=re.I,
+    )
+    cleaned = re.sub(
+        r"(?<![A-Za-z0-9])\d+\s*(?:件|个|套|本|张|份|pcs?)?\s*$",
+        " ",
+        cleaned,
+        flags=re.I,
+    )
+    cleaned = re.sub(
+        r"(?:帮我|麻烦|请问|请|查一下|查下|查询|查找|搜索|查)\s*",
+        " ",
+        cleaned,
+        flags=re.I,
+    )
+    cleaned = re.sub(r"(?:当前)?库存(?:有多少|多少|情况)?", " ", cleaned, flags=re.I)
+    cleaned = re.sub(
+        r"(?:物料品类|品类|产品型号|型号|语种|语言)\s*[:：]?",
+        " ",
+        cleaned,
+        flags=re.I,
+    )
+    return re.sub(r"\s+", " ", cleaned).strip(" \t,，;；/／|:：")
+
+
 def _fill_unique_dimensions(
     query: InventoryQuery,
     records: Iterable[dict[str, Any]],
@@ -344,6 +397,7 @@ def parse_inventory_queries(
     category_names: Iterable[object] = (),
     max_items: int = MAX_QUERY_ITEMS,
     require_quantity: bool = True,
+    allow_fuzzy: bool = False,
 ) -> list[InventoryQuery]:
     records = [dict(record) for record in inventory_records]
     categories = sorted(
@@ -446,12 +500,31 @@ def parse_inventory_queries(
 
     flush()
 
-    merged: dict[tuple[str, str, str], InventoryQuery] = {}
+    if not queries and allow_fuzzy:
+        fuzzy_source = " ".join(
+            line
+            for line in lines
+            if not _is_header_line(line) and not _is_ignorable_line(line)
+        ).strip()
+        fuzzy_text = _clean_fuzzy_search_text(fuzzy_source)
+        if len(normalized_text(fuzzy_text)) >= 2:
+            queries.append(
+                InventoryQuery(
+                    "",
+                    "",
+                    "",
+                    int(_extract_quantity(fuzzy_source, allow_unlabelled=True) or 0),
+                    fuzzy_text,
+                )
+            )
+
+    merged: dict[tuple[str, str, str, str], InventoryQuery] = {}
     for query in queries[:max_items]:
         key = (
             normalized_text(query.category),
             normalized_text(query.model),
             normalized_text(query.language),
+            normalized_text(query.search_text),
         )
         existing = merged.get(key)
         merged[key] = InventoryQuery(
@@ -459,8 +532,122 @@ def parse_inventory_queries(
             query.model,
             query.language,
             query.quantity + (existing.quantity if existing else 0),
+            query.search_text,
         )
     return list(merged.values())
+
+
+def _fuzzy_search_tokens(text: object) -> list[str]:
+    tokens: list[str] = []
+    for part in re.split(r"[\s,，/／|;；:：()（）_-]+", str(text or "")):
+        for token in re.findall(r"[A-Za-z]+[A-Za-z0-9]*|\d+|[\u3400-\u9fff]+", part):
+            normalized = normalized_text(token)
+            if len(normalized) >= 2 and normalized not in tokens:
+                tokens.append(normalized)
+    return tokens
+
+
+def _fuzzy_token_score(token: str, aliases: Iterable[str]) -> float:
+    best = 0.0
+    for alias in aliases:
+        alias_key = normalized_text(alias)
+        if not alias_key:
+            continue
+        if token in alias_key or alias_key in token:
+            best = max(best, 1.0)
+        else:
+            best = max(best, SequenceMatcher(None, token, alias_key).ratio())
+    return best
+
+
+def fuzzy_search_inventory(
+    search_text: object,
+    inventory_records: Iterable[dict[str, Any]],
+    *,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    normalized_query = normalized_text(search_text)
+    tokens = _fuzzy_search_tokens(search_text)
+    if len(normalized_query) < 2 or not tokens:
+        return []
+
+    ranked: list[tuple[float, int, dict[str, Any]]] = []
+    for record in inventory_records:
+        aliases = [
+            alias
+            for field in ("category", "model", "language")
+            for alias in value_aliases(record.get(field))
+        ]
+        alias_keys = [normalized_text(alias) for alias in aliases if normalized_text(alias)]
+        if not alias_keys:
+            continue
+        combined = "".join(
+            normalized_text(record.get(field))
+            for field in ("category", "model", "language")
+        )
+        token_scores = [_fuzzy_token_score(token, aliases) for token in tokens]
+        coverage = sum(token_scores) / len(token_scores)
+        best_token = max(token_scores)
+        if normalized_query in combined:
+            whole_score = 1.0
+        else:
+            whole_score = max(
+                SequenceMatcher(None, normalized_query, combined).ratio(),
+                *(
+                    SequenceMatcher(None, normalized_query, alias_key).ratio()
+                    for alias_key in alias_keys
+                ),
+            )
+        score = coverage * 0.78 + whole_score * 0.22
+        if best_token < 0.66 or coverage < 0.5 or score < 0.56:
+            continue
+        ranked.append((score, int(record.get("quantity") or 0), dict(record)))
+
+    ranked.sort(key=lambda item: (-item[0], -item[1]))
+    results: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for _, _, record in ranked:
+        key = (
+            normalized_text(record.get("category")),
+            normalized_text(record.get("model")),
+            normalized_text(record.get("language")),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        results.append(record)
+        if len(results) >= max(1, limit):
+            break
+    return results
+
+
+def expand_fuzzy_inventory_queries(
+    queries: Iterable[InventoryQuery],
+    inventory_records: Iterable[dict[str, Any]],
+    *,
+    limit: int = 10,
+) -> list[InventoryQuery]:
+    records = [dict(record) for record in inventory_records]
+    expanded: list[InventoryQuery] = []
+    for query in queries:
+        if not query.search_text:
+            expanded.append(query)
+            continue
+        candidates = fuzzy_search_inventory(query.search_text, records, limit=limit)
+        if not candidates:
+            expanded.append(query)
+            continue
+        expanded.extend(
+            InventoryQuery(
+                str(record.get("category") or ""),
+                str(record.get("model") or NO_MODEL_TEXT),
+                str(record.get("language") or NO_LANGUAGE_TEXT),
+                query.quantity,
+                query.search_text,
+            )
+            for record in candidates
+        )
+    return expanded[:MAX_QUERY_ITEMS]
 
 
 def _dimension_similarity(left: object, right: object) -> float:
@@ -529,7 +716,10 @@ def match_inventory_queries(
         exact = [
             record
             for record in records
-            if dimension_equal(query.category, record.get("category"))
+            if query.category
+            and query.model
+            and query.language
+            and dimension_equal(query.category, record.get("category"))
             and dimension_equal(query.model, record.get("model"))
             and dimension_equal(query.language, record.get("language"))
         ]
@@ -579,6 +769,8 @@ def inventory_result_card(results: Iterable[InventoryQueryResult]) -> dict[str, 
         {
             "material": (
                 f"{result.query.category} / {result.query.model} / {result.query.language}"
+                if result.query.category and result.query.model and result.query.language
+                else f"模糊搜索：{result.query.search_text}"
             ),
             "requested": str(result.query.quantity) if result.query.quantity > 0 else "-",
             "stock": str(result.available) if result.status != "missing" else "未找到",
@@ -644,6 +836,24 @@ def inventory_result_card(results: Iterable[InventoryQueryResult]) -> dict[str, 
             "margin": "0px",
         },
     ]
+
+    fuzzy_terms = list(
+        dict.fromkeys(
+            result.query.search_text
+            for result in result_list
+            if result.query.search_text and result.query.category
+        )
+    )
+    if fuzzy_terms:
+        terms = "、".join(f"**{_markdown_escape(term)}**" for term in fuzzy_terms)
+        elements.append(
+            {
+                "tag": "markdown",
+                "content": f"已按 {terms} 模糊匹配，结果按相关度排序。",
+                "text_size": "notation",
+                "margin": "12px 0px 0px 0px",
+            }
+        )
 
     similar_lines: list[str] = []
     for result in result_list:

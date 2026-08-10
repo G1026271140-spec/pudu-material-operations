@@ -60,7 +60,9 @@ class InventoryQueryBotTests(unittest.TestCase):
         )
         self.assertTrue(bot.has_inventory_query_intent("产品单页 BellaBot 英语 5个"))
         self.assertTrue(bot.has_inventory_query_intent("查一下这个物料库存"))
+        self.assertTrue(bot.has_inventory_query_intent("Bella"))
         self.assertFalse(bot.has_inventory_query_intent("你好，今天怎么样"))
+        self.assertTrue(bot.dimension_equal("简中", "简体中文(Simplified Chinese)"))
 
     def test_parses_ocr_table_cells_using_live_catalog_names(self) -> None:
         queries = bot.parse_inventory_queries(
@@ -129,6 +131,28 @@ class InventoryQueryBotTests(unittest.TestCase):
         result = bot.match_inventory_queries(queries_without_quantity, self.records)[0]
         self.assertEqual((result.status, result.available), ("found", 12))
 
+    def test_fuzzy_text_search_matches_partial_terms_and_language_synonym(self) -> None:
+        queries = bot.parse_inventory_queries(
+            ["查库存 单页 Bella 英文 5个"],
+            self.records,
+            require_quantity=False,
+            allow_fuzzy=True,
+        )
+        expanded = bot.expand_fuzzy_inventory_queries(queries, self.records)
+        results = bot.match_inventory_queries(expanded, self.records)
+
+        self.assertEqual(queries[0].search_text, "单页 Bella 英文")
+        self.assertEqual(queries[0].quantity, 5)
+        self.assertEqual(expanded[0].language, "英语(English)")
+        self.assertEqual((results[0].status, results[0].available), ("available", 12))
+
+    def test_fuzzy_search_tolerates_small_model_typo_and_rejects_noise(self) -> None:
+        typo_records = bot.fuzzy_search_inventory("CC1 PR0 英语", self.records)
+        noise_records = bot.fuzzy_search_inventory("完全不存在的东西", self.records)
+
+        self.assertEqual(typo_records[0]["model"], "CC1 PRO")
+        self.assertEqual(noise_records, [])
+
     def test_matches_available_insufficient_and_missing_with_similar_items(self) -> None:
         queries = [
             bot.InventoryQuery("产品单页", "BellaBot", "英语", 5),
@@ -178,6 +202,19 @@ class InventoryQueryBotTests(unittest.TestCase):
         self.assertEqual(row["requested"], "-")
         self.assertEqual(row["stock"], "12")
         self.assertEqual(row["status"], "已找到")
+
+    def test_card_identifies_fuzzy_results(self) -> None:
+        query = bot.InventoryQuery(
+            "产品单页(Product Flyer)",
+            "BellaBot",
+            "英语(English)",
+            0,
+            "单页 Bella 英文",
+        )
+        card = bot.inventory_result_card(bot.match_inventory_queries([query], self.records))
+
+        self.assertIn("模糊匹配", card["body"]["elements"][2]["content"])
+        self.assertIn("单页 Bella 英文", card["body"]["elements"][2]["content"])
 
 
 if __name__ == "__main__":

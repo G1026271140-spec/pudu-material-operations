@@ -840,6 +840,7 @@ def process_inventory_message(
             inventory_records,
             category_names=category_names,
             require_quantity=bool(image_keys),
+            allow_fuzzy=not image_keys,
         )
         if not queries:
             if not image_keys and not any(
@@ -853,6 +854,19 @@ def process_inventory_message(
                 f"没有识别出完整物料信息。请确保每项都包含{requirement}。",
                 idempotency_key=f"inventory-parse-error:{message_id}",
             )
+            return
+        queries = inventory_query_bot.expand_fuzzy_inventory_queries(
+            queries,
+            inventory_records,
+        )
+        if (
+            not image_keys
+            and not any(query.category for query in queries)
+            and not any(
+                inventory_query_bot.has_inventory_query_intent(segment)
+                for segment in recognized_text
+            )
+        ):
             return
         results = inventory_query_bot.match_inventory_queries(queries, inventory_records)
         client.reply_interactive_message(
