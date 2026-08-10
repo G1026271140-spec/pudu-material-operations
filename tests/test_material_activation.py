@@ -315,6 +315,67 @@ class MaterialActivationTests(unittest.TestCase):
         self.assertTrue(app.selection_context_has_inventory_combination(context, "品类A", "M1", "英语"))
         self.assertFalse(app.selection_context_has_inventory_combination(context, "品类A", "M2", "法语"))
 
+    def test_request_options_only_use_combinations_in_enabled_inventory_rows(self) -> None:
+        context = app.request_form_cache_to_selection_context(
+            {
+                "products": ["品类A", "无启用行品类"],
+                "models": ["M1", "M2", "维度表额外型号"],
+                "languages": ["英语", "法语", app.NO_LANGUAGE_TEXT],
+                "inventory_rows": [
+                    {
+                        "material_code": "MAT-1",
+                        "product": "品类A",
+                        "model": "M1",
+                        "language": "英语",
+                        "quantity": 10,
+                    },
+                    {
+                        "material_code": "MAT-2",
+                        "product": "品类A",
+                        "model": "M2",
+                        "language": "法语",
+                        "quantity": 0,
+                    },
+                ],
+            }
+        )
+
+        self.assertEqual(context["products"], ["品类A"])
+        self.assertEqual(app.product_model_state("品类A", context), (False, ["M1", "M2"]))
+        self.assertEqual(app.product_language_options("品类A", "M1", context), ["英语"])
+        self.assertEqual(app.product_language_options("品类A", "M2", context), ["法语"])
+        self.assertNotIn(
+            app.NO_LANGUAGE_TEXT,
+            app.product_language_options("品类A", "M1", context),
+        )
+
+    def test_no_model_and_no_language_only_appear_when_enabled_row_contains_them(self) -> None:
+        context = app.request_form_cache_to_selection_context(
+            {
+                "products": ["无规格品类"],
+                "models": ["M1"],
+                "languages": ["英语"],
+                "inventory_rows": [
+                    {
+                        "material_code": "MAT-1",
+                        "product": "无规格品类",
+                        "model": app.NO_MODEL_TEXT,
+                        "language": app.NO_LANGUAGE_TEXT,
+                        "quantity": 1,
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(
+            app.product_model_state("无规格品类", context),
+            (True, [app.NO_MODEL_TEXT]),
+        )
+        self.assertEqual(
+            app.product_language_state("无规格品类", app.NO_MODEL_TEXT, context),
+            (True, [app.NO_LANGUAGE_TEXT]),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

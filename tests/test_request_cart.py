@@ -139,6 +139,44 @@ class RequestCartTests(unittest.TestCase):
         self.assertTrue(all(line["quantity"] == 3 for line in lines))
         self.assertTrue(all(line["remark"] == "展会" for line in lines))
 
+    def test_model_multi_select_only_offers_languages_shared_by_every_model(self) -> None:
+        context = {
+            "product_model_languages": {
+                ("产品手册", "P1"): ["英语", "日语"],
+                ("产品手册", "P2"): ["英语"],
+            }
+        }
+
+        self.assertEqual(
+            app.request_language_options_for_models(
+                context,
+                "产品手册",
+                ["P1", "P2"],
+            ),
+            ["英语"],
+        )
+
+    def test_stale_widget_selections_are_removed_when_inventory_options_change(self) -> None:
+        state = {
+            "models": ["已停用型号", "M1"],
+            "language": "已停用语种",
+        }
+
+        with patch.object(app.st, "session_state", state):
+            app.normalize_request_option_state(
+                "models",
+                ["M1", "M2"],
+                multiple=True,
+            )
+            app.normalize_request_option_state(
+                "language",
+                ["英语"],
+                multiple=False,
+            )
+
+        self.assertEqual(state["models"], ["M1"])
+        self.assertEqual(state["language"], "英语")
+
     def test_enabling_one_multi_select_turns_the_other_off(self) -> None:
         state = {
             "model_multi": True,

@@ -40,19 +40,25 @@ class NoLanguageRuleTests(unittest.TestCase):
                         "language": "德语(German)",
                         "quantity": 1000,
                     },
+                    {
+                        "product": "活动礼品",
+                        "model": "BellaBot",
+                        "language": app.NO_LANGUAGE_TEXT,
+                        "quantity": 1000,
+                    },
                 ],
             }
         )
 
-    def test_default_no_language_product_is_forced_to_single_option(self) -> None:
+    def test_enabled_inventory_row_overrides_default_no_language_rule(self) -> None:
         disabled, languages = app.product_language_state(
             "公仔(Plush Toy)",
             "BellaBot",
             self.selection_context(),
         )
 
-        self.assertTrue(disabled)
-        self.assertEqual(languages, [app.NO_LANGUAGE_TEXT])
+        self.assertFalse(disabled)
+        self.assertEqual(languages, ["英语(English)"])
 
     def test_explicit_no_language_category_uses_same_rule(self) -> None:
         disabled, languages = app.product_language_state(
@@ -72,7 +78,7 @@ class NoLanguageRuleTests(unittest.TestCase):
         )
 
         self.assertFalse(disabled)
-        self.assertEqual(languages, ["英语(English)", "德语(German)"])
+        self.assertEqual(languages, ["英语(English)"])
 
     def test_normal_category_keeps_scoped_languages(self) -> None:
         disabled, languages = app.product_language_state(

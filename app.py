@@ -1824,6 +1824,14 @@ def sort_models(models: list[str]) -> list[str]:
     return sorted(unique_models, key=model_key)
 
 
+def sort_model_options(models: list[str]) -> list[str]:
+    normalized_models = [str(model).strip() or NO_MODEL_TEXT for model in models]
+    sorted_models = sort_models(normalized_models)
+    if NO_MODEL_TEXT in normalized_models:
+        return [NO_MODEL_TEXT] + sorted_models
+    return sorted_models
+
+
 def sort_request_products(products: list[str]) -> list[str]:
     """Keep the four product-line manuals together without reordering other categories."""
     unique_products = unique_preserve(products)
@@ -1857,13 +1865,11 @@ def build_inventory_selection_context() -> dict[str, object]:
             product_key = normalize_option_label(item[0])
             model_name = str(item[1]).strip() or NO_MODEL_TEXT
             model_key = normalize_option_label(model_name)
-            language_name = str(item[2]).strip()
+            language_name = str(item[2]).strip() or NO_LANGUAGE_TEXT
             inventory_product_keys.add(product_key)
-            if model_name and model_name != NO_MODEL_TEXT:
-                product_models.setdefault(product_key, []).append(model_name)
-            if language_name:
-                product_languages.setdefault(product_key, []).append(language_name)
-                product_model_languages.setdefault((product_key, model_key), []).append(language_name)
+            product_models.setdefault(product_key, []).append(model_name)
+            product_languages.setdefault(product_key, []).append(language_name)
+            product_model_languages.setdefault((product_key, model_key), []).append(language_name)
 
     configured_language_product_keys = {
         normalize_option_label(product) for product in options.get("configured_language_products", [])
@@ -1884,7 +1890,7 @@ def build_inventory_selection_context() -> dict[str, object]:
         "no_model_product_keys": {normalize_option_label(product) for product in options["no_model_products"]},
         "no_language_product_keys": no_language_product_keys,
         "inventory_product_keys": inventory_product_keys,
-        "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
+        "product_models": {key: sort_model_options(values) for key, values in product_models.items()},
         "product_languages": {key: sort_languages(values) for key, values in product_languages.items()},
         "product_model_languages": {
             key: sort_languages(values) for key, values in product_model_languages.items()
@@ -1895,13 +1901,11 @@ def build_inventory_selection_context() -> dict[str, object]:
 
 def product_model_state(product: str, selection_context: dict[str, object]) -> tuple[bool, list[str]]:
     product_key = normalize_option_label(product)
-    product_models = selection_context["product_models"]
-    scoped_models = product_models.get(product_key, [])  # type: ignore[union-attr]
-    is_no_model_product = product_key in selection_context["no_model_product_keys"] or (
-        product_key in selection_context["inventory_product_keys"] and not scoped_models
+    scoped_models = sort_model_options(
+        list(dict(selection_context.get("product_models") or {}).get(product_key, []))
     )
-    all_models = sort_models(list(selection_context.get("models") or []))
-    return bool(is_no_model_product), all_models or sort_models(list(scoped_models))
+    is_no_model_product = scoped_models == [NO_MODEL_TEXT]
+    return is_no_model_product, scoped_models
 
 
 def selection_context_has_inventory_combination(
@@ -1926,10 +1930,12 @@ def product_language_options(
     fallback_languages: list[str] | None = None,
 ) -> list[str]:
     product_key = normalize_option_label(product)
-    if product_key in selection_context.get("no_language_product_keys", set()):
-        return [NO_LANGUAGE_TEXT]
-    available_languages = fallback_languages or list(selection_context["languages"])
-    return sort_languages(list(available_languages))
+    model_key = normalize_option_label(model or NO_MODEL_TEXT)
+    scoped_languages = dict(selection_context.get("product_model_languages") or {}).get(
+        (product_key, model_key),
+        [],
+    )
+    return sort_languages(list(scoped_languages))
 
 
 def product_language_state(
@@ -1938,14 +1944,13 @@ def product_language_state(
     selection_context: dict[str, object],
     fallback_languages: list[str] | None = None,
 ) -> tuple[bool, list[str]]:
-    product_key = normalize_option_label(product)
-    is_no_language_product = product_key in selection_context.get("no_language_product_keys", set())
-    return bool(is_no_language_product), product_language_options(
+    scoped_languages = product_language_options(
         product,
         model,
         selection_context,
         fallback_languages,
     )
+    return scoped_languages == [NO_LANGUAGE_TEXT], scoped_languages
 
 
 def request_form_cache_from_inventory(
@@ -2067,22 +2072,25 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
             continue
         product = str(item.get("product") or "").strip()
         model = str(item.get("model") or "").strip() or NO_MODEL_TEXT
-        language = str(item.get("language") or "").strip()
+        language = str(item.get("language") or "").strip() or NO_LANGUAGE_TEXT
         if not product:
             continue
         product_key = normalize_option_label(product)
         model_key = normalize_option_label(model)
         inventory_product_keys.add(product_key)
-        if model and model != NO_MODEL_TEXT:
-            product_models.setdefault(product_key, []).append(model)
-        if language:
-            product_languages.setdefault(product_key, []).append(language)
-            product_model_languages.setdefault((product_key, model_key), []).append(language)
+        product_models.setdefault(product_key, []).append(model)
+        product_languages.setdefault(product_key, []).append(language)
+        product_model_languages.setdefault((product_key, model_key), []).append(language)
 
-    products = sort_request_products(
+    product_candidates = sort_request_products(
         list(cache_data.get("products") or [])
         + [str(item.get("product") or "") for item in rows if isinstance(item, dict)]
     )
+    products = [
+        product
+        for product in product_candidates
+        if normalize_option_label(product) in inventory_product_keys
+    ]
     models = sort_models(
         list(cache_data.get("models") or [])
         + [str(item.get("model") or "") for item in rows if isinstance(item, dict)]
@@ -2110,7 +2118,7 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
         },
         "no_language_product_keys": no_language_product_keys,
         "inventory_product_keys": inventory_product_keys,
-        "product_models": {key: unique_preserve(values) for key, values in product_models.items()},
+        "product_models": {key: sort_model_options(values) for key, values in product_models.items()},
         "product_languages": {key: sort_languages(values) for key, values in product_languages.items()},
         "product_model_languages": {
             key: sort_languages(values) for key, values in product_model_languages.items()
@@ -7035,6 +7043,44 @@ def build_request_cart_selection_lines(
     ]
 
 
+def request_language_options_for_models(
+    selection_context: dict[str, object],
+    product: str,
+    selected_models: list[str],
+) -> list[str]:
+    scoped_options = [
+        product_language_options(product, model, selection_context)
+        for model in selected_models
+    ]
+    if not scoped_options:
+        return []
+    common_languages = set(scoped_options[0])
+    for languages in scoped_options[1:]:
+        common_languages.intersection_update(languages)
+    return sort_languages(
+        [language for language in scoped_options[0] if language in common_languages]
+    )
+
+
+def normalize_request_option_state(
+    state_key: str,
+    options: list[str],
+    *,
+    multiple: bool,
+) -> None:
+    current_value = st.session_state.get(state_key)
+    if multiple:
+        selected_values = (
+            [value for value in current_value if value in options]
+            if isinstance(current_value, list)
+            else []
+        )
+        st.session_state[state_key] = selected_values or options[:1]
+        return
+    if not isinstance(current_value, str) or current_value not in options:
+        st.session_state[state_key] = options[0] if options else None
+
+
 def prepare_request_line_editor_state() -> None:
     load_data = st.session_state.pop("request_line_editor_load", None)
     if isinstance(load_data, dict):
@@ -7503,8 +7549,6 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
 def render_request_material_builder(
     selection_context: dict[str, object],
     products: list[str],
-    models: list[str],
-    languages: list[str],
 ) -> tuple[list[dict[str, object]], bool]:
     lines = get_request_material_lines()
     render_request_cart_added_toast()
@@ -7545,18 +7589,13 @@ def render_request_material_builder(
             card_columns = st.columns(4, gap="small")
             for index, catalog_product in enumerate(filtered_products):
                 product_state_key = normalize_option_label(catalog_product)
-                is_no_model_product, scoped_models = product_model_state(
+                _, scoped_models = product_model_state(
                     catalog_product,
                     selection_context,
                 )
-                if is_no_model_product:
-                    model_options = [NO_MODEL_TEXT]
-                elif scoped_models:
-                    model_options = unique_preserve(scoped_models)
-                else:
-                    model_options = [
-                        model for model in models if model != NO_MODEL_TEXT
-                    ] or [NO_MODEL_TEXT]
+                model_options = unique_preserve(scoped_models)
+                if not model_options:
+                    continue
                 with card_columns[index % 4].container(border=True):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
                     category_image_path = request_category_image_path(catalog_product)
@@ -7623,14 +7662,11 @@ def render_request_material_builder(
                             f"request_cart_models_v2_{'multi' if model_multi else 'single'}_"
                             f"{get_ui_language()}_{product_state_key}"
                         )
-                        current_models = st.session_state.get(model_widget_key)
-                        if model_multi:
-                            if not isinstance(current_models, list) or any(
-                                model not in model_options for model in current_models
-                            ):
-                                st.session_state[model_widget_key] = [model_options[0]]
-                        elif not isinstance(current_models, str) or current_models not in model_options:
-                            st.session_state[model_widget_key] = model_options[0]
+                        normalize_request_option_state(
+                            model_widget_key,
+                            model_options,
+                            multiple=model_multi,
+                        )
                         selected_model_values = st.pills(
                             "产品型号",
                             model_options,
@@ -7647,40 +7683,33 @@ def render_request_material_builder(
                             else [selected_model_values] if selected_model_values else []
                         )
 
-                        language_options: list[str] = []
-                        for selected_model in selected_models:
-                            _, scoped_languages = product_language_state(
-                                catalog_product,
-                                selected_model,
-                                selection_context,
-                                languages,
-                            )
-                            language_options.extend(scoped_languages)
-                        language_options = unique_preserve(language_options) or [NO_LANGUAGE_TEXT]
+                        language_options = request_language_options_for_models(
+                            selection_context,
+                            catalog_product,
+                            selected_models,
+                        )
                         language_widget_key = (
                             f"request_cart_languages_v2_{'multi' if language_multi else 'single'}_"
                             f"{get_ui_language()}_{product_state_key}"
                         )
-                        current_languages = st.session_state.get(language_widget_key)
-                        if language_multi:
-                            if not isinstance(current_languages, list) or any(
-                                language not in language_options for language in current_languages
-                            ):
-                                st.session_state[language_widget_key] = [language_options[0]]
-                        elif (
-                            not isinstance(current_languages, str)
-                            or current_languages not in language_options
-                        ):
-                            st.session_state[language_widget_key] = language_options[0]
-                        selected_language_values = st.pills(
-                            "语种",
+                        normalize_request_option_state(
+                            language_widget_key,
                             language_options,
-                            selection_mode="multi" if language_multi else "single",
-                            required=not language_multi,
-                            format_func=request_option_display_label,
-                            key=language_widget_key,
-                            on_change=mark_request_form_dirty,
-                            width="stretch",
+                            multiple=language_multi,
+                        )
+                        selected_language_values = (
+                            st.pills(
+                                "语种",
+                                language_options,
+                                selection_mode="multi" if language_multi else "single",
+                                required=not language_multi,
+                                format_func=request_option_display_label,
+                                key=language_widget_key,
+                                on_change=mark_request_form_dirty,
+                                width="stretch",
+                            )
+                            if language_options
+                            else []
                         )
                         selected_languages = (
                             list(selected_language_values or [])
@@ -7769,8 +7798,6 @@ def render_change_form(show_title: bool = True) -> None:
     with st.spinner("物料数据加载中，请稍后......"):
         selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
-    models = unique_preserve([NO_MODEL_TEXT] + list(selection_context["models"]))
-    languages = [language for language in selection_context["languages"] if language != NO_LANGUAGE_TEXT]
 
     if show_title:
         render_page_header(
@@ -7905,8 +7932,6 @@ def render_change_form(show_title: bool = True) -> None:
     lines, preview_clicked = render_request_material_builder(
         selection_context,
         products,
-        models,
-        languages,
     )
     if preview_clicked:
         attachments = merge_request_attachments(
