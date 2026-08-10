@@ -798,16 +798,24 @@ def inventory_query_error_text(error: Exception) -> str:
         )
     ):
         return "机器人暂时缺少截图识别或消息读取权限，请联系应用管理员检查权限配置。"
-    return "库存查询暂时失败，请稍后重新发送截图。"
+    return "库存查询暂时失败，请稍后重新发送查询内容。"
 
 
-def process_inventory_message(message_id: str, image_keys: list[str]) -> None:
+def process_inventory_message(
+    message_id: str,
+    image_keys: list[str],
+    text_segments: list[str] | None = None,
+) -> None:
     client = inventory_app.feishu_client()
     if client is None:
         logging.error("Inventory query failed: Feishu client is not configured")
         return
     try:
-        recognized_text: list[str] = []
+        recognized_text = [
+            str(segment).strip()
+            for segment in list(text_segments or [])
+            if str(segment).strip()
+        ]
         for image_key in image_keys[:3]:
             image = client.download_message_resource(message_id, image_key)
             recognized_text.extend(client.recognize_image_text(image))
@@ -831,11 +839,18 @@ def process_inventory_message(message_id: str, image_keys: list[str]) -> None:
             recognized_text,
             inventory_records,
             category_names=category_names,
+            require_quantity=bool(image_keys),
         )
         if not queries:
+            if not image_keys and not any(
+                inventory_query_bot.has_inventory_query_intent(segment)
+                for segment in recognized_text
+            ):
+                return
+            requirement = "品类、产品型号、语种和需求数量" if image_keys else "品类、产品型号和语种"
             client.reply_text_message(
                 message_id,
-                "没有从截图中识别出完整物料信息。请确保每项都包含品类、产品型号、语种和需求数量。",
+                f"没有识别出完整物料信息。请确保每项都包含{requirement}。",
                 idempotency_key=f"inventory-parse-error:{message_id}",
             )
             return
@@ -846,13 +861,13 @@ def process_inventory_message(message_id: str, image_keys: list[str]) -> None:
             idempotency_key=f"inventory-result:{message_id}",
         )
         logging.info(
-            "Inventory screenshot processed: message_id=%s images=%s items=%s",
+            "Inventory query processed: message_id=%s images=%s items=%s",
             message_id,
             len(image_keys),
             len(results),
         )
     except Exception as exc:
-        logging.exception("Inventory screenshot processing failed: %s", message_id)
+        logging.exception("Inventory query processing failed: %s", message_id)
         try:
             client.reply_text_message(
                 message_id,
@@ -872,16 +887,24 @@ def handle_inventory_message(data: P2ImMessageReceiveV1) -> None:
     message_id = str(message.message_id or "").strip()
     message_type = str(message.message_type or "").strip()
     chat_type = str(message.chat_type or "").strip()
-    if not message_id or message_type not in {"image", "post"}:
+    if not message_id or message_type not in {"image", "post", "text"}:
         return
     if chat_type == "group" and not list(message.mentions or []):
         return
     image_keys = inventory_query_bot.extract_image_keys(message.content)
-    if not image_keys or not reserve_inventory_message(message_id):
+    message_text = inventory_query_bot.extract_message_text(message.content)
+    text_segments = [message_text] if message_text else []
+    if (
+        not image_keys
+        and text_segments
+        and not inventory_query_bot.has_inventory_query_intent(message_text)
+    ):
+        return
+    if (not image_keys and not text_segments) or not reserve_inventory_message(message_id):
         return
     threading.Thread(
         target=process_inventory_message,
-        args=(message_id, image_keys),
+        args=(message_id, image_keys, text_segments),
         name=f"inventory-query-{message_id[-8:]}",
         daemon=True,
     ).start()

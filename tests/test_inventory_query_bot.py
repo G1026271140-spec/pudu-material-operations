@@ -43,6 +43,25 @@ class InventoryQueryBotTests(unittest.TestCase):
             ["img-json"],
         )
 
+    def test_extracts_text_from_text_and_post_content(self) -> None:
+        self.assertEqual(
+            bot.extract_message_text('{"text":"查库存 产品单页 BellaBot 英语"}'),
+            "查库存 产品单页 BellaBot 英语",
+        )
+        post = {
+            "zh_cn": {
+                "title": "库存查询",
+                "content": [[{"tag": "text", "text": "产品单页 BellaBot 英语 5个"}]],
+            }
+        }
+        self.assertEqual(
+            bot.extract_message_text(post),
+            "库存查询\n产品单页 BellaBot 英语 5个",
+        )
+        self.assertTrue(bot.has_inventory_query_intent("产品单页 BellaBot 英语 5个"))
+        self.assertTrue(bot.has_inventory_query_intent("查一下这个物料库存"))
+        self.assertFalse(bot.has_inventory_query_intent("你好，今天怎么样"))
+
     def test_parses_ocr_table_cells_using_live_catalog_names(self) -> None:
         queries = bot.parse_inventory_queries(
             [
@@ -93,6 +112,23 @@ class InventoryQueryBotTests(unittest.TestCase):
             ],
         )
 
+    def test_text_query_supports_natural_quantity_and_inventory_only_lookup(self) -> None:
+        queries_with_quantity = bot.parse_inventory_queries(
+            ["查库存 产品单页 BellaBot 英语 5个"],
+            self.records,
+            require_quantity=False,
+        )
+        queries_without_quantity = bot.parse_inventory_queries(
+            ["产品单页 BellaBot 英语库存多少"],
+            self.records,
+            require_quantity=False,
+        )
+
+        self.assertEqual(queries_with_quantity[0].quantity, 5)
+        self.assertEqual(queries_without_quantity[0].quantity, 0)
+        result = bot.match_inventory_queries(queries_without_quantity, self.records)[0]
+        self.assertEqual((result.status, result.available), ("found", 12))
+
     def test_matches_available_insufficient_and_missing_with_similar_items(self) -> None:
         queries = [
             bot.InventoryQuery("产品单页", "BellaBot", "英语", 5),
@@ -129,6 +165,19 @@ class InventoryQueryBotTests(unittest.TestCase):
         self.assertEqual(table["rows"][0]["status"], "库存充足")
         self.assertEqual(table["rows"][1]["status"], "无此组合")
         self.assertIn("相似库存组合", card["body"]["elements"][2]["content"])
+
+    def test_card_marks_quantityless_text_query_as_found(self) -> None:
+        results = bot.match_inventory_queries(
+            [bot.InventoryQuery("产品单页", "BellaBot", "英语", 0)],
+            self.records,
+        )
+
+        card = bot.inventory_result_card(results)
+        row = card["body"]["elements"][1]["rows"][0]
+
+        self.assertEqual(row["requested"], "-")
+        self.assertEqual(row["stock"], "12")
+        self.assertEqual(row["status"], "已找到")
 
 
 if __name__ == "__main__":

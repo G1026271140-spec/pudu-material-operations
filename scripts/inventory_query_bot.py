@@ -91,6 +91,59 @@ def extract_image_keys(content: object) -> list[str]:
     return keys
 
 
+def extract_message_text(content: object) -> str:
+    if isinstance(content, str):
+        try:
+            content = json.loads(content)
+        except json.JSONDecodeError:
+            return content.strip()
+
+    parts: list[str] = []
+
+    def add_text(value: object) -> None:
+        text = str(value or "").strip()
+        if text and text not in parts:
+            parts.append(text)
+
+    def walk(value: object) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key in {"text", "title"} and isinstance(child, str):
+                    add_text(child)
+                elif isinstance(child, (dict, list)):
+                    walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+
+    walk(content)
+    return "\n".join(parts)
+
+
+def has_inventory_query_intent(text: object) -> bool:
+    raw_text = unicodedata.normalize("NFKC", str(text or "")).strip()
+    key = normalized_text(raw_text)
+    if any(
+        marker in key
+        for marker in (
+            "库存",
+            "物料",
+            "品类",
+            "型号",
+            "语种",
+            "语言",
+            "数量",
+            "inventory",
+            "stock",
+            "quantity",
+            "qty",
+        )
+    ):
+        return True
+    parts = [part for part in re.split(r"[\s,，/／|;；]+", raw_text) if part]
+    return bool(re.search(r"\d", raw_text) and len(parts) >= 4)
+
+
 def _catalog_values(records: Iterable[dict[str, Any]], field: str) -> list[str]:
     values = {
         str(record.get(field) or "").strip()
@@ -136,7 +189,7 @@ def _canonical_or_raw(value: str, catalog: Iterable[str]) -> str:
 
 def _extract_quantity(text: str, *, allow_unlabelled: bool) -> int | None:
     labelled = re.search(
-        r"(?:需求数量|申请数量|数量|qty|quantity|count)\s*[:：x×*]?\s*(\d+)",
+        r"(?:需求数量|申请数量|数量|需要|需求|qty|quantity|count)\s*[:：x×*]?\s*(\d+)",
         text,
         flags=re.IGNORECASE,
     )
@@ -147,6 +200,9 @@ def _extract_quantity(text: str, *, allow_unlabelled: bool) -> int | None:
     standalone = re.fullmatch(r"\s*(\d+)\s*(?:件|个|套|本|张|份|pcs?)?\s*", text, re.I)
     if standalone:
         return int(standalone.group(1))
+    multiplied = re.search(r"(?:x|×|\*)\s*(\d+)\s*$", text, re.I)
+    if multiplied:
+        return int(multiplied.group(1))
     trailing = re.search(
         r"(?<![A-Za-z0-9])(\d+)\s*(?:件|个|套|本|张|份|pcs?)?\s*$",
         text,
@@ -156,8 +212,12 @@ def _extract_quantity(text: str, *, allow_unlabelled: bool) -> int | None:
 
 
 def _labelled_value(text: str, labels: str) -> str:
+    next_label = (
+        r"(?:物料品类|物料名称|品类|产品型号|型号|语种|语言)\s*[:：]"
+        r"|(?:需求数量|申请数量|数量|需要|需求|qty|quantity|count)\s*[:：]?"
+    )
     match = re.search(
-        rf"(?:{labels})\s*[:：]\s*(.+?)(?=\s*(?:物料品类|物料名称|品类|产品型号|型号|语种|语言|需求数量|申请数量|数量|qty|quantity|count)\s*[:：]|$)",
+        rf"(?:{labels})\s*[:：]\s*(.+?)(?=[\s,，;；]*(?:{next_label})|$)",
         text,
         flags=re.IGNORECASE,
     )
@@ -169,18 +229,22 @@ def _parse_labelled_query(
     categories: Iterable[str],
     models: Iterable[str],
     languages: Iterable[str],
+    *,
+    require_quantity: bool,
 ) -> InventoryQuery | None:
     category = _labelled_value(text, r"物料品类|物料名称|品类")
     model = _labelled_value(text, r"产品型号|型号")
     language = _labelled_value(text, r"语种|语言")
     quantity = _extract_quantity(text, allow_unlabelled=False)
-    if not category or not model or not language or not quantity:
+    if not category or not model or not language:
+        return None
+    if require_quantity and not quantity:
         return None
     return InventoryQuery(
         category=_canonical_or_raw(category, categories),
         model=_canonical_or_raw(model, models),
         language=_canonical_or_raw(language, languages),
-        quantity=quantity,
+        quantity=int(quantity or 0),
     )
 
 
@@ -207,16 +271,13 @@ def _is_ignorable_line(text: str) -> bool:
     key = normalized_text(text)
     if not key:
         return True
-    return any(
-        phrase in key
-        for phrase in (
-            "库存确认清单",
-            "物料需求清单",
-            "库存查询",
-            "请确认库存",
-            "inventorycheck",
-        )
-    )
+    return key in {
+        "库存确认清单",
+        "物料需求清单",
+        "库存查询",
+        "请确认库存",
+        "inventorycheck",
+    }
 
 
 def _looks_like_language(text: str) -> bool:
@@ -282,6 +343,7 @@ def parse_inventory_queries(
     *,
     category_names: Iterable[object] = (),
     max_items: int = MAX_QUERY_ITEMS,
+    require_quantity: bool = True,
 ) -> list[InventoryQuery]:
     records = [dict(record) for record in inventory_records]
     categories = sorted(
@@ -312,14 +374,25 @@ def parse_inventory_queries(
             int(current.get("quantity") or 0),
         )
         query = _fill_unique_dimensions(query, records)
-        if query.category and query.model and query.language and query.quantity > 0:
+        if (
+            query.category
+            and query.model
+            and query.language
+            and (query.quantity > 0 or not require_quantity)
+        ):
             queries.append(query)
         current = {"category": "", "model": "", "language": "", "quantity": 0}
 
     for line in lines:
         if len(queries) >= max_items:
             break
-        labelled_query = _parse_labelled_query(line, categories, models, languages)
+        labelled_query = _parse_labelled_query(
+            line,
+            categories,
+            models,
+            languages,
+            require_quantity=require_quantity,
+        )
         if labelled_query is not None:
             flush()
             queries.append(labelled_query)
@@ -462,7 +535,10 @@ def match_inventory_queries(
         ]
         if exact:
             available = sum(int(record.get("quantity") or 0) for record in exact)
-            status = "available" if available >= query.quantity else "insufficient"
+            if query.quantity <= 0:
+                status = "found"
+            else:
+                status = "available" if available >= query.quantity else "insufficient"
             results.append(InventoryQueryResult(query, status, available))
             continue
         results.append(
@@ -489,10 +565,12 @@ def _markdown_escape(value: object) -> str:
 
 def inventory_result_card(results: Iterable[InventoryQueryResult]) -> dict[str, Any]:
     result_list = list(results)
+    found_count = sum(result.status == "found" for result in result_list)
     available_count = sum(result.status == "available" for result in result_list)
     insufficient_count = sum(result.status == "insufficient" for result in result_list)
     missing_count = sum(result.status == "missing" for result in result_list)
     status_labels = {
+        "found": "已找到",
         "available": "库存充足",
         "insufficient": "库存不足",
         "missing": "无此组合",
@@ -502,7 +580,7 @@ def inventory_result_card(results: Iterable[InventoryQueryResult]) -> dict[str, 
             "material": (
                 f"{result.query.category} / {result.query.model} / {result.query.language}"
             ),
-            "requested": result.query.quantity,
+            "requested": str(result.query.quantity) if result.query.quantity > 0 else "-",
             "stock": str(result.available) if result.status != "missing" else "未找到",
             "status": status_labels[result.status],
         }
@@ -524,13 +602,19 @@ def inventory_result_card(results: Iterable[InventoryQueryResult]) -> dict[str, 
                     "elements": [
                         {
                             "tag": "markdown",
-                            "content": f"**共识别 {len(result_list)} 项物料**",
+                            "content": f"**共查询 {len(result_list)} 项物料**",
                         },
                         {
                             "tag": "markdown",
-                            "content": (
-                                f"库存充足 {available_count} 项 · 库存不足 {insufficient_count} 项 · "
-                                f"无此组合 {missing_count} 项"
+                            "content": " · ".join(
+                                label
+                                for count, label in (
+                                    (found_count, f"已找到 {found_count} 项"),
+                                    (available_count, f"库存充足 {available_count} 项"),
+                                    (insufficient_count, f"库存不足 {insufficient_count} 项"),
+                                    (missing_count, f"无此组合 {missing_count} 项"),
+                                )
+                                if count
                             ),
                             "text_size": "notation",
                         },
@@ -543,7 +627,7 @@ def inventory_result_card(results: Iterable[InventoryQueryResult]) -> dict[str, 
             "tag": "table",
             "columns": [
                 {"name": "material", "display_name": "物料", "data_type": "text", "width": "46%"},
-                {"name": "requested", "display_name": "需求", "data_type": "number", "width": "14%"},
+                {"name": "requested", "display_name": "需求", "data_type": "text", "width": "14%"},
                 {"name": "stock", "display_name": "库存", "data_type": "text", "width": "16%"},
                 {"name": "status", "display_name": "结果", "data_type": "text", "width": "24%"},
             ],

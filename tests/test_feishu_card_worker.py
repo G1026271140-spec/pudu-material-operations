@@ -180,7 +180,33 @@ class FeishuCardWorkerTests(unittest.TestCase):
             worker.handle_inventory_message(data)
 
         thread_class.assert_called_once()
-        self.assertEqual(thread_class.call_args.kwargs["args"], ("om-inventory-test", ["img-test"]))
+        self.assertEqual(
+            thread_class.call_args.kwargs["args"],
+            ("om-inventory-test", ["img-test"], []),
+        )
+        thread.start.assert_called_once_with()
+
+    def test_direct_text_message_starts_inventory_query(self) -> None:
+        event = SimpleNamespace(
+            sender=SimpleNamespace(sender_type="user"),
+            message=SimpleNamespace(
+                message_id="om-inventory-text",
+                message_type="text",
+                chat_type="p2p",
+                mentions=None,
+                content='{"text":"产品单页 BellaBot 英语库存多少"}',
+            ),
+        )
+        thread = Mock()
+        with worker.INVENTORY_MESSAGE_LOCK:
+            worker.INVENTORY_MESSAGE_IDS.discard("om-inventory-text")
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
+            worker.handle_inventory_message(SimpleNamespace(event=event))
+
+        self.assertEqual(
+            thread_class.call_args.kwargs["args"],
+            ("om-inventory-text", [], ["产品单页 BellaBot 英语库存多少"]),
+        )
         thread.start.assert_called_once_with()
 
     def test_group_image_without_mention_is_ignored(self) -> None:
@@ -192,6 +218,22 @@ class FeishuCardWorkerTests(unittest.TestCase):
                 chat_type="group",
                 mentions=[],
                 content='{"image_key":"img-test"}',
+            ),
+        )
+        with patch.object(worker.threading, "Thread") as thread_class:
+            worker.handle_inventory_message(SimpleNamespace(event=event))
+
+        thread_class.assert_not_called()
+
+    def test_unrelated_direct_text_does_not_start_inventory_query(self) -> None:
+        event = SimpleNamespace(
+            sender=SimpleNamespace(sender_type="user"),
+            message=SimpleNamespace(
+                message_id="om-unrelated-text",
+                message_type="text",
+                chat_type="p2p",
+                mentions=None,
+                content='{"text":"你好，今天怎么样"}',
             ),
         )
         with patch.object(worker.threading, "Thread") as thread_class:
@@ -258,6 +300,24 @@ class FeishuCardWorkerTests(unittest.TestCase):
             card,
             idempotency_key="inventory-result:om-live",
         )
+
+    def test_unrelated_text_message_is_silently_ignored(self) -> None:
+        client = Mock()
+        category_rows = [
+            {"record_id": "category-1", "fields": {"物料品类": "产品单页", "启用状态": "启用"}}
+        ]
+
+        def fresh_rows(table_name: str) -> list[dict]:
+            return category_rows if table_name == worker.inventory_app.CATEGORY_TABLE_NAME else []
+
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=client),
+            patch.object(worker.inventory_app, "fresh_feishu_rows", side_effect=fresh_rows),
+        ):
+            worker.process_inventory_message("om-chat", [], ["你好"])
+
+        client.reply_text_message.assert_not_called()
+        client.reply_interactive_message.assert_not_called()
 
 
 if __name__ == "__main__":
