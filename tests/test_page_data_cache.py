@@ -16,6 +16,21 @@ class PageDataCacheTests(unittest.TestCase):
         app.page_data_runtime_cache.clear()
         app.load_static_page_data_cache.clear()
 
+    def test_request_page_and_form_cache_share_one_table_configuration(self) -> None:
+        self.assertEqual(
+            app.PAGE_CACHE_TABLES["request"],
+            app.REQUEST_FORM_CACHE_TABLES,
+        )
+        self.assertEqual(
+            set(app.REQUEST_FORM_CACHE_TABLES),
+            {
+                app.CATEGORY_TABLE_NAME,
+                app.MODEL_TABLE_NAME,
+                app.LANGUAGE_TABLE_NAME,
+                app.MATERIAL_TABLE_NAME,
+            },
+        )
+
     def test_feishu_rows_uses_static_snapshot_without_network(self) -> None:
         rows = [{"record_id": "material-1", "fields": {"物料编码": "MAT-0001"}}]
         with tempfile.TemporaryDirectory() as temp_dir:

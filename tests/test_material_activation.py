@@ -228,8 +228,51 @@ class MaterialActivationTests(unittest.TestCase):
 
         cache = app.request_form_cache_from_inventory(options, inventory_df, source="test")
 
+        self.assertEqual(cache["schema_version"], app.REQUEST_FORM_CACHE_SCHEMA_VERSION)
         self.assertEqual(cache["row_count"], 1)
+        self.assertEqual(cache["combination_count"], 1)
         self.assertEqual(cache["inventory_rows"][0]["product"], "启用品类")
+        self.assertEqual(
+            cache["active_combinations"],
+            [
+                {
+                    "product": "启用品类",
+                    "models": [{"model": "M1", "languages": ["英语"]}],
+                }
+            ],
+        )
+
+    def test_request_cache_validation_rejects_tampered_combination_config(self) -> None:
+        inventory_df = pd.DataFrame(
+            [["MAT-1", "品类A", "M1", "英语", 10, 0, 0, ""]],
+            columns=app.INVENTORY_HEADERS,
+        )
+        options = {
+            "products": ["品类A"],
+            "no_model_products": [],
+            "no_language_products": [],
+            "configured_language_products": [],
+            "models": ["M1"],
+            "languages": ["英语", "法语"],
+        }
+        cache = app.request_form_cache_from_inventory(options, inventory_df, source="test")
+        cache["active_combinations"][0]["models"][0]["languages"] = ["法语"]
+
+        with self.assertRaisesRegex(ValueError, "启用组合配置与物料行不一致"):
+            app.validate_request_form_cache(cache, require_data=True)
+
+    def test_request_cache_validation_rejects_orphan_product_config(self) -> None:
+        cache = {
+            "schema_version": app.REQUEST_FORM_CACHE_SCHEMA_VERSION,
+            "products": ["没有启用行的品类"],
+            "active_combinations": [],
+            "combination_count": 0,
+            "inventory_rows": [],
+            "row_count": 0,
+        }
+
+        with self.assertRaisesRegex(ValueError, "品类配置与启用物料组合不一致"):
+            app.validate_request_form_cache(cache)
 
     def test_category_matching_tolerates_bilingual_suffix_differences(self) -> None:
         inventory_df = pd.DataFrame(

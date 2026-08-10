@@ -155,6 +155,7 @@ MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存"
 DEFAULT_LOW_STOCK_THRESHOLD = 100
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
+REQUEST_FORM_CACHE_SCHEMA_VERSION = 2
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 WAREHOUSE_LOCATION_CACHE_PATH = (
@@ -205,8 +206,14 @@ ALL_PAGE_CACHE_TABLES = (
     REQUEST_TABLE_NAME,
     REQUEST_LINE_TABLE_NAME,
 )
+REQUEST_FORM_CACHE_TABLES = (
+    CATEGORY_TABLE_NAME,
+    MODEL_TABLE_NAME,
+    LANGUAGE_TABLE_NAME,
+    MATERIAL_TABLE_NAME,
+)
 PAGE_CACHE_TABLES = {
-    "request": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "request": REQUEST_FORM_CACHE_TABLES,
     "restock": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
@@ -1953,6 +1960,94 @@ def product_language_state(
     return scoped_languages == [NO_LANGUAGE_TEXT], scoped_languages
 
 
+def request_form_active_combinations(
+    rows: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    product_models: dict[str, dict[str, list[str]]] = {}
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        product = str(item.get("product") or "").strip()
+        if not product:
+            continue
+        model = str(item.get("model") or "").strip() or NO_MODEL_TEXT
+        language = str(item.get("language") or "").strip() or NO_LANGUAGE_TEXT
+        product_models.setdefault(product, {}).setdefault(model, []).append(language)
+
+    combinations: list[dict[str, object]] = []
+    for product, model_languages in product_models.items():
+        combinations.append(
+            {
+                "product": product,
+                "models": [
+                    {
+                        "model": model,
+                        "languages": sort_languages(model_languages[model]),
+                    }
+                    for model in sort_model_options(list(model_languages))
+                ],
+            }
+        )
+    return combinations
+
+
+def request_form_combination_count(combinations: list[dict[str, object]]) -> int:
+    return sum(
+        len(list(model_config.get("languages") or []))
+        for product_config in combinations
+        if isinstance(product_config, dict)
+        for model_config in list(product_config.get("models") or [])
+        if isinstance(model_config, dict)
+    )
+
+
+def validate_request_form_cache(
+    cache_data: dict[str, object],
+    *,
+    require_data: bool = False,
+) -> dict[str, int]:
+    schema_version = int(cache_data.get("schema_version") or 1)
+    if schema_version > REQUEST_FORM_CACHE_SCHEMA_VERSION:
+        raise ValueError(f"不支持的申请页面缓存版本：{schema_version}。")
+
+    rows = [item for item in list(cache_data.get("inventory_rows") or []) if isinstance(item, dict)]
+    row_count = int(cache_data.get("row_count") or 0)
+    if row_count != len(rows):
+        raise ValueError(
+            f"申请页面缓存行数不一致：配置 {row_count}，实际 {len(rows)}。"
+        )
+
+    expected_combinations = request_form_active_combinations(rows)
+    expected_count = request_form_combination_count(expected_combinations)
+    if schema_version >= 2:
+        cached_combinations = list(cache_data.get("active_combinations") or [])
+        if cached_combinations != expected_combinations:
+            raise ValueError("申请页面缓存中的启用组合配置与物料行不一致。")
+        configured_count = int(cache_data.get("combination_count") or 0)
+        if configured_count != expected_count:
+            raise ValueError(
+                f"申请页面缓存组合数不一致：配置 {configured_count}，实际 {expected_count}。"
+            )
+
+    products = [str(value).strip() for value in list(cache_data.get("products") or []) if str(value).strip()]
+    combination_product_keys = {
+        normalize_option_label(str(item.get("product") or ""))
+        for item in expected_combinations
+        if isinstance(item, dict)
+    }
+    product_keys = {normalize_option_label(product) for product in products}
+    if product_keys != combination_product_keys:
+        raise ValueError("申请页面缓存品类配置与启用物料组合不一致。")
+    if require_data and (not rows or not products or expected_count <= 0):
+        raise ValueError("申请页面缓存没有可用的启用物料组合。")
+
+    return {
+        "row_count": len(rows),
+        "product_count": len(products),
+        "combination_count": expected_count,
+    }
+
+
 def request_form_cache_from_inventory(
     options: dict,
     inventory_df: pd.DataFrame,
@@ -1981,16 +2076,26 @@ def request_form_cache_from_inventory(
                 {
                     "material_code": str(item[0]),
                     "product": canonical_product,
-                    "model": str(item[2]) or NO_MODEL_TEXT,
-                    "language": str(item[3]),
+                    "model": str(item[2]).strip() or NO_MODEL_TEXT,
+                    "language": str(item[3]).strip() or NO_LANGUAGE_TEXT,
                     "quantity": int(item[4] or 0),
                 }
             )
-    return {
-        "schema_version": 1,
+    active_combinations = request_form_active_combinations(rows)
+    active_product_keys = {
+        normalize_option_label(str(item.get("product") or ""))
+        for item in active_combinations
+    }
+    products = [
+        str(product)
+        for product in sort_request_products(list(options.get("products") or []))
+        if normalize_option_label(product) in active_product_keys
+    ]
+    cache = {
+        "schema_version": REQUEST_FORM_CACHE_SCHEMA_VERSION,
         "source": source,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "products": sort_request_products(list(options.get("products") or [])),
+        "products": products,
         "no_model_products": unique_preserve(list(options.get("no_model_products") or [])),
         "no_language_products": unique_preserve(list(options.get("no_language_products") or [])),
         "configured_language_products": unique_preserve(
@@ -1998,9 +2103,13 @@ def request_form_cache_from_inventory(
         ),
         "models": sort_models(list(options.get("models") or [])),
         "languages": sort_languages(list(options.get("languages") or [])),
+        "active_combinations": active_combinations,
+        "combination_count": request_form_combination_count(active_combinations),
         "inventory_rows": rows,
         "row_count": len(rows),
     }
+    validate_request_form_cache(cache)
+    return cache
 
 
 def build_live_request_form_cache() -> dict[str, object]:
@@ -2013,7 +2122,7 @@ def build_live_request_form_cache() -> dict[str, object]:
 def load_static_request_form_cache() -> dict[str, object]:
     if not REQUEST_FORM_STATIC_CACHE_PATH.exists():
         return {
-            "schema_version": 1,
+            "schema_version": REQUEST_FORM_CACHE_SCHEMA_VERSION,
             "source": "empty",
             "generated_at": "",
             "products": [],
@@ -2022,10 +2131,16 @@ def load_static_request_form_cache() -> dict[str, object]:
             "configured_language_products": [],
             "models": [],
             "languages": [],
+            "active_combinations": [],
+            "combination_count": 0,
             "inventory_rows": [],
             "row_count": 0,
         }
-    return json.loads(REQUEST_FORM_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+    data = json.loads(REQUEST_FORM_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("申请页面静态缓存文件格式不正确。")
+    validate_request_form_cache(data)
+    return data
 
 
 def request_form_cache_state() -> dict[str, object]:
@@ -2067,6 +2182,7 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
     product_model_languages: dict[tuple[str, str], list[str]] = {}
     inventory_product_keys: set[str] = set()
     rows = list(cache_data.get("inventory_rows") or [])
+    has_active_combination_config = "active_combinations" in cache_data
     for item in rows:
         if not isinstance(item, dict):
             continue
@@ -2076,11 +2192,34 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
         if not product:
             continue
         product_key = normalize_option_label(product)
-        model_key = normalize_option_label(model)
         inventory_product_keys.add(product_key)
-        product_models.setdefault(product_key, []).append(model)
-        product_languages.setdefault(product_key, []).append(language)
-        product_model_languages.setdefault((product_key, model_key), []).append(language)
+        if not has_active_combination_config:
+            model_key = normalize_option_label(model)
+            product_models.setdefault(product_key, []).append(model)
+            product_languages.setdefault(product_key, []).append(language)
+            product_model_languages.setdefault((product_key, model_key), []).append(language)
+
+    if has_active_combination_config:
+        for product_config in list(cache_data.get("active_combinations") or []):
+            if not isinstance(product_config, dict):
+                continue
+            product = str(product_config.get("product") or "").strip()
+            if not product:
+                continue
+            product_key = normalize_option_label(product)
+            inventory_product_keys.add(product_key)
+            for model_config in list(product_config.get("models") or []):
+                if not isinstance(model_config, dict):
+                    continue
+                model = str(model_config.get("model") or "").strip() or NO_MODEL_TEXT
+                languages = [
+                    str(language).strip() or NO_LANGUAGE_TEXT
+                    for language in list(model_config.get("languages") or [])
+                ]
+                model_key = normalize_option_label(model)
+                product_models.setdefault(product_key, []).append(model)
+                product_languages.setdefault(product_key, []).extend(languages)
+                product_model_languages.setdefault((product_key, model_key), []).extend(languages)
 
     product_candidates = sort_request_products(
         list(cache_data.get("products") or [])
@@ -2784,7 +2923,7 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
     runtime_lock = runtime_cache["lock"]
     with runtime_lock:  # type: ignore[union-attr]
         runtime_tables = dict(runtime_cache.get("tables") or {})
-    if not all(table_name in runtime_tables for table_name in PAGE_CACHE_TABLES["request"]):
+    if not all(table_name in runtime_tables for table_name in REQUEST_FORM_CACHE_TABLES):
         return None
     return request_form_cache_from_inventory(
         load_feishu_options(),

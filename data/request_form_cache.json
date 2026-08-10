@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source": "static_snapshot",
-  "generated_at": "2026-08-10 16:31:42",
+  "generated_at": "2026-08-10 18:09:32",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -91,6 +91,484 @@
     "意大利语(Italian)",
     "韩语(Korean)"
   ],
+  "active_combinations": [
+    {
+      "product": "产品单页(Product Flyer )",
+      "models": [
+        {
+          "model": "BellaBot",
+          "languages": [
+            "英语(English)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "Bellabot pro",
+          "languages": [
+            "简中(Simplified Chinese)",
+            "法语(French)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "BG1",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "PUDU CC1",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "法语(French)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "CC1 PRO",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "法语(French)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "D5",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "D7",
+          "languages": [
+            "简中(Simplified Chinese)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "D9",
+          "languages": [
+            "简中(Simplified Chinese)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "ET1",
+          "languages": [
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "Flash Arm",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "FlashBot",
+          "languages": [
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "FlashBot Lite",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "FlashBot Max",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "PUDU HolaBot",
+          "languages": [
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "HolaBot Pro",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "Hulk",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "KettyBot Pro",
+          "languages": [
+            "英语(English)",
+            "法语(French)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "MT1",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "法语(French)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "MT1 Max",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "法语(French)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "MT1 Vac",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "法语(French)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "PuduBot 2",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "SH1",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "SwiftBot",
+          "languages": [
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "SwiftBot Neo",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "T300",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "法语(French)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "T300 Conveyor",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "T600",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "法语(French)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "新闪电匣",
+          "languages": [
+            "韩语(Korean)"
+          ]
+        },
+        {
+          "model": "猛犸MP2000",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "英语(English)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "产品易拉宝(Product Roll-Up)",
+      "models": [
+        {
+          "model": "KettyBot Pro",
+          "languages": [
+            "简中(Simplified Chinese)"
+          ]
+        },
+        {
+          "model": "PuduBot 2",
+          "languages": [
+            "德语(German)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "公仔(Plush Toy)",
+      "models": [
+        {
+          "model": "CC1 PRO",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "PUDU HolaBot",
+          "languages": [
+            "无需语种"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "冰箱贴( Fridge Magnet)",
+      "models": [
+        {
+          "model": "BellaBot",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "Bellabot pro",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "BG1",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "PUDU CC1",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "D5",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "D7",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "MT1",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "T300",
+          "languages": [
+            "无需语种"
+          ]
+        },
+        {
+          "model": "猛犸MP2000",
+          "languages": [
+            "无需语种"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "笔记本礼盒(Notebook Gift Box)",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "无需语种"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "普渡logo无纺布手提袋(PUDU logo bag)",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "英语(English)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "英语(English)"
+          ]
+        }
+      ]
+    },
+    {
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)"
+          ]
+        }
+      ]
+    }
+  ],
+  "combination_count": 175,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",

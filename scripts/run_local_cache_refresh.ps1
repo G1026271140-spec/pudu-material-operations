@@ -184,6 +184,8 @@ try {
         )) {
             Invoke-CheckedCommand $venvPython @($generator) | Out-Null
         }
+        Write-RunnerLog "Validating active material combinations in the request cache."
+        Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
 
         Invoke-CheckedCommand $git (@("add", "--") + $CacheFiles) | Out-Null
         & $git diff --cached --quiet -- @CacheFiles

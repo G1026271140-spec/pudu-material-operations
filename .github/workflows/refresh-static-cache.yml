@@ -40,11 +40,12 @@ jobs:
       - name: Maintain inventory row status
         run: python scripts/maintain_inventory_status.py
 
-      - name: Generate static cache files
+      - name: Generate and validate static cache files
         run: |
           python scripts/generate_page_data_cache.py
           python scripts/generate_request_form_cache.py
           python scripts/generate_contact_departments_cache.py
+          python scripts/validate_request_form_cache.py
 
       - name: Commit refreshed cache
         shell: bash

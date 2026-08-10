@@ -10,9 +10,11 @@ import app  # noqa: E402
 
 def main() -> int:
     cache = app.build_live_request_form_cache()
-    if int(cache.get("row_count") or 0) <= 0 or not list(cache.get("products") or []):
+    try:
+        stats = app.validate_request_form_cache(cache, require_data=True)
+    except ValueError as exc:
         print(
-            "request_form_cache_not_written: Feishu returned no material rows or products",
+            f"request_form_cache_not_written: {exc}",
             file=sys.stderr,
         )
         return 1
@@ -26,7 +28,9 @@ def main() -> int:
     print(
         "request_and_restock_form_cache_written",
         app.REQUEST_FORM_STATIC_CACHE_PATH,
-        f"rows={cache.get('row_count')}",
+        f"rows={stats['row_count']}",
+        f"products={stats['product_count']}",
+        f"combinations={stats['combination_count']}",
         f"generated_at={cache.get('generated_at')}",
     )
     return 0
