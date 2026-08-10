@@ -4437,6 +4437,31 @@ def category_edit_notification_card(
     }
 
 
+def is_feishu_recipient_unavailable_error(exc: Exception) -> bool:
+    compact_message = re.sub(r"\s+", "", str(exc))
+    return (
+        '"code":230013' in compact_message
+        or "FeishuAPI230013:" in compact_message
+    )
+
+
+def send_category_notification_to_available_admins(
+    client: object,
+    recipients: list[str],
+    card: dict[str, object],
+) -> int:
+    sent_count = 0
+    for open_id in recipients:
+        try:
+            send_feishu_interactive_message(client, open_id, card)
+        except FeishuBitableError as exc:
+            if is_feishu_recipient_unavailable_error(exc):
+                continue
+            raise
+        sent_count += 1
+    return sent_count
+
+
 def notify_enabled_admins_of_category_edit(
     draft: dict[str, object], result: dict[str, object]
 ) -> int:
@@ -4447,9 +4472,7 @@ def notify_enabled_admins_of_category_edit(
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = category_edit_notification_card(draft, result)
-    for open_id in recipients:
-        send_feishu_interactive_message(client, open_id, card)
-    return len(recipients)
+    return send_category_notification_to_available_admins(client, recipients, card)
 
 
 def category_create_notification_card(
@@ -4517,9 +4540,7 @@ def notify_enabled_admins_of_category_create(
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = category_create_notification_card(draft, result)
-    for open_id in recipients:
-        send_feishu_interactive_message(client, open_id, card)
-    return len(recipients)
+    return send_category_notification_to_available_admins(client, recipients, card)
 
 
 def ensure_inventory_zero_since_field() -> bool:

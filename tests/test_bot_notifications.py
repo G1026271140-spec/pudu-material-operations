@@ -75,6 +75,37 @@ class BotNotificationTests(unittest.TestCase):
         client.send_interactive_message.assert_any_call("ou-a", card)
         client.send_interactive_message.assert_any_call("ou-b", card)
 
+    def test_category_notification_skips_unavailable_admin_and_continues(self) -> None:
+        client = Mock()
+        client.send_interactive_message.side_effect = [
+            app.FeishuBitableError(
+                'Feishu HTTP 400: {"code":230013,"msg":"Bot has NO availability to this user"}'
+            ),
+            "om-success",
+        ]
+        card = {"config": {"wide_screen_mode": True}}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-unavailable", "ou-ok"]),
+            patch.object(app, "category_edit_notification_card", return_value=card),
+        ):
+            count = app.notify_enabled_admins_of_category_edit({}, {})
+
+        self.assertEqual(count, 1)
+        self.assertEqual(client.send_interactive_message.call_count, 2)
+
+    def test_category_notification_keeps_unexpected_errors_visible(self) -> None:
+        client = Mock()
+        client.send_interactive_message.side_effect = app.FeishuBitableError(
+            'Feishu HTTP 400: {"code":230001,"msg":"invalid request"}'
+        )
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+        ):
+            with self.assertRaisesRegex(app.FeishuBitableError, "230001"):
+                app.notify_enabled_admins_of_category_edit({}, {})
+
     def test_category_create_card_contains_initial_inventory_details(self) -> None:
         draft = {
             "product": "新品类",
