@@ -53,7 +53,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/page_data_cache.json data/request_form_cache.json data/contact_departments_cache.json
+          git add data/page_data_cache.json data/request_form_cache.json data/contact_departments_cache.json assets/gift_projects
           if git diff --cached --quiet; then
             echo "Static cache is already current."
             exit 0

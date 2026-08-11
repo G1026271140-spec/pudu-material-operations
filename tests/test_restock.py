@@ -230,6 +230,163 @@ class RestockTests(unittest.TestCase):
             )
         )
 
+    def test_inventory_records_prefer_linked_category_name(self) -> None:
+        material_row = {
+            **self.material_row,
+            "fields": {
+                **self.material_row["fields"],
+                "物料品类": "展会服装",
+                "品类关联": [{"record_ids": ["category-clothes"]}],
+                "产品型号": app.NO_MODEL_TEXT,
+                "语种": app.NO_LANGUAGE_TEXT,
+            },
+        }
+        category_row = {
+            "record_id": "category-clothes",
+            "fields": {
+                "物料品类": "展会服装（Clothes）",
+                "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                "是否无需型号": "是",
+                "是否无需语种": "是",
+                "启用状态": app.STATUS_INACTIVE,
+            },
+        }
+
+        records = app.feishu_inventory_records_from_rows(
+            [material_row],
+            [category_row],
+            active_only=False,
+        )
+
+        self.assertEqual(records[0]["category"], "展会服装（Clothes）")
+
+    def test_restock_context_includes_default_combination_for_empty_category(self) -> None:
+        category_row = {
+            "record_id": "category-gift",
+            "fields": {
+                "物料品类": "定制帽子",
+                "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                "是否无需型号": "是",
+                "是否无需语种": "是",
+                "启用状态": app.STATUS_INACTIVE,
+            },
+        }
+
+        def cached_rows(table_name: str) -> list[dict]:
+            if table_name == app.CATEGORY_TABLE_NAME:
+                return [category_row]
+            return []
+
+        with (
+            patch.object(app, "safe_feishu_rows", side_effect=cached_rows),
+            patch.object(
+                app,
+                "page_cache_status",
+                return_value=("部署静态缓存", "2026-08-11 12:00:00"),
+            ),
+        ):
+            context = app.get_restock_selection_context()
+
+        self.assertEqual(context["products"], ["定制帽子"])
+        self.assertEqual(
+            app.restock_scoped_models(context, "定制帽子"),
+            (True, [app.NO_MODEL_TEXT]),
+        )
+        self.assertTrue(
+            app.selection_context_has_inventory_combination(
+                context,
+                "定制帽子",
+                app.NO_MODEL_TEXT,
+                app.NO_LANGUAGE_TEXT,
+            )
+        )
+
+    def test_restock_scoped_models_handles_only_no_model_inventory_value(self) -> None:
+        context = {
+            "product_models": {"展会服装": [app.NO_MODEL_TEXT]},
+            "no_model_product_keys": set(),
+        }
+
+        result = app.restock_scoped_models(context, "展会服装")
+
+        self.assertEqual(result, (True, [app.NO_MODEL_TEXT]))
+
+    def test_restock_creates_missing_default_material_before_purchase(self) -> None:
+        category_row = {
+            "record_id": "category-hat",
+            "fields": {
+                "物料品类": "定制帽子",
+                "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                "是否无需型号": "是",
+                "是否无需语种": "是",
+                "启用状态": app.STATUS_INACTIVE,
+            },
+        }
+        draft = {
+            **self.draft,
+            "lines": [
+                {
+                    "product": "定制帽子",
+                    "model": app.NO_MODEL_TEXT,
+                    "language": app.NO_LANGUAGE_TEXT,
+                    "quantity": 1000,
+                    "remark": "首次补库",
+                }
+            ],
+        }
+
+        def fresh_rows(table_name: str) -> list[dict]:
+            if table_name == app.CATEGORY_TABLE_NAME:
+                return [category_row]
+            return []
+
+        def create_rows(table_name: str, rows: list[dict]) -> list[dict]:
+            if table_name == app.MATERIAL_TABLE_NAME:
+                return [{"record_id": "material-hat"}]
+            if table_name == app.LEDGER_TABLE_NAME:
+                return [{"record_id": "ledger-hat"}]
+            return []
+
+        with (
+            patch.object(app, "feishu_client", return_value=MagicMock()),
+            patch.object(app, "fresh_feishu_rows", side_effect=fresh_rows),
+            patch.object(
+                app,
+                "ensure_feishu_model_records",
+                return_value=("型号关联", {app.NO_MODEL_TEXT: "model-none"}),
+            ),
+            patch.object(
+                app,
+                "ensure_feishu_language_records",
+                return_value=("语种关联", {app.NO_LANGUAGE_TEXT: "language-none"}),
+            ),
+            patch.object(app, "set_feishu_unit_price"),
+            patch.object(app, "set_feishu_customs_code"),
+            patch.object(app, "feishu_batch_create_records", side_effect=create_rows) as create,
+            patch.object(
+                app,
+                "feishu_batch_update_record_fields",
+                side_effect=lambda _table, rows: len(rows),
+            ) as update,
+        ):
+            result = app.submit_inventory_restock(draft)
+
+        self.assertEqual(result[0]["material_code"], "MAT-0001")
+        self.assertEqual(result[0]["before_quantity"], 0)
+        self.assertEqual(result[0]["after_quantity"], 1000)
+        material_create = next(
+            call_item
+            for call_item in create.call_args_list
+            if call_item.args[0] == app.MATERIAL_TABLE_NAME
+        )
+        self.assertEqual(material_create.args[1][0]["品类关联"], ["category-hat"])
+        material_update = next(
+            call_item
+            for call_item in update.call_args_list
+            if call_item.args[0] == app.MATERIAL_TABLE_NAME
+        )
+        self.assertEqual(material_update.args[1][0]["fields"]["当前库存"], 1000)
+
 
 if __name__ == "__main__":
     unittest.main()

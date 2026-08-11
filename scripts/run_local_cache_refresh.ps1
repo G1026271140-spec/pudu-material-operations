@@ -21,6 +21,10 @@ $CacheFiles = @(
     "data/request_form_cache.json",
     "data/contact_departments_cache.json"
 )
+$CacheDirectories = @(
+    "assets/gift_projects"
+)
+$CachePaths = $CacheFiles + $CacheDirectories
 $MutexName = "Local\PuduMaterialCacheRefresh"
 $Mutex = [Threading.Mutex]::new($false, $MutexName)
 $HasMutex = $false
@@ -126,7 +130,14 @@ try {
                 continue
             }
             $changedPath = $statusText.Substring(3).Replace("\", "/").Trim('"')
-            if ($changedPath -notin $CacheFiles) {
+            $isCachePath = $changedPath -in $CacheFiles
+            foreach ($cacheDirectory in $CacheDirectories) {
+                if ($changedPath -eq $cacheDirectory -or $changedPath.StartsWith("$cacheDirectory/")) {
+                    $isCachePath = $true
+                    break
+                }
+            }
+            if (-not $isCachePath) {
                 $unexpectedChanges += $changedPath
             }
         }
@@ -134,7 +145,7 @@ try {
             throw "Runner repository has unexpected changes: $($unexpectedChanges -join ', ')"
         }
         if ($statusLines.Count -gt 0) {
-            Invoke-CheckedCommand $git (@("restore", "--staged", "--worktree", "--") + $CacheFiles) | Out-Null
+            Invoke-CheckedCommand $git (@("restore", "--staged", "--worktree", "--") + $CachePaths) | Out-Null
         }
 
         Invoke-CheckedCommand $git @("fetch", "origin", "master") | Out-Null
@@ -189,8 +200,8 @@ try {
         Write-RunnerLog "Validating active material combinations in the request cache."
         Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
 
-        Invoke-CheckedCommand $git (@("add", "--") + $CacheFiles) | Out-Null
-        & $git diff --cached --quiet -- @CacheFiles
+        Invoke-CheckedCommand $git (@("add", "--") + $CachePaths) | Out-Null
+        & $git diff --cached --quiet -- @CachePaths
         $diffExitCode = $LASTEXITCODE
         if ($diffExitCode -eq 0) {
             $FinalMessage = "Static cache is already current; no Git commit was needed."

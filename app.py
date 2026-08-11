@@ -2376,6 +2376,27 @@ def get_restock_selection_context() -> dict[str, object]:
         }
         for item in inventory_records
     ]
+    inventory_category_keys = {
+        normalize_category_match_key(item.get("category"))
+        for item in inventory_records
+        if str(item.get("category") or "").strip()
+    }
+    inventory_rows.extend(
+        {
+            "material_code": "",
+            "product": str(category.get("category") or ""),
+            "model": NO_MODEL_TEXT,
+            "language": NO_LANGUAGE_TEXT,
+            "quantity": 0,
+            "status": str(category.get("status") or STATUS_INACTIVE),
+            "synthetic": True,
+        }
+        for category in category_records
+        if category.get("no_model")
+        and category.get("no_language")
+        and normalize_category_match_key(category.get("category"))
+        not in inventory_category_keys
+    )
     context = request_form_cache_to_selection_context(
         {
             "source": "page_data_cache",
@@ -3169,6 +3190,7 @@ def feishu_attachment_items(fields: dict, name: str) -> list[dict[str, str]]:
                 "name": str(item.get("name") or "").strip(),
                 "type": str(item.get("type") or "").strip(),
                 "url": str(item.get("tmp_url") or item.get("url") or "").strip(),
+                "cached_path": str(item.get("cached_path") or "").strip(),
             }
         )
     return attachments
@@ -3879,6 +3901,121 @@ def validate_restock_draft(draft: dict[str, object]) -> list[str]:
     return errors
 
 
+def create_missing_restock_material_records(
+    lines: list[dict[str, object]],
+    restock_records: list[dict],
+    restock_by_key: dict[tuple[str, str, str], dict],
+    raw_material_by_id: dict[str, dict],
+    category_records: list[dict],
+) -> int:
+    category_by_product = {
+        normalize_category_match_key(item.get("category")): item
+        for item in category_records
+        if str(item.get("category") or "").strip()
+    }
+    missing_keys: list[tuple[str, str, str]] = []
+    for line in lines:
+        key = request_material_key(line)
+        if key in restock_by_key or key in missing_keys:
+            continue
+        category = category_by_product.get(normalize_category_match_key(key[0]))
+        if (
+            category is None
+            or not category.get("no_model")
+            or not category.get("no_language")
+            or key[1] != NO_MODEL_TEXT
+            or key[2] != NO_LANGUAGE_TEXT
+        ):
+            raise RuntimeError(f"补库物料不存在：{key[0]} / {key[1]} / {key[2]}")
+        missing_keys.append(key)
+
+    if not missing_keys:
+        return 0
+
+    new_codes = next_material_codes_from_records(restock_records, len(missing_keys))
+    model_link_field, model_record_ids = ensure_feishu_model_records([NO_MODEL_TEXT])
+    language_link_field, language_record_ids = ensure_feishu_language_records(
+        [NO_LANGUAGE_TEXT]
+    )
+    create_fields: list[dict[str, object]] = []
+    for key, material_code in zip(missing_keys, new_codes):
+        category = category_by_product[normalize_category_match_key(key[0])]
+        fields: dict[str, object] = {
+            "物料编码": material_code,
+            "物料品类": str(category.get("category") or key[0]),
+            "产品型号": NO_MODEL_TEXT,
+            "语种": NO_LANGUAGE_TEXT,
+            "当前库存": 0,
+            "启用状态": STATUS_INACTIVE,
+            "备注": "",
+            "品类关联": [str(category.get("record_id") or "")],
+        }
+        set_feishu_unit_price(
+            MATERIAL_TABLE_NAME,
+            fields,
+            float(category.get("unit_price") or 0),
+        )
+        set_feishu_customs_code(
+            MATERIAL_TABLE_NAME,
+            fields,
+            str(category.get("customs_code") or ""),
+        )
+        add_material_model_link(
+            fields,
+            NO_MODEL_TEXT,
+            model_link_field,
+            model_record_ids,
+        )
+        add_material_language_link(
+            fields,
+            NO_LANGUAGE_TEXT,
+            language_link_field,
+            language_record_ids,
+        )
+        create_fields.append(fields)
+
+    created_rows = feishu_batch_create_records(MATERIAL_TABLE_NAME, create_fields)
+    if len(created_rows) != len(create_fields):
+        raise RuntimeError("缺失的补库物料主数据未完整创建。")
+
+    category_updates: dict[str, dict[str, object]] = {}
+    for key, material_code, fields, created_row in zip(
+        missing_keys,
+        new_codes,
+        create_fields,
+        created_rows,
+    ):
+        record_id = feishu_record_id(created_row)
+        if not record_id:
+            raise RuntimeError("创建补库物料主数据后未返回记录 ID。")
+        restock_by_key[key] = {
+            "record_id": record_id,
+            "material_code": material_code,
+            "category": key[0],
+            "model": key[1],
+            "language": key[2],
+            "quantity": 0,
+            "unit_price": feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES)),
+            "status": STATUS_INACTIVE,
+        }
+        raw_material_by_id[record_id] = {"record_id": record_id, "fields": fields}
+        category = category_by_product[normalize_category_match_key(key[0])]
+        category_id = str(category.get("record_id") or "")
+        category_updates[category_id] = {
+            "record_id": category_id,
+            "fields": {
+                "库存行数": 1,
+                "产品型号数量": 1,
+                "语种数量": 1,
+            },
+        }
+    feishu_batch_update_record_fields(
+        CATEGORY_TABLE_NAME,
+        list(category_updates.values()),
+    )
+    return len(created_rows)
+
+
 def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]]:
     errors = validate_restock_draft(draft)
     if errors:
@@ -3903,11 +4040,24 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
         ): record
         for record in restock_records
     }
+    category_records = feishu_category_records_from_rows(category_rows)
+    draft_lines = [
+        line
+        for line in list(draft.get("lines") or [])
+        if isinstance(line, dict)
+    ]
+    create_missing_restock_material_records(
+        draft_lines,
+        restock_records,
+        restock_by_key,
+        raw_material_by_id,
+        category_records,
+    )
     category_definition_by_product = {
         str(item.get("category") or ""): str(
             item.get("category_definition") or UNDEFINED_CATEGORY_DEFINITION
         )
-        for item in feishu_category_records_from_rows(category_rows)
+        for item in category_records
     }
     restock_no = str(draft.get("restock_no") or "").strip()
     operator = str(draft.get("operator") or "").strip()
@@ -3916,9 +4066,7 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
     submission_token = str(draft.get("submission_token") or "").strip() or uuid.uuid4().hex
     occurred_at = datetime.now()
     prepared: list[dict[str, object]] = []
-    for index, line in enumerate(list(draft.get("lines") or []), start=1):
-        if not isinstance(line, dict):
-            continue
+    for index, line in enumerate(draft_lines, start=1):
         product, model, language = request_material_key(line)
         record = restock_by_key.get((product, model, language))
         if record is None:
@@ -5683,12 +5831,16 @@ def load_feishu_transaction_records(
     return records[:limit]
 
 
-def parse_feishu_inventory_record(row: dict) -> dict | None:
+def parse_feishu_inventory_record(
+    row: dict,
+    *,
+    category_override: str = "",
+) -> dict | None:
     fields = feishu_fields(row)
     if not fields:
         return None
     material_code = feishu_text(fields, "物料编码")
-    category = feishu_text(fields, "物料品类")
+    category = category_override.strip() or feishu_text(fields, "物料品类")
     if not material_code or not category:
         return None
     quantity = feishu_int(fields, "当前库存")
@@ -5714,18 +5866,33 @@ def feishu_inventory_records_from_rows(
     *,
     active_only: bool = False,
 ) -> list[dict]:
-    records = [
-        parsed
-        for row in material_rows
-        if (parsed := parse_feishu_inventory_record(row)) is not None
-    ]
+    category_records = feishu_category_records_from_rows(list(category_rows or []))
+    category_by_id = {
+        str(category.get("record_id") or ""): str(category.get("category") or "")
+        for category in category_records
+        if str(category.get("record_id") or "")
+    }
+    records: list[dict] = []
+    for row in material_rows:
+        linked_category = next(
+            (
+                category_by_id[record_id]
+                for record_id in feishu_link_ids(feishu_fields(row), "品类关联")
+                if record_id in category_by_id
+            ),
+            "",
+        )
+        parsed = parse_feishu_inventory_record(
+            row,
+            category_override=linked_category,
+        )
+        if parsed is not None:
+            records.append(parsed)
     if active_only:
         category_status_by_name = {
-            feishu_text(feishu_fields(row), "物料品类"): normalize_enabled_status(
-                feishu_text(feishu_fields(row), "启用状态")
-            )
-            for row in list(category_rows or [])
-            if feishu_text(feishu_fields(row), "物料品类")
+            str(category.get("category") or ""): str(category.get("status") or "")
+            for category in category_records
+            if str(category.get("category") or "")
         }
         records = [
             record
@@ -8384,10 +8551,11 @@ def restock_scoped_models(
     scoped_models = list(
         dict(selection_context.get("product_models") or {}).get(product_key, [])
     )
+    model_options = sort_model_options(scoped_models)
     is_no_model = product_key in set(selection_context.get("no_model_product_keys") or set())
-    if is_no_model or not scoped_models:
+    if is_no_model or not model_options or model_options == [NO_MODEL_TEXT]:
         return True, [NO_MODEL_TEXT]
-    return False, sort_models(scoped_models)
+    return False, model_options
 
 
 def restock_scoped_languages(
@@ -8408,7 +8576,10 @@ def restock_scoped_languages(
             [],
         )
     )
-    return False, sort_languages(scoped_languages)
+    language_options = sort_languages(scoped_languages)
+    if not language_options:
+        return True, [NO_LANGUAGE_TEXT]
+    return language_options == [NO_LANGUAGE_TEXT], language_options
 
 
 def restock_inventory_snapshot(
@@ -11308,6 +11479,13 @@ def render_warehouse_location_view() -> None:
 def render_gift_image(attachments: list[dict], product: object) -> None:
     attachment = attachments[0] if attachments else None
     if isinstance(attachment, dict):
+        cached_path = str(attachment.get("cached_path") or "").strip()
+        if cached_path:
+            app_root = Path(__file__).resolve().parent
+            image_path = (app_root / cached_path).resolve()
+            if app_root in image_path.parents and image_path.is_file():
+                st.image(str(image_path), width="stretch")
+                return
         file_token = str(attachment.get("file_token") or "")
         if file_token:
             try:
