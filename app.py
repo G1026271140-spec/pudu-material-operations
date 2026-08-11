@@ -280,6 +280,9 @@ def inject_global_styles() -> None:
             --pudu-green: #20A162;
             --pudu-amber: #B86B13;
             --pudu-red: #C83F32;
+            --pudu-required-bg: #FFF5F4;
+            --pudu-required-line: #E5A29B;
+            --pudu-required-focus: #C95A50;
         }
         html, body, [class*="css"] {
             font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -668,6 +671,49 @@ def inject_global_styles() -> None:
         [data-testid="stSelectbox"] div[role="group"]:has(input:disabled),
         [data-testid="stMultiSelect"] div[role="group"]:has(input:disabled) {
             background: #F5F6F8 !important;
+        }
+        .pudu-required-control-marker {
+            display: none;
+        }
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] [data-testid="stTextInputRootElement"],
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] [data-testid="stTextAreaRootElement"],
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] [data-testid="stNumberInputContainer"],
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] div[data-baseweb="select"] > div,
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] textarea {
+            border-color: var(--pudu-required-line) !important;
+            background: var(--pudu-required-bg) !important;
+        }
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] [data-testid="stTextInputRootElement"]:focus-within,
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] [data-testid="stTextAreaRootElement"]:focus-within,
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] [data-testid="stNumberInputContainer"]:focus-within,
+        [data-testid="stElementContainer"]:has(.pudu-required-control-marker)
+        + [data-testid="stElementContainer"] div[data-baseweb="select"] > div:focus-within {
+            border-color: var(--pudu-required-focus) !important;
+            box-shadow: 0 0 0 2px rgba(201, 90, 80, 0.12) !important;
+        }
+        .pudu-readonly-required-control {
+            display: flex;
+            align-items: center;
+            min-height: 40px;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid var(--pudu-required-line);
+            border-radius: 6px;
+            background: var(--pudu-required-bg);
+            color: var(--pudu-subtle);
+            font-size: 0.9rem;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+        .pudu-readonly-required-control.has-value {
+            color: var(--pudu-ink);
         }
         [data-testid="stFileUploaderDropzone"] {
             min-height: 90px;
@@ -2287,9 +2333,11 @@ def sync_request_department_from_selected_applicant() -> None:
     open_id = str(st.session_state.get("request_requester_open_id") or "")
     user_lookup = st.session_state.get(REQUEST_CONTACT_USER_LOOKUP_KEY)
     if not open_id or not isinstance(user_lookup, dict):
+        st.session_state["request_department_id"] = None
         return
     user = user_lookup.get(open_id)
     if not isinstance(user, dict):
+        st.session_state["request_department_id"] = None
         return
     department_ids = [
         str(value)
@@ -2297,8 +2345,8 @@ def sync_request_department_from_selected_applicant() -> None:
         if str(value).strip()
     ]
     current_department_id = str(st.session_state.get("request_department_id") or "")
-    if department_ids and current_department_id not in department_ids:
-        st.session_state["request_department_id"] = department_ids[0]
+    if current_department_id not in department_ids:
+        st.session_state["request_department_id"] = department_ids[0] if department_ids else None
 
 
 def get_request_form_selection_context() -> dict[str, object]:
@@ -7065,7 +7113,21 @@ def required_field_label(container: object, label: str, hint: str = "") -> None:
     container.markdown(
         (
             f'<div class="pudu-field-label"><span>{escape(ui_text(label))} '
-            f'<span class="pudu-required-star">*</span></span>{hint_html}</div>'
+            f'<span class="pudu-required-star">*</span></span>{hint_html}'
+            '<span class="pudu-required-control-marker" aria-hidden="true"></span></div>'
+        ),
+        unsafe_allow_html=True,
+    )
+
+
+def render_readonly_request_department(container: object, department: str) -> None:
+    value = str(department or "").strip()
+    display_value = value or ui_text("选择申请人后自动显示")
+    value_class = " has-value" if value else ""
+    container.markdown(
+        (
+            f'<div class="pudu-readonly-required-control{value_class}" '
+            f'role="textbox" aria-readonly="true">{escape(display_value)}</div>'
         ),
         unsafe_allow_html=True,
     )
@@ -7107,13 +7169,9 @@ def render_request_contact_fields(
         departments = get_contact_departments()
         directory_users = get_contact_users()
     except Exception as exc:
-        st.warning(f"飞书通讯录暂时不可用，已切换为手动填写：{exc}")
-        department = department_col.text_input(
-            "申请部门",
-            key="request_department_manual",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
+        st.warning(f"飞书通讯录暂时不可用，无法自动识别申请部门：{exc}")
+        department = ""
+        render_readonly_request_department(department_col, department)
         requester = requester_col.text_input(
             "申请人",
             key="request_requester_manual",
@@ -7131,42 +7189,7 @@ def render_request_contact_fields(
         for item in departments
         if str(item.get("department_id") or "").strip()
     }
-    department_options = list(department_by_id)
-    current_department_id = st.session_state.get("request_department_id")
-    if current_department_id not in department_options:
-        st.session_state["request_department_id"] = None
-    department_id = department_col.selectbox(
-        "申请部门",
-        department_options,
-        index=None,
-        key="request_department_id",
-        format_func=lambda value: str(department_by_id.get(str(value), {}).get("path") or value),
-        placeholder="请选择飞书部门",
-        label_visibility="collapsed",
-        on_change=mark_request_form_dirty,
-    )
-    department = (
-        str(department_by_id.get(str(department_id), {}).get("path") or "")
-        if department_id
-        else ""
-    )
-    st.session_state["request_department"] = department
-
     users: list[dict[str, object]] = list(directory_users)
-    user_error = ""
-    if not users and department_id:
-        try:
-            with st.spinner("正在读取部门成员，请稍后......"):
-                users = [
-                    {
-                        **item,
-                        "department_ids": [str(department_id)],
-                        "department_paths": [department],
-                    }
-                    for item in load_contact_department_users(str(department_id))
-                ]
-        except Exception as exc:
-            user_error = str(exc)
     user_by_id = {
         str(item["open_id"]): item
         for item in users
@@ -7197,9 +7220,7 @@ def render_request_contact_fields(
         index=None,
         key="request_requester_open_id",
         format_func=user_label,
-        placeholder="输入姓名搜索申请人" if directory_users else (
-            "请先选择部门" if not department_id else "请选择飞书员工"
-        ),
+        placeholder="输入姓名搜索申请人" if directory_users else "通讯录中暂无可选成员",
         disabled=not user_options,
         label_visibility="collapsed",
         on_change=sync_request_department_from_selected_applicant,
@@ -7209,11 +7230,31 @@ def render_request_contact_fields(
         if requester_open_id
         else ""
     )
+    selected_user = user_by_id.get(str(requester_open_id), {})
+    selected_department_ids = [
+        str(value)
+        for value in list(selected_user.get("department_ids") or [])
+        if str(value).strip() and str(value) in department_by_id
+    ]
+    current_department_id = str(st.session_state.get("request_department_id") or "")
+    department_id = (
+        current_department_id
+        if current_department_id in selected_department_ids
+        else (selected_department_ids[0] if selected_department_ids else "")
+    )
+    department = (
+        str(department_by_id.get(department_id, {}).get("path") or "")
+        if department_id
+        else ""
+    )
+    render_readonly_request_department(department_col, department)
+    st.session_state["request_department"] = department
+    st.session_state["request_department_id"] = department_id or None
     st.session_state["request_requester"] = requester
-    if user_error:
-        requester_col.caption("部门成员读取失败，请刷新本页数据后重试。")
-    elif department_id and not users:
-        requester_col.caption("该部门暂无可选成员。")
+    if not users:
+        requester_col.caption("通讯录中暂无可选成员，请刷新本页数据后重试。")
+    elif requester_open_id and not department:
+        department_col.caption("该申请人未关联有效部门，请联系管理员维护通讯录。")
     return department, str(department_id or ""), requester, str(requester_open_id or "")
 
 

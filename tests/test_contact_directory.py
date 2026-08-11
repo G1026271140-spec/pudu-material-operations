@@ -77,6 +77,35 @@ class ContactDirectoryTests(unittest.TestCase):
         self.assertEqual(session_state["request_department_id"], "od-sales")
         self.assertTrue(session_state["request_form_cache_locked"])
 
+    def test_clearing_applicant_clears_previous_department(self) -> None:
+        session_state = {
+            "request_requester_open_id": None,
+            "request_department_id": "od-sales",
+            app.REQUEST_CONTACT_USER_LOOKUP_KEY: {},
+        }
+
+        with patch.object(app.st, "session_state", session_state):
+            app.sync_request_department_from_selected_applicant()
+
+        self.assertIsNone(session_state["request_department_id"])
+        self.assertTrue(session_state["request_form_cache_locked"])
+
+    def test_applicant_without_department_clears_previous_department(self) -> None:
+        session_state = {
+            "request_requester_open_id": "ou-example",
+            "request_department_id": "od-sales",
+            app.REQUEST_CONTACT_USER_LOOKUP_KEY: {
+                "ou-example": {
+                    "department_ids": [],
+                }
+            },
+        }
+
+        with patch.object(app.st, "session_state", session_state):
+            app.sync_request_department_from_selected_applicant()
+
+        self.assertIsNone(session_state["request_department_id"])
+
     def test_live_directory_retries_transient_department_timeout(self) -> None:
         client = Mock()
         client.list_contact_departments.return_value = [
