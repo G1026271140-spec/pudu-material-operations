@@ -134,6 +134,33 @@ class FeishuBitableClient:
             raise FeishuBitableError("Feishu did not return an attachment file_token.")
         return file_token
 
+    def download_media(self, file_token: str, *, max_bytes: int = 20 * 1024 * 1024) -> bytes:
+        normalized_token = file_token.strip()
+        if not normalized_token:
+            raise FeishuBitableError("Attachment file_token cannot be empty.")
+        if max_bytes <= 0:
+            raise FeishuBitableError("Attachment size limit must be positive.")
+
+        req = request.Request(
+            FEISHU_OPEN_API
+            + f"/drive/v1/medias/{parse.quote(normalized_token, safe='')}/download",
+            headers={"Authorization": f"Bearer {self.tenant_access_token()}"},
+            method="GET",
+        )
+        try:
+            with request.urlopen(req, timeout=30) as response:
+                content = response.read(max_bytes + 1)
+        except error.HTTPError as exc:
+            text = exc.read().decode("utf-8", errors="replace")
+            raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
+        if len(content) > max_bytes:
+            raise FeishuBitableError(
+                f"Attachment exceeds the {max_bytes} byte download limit."
+            )
+        if not content:
+            raise FeishuBitableError("Feishu returned an empty attachment.")
+        return content
+
     def list_records(self, table_id: str, page_size: int = 500) -> list[dict[str, Any]]:
         return self._paged_get(
             f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records",

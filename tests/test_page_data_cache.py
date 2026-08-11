@@ -21,6 +21,17 @@ class PageDataCacheTests(unittest.TestCase):
             app.PAGE_CACHE_TABLES["request"],
             app.REQUEST_FORM_CACHE_TABLES,
         )
+
+    def test_gift_project_table_is_in_page_and_global_cache_configuration(self) -> None:
+        self.assertIn(app.GIFT_PROJECT_TABLE_NAME, app.ALL_PAGE_CACHE_TABLES)
+        self.assertEqual(
+            app.PAGE_CACHE_TABLES["gift_projects"],
+            (
+                app.CATEGORY_TABLE_NAME,
+                app.MATERIAL_TABLE_NAME,
+                app.GIFT_PROJECT_TABLE_NAME,
+            ),
+        )
         self.assertEqual(
             set(app.REQUEST_FORM_CACHE_TABLES),
             {

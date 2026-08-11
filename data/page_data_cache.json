@@ -1,29 +1,17 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-11 16:36:45",
+  "generated_at": "2026-08-11 18:05:57",
   "tables": {
     "物料品类": [
       {
         "fields": {
           "产品型号数量": "18",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY1dq005YC"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00120260811",
-              "text_arr": [
-                "00120260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
+          "单价（人民币）": 0.4062,
+          "单价（美元）": "0.06",
           "启用状态": "停用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "180",
           "是否无需型号": "否",
@@ -419,23 +407,11 @@
       {
         "fields": {
           "产品型号数量": "29",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY1dq09EXI"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00220260811",
-              "text_arr": [
-                "00220260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
+          "单价（人民币）": 0.4062,
+          "单价（美元）": "0.06",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "319",
           "是否无需型号": "否",
@@ -1109,23 +1085,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY1dq0xpBN"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00320260811",
-              "text_arr": [
-                "00320260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 5.416,
           "单价（美元）": "0.8",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "10",
           "是否无需型号": "是",
@@ -1181,23 +1145,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY1dq0yorY"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00420260811",
-              "text_arr": [
-                "00420260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
+          "单价（人民币）": 5.416,
+          "单价（美元）": "0.8",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "2",
           "是否无需型号": "是",
@@ -1257,23 +1209,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY1dq0WMgz"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00520260811",
-              "text_arr": [
-                "00520260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 5.416,
           "单价（美元）": "0.8",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "10",
           "是否无需型号": "是",
@@ -1329,23 +1269,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2KP0KmCo"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00620260811",
-              "text_arr": [
-                "00620260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
           "单价（人民币）": 5.416,
           "单价（美元）": "0.8",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": null,
           "库存行数": "1",
           "是否无需型号": "是",
@@ -1383,23 +1311,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2KZy5kxP"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00720260811",
-              "text_arr": [
-                "00720260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
           "单价（人民币）": 5.416,
           "单价（美元）": "0.8",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": null,
           "库存行数": "1",
           "是否无需型号": "是",
@@ -1439,23 +1355,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2L9zj0KW"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00820260811",
-              "text_arr": [
-                "00820260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 5.416,
           "单价（美元）": "0.8",
           "启用状态": "停用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "10",
           "是否无需型号": "是",
@@ -1511,23 +1415,11 @@
       {
         "fields": {
           "产品型号数量": "18",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2LhetNcR"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "00920260811",
-              "text_arr": [
-                "00920260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 80.0891,
           "单价（美元）": "11.83",
           "启用状态": "启用",
+          "品类定义": "印刷物料",
           "备注": "",
           "库存行数": "180",
           "是否无需型号": "否",
@@ -1923,23 +1815,11 @@
       {
         "fields": {
           "产品型号数量": "18",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2Ln3xZJy"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01020260811",
-              "text_arr": [
-                "01020260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 24.9813,
           "单价（美元）": "3.69",
           "启用状态": "启用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "18",
           "是否无需型号": "否",
@@ -2011,23 +1891,11 @@
       {
         "fields": {
           "产品型号数量": "21",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2LsEEAdg"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01120260811",
-              "text_arr": [
-                "01120260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 13.54,
           "单价（美元）": "2",
           "启用状态": "启用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "21",
           "是否无需型号": "否",
@@ -2105,23 +1973,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2LJD627m"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01220260811",
-              "text_arr": [
-                "01220260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 33.85,
           "单价（美元）": "5",
           "启用状态": "启用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "1",
           "是否无需型号": "是",
@@ -2159,23 +2015,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2LTQuC5H"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01320260811",
-              "text_arr": [
-                "01320260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 1.0155,
           "单价（美元）": "0.15",
           "启用状态": "启用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "10",
           "是否无需型号": "是",
@@ -2231,25 +2075,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2M15m1PW",
-                "recvrY2M6ormvB"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01420260811,01520260811",
-              "text_arr": [
-                "01420260811",
-                "01520260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 100.0606,
           "单价（美元）": "14.78",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "1",
           "是否无需型号": "是",
@@ -2287,23 +2117,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2MfN01L9"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01620260811",
-              "text_arr": [
-                "01620260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 1.6925,
           "单价（美元）": "0.25",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "10",
           "是否无需型号": "是",
@@ -2359,23 +2177,11 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [
-                "recvrY2Mr9kUCf"
-              ],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": "01720260811",
-              "text_arr": [
-                "01720260811"
-              ],
-              "type": "text"
-            }
-          ],
           "创建时间": "",
           "单价（人民币）": 79.0059,
           "单价（美元）": "11.67",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": "",
           "库存行数": "1",
           "是否无需型号": "是",
@@ -2413,24 +2219,16 @@
       {
         "fields": {
           "产品型号数量": "1",
-          "关联物料筹备详情list": [
-            {
-              "record_ids": [],
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
           "单价（人民币）": 0.4062,
           "单价（美元）": "0.06",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": "1",
           "是否无需型号": "是",
           "是否无需语种": "是",
-          "海关编码": null,
+          "海关编码": "3926909090",
           "父记录": [
             {
               "record_ids": null,
@@ -2453,7 +2251,7 @@
               "type": "text"
             }
           ],
-          "物料品类": "扇子",
+          "物料品类": "定制扇子",
           "物料品类编码": "017",
           "语种数量": "1"
         },
@@ -2463,24 +2261,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 26.403,
-          "单价（美元）": "3.9",
+          "单价（人民币）": 3.9266,
+          "单价（美元）": "0.58",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "4819400000",
           "父记录": [
             {
               "record_ids": null,
@@ -2509,70 +2299,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 216.64,
-          "单价（美元）": "32",
+          "单价（人民币）": 11.9829,
+          "单价（美元）": "1.77",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
-          "父记录": [
-            {
-              "record_ids": null,
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料主数据": [
-            {
-              "record_ids": null,
-              "table_id": "tbl4UsiEmprnImIY",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料品类": "伴手礼礼包-笔记本盒套装",
-          "物料品类编码": "019",
-          "语种数量": null
-        },
-        "id": "recvrYwxxP64Yn",
-        "record_id": "recvrYwxxP64Yn"
-      },
-      {
-        "fields": {
-          "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "创建时间": null,
-          "单价（人民币）": 81.24,
-          "单价（美元）": "12",
-          "启用状态": "停用",
-          "备注": null,
-          "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "6505009900",
           "父记录": [
             {
               "record_ids": null,
@@ -2601,24 +2337,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 67.7,
-          "单价（美元）": "10",
+          "单价（人民币）": 10.0196,
+          "单价（美元）": "1.48",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "8505190090",
           "父记录": [
             {
               "record_ids": null,
@@ -2647,24 +2375,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 299.234,
-          "单价（美元）": "44.2",
+          "单价（人民币）": 44.2081,
+          "单价（美元）": "6.53",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "9506320000",
           "父记录": [
             {
               "record_ids": null,
@@ -2693,24 +2413,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 176.02,
-          "单价（美元）": "26",
+          "单价（人民币）": 25.9968,
+          "单价（美元）": "3.84",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "8414519900",
           "父记录": [
             {
               "record_ids": null,
@@ -2729,7 +2441,7 @@
               "type": "text"
             }
           ],
-          "物料品类": "电风扇（充电）手持贵的",
+          "物料品类": "手持充电电风扇（充电）",
           "物料品类编码": "023",
           "语种数量": null
         },
@@ -2739,24 +2451,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 3.385,
-          "单价（美元）": "0.5",
+          "单价（人民币）": 0.4739,
+          "单价（美元）": "0.07",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "5807900000",
           "父记录": [
             {
               "record_ids": null,
@@ -2785,24 +2489,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 30.465,
-          "单价（美元）": "4.5",
+          "单价（人民币）": 4.4682,
+          "单价（美元）": "0.66",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "3926909090",
           "父记录": [
             {
               "record_ids": null,
@@ -2831,24 +2527,16 @@
       {
         "fields": {
           "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
           "创建时间": null,
-          "单价（人民币）": 33.85,
-          "单价（美元）": "5",
+          "单价（人民币）": 5.0098,
+          "单价（美元）": "0.74",
           "启用状态": "停用",
+          "品类定义": "周边礼品",
           "备注": null,
           "库存行数": null,
-          "是否无需型号": "否",
-          "是否无需语种": "否",
-          "海关编码": null,
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "3926400000",
           "父记录": [
             {
               "record_ids": null,
@@ -2873,52 +2561,6 @@
         },
         "id": "recvrYwxxPyLz4",
         "record_id": "recvrYwxxPyLz4"
-      },
-      {
-        "fields": {
-          "产品型号数量": null,
-          "关联物料筹备详情list": [
-            {
-              "record_ids": null,
-              "table_id": "tblIK0aWEMcMIbxt",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "创建时间": null,
-          "单价（人民币）": 0,
-          "单价（美元）": null,
-          "启用状态": null,
-          "备注": null,
-          "库存行数": null,
-          "是否无需型号": null,
-          "是否无需语种": null,
-          "海关编码": null,
-          "父记录": [
-            {
-              "record_ids": null,
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料主数据": [
-            {
-              "record_ids": null,
-              "table_id": "tbl4UsiEmprnImIY",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料品类": null,
-          "物料品类编码": "027",
-          "语种数量": null
-        },
-        "id": "recvrYwSr4BWE9",
-        "record_id": "recvrYwSr4BWE9"
       }
     ],
     "产品型号": [
@@ -102832,15 +102474,301 @@
         "id": "recvrYnt82BO7l",
         "record_id": "recvrYnt82BO7l"
       }
+    ],
+    "项目周边礼品物料筹备详情list": [
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "手提纸袋改尺寸大版 已到货待打包",
+          "物料名称": "伴手礼礼包盒（纸袋）",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": [
+            {
+              "file_token": "FEcLbvMD5owQR5xOwiNc19O8nLf",
+              "name": "026329d8-1de1-4365-8d72-0c18f0a82231.jpg",
+              "size": 1134140,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D"
+            },
+            {
+              "file_token": "IVi3bViUaoDJB2xiMlYcQlTRnsd",
+              "name": "0950006d75ef6e3076c4282f475242fe(1).png",
+              "size": 28337,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D"
+            }
+          ],
+          "物料状态": "已到货",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYwl3CMW4v",
+        "record_id": "recvrYwl3CMW4v"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "已有库存 本周打包",
+          "物料名称": "伴手礼礼包-笔记本盒套装",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": [
+            {
+              "file_token": "KAkebk1MuoUlwZxwQb0cwiSwnIb",
+              "name": "76893361-4130-4141-8359-a3d240b7af73.png",
+              "size": 166239,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D"
+            }
+          ],
+          "物料状态": "在库有库存",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNsQglN",
+        "record_id": "recvrYydNsQglN"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "已到货待打包",
+          "物料名称": "定制帽子",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": [
+            {
+              "file_token": "AE4Rb1HnjoA1hMxOd3acBWdunjd",
+              "name": "image.png",
+              "size": 94114,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D"
+            }
+          ],
+          "物料状态": "已到货",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNsBoGO",
+        "record_id": "recvrYydNsBoGO"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "待确认9个款式后排版下单，工期大概6-7天",
+          "物料名称": "全套产品冰箱贴",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": [
+            {
+              "file_token": "FIaab7VkEoIRpOxf9ANctQ98nIb",
+              "name": "9e95b14c-1ddc-403d-b292-1ad76fc2258e.jpg",
+              "size": 262068,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D"
+            }
+          ],
+          "物料状态": "待确认下单",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNsoo1v",
+        "record_id": "recvrYydNsoo1v"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "每人3个黑色礼盒，已安排下单货期10天左右",
+          "物料名称": "定制高尔夫球",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": "制作中",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNslWoy",
+        "record_id": "recvrYydNslWoy"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "已确认样品，外盒封套自己设计给供应商组装，大货预计5个工作日，下周可到货",
+          "物料名称": "电风扇（充电）手持贵的",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": [
+            {
+              "file_token": "GlTObQQGhoHUfRxjVoYcC0Vtnbd",
+              "name": "img_v3_02149_de15c820-8c5a-4595-b1b1-0b20d1d2f07g.jpg",
+              "size": 354165,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D"
+            }
+          ],
+          "物料状态": "制作中",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNs1Nkp",
+        "record_id": "recvrYydNs1Nkp"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "待出设计",
+          "物料名称": "嘉宾胸牌/臂贴",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": "设计中",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNsCXmg",
+        "record_id": "recvrYydNsCXmg"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "待确认",
+          "物料名称": "工作证",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": "设计中",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNsSxhO",
+        "record_id": "recvrYydNsSxhO"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "预估费用，代理商颁奖牌（需要提前名单）",
+          "物料名称": "代理商颁奖牌",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": "设计中",
+          "负责人": null,
+          "项目名称": "巴拿马活动"
+        },
+        "id": "recvrYydNsQWHD",
+        "record_id": "recvrYydNsQWHD"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": null,
+          "物料名称": "MP2000模型",
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": "设计中",
+          "负责人": null,
+          "项目名称": "公共项目"
+        },
+        "id": "recvrYBWClJVRL",
+        "record_id": "recvrYBWClJVRL"
+      }
     ]
   },
   "row_counts": {
-    "物料品类": 27,
+    "物料品类": 25,
     "产品型号": 30,
     "物料语种": 12,
     "物料主数据": 790,
     "库存流水": 61,
     "物料申请单": 36,
-    "申请明细": 69
+    "申请明细": 69,
+    "项目周边礼品物料筹备详情list": 10
   }
 }

@@ -74,7 +74,12 @@ class RestockTests(unittest.TestCase):
         self.assertEqual(result[0]["after_quantity"], 20)
         update_rows.assert_called_once_with(
             app.MATERIAL_TABLE_NAME,
-            [{"record_id": "material-1", "fields": {"当前库存": 20}}],
+            [
+                {
+                    "record_id": "material-1",
+                    "fields": {"当前库存": 20, "启用状态": app.STATUS_ACTIVE},
+                }
+            ],
         )
         ledger_fields = create_rows.call_args.args[1][0]
         self.assertEqual(create_rows.call_args.args[0], app.LEDGER_TABLE_NAME)
@@ -107,11 +112,19 @@ class RestockTests(unittest.TestCase):
             update_rows.call_args_list[1],
             call(
                 app.MATERIAL_TABLE_NAME,
-                [{"record_id": "material-1", "fields": {"当前库存": 12}}],
+                [
+                    {
+                        "record_id": "material-1",
+                        "fields": {
+                            "当前库存": 12,
+                            "启用状态": app.STATUS_ACTIVE,
+                        },
+                    }
+                ],
             ),
         )
 
-    def test_restock_rejects_inactive_or_missing_combination(self) -> None:
+    def test_restock_reactivates_inactive_combination(self) -> None:
         client = MagicMock()
         inactive_row = {
             **self.material_row,
@@ -128,9 +141,20 @@ class RestockTests(unittest.TestCase):
         with (
             patch.object(app, "feishu_client", return_value=client),
             patch.object(app, "fresh_feishu_rows", side_effect=inactive_rows),
+            patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update_rows,
+            patch.object(
+                app,
+                "feishu_batch_create_records",
+                return_value=[{"record_id": "ledger-1"}],
+            ),
         ):
-            with self.assertRaisesRegex(RuntimeError, "不存在或已停用"):
-                app.submit_inventory_restock(self.draft)
+            result = app.submit_inventory_restock(self.draft)
+
+        self.assertEqual(result[0]["before_status"], app.STATUS_INACTIVE)
+        self.assertEqual(
+            update_rows.call_args.args[1][0]["fields"]["启用状态"],
+            app.STATUS_ACTIVE,
+        )
 
     def test_restock_card_contains_inventory_changes(self) -> None:
         completed = [
@@ -171,35 +195,32 @@ class RestockTests(unittest.TestCase):
             [call("ou-a", card), call("ou-b", card)]
         )
 
-    def test_restock_uses_shared_static_form_cache(self) -> None:
-        static_cache = {
-            "source": "static_snapshot",
-            "products": ["产品折页"],
-            "models": ["BellaBot"],
-            "languages": ["英语"],
-            "no_model_products": [],
-            "no_language_products": [],
-            "configured_language_products": [],
-            "inventory_rows": [
-                {
-                    "material_code": "MAT-1",
-                    "product": "产品折页",
-                    "model": "BellaBot",
-                    "language": "英语",
-                    "quantity": 12,
-                }
-            ],
-            "row_count": 1,
-        }
+    def test_restock_uses_page_cache_and_exposes_category_definition(self) -> None:
+        self.category_row["fields"]["品类定义"] = app.CATEGORY_DEFINITION_PRINT
+
+        def cached_rows(table_name: str) -> list[dict]:
+            if table_name == app.CATEGORY_TABLE_NAME:
+                return [self.category_row]
+            if table_name == app.MATERIAL_TABLE_NAME:
+                return [self.material_row]
+            return []
+
         with (
-            patch.object(app, "request_form_cache_state", return_value={"data": None}),
-            patch.object(app, "request_form_cache_from_runtime_page_data", return_value=None),
-            patch.object(app, "load_static_request_form_cache", return_value=static_cache),
+            patch.object(app, "safe_feishu_rows", side_effect=cached_rows),
+            patch.object(
+                app,
+                "page_cache_status",
+                return_value=("部署静态缓存", "2026-08-11 12:00:00"),
+            ),
         ):
             context = app.get_restock_selection_context()
 
-        self.assertEqual(context["cache_source"], "static_snapshot")
+        self.assertEqual(context["cache_source"], "page_data_cache")
         self.assertEqual(context["products"], ["产品折页"])
+        self.assertEqual(
+            context["category_definition_by_product"],
+            {"产品折页": app.CATEGORY_DEFINITION_PRINT},
+        )
         self.assertTrue(
             app.selection_context_has_inventory_combination(
                 context,

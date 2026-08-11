@@ -55,12 +55,19 @@ MODEL_TABLE_NAME = "产品型号"
 LANGUAGE_TABLE_NAME = "物料语种"
 LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
+GIFT_PROJECT_TABLE_NAME = "项目周边礼品物料筹备详情list"
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
 UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
+UNIT_PRICE_RMB_FIELD = "单价（人民币）"
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
+CATEGORY_DEFINITION_PRINT = "印刷物料"
+CATEGORY_DEFINITION_GIFT = "周边礼品"
+CATEGORY_DEFINITION_OPTIONS = (CATEGORY_DEFINITION_PRINT, CATEGORY_DEFINITION_GIFT)
+UNDEFINED_CATEGORY_DEFINITION = "未定义"
+GIFT_PROJECT_STATUS_REQUESTED = "已提需"
 INVENTORY_ZERO_SINCE_FIELD = "库存归零时间"
 INVENTORY_AUTO_DISABLE_DAYS = 14
 CATEGORY_CREATE_STAGE_KEY = "category_create_stage"
@@ -134,7 +141,7 @@ ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
-MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记",)
+MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "周边礼品项目")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理", "物料数据库")
 MATERIAL_DASHBOARD_MODULES = (
@@ -196,6 +203,7 @@ ALL_PAGE_CACHE_TABLES = (
     LEDGER_TABLE_NAME,
     REQUEST_TABLE_NAME,
     REQUEST_LINE_TABLE_NAME,
+    GIFT_PROJECT_TABLE_NAME,
 )
 REQUEST_FORM_CACHE_TABLES = (
     CATEGORY_TABLE_NAME,
@@ -210,6 +218,7 @@ PAGE_CACHE_TABLES = {
     "maintenance": ALL_PAGE_CACHE_TABLES,
     "material_database": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "inventory": (CATEGORY_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "gift_projects": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, GIFT_PROJECT_TABLE_NAME),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
 
@@ -869,6 +878,7 @@ def inject_global_styles() -> None:
             font-size: 0.9rem;
         }
         .pudu-product-card-marker,
+        .pudu-gift-card-marker,
         .pudu-cart-marker,
         .pudu-full-cart-popover-marker {
             display: none;
@@ -964,6 +974,61 @@ def inject_global_styles() -> None:
             font-weight: 700;
             line-height: 1.45;
             overflow-wrap: anywhere;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-card-marker) > [data-testid="stVerticalBlock"] {
+            min-height: 390px;
+            gap: 0.42rem;
+            padding: 0.75rem !important;
+            border-color: #D8E1E8 !important;
+            border-radius: 8px !important;
+            background: #FFFFFF;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-card-marker) [data-testid="stImage"] img {
+            width: 100%;
+            height: 174px;
+            border: 1px solid #E2E8ED;
+            border-radius: 6px;
+            background: #F7F9FA;
+            object-fit: contain;
+        }
+        .pudu-gift-card-meta {
+            min-height: 2.6rem;
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
+            line-height: 1.55;
+            overflow-wrap: anywhere;
+        }
+        .pudu-gift-card-price {
+            color: var(--pudu-navy);
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+        .pudu-fixed-rule-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin: 0.35rem 0 0.9rem;
+        }
+        .pudu-fixed-rule-row div {
+            min-width: 0;
+            padding: 0.55rem 0.65rem;
+            border: 1px solid var(--pudu-line);
+            border-radius: 6px;
+            background: var(--pudu-teal-soft);
+            color: var(--pudu-ink);
+            font-size: 0.76rem;
+            overflow-wrap: anywhere;
+        }
+        .pudu-fixed-rule-row span {
+            display: block;
+            margin-bottom: 0.12rem;
+            color: var(--pudu-muted);
+            font-size: 0.68rem;
+        }
+        @media (max-width: 720px) {
+            .pudu-fixed-rule-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-cart-marker) > [data-testid="stVerticalBlock"] {
             gap: 0.55rem;
@@ -2293,12 +2358,63 @@ def get_request_form_selection_context() -> dict[str, object]:
 
 
 def get_restock_selection_context() -> dict[str, object]:
-    state = request_form_cache_state()
-    live_data = state.get("data") if isinstance(state.get("data"), dict) else None
-    runtime_data = request_form_cache_from_runtime_page_data()
-    static_data = load_static_request_form_cache()
-    selected_data = runtime_data or live_data or static_data
-    return request_form_cache_to_selection_context(dict(selected_data))
+    category_rows = safe_feishu_rows(CATEGORY_TABLE_NAME)
+    category_records = feishu_category_records_from_rows(category_rows)
+    inventory_records = feishu_inventory_records_from_rows(
+        safe_feishu_rows(MATERIAL_TABLE_NAME),
+        category_rows,
+        active_only=False,
+    )
+    inventory_rows = [
+        {
+            "material_code": str(item.get("material_code") or ""),
+            "product": str(item.get("category") or ""),
+            "model": str(item.get("model") or NO_MODEL_TEXT),
+            "language": str(item.get("language") or NO_LANGUAGE_TEXT),
+            "quantity": int(item.get("quantity") or 0),
+            "status": str(item.get("status") or ""),
+        }
+        for item in inventory_records
+    ]
+    context = request_form_cache_to_selection_context(
+        {
+            "source": "page_data_cache",
+            "generated_at": page_cache_status(PAGE_CACHE_TABLES["restock"])[1],
+            "inventory_rows": inventory_rows,
+            "row_count": len(inventory_rows),
+            "products": [str(item.get("category") or "") for item in category_records],
+            "models": [str(item.get("model") or "") for item in inventory_records],
+            "languages": [str(item.get("language") or "") for item in inventory_records],
+            "no_model_products": [
+                str(item.get("category") or "")
+                for item in category_records
+                if item.get("no_model")
+            ],
+            "no_language_products": [
+                str(item.get("category") or "")
+                for item in category_records
+                if item.get("no_language")
+            ],
+            "configured_language_products": [
+                str(item.get("category") or "") for item in category_records
+            ],
+        }
+    )
+    category_definition_by_product = {
+        str(item.get("category") or ""): str(
+            item.get("category_definition") or UNDEFINED_CATEGORY_DEFINITION
+        )
+        for item in category_records
+        if str(item.get("category") or "").strip()
+    }
+    context["category_definition_by_product"] = category_definition_by_product
+    context["category_definitions"] = unique_preserve(
+        [
+            category_definition_by_product.get(product, UNDEFINED_CATEGORY_DEFINITION)
+            for product in list(context.get("products") or [])
+        ]
+    )
+    return context
 
 
 def format_datetime(value: object) -> str:
@@ -2465,7 +2581,7 @@ def navigate_to_management_section(key: str, section: str, label: str, icon: str
     )
     if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
         set_management_section(section)
-        if section == "物料管理":
+        if section in {"物料管理", "周边礼品项目"}:
             st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = section
         st.query_params.clear()
         st.rerun()
@@ -3034,6 +3150,44 @@ def feishu_link_ids(fields: dict, name: str) -> list[str]:
                 if isinstance(nested, list):
                     record_ids.extend(str(record_id) for record_id in nested if record_id)
     return unique_preserve(record_ids)
+
+
+def feishu_attachment_items(fields: dict, name: str) -> list[dict[str, str]]:
+    value = fields.get(name)
+    if not isinstance(value, list):
+        return []
+    attachments: list[dict[str, str]] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        file_token = str(item.get("file_token") or "").strip()
+        if not file_token:
+            continue
+        attachments.append(
+            {
+                "file_token": file_token,
+                "name": str(item.get("name") or "").strip(),
+                "type": str(item.get("type") or "").strip(),
+                "url": str(item.get("tmp_url") or item.get("url") or "").strip(),
+            }
+        )
+    return attachments
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 60)
+def load_feishu_attachment_snapshot(
+    file_token: str,
+    app_id: str,
+    app_secret: str,
+    app_token: str,
+) -> bytes:
+    return get_feishu_bitable_client(app_id, app_secret, app_token).download_media(
+        file_token
+    )
+
+
+def load_feishu_attachment(file_token: str) -> bytes:
+    return load_feishu_attachment_snapshot(file_token, *feishu_config_args())
 
 
 def feishu_text_any(fields: dict, names: list[str], default: str = "") -> str:
@@ -3726,18 +3880,24 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
     material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
     category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
-    active_records = feishu_inventory_records_from_rows(
+    restock_records = feishu_inventory_records_from_rows(
         material_rows,
         category_rows,
-        active_only=True,
+        active_only=False,
     )
-    active_by_key = {
+    restock_by_key = {
         (
             str(record.get("category") or ""),
             str(record.get("model") or NO_MODEL_TEXT),
             str(record.get("language") or NO_LANGUAGE_TEXT),
         ): record
-        for record in active_records
+        for record in restock_records
+    }
+    category_definition_by_product = {
+        str(item.get("category") or ""): str(
+            item.get("category_definition") or UNDEFINED_CATEGORY_DEFINITION
+        )
+        for item in feishu_category_records_from_rows(category_rows)
     }
     restock_no = str(draft.get("restock_no") or "").strip()
     operator = str(draft.get("operator") or "").strip()
@@ -3750,9 +3910,9 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
         if not isinstance(line, dict):
             continue
         product, model, language = request_material_key(line)
-        record = active_by_key.get((product, model, language))
+        record = restock_by_key.get((product, model, language))
         if record is None:
-            raise RuntimeError(f"补库物料不存在或已停用：{product} / {model} / {language}")
+            raise RuntimeError(f"补库物料不存在：{product} / {model} / {language}")
         record_id = str(record.get("record_id") or "")
         raw_row = raw_material_by_id.get(record_id, {})
         before_quantity = feishu_int(feishu_fields(raw_row), "当前库存")
@@ -3771,10 +3931,17 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
                 "record_id": record_id,
                 "material_code": str(record.get("material_code") or ""),
                 "product": product,
+                "category_definition": category_definition_by_product.get(
+                    product,
+                    str(line.get("category_definition") or UNDEFINED_CATEGORY_DEFINITION),
+                ),
                 "model": model,
                 "language": language,
                 "quantity": quantity,
                 "before_quantity": before_quantity,
+                "before_status": normalize_enabled_status(
+                    feishu_text(feishu_fields(raw_row), "启用状态")
+                ),
                 "after_quantity": after_quantity,
                 "remark": line_note,
                 "ledger_note": "；".join(note_parts),
@@ -3785,14 +3952,20 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
     inventory_updates = [
         {
             "record_id": str(item["record_id"]),
-            "fields": {"当前库存": int(item["after_quantity"])},
+            "fields": {
+                "当前库存": int(item["after_quantity"]),
+                "启用状态": STATUS_ACTIVE,
+            },
         }
         for item in prepared
     ]
     rollback_updates = [
         {
             "record_id": str(item["record_id"]),
-            "fields": {"当前库存": int(item["before_quantity"])},
+            "fields": {
+                "当前库存": int(item["before_quantity"]),
+                "启用状态": str(item.get("before_status") or STATUS_ACTIVE),
+            },
         }
         for item in prepared
     ]
@@ -5562,9 +5735,9 @@ def load_feishu_inventory_records(*, active_only: bool = False) -> list[dict]:
     )
 
 
-def load_feishu_category_records() -> list[dict]:
+def feishu_category_records_from_rows(rows: list[dict]) -> list[dict]:
     records: list[dict] = []
-    for row in feishu_category_rows():
+    for row in rows:
         fields = feishu_fields(row)
         product = feishu_text(fields, "物料品类")
         if not product:
@@ -5574,6 +5747,7 @@ def load_feishu_category_records() -> list[dict]:
             {
                 "record_id": feishu_record_id(row),
                 "category": product,
+                "category_definition": feishu_text(fields, "品类定义"),
                 "no_model": feishu_text(fields, "是否无需型号") == "是",
                 "no_language": feishu_text(fields, "是否无需语种") == "是"
                 or (
@@ -5582,6 +5756,7 @@ def load_feishu_category_records() -> list[dict]:
                 ),
                 "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
                 "unit_price": parse_optional_unit_price(unit_price_text),
+                "unit_price_rmb": feishu_float(fields, UNIT_PRICE_RMB_FIELD),
                 "customs_code": feishu_text(fields, "海关编码"),
                 "created_at": feishu_text(fields, "创建时间"),
                 "remark": feishu_text(fields, "备注"),
@@ -5589,6 +5764,189 @@ def load_feishu_category_records() -> list[dict]:
         )
     records.sort(key=lambda item: item["category"])
     return records
+
+
+def load_feishu_category_records() -> list[dict]:
+    return feishu_category_records_from_rows(feishu_category_rows())
+
+
+def parse_gift_project_record(row: dict) -> dict | None:
+    fields = feishu_fields(row)
+    project_name = feishu_text(fields, "项目名称").strip()
+    material_name = feishu_text(fields, "物料名称").strip()
+    if not project_name and not material_name:
+        return None
+    return {
+        "record_id": feishu_record_id(row),
+        "project_name": project_name,
+        "material_name": material_name,
+        "status": feishu_text(fields, "物料状态").strip(),
+        "category_ids": feishu_link_ids(fields, "物料品类关联"),
+        "attachments": feishu_attachment_items(fields, "物料图片"),
+        "supplier_contact": feishu_text(fields, "供应商联系方式").strip(),
+        "remark": feishu_text(fields, "备注").strip(),
+    }
+
+
+def gift_project_records_from_rows(rows: list[dict]) -> list[dict]:
+    return [
+        parsed
+        for row in rows
+        if (parsed := parse_gift_project_record(row)) is not None
+    ]
+
+
+def gift_gallery_records_from_rows(
+    category_rows: list[dict],
+    project_rows: list[dict],
+) -> list[dict]:
+    categories = [
+        category
+        for category in feishu_category_records_from_rows(category_rows)
+        if category["status"] == STATUS_ACTIVE
+        and category["category_definition"] == CATEGORY_DEFINITION_GIFT
+    ]
+    projects = gift_project_records_from_rows(project_rows)
+    gallery: list[dict] = []
+    for category in categories:
+        category_id = str(category.get("record_id") or "")
+        category_key = normalize_category_match_key(category.get("category"))
+        related_projects = [
+            project
+            for project in projects
+            if category_id in set(project.get("category_ids") or [])
+            or (
+                category_key
+                and normalize_category_match_key(project.get("material_name"))
+                == category_key
+            )
+        ]
+        attachments: list[dict[str, str]] = []
+        attachment_tokens: set[str] = set()
+        for project in related_projects:
+            for attachment in list(project.get("attachments") or []):
+                file_token = str(attachment.get("file_token") or "")
+                if file_token and file_token not in attachment_tokens:
+                    attachments.append(dict(attachment))
+                    attachment_tokens.add(file_token)
+        gallery.append(
+            {
+                **category,
+                "projects": related_projects,
+                "attachments": attachments,
+                "search_text": " ".join(
+                    [
+                        str(category.get("category") or ""),
+                        str(category.get("remark") or ""),
+                        *[
+                            " ".join(
+                                [
+                                    str(project.get("project_name") or ""),
+                                    str(project.get("status") or ""),
+                                    str(project.get("remark") or ""),
+                                ]
+                            )
+                            for project in related_projects
+                        ],
+                    ]
+                ).casefold(),
+            }
+        )
+    return gallery
+
+
+def filter_gift_gallery_records(records: list[dict], query: object) -> list[dict]:
+    keywords = [
+        keyword.casefold()
+        for keyword in re.split(r"\s+", str(query or "").strip())
+        if keyword.strip()
+    ]
+    if not keywords:
+        return list(records)
+    return [
+        record
+        for record in records
+        if all(keyword in str(record.get("search_text") or "") for keyword in keywords)
+    ]
+
+
+def build_gift_project_fields(
+    project_name: object,
+    material_name: object,
+    category_record_id: object,
+    *,
+    remark: object = "",
+    attachment_token: object = "",
+) -> dict[str, object]:
+    project = str(project_name or "").strip()
+    material = str(material_name or "").strip()
+    category_id = str(category_record_id or "").strip()
+    if not project:
+        raise ValueError("请填写项目名称。")
+    if not material or not category_id:
+        raise ValueError("请选择有效的周边礼品。")
+    fields: dict[str, object] = {
+        "项目名称": project,
+        "物料名称": material,
+        "物料状态": GIFT_PROJECT_STATUS_REQUESTED,
+        "物料品类关联": [category_id],
+        "备注": str(remark or "").strip(),
+    }
+    file_token = str(attachment_token or "").strip()
+    if file_token:
+        fields["物料图片"] = [{"file_token": file_token}]
+    return fields
+
+
+def upload_gift_project_attachment(uploaded_file: object | None) -> str:
+    if uploaded_file is None:
+        return ""
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法上传物料图片。")
+    file_name = str(getattr(uploaded_file, "name", "") or "").strip()
+    content = bytes(uploaded_file.getvalue())  # type: ignore[attr-defined]
+    content_type = str(
+        getattr(uploaded_file, "type", "") or "application/octet-stream"
+    )
+    return client.upload_media(file_name, content, content_type)
+
+
+def create_gift_project_request(
+    project_name: object,
+    category_record_id: object,
+    *,
+    remark: object = "",
+    attachment_token: object = "",
+) -> dict:
+    category_id = str(category_record_id or "").strip()
+    category = next(
+        (
+            item
+            for item in feishu_category_records_from_rows(
+                fresh_feishu_rows(CATEGORY_TABLE_NAME)
+            )
+            if str(item.get("record_id") or "") == category_id
+        ),
+        None,
+    )
+    if category is None:
+        raise ValueError("所选周边礼品不存在，请刷新页面后重试。")
+    if category.get("status") != STATUS_ACTIVE:
+        raise ValueError("所选周边礼品已停用，请选择其他物料。")
+    if category.get("category_definition") != CATEGORY_DEFINITION_GIFT:
+        raise ValueError("所选品类不是周边礼品，不能写入项目礼品申请。")
+    fields = build_gift_project_fields(
+        project_name,
+        category.get("category"),
+        category_id,
+        remark=remark,
+        attachment_token=attachment_token,
+    )
+    created = feishu_batch_create_records(GIFT_PROJECT_TABLE_NAME, [fields])
+    if not created:
+        raise RuntimeError("项目周边礼品需求写入失败。")
+    return created[0]
 
 
 def build_category_inventory_plan(
@@ -5878,7 +6236,12 @@ def count_feishu_category_transactions(product: str) -> int:
     return count
 
 
-def get_or_create_feishu_category_record(product: str, no_model: bool, no_language: bool = False) -> dict:
+def get_or_create_feishu_category_record(
+    product: str,
+    no_model: bool,
+    no_language: bool = False,
+    category_definition: str = "",
+) -> dict:
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书客户端未初始化。")
@@ -5889,6 +6252,8 @@ def get_or_create_feishu_category_record(product: str, no_model: bool, no_langua
             updates["是否无需型号"] = "是"
         if no_language:
             updates["是否无需语种"] = "是"
+        if category_definition:
+            updates["品类定义"] = category_definition
         if updates:
             feishu_update_record_fields(
                 "物料品类",
@@ -5896,20 +6261,21 @@ def get_or_create_feishu_category_record(product: str, no_model: bool, no_langua
                 updates,
             )
         return existing
+    category_fields: dict[str, object] = {
+        "物料品类": product,
+        "是否无需型号": "是" if no_model else "否",
+        "是否无需语种": "是" if no_language else "否",
+        "启用状态": "启用",
+        "库存行数": 0,
+        "产品型号数量": 0,
+        "语种数量": 0,
+        "备注": "",
+    }
+    if category_definition:
+        category_fields["品类定义"] = category_definition
     created = feishu_batch_create_records(
         "物料品类",
-        [
-            {
-                "物料品类": product,
-                "是否无需型号": "是" if no_model else "否",
-                "是否无需语种": "是" if no_language else "否",
-                "启用状态": "启用",
-                "库存行数": 0,
-                "产品型号数量": 0,
-                "语种数量": 0,
-                "备注": "",
-            }
-        ],
+        [category_fields],
     )
     if not created:
         raise RuntimeError(f"创建物料品类失败: {product}")
@@ -6172,6 +6538,7 @@ def sync_feishu_category_inventory(
     no_language: bool,
     target_models: list[str],
     target_languages: list[str],
+    category_definition: str = "",
     category_status: str = STATUS_ACTIVE,
     category_unit_price: float | None = None,
     category_customs_code: str = "",
@@ -6191,10 +6558,20 @@ def sync_feishu_category_inventory(
     category_status = normalize_enabled_status(category_status)
     category_unit_price = None if category_unit_price is None else float(category_unit_price)
     category_customs_code = category_customs_code.strip()
+    category_definition = category_definition.strip()
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
 
     category_rows = fresh_feishu_rows("物料品类")
+    if category_record_id and not category_definition:
+        category_definition = next(
+            (
+                feishu_text(feishu_fields(row), "品类定义")
+                for row in category_rows
+                if feishu_record_id(row) == category_record_id
+            ),
+            "",
+        )
     for row in category_rows:
         row_id = feishu_record_id(row)
         row_product = feishu_text(feishu_fields(row), "物料品类")
@@ -6257,6 +6634,8 @@ def sync_feishu_category_inventory(
             "语种数量": len(plan["languages"]),
             "备注": "",
         }
+        if category_definition:
+            category_fields["品类定义"] = category_definition
         set_feishu_unit_price(CATEGORY_TABLE_NAME, category_fields, category_unit_price)
         set_feishu_customs_code(CATEGORY_TABLE_NAME, category_fields, category_customs_code)
         created = feishu_batch_create_records(
@@ -6339,6 +6718,8 @@ def sync_feishu_category_inventory(
         "产品型号数量": len(plan["models"]),
         "语种数量": len(plan["languages"]),
     }
+    if category_definition:
+        category_update_fields["品类定义"] = category_definition
     set_feishu_unit_price(CATEGORY_TABLE_NAME, category_update_fields, category_unit_price)
     set_feishu_customs_code(CATEGORY_TABLE_NAME, category_update_fields, category_customs_code)
     feishu_update_record_fields(CATEGORY_TABLE_NAME, category_record_id, category_update_fields)
@@ -6351,6 +6732,59 @@ def sync_feishu_category_inventory(
         "updated_count": len(keeper_updates),
         "deleted_count": deleted_count,
         "relation_update_count": relation_update_count,
+        "category_definition": category_definition,
+    }
+
+
+def create_new_gift_project_request(
+    project_name: object,
+    material_name: object,
+    *,
+    unit_price: float = 0.0,
+    remark: object = "",
+    attachment_token: object = "",
+) -> dict[str, object]:
+    product = str(material_name or "").strip()
+    if not product:
+        raise ValueError("请填写新的周边礼品名称。")
+    if float(unit_price) < 0:
+        raise ValueError("单价（美元）不能小于 0。")
+    existing_names = {
+        normalize_category_match_key(item.get("category"))
+        for item in feishu_category_records_from_rows(
+            fresh_feishu_rows(CATEGORY_TABLE_NAME)
+        )
+    }
+    if normalize_category_match_key(product) in existing_names:
+        raise ValueError("该物料品类已经存在，请返回卡片列表选择现有周边礼品。")
+
+    category_result = sync_feishu_category_inventory(
+        old_product="",
+        new_product=product,
+        no_model=True,
+        no_language=True,
+        target_models=[NO_MODEL_TEXT],
+        target_languages=[NO_LANGUAGE_TEXT],
+        category_definition=CATEGORY_DEFINITION_GIFT,
+        category_status=STATUS_ACTIVE,
+        category_unit_price=float(unit_price),
+        target_values={
+            (NO_MODEL_TEXT, NO_LANGUAGE_TEXT): {
+                "quantity": 0,
+                "unit_price": float(unit_price),
+                "status": STATUS_ACTIVE,
+            }
+        },
+    )
+    project_record = create_gift_project_request(
+        project_name,
+        category_result["category_record_id"],
+        remark=remark,
+        attachment_token=attachment_token,
+    )
+    return {
+        "category": category_result,
+        "project_record": project_record,
     }
 
 
@@ -6526,7 +6960,7 @@ def request_material_management_navigation_loading() -> None:
 
 def management_navigation_uses_loading_overlay(section: object) -> bool:
     normalized = str(section or "")
-    return normalized == "物料管理" or normalized in MATERIAL_MANAGEMENT_SECTIONS
+    return normalized in {"物料管理", "周边礼品项目"} or normalized in MATERIAL_MANAGEMENT_SECTIONS
 
 
 def admin_auth_gate() -> bool:
@@ -6636,6 +7070,12 @@ def render_sidebar_link() -> None:
             "库存登记",
             "库存登记",
             ":material/edit_note:",
+        )
+        navigate_to_management_section(
+            "sidebar_open_gift_projects",
+            "周边礼品项目",
+            "周边礼品项目",
+            ":material/redeem:",
         )
         navigate_to_warehouse_locations(
             "sidebar_open_warehouse_locations",
@@ -7887,6 +8327,7 @@ def get_restock_material_lines() -> list[dict[str, object]]:
         raw_lines = []
     lines = [
         {
+            "category_definition": str(item.get("category_definition") or "").strip(),
             "product": str(item.get("product") or "").strip(),
             "model": str(item.get("model") or "").strip() or NO_MODEL_TEXT,
             "language": str(item.get("language") or "").strip() or NO_LANGUAGE_TEXT,
@@ -7904,6 +8345,9 @@ def prepare_restock_line_editor_state() -> None:
     load_data = st.session_state.pop("restock_line_editor_load", None)
     if isinstance(load_data, dict):
         st.session_state["restock_material_edit_index"] = int(load_data.get("index", -1))
+        st.session_state["restock_line_category_definition"] = str(
+            load_data.get("category_definition") or ""
+        )
         st.session_state["restock_line_product"] = str(load_data.get("product") or "")
         st.session_state["restock_line_model"] = str(load_data.get("model") or NO_MODEL_TEXT)
         st.session_state["restock_line_language"] = str(
@@ -7915,6 +8359,7 @@ def prepare_restock_line_editor_state() -> None:
     if st.session_state.pop("restock_line_editor_reset", False):
         for key in (
             "restock_line_product",
+            "restock_line_category_definition",
             "restock_line_model",
             "restock_line_language",
             "restock_line_quantity",
@@ -7985,14 +8430,18 @@ def render_restock_material_builder(
     prepare_restock_line_editor_state()
     lines = get_restock_material_lines()
     products = list(selection_context.get("products") or [])
+    category_definition_by_product = dict(
+        selection_context.get("category_definition_by_product") or {}
+    )
+    category_definitions = list(selection_context.get("category_definitions") or [])
     with st.container(border=True):
         render_section_header(
             "02",
             "采购补库清单",
-            f"逐条添加启用物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
+            f"按品类定义逐条添加现有物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
         )
         if not products:
-            st.error("当前没有可补库的启用物料，请先刷新数据或在品类管理中启用库存行。")
+            st.error("当前没有可补库的物料，请先刷新数据或在品类管理中创建库存行。")
             return lines
 
         editor_index_value = st.session_state.get("restock_material_edit_index")
@@ -8002,17 +8451,48 @@ def render_restock_material_builder(
             else None
         )
         editor_cols = st.columns(
-            [2.2, 1.7, 1.5, 0.85, 1.5, 1.15],
+            [1.25, 2.05, 1.55, 1.4, 0.8, 1.35, 1.1],
             gap="small",
             vertical_alignment="bottom",
         )
-        product_col, model_col, language_col, quantity_col, remark_col, action_col = editor_cols
+        (
+            definition_col,
+            product_col,
+            model_col,
+            language_col,
+            quantity_col,
+            remark_col,
+            action_col,
+        ) = editor_cols
+        required_field_label(definition_col, "品类定义")
+        if not category_definitions:
+            category_definitions = [UNDEFINED_CATEGORY_DEFINITION]
+        if st.session_state.get("restock_line_category_definition") not in category_definitions:
+            st.session_state["restock_line_category_definition"] = category_definitions[0]
+        category_definition = definition_col.selectbox(
+            "品类定义",
+            category_definitions,
+            key="restock_line_category_definition",
+            label_visibility="collapsed",
+        )
+        scoped_products = [
+            product
+            for product in products
+            if category_definition_by_product.get(
+                product,
+                UNDEFINED_CATEGORY_DEFINITION,
+            )
+            == category_definition
+        ]
+        if not scoped_products:
+            st.error("该品类定义下没有可补库的启用物料。")
+            return lines
         required_field_label(product_col, "物料品类")
-        if st.session_state.get("restock_line_product") not in products:
-            st.session_state["restock_line_product"] = products[0]
+        if st.session_state.get("restock_line_product") not in scoped_products:
+            st.session_state["restock_line_product"] = scoped_products[0]
         product = product_col.selectbox(
             "物料品类",
-            products,
+            scoped_products,
             key="restock_line_product",
             label_visibility="collapsed",
         )
@@ -8079,6 +8559,7 @@ def render_restock_material_builder(
 
         if action_clicked:
             next_line = {
+                "category_definition": category_definition,
                 "product": product,
                 "model": model or NO_MODEL_TEXT,
                 "language": language or NO_LANGUAGE_TEXT,
@@ -8100,7 +8581,7 @@ def render_restock_material_builder(
                 model,
                 language,
             ):
-                st.warning("该品类、型号和语种的库存组合不存在或已停用，请重新选择。")
+                st.warning("该品类、型号和语种的库存组合不存在，请重新选择。")
             elif duplicate_index is not None:
                 st.warning(f"该物料组合已在清单第 {duplicate_index + 1} 行，请直接修改原行。")
             else:
@@ -8131,16 +8612,25 @@ def render_restock_material_builder(
             return lines
 
         table_version = int(st.session_state.get("restock_material_table_version", 0))
+        restock_table_df = request_material_table_dataframe(lines).rename(
+            columns={"数量": "补库数量"}
+        )
+        restock_table_df.insert(
+            2,
+            "品类定义",
+            [str(line.get("category_definition") or "") for line in lines],
+        )
         edited_df = st.data_editor(
-            request_material_table_dataframe(lines).rename(columns={"数量": "补库数量"}),
+            restock_table_df,
             width="stretch",
             hide_index=True,
             height=min(520, max(140, 38 * (len(lines) + 1) + 22)),
             row_height=34,
-            disabled=["序号", "物料品类", "产品型号", "语种"],
+            disabled=["序号", "品类定义", "物料品类", "产品型号", "语种"],
             column_config={
                 "选择": st.column_config.CheckboxColumn("选择", width="small"),
                 "序号": st.column_config.NumberColumn("序号", width="small", format="%d"),
+                "品类定义": st.column_config.TextColumn("品类定义", width="small"),
                 "物料品类": st.column_config.TextColumn("物料品类", width="large"),
                 "产品型号": st.column_config.TextColumn("产品型号", width="medium"),
                 "语种": st.column_config.TextColumn("语种", width="medium"),
@@ -8235,6 +8725,7 @@ def render_restock_review() -> None:
             [
                 {
                     "序号": index + 1,
+                    "品类定义": line.get("category_definition") or UNDEFINED_CATEGORY_DEFINITION,
                     "物料品类": line.get("product") or "",
                     "产品型号": line.get("model") or NO_MODEL_TEXT,
                     "语种": line.get("language") or NO_LANGUAGE_TEXT,
@@ -8387,6 +8878,7 @@ def clear_new_category_creation_state() -> None:
     prefixes = (
         "category_name_new",
         "category_status_new",
+        "category_definition_new",
         "category_unit_price_new",
         "category_customs_code_new",
         "category_no_model_new",
@@ -8421,6 +8913,7 @@ def restore_new_category_creation_state(
     allowed_form_keys = {
         "category_name_new",
         "category_status_new",
+        "category_definition_new",
         "category_unit_price_new",
         "category_customs_code_new",
         "category_no_model_new",
@@ -8459,10 +8952,11 @@ def render_category_edit_review() -> None:
     metric_b.metric("目标组合", f"{len(list(draft.get('targets') or [])):,}")
     metric_c.metric("库存差额", f"{int(draft.get('quantity_difference') or 0):+,}")
     with st.container(border=True):
-        info_cols = st.columns(3)
+        info_cols = st.columns(4)
         render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
         render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
-        render_request_review_field(info_cols[2], "品类状态", draft.get("category_status"))
+        render_request_review_field(info_cols[2], "品类定义", draft.get("category_definition"))
+        render_request_review_field(info_cols[3], "品类状态", draft.get("category_status"))
         if changed_rows:
             st.dataframe(
                 pd.DataFrame(changed_rows),
@@ -8538,16 +9032,17 @@ def render_new_category_review() -> None:
 
     with st.container(border=True):
         render_section_header("01", "品类信息确认", "确认基础信息后编辑每一条新增库存行")
-        info_cols = st.columns(4)
+        info_cols = st.columns(5)
         render_request_review_field(info_cols[0], "物料品类", product)
-        render_request_review_field(info_cols[1], "品类启用状态", category_status)
+        render_request_review_field(info_cols[1], "品类定义", draft.get("category_definition"))
+        render_request_review_field(info_cols[2], "品类启用状态", category_status)
         render_request_review_field(
-            info_cols[2],
+            info_cols[3],
             "产品型号规则",
             NO_MODEL_TEXT if draft.get("no_model") else f"{len(list(draft.get('models') or []))} 个型号",
         )
         render_request_review_field(
-            info_cols[3],
+            info_cols[4],
             "语种规则",
             NO_LANGUAGE_TEXT
             if draft.get("no_language")
@@ -8649,6 +9144,7 @@ def render_new_category_review() -> None:
                         no_language=bool(draft.get("no_language")),
                         target_models=list(draft.get("models") or []),
                         target_languages=list(draft.get("languages") or []),
+                        category_definition=str(draft.get("category_definition") or ""),
                         category_status=category_status,
                         category_unit_price=draft.get("category_unit_price"),
                         category_customs_code=str(draft.get("category_customs_code") or ""),
@@ -8741,6 +9237,10 @@ def render_add_category_form() -> None:
         bool(current_languages) and set(current_languages) == {NO_LANGUAGE_TEXT}
     )
     current_category_status = normalize_enabled_status((selected_category or {}).get("status"))
+    current_category_definition = str(
+        (selected_category or {}).get("category_definition")
+        or CATEGORY_DEFINITION_PRINT
+    )
     current_category_unit_price = (selected_category or {}).get("unit_price")
     current_category_customs_code = str((selected_category or {}).get("customs_code") or "")
     editor_key = category_id or "new"
@@ -8753,9 +9253,34 @@ def render_add_category_form() -> None:
             key=product_key,
             **({} if product_key in st.session_state else {"value": old_product}),
         ).strip()
-        metadata_status_col, metadata_price_col, metadata_customs_col = st.columns(
-            [1.2, 1, 1.2],
+        metadata_definition_col, metadata_status_col, metadata_price_col, metadata_customs_col = st.columns(
+            [1.2, 1.2, 1, 1.2],
             vertical_alignment="bottom",
+        )
+        category_definition_options = unique_preserve(
+            list(CATEGORY_DEFINITION_OPTIONS)
+            + [
+                str(item.get("category_definition") or "").strip()
+                for item in categories
+                if str(item.get("category_definition") or "").strip()
+            ]
+        )
+        category_definition_key = f"category_definition_{editor_key}"
+        category_definition = metadata_definition_col.selectbox(
+            "品类定义 *",
+            category_definition_options,
+            key=category_definition_key,
+            **(
+                {}
+                if category_definition_key in st.session_state
+                else {
+                    "index": category_definition_options.index(
+                        current_category_definition
+                        if current_category_definition in category_definition_options
+                        else category_definition_options[0]
+                    )
+                }
+            ),
         )
         category_status_key = f"category_status_{editor_key}"
         category_status = metadata_status_col.radio(
@@ -9309,6 +9834,7 @@ def render_add_category_form() -> None:
                 "models": list(models),
                 "languages": list(languages),
                 "category_status": category_status,
+                "category_definition": category_definition,
                 "category_unit_price": category_unit_price,
                 "category_customs_code": category_customs_code,
                 "targets": [dict(target) for target in plan["targets"]],
@@ -9317,6 +9843,7 @@ def render_add_category_form() -> None:
                 "form_state": {
                     "category_name_new": product,
                     "category_status_new": category_status,
+                    "category_definition_new": category_definition,
                     "category_unit_price_new": category_unit_price_text,
                     "category_customs_code_new": category_customs_code,
                     "category_no_model_new": no_model,
@@ -9335,6 +9862,7 @@ def render_add_category_form() -> None:
                 "old_product": old_product, "new_product": product, "no_model": no_model,
                 "no_language": no_language, "target_models": list(models),
                 "target_languages": list(languages), "category_status": category_status,
+                "category_definition": category_definition,
                 "category_unit_price": category_unit_price, "category_customs_code": category_customs_code,
                 "category_record_id": category_id, "model_renames": dict(model_renames),
                 "carry_model": carry_model, "carry_language": carry_language,
@@ -9342,6 +9870,7 @@ def render_add_category_form() -> None:
             }
             st.session_state[CATEGORY_EDIT_DRAFT_KEY] = {
                 "old_product": old_product, "product": product, "category_status": category_status,
+                "category_definition": category_definition,
                 "edited_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "current_records": [dict(row) for row in current_records],
                 "targets": [dict(target) for target in plan["targets"]],
@@ -10093,6 +10622,7 @@ def render_category_admin() -> None:
                 "选择": False,
                 "记录ID": row["record_id"],
                 "物料品类": row["category"],
+                "品类定义": row["category_definition"] or UNDEFINED_CATEGORY_DEFINITION,
                 "无需型号": bool(row["no_model"]),
                 "无需语种": bool(row["no_language"]),
                 "启用状态": row["status"],
@@ -10768,6 +11298,321 @@ def render_warehouse_location_view() -> None:
                     render_warehouse_materials(row_materials)
 
 
+def render_gift_image(attachments: list[dict], product: object) -> None:
+    attachment = attachments[0] if attachments else None
+    if isinstance(attachment, dict):
+        file_token = str(attachment.get("file_token") or "")
+        if file_token:
+            try:
+                st.image(load_feishu_attachment(file_token), width="stretch")
+                return
+            except Exception:
+                image_url = str(attachment.get("url") or "")
+                if image_url:
+                    try:
+                        st.image(image_url, width="stretch")
+                        return
+                    except Exception:
+                        pass
+    category_image_path = request_category_image_path(product)
+    if category_image_path:
+        st.image(str(category_image_path), width="stretch")
+        return
+    st.markdown(
+        '<div class="pudu-product-image-placeholder">暂无图片</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_gift_fixed_rules() -> None:
+    st.markdown(
+        f"""
+        <div class="pudu-fixed-rule-row">
+            <div><span>品类定义</span>{escape(CATEGORY_DEFINITION_GIFT)}</div>
+            <div><span>产品型号</span>{escape(NO_MODEL_TEXT)}</div>
+            <div><span>语种</span>{escape(NO_LANGUAGE_TEXT)}</div>
+            <div><span>物料状态</span>{escape(GIFT_PROJECT_STATUS_REQUESTED)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_existing_gift_project_form(category: dict) -> None:
+    category_id = str(category.get("record_id") or "")
+    product = str(category.get("category") or "")
+    with st.container(border=True):
+        render_section_header("02", "新建项目需求", product)
+        render_gift_fixed_rules()
+        project_col, note_col, image_col = st.columns([1.2, 2, 1.2])
+        required_field_label(project_col, "项目名称")
+        project_name = project_col.text_input(
+            "项目名称",
+            placeholder="填写新的或已有项目名称",
+            label_visibility="collapsed",
+            key=f"gift_existing_project_{category_id}",
+        )
+        note_col.markdown(
+            '<div class="pudu-field-label">备注</div>',
+            unsafe_allow_html=True,
+        )
+        remark = note_col.text_input(
+            "备注",
+            placeholder="可选",
+            label_visibility="collapsed",
+            key=f"gift_existing_remark_{category_id}",
+        )
+        image_col.markdown(
+            '<div class="pudu-field-label">物料图片</div>',
+            unsafe_allow_html=True,
+        )
+        uploaded_file = image_col.file_uploader(
+            "物料图片",
+            type=["png", "jpg", "jpeg", "webp"],
+            label_visibility="collapsed",
+            key=f"gift_existing_image_{category_id}",
+        )
+        _, submit_col = st.columns([3, 1.15])
+        submitted = submit_col.button(
+            "提交项目需求",
+            type="primary",
+            icon=":material/send:",
+            width="stretch",
+            key=f"gift_existing_submit_{category_id}",
+        )
+    if not submitted:
+        return
+    if not str(project_name or "").strip():
+        st.warning("请填写项目名称。")
+        return
+    with st.spinner("正在写入项目周边礼品需求，请稍后......"):
+        try:
+            attachment_token = upload_gift_project_attachment(uploaded_file)
+            create_gift_project_request(
+                project_name,
+                category_id,
+                remark=remark,
+                attachment_token=attachment_token,
+            )
+        except Exception as exc:
+            st.error("项目周边礼品需求提交失败，请检查飞书字段和应用写入权限。")
+            st.exception(exc)
+            return
+    refresh_page_cache_after_write("gift_projects", update_request_form=True)
+    st.session_state.pop("gift_selected_category_id", None)
+    st.session_state["gift_project_submit_message"] = (
+        f"项目“{str(project_name).strip()}”的周边礼品“{product}”已提交，状态为“{GIFT_PROJECT_STATUS_REQUESTED}”。"
+    )
+    st.rerun()
+
+
+def render_new_gift_project_form() -> None:
+    with st.container(border=True):
+        render_section_header("03", "新增周边礼品", "同时创建物料品类、零库存行和项目需求")
+        render_gift_fixed_rules()
+        project_col, product_col, price_col = st.columns([1.2, 1.6, 0.8])
+        required_field_label(project_col, "项目名称")
+        project_name = project_col.text_input(
+            "项目名称",
+            placeholder="填写新的或已有项目名称",
+            label_visibility="collapsed",
+            key="gift_new_project_name",
+        )
+        required_field_label(product_col, "新的物料名称")
+        material_name = product_col.text_input(
+            "新的物料名称",
+            placeholder="例如：活动定制徽章",
+            label_visibility="collapsed",
+            key="gift_new_material_name",
+        )
+        price_col.markdown(
+            '<div class="pudu-field-label">单价（美元）</div>',
+            unsafe_allow_html=True,
+        )
+        unit_price = price_col.number_input(
+            "单价（美元）",
+            min_value=0.0,
+            step=0.01,
+            format="%.2f",
+            label_visibility="collapsed",
+            key="gift_new_unit_price",
+        )
+        note_col, image_col = st.columns([2, 1.2])
+        note_col.markdown(
+            '<div class="pudu-field-label">备注</div>',
+            unsafe_allow_html=True,
+        )
+        remark = note_col.text_input(
+            "备注",
+            placeholder="可选",
+            label_visibility="collapsed",
+            key="gift_new_remark",
+        )
+        image_col.markdown(
+            '<div class="pudu-field-label">物料图片</div>',
+            unsafe_allow_html=True,
+        )
+        uploaded_file = image_col.file_uploader(
+            "物料图片",
+            type=["png", "jpg", "jpeg", "webp"],
+            label_visibility="collapsed",
+            key="gift_new_image",
+        )
+        confirmed = st.checkbox(
+            "我确认现有周边礼品中没有所需物料，并创建新的周边礼品品类",
+            key="gift_new_final_confirmed",
+        )
+        _, submit_col = st.columns([3, 1.15])
+        submitted = submit_col.button(
+            "确认新增并提交",
+            type="primary",
+            icon=":material/add_circle:",
+            width="stretch",
+            key="gift_new_submit",
+        )
+    if not submitted:
+        return
+    if not confirmed:
+        st.warning("请先确认新增周边礼品。")
+        return
+    if not str(project_name or "").strip() or not str(material_name or "").strip():
+        st.warning("请填写项目名称和新的物料名称。")
+        return
+    with st.spinner("正在创建周边礼品品类并写入项目需求，请稍后......"):
+        try:
+            attachment_token = upload_gift_project_attachment(uploaded_file)
+            create_new_gift_project_request(
+                project_name,
+                material_name,
+                unit_price=float(unit_price),
+                remark=remark,
+                attachment_token=attachment_token,
+            )
+        except Exception as exc:
+            st.error("新增周边礼品失败，请检查品类名称、飞书字段和应用写入权限。")
+            st.exception(exc)
+            return
+    refresh_page_cache_after_write("gift_projects", update_request_form=True)
+    for key in list(st.session_state):
+        if str(key).startswith("gift_new_"):
+            st.session_state.pop(key, None)
+    st.session_state["gift_create_mode"] = False
+    st.session_state["gift_project_submit_message"] = (
+        f"周边礼品“{str(material_name).strip()}”及项目“{str(project_name).strip()}”已创建，状态为“{GIFT_PROJECT_STATUS_REQUESTED}”。"
+    )
+    st.rerun()
+
+
+def render_gift_projects_page() -> None:
+    message = st.session_state.pop("gift_project_submit_message", "")
+    if message:
+        st.success(message)
+    with st.spinner("周边礼品数据加载中，请稍后......"):
+        gallery = gift_gallery_records_from_rows(
+            safe_feishu_rows(CATEGORY_TABLE_NAME),
+            safe_feishu_rows(GIFT_PROJECT_TABLE_NAME),
+        )
+
+    project_names = {
+        str(project.get("project_name") or "")
+        for item in gallery
+        for project in list(item.get("projects") or [])
+        if str(project.get("project_name") or "").strip()
+    }
+    project_record_count = sum(len(list(item.get("projects") or [])) for item in gallery)
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("周边礼品", f"{len(gallery):,}")
+    metric_b.metric("关联项目", f"{len(project_names):,}")
+    metric_c.metric("项目物料记录", f"{project_record_count:,}")
+
+    render_section_header("01", "周边礼品库", "图片、单价和项目状态")
+    search_query = st.text_input(
+        "搜索周边礼品",
+        placeholder="搜索物料名称、项目名称、状态或备注",
+        icon=":material/search:",
+        key="gift_gallery_search",
+    )
+    filtered_gallery = filter_gift_gallery_records(gallery, search_query)
+    if not filtered_gallery:
+        st.info("没有找到匹配的周边礼品。")
+    else:
+        card_columns = st.columns(3, gap="small")
+        for index, item in enumerate(filtered_gallery):
+            category_id = str(item.get("record_id") or "")
+            product = str(item.get("category") or "")
+            projects = list(item.get("projects") or [])
+            usd_price = float(item.get("unit_price") or 0)
+            rmb_price = float(item.get("unit_price_rmb") or 0) or usd_price * 6.77
+            with card_columns[index % 3].container(border=True):
+                st.markdown(
+                    '<span class="pudu-gift-card-marker"></span>',
+                    unsafe_allow_html=True,
+                )
+                render_gift_image(list(item.get("attachments") or []), product)
+                st.markdown(
+                    f"""
+                    <div class="pudu-product-card-kicker">{escape(CATEGORY_DEFINITION_GIFT)}</div>
+                    <div class="pudu-product-card-title">{escape(product)}</div>
+                    <div class="pudu-gift-card-price">USD {usd_price:g} · RMB {rmb_price:.2f}</div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if projects:
+                    project_text = "<br>".join(
+                        escape(
+                            f"{project.get('project_name') or '未命名项目'} · "
+                            f"{project.get('status') or '状态未填写'}"
+                        )
+                        for project in projects[:3]
+                    )
+                    if len(projects) > 3:
+                        project_text += f"<br>{escape(f'另有 {len(projects) - 3} 条项目记录')}"
+                else:
+                    project_text = "尚无项目记录"
+                st.markdown(
+                    f'<div class="pudu-gift-card-meta">{project_text}</div>',
+                    unsafe_allow_html=True,
+                )
+                if st.button(
+                    "选择此礼品",
+                    icon=":material/add_task:",
+                    width="stretch",
+                    key=f"gift_select_{category_id}",
+                ):
+                    st.session_state["gift_selected_category_id"] = category_id
+                    st.session_state["gift_create_mode"] = False
+                    st.rerun()
+
+    selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
+    selected_category = next(
+        (
+            item
+            for item in gallery
+            if str(item.get("record_id") or "") == selected_category_id
+        ),
+        None,
+    )
+    if selected_category is not None:
+        render_existing_gift_project_form(selected_category)
+
+    st.divider()
+    browse_confirmed = st.checkbox(
+        "我已浏览并搜索现有周边礼品，确认没有需要的物料",
+        key="gift_catalog_browse_confirmed",
+    )
+    if st.button(
+        "新增周边礼品",
+        icon=":material/add_circle:",
+        disabled=not browse_confirmed,
+        key="gift_start_create",
+    ):
+        st.session_state["gift_create_mode"] = True
+        st.session_state.pop("gift_selected_category_id", None)
+        st.rerun()
+    if st.session_state.get("gift_create_mode"):
+        render_new_gift_project_form()
+
+
 def render_management_page() -> None:
     current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
     if current_section == "新增物料品类":
@@ -10778,6 +11623,7 @@ def render_management_page() -> None:
         current_section = "物料管理"
     if current_section not in {
         "库存登记",
+        "周边礼品项目",
         "物料管理",
     }:
         current_section = "库存登记"
@@ -10798,11 +11644,16 @@ def render_management_page() -> None:
         return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
+        "周边礼品项目": ("周边礼品项目", "项目物料工作台", "浏览周边礼品并登记项目物料需求。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库、品类维护与物料数据库统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
     if management_section_requires_admin(current_section) and not admin_auth_gate():
+        return
+    if current_section == "周边礼品项目":
+        render_page_cache_toolbar("gift_projects")
+        render_gift_projects_page()
         return
     if current_section == "物料管理":
         if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) not in MATERIAL_MANAGEMENT_SECTIONS:
