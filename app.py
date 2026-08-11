@@ -8151,14 +8151,14 @@ def render_change_form(show_title: bool = True) -> None:
 
         middle_cols = st.columns([2.4, 1])
         recipient_hint = (
-            "Please specify the delivery address (including recipient information, postal code, and specific address)"
+            "Include the full delivery address and postal code, recipient company, recipient name, and contact details."
             if get_ui_language() == LANGUAGE_EN
-            else "请写明快递地址（包含收件人信息，邮编，具体地址）"
+            else "包含具体收货地址及邮编，收件公司，收件人及其联系方式"
         )
         required_field_label(middle_cols[0], "收件人信息", recipient_hint)
         recipient_info = middle_cols[0].text_area(
             "收件人信息",
-            placeholder="请写明快递地址（包含收件人信息、邮编、具体地址）",
+            placeholder="包含具体收货地址及邮编，收件公司，收件人及其联系方式",
             height=84,
             key="request_recipient_info",
             label_visibility="collapsed",

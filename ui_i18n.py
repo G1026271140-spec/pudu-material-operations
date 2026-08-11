@@ -540,8 +540,8 @@ EN_DISPLAY_TEXT = {
     "可选，例如：0.06": "Optional, e.g. 0.06",
     "可选，例如：4911101000": "Optional, e.g. 4911101000",
     "物料编码 / 品类 / 型号 / 语种": "Material code / category / model / language",
-    "请写明快递地址（包含收件人信息、邮编、具体地址）": (
-        "Enter the delivery address, including recipient information, postal code, and street address"
+    "包含具体收货地址及邮编，收件公司，收件人及其联系方式": (
+        "Include the full delivery address and postal code, recipient company, recipient name, and contact details."
     ),
     "活动物料请注明具体活动名称": "Specify the exact event name for promotional materials",
     "可用逗号、分号、顿号或换行分隔": "Separate entries with commas, semicolons, or line breaks",
