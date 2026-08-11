@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "source": "static_snapshot",
-  "generated_at": "2026-08-10 18:09:32",
+  "generated_at": "2026-08-11 10:31:29",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -848,7 +848,7 @@
       "product": "品牌手册(Product Brochure (All\nBanner)）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1510
+      "quantity": 460
     },
     {
       "material_code": "MAT-0371",
