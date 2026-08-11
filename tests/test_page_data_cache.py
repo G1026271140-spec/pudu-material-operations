@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import app
+from scripts.validate_page_data_cache import validate_page_data_cache
 
 
 class PageDataCacheTests(unittest.TestCase):
@@ -41,6 +42,58 @@ class PageDataCacheTests(unittest.TestCase):
                 app.MATERIAL_TABLE_NAME,
             },
         )
+
+    def test_page_cache_validator_includes_gift_project_catalog(self) -> None:
+        category_rows = [
+            {
+                "record_id": "category-gift-1",
+                "fields": {
+                    "物料品类": "礼品袋",
+                    "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                    "启用状态": app.STATUS_ACTIVE,
+                },
+            }
+        ]
+        material_rows = [
+            {
+                "record_id": "material-1",
+                "fields": {"物料编码": "MAT-0001", "物料品类": "礼品袋"},
+            }
+        ]
+        gift_project_rows: list[dict] = []
+        cache = {
+            "tables": {
+                app.CATEGORY_TABLE_NAME: category_rows,
+                app.MATERIAL_TABLE_NAME: material_rows,
+                app.GIFT_PROJECT_TABLE_NAME: gift_project_rows,
+            },
+            "row_counts": {
+                app.CATEGORY_TABLE_NAME: 1,
+                app.MATERIAL_TABLE_NAME: 1,
+                app.GIFT_PROJECT_TABLE_NAME: 0,
+            },
+        }
+
+        stats = validate_page_data_cache(cache, require_data=True)
+
+        self.assertEqual(stats["active_gift_categories"], 1)
+        self.assertEqual(stats["gift_gallery_rows"], 1)
+        self.assertEqual(stats["gift_project_rows"], 0)
+
+    def test_page_cache_validator_rejects_missing_gift_project_table(self) -> None:
+        cache = {
+            "tables": {
+                app.CATEGORY_TABLE_NAME: [],
+                app.MATERIAL_TABLE_NAME: [],
+            },
+            "row_counts": {
+                app.CATEGORY_TABLE_NAME: 0,
+                app.MATERIAL_TABLE_NAME: 0,
+            },
+        }
+
+        with self.assertRaisesRegex(ValueError, app.GIFT_PROJECT_TABLE_NAME):
+            validate_page_data_cache(cache)
 
     def test_feishu_rows_uses_static_snapshot_without_network(self) -> None:
         rows = [{"record_id": "material-1", "fields": {"物料编码": "MAT-0001"}}]

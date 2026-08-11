@@ -176,7 +176,7 @@ try {
         Write-RunnerLog "Maintaining inventory row status before refreshing static cache."
         Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
 
-        Write-RunnerLog "Refreshing page data, request options, and contact directory cache."
+        Write-RunnerLog "Refreshing page data (including gift projects), request options, and contact directory cache."
         foreach ($generator in @(
             "scripts/generate_page_data_cache.py",
             "scripts/generate_request_form_cache.py",
@@ -184,6 +184,8 @@ try {
         )) {
             Invoke-CheckedCommand $venvPython @($generator) | Out-Null
         }
+        Write-RunnerLog "Validating page cache and gift project catalog."
+        Invoke-CheckedCommand $venvPython @("scripts/validate_page_data_cache.py") | Out-Null
         Write-RunnerLog "Validating active material combinations in the request cache."
         Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
 

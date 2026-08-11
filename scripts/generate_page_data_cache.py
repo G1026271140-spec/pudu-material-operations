@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import app  # noqa: E402
+from scripts.validate_page_data_cache import validate_page_data_cache  # noqa: E402
 
 
 def main() -> int:
@@ -22,6 +23,11 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
+    try:
+        stats = validate_page_data_cache(cache, require_data=True)
+    except (TypeError, ValueError) as exc:
+        print(f"page_data_cache_not_written: {exc}", file=sys.stderr)
+        return 1
     app.PAGE_DATA_STATIC_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
     app.PAGE_DATA_STATIC_CACHE_PATH.write_text(
         json.dumps(cache, ensure_ascii=False, indent=2),
@@ -32,6 +38,7 @@ def main() -> int:
         app.PAGE_DATA_STATIC_CACHE_PATH,
         f"generated_at={cache.get('generated_at')}",
         f"rows={sum(int(value) for value in counts.values())}",
+        f"active_gifts={stats['active_gift_categories']}",
     )
     for table_name, row_count in counts.items():
         print(f"  {table_name}: {row_count}")

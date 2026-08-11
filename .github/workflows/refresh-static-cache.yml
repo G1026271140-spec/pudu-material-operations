@@ -45,6 +45,7 @@ jobs:
           python scripts/generate_page_data_cache.py
           python scripts/generate_request_form_cache.py
           python scripts/generate_contact_departments_cache.py
+          python scripts/validate_page_data_cache.py
           python scripts/validate_request_form_cache.py
 
       - name: Commit refreshed cache
