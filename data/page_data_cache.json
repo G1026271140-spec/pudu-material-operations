@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-11 16:31:07",
+  "generated_at": "2026-08-11 16:36:45",
   "tables": {
     "物料品类": [
       {
@@ -2423,8 +2423,8 @@
             }
           ],
           "创建时间": null,
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
+          "单价（人民币）": 0.4062,
+          "单价（美元）": "0.06",
           "启用状态": "停用",
           "备注": null,
           "库存行数": "1",
@@ -2459,6 +2459,466 @@
         },
         "id": "recvqz3LUkQpbg",
         "record_id": "recvqz3LUkQpbg"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 26.403,
+          "单价（美元）": "3.9",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "伴手礼礼包盒（纸袋）",
+          "物料品类编码": "018",
+          "语种数量": null
+        },
+        "id": "recvrYww8Hq9pN",
+        "record_id": "recvrYww8Hq9pN"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 216.64,
+          "单价（美元）": "32",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "伴手礼礼包-笔记本盒套装",
+          "物料品类编码": "019",
+          "语种数量": null
+        },
+        "id": "recvrYwxxP64Yn",
+        "record_id": "recvrYwxxP64Yn"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 81.24,
+          "单价（美元）": "12",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "定制帽子",
+          "物料品类编码": "020",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPI4ku",
+        "record_id": "recvrYwxxPI4ku"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 67.7,
+          "单价（美元）": "10",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "全套产品冰箱贴",
+          "物料品类编码": "021",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPUrRL",
+        "record_id": "recvrYwxxPUrRL"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 299.234,
+          "单价（美元）": "44.2",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "定制高尔夫球",
+          "物料品类编码": "022",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPk6DR",
+        "record_id": "recvrYwxxPk6DR"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 176.02,
+          "单价（美元）": "26",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "电风扇（充电）手持贵的",
+          "物料品类编码": "023",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPd4EN",
+        "record_id": "recvrYwxxPd4EN"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 3.385,
+          "单价（美元）": "0.5",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "嘉宾胸牌/臂贴",
+          "物料品类编码": "024",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPb91e",
+        "record_id": "recvrYwxxPb91e"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 30.465,
+          "单价（美元）": "4.5",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "工作证",
+          "物料品类编码": "025",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPRwWW",
+        "record_id": "recvrYwxxPRwWW"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 33.85,
+          "单价（美元）": "5",
+          "启用状态": "停用",
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": "否",
+          "是否无需语种": "否",
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": "代理商颁奖牌",
+          "物料品类编码": "026",
+          "语种数量": null
+        },
+        "id": "recvrYwxxPyLz4",
+        "record_id": "recvrYwxxPyLz4"
+      },
+      {
+        "fields": {
+          "产品型号数量": null,
+          "关联物料筹备详情list": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "创建时间": null,
+          "单价（人民币）": 0,
+          "单价（美元）": null,
+          "启用状态": null,
+          "备注": null,
+          "库存行数": null,
+          "是否无需型号": null,
+          "是否无需语种": null,
+          "海关编码": null,
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料品类": null,
+          "物料品类编码": "027",
+          "语种数量": null
+        },
+        "id": "recvrYwSr4BWE9",
+        "record_id": "recvrYwSr4BWE9"
       }
     ],
     "产品型号": [
@@ -102375,7 +102835,7 @@
     ]
   },
   "row_counts": {
-    "物料品类": 17,
+    "物料品类": 27,
     "产品型号": 30,
     "物料语种": 12,
     "物料主数据": 790,
