@@ -21,7 +21,7 @@ class GiftProjectTests(unittest.TestCase):
             },
         }
 
-    def test_gallery_only_includes_active_gifts_and_joins_project_details(self) -> None:
+    def test_gallery_includes_all_gift_definitions_and_joins_project_images(self) -> None:
         categories = [
             self.gift_category,
             {
@@ -57,17 +57,36 @@ class GiftProjectTests(unittest.TestCase):
                         }
                     ],
                 },
-            }
+            },
+            {
+                "record_id": "project-line-disabled",
+                "fields": {
+                    "项目名称": "客户礼赠",
+                    "物料名称": "停用礼品",
+                    "物料状态": app.GIFT_PROJECT_STATUS_REQUESTED,
+                    "物料图片": [
+                        {
+                            "file_token": "file-disabled",
+                            "name": "disabled-gift.webp",
+                        }
+                    ],
+                },
+            },
         ]
 
         gallery = app.gift_gallery_records_from_rows(categories, projects)
 
-        self.assertEqual([item["category"] for item in gallery], ["活动徽章"])
-        self.assertEqual(gallery[0]["projects"][0]["project_name"], "深圳展会")
-        self.assertEqual(gallery[0]["attachments"][0]["file_token"], "file-1")
+        self.assertEqual(
+            [item["category"] for item in gallery],
+            ["停用礼品", "活动徽章"],
+        )
+        self.assertEqual(gallery[0]["projects"][0]["project_name"], "客户礼赠")
+        self.assertEqual(gallery[1]["projects"][0]["project_name"], "深圳展会")
+        self.assertEqual(gallery[0]["attachments"][0]["file_token"], "file-disabled")
+        self.assertEqual(gallery[1]["attachments"][0]["file_token"], "file-1")
         self.assertEqual(
             app.filter_gift_gallery_records(gallery, "深圳 寻源"),
-            gallery,
+            [gallery[1]],
         )
         self.assertEqual(app.filter_gift_gallery_records(gallery, "不存在"), [])
 
@@ -115,6 +134,27 @@ class GiftProjectTests(unittest.TestCase):
         self.assertEqual(result["record_id"], "project-line-1")
         create_records.assert_called_once()
         self.assertEqual(create_records.call_args.args[0], app.GIFT_PROJECT_TABLE_NAME)
+
+    def test_existing_gift_request_allows_inactive_gift_definition(self) -> None:
+        inactive_gift = {
+            **self.gift_category,
+            "fields": {
+                **self.gift_category["fields"],
+                "启用状态": app.STATUS_INACTIVE,
+            },
+        }
+        with (
+            patch.object(app, "fresh_feishu_rows", return_value=[inactive_gift]),
+            patch.object(
+                app,
+                "feishu_batch_create_records",
+                return_value=[{"record_id": "project-inactive-gift"}],
+            ) as create_records,
+        ):
+            result = app.create_gift_project_request("项目C", "category-gift")
+
+        self.assertEqual(result["record_id"], "project-inactive-gift")
+        create_records.assert_called_once()
 
     def test_new_gift_uses_fixed_category_rules_and_requested_status(self) -> None:
         with (

@@ -44,22 +44,21 @@ def validate_page_data_cache(cache: object, *, require_data: bool = False) -> di
     if require_data and (not category_rows or not material_rows):
         raise ValueError("页面缓存中的物料品类或物料主数据为空。")
 
-    active_gift_ids = {
+    gift_category_ids = {
         str(category.get("record_id") or "")
         for category in app.feishu_category_records_from_rows(category_rows)
-        if category.get("status") == app.STATUS_ACTIVE
-        and category.get("category_definition") == app.CATEGORY_DEFINITION_GIFT
+        if category.get("category_definition") == app.CATEGORY_DEFINITION_GIFT
     }
     gallery = app.gift_gallery_records_from_rows(category_rows, gift_project_rows)
     gallery_ids = {str(item.get("record_id") or "") for item in gallery}
-    if gallery_ids != active_gift_ids:
-        raise ValueError("周边礼品页面缓存与启用品类不一致。")
+    if gallery_ids != gift_category_ids:
+        raise ValueError("周边礼品页面缓存与品类定义不一致。")
 
     return {
         "category_rows": len(category_rows),
         "material_rows": len(material_rows),
         "gift_project_rows": len(gift_project_rows),
-        "active_gift_categories": len(active_gift_ids),
+        "gift_categories": len(gift_category_ids),
         "gift_gallery_rows": len(gallery),
     }
 
@@ -76,7 +75,7 @@ def main() -> int:
         f"categories={stats['category_rows']}",
         f"materials={stats['material_rows']}",
         f"gift_projects={stats['gift_project_rows']}",
-        f"active_gifts={stats['active_gift_categories']}",
+        f"gift_categories={stats['gift_categories']}",
     )
     return 0
 

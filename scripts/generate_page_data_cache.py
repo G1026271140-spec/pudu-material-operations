@@ -38,7 +38,7 @@ def main() -> int:
         app.PAGE_DATA_STATIC_CACHE_PATH,
         f"generated_at={cache.get('generated_at')}",
         f"rows={sum(int(value) for value in counts.values())}",
-        f"active_gifts={stats['active_gift_categories']}",
+        f"gift_categories={stats['gift_categories']}",
     )
     for table_name, row_count in counts.items():
         print(f"  {table_name}: {row_count}")

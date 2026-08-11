@@ -161,6 +161,86 @@ class FeishuBitableClient:
             raise FeishuBitableError("Feishu returned an empty attachment.")
         return content
 
+    def download_bitable_attachment(
+        self,
+        file_token: str,
+        attachment_url: str = "",
+        *,
+        max_bytes: int = 20 * 1024 * 1024,
+    ) -> bytes:
+        normalized_token = file_token.strip()
+        normalized_url = attachment_url.strip()
+        if not normalized_token:
+            raise FeishuBitableError("Attachment file_token cannot be empty.")
+        if not normalized_url:
+            return self.download_media(normalized_token, max_bytes=max_bytes)
+        if max_bytes <= 0:
+            raise FeishuBitableError("Attachment size limit must be positive.")
+
+        parsed_url = parse.urlsplit(normalized_url)
+        hostname = str(parsed_url.hostname or "").lower()
+        if parsed_url.scheme != "https" or not (
+            hostname == "feishu.cn" or hostname.endswith(".feishu.cn")
+        ):
+            raise FeishuBitableError("Attachment URL is not a trusted Feishu URL.")
+
+        download_url = normalized_url
+        if (
+            hostname == "open.feishu.cn"
+            and parsed_url.path
+            == "/open-apis/drive/v1/medias/batch_get_tmp_download_url"
+        ):
+            params = {
+                key: values[-1]
+                for key, values in parse.parse_qs(
+                    parsed_url.query,
+                    keep_blank_values=True,
+                ).items()
+                if values
+            }
+            response = self._request(
+                "GET",
+                "/drive/v1/medias/batch_get_tmp_download_url",
+                params=params,
+            )
+            candidates = list(response.get("data", {}).get("tmp_download_urls") or [])
+            matched = next(
+                (
+                    item
+                    for item in candidates
+                    if str(item.get("file_token") or "").strip() == normalized_token
+                ),
+                None,
+            )
+            download_url = str((matched or {}).get("tmp_download_url") or "").strip()
+            if not download_url:
+                raise FeishuBitableError(
+                    "Feishu did not return a temporary attachment download URL."
+                )
+
+        parsed_download_url = parse.urlsplit(download_url)
+        download_hostname = str(parsed_download_url.hostname or "").lower()
+        if parsed_download_url.scheme != "https" or not (
+            download_hostname == "feishu.cn"
+            or download_hostname.endswith(".feishu.cn")
+        ):
+            raise FeishuBitableError("Attachment download URL is not trusted.")
+
+        req = request.Request(download_url, method="GET")
+        try:
+            with request.urlopen(req, timeout=30) as response:
+                content = response.read(max_bytes + 1)
+        except error.HTTPError as exc:
+            text = exc.read().decode("utf-8", errors="replace")
+            raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
+        if len(content) > max_bytes:
+            raise FeishuBitableError(
+                f"Attachment exceeds the {max_bytes} byte download limit."
+            )
+        if not content:
+            raise FeishuBitableError("Feishu returned an empty attachment.")
+        return content
+
     def list_records(self, table_id: str, page_size: int = 500) -> list[dict[str, Any]]:
         return self._paged_get(
             f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
@@ -66,6 +67,54 @@ class FeishuBitableBotApiTests(unittest.TestCase):
         request_object = urlopen.call_args.args[0]
         self.assertIn("/im/v1/messages/om-source/resources/img-key", request_object.full_url)
         self.assertIn("type=image", request_object.full_url)
+
+    def test_download_bitable_attachment_resolves_authenticated_temporary_url(self) -> None:
+        self.client._tenant_access_token = "token"
+        self.client._tenant_access_token_expires_at = 10**12
+        temporary_url = "https://internal-api-drive-stream.feishu.cn/file/image"
+        api_response = MagicMock()
+        api_response.__enter__.return_value.read.return_value = json.dumps(
+            {
+                "code": 0,
+                "data": {
+                    "tmp_download_urls": [
+                        {
+                            "file_token": "file-1",
+                            "tmp_download_url": temporary_url,
+                        }
+                    ]
+                },
+            }
+        ).encode("utf-8")
+        image_response = MagicMock()
+        image_response.__enter__.return_value.read.return_value = b"image"
+        attachment_url = (
+            "https://open.feishu.cn/open-apis/drive/v1/medias/"
+            "batch_get_tmp_download_url?file_tokens=file-1&extra=context"
+        )
+
+        with patch(
+            "feishu_bitable.request.urlopen",
+            side_effect=[api_response, image_response],
+        ) as urlopen:
+            result = self.client.download_bitable_attachment(
+                "file-1",
+                attachment_url,
+            )
+
+        self.assertEqual(result, b"image")
+        self.assertEqual(urlopen.call_count, 2)
+        api_request = urlopen.call_args_list[0].args[0]
+        image_request = urlopen.call_args_list[1].args[0]
+        self.assertEqual(api_request.get_header("Authorization"), "Bearer token")
+        self.assertEqual(image_request.full_url, temporary_url)
+
+    def test_download_bitable_attachment_rejects_untrusted_url(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "trusted Feishu URL"):
+            self.client.download_bitable_attachment(
+                "file-1",
+                "https://example.com/file/image",
+            )
 
 
 if __name__ == "__main__":

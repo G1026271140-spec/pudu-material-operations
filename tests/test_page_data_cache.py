@@ -76,7 +76,7 @@ class PageDataCacheTests(unittest.TestCase):
 
         stats = validate_page_data_cache(cache, require_data=True)
 
-        self.assertEqual(stats["active_gift_categories"], 1)
+        self.assertEqual(stats["gift_categories"], 1)
         self.assertEqual(stats["gift_gallery_rows"], 1)
         self.assertEqual(stats["gift_project_rows"], 0)
 

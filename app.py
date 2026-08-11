@@ -3180,14 +3180,24 @@ def load_feishu_attachment_snapshot(
     app_id: str,
     app_secret: str,
     app_token: str,
+    attachment_url: str = "",
 ) -> bytes:
-    return get_feishu_bitable_client(app_id, app_secret, app_token).download_media(
-        file_token
+    return get_feishu_bitable_client(
+        app_id,
+        app_secret,
+        app_token,
+    ).download_bitable_attachment(
+        file_token,
+        attachment_url,
     )
 
 
-def load_feishu_attachment(file_token: str) -> bytes:
-    return load_feishu_attachment_snapshot(file_token, *feishu_config_args())
+def load_feishu_attachment(file_token: str, attachment_url: str = "") -> bytes:
+    return load_feishu_attachment_snapshot(
+        file_token,
+        *feishu_config_args(),
+        attachment_url=attachment_url,
+    )
 
 
 def feishu_text_any(fields: dict, names: list[str], default: str = "") -> str:
@@ -5803,8 +5813,7 @@ def gift_gallery_records_from_rows(
     categories = [
         category
         for category in feishu_category_records_from_rows(category_rows)
-        if category["status"] == STATUS_ACTIVE
-        and category["category_definition"] == CATEGORY_DEFINITION_GIFT
+        if category["category_definition"] == CATEGORY_DEFINITION_GIFT
     ]
     projects = gift_project_records_from_rows(project_rows)
     gallery: list[dict] = []
@@ -5932,8 +5941,6 @@ def create_gift_project_request(
     )
     if category is None:
         raise ValueError("所选周边礼品不存在，请刷新页面后重试。")
-    if category.get("status") != STATUS_ACTIVE:
-        raise ValueError("所选周边礼品已停用，请选择其他物料。")
     if category.get("category_definition") != CATEGORY_DEFINITION_GIFT:
         raise ValueError("所选品类不是周边礼品，不能写入项目礼品申请。")
     fields = build_gift_project_fields(
@@ -11304,16 +11311,16 @@ def render_gift_image(attachments: list[dict], product: object) -> None:
         file_token = str(attachment.get("file_token") or "")
         if file_token:
             try:
-                st.image(load_feishu_attachment(file_token), width="stretch")
+                st.image(
+                    load_feishu_attachment(
+                        file_token,
+                        str(attachment.get("url") or ""),
+                    ),
+                    width="stretch",
+                )
                 return
             except Exception:
-                image_url = str(attachment.get("url") or "")
-                if image_url:
-                    try:
-                        st.image(image_url, width="stretch")
-                        return
-                    except Exception:
-                        pass
+                pass
     category_image_path = request_category_image_path(product)
     if category_image_path:
         st.image(str(category_image_path), width="stretch")
