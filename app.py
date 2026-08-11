@@ -141,7 +141,7 @@ ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
-MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "修改与撤回")
+MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记",)
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理", "物料数据库")
 MATERIAL_DASHBOARD_MODULES = (
@@ -4153,18 +4153,12 @@ def ensure_requester_sales_permission(request_payload: dict[str, object]) -> str
     return "created"
 
 
-def material_approval_url() -> str:
-    base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).strip()
-    return f"{base_url.rstrip('/')}/?view=approval"
-
-
 def material_request_notification_text(
     request_no: str,
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
 ) -> str:
     valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
-    total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
     details = [
         (
             f"{index}. {str(line.get('product') or '-')} / "
@@ -4174,18 +4168,19 @@ def material_request_notification_text(
         for index, line in enumerate(valid_lines, start=1)
     ]
     parts = [
-        "【新的营销物料申请待处理】",
+        (
+            f"【来自{str(request_payload.get('department') or '-')}的"
+            f"{str(request_payload.get('requester') or '-')}的营销物料即将进入审批流程，"
+            f"本批物料的用途为{str(request_payload.get('material_usage') or '-')}，"
+            "请关注飞书审批进度。】"
+        ),
         f"申请单号：{request_no}",
         f"申请人：{str(request_payload.get('requester') or '-')}",
         f"申请部门：{str(request_payload.get('department') or '-')}",
         f"客户/国家：{str(request_payload.get('customer_name') or '-')} / {str(request_payload.get('country') or '-')}",
         f"物料用途：{str(request_payload.get('material_usage') or '-')}",
-        f"申请合计：{len(valid_lines)} 种，共 {total_quantity} 件",
         "",
         *details,
-        "",
-        "请打开审批与发放页面处理：",
-        material_approval_url(),
     ]
     return "\n".join(parts)
 
@@ -4194,6 +4189,144 @@ def _feishu_card_plain_text(value: object, *, max_length: int = 1600) -> str:
     text = str(value or "-").strip() or "-"
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     return text[:max_length]
+
+
+def _feishu_card_text_element(
+    value: object,
+    *,
+    max_length: int = 1600,
+    text_size: str = "normal",
+    text_color: str = "default",
+    lines: int = 4,
+) -> dict[str, object]:
+    return {
+        "tag": "div",
+        "text": {
+            "tag": "plain_text",
+            "content": _feishu_card_plain_text(value, max_length=max_length),
+            "text_size": text_size,
+            "text_color": text_color,
+            "lines": lines,
+        },
+    }
+
+
+def _feishu_notification_field(label: str, value: object) -> dict[str, object]:
+    return {
+        "tag": "column_set",
+        "flex_mode": "none",
+        "columns": [
+            {
+                "tag": "column",
+                "width": "weighted",
+                "weight": 1,
+                "vertical_spacing": "2px",
+                "elements": [
+                    _feishu_card_text_element(
+                        label,
+                        max_length=80,
+                        text_size="notation",
+                        text_color="grey-500",
+                        lines=1,
+                    ),
+                    _feishu_card_text_element(value, max_length=500, lines=4),
+                ],
+            }
+        ],
+    }
+
+
+def _feishu_notification_field_grid(
+    fields: list[tuple[str, object]],
+) -> dict[str, object]:
+    left_fields = fields[::2]
+    right_fields = fields[1::2]
+    columns: list[dict[str, object]] = []
+    for column_fields in (left_fields, right_fields):
+        if not column_fields:
+            continue
+        columns.append(
+            {
+                "tag": "column",
+                "width": "weighted",
+                "weight": 1,
+                "vertical_spacing": "16px",
+                "elements": [
+                    _feishu_notification_field(label, value)
+                    for label, value in column_fields
+                ],
+            }
+        )
+    return {
+        "tag": "column_set",
+        "flex_mode": "bisect" if len(columns) == 2 else "none",
+        "horizontal_spacing": "16px",
+        "columns": columns,
+    }
+
+
+def _feishu_notification_section(
+    title: str,
+    elements: list[dict[str, object]],
+    *,
+    color: str,
+    focus: bool = False,
+    last: bool = False,
+) -> dict[str, object]:
+    return {
+        "tag": "column_set",
+        "flex_mode": "none",
+        "margin": "0px" if last else "0px 0px 12px 0px",
+        "columns": [
+            {
+                "tag": "column",
+                "width": "weighted",
+                "weight": 1,
+                "background_style": f"{color}-50",
+                "padding": "12px",
+                "vertical_spacing": "12px",
+                "elements": [
+                    {
+                        "tag": "markdown",
+                        "content": f"**<font color='{color}'>{title}</font>**",
+                        "text_size": "heading-4" if focus else "normal",
+                    },
+                    *elements,
+                ],
+            }
+        ],
+    }
+
+
+def _feishu_material_detail_elements(
+    lines: list[dict[str, object]],
+    *,
+    english: bool = False,
+) -> list[dict[str, object]]:
+    valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
+    elements: list[dict[str, object]] = []
+    for index, line in enumerate(valid_lines, start=1):
+        label = english_material_notification_label if english else lambda value: str(value or "-")
+        detail = (
+            f"{index:02d}. {label(line.get('product'))} / "
+            f"{label(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{label(line.get('language') or NO_LANGUAGE_TEXT)} "
+            f"× {int(line.get('quantity') or 0)}"
+        )
+        remark = str(line.get("remark") or "").strip()
+        if remark:
+            remark_label = "Remark" if english else "备注"
+            detail += f"\n{remark_label}: {_feishu_card_plain_text(remark, max_length=500)}"
+        elements.append(_feishu_card_text_element(detail, max_length=1200, lines=6))
+    if elements:
+        return elements
+    return [
+        _feishu_card_text_element(
+            "No material details" if english else "暂无物料明细",
+            text_color="grey-500",
+            lines=2,
+        )
+    ]
 
 
 def material_request_notification_card(
@@ -4212,103 +4345,70 @@ def material_request_notification_card(
         for attachment in attachments
     ]
 
-    def short_field(label: str, value: object) -> dict[str, object]:
-        return {
-            "is_short": True,
-            "text": {
-                "tag": "plain_text",
-                "content": f"{label}\n{_feishu_card_plain_text(value, max_length=500)}",
-            },
-        }
-
-    elements: list[dict[str, object]] = [
-        {"tag": "markdown", "content": "**申请信息**"},
-        {
-            "tag": "div",
-            "fields": [
-                short_field("申请单号", request_no),
-                short_field("申请人", request_payload.get("requester")),
-                short_field("申请部门", request_payload.get("department")),
-                short_field("标题", request_payload.get("title")),
-                short_field("客户名称", request_payload.get("customer_name")),
-                short_field("国家", request_payload.get("country")),
-                short_field("运费承担者", request_payload.get("freight_payer")),
-                short_field("申请合计", f"{len(valid_lines)} 种，共 {total_quantity} 件"),
-            ],
-        },
-        {"tag": "hr"},
-        {"tag": "markdown", "content": "**收件人信息**"},
-        {
-            "tag": "div",
-            "text": {
-                "tag": "plain_text",
-                "content": _feishu_card_plain_text(request_payload.get("recipient_info")),
-            },
-        },
-        {"tag": "markdown", "content": "**物料用途**"},
-        {
-            "tag": "div",
-            "text": {
-                "tag": "plain_text",
-                "content": _feishu_card_plain_text(request_payload.get("material_usage")),
-            },
-        },
+    application_fields: list[tuple[str, object]] = [
+        ("申请单号", request_no),
+        ("申请人", request_payload.get("requester")),
+        ("申请部门", request_payload.get("department")),
+        ("标题", request_payload.get("title")),
+        ("客户名称", request_payload.get("customer_name")),
+        ("国家", request_payload.get("country")),
+        ("运费承担者", request_payload.get("freight_payer")),
+        ("申请合计", f"{len(valid_lines)} 种，共 {total_quantity} 件"),
     ]
     if attachment_names:
-        elements.extend(
-            [
-                {"tag": "markdown", "content": "**相关附件**"},
-                {
-                    "tag": "div",
-                    "text": {
-                        "tag": "plain_text",
-                        "content": "、".join(attachment_names),
-                    },
-                },
-            ]
+        application_fields.append(
+            ("相关附件", "、".join(attachment_names))
         )
-
-    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**物料明细**"}])
-    for index, line in enumerate(valid_lines, start=1):
-        detail = (
-            f"{index:02d}. {_feishu_card_plain_text(line.get('product'), max_length=300)} / "
-            f"{_feishu_card_plain_text(line.get('model') or NO_MODEL_TEXT, max_length=200)} / "
-            f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)} "
-            f"× {int(line.get('quantity') or 0)}"
-        )
-        remark = str(line.get("remark") or "").strip()
-        if remark:
-            detail += f"\n备注：{_feishu_card_plain_text(remark, max_length=500)}"
-        elements.append(
-            {
-                "tag": "div",
-                "text": {"tag": "plain_text", "content": detail},
-            }
-        )
-
-    elements.extend(
-        [
-            {"tag": "hr"},
-            {
-                "tag": "action",
-                "actions": [
-                    {
-                        "tag": "button",
-                        "text": {"tag": "plain_text", "content": "打开审批与发放"},
-                        "type": "primary",
-                        "url": material_approval_url(),
-                    }
-                ],
-            },
-        ]
+    department = _feishu_card_plain_text(request_payload.get("department"), max_length=100)
+    requester = _feishu_card_plain_text(request_payload.get("requester"), max_length=100)
+    material_usage = _feishu_card_plain_text(
+        request_payload.get("material_usage"), max_length=200
     )
+    header_title = (
+        f"来自{department}的{requester}的营销物料即将进入审批流程，"
+        f"本批物料的用途为{material_usage}，请关注飞书审批进度。"
+    )
+    elements = [
+        _feishu_notification_section(
+            "申请信息",
+            [_feishu_notification_field_grid(application_fields)],
+            color="orange",
+            focus=True,
+        ),
+        _feishu_notification_section(
+            "收件人信息",
+            [_feishu_card_text_element(request_payload.get("recipient_info"), lines=6)],
+            color="orange",
+        ),
+        _feishu_notification_section(
+            "物料用途",
+            [_feishu_card_text_element(request_payload.get("material_usage"), lines=6)],
+            color="orange",
+        ),
+        _feishu_notification_section(
+            "物料明细",
+            _feishu_material_detail_elements(valid_lines),
+            color="orange",
+            last=True,
+        ),
+    ]
     return {
-        "config": {"wide_screen_mode": True},
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "default",
+            "summary": {"content": header_title},
+        },
         "header": {
             "template": "orange",
-            "title": {"tag": "plain_text", "content": "新的营销物料申请待处理"},
+            "title": {"tag": "plain_text", "content": header_title},
+            "icon": {"tag": "standard_icon", "token": "approve_colorful"},
         },
-        "elements": elements,
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "elements": elements,
+        },
     }
 
 
@@ -4864,28 +4964,48 @@ def sales_request_received_notification_text(
     english: bool = False,
 ) -> str:
     valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
-    total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
+    details = [
+        (
+            f"{index:02d}. "
+            f"{english_material_notification_label(line.get('product'))} / "
+            f"{english_material_notification_label(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{english_material_notification_label(line.get('language') or NO_LANGUAGE_TEXT)} "
+            f"× {int(line.get('quantity') or 0)}"
+        )
+        for index, line in enumerate(valid_lines, start=1)
+    ]
     if english:
         return "\n".join(
             [
-                "Your marketing material request is now being processed.",
+                "Your marketing material request has entered the approval process.",
+                "",
+                "Material details",
+                *details,
+                "",
                 f"Request No.: {request_no}",
                 f"Applicant: {str(request_payload.get('requester') or '-')}",
                 f"Purpose: {str(request_payload.get('material_usage') or '-')}",
-                f"Total requested: {len(valid_lines)} item types, {total_quantity} units",
-                "",
-                "The administrators have received your request. Please wait for the approval and issuance result.",
             ]
         )
+    details = [
+        (
+            f"{index:02d}. {str(line.get('product') or '-')} / "
+            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{str(line.get('language') or NO_LANGUAGE_TEXT)} "
+            f"× {int(line.get('quantity') or 0)}"
+        )
+        for index, line in enumerate(valid_lines, start=1)
+    ]
     return "\n".join(
         [
-            "【营销物料申请已进入处理流程】",
+            "【您提交的营销物料申请已进入审批流程】",
+            "",
+            "物料明细",
+            *details,
+            "",
             f"申请单号：{request_no}",
             f"申请人：{str(request_payload.get('requester') or '-')}",
             f"物料用途：{str(request_payload.get('material_usage') or '-')}",
-            f"申请合计：{len(valid_lines)} 种，共 {total_quantity} 件",
-            "",
-            "管理员已收到申请，请等待审批与发放结果。",
         ]
     )
 
@@ -4896,43 +5016,48 @@ def sales_request_received_notification_card(
     lines: list[dict[str, object]],
 ) -> dict[str, object]:
     english = requester_prefers_english(request_payload)
-    action_text = "Modify or withdraw this request" if english else "修改或撤回本条申请"
+    header_title = (
+        "Your marketing material request has entered the approval process"
+        if english
+        else "您提交的营销物料申请已进入审批流程"
+    )
+    detail_title = "Material details" if english else "物料明细"
+    info_title = "Request information" if english else "申请信息"
+    info_fields = [
+        ("Request No." if english else "申请单号", request_no),
+        ("Applicant" if english else "申请人", request_payload.get("requester")),
+        ("Purpose" if english else "物料用途", request_payload.get("material_usage")),
+    ]
     return {
-        "config": {"wide_screen_mode": True},
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "default",
+            "summary": {"content": header_title},
+        },
         "header": {
             "template": "blue",
-            "title": {
-                "tag": "plain_text",
-                "content": (
-                    "Material Request Received"
-                    if english
-                    else "营销物料申请已进入处理流程"
-                ),
-            },
+            "title": {"tag": "plain_text", "content": header_title},
+            "icon": {"tag": "standard_icon", "token": "approve_colorful"},
         },
-        "elements": [
-            {
-                "tag": "markdown",
-                "content": sales_request_received_notification_text(
-                    request_no, request_payload, lines, english=english
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "elements": [
+                _feishu_notification_section(
+                    detail_title,
+                    _feishu_material_detail_elements(lines, english=english),
+                    color="blue",
+                    focus=True,
                 ),
-            },
-            {
-                "tag": "action",
-                "actions": [
-                    {
-                        "tag": "button",
-                        "text": {"tag": "plain_text", "content": action_text},
-                        "type": "primary",
-                        "value": {
-                            "action": "open_request_editor",
-                            "request_no": request_no,
-                            "language": "en" if english else "zh",
-                        },
-                    }
-                ],
-            },
-        ],
+                _feishu_notification_section(
+                    info_title,
+                    [_feishu_notification_field_grid(info_fields)],
+                    color="blue",
+                    last=True,
+                ),
+            ],
+        },
     }
 
 
@@ -6754,10 +6879,7 @@ def request_material_management_navigation_loading() -> None:
 
 def management_navigation_uses_loading_overlay(section: object) -> bool:
     normalized = str(section or "")
-    return (
-        normalized in {"物料管理", "修改与撤回"}
-        or normalized in MATERIAL_MANAGEMENT_SECTIONS
-    )
+    return normalized == "物料管理" or normalized in MATERIAL_MANAGEMENT_SECTIONS
 
 
 def admin_auth_gate() -> bool:
@@ -10462,318 +10584,6 @@ def render_category_admin() -> None:
     else:
         st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
 
-def fetch_request_maintenance_live_data() -> dict[str, object]:
-    """Always read request maintenance data directly from Feishu."""
-    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
-    line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
-    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
-    return {
-        "requests": load_feishu_request_records(request_rows),
-        "lines": load_feishu_request_line_records(line_rows, material_rows),
-        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "row_count": len(request_rows) + len(line_rows),
-    }
-
-
-def update_pending_feishu_request(
-    request: dict[str, object],
-    request_updates: dict[str, object],
-    edited_lines: list[dict[str, object]],
-) -> None:
-    request_id = str(request.get("record_id") or "")
-    request_no = str(request.get("request_no") or "")
-    current_request = next(
-        (
-            row
-            for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
-            if feishu_record_id(row) == request_id
-        ),
-        None,
-    )
-    if current_request is None:
-        raise RuntimeError("申请单不存在或已被删除，请刷新后重试。")
-    if feishu_text(feishu_fields(current_request), "审批状态") != REQUEST_STATUS_PENDING:
-        raise RuntimeError("只有待审批申请可以修改，请刷新后查看最新状态。")
-
-    current_line_rows = [
-        row
-        for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
-        if request_id in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
-        or feishu_text_any(feishu_fields(row), ["申请单号", "所属申请单", "申请单"]) == request_no
-    ]
-    allowed_line_ids = {
-        feishu_record_id(row)
-        for row in current_line_rows
-        if feishu_text(feishu_fields(row), "明细状态") != REQUEST_LINE_STATUS_WITHDRAWN
-    }
-    line_updates: list[dict] = []
-    deleted_line_ids: set[str] = set()
-    for line in edited_lines:
-        line_id = str(line.get("record_id") or "")
-        quantity = int(line.get("quantity") or 0)
-        if line_id not in allowed_line_ids:
-            raise RuntimeError("申请明细已发生变化，请刷新后重试。")
-        delete_requested = bool(line.get("delete")) or quantity == 0
-        if delete_requested:
-            deleted_line_ids.add(line_id)
-            line_updates.append(
-                {
-                    "record_id": line_id,
-                    "fields": {"明细状态": REQUEST_LINE_STATUS_WITHDRAWN},
-                }
-            )
-            continue
-        if quantity <= 0:
-            raise RuntimeError("申请数量必须大于 0。")
-        line_updates.append(
-            {
-                "record_id": line_id,
-                "fields": {
-                    "申请数量": quantity,
-                    "物料数量": quantity,
-                    "审批通过数量": quantity,
-                    "备注": str(line.get("remark") or "").strip(),
-                },
-            }
-        )
-
-    if not line_updates or not (allowed_line_ids - deleted_line_ids):
-        raise RuntimeError("申请单至少需要保留一条物料明细。")
-    feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
-    feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
-
-
-def withdraw_pending_feishu_request(request: dict[str, object], note: str = "") -> None:
-    request_id = str(request.get("record_id") or "")
-    request_no = str(request.get("request_no") or "")
-    current_request = next(
-        (
-            row
-            for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
-            if feishu_record_id(row) == request_id
-        ),
-        None,
-    )
-    if current_request is None:
-        raise RuntimeError("申请单不存在或已被删除，请刷新后重试。")
-    current_fields = feishu_fields(current_request)
-    if feishu_text(current_fields, "审批状态") != REQUEST_STATUS_PENDING:
-        raise RuntimeError("只有待审批申请可以撤回，请刷新后查看最新状态。")
-
-    line_updates: list[dict] = []
-    for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME):
-        fields = feishu_fields(row)
-        belongs_to_request = (
-            request_id in feishu_link_ids_any(fields, ["所属申请单", "申请单"])
-            or feishu_text_any(fields, ["申请单号", "所属申请单", "申请单"]) == request_no
-        )
-        if belongs_to_request:
-            line_updates.append(
-                {
-                    "record_id": feishu_record_id(row),
-                    "fields": {"明细状态": REQUEST_LINE_STATUS_WITHDRAWN},
-                }
-            )
-
-    request_fields: dict[str, object] = {"审批状态": REQUEST_STATUS_WITHDRAWN}
-    if note.strip():
-        request_fields["备注"] = append_admin_note(
-            feishu_text(current_fields, "备注"),
-            "撤回备注",
-            note,
-        )
-    feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_fields)
-    if line_updates:
-        feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
-
-
-def render_request_edit_revert_page() -> None:
-    render_section_header("01", "物料申请修改与撤回", "实时读取飞书申请单；仅待审批申请允许修改或撤回")
-    message = st.session_state.pop("request_maintenance_message", "")
-    if message:
-        st.success(message)
-
-    with st.spinner("正在实时读取申请单和申请明细，请稍后......"):
-        live_data = fetch_request_maintenance_live_data()
-    requests = [
-        request
-        for request in list(live_data.get("requests") or [])
-        if str(request.get("status") or "") == REQUEST_STATUS_PENDING
-    ]
-    lines = list(live_data.get("lines") or [])
-    st.caption(
-        "数据来源：飞书实时数据　更新时间："
-        f"{str(live_data.get('updated_at') or '未记录')}"
-    )
-    if not requests:
-        st.info("当前没有可修改或撤回的待审批申请。")
-        return
-
-    requester_options = unique_preserve(
-        [str(request.get("requester") or "未填写申请人") for request in requests]
-    )
-    selected_requester = st.selectbox(
-        "申请人",
-        requester_options,
-        key="request_maintenance_requester",
-    )
-    scoped_requests = [
-        request
-        for request in requests
-        if str(request.get("requester") or "未填写申请人") == selected_requester
-    ]
-    request_by_label = {
-        (
-            f"{request.get('request_no')} · "
-            f"{request.get('submitted_at') or '未记录时间'} · "
-            f"{request.get('customer_name') or request.get('material_usage') or '物料申请'}"
-        ): request
-        for request in scoped_requests
-    }
-    selected_label = st.selectbox(
-        "选择待审批申请单",
-        list(request_by_label),
-        key="request_maintenance_selector",
-    )
-    selected_request = request_by_label[selected_label]
-    selected_lines = request_lines_for_request(selected_request, lines)
-
-    info_col_a, info_col_b = st.columns(2)
-    customer_name = info_col_a.text_input(
-        "客户名称",
-        value=str(selected_request.get("customer_name") or ""),
-        key=f"request_edit_customer_{selected_request['record_id']}",
-    )
-    country = info_col_b.text_input(
-        "国家",
-        value=str(selected_request.get("country") or ""),
-        key=f"request_edit_country_{selected_request['record_id']}",
-    )
-    recipient_info = st.text_area(
-        "收件人信息",
-        value=str(selected_request.get("recipient_info") or ""),
-        key=f"request_edit_recipient_{selected_request['record_id']}",
-    )
-    detail_col_a, detail_col_b = st.columns(2)
-    freight_payer = detail_col_a.text_input(
-        "运费承担者",
-        value=str(selected_request.get("freight_payer") or ""),
-        key=f"request_edit_freight_{selected_request['record_id']}",
-    )
-    material_usage = detail_col_b.text_input(
-        "物料用途",
-        value=str(selected_request.get("material_usage") or ""),
-        key=f"request_edit_usage_{selected_request['record_id']}",
-    )
-
-    line_df = pd.DataFrame(
-        [
-            {
-                "删除": False,
-                "记录ID": line["record_id"],
-                "物料品类": request_category_display_label(line["product"]),
-                "产品型号": line["model"],
-                "语种": line["language"],
-                "申请数量": int(line["quantity"]),
-                "备注": line["remark"],
-            }
-            for line in selected_lines
-            if str(line.get("status") or "") != REQUEST_LINE_STATUS_WITHDRAWN
-        ]
-    )
-    edited_df = st.data_editor(
-        line_df,
-        hide_index=True,
-        width="stretch",
-        disabled=["记录ID", "物料品类", "产品型号", "语种"],
-        column_config={
-            "删除": st.column_config.CheckboxColumn(
-                "删除",
-                help="勾选后保存，将从该申请中移除这条物料明细。",
-                width="small",
-            ),
-            "记录ID": None,
-            "申请数量": st.column_config.NumberColumn("申请数量", min_value=1, step=1, required=True),
-        },
-        key=f"request_line_editor_{selected_request['record_id']}",
-    )
-
-    save_col, withdraw_col = st.columns(2)
-    if save_col.button(
-        "保存申请修改",
-        type="primary",
-        icon=":material/save:",
-        width="stretch",
-        key=f"save_request_edit_{selected_request['record_id']}",
-    ):
-        edited_lines = [
-            {
-                "record_id": str(row["记录ID"]),
-                "quantity": int(row["申请数量"]),
-                "remark": str(row.get("备注") or ""),
-                "delete": bool(row.get("删除")),
-            }
-            for row in edited_df.to_dict("records")
-        ]
-        request_updates = {
-            "客户名称": customer_name.strip(),
-            "国家": country.strip(),
-            "收件人信息": recipient_info.strip(),
-            "运费的承担者": freight_payer.strip(),
-            "运费承担者": freight_payer.strip(),
-            "用途/活动": material_usage.strip(),
-            "用途|活动": material_usage.strip(),
-            "物料用途": material_usage.strip(),
-        }
-        with st.spinner("正在保存申请修改并同步飞书，请勿关闭页面......"):
-            try:
-                with DATA_LOCK:
-                    update_pending_feishu_request(selected_request, request_updates, edited_lines)
-            except Exception as exc:
-                st.error(f"申请修改失败：{exc}")
-                return
-        st.session_state["request_maintenance_message"] = (
-            f"申请单 {selected_request['request_no']} 已保存修改。"
-        )
-        st.rerun()
-
-    with withdraw_col.popover("撤回这张申请单", width="stretch"):
-        st.warning("撤回后该申请单不会再进入审批发放流程。")
-        withdraw_note = st.text_input(
-            "撤回备注",
-            key=f"withdraw_request_note_{selected_request['record_id']}",
-            placeholder="可选",
-        )
-        withdraw_confirmed = st.checkbox(
-            "确认撤回该申请单",
-            key=f"withdraw_request_confirm_{selected_request['record_id']}",
-        )
-        if st.button(
-            "确认撤回",
-            icon=":material/undo:",
-            width="stretch",
-            key=f"withdraw_request_button_{selected_request['record_id']}",
-        ):
-            if not withdraw_confirmed:
-                st.warning("请先勾选确认撤回。")
-            else:
-                with st.spinner("正在撤回申请单并同步飞书，请勿关闭页面......"):
-                    try:
-                        with DATA_LOCK:
-                            withdraw_pending_feishu_request(selected_request, withdraw_note)
-                    except Exception as exc:
-                        st.error(f"申请撤回失败：{exc}")
-                        return
-                st.session_state["request_maintenance_message"] = (
-                    f"申请单 {selected_request['request_no']} 已撤回。"
-                )
-                st.rerun()
-
-
-def render_edit_revert_page() -> None:
-    render_request_edit_revert_page()
-
-
 def render_material_database_page() -> None:
     action_spacer, action_col = st.columns([4, 1.35], vertical_alignment="center")
     action_spacer.empty()
@@ -11856,7 +11666,6 @@ def render_management_page() -> None:
     if current_section not in {
         "库存登记",
         "物料管理",
-        "修改与撤回",
     }:
         current_section = "库存登记"
     # This write keeps the app-level navigation state alive while pages such as
@@ -11877,7 +11686,6 @@ def render_management_page() -> None:
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库、品类维护与物料数据库统一管理。"),
-        "修改与撤回": ("物料申请修改与撤回", "申请工作台", "实时读取待审批申请，修改申请信息或撤回申请单。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
@@ -11908,22 +11716,8 @@ def render_management_page() -> None:
         else:
             render_material_database_page()
         return
-    if st.session_state.get(MANAGEMENT_WORKBENCH_CONTROL_KEY) not in MANAGEMENT_WORKBENCH_SECTIONS:
-        st.session_state[MANAGEMENT_WORKBENCH_CONTROL_KEY] = current_section
-    management_section = st.radio(
-        "管理功能",
-        MANAGEMENT_WORKBENCH_SECTIONS,
-        horizontal=True,
-        label_visibility="collapsed",
-        key=MANAGEMENT_WORKBENCH_CONTROL_KEY,
-        on_change=sync_management_section_from_workbench_control,
-    )
-    set_management_section(management_section, sync_workbench_control=False)
-    if management_section == "库存登记":
-        render_page_cache_toolbar("request")
-        render_change_form(show_title=False)
-    else:
-        render_edit_revert_page()
+    render_page_cache_toolbar("request")
+    render_change_form(show_title=False)
 
 
 def render_management_page_with_navigation_loading() -> None:

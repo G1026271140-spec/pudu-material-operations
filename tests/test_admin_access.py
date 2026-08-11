@@ -16,7 +16,6 @@ class AdminAccessTests(unittest.TestCase):
 
     def test_request_pages_remain_unprotected(self) -> None:
         self.assertFalse(app.management_section_requires_admin("库存登记"))
-        self.assertFalse(app.management_section_requires_admin("修改与撤回"))
         self.assertFalse(app.management_section_requires_admin(""))
 
     def test_material_management_navigation_requests_fullscreen_loading(self) -> None:
@@ -73,10 +72,13 @@ class AdminAccessTests(unittest.TestCase):
 
     def test_all_material_management_pages_use_loading_overlay(self) -> None:
         self.assertTrue(app.management_navigation_uses_loading_overlay("物料管理"))
-        self.assertTrue(app.management_navigation_uses_loading_overlay("修改与撤回"))
         for section in app.MATERIAL_MANAGEMENT_SECTIONS:
             self.assertTrue(app.management_navigation_uses_loading_overlay(section))
         self.assertFalse(app.management_navigation_uses_loading_overlay("库存登记"))
+
+    def test_request_edit_and_withdraw_page_is_not_exposed(self) -> None:
+        self.assertNotIn("修改与撤回", app.MANAGEMENT_WORKBENCH_SECTIONS)
+        self.assertFalse(app.management_navigation_uses_loading_overlay("修改与撤回"))
 
     def test_locked_cache_publish_does_not_expose_github_link(self) -> None:
         expander = MagicMock()

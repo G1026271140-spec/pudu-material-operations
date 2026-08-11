@@ -34,7 +34,7 @@ Register-ScheduledTask `
     -Action $action `
     -Trigger $trigger `
     -Settings $settings `
-    -Description "Keeps the PUDU Feishu card callback and inventory screenshot bot online." `
+    -Description "Keeps the PUDU Feishu inventory text and screenshot bot online." `
     -Force | Out-Null
 
 Start-ScheduledTask -TaskName $TaskName

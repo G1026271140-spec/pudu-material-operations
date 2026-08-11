@@ -395,7 +395,7 @@ class BotNotificationTests(unittest.TestCase):
         create_record.assert_not_called()
         update_record.assert_not_called()
 
-    def test_notification_contains_summary_and_approval_link(self) -> None:
+    def test_admin_notification_text_contains_details_without_approval_link(self) -> None:
         payload = {
             "requester": "销售甲",
             "department": "海外销售部",
@@ -412,16 +412,16 @@ class BotNotificationTests(unittest.TestCase):
             }
         ]
 
-        with patch.object(app, "material_approval_url", return_value="https://example.test/?view=approval"):
-            text = app.material_request_notification_text("REQ-1", payload, lines)
+        text = app.material_request_notification_text("REQ-1", payload, lines)
 
         self.assertIn("REQ-1", text)
         self.assertIn("销售甲", text)
-        self.assertIn("1 种，共 3 件", text)
         self.assertIn("产品折页 / BellaBot / 英语 × 3", text)
-        self.assertIn("https://example.test/?view=approval", text)
+        self.assertIn("来自海外销售部的销售甲的营销物料即将进入审批流程", text)
+        self.assertNotIn("申请合计", text)
+        self.assertNotIn("审批与发放页面", text)
 
-    def test_notification_card_contains_full_request_and_approval_button(self) -> None:
+    def test_admin_notification_card_has_structured_title_and_no_action_button(self) -> None:
         payload = {
             "title": "展会使用-销售甲-营销物料领取",
             "requester": "销售甲",
@@ -443,15 +443,16 @@ class BotNotificationTests(unittest.TestCase):
             }
         ]
 
-        with patch.object(
-            app,
-            "material_approval_url",
-            return_value="https://example.test/?view=approval",
-        ):
-            card = app.material_request_notification_card("REQ-1", payload, lines)
+        card = app.material_request_notification_card("REQ-1", payload, lines)
 
         serialized = json.dumps(card, ensure_ascii=False)
+        self.assertEqual(card["schema"], "2.0")
         self.assertEqual(card["header"]["template"], "orange")
+        self.assertEqual(
+            card["header"]["title"]["content"],
+            "来自海外销售部的销售甲的营销物料即将进入审批流程，"
+            "本批物料的用途为柏林展会，请关注飞书审批进度。",
+        )
         for expected in (
             "REQ-1",
             "销售甲",
@@ -466,9 +467,17 @@ class BotNotificationTests(unittest.TestCase):
             "现场派发",
         ):
             self.assertIn(expected, serialized)
-        action = card["elements"][-1]["actions"][0]
-        self.assertEqual(action["url"], "https://example.test/?view=approval")
-        self.assertEqual(action["type"], "primary")
+        self.assertNotIn("打开审批与发放", serialized)
+        self.assertNotIn('"tag": "button"', serialized)
+        self.assertNotIn('"tag": "action"', serialized)
+        application_section = card["body"]["elements"][0]
+        field_grid = application_section["columns"][0]["elements"][1]
+        first_field = field_grid["columns"][0]["elements"][0]["columns"][0]
+        self.assertEqual(first_field["vertical_spacing"], "2px")
+        self.assertEqual(first_field["elements"][0]["text"]["text_size"], "notation")
+        self.assertEqual(first_field["elements"][0]["text"]["text_color"], "grey-500")
+        self.assertEqual(first_field["elements"][1]["text"]["text_size"], "normal")
+        self.assertEqual(field_grid["columns"][0]["vertical_spacing"], "16px")
 
     def test_notify_sends_once_to_each_enabled_administrator(self) -> None:
         client = Mock()
@@ -519,30 +528,48 @@ class BotNotificationTests(unittest.TestCase):
         )
         serialized = json.dumps(card, ensure_ascii=False)
 
-        self.assertEqual(card["header"]["title"]["content"], "Material Request Received")
-        self.assertIn("Request No.: REQ-EN-1", serialized)
-        self.assertIn("Applicant: John Smith", serialized)
+        self.assertEqual(
+            card["header"]["title"]["content"],
+            "Your marketing material request has entered the approval process",
+        )
+        self.assertIn("Request No.", serialized)
+        self.assertIn("REQ-EN-1", serialized)
+        self.assertIn("Applicant", serialized)
+        self.assertIn("John Smith", serialized)
         self.assertNotIn("申请单号", serialized)
-        action = card["elements"][-1]["actions"][0]
-        self.assertEqual(action["text"]["content"], "Modify or withdraw this request")
-        self.assertEqual(action["value"]["language"], "en")
+        self.assertNotIn("Modify or withdraw", serialized)
+        self.assertNotIn("open_request_editor", serialized)
+        self.assertNotIn("Total requested", serialized)
 
     def test_chinese_applicant_keeps_chinese_request_card(self) -> None:
         card = app.sales_request_received_notification_card(
-            "REQ-ZH-1", {"requester": "张三"}, [{"quantity": 1}]
+            "REQ-ZH-1",
+            {"requester": "张三", "material_usage": "展会"},
+            [
+                {
+                    "product": "产品单页",
+                    "model": "BellaBot",
+                    "language": "英语",
+                    "quantity": 1,
+                }
+            ],
         )
+        serialized = json.dumps(card, ensure_ascii=False)
 
-        self.assertEqual(card["header"]["title"]["content"], "营销物料申请已进入处理流程")
-        action = card["elements"][-1]["actions"][0]
-        self.assertEqual(action["text"]["content"], "修改或撤回本条申请")
+        self.assertEqual(card["schema"], "2.0")
         self.assertEqual(
-            action["value"],
-            {
-                "action": "open_request_editor",
-                "request_no": "REQ-ZH-1",
-                "language": "zh",
-            },
+            card["header"]["title"]["content"],
+            "您提交的营销物料申请已进入审批流程",
         )
+        body_elements = card["body"]["elements"]
+        self.assertIn("物料明细", json.dumps(body_elements[0], ensure_ascii=False))
+        self.assertIn("申请信息", json.dumps(body_elements[1], ensure_ascii=False))
+        self.assertLess(serialized.index("物料明细"), serialized.index("申请信息"))
+        self.assertIn("产品单页 / BellaBot / 英语 × 1", serialized)
+        self.assertNotIn("申请合计", serialized)
+        self.assertNotIn("修改或撤回本条申请", serialized)
+        self.assertNotIn("open_request_editor", serialized)
+        self.assertNotIn('"tag": "button"', serialized)
 
     def test_completed_notification_contains_requested_and_actual_quantities(self) -> None:
         request = {
