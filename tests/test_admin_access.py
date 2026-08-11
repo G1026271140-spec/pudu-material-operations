@@ -80,6 +80,11 @@ class AdminAccessTests(unittest.TestCase):
         self.assertNotIn("修改与撤回", app.MANAGEMENT_WORKBENCH_SECTIONS)
         self.assertFalse(app.management_navigation_uses_loading_overlay("修改与撤回"))
 
+    def test_approval_and_issuance_page_is_not_exposed(self) -> None:
+        self.assertFalse(hasattr(app, "navigate_to_approval"))
+        self.assertFalse(hasattr(app, "render_approval_view"))
+        self.assertNotIn("approval", app.PAGE_CACHE_TABLES)
+
     def test_locked_cache_publish_does_not_expose_github_link(self) -> None:
         expander = MagicMock()
         expander.__enter__.return_value = expander

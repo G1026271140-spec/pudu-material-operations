@@ -204,7 +204,7 @@ class SmokeTest:
         self.log("流水撤回恢复库存", after_revert == 1000, f"after={after_revert}")
         self.collect_debug_records()
 
-    def test_request_and_approval(self) -> None:
+    def test_request_submission(self) -> None:
         materials = self.pick_materials(10)
         for material in materials:
             self.restore_stock_ids.add(str(material["record_id"]))
@@ -255,21 +255,6 @@ class SmokeTest:
         self.log("申请明细关联申请单", len(line_records) == 10, f"lines={len(line_records)}")
         for line in line_records:
             self.cleanup_records["申请明细"].add(str(line["record_id"]))
-        issue_lines = []
-        for line in line_records:
-            next_line = dict(line)
-            next_line["previous_actual_issue_qty"] = int(line.get("actual_issue_qty") or 0)
-            next_line["actual_issue_qty"] = 1
-            issue_lines.append(next_line)
-        logs = app.issue_request_lines(request, issue_lines, f"{self.prefix}-APPROVAL")
-        self.clear_cache()
-        self.log("审批发放扣库存", len(logs) == 10, f"logs={len(logs)}")
-        for material in materials:
-            row = app.find_feishu_material_by_id(str(material["record_id"]))
-            qty = app.feishu_int(app.feishu_fields(row or {}), "当前库存")
-            if qty != 999:
-                self.log("审批后库存校验", False, f"{material['record_id']}={qty}")
-        self.log("审批后库存校验", True, "10 materials at 999")
         self.collect_debug_records()
 
     def test_category_and_material_admin(self) -> None:
@@ -372,7 +357,7 @@ class SmokeTest:
             self.test_schema_links()
             self.test_inventory_and_options()
             self.test_stock_transaction_and_revert()
-            self.test_request_and_approval()
+            self.test_request_submission()
             self.test_category_and_material_admin()
             self.test_no_model_created_category()
         except Exception as exc:
