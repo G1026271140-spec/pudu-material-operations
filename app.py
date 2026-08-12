@@ -12021,36 +12021,71 @@ def render_gift_projects_page() -> None:
         project_name = project_col.text_input("项目名称", key="gift_batch_project_name", label_visibility="collapsed")
         required_field_label(owner_col, "负责人")
         owner = owner_col.text_input("负责人", placeholder="填写负责人姓名", key="gift_batch_owner", label_visibility="collapsed")
-        st.caption("选择多个已有周边礼品加入清单；新建物料也可以加入同一清单，最后统一预览并批量写入。")
+        st.caption("可从下方卡片多选已有周边礼品；也可用第一张卡片新建周边礼品并加入同一清单。")
         filtered_gallery = filter_gift_gallery_records(gallery, "")
-        catalog_names = [str(item.get("category") or "") for item in filtered_gallery]
-        selected_names = st.pills("已有周边礼品", catalog_names, selection_mode="multi", key="gift_batch_selected_names", width="stretch") or []
-        selected_name_set = set(selected_names)
-        gift_lines = [item for item in filtered_gallery if str(item.get("category") or "") in selected_name_set]
-        for row_start in range(0, len(filtered_gallery), 8):
-            row_items = filtered_gallery[row_start : row_start + 8]
+        selected_ids = set(st.session_state.get("gift_batch_selected_ids", []))
+        gift_lines = [item for item in filtered_gallery if str(item.get("record_id") or "") in selected_ids]
+        catalog_items = [{"new": True}, *filtered_gallery]
+        for row_start in range(0, len(catalog_items), 8):
+            row_items = catalog_items[row_start : row_start + 8]
             card_columns = st.columns(8, gap="small")
             for column_index, item in enumerate(row_items):
+                if item.get("new"):
+                    with card_columns[column_index].container(border=True):
+                        st.markdown('<span class="pudu-gift-catalog-card-marker"></span>', unsafe_allow_html=True)
+                        st.markdown("### 需要新的周边品类点这个")
+                        new_name = st.text_input("名称", key="gift_batch_new_name")
+                        new_quantity = st.number_input("数量", min_value=1, step=1, key="gift_batch_new_quantity")
+                        new_remark = st.text_area("备注", key="gift_batch_new_remark", height=86)
+                        if st.button("加入清单", width="stretch", key="gift_batch_add_new"):
+                            if not str(new_name).strip():
+                                st.warning("请填写新周边品类名称。")
+                            else:
+                                st.session_state["gift_batch_new_line"] = {
+                                    "name": str(new_name).strip(),
+                                    "quantity": int(new_quantity),
+                                    "remark": str(new_remark or "").strip(),
+                                }
+                                st.rerun()
+                    continue
                 category_id = str(item.get("record_id") or "")
                 product = str(item.get("category") or "")
                 with card_columns[column_index].container(border=True):
                     st.markdown('<span class="pudu-gift-catalog-card-marker"></span>', unsafe_allow_html=True)
                     render_gift_image(list(item.get("attachments") or []), product)
                     st.markdown(f'<div class="pudu-gift-catalog-title">{escape(product)}</div>', unsafe_allow_html=True)
-                    if st.button("选择", width="stretch", key=f"gift_select_{category_id}"):
-                        st.session_state["gift_selected_category_id"] = category_id
-                        st.session_state["gift_create_mode"] = False
+                    is_selected = category_id in selected_ids
+                    if st.button("移出清单" if is_selected else "加入清单", width="stretch", key=f"gift_select_{category_id}"):
+                        if is_selected:
+                            selected_ids.remove(category_id)
+                        else:
+                            selected_ids.add(category_id)
+                        st.session_state["gift_batch_selected_ids"] = sorted(selected_ids)
                         st.rerun()
-        browse_confirmed = st.checkbox(
-            "我已浏览现有周边礼品，确认没有需要的物料",
-            key="gift_catalog_browse_confirmed",
-        )
-        if st.button("新增周边礼品", disabled=not browse_confirmed, key="gift_start_create"):
-            st.session_state["gift_create_mode"] = True
-            st.session_state.pop("gift_selected_category_id", None)
-            st.rerun()
-        if st.session_state.get("gift_create_mode"):
-            render_new_gift_project_form()
+        new_line = st.session_state.get("gift_batch_new_line")
+        st.markdown(f"**购物清单：** {len(gift_lines) + (1 if new_line else 0)} 项")
+        if gift_lines or new_line:
+            st.dataframe(
+                [{"物料名称": item.get("category"), "类型": "已有品类"} for item in gift_lines]
+                + ([{"物料名称": new_line["name"], "类型": f"待新建品类 · 数量 {new_line['quantity']}"}] if new_line else []),
+                hide_index=True,
+                width="stretch",
+            )
+        if st.button("批量提交", type="primary", key="gift_batch_submit"):
+            if not str(project_name).strip() or not str(owner).strip():
+                st.error("项目名称和负责人均为必填项。")
+            elif not gift_lines and not new_line:
+                st.error("请至少选择一个已有物料或加入一个新物料。")
+            else:
+                try:
+                    for item in gift_lines:
+                        create_gift_project_request(project_name, item.get("record_id"), owner=owner)
+                    if new_line:
+                        create_new_gift_project_request(project_name, new_line["name"], owner=owner, remark=f"数量：{new_line['quantity']}\n{new_line['remark']}")
+                    refresh_page_cache_after_write("gift_projects", update_request_form=True)
+                    st.success("项目物料清单已批量写入。")
+                except Exception as exc:
+                    st.error(f"批量写入失败：{exc}")
         return
 
     if not project_names:
