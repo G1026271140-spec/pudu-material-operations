@@ -6320,6 +6320,7 @@ def build_gift_project_fields(
     material_name: object,
     category_record_id: object,
     *,
+    owner: object = "",
     remark: object = "",
     attachment_token: object = "",
 ) -> dict[str, object]:
@@ -6330,8 +6331,10 @@ def build_gift_project_fields(
         raise ValueError("请填写项目名称。")
     if not material or not category_id:
         raise ValueError("请选择有效的周边礼品。")
+    responsible = str(owner or "未指定负责人").strip()
     fields: dict[str, object] = {
         "项目名称": project,
+        "负责人": responsible,
         "物料名称": material,
         "物料状态": GIFT_PROJECT_STATUS_REQUESTED,
         "物料品类关联": [category_id],
@@ -6361,6 +6364,7 @@ def create_gift_project_request(
     project_name: object,
     category_record_id: object,
     *,
+    owner: object = "",
     remark: object = "",
     attachment_token: object = "",
 ) -> dict:
@@ -6383,6 +6387,7 @@ def create_gift_project_request(
         project_name,
         category.get("category"),
         category_id,
+        owner=owner,
         remark=remark,
         attachment_token=attachment_token,
     )
@@ -7183,6 +7188,7 @@ def create_new_gift_project_request(
     project_name: object,
     material_name: object,
     *,
+    owner: object = "",
     unit_price: float = 0.0,
     remark: object = "",
     attachment_token: object = "",
@@ -7222,6 +7228,7 @@ def create_new_gift_project_request(
     project_record = create_gift_project_request(
         project_name,
         category_result["category_record_id"],
+        owner=owner,
         remark=remark,
         attachment_token=attachment_token,
     )
@@ -12009,15 +12016,17 @@ def render_gift_projects_page() -> None:
         label_visibility="collapsed",
     )
     if page_mode == "新增项目物料":
-        selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
-        selected_category = next(
-            (item for item in gallery if str(item.get("record_id") or "") == selected_category_id),
-            None,
-        )
-        if selected_category is not None:
-            render_existing_gift_project_form(selected_category)
-        st.caption("先选择已有周边礼品；确认目录中没有需要的物料后，再新增品类。")
+        project_col, owner_col = st.columns(2)
+        required_field_label(project_col, "项目名称")
+        project_name = project_col.text_input("项目名称", key="gift_batch_project_name", label_visibility="collapsed")
+        required_field_label(owner_col, "负责人")
+        owner = owner_col.text_input("负责人", placeholder="填写负责人姓名", key="gift_batch_owner", label_visibility="collapsed")
+        st.caption("选择多个已有周边礼品加入清单；新建物料也可以加入同一清单，最后统一预览并批量写入。")
         filtered_gallery = filter_gift_gallery_records(gallery, "")
+        catalog_names = [str(item.get("category") or "") for item in filtered_gallery]
+        selected_names = st.pills("已有周边礼品", catalog_names, selection_mode="multi", key="gift_batch_selected_names", width="stretch") or []
+        selected_name_set = set(selected_names)
+        gift_lines = [item for item in filtered_gallery if str(item.get("category") or "") in selected_name_set]
         for row_start in range(0, len(filtered_gallery), 8):
             row_items = filtered_gallery[row_start : row_start + 8]
             card_columns = st.columns(8, gap="small")
