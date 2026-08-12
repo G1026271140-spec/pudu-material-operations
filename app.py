@@ -7,6 +7,7 @@ import threading
 import time
 import unicodedata
 import uuid
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from html import escape
@@ -6046,6 +6047,52 @@ def filter_gift_gallery_records(records: list[dict], query: object) -> list[dict
     ]
 
 
+def gift_project_management_records(
+    category_rows: list[dict], project_rows: list[dict]
+) -> list[dict]:
+    categories = {
+        str(item.get("record_id") or ""): item
+        for item in feishu_category_records_from_rows(category_rows)
+        if item.get("category_definition") == CATEGORY_DEFINITION_GIFT
+    }
+    category_by_name = {
+        normalize_category_match_key(item.get("category")): item
+        for item in categories.values()
+    }
+    records: list[dict] = []
+    for project in gift_project_records_from_rows(project_rows):
+        category = next(
+            (
+                categories[record_id]
+                for record_id in list(project.get("category_ids") or [])
+                if record_id in categories
+            ),
+            None,
+        )
+        if category is None:
+            category = category_by_name.get(
+                normalize_category_match_key(project.get("material_name"))
+            )
+        unit_price = float((category or {}).get("unit_price") or 0)
+        unit_price_rmb = float((category or {}).get("unit_price_rmb") or 0)
+        records.append(
+            {
+                **project,
+                "category": str((category or {}).get("category") or project.get("material_name") or ""),
+                "unit_price": unit_price,
+                "unit_price_rmb": unit_price_rmb or unit_price * 6.77,
+                "category_status": str((category or {}).get("status") or ""),
+            }
+        )
+    records.sort(
+        key=lambda item: (
+            str(item.get("project_name") or "未命名项目"),
+            str(item.get("material_name") or ""),
+        )
+    )
+    return records
+
+
 def build_gift_project_fields(
     project_name: object,
     material_name: object,
@@ -11698,75 +11745,97 @@ def render_gift_projects_page() -> None:
             safe_feishu_rows(GIFT_PROJECT_TABLE_NAME),
         )
 
-    project_names = {
-        str(project.get("project_name") or "")
-        for item in gallery
-        for project in list(item.get("projects") or [])
-        if str(project.get("project_name") or "").strip()
-    }
-    project_record_count = sum(len(list(item.get("projects") or [])) for item in gallery)
-    metric_a, metric_b, metric_c = st.columns(3)
-    metric_a.metric("周边礼品", f"{len(gallery):,}")
-    metric_b.metric("关联项目", f"{len(project_names):,}")
-    metric_c.metric("项目物料记录", f"{project_record_count:,}")
-
-    render_section_header("01", "周边礼品库", "图片、单价和项目状态")
-    search_query = st.text_input(
-        "搜索周边礼品",
-        placeholder="搜索物料名称、项目名称、状态或备注",
-        icon=":material/search:",
-        key="gift_gallery_search",
+    project_records = gift_project_management_records(
+        safe_feishu_rows(CATEGORY_TABLE_NAME),
+        safe_feishu_rows(GIFT_PROJECT_TABLE_NAME),
     )
-    filtered_gallery = filter_gift_gallery_records(gallery, search_query)
-    if not filtered_gallery:
-        st.info("没有找到匹配的周边礼品。")
+    project_names = sorted(
+        {
+            str(project.get("project_name") or "")
+            for project in project_records
+            if str(project.get("project_name") or "").strip()
+        }
+    )
+    selected_project = st.selectbox(
+        "项目筛选",
+        ["全部项目", *project_names],
+        key="gift_project_filter",
+        help="按项目查看所有周边礼品的状态、单价、备注和图片。",
+    )
+    selected_records = (
+        project_records
+        if selected_project == "全部项目"
+        else [item for item in project_records if item.get("project_name") == selected_project]
+    )
+    status_counts = Counter(
+        str(item.get("status") or "未填写") for item in selected_records
+    )
+    project_record_count = len(project_records)
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("项目物料", f"{len(selected_records):,}")
+    metric_b.metric("关联项目", f"{len(project_names):,}")
+    metric_c.metric("物料状态", f"{len(status_counts):,}")
+
+    render_section_header(
+        "01",
+        "项目物料进度",
+        "按项目查看周边礼品的物料状态、单价、备注和图片",
+    )
+    search_query = st.text_input(
+        "搜索项目物料",
+        placeholder="搜索物料名称、状态或备注",
+        icon=":material/search:",
+        key="gift_project_management_search",
+    )
+    keywords = [
+        keyword.casefold()
+        for keyword in re.split(r"\s+", str(search_query or "").strip())
+        if keyword.strip()
+    ]
+    if keywords:
+        selected_records = [
+            item
+            for item in selected_records
+            if all(
+                keyword in " ".join(
+                    [
+                        str(item.get("material_name") or ""),
+                        str(item.get("status") or ""),
+                        str(item.get("remark") or ""),
+                    ]
+                ).casefold()
+                for keyword in keywords
+            )
+        ]
+    if not selected_records:
+        st.info("当前项目没有匹配的周边礼品记录。")
     else:
-        card_columns = st.columns(3, gap="small")
-        for index, item in enumerate(filtered_gallery):
-            category_id = str(item.get("record_id") or "")
-            product = str(item.get("category") or "")
-            projects = list(item.get("projects") or [])
+        status_text = " · ".join(
+            f"{escape(status)} {count}"
+            for status, count in sorted(status_counts.items())
+        )
+        st.caption(f"当前视图：{selected_project}　|　{status_text}")
+        for index, item in enumerate(selected_records):
+            product = str(item.get("material_name") or item.get("category") or "")
             usd_price = float(item.get("unit_price") or 0)
-            rmb_price = float(item.get("unit_price_rmb") or 0) or usd_price * 6.77
-            with card_columns[index % 3].container(border=True):
-                st.markdown(
-                    '<span class="pudu-gift-card-marker"></span>',
-                    unsafe_allow_html=True,
-                )
-                render_gift_image(list(item.get("attachments") or []), product)
-                st.markdown(
-                    f"""
-                    <div class="pudu-product-card-kicker">{escape(CATEGORY_DEFINITION_GIFT)}</div>
-                    <div class="pudu-product-card-title">{escape(product)}</div>
-                    <div class="pudu-gift-card-price">USD {usd_price:g} · RMB {rmb_price:.2f}</div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if projects:
-                    project_text = "<br>".join(
-                        escape(
-                            f"{project.get('project_name') or '未命名项目'} · "
-                            f"{project.get('status') or '状态未填写'}"
-                        )
-                        for project in projects[:3]
+            rmb_price = float(item.get("unit_price_rmb") or 0)
+            with st.container(border=True):
+                image_col, detail_col, note_col = st.columns([1, 2.4, 1.8], gap="medium")
+                with image_col:
+                    render_gift_image(list(item.get("attachments") or []), product)
+                with detail_col:
+                    st.markdown(f"### {escape(product)}")
+                    st.markdown(
+                        f"**物料状态**　`{escape(str(item.get('status') or '未填写'))}`\n\n"
+                        f"**项目**　{escape(str(item.get('project_name') or '未命名项目'))}\n\n"
+                        f"**单价**　USD {usd_price:g} · RMB {rmb_price:.2f}",
                     )
-                    if len(projects) > 3:
-                        project_text += f"<br>{escape(f'另有 {len(projects) - 3} 条项目记录')}"
-                else:
-                    project_text = "尚无项目记录"
-                st.markdown(
-                    f'<div class="pudu-gift-card-meta">{project_text}</div>',
-                    unsafe_allow_html=True,
-                )
-                if st.button(
-                    "选择此礼品",
-                    icon=":material/add_task:",
-                    width="stretch",
-                    key=f"gift_select_{category_id}",
-                ):
-                    st.session_state["gift_selected_category_id"] = category_id
-                    st.session_state["gift_create_mode"] = False
-                    st.rerun()
+                with note_col:
+                    st.markdown("**备注**")
+                    st.write(str(item.get("remark") or "暂无备注"))
+                    supplier = str(item.get("supplier_contact") or "").strip()
+                    if supplier:
+                        st.caption(f"供应商联系方式：{supplier}")
 
     selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
     selected_category = next(
@@ -11780,22 +11849,40 @@ def render_gift_projects_page() -> None:
     if selected_category is not None:
         render_existing_gift_project_form(selected_category)
 
-    st.divider()
-    browse_confirmed = st.checkbox(
-        "我已浏览并搜索现有周边礼品，确认没有需要的物料",
-        key="gift_catalog_browse_confirmed",
-    )
-    if st.button(
-        "新增周边礼品",
-        icon=":material/add_circle:",
-        disabled=not browse_confirmed,
-        key="gift_start_create",
-    ):
-        st.session_state["gift_create_mode"] = True
-        st.session_state.pop("gift_selected_category_id", None)
-        st.rerun()
-    if st.session_state.get("gift_create_mode"):
-        render_new_gift_project_form()
+    with st.expander("新增或补充项目物料", expanded=False):
+        st.caption("先选择已有周边礼品，再填写项目名称；如目录中没有所需物料，可确认后新增品类。")
+        filtered_gallery = filter_gift_gallery_records(gallery, "")
+        card_columns = st.columns(3, gap="small")
+        for index, item in enumerate(filtered_gallery):
+            category_id = str(item.get("record_id") or "")
+            product = str(item.get("category") or "")
+            with card_columns[index % 3].container(border=True):
+                render_gift_image(list(item.get("attachments") or []), product)
+                st.markdown(f"**{escape(product)}**")
+                if st.button(
+                    "补充到项目",
+                    icon=":material/add_task:",
+                    width="stretch",
+                    key=f"gift_select_{category_id}",
+                ):
+                    st.session_state["gift_selected_category_id"] = category_id
+                    st.session_state["gift_create_mode"] = False
+                    st.rerun()
+        browse_confirmed = st.checkbox(
+            "我已浏览并搜索现有周边礼品，确认没有需要的物料",
+            key="gift_catalog_browse_confirmed",
+        )
+        if st.button(
+            "新增周边礼品",
+            icon=":material/add_circle:",
+            disabled=not browse_confirmed,
+            key="gift_start_create",
+        ):
+            st.session_state["gift_create_mode"] = True
+            st.session_state.pop("gift_selected_category_id", None)
+            st.rerun()
+        if st.session_state.get("gift_create_mode"):
+            render_new_gift_project_form()
 
 
 def render_management_page() -> None:
@@ -11829,7 +11916,7 @@ def render_management_page() -> None:
         return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
-        "周边礼品项目": ("周边礼品项目", "项目物料工作台", "浏览周边礼品并登记项目物料需求。"),
+        "周边礼品项目": ("周边礼品项目", "项目物料进度管理", "按项目跟踪周边礼品的状态、单价、备注和图片。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库、品类维护与物料数据库统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
