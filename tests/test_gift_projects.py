@@ -104,6 +104,23 @@ class GiftProjectTests(unittest.TestCase):
         self.assertEqual(fields["物料品类关联"], ["category-gift"])
         self.assertEqual(fields["物料图片"], [{"file_token": "file-1"}])
 
+    def test_project_statuses_map_to_progress_stages(self) -> None:
+        cases = {
+            "已提需": "已提需",
+            "寻源中": "寻源中",
+            "待确认下单": "待确认下单",
+            "设计中": "设计制作中",
+            "制作中": "设计制作中",
+            "已到货": "到货",
+            "在库有库存": "到货",
+            "已发货": "已发货",
+        }
+
+        self.assertEqual(
+            {status: app.gift_project_progress_stage(status) for status in cases},
+            cases,
+        )
+
     def test_existing_gift_request_rejects_non_gift_category(self) -> None:
         print_category = {
             **self.gift_category,

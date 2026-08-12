@@ -1064,6 +1064,16 @@ def inject_global_styles() -> None:
         }
         .pudu-project-progress-note-label { margin-top: 0.45rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
         .pudu-project-progress-note { min-height: 4rem; margin-top: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+        .pudu-project-progress-stage {
+            margin: 0 0 0.75rem;
+            padding: 0.48rem 0.35rem;
+            border-bottom: 3px solid #AAB8C3;
+            color: var(--pudu-ink);
+            font-size: 0.74rem;
+            font-weight: 800;
+            text-align: center;
+            white-space: nowrap;
+        }
         .pudu-fixed-rule-row {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -6032,6 +6042,31 @@ def gift_project_records_from_rows(rows: list[dict]) -> list[dict]:
         for row in rows
         if (parsed := parse_gift_project_record(row)) is not None
     ]
+
+
+GIFT_PROJECT_PROGRESS_STAGES = (
+    "已提需",
+    "寻源中",
+    "待确认下单",
+    "设计制作中",
+    "到货",
+    "已发货",
+)
+
+
+def gift_project_progress_stage(status: object) -> str:
+    value = str(status or "").strip()
+    if "发货" in value:
+        return "已发货"
+    if any(token in value for token in ("到货", "库存")):
+        return "到货"
+    if any(token in value for token in ("设计", "制作", "生产")):
+        return "设计制作中"
+    if any(token in value for token in ("确认", "下单")):
+        return "待确认下单"
+    if any(token in value for token in ("寻源", "询价")):
+        return "寻源中"
+    return "已提需"
 
 
 def gift_gallery_records_from_rows(
@@ -11876,36 +11911,41 @@ def render_gift_projects_page() -> None:
         )
         st.caption(f"当前视图：{selected_project}　|　{status_text}")
         card_columns = st.columns(6, gap="small")
-        for index, item in enumerate(selected_records):
-            product = str(item.get("material_name") or item.get("category") or "")
-            usd_price = float(item.get("unit_price") or 0)
-            rmb_price = float(item.get("unit_price_rmb") or 0)
-            status = str(item.get("status") or "未填写")
-            status_class = "pudu-project-progress-status"
-            if any(token in status for token in ("提需", "待确认")):
-                status_class += " pudu-project-progress-status--requested"
-            elif any(token in status for token in ("设计", "寻源")):
-                status_class += " pudu-project-progress-status--design"
-            elif any(token in status for token in ("制作", "生产")):
-                status_class += " pudu-project-progress-status--production"
-            elif "到货" in status:
-                status_class += " pudu-project-progress-status--arrived"
-            elif "库存" in status:
-                status_class += " pudu-project-progress-status--stock"
-            with card_columns[index % 6].container(border=True):
-                st.markdown('<span class="pudu-project-progress-card-marker"></span>', unsafe_allow_html=True)
-                st.markdown(f'<div class="{status_class}">物料状态：{escape(status)}</div>', unsafe_allow_html=True)
-                render_gift_image(list(item.get("attachments") or []), product)
-                st.markdown(f'<div class="pudu-project-progress-title" title="{escape(product)}">{escape(product)}</div>', unsafe_allow_html=True)
-                st.markdown(
-                    f'<div class="pudu-project-progress-meta"><strong>项目：</strong>{escape(str(item.get("project_name") or "未命名项目"))}<br><strong>单价：</strong>USD {usd_price:g} · RMB {rmb_price:.2f}</div>',
-                    unsafe_allow_html=True,
-                )
-                st.markdown('<div class="pudu-project-progress-note-label">备注</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="pudu-project-progress-note">{escape(str(item.get("remark") or "暂无备注"))}</div>', unsafe_allow_html=True)
-                supplier = str(item.get("supplier_contact") or "").strip()
-                if supplier:
-                    st.caption(f"供应商联系方式：{supplier}")
+        for stage_index, stage in enumerate(GIFT_PROJECT_PROGRESS_STAGES):
+            stage_records = sorted(
+                (item for item in selected_records if gift_project_progress_stage(item.get("status")) == stage),
+                key=lambda item: str(item.get("material_name") or item.get("category") or ""),
+            )
+            with card_columns[stage_index]:
+                st.markdown(f'<div class="pudu-project-progress-stage">{escape(stage)} · {len(stage_records)}</div>', unsafe_allow_html=True)
+            for item in stage_records:
+                product = str(item.get("material_name") or item.get("category") or "")
+                usd_price = float(item.get("unit_price") or 0)
+                rmb_price = float(item.get("unit_price_rmb") or 0)
+                status = str(item.get("status") or "未填写")
+                status_class = "pudu-project-progress-status"
+                if stage in ("已提需", "待确认下单"):
+                    status_class += " pudu-project-progress-status--requested"
+                elif stage in ("寻源中", "设计制作中"):
+                    status_class += " pudu-project-progress-status--design"
+                elif stage == "到货":
+                    status_class += " pudu-project-progress-status--arrived"
+                elif stage == "已发货":
+                    status_class += " pudu-project-progress-status--stock"
+                with card_columns[stage_index].container(border=True):
+                    st.markdown('<span class="pudu-project-progress-card-marker"></span>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="{status_class}">物料状态：{escape(status)}</div>', unsafe_allow_html=True)
+                    render_gift_image(list(item.get("attachments") or []), product)
+                    st.markdown(f'<div class="pudu-project-progress-title" title="{escape(product)}">{escape(product)}</div>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<div class="pudu-project-progress-meta"><strong>项目：</strong>{escape(str(item.get("project_name") or "未命名项目"))}<br><strong>单价：</strong>USD {usd_price:g} · RMB {rmb_price:.2f}</div>',
+                        unsafe_allow_html=True,
+                    )
+                    st.markdown('<div class="pudu-project-progress-note-label">备注</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="pudu-project-progress-note">{escape(str(item.get("remark") or "暂无备注"))}</div>', unsafe_allow_html=True)
+                    supplier = str(item.get("supplier_contact") or "").strip()
+                    if supplier:
+                        st.caption(f"供应商联系方式：{supplier}")
 
     selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
     selected_category = next(
