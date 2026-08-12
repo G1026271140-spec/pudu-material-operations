@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-12 15:16:17",
+  "generated_at": "2026-08-12 16:28:17",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -5954,16 +5954,6 @@
       ],
       "department_paths": [
         "欧洲IR业务部"
-      ]
-    },
-    {
-      "open_id": "ou_6e8c4bb1da1468f682a841c43a51b726",
-      "name": "宋欣隆",
-      "department_ids": [
-        "od-0f6648d2be38f9764cbcf8fab9eb8408"
-      ],
-      "department_paths": [
-        "IQC组"
       ]
     },
     {
@@ -12355,16 +12345,6 @@
       ]
     },
     {
-      "open_id": "ou_855f26ab934110eb56a1197244335dec",
-      "name": "熊早霞",
-      "department_ids": [
-        "od-0f6648d2be38f9764cbcf8fab9eb8408"
-      ],
-      "department_paths": [
-        "IQC组"
-      ]
-    },
-    {
       "open_id": "ou_915db155d562acab13f119c143c06d00",
       "name": "熊毅",
       "department_ids": [
@@ -15228,16 +15208,6 @@
       ],
       "department_paths": [
         "采购开发组"
-      ]
-    },
-    {
-      "open_id": "ou_bfdf32acc6bd240741fc23bce20de6b4",
-      "name": "董廷元",
-      "department_ids": [
-        "od-0f6648d2be38f9764cbcf8fab9eb8408"
-      ],
-      "department_paths": [
-        "IQC组"
       ]
     },
     {
@@ -20425,5 +20395,5 @@
       ]
     }
   ],
-  "user_count": 1883
+  "user_count": 1880
 }
