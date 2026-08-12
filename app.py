@@ -1005,17 +1005,17 @@ def inject_global_styles() -> None:
             font-weight: 700;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"] {
-            min-height: 410px;
+            min-height: 330px;
             height: 100%;
-            gap: 0.45rem;
-            padding: 0.8rem !important;
+            gap: 0.25rem;
+            padding: 0.55rem !important;
             border-color: #D8E1E8 !important;
             border-radius: 8px !important;
             background: #FFFFFF;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stImage"] img {
             width: 100%;
-            height: 155px;
+            height: 105px;
             border: 1px solid #E2E8ED;
             border-radius: 6px;
             background: #F7F9FA;
@@ -1023,9 +1023,10 @@ def inject_global_styles() -> None:
         }
         .pudu-project-progress-card-marker { display: none; }
         .pudu-project-progress-title {
-            min-height: 1.6rem;
+            min-height: 1.35rem;
+            margin-top: 0.35rem;
             color: var(--pudu-ink);
-            font-size: 1.02rem;
+            font-size: 0.82rem;
             font-weight: 750;
             line-height: 1.4;
             overflow: hidden;
@@ -1035,13 +1036,13 @@ def inject_global_styles() -> None:
         .pudu-project-progress-status {
             display: inline-block;
             width: fit-content;
-            margin: 0.15rem 0 0.2rem;
-            padding: 0.38rem 0.68rem;
+            margin: 0 0 0.35rem;
+            padding: 0.24rem 0.4rem;
             border: 1px solid #B9C7D2;
             border-radius: 6px;
             color: #17324D;
             background: #EAF0F4;
-            font-size: 1rem;
+            font-size: 0.72rem;
             font-weight: 800;
             line-height: 1.25;
         }
@@ -1051,17 +1052,18 @@ def inject_global_styles() -> None:
         .pudu-project-progress-status--arrived { background: #E3F5E9; border-color: #91D3A4; }
         .pudu-project-progress-status--stock { background: #DDF5F2; border-color: #82C9C1; }
         .pudu-project-progress-meta {
-            min-height: 3.4rem;
-            padding: 0.55rem 0;
+            min-height: 3rem;
+            margin-top: 0.35rem;
+            padding: 0.4rem 0;
             border-top: 1px solid #E7EDF1;
             border-bottom: 1px solid #E7EDF1;
             color: var(--pudu-muted);
-            font-size: 0.82rem;
-            line-height: 1.65;
+            font-size: 0.7rem;
+            line-height: 1.7;
             overflow-wrap: anywhere;
         }
-        .pudu-project-progress-note-label { margin-top: 0.1rem; color: var(--pudu-ink); font-size: 0.78rem; font-weight: 750; }
-        .pudu-project-progress-note { min-height: 4.8rem; color: var(--pudu-ink); font-size: 0.82rem; line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
+        .pudu-project-progress-note-label { margin-top: 0.45rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
+        .pudu-project-progress-note { min-height: 4rem; margin-top: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
         .pudu-fixed-rule-row {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -11873,7 +11875,7 @@ def render_gift_projects_page() -> None:
             for status, count in sorted(status_counts.items())
         )
         st.caption(f"当前视图：{selected_project}　|　{status_text}")
-        card_columns = st.columns(3, gap="small")
+        card_columns = st.columns(6, gap="small")
         for index, item in enumerate(selected_records):
             product = str(item.get("material_name") or item.get("category") or "")
             usd_price = float(item.get("unit_price") or 0)
@@ -11890,7 +11892,7 @@ def render_gift_projects_page() -> None:
                 status_class += " pudu-project-progress-status--arrived"
             elif "库存" in status:
                 status_class += " pudu-project-progress-status--stock"
-            with card_columns[index % 3].container(border=True):
+            with card_columns[index % 6].container(border=True):
                 st.markdown('<span class="pudu-project-progress-card-marker"></span>', unsafe_allow_html=True)
                 st.markdown(f'<div class="{status_class}">物料状态：{escape(status)}</div>', unsafe_allow_html=True)
                 render_gift_image(list(item.get("attachments") or []), product)
