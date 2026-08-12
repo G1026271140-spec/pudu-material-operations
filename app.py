@@ -1023,12 +1023,14 @@ def inject_global_styles() -> None:
         }
         .pudu-project-progress-card-marker { display: none; }
         .pudu-project-progress-title {
-            min-height: 2.8rem;
+            min-height: 1.6rem;
             color: var(--pudu-ink);
             font-size: 1.02rem;
             font-weight: 750;
             line-height: 1.4;
-            overflow-wrap: anywhere;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .pudu-project-progress-status {
             display: inline-block;
@@ -1048,8 +1050,18 @@ def inject_global_styles() -> None:
         .pudu-project-progress-status--production { background: #FFE8D8; border-color: #F2B27C; }
         .pudu-project-progress-status--arrived { background: #E3F5E9; border-color: #91D3A4; }
         .pudu-project-progress-status--stock { background: #DDF5F2; border-color: #82C9C1; }
-        .pudu-project-progress-meta { color: var(--pudu-muted); font-size: 0.82rem; line-height: 1.55; overflow-wrap: anywhere; }
-        .pudu-project-progress-note { min-height: 3.2rem; color: var(--pudu-ink); font-size: 0.82rem; line-height: 1.55; overflow-wrap: anywhere; }
+        .pudu-project-progress-meta {
+            min-height: 3.4rem;
+            padding: 0.55rem 0;
+            border-top: 1px solid #E7EDF1;
+            border-bottom: 1px solid #E7EDF1;
+            color: var(--pudu-muted);
+            font-size: 0.82rem;
+            line-height: 1.65;
+            overflow-wrap: anywhere;
+        }
+        .pudu-project-progress-note-label { margin-top: 0.1rem; color: var(--pudu-ink); font-size: 0.78rem; font-weight: 750; }
+        .pudu-project-progress-note { min-height: 4.8rem; color: var(--pudu-ink); font-size: 0.82rem; line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
         .pudu-fixed-rule-row {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -11881,22 +11893,17 @@ def render_gift_projects_page() -> None:
             with card_columns[index % 3].container(border=True):
                 st.markdown('<span class="pudu-project-progress-card-marker"></span>', unsafe_allow_html=True)
                 st.markdown(f'<div class="{status_class}">物料状态：{escape(status)}</div>', unsafe_allow_html=True)
-                image_col, detail_col, note_col = st.columns([1, 2.4, 1.8], gap="medium")
-                with image_col:
-                    render_gift_image(list(item.get("attachments") or []), product)
-                with detail_col:
-                    st.markdown(f"### {escape(product)}")
-                    st.markdown(
-                        f"**物料状态**　`{escape(str(item.get('status') or '未填写'))}`\n\n"
-                        f"**项目**　{escape(str(item.get('project_name') or '未命名项目'))}\n\n"
-                        f"**单价**　USD {usd_price:g} · RMB {rmb_price:.2f}",
-                    )
-                with note_col:
-                    st.markdown("**备注**")
-                    st.write(str(item.get("remark") or "暂无备注"))
-                    supplier = str(item.get("supplier_contact") or "").strip()
-                    if supplier:
-                        st.caption(f"供应商联系方式：{supplier}")
+                render_gift_image(list(item.get("attachments") or []), product)
+                st.markdown(f'<div class="pudu-project-progress-title" title="{escape(product)}">{escape(product)}</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="pudu-project-progress-meta"><strong>项目：</strong>{escape(str(item.get("project_name") or "未命名项目"))}<br><strong>单价：</strong>USD {usd_price:g} · RMB {rmb_price:.2f}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown('<div class="pudu-project-progress-note-label">备注</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="pudu-project-progress-note">{escape(str(item.get("remark") or "暂无备注"))}</div>', unsafe_allow_html=True)
+                supplier = str(item.get("supplier_contact") or "").strip()
+                if supplier:
+                    st.caption(f"供应商联系方式：{supplier}")
 
     selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
     selected_category = next(
