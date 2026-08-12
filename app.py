@@ -1148,23 +1148,66 @@ def inject_global_styles() -> None:
             color: #FFFFFF;
         }
         .st-key-gift_project_page_mode label > div:first-child { display: none; }
-        .pudu-gift-catalog-card-marker { display: none; }
+        .pudu-gift-catalog-card-marker,
+        .pudu-gift-new-category-card-marker { display: none; }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker),
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) {
+            height: 268px;
+        }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
-            min-height: 245px;
-            height: 100%;
-            gap: 0.35rem;
-            padding: 0.55rem !important;
+            height: 268px;
+            min-height: 268px;
+            display: flex !important;
+            flex-direction: column;
+            gap: 0.42rem;
+            padding: 0.65rem !important;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stElementContainer"]:has([data-testid="stImage"]),
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stElementContainer"]:has(.pudu-product-image-placeholder) {
+            height: 112px;
+            min-height: 112px;
+            margin-bottom: 0.28rem !important;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stImage"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) .pudu-product-image-placeholder {
+            height: 112px;
+            min-height: 112px;
+            box-sizing: border-box;
+            margin: 0 !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stImage"] img {
             height: 112px;
             object-fit: contain;
         }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stElementContainer"]:has(.pudu-gift-catalog-title) {
+            height: 2.85rem;
+            min-height: 2.85rem;
+        }
         .pudu-gift-catalog-title {
-            height: 2.5rem;
+            height: 2.85rem;
+            min-height: 2.85rem;
             overflow: hidden;
-            font-size: 0.72rem;
-            font-weight: 750;
-            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            font-size: 0.74rem;
+            font-weight: 800;
+            line-height: 1.35;
+            color: #12263A;
+            word-break: break-word;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stElementContainer"]:has(.stButton) {
+            margin-top: auto;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) .stButton button {
+            min-height: 2.35rem;
+            padding: 0.35rem 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1.15;
+            white-space: nowrap;
         }
         .pudu-gift-batch-cart {
             margin: 0.7rem 0 1rem;
@@ -1182,24 +1225,79 @@ def inject_global_styles() -> None:
             background: #ECF8F6;
         }
         .pudu-gift-new-category-card {
-            min-height: 228px;
-            padding: 0.45rem;
+            min-height: 68px;
+            padding: 0.58rem 0.6rem;
             border: 1px dashed #1B8A86;
-            border-radius: 8px;
+            border-radius: 7px;
             background: #E8F7F5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.2rem;
         }
-        .pudu-gift-new-category-card h3 { margin: 0 0 0.35rem; color: #0D6663; font-size: 0.82rem; }
+        .pudu-gift-new-category-card h3 {
+            margin: 0;
+            color: #0A5F5C;
+            font-size: 1rem;
+            font-weight: 900;
+            line-height: 1.18;
+        }
+        .pudu-gift-new-category-card p {
+            margin: 0;
+            color: #3D6665;
+            font-size: 0.68rem;
+            font-weight: 650;
+            line-height: 1.25;
+        }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) > [data-testid="stVerticalBlock"] {
-            min-height: 245px;
-            height: 100%;
-            padding: 0.45rem !important;
+            height: 268px;
+            min-height: 268px;
+            display: flex !important;
+            flex-direction: column;
+            gap: 0.22rem;
+            padding: 0.6rem !important;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stWidgetLabel"] {
+            min-height: 0;
+            margin-bottom: 0.05rem;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stWidgetLabel"] p {
+            font-size: 0.68rem;
+            line-height: 1.1;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stTextInput"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stNumberInput"] {
+            margin-bottom: 0 !important;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stTextInput"] input,
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stNumberInput"] input {
+            min-height: 2.05rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stHorizontalBlock"] {
+            gap: 0.4rem;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stElementContainer"]:has(.stButton) {
+            margin-top: auto;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) .stButton button {
+            min-height: 2.35rem;
+            padding: 0.35rem 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 750;
+            white-space: nowrap;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"],
-        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) > [data-testid="stVerticalBlock"] {
             transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker):hover > [data-testid="stVerticalBlock"],
-        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker):hover > [data-testid="stVerticalBlock"] {
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker):hover > [data-testid="stVerticalBlock"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker):hover > [data-testid="stVerticalBlock"] {
             z-index: 2;
             transform: translateY(-3px) scale(1.015);
             border-color: #9DB9CC !important;
@@ -12106,22 +12204,22 @@ def render_gift_projects_page() -> None:
             )
             if row_start == 0:
                 with card_columns[0].container(border=True):
-                    with st.container(border=False):
-                        st.markdown('<span class="pudu-gift-new-category-card-marker"></span>', unsafe_allow_html=True)
-                        st.markdown('<div class="pudu-gift-new-category-card">需要新的周边品类点这个</div>', unsafe_allow_html=True)
-                        new_name = st.text_input("名称", key="gift_batch_new_name", label_visibility="collapsed", placeholder="新周边品类名称")
-                        new_quantity = st.number_input("数量", min_value=1, step=1, key="gift_batch_new_quantity")
-                        new_remark = st.text_input("备注", key="gift_batch_new_remark", placeholder="可选")
-                        if st.button("加入清单", width="stretch", key="gift_batch_add_new"):
-                            if not str(new_name).strip():
-                                st.warning("请填写新周边品类名称。")
-                            else:
-                                st.session_state["gift_batch_new_line"] = {
-                                    "name": str(new_name).strip(),
-                                    "quantity": int(new_quantity),
-                                    "remark": str(new_remark or "").strip(),
-                                }
-                                st.rerun()
+                    st.markdown('<span class="pudu-gift-new-category-card-marker"></span>', unsafe_allow_html=True)
+                    st.markdown('<div class="pudu-gift-new-category-card"><h3>需要新的周边品类，点击这里</h3><p>填写名称、数量和备注后加入清单</p></div>', unsafe_allow_html=True)
+                    new_name = st.text_input("名称", key="gift_batch_new_name", label_visibility="collapsed", placeholder="新周边品类名称")
+                    quantity_col, remark_col = st.columns([0.75, 1.25], gap="small")
+                    new_quantity = quantity_col.number_input("数量", min_value=1, step=1, key="gift_batch_new_quantity")
+                    new_remark = remark_col.text_input("备注", key="gift_batch_new_remark", placeholder="可选")
+                    if st.button("加入清单", width="stretch", key="gift_batch_add_new"):
+                        if not str(new_name).strip():
+                            st.warning("请填写新周边品类名称。")
+                        else:
+                            st.session_state["gift_batch_new_line"] = {
+                                "name": str(new_name).strip(),
+                                "quantity": int(new_quantity),
+                                "remark": str(new_remark or "").strip(),
+                            }
+                            st.rerun()
             offset = 1 if row_start == 0 else 0
             for column_index, item in enumerate(row_items):
                 category_id = str(item.get("record_id") or "")
@@ -12138,30 +12236,6 @@ def render_gift_projects_page() -> None:
                             selected_ids.add(category_id)
                         st.session_state["gift_batch_selected_ids"] = sorted(selected_ids)
                         st.rerun()
-        new_line = st.session_state.get("gift_batch_new_line")
-        st.markdown(f"**购物清单：** {len(gift_lines) + (1 if new_line else 0)} 项")
-        if gift_lines or new_line:
-            st.dataframe(
-                [{"物料名称": item.get("category"), "类型": "已有品类"} for item in gift_lines]
-                + ([{"物料名称": new_line["name"], "类型": f"待新建品类 · 数量 {new_line['quantity']}"}] if new_line else []),
-                hide_index=True,
-                width="stretch",
-            )
-        if st.button("批量提交", type="primary", key="gift_batch_submit"):
-            if not str(project_name).strip() or not str(owner).strip():
-                st.error("项目名称和负责人均为必填项。")
-            elif not gift_lines and not new_line:
-                st.error("请至少选择一个已有物料或加入一个新物料。")
-            else:
-                try:
-                    for item in gift_lines:
-                        create_gift_project_request(project_name, item.get("record_id"), owner=owner)
-                    if new_line:
-                        create_new_gift_project_request(project_name, new_line["name"], owner=owner, remark=f"数量：{new_line['quantity']}\n{new_line['remark']}")
-                    refresh_page_cache_after_write("gift_projects", update_request_form=True)
-                    st.success("项目物料清单已批量写入。")
-                except Exception as exc:
-                    st.error(f"批量写入失败：{exc}")
         return
 
     if not project_names:

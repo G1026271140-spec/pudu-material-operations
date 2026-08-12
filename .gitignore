@@ -5,5 +5,7 @@ work/
 *.pyc
 data/~$*
 data/*.tmp
+data/daily_issuance_notification_state.json
+data/daily_issuance_notifier.log
 streamlit.log
 streamlit.err.log

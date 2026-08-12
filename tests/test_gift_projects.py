@@ -207,6 +207,7 @@ class GiftProjectTests(unittest.TestCase):
         create_project.assert_called_once_with(
             "项目B",
             "category-new",
+            owner="",
             remark="",
             attachment_token="file-new",
         )
