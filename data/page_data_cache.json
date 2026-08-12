@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-11 18:57:19",
+  "generated_at": "2026-08-12 10:32:23",
   "tables": {
     "物料品类": [
       {
@@ -88176,7 +88176,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -88278,7 +88278,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -88380,7 +88380,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -88482,7 +88482,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -88690,7 +88690,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -88792,7 +88792,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -88894,7 +88894,7 @@
             }
           ],
           "备注": null,
-          "库存归零时间": null,
+          "库存归零时间": "2026-08-12 10:30:52",
           "库存流水": [
             {
               "record_ids": null,
@@ -103433,18 +103433,18 @@
               "file_token": "FEcLbvMD5owQR5xOwiNc19O8nLf",
               "name": "026329d8-1de1-4365-8d72-0c18f0a82231.jpg",
               "size": 1134140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "cached_path": "assets/gift_projects/8037856b2214aa72d317.webp"
             },
             {
               "file_token": "IVi3bViUaoDJB2xiMlYcQlTRnsd",
               "name": "0950006d75ef6e3076c4282f475242fe(1).png",
               "size": 28337,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "cached_path": "assets/gift_projects/d080d85efd6566443407.webp"
             }
           ],
@@ -103475,9 +103475,9 @@
               "file_token": "KAkebk1MuoUlwZxwQb0cwiSwnIb",
               "name": "76893361-4130-4141-8359-a3d240b7af73.png",
               "size": 166239,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "cached_path": "assets/gift_projects/eb63fd20472ee48a7ba8.webp"
             }
           ],
@@ -103508,9 +103508,9 @@
               "file_token": "AE4Rb1HnjoA1hMxOd3acBWdunjd",
               "name": "image.png",
               "size": 94114,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "cached_path": "assets/gift_projects/43dc0d9c2b7d49de4d01.webp"
             }
           ],
@@ -103541,9 +103541,9 @@
               "file_token": "FIaab7VkEoIRpOxf9ANctQ98nIb",
               "name": "9e95b14c-1ddc-403d-b292-1ad76fc2258e.jpg",
               "size": 262068,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "cached_path": "assets/gift_projects/f50ae498e27a427e92d5.webp"
             }
           ],
@@ -103597,9 +103597,9 @@
               "file_token": "GlTObQQGhoHUfRxjVoYcC0Vtnbd",
               "name": "img_v3_02149_de15c820-8c5a-4595-b1b1-0b20d1d2f07g.jpg",
               "size": 354165,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A117%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A129%7D%7D",
               "cached_path": "assets/gift_projects/3cba6d296614195a7aa7.webp"
             }
           ],
