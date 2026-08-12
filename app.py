@@ -347,11 +347,14 @@ def inject_global_styles() -> None:
             border: 1px solid var(--pudu-line);
             color: var(--pudu-ink);
             box-shadow: none;
+            transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
         [data-testid="stSidebar"] .stButton > button:hover {
             background: var(--pudu-blue-soft);
             border-color: #9FB8CB;
             color: var(--pudu-blue);
+            transform: scale(1.025);
+            box-shadow: 0 5px 14px rgba(24, 66, 92, 0.12);
         }
         .st-key-sidebar_cache_publish [data-testid="stLinkButton"] > a,
         .st-key-sidebar_cache_publish .stButton > button {
@@ -1136,7 +1139,9 @@ def inject_global_styles() -> None:
             background: #F4F8FC;
             color: #174A7A;
             font-weight: 750;
+            transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
+        .st-key-gift_project_page_mode label:hover { transform: scale(1.035); box-shadow: 0 5px 14px rgba(38, 114, 185, 0.16); }
         .st-key-gift_project_page_mode label:has(input:checked) {
             border-color: #2672B9;
             background: #2672B9;
@@ -1160,6 +1165,32 @@ def inject_global_styles() -> None:
             font-size: 0.72rem;
             font-weight: 750;
             line-height: 1.4;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
+            transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker):hover > [data-testid="stVerticalBlock"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker):hover > [data-testid="stVerticalBlock"] {
+            z-index: 2;
+            transform: translateY(-3px) scale(1.015);
+            border-color: #9DB9CC !important;
+            box-shadow: 0 9px 22px rgba(22, 58, 79, 0.14);
+        }
+        div[role="dialog"] {
+            animation: pudu-detail-drawer-in 240ms ease-out both;
+        }
+        div[role="dialog"] > div {
+            width: min(520px, 94vw) !important;
+            max-width: min(520px, 94vw) !important;
+            height: 100vh;
+            max-height: 100vh !important;
+            margin: 0 0 0 auto !important;
+            border-radius: 0 !important;
+        }
+        @keyframes pudu-detail-drawer-in {
+            from { transform: translateX(100%); opacity: 0.7; }
+            to { transform: translateX(0); opacity: 1; }
         }
         .pudu-fixed-rule-row {
             display: grid;
@@ -11926,6 +11957,28 @@ def render_new_gift_project_form() -> None:
     st.rerun()
 
 
+@st.dialog("周边礼品完整信息", width="large")
+def render_gift_project_detail_drawer(item: dict) -> None:
+    product = str(item.get("material_name") or item.get("category") or "未命名物料")
+    render_gift_image(list(item.get("attachments") or []), product)
+    st.markdown(f"## {escape(product)}")
+    status = str(item.get("status") or "未填写")
+    project_name = str(item.get("project_name") or "未命名项目")
+    usd_price = float(item.get("unit_price") or 0)
+    rmb_price = float(item.get("unit_price_rmb") or 0)
+    st.markdown(
+        f"**物料状态**　{escape(status)}\n\n"
+        f"**项目**　{escape(project_name)}\n\n"
+        f"**单价**　USD {usd_price:g} · RMB {rmb_price:.2f}"
+    )
+    st.divider()
+    st.markdown("**备注**")
+    st.write(str(item.get("remark") or "暂无备注"))
+    supplier = str(item.get("supplier_contact") or "").strip()
+    if supplier:
+        st.markdown(f"**供应商联系方式**　{escape(supplier)}")
+
+
 def render_gift_projects_page() -> None:
     message = st.session_state.pop("gift_project_submit_message", "")
     if message:
@@ -12057,6 +12110,13 @@ def render_gift_projects_page() -> None:
                         supplier = str(item.get("supplier_contact") or "").strip()
                         if supplier:
                             st.caption(f"供应商联系方式：{supplier}")
+                        if st.button(
+                            "查看完整信息",
+                            icon=":material/arrow_forward:",
+                            width="stretch",
+                            key=f"gift_detail_{item.get('record_id') or item_index}",
+                        ):
+                            render_gift_project_detail_drawer(item)
 
 
 
