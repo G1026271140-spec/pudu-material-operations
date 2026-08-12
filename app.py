@@ -1004,6 +1004,52 @@ def inject_global_styles() -> None:
             font-size: 0.84rem;
             font-weight: 700;
         }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"] {
+            min-height: 410px;
+            height: 100%;
+            gap: 0.45rem;
+            padding: 0.8rem !important;
+            border-color: #D8E1E8 !important;
+            border-radius: 8px !important;
+            background: #FFFFFF;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stImage"] img {
+            width: 100%;
+            height: 155px;
+            border: 1px solid #E2E8ED;
+            border-radius: 6px;
+            background: #F7F9FA;
+            object-fit: contain;
+        }
+        .pudu-project-progress-card-marker { display: none; }
+        .pudu-project-progress-title {
+            min-height: 2.8rem;
+            color: var(--pudu-ink);
+            font-size: 1.02rem;
+            font-weight: 750;
+            line-height: 1.4;
+            overflow-wrap: anywhere;
+        }
+        .pudu-project-progress-status {
+            display: inline-block;
+            width: fit-content;
+            margin: 0.15rem 0 0.2rem;
+            padding: 0.38rem 0.68rem;
+            border: 1px solid #B9C7D2;
+            border-radius: 6px;
+            color: #17324D;
+            background: #EAF0F4;
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+        .pudu-project-progress-status--requested { background: #FFF3CD; border-color: #E8C96A; }
+        .pudu-project-progress-status--design { background: #E5F1FF; border-color: #9EC5F8; }
+        .pudu-project-progress-status--production { background: #FFE8D8; border-color: #F2B27C; }
+        .pudu-project-progress-status--arrived { background: #E3F5E9; border-color: #91D3A4; }
+        .pudu-project-progress-status--stock { background: #DDF5F2; border-color: #82C9C1; }
+        .pudu-project-progress-meta { color: var(--pudu-muted); font-size: 0.82rem; line-height: 1.55; overflow-wrap: anywhere; }
+        .pudu-project-progress-note { min-height: 3.2rem; color: var(--pudu-ink); font-size: 0.82rem; line-height: 1.55; overflow-wrap: anywhere; }
         .pudu-fixed-rule-row {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -11815,11 +11861,26 @@ def render_gift_projects_page() -> None:
             for status, count in sorted(status_counts.items())
         )
         st.caption(f"当前视图：{selected_project}　|　{status_text}")
+        card_columns = st.columns(3, gap="small")
         for index, item in enumerate(selected_records):
             product = str(item.get("material_name") or item.get("category") or "")
             usd_price = float(item.get("unit_price") or 0)
             rmb_price = float(item.get("unit_price_rmb") or 0)
-            with st.container(border=True):
+            status = str(item.get("status") or "未填写")
+            status_class = "pudu-project-progress-status"
+            if any(token in status for token in ("提需", "待确认")):
+                status_class += " pudu-project-progress-status--requested"
+            elif any(token in status for token in ("设计", "寻源")):
+                status_class += " pudu-project-progress-status--design"
+            elif any(token in status for token in ("制作", "生产")):
+                status_class += " pudu-project-progress-status--production"
+            elif "到货" in status:
+                status_class += " pudu-project-progress-status--arrived"
+            elif "库存" in status:
+                status_class += " pudu-project-progress-status--stock"
+            with card_columns[index % 3].container(border=True):
+                st.markdown('<span class="pudu-project-progress-card-marker"></span>', unsafe_allow_html=True)
+                st.markdown(f'<div class="{status_class}">物料状态：{escape(status)}</div>', unsafe_allow_html=True)
                 image_col, detail_col, note_col = st.columns([1, 2.4, 1.8], gap="medium")
                 with image_col:
                     render_gift_image(list(item.get("attachments") or []), product)
