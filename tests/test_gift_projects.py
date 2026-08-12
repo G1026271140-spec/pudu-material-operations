@@ -90,6 +90,229 @@ class GiftProjectTests(unittest.TestCase):
         )
         self.assertEqual(app.filter_gift_gallery_records(gallery, "不存在"), [])
 
+    def test_gallery_and_project_price_use_material_category_relation(self) -> None:
+        categories = [
+            {
+                "record_id": "category-fan",
+                "fields": {
+                    "物料品类": "手持充电电风扇（充电）",
+                    "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                    "启用状态": app.STATUS_INACTIVE,
+                    "单价（美元）": 3.84,
+                    "单价（人民币）": 25.9968,
+                },
+            }
+        ]
+        material_rows = [
+            {
+                "record_id": "material-fan",
+                "fields": {
+                    "物料编码": "MAT-1143",
+                    "物料品类": "电风扇（充电）手持贵的",
+                    "品类关联": ["category-fan"],
+                },
+            }
+        ]
+        projects = [
+            {
+                "record_id": "project-fan",
+                "fields": {
+                    "项目名称": "巴拿马活动",
+                    "物料名称": "电风扇（充电）手持贵的",
+                    "物料状态": "设计制作中",
+                    "物料品类关联": [
+                        {
+                            "record_ids": None,
+                            "table_id": "tbl45q6s50SzEnFI",
+                            "text": None,
+                            "text_arr": [],
+                        }
+                    ],
+                    "物料图片": [
+                        {
+                            "file_token": "file-fan",
+                            "name": "fan.png",
+                            "type": "image/png",
+                            "cached_path": "assets/gift_projects/fan.webp",
+                        }
+                    ],
+                },
+            }
+        ]
+
+        gallery = app.gift_gallery_records_from_rows(categories, projects, material_rows)
+        records = app.gift_project_management_records(categories, projects, material_rows)
+
+        self.assertEqual(gallery[0]["projects"][0]["record_id"], "project-fan")
+        self.assertEqual(gallery[0]["attachments"][0]["file_token"], "file-fan")
+        self.assertEqual(records[0]["matched_category_id"], "category-fan")
+        self.assertEqual(records[0]["category"], "手持充电电风扇（充电）")
+        self.assertEqual(records[0]["unit_price"], 3.84)
+        self.assertEqual(records[0]["unit_price_rmb"], 25.9968)
+
+    def test_project_price_uses_unique_fuzzy_category_match(self) -> None:
+        categories = [
+            {
+                "record_id": "category-fan",
+                "fields": {
+                    "物料品类": "手持充电电风扇（充电）",
+                    "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                    "单价（美元）": 3.84,
+                    "单价（人民币）": 25.9968,
+                },
+            },
+            {
+                "record_id": "category-hat",
+                "fields": {
+                    "物料品类": "定制帽子",
+                    "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                    "单价（美元）": 1.77,
+                },
+            },
+        ]
+        projects = [
+            {
+                "record_id": "project-fan",
+                "fields": {
+                    "项目名称": "巴拿马活动",
+                    "物料名称": "电风扇（充电）手持贵的",
+                },
+            }
+        ]
+
+        records = app.gift_project_management_records(categories, projects)
+
+        self.assertEqual(records[0]["matched_category_id"], "category-fan")
+        self.assertEqual(records[0]["unit_price"], 3.84)
+
+    def test_project_link_update_uses_best_keyword_fuzzy_match(self) -> None:
+        categories = [
+            {
+                "record_id": "category-paper-bag",
+                "fields": {
+                    "物料品类": "伴手礼礼包盒（纸袋）",
+                    "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                },
+            },
+            {
+                "record_id": "category-notebook",
+                "fields": {
+                    "物料品类": "笔记本礼盒(Notebook Gift Box)",
+                    "品类定义": app.CATEGORY_DEFINITION_GIFT,
+                },
+            },
+        ]
+        projects = [
+            {
+                "record_id": "project-bundle",
+                "fields": {
+                    "项目名称": "巴拿马活动",
+                    "物料名称": "伴手礼礼包-笔记本盒套装",
+                },
+            }
+        ]
+
+        updates, stats = app.build_gift_project_category_link_updates(
+            categories,
+            [],
+            projects,
+        )
+
+        self.assertEqual(
+            updates,
+            [
+                {
+                    "record_id": "project-bundle",
+                    "fields": {
+                        app.GIFT_PROJECT_CATEGORY_LINK_FIELD: ["category-notebook"],
+                    },
+                }
+            ],
+        )
+        self.assertEqual(stats["update_count"], 1)
+
+    def test_link_texts_can_match_related_gift_category(self) -> None:
+        categories = [self.gift_category]
+        projects = [
+            {
+                "record_id": "project-line-1",
+                "fields": {
+                    "项目名称": "深圳展会",
+                    "物料名称": "展会定制物",
+                    "物料状态": "寻源中",
+                    "物料品类关联": [
+                        {
+                            "record_ids": None,
+                            "text": "活动徽章",
+                            "text_arr": ["活动徽章"],
+                        }
+                    ],
+                },
+            }
+        ]
+
+        records = app.gift_project_management_records(categories, projects)
+
+        self.assertEqual(records[0]["matched_category_id"], "category-gift")
+        self.assertEqual(records[0]["unit_price"], 1.5)
+
+    def test_build_gift_project_category_link_updates_uses_unique_match(self) -> None:
+        material_rows = [
+            {
+                "record_id": "material-gift",
+                "fields": {
+                    "物料编码": "MAT-0001",
+                    "物料品类": "活动徽章别名",
+                    "品类关联": ["category-gift"],
+                },
+            }
+        ]
+        projects = [
+            {
+                "record_id": "project-needs-link",
+                "fields": {
+                    "项目名称": "深圳展会",
+                    "物料名称": "活动徽章别名",
+                },
+            },
+            {
+                "record_id": "project-already-linked",
+                "fields": {
+                    "项目名称": "深圳展会",
+                    "物料名称": "活动徽章",
+                    "物料品类关联": ["category-gift"],
+                },
+            },
+            {
+                "record_id": "project-unmatched",
+                "fields": {
+                    "项目名称": "深圳展会",
+                    "物料名称": "不存在的周边",
+                },
+            },
+        ]
+
+        updates, stats = app.build_gift_project_category_link_updates(
+            [self.gift_category],
+            material_rows,
+            projects,
+        )
+
+        self.assertEqual(
+            updates,
+            [
+                {
+                    "record_id": "project-needs-link",
+                    "fields": {
+                        app.GIFT_PROJECT_CATEGORY_LINK_FIELD: ["category-gift"],
+                    },
+                }
+            ],
+        )
+        self.assertEqual(stats["already_linked_count"], 1)
+        self.assertEqual(stats["update_count"], 1)
+        self.assertEqual(stats["unmatched_count"], 1)
+
     def test_project_payload_has_fixed_status_relation_and_optional_image(self) -> None:
         fields = app.build_gift_project_fields(
             "新品发布会",

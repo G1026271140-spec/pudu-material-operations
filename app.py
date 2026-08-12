@@ -10,6 +10,7 @@ import uuid
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
+from difflib import SequenceMatcher
 from html import escape
 from io import BytesIO
 from pathlib import Path
@@ -61,6 +62,7 @@ MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
 UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 UNIT_PRICE_RMB_FIELD = "单价（人民币）"
+GIFT_PROJECT_CATEGORY_LINK_FIELD = "物料品类关联"
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
@@ -1007,12 +1009,34 @@ def inject_global_styles() -> None:
             font-size: 0.84rem;
             font-weight: 700;
         }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) {
+            min-height: 360px;
+        }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"] {
-            gap: 0.55rem;
+            min-height: 360px;
+            height: 360px;
+            display: flex !important;
+            flex-direction: column;
+            gap: 0.42rem;
             padding: 0.7rem !important;
             border-color: #D8E1E8 !important;
             border-radius: 8px !important;
             background: #FFFFFF;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stElementContainer"]:has([data-testid="stImage"]),
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stElementContainer"]:has(.pudu-product-image-placeholder) {
+            height: 105px;
+            min-height: 105px;
+            margin-bottom: 0.35rem !important;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stImage"],
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) .pudu-product-image-placeholder {
+            height: 105px;
+            min-height: 105px;
+            margin: 0 !important;
+            box-sizing: border-box;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stImage"] img {
             width: 100%;
@@ -1022,14 +1046,12 @@ def inject_global_styles() -> None:
             background: #F7F9FA;
             object-fit: contain;
         }
-        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stImage"] {
-            margin-bottom: 0.7rem;
-        }
         .pudu-project-progress-card-marker { display: none; }
         .pudu-project-progress-title {
             display: block;
-            margin-top: 0.45rem;
-            padding-top: 0.15rem;
+            height: 1.45rem;
+            margin-top: 0.1rem;
+            padding-top: 0;
             color: var(--pudu-ink);
             font-size: 0.82rem;
             font-weight: 750;
@@ -1057,17 +1079,40 @@ def inject_global_styles() -> None:
         .pudu-project-progress-status--arrived { background: #E3F5E9; border-color: #91D3A4; }
         .pudu-project-progress-status--stock { background: #DDF5F2; border-color: #82C9C1; }
         .pudu-project-progress-meta {
-            margin-top: 0.45rem;
-            padding: 0.55rem 0;
+            min-height: 3.35rem;
+            margin-top: 0.22rem;
+            padding: 0.45rem 0;
             border-top: 1px solid #E7EDF1;
             border-bottom: 1px solid #E7EDF1;
             color: var(--pudu-muted);
             font-size: 0.7rem;
-            line-height: 1.7;
+            line-height: 1.55;
             overflow-wrap: anywhere;
         }
-        .pudu-project-progress-note-label { margin-top: 0.65rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
-        .pudu-project-progress-note { margin-top: 0.3rem; margin-bottom: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
+        .pudu-project-progress-note-label { margin-top: 0.45rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
+        .pudu-project-progress-note {
+            min-height: 2.25rem;
+            margin-top: 0.2rem;
+            margin-bottom: 0;
+            color: var(--pudu-ink);
+            font-size: 0.7rem;
+            line-height: 1.55;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stElementContainer"]:has(.stButton) {
+            margin-top: auto;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) .stButton button {
+            min-height: 2.35rem;
+            padding: 0.35rem 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
         .pudu-project-progress-stage-marker { display: none; }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) {
             margin: 0 0 0.45rem !important;
@@ -1154,6 +1199,9 @@ def inject_global_styles() -> None:
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) {
             height: 268px;
         }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) {
+            min-height: 268px;
+        }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
             height: 268px;
             min-height: 268px;
@@ -1225,36 +1273,36 @@ def inject_global_styles() -> None:
             background: #ECF8F6;
         }
         .pudu-gift-new-category-card {
-            min-height: 68px;
-            padding: 0.58rem 0.6rem;
+            min-height: 78px;
+            padding: 0.55rem 0.6rem;
             border: 1px dashed #1B8A86;
             border-radius: 7px;
             background: #E8F7F5;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 0.2rem;
+            gap: 0.18rem;
         }
         .pudu-gift-new-category-card h3 {
             margin: 0;
             color: #0A5F5C;
-            font-size: 1rem;
+            font-size: 1.08rem;
             font-weight: 900;
-            line-height: 1.18;
+            line-height: 1.12;
         }
         .pudu-gift-new-category-card p {
             margin: 0;
             color: #3D6665;
-            font-size: 0.68rem;
+            font-size: 0.64rem;
             font-weight: 650;
-            line-height: 1.25;
+            line-height: 1.18;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) > [data-testid="stVerticalBlock"] {
             height: 268px;
             min-height: 268px;
             display: flex !important;
             flex-direction: column;
-            gap: 0.22rem;
+            gap: 0.16rem;
             padding: 0.6rem !important;
             overflow: hidden;
             box-sizing: border-box;
@@ -1273,12 +1321,12 @@ def inject_global_styles() -> None:
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stTextInput"] input,
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stNumberInput"] input {
-            min-height: 2.05rem;
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
+            min-height: 1.92rem;
+            padding: 0.2rem 0.45rem;
+            font-size: 0.74rem;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stHorizontalBlock"] {
-            gap: 0.4rem;
+            gap: 0.28rem;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) [data-testid="stElementContainer"]:has(.stButton) {
             margin-top: auto;
@@ -3503,6 +3551,26 @@ def feishu_link_ids(fields: dict, name: str) -> list[str]:
                 if isinstance(nested, list):
                     record_ids.extend(str(record_id) for record_id in nested if record_id)
     return unique_preserve(record_ids)
+
+
+def feishu_link_texts(fields: dict, name: str) -> list[str]:
+    value = fields.get(name)
+    if value in (None, ""):
+        return []
+
+    raw_items = value if isinstance(value, list) else [value]
+    texts: list[str] = []
+    for item in raw_items:
+        if isinstance(item, str):
+            texts.append(item)
+        elif isinstance(item, dict):
+            text_arr = item.get("text_arr") or []
+            if isinstance(text_arr, list):
+                texts.extend(str(text) for text in text_arr if text not in (None, ""))
+            text = item.get("text")
+            if text not in (None, ""):
+                texts.append(str(text))
+    return unique_preserve(texts)
 
 
 def feishu_attachment_items(fields: dict, name: str) -> list[dict[str, str]]:
@@ -6290,7 +6358,8 @@ def parse_gift_project_record(row: dict) -> dict | None:
         "project_name": project_name,
         "material_name": material_name,
         "status": feishu_text(fields, "物料状态").strip(),
-        "category_ids": feishu_link_ids(fields, "物料品类关联"),
+        "category_ids": feishu_link_ids(fields, GIFT_PROJECT_CATEGORY_LINK_FIELD),
+        "category_link_texts": feishu_link_texts(fields, GIFT_PROJECT_CATEGORY_LINK_FIELD),
         "attachments": feishu_attachment_items(fields, "物料图片"),
         "supplier_contact": feishu_text(fields, "供应商联系方式").strip(),
         "remark": feishu_text(fields, "备注").strip(),
@@ -6303,6 +6372,247 @@ def gift_project_records_from_rows(rows: list[dict]) -> list[dict]:
         for row in rows
         if (parsed := parse_gift_project_record(row)) is not None
     ]
+
+
+def gift_category_candidates_from_material_rows(
+    material_rows: list[dict],
+    categories_by_id: dict[str, dict],
+    category_by_name: dict[str, dict],
+) -> dict[str, list[dict]]:
+    candidates_by_material_name: dict[str, list[dict]] = {}
+    for row in material_rows:
+        fields = feishu_fields(row)
+        material_name = feishu_text(fields, "物料品类").strip()
+        if not material_name:
+            continue
+        candidates: list[dict] = []
+        for category_id in feishu_link_ids(fields, "品类关联"):
+            category = categories_by_id.get(category_id)
+            if category is not None:
+                candidates.append(category)
+        name_match = category_by_name.get(normalize_category_match_key(material_name))
+        if name_match is not None:
+            candidates.append(name_match)
+        if not candidates:
+            continue
+        material_key = normalize_category_match_key(material_name)
+        candidates_by_material_name.setdefault(material_key, [])
+        candidates_by_material_name[material_key] = unique_gift_categories(
+            [*candidates_by_material_name[material_key], *candidates]
+        )
+    return candidates_by_material_name
+
+
+def unique_gift_categories(categories: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    result: list[dict] = []
+    for category in categories:
+        category_id = str(category.get("record_id") or "")
+        if not category_id or category_id in seen:
+            continue
+        result.append(category)
+        seen.add(category_id)
+    return result
+
+
+def gift_project_related_categories(
+    project: dict,
+    categories_by_id: dict[str, dict],
+    category_by_name: dict[str, dict],
+    categories_by_material_name: dict[str, list[dict]],
+) -> list[dict]:
+    candidates: list[dict] = []
+    for category_id in list(project.get("category_ids") or []):
+        category = categories_by_id.get(str(category_id))
+        if category is not None:
+            candidates.append(category)
+    for link_text in list(project.get("category_link_texts") or []):
+        category = category_by_name.get(normalize_category_match_key(link_text))
+        if category is not None:
+            candidates.append(category)
+
+    material_key = normalize_category_match_key(project.get("material_name"))
+    candidates.extend(categories_by_material_name.get(material_key, []))
+    category = category_by_name.get(material_key)
+    if category is not None:
+        candidates.append(category)
+    return unique_gift_categories(candidates)
+
+
+def normalize_gift_category_fuzzy_key(value: object) -> str:
+    normalized = unicodedata.normalize("NFKC", normalize_option_label(value))
+    normalized = re.sub(r"[A-Za-z0-9]+", "", normalized)
+    return re.sub(r"[^\w\u4e00-\u9fff]+", "", normalized).casefold()
+
+
+def ranked_gift_category_fuzzy_matches(
+    project_name: object,
+    categories: list[dict],
+) -> list[tuple[float, dict]]:
+    project_key = normalize_gift_category_fuzzy_key(project_name)
+    if len(project_key) < 4:
+        return []
+    scored: list[tuple[float, dict]] = []
+    project_chars = set(project_key)
+    for category in categories:
+        category_key = normalize_gift_category_fuzzy_key(category.get("category"))
+        if len(category_key) < 4:
+            continue
+        if project_key == category_key:
+            score = 1.0
+        elif project_key in category_key or category_key in project_key:
+            score = min(len(project_key), len(category_key)) / max(len(project_key), len(category_key))
+        else:
+            category_chars = set(category_key)
+            shared_chars = project_chars & category_chars
+            if not shared_chars:
+                continue
+            coverage = len(shared_chars) / max(len(category_chars), 1)
+            jaccard = len(shared_chars) / max(len(project_chars | category_chars), 1)
+            sequence_ratio = SequenceMatcher(None, project_key, category_key).ratio()
+            score = 0.55 * coverage + 0.25 * jaccard + 0.2 * sequence_ratio
+        if score >= 0.74:
+            scored.append((score, category))
+    scored.sort(
+        key=lambda item: (
+            item[0],
+            len(normalize_category_match_key(item[1].get("category"))),
+        ),
+        reverse=True,
+    )
+    return scored
+
+
+def best_gift_category_fuzzy_match(project_name: object, categories: list[dict]) -> dict | None:
+    scored = ranked_gift_category_fuzzy_matches(project_name, categories)
+    if not scored:
+        return None
+    best_score, best_category = scored[0]
+    if len(scored) > 1 and best_score - scored[1][0] < 0.12:
+        return None
+    return best_category
+
+
+def gift_project_catalog_context(
+    category_rows: list[dict],
+    material_rows: list[dict] | None = None,
+) -> dict[str, object]:
+    categories = [
+        category
+        for category in feishu_category_records_from_rows(category_rows)
+        if category["category_definition"] == CATEGORY_DEFINITION_GIFT
+    ]
+    categories_by_id = {
+        str(category.get("record_id") or ""): category
+        for category in categories
+        if str(category.get("record_id") or "")
+    }
+    category_by_name = {
+        normalize_category_match_key(category.get("category")): category
+        for category in categories
+        if normalize_category_match_key(category.get("category"))
+    }
+    categories_by_material_name = gift_category_candidates_from_material_rows(
+        list(material_rows or []),
+        categories_by_id,
+        category_by_name,
+    )
+    return {
+        "categories": categories,
+        "categories_by_id": categories_by_id,
+        "category_by_name": category_by_name,
+        "categories_by_material_name": categories_by_material_name,
+    }
+
+
+def gift_project_inferred_categories(
+    project: dict,
+    context: dict[str, object],
+    *,
+    allow_fuzzy: bool = True,
+) -> list[dict]:
+    related_categories = gift_project_related_categories(
+        project,
+        dict(context["categories_by_id"]),  # type: ignore[arg-type]
+        dict(context["category_by_name"]),  # type: ignore[arg-type]
+        dict(context["categories_by_material_name"]),  # type: ignore[arg-type]
+    )
+    if related_categories or not allow_fuzzy:
+        return related_categories
+    fuzzy_category = best_gift_category_fuzzy_match(
+        project.get("material_name"),
+        list(context["categories"]),  # type: ignore[arg-type]
+    )
+    return [fuzzy_category] if fuzzy_category is not None else []
+
+
+def build_gift_project_category_link_updates(
+    category_rows: list[dict],
+    material_rows: list[dict],
+    project_rows: list[dict],
+) -> tuple[list[dict], dict[str, int]]:
+    context = gift_project_catalog_context(category_rows, material_rows)
+    stats = {
+        "project_count": 0,
+        "already_linked_count": 0,
+        "update_count": 0,
+        "unmatched_count": 0,
+        "ambiguous_count": 0,
+    }
+    updates: list[dict] = []
+    for project in gift_project_records_from_rows(project_rows):
+        stats["project_count"] += 1
+        if project.get("category_ids"):
+            stats["already_linked_count"] += 1
+            continue
+        related_categories = gift_project_inferred_categories(project, context)
+        if not related_categories:
+            fuzzy_matches = ranked_gift_category_fuzzy_matches(
+                project.get("material_name"),
+                list(context["categories"]),  # type: ignore[arg-type]
+            )
+            if len(fuzzy_matches) > 1 and fuzzy_matches[0][0] - fuzzy_matches[1][0] < 0.12:
+                stats["ambiguous_count"] += 1
+            else:
+                stats["unmatched_count"] += 1
+            continue
+        if len(related_categories) > 1:
+            stats["ambiguous_count"] += 1
+            continue
+        category_id = str(related_categories[0].get("record_id") or "")
+        project_id = str(project.get("record_id") or "")
+        if not category_id or not project_id:
+            stats["unmatched_count"] += 1
+            continue
+        updates.append(
+            {
+                "record_id": project_id,
+                "fields": {GIFT_PROJECT_CATEGORY_LINK_FIELD: [category_id]},
+            }
+        )
+        stats["update_count"] += 1
+    return updates, stats
+
+
+def sync_feishu_gift_project_category_links() -> dict[str, int]:
+    if not feishu_has_field(GIFT_PROJECT_TABLE_NAME, GIFT_PROJECT_CATEGORY_LINK_FIELD):
+        raise RuntimeError(f"飞书项目周边礼品表缺少字段：{GIFT_PROJECT_CATEGORY_LINK_FIELD}")
+    if feishu_field_type(GIFT_PROJECT_TABLE_NAME, GIFT_PROJECT_CATEGORY_LINK_FIELD) not in {18, 21}:
+        raise RuntimeError(f"飞书字段不是关联字段：{GIFT_PROJECT_CATEGORY_LINK_FIELD}")
+
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    project_rows = fresh_feishu_rows(GIFT_PROJECT_TABLE_NAME)
+    updates, stats = build_gift_project_category_link_updates(
+        category_rows,
+        material_rows,
+        project_rows,
+    )
+    stats["written_count"] = feishu_batch_update_record_fields(
+        GIFT_PROJECT_TABLE_NAME,
+        updates,
+    )
+    return stats
 
 
 GIFT_PROJECT_PROGRESS_STAGES = (
@@ -6342,26 +6652,22 @@ def gift_project_progress_stage(status: object) -> str:
 def gift_gallery_records_from_rows(
     category_rows: list[dict],
     project_rows: list[dict],
+    material_rows: list[dict] | None = None,
 ) -> list[dict]:
-    categories = [
-        category
-        for category in feishu_category_records_from_rows(category_rows)
-        if category["category_definition"] == CATEGORY_DEFINITION_GIFT
-    ]
+    context = gift_project_catalog_context(category_rows, material_rows)
+    categories = list(context["categories"])  # type: ignore[arg-type]
     projects = gift_project_records_from_rows(project_rows)
     gallery: list[dict] = []
     for category in categories:
         category_id = str(category.get("record_id") or "")
-        category_key = normalize_category_match_key(category.get("category"))
         related_projects = [
             project
             for project in projects
-            if category_id in set(project.get("category_ids") or [])
-            or (
-                category_key
-                and normalize_category_match_key(project.get("material_name"))
-                == category_key
-            )
+            if category_id
+            in {
+                str(item.get("record_id") or "")
+                for item in gift_project_inferred_categories(project, context)
+            }
         ]
         attachments: list[dict[str, str]] = []
         attachment_tokens: set[str] = set()
@@ -6413,36 +6719,21 @@ def filter_gift_gallery_records(records: list[dict], query: object) -> list[dict
 
 
 def gift_project_management_records(
-    category_rows: list[dict], project_rows: list[dict]
+    category_rows: list[dict],
+    project_rows: list[dict],
+    material_rows: list[dict] | None = None,
 ) -> list[dict]:
-    categories = {
-        str(item.get("record_id") or ""): item
-        for item in feishu_category_records_from_rows(category_rows)
-        if item.get("category_definition") == CATEGORY_DEFINITION_GIFT
-    }
-    category_by_name = {
-        normalize_category_match_key(item.get("category")): item
-        for item in categories.values()
-    }
+    context = gift_project_catalog_context(category_rows, material_rows)
     records: list[dict] = []
     for project in gift_project_records_from_rows(project_rows):
-        category = next(
-            (
-                categories[record_id]
-                for record_id in list(project.get("category_ids") or [])
-                if record_id in categories
-            ),
-            None,
-        )
-        if category is None:
-            category = category_by_name.get(
-                normalize_category_match_key(project.get("material_name"))
-            )
+        related_categories = gift_project_inferred_categories(project, context)
+        category = related_categories[0] if related_categories else None
         unit_price = float((category or {}).get("unit_price") or 0)
         unit_price_rmb = float((category or {}).get("unit_price_rmb") or 0)
         records.append(
             {
                 **project,
+                "matched_category_id": str((category or {}).get("record_id") or ""),
                 "category": str((category or {}).get("category") or project.get("material_name") or ""),
                 "unit_price": unit_price,
                 "unit_price_rmb": unit_price_rmb or unit_price * 6.77,
@@ -12134,14 +12425,19 @@ def render_gift_projects_page() -> None:
     if message:
         st.success(message)
     with st.spinner("周边礼品数据加载中，请稍后......"):
+        category_rows = safe_feishu_rows(CATEGORY_TABLE_NAME)
+        material_rows = safe_feishu_rows(MATERIAL_TABLE_NAME)
+        project_rows = safe_feishu_rows(GIFT_PROJECT_TABLE_NAME)
         gallery = gift_gallery_records_from_rows(
-            safe_feishu_rows(CATEGORY_TABLE_NAME),
-            safe_feishu_rows(GIFT_PROJECT_TABLE_NAME),
+            category_rows,
+            project_rows,
+            material_rows,
         )
 
     project_records = gift_project_management_records(
-        safe_feishu_rows(CATEGORY_TABLE_NAME),
-        safe_feishu_rows(GIFT_PROJECT_TABLE_NAME),
+        category_rows,
+        project_rows,
+        material_rows,
     )
     project_names = sorted(
         {

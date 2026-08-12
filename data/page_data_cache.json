@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-12 16:32:18",
+  "generated_at": "2026-08-12 17:17:25",
   "tables": {
     "物料品类": [
       {
@@ -103421,10 +103421,14 @@
           "物料名称": "伴手礼礼包盒（纸袋）",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYww8Hq9pN"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "018",
+              "text_arr": [
+                "018"
+              ],
               "type": "text"
             }
           ],
@@ -103433,18 +103437,18 @@
               "file_token": "FEcLbvMD5owQR5xOwiNc19O8nLf",
               "name": "026329d8-1de1-4365-8d72-0c18f0a82231.jpg",
               "size": 1134140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/8037856b2214aa72d317.webp"
             },
             {
               "file_token": "IVi3bViUaoDJB2xiMlYcQlTRnsd",
               "name": "0950006d75ef6e3076c4282f475242fe(1).png",
               "size": 28337,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/d080d85efd6566443407.webp"
             }
           ],
@@ -103463,10 +103467,14 @@
           "物料名称": "伴手礼礼包-笔记本盒套装",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "rec27JD20Fj7B4"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "012",
+              "text_arr": [
+                "012"
+              ],
               "type": "text"
             }
           ],
@@ -103475,9 +103483,9 @@
               "file_token": "KAkebk1MuoUlwZxwQb0cwiSwnIb",
               "name": "76893361-4130-4141-8359-a3d240b7af73.png",
               "size": 166239,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/eb63fd20472ee48a7ba8.webp"
             }
           ],
@@ -103496,10 +103504,14 @@
           "物料名称": "定制帽子",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPI4ku"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "020",
+              "text_arr": [
+                "020"
+              ],
               "type": "text"
             }
           ],
@@ -103508,9 +103520,9 @@
               "file_token": "AE4Rb1HnjoA1hMxOd3acBWdunjd",
               "name": "image.png",
               "size": 94114,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/43dc0d9c2b7d49de4d01.webp"
             }
           ],
@@ -103529,10 +103541,14 @@
           "物料名称": "全套产品冰箱贴",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPUrRL"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "021",
+              "text_arr": [
+                "021"
+              ],
               "type": "text"
             }
           ],
@@ -103541,9 +103557,9 @@
               "file_token": "FIaab7VkEoIRpOxf9ANctQ98nIb",
               "name": "9e95b14c-1ddc-403d-b292-1ad76fc2258e.jpg",
               "size": 262068,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/f50ae498e27a427e92d5.webp"
             }
           ],
@@ -103562,10 +103578,14 @@
           "物料名称": "定制高尔夫球",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPk6DR"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "022",
+              "text_arr": [
+                "022"
+              ],
               "type": "text"
             }
           ],
@@ -103585,10 +103605,14 @@
           "物料名称": "电风扇（充电）手持贵的",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPd4EN"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "023",
+              "text_arr": [
+                "023"
+              ],
               "type": "text"
             }
           ],
@@ -103597,9 +103621,9 @@
               "file_token": "GlTObQQGhoHUfRxjVoYcC0Vtnbd",
               "name": "img_v3_02149_de15c820-8c5a-4595-b1b1-0b20d1d2f07g.jpg",
               "size": 354165,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/3cba6d296614195a7aa7.webp"
             }
           ],
@@ -103618,14 +103642,28 @@
           "物料名称": "嘉宾胸牌/臂贴",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPb91e"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "024",
+              "text_arr": [
+                "024"
+              ],
               "type": "text"
             }
           ],
-          "物料图片": null,
+          "物料图片": [
+            {
+              "file_token": "Wg5EbXbo1oOxpRxIrYac4aOEnYe",
+              "name": "image.png",
+              "size": 244396,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Wg5EbXbo1oOxpRxIrYac4aOEnYe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Wg5EbXbo1oOxpRxIrYac4aOEnYe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
+              "cached_path": "assets/gift_projects/5fe90af578b9910d69c1.webp"
+            }
+          ],
           "物料状态": "设计制作中",
           "负责人": null,
           "项目名称": "巴拿马活动"
@@ -103641,10 +103679,14 @@
           "物料名称": "工作证",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPRwWW"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "025",
+              "text_arr": [
+                "025"
+              ],
               "type": "text"
             }
           ],
@@ -103664,10 +103706,14 @@
           "物料名称": "代理商颁奖牌",
           "物料品类关联": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvrYwxxPyLz4"
+              ],
               "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
+              "text": "026",
+              "text_arr": [
+                "026"
+              ],
               "type": "text"
             }
           ],
@@ -103676,9 +103722,9 @@
               "file_token": "JJdkbKdFToAf3Lx7PNCclEPTnTh",
               "name": "企业微信截图_17865186083941.png",
               "size": 436318,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JJdkbKdFToAf3Lx7PNCclEPTnTh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JJdkbKdFToAf3Lx7PNCclEPTnTh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JJdkbKdFToAf3Lx7PNCclEPTnTh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A140%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JJdkbKdFToAf3Lx7PNCclEPTnTh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A153%7D%7D",
               "cached_path": "assets/gift_projects/f179e56146c3daedb353.webp"
             }
           ],
@@ -103705,12 +103751,104 @@
             }
           ],
           "物料图片": null,
-          "物料状态": "设计制作中",
+          "物料状态": "寻源中",
           "负责人": null,
-          "项目名称": "公共项目"
+          "项目名称": "周边电商化"
         },
         "id": "recvrYBWClJVRL",
         "record_id": "recvrYBWClJVRL"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": null,
+          "物料名称": null,
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": null,
+          "负责人": null,
+          "项目名称": "公共项目"
+        },
+        "id": "recvs4nzWPyEbO",
+        "record_id": "recvs4nzWPyEbO"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": null,
+          "物料名称": null,
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": null,
+          "负责人": null,
+          "项目名称": "公共项目"
+        },
+        "id": "recvs4nA7hXBOg",
+        "record_id": "recvs4nA7hXBOg"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": null,
+          "物料名称": null,
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": null,
+          "负责人": null,
+          "项目名称": "公共项目"
+        },
+        "id": "recvs4nAjaclXk",
+        "record_id": "recvs4nAjaclXk"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": null,
+          "物料名称": null,
+          "物料品类关联": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": null,
+          "负责人": null,
+          "项目名称": "公共项目"
+        },
+        "id": "recvs4nAuDWbTW",
+        "record_id": "recvs4nAuDWbTW"
       }
     ]
   },
@@ -103722,10 +103860,10 @@
     "库存流水": 62,
     "物料申请单": 36,
     "申请明细": 69,
-    "项目周边礼品物料筹备详情list": 10
+    "项目周边礼品物料筹备详情list": 14
   },
   "gift_image_cache": {
     "directory": "assets/gift_projects",
-    "image_count": 7
+    "image_count": 8
   }
 }

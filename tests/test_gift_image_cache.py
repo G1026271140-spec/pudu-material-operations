@@ -126,6 +126,25 @@ class GiftImageCacheTests(unittest.TestCase):
             self.assertEqual(removed_stats["deleted_count"], 1)
             self.assertEqual(list(image_dir.iterdir()), [])
 
+    def test_validator_rejects_missing_cached_gift_image_file(self) -> None:
+        cache = self.cache()
+        cache["tables"][app.GIFT_PROJECT_TABLE_NAME][0]["fields"]["物料图片"][0][
+            "cached_path"
+        ] = "assets/gift_projects/missing.webp"
+        cache["gift_image_cache"] = {
+            "directory": "assets/gift_projects",
+            "image_count": 1,
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaisesRegex(ValueError, "周边礼品静态图片不存在"):
+                validate_page_data_cache(
+                    cache,
+                    require_data=True,
+                    require_cached_gift_images=True,
+                    cache_root=Path(temp_dir),
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

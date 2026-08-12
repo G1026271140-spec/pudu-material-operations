@@ -55,7 +55,7 @@ def validate_page_data_cache(
         for category in app.feishu_category_records_from_rows(category_rows)
         if category.get("category_definition") == app.CATEGORY_DEFINITION_GIFT
     }
-    gallery = app.gift_gallery_records_from_rows(category_rows, gift_project_rows)
+    gallery = app.gift_gallery_records_from_rows(category_rows, gift_project_rows, material_rows)
     gallery_ids = {str(item.get("record_id") or "") for item in gallery}
     if gallery_ids != gift_category_ids:
         raise ValueError("周边礼品页面缓存与品类定义不一致。")
