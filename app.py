@@ -1173,14 +1173,27 @@ def inject_global_styles() -> None:
             border-radius: 8px;
             background: #ECF8F6;
         }
+        .pudu-gift-batch-cart-marker { display: none; }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-batch-cart-marker) > [data-testid="stVerticalBlock"] {
+            margin: 0.7rem 0 1rem;
+            padding: 0.85rem 1rem !important;
+            border: 1px solid #B9D9D3 !important;
+            border-radius: 8px !important;
+            background: #ECF8F6;
+        }
         .pudu-gift-new-category-card {
-            min-height: 245px;
-            padding: 0.55rem;
+            min-height: 228px;
+            padding: 0.45rem;
             border: 1px dashed #1B8A86;
             border-radius: 8px;
             background: #E8F7F5;
         }
-        .pudu-gift-new-category-card h3 { margin: 0 0 0.55rem; color: #0D6663; font-size: 0.92rem; }
+        .pudu-gift-new-category-card h3 { margin: 0 0 0.35rem; color: #0D6663; font-size: 0.82rem; }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-new-category-card-marker) > [data-testid="stVerticalBlock"] {
+            min-height: 245px;
+            height: 100%;
+            padding: 0.45rem !important;
+        }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"],
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
             transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
@@ -12057,18 +12070,48 @@ def render_gift_projects_page() -> None:
         filtered_gallery = filter_gift_gallery_records(gallery, "")
         selected_ids = set(st.session_state.get("gift_batch_selected_ids", []))
         gift_lines = [item for item in filtered_gallery if str(item.get("record_id") or "") in selected_ids]
-        catalog_items = [{"new": True}, *filtered_gallery]
-        for row_start in range(0, len(catalog_items), 8):
-            row_items = catalog_items[row_start : row_start + 8]
-            card_columns = st.columns(8, gap="small")
-            for column_index, item in enumerate(row_items):
-                if item.get("new"):
-                    with card_columns[column_index].container(border=True):
-                        st.markdown('<span class="pudu-gift-catalog-card-marker"></span>', unsafe_allow_html=True)
-                        st.markdown("### 需要新的周边品类点这个")
-                        new_name = st.text_input("名称", key="gift_batch_new_name")
+        new_line = st.session_state.get("gift_batch_new_line")
+        with st.container(border=True):
+            st.markdown('<span class="pudu-gift-batch-cart-marker"></span>', unsafe_allow_html=True)
+            st.markdown(f"**购物清单：** {len(gift_lines) + (1 if new_line else 0)} 项")
+            if gift_lines or new_line:
+                st.dataframe(
+                    [{"物料名称": item.get("category"), "类型": "已有品类"} for item in gift_lines]
+                    + ([{"物料名称": new_line["name"], "类型": f"待新建品类 · 数量 {new_line['quantity']}"}] if new_line else []),
+                    hide_index=True,
+                    width="stretch",
+                )
+            if st.button("批量提交", type="primary", key="gift_batch_submit"):
+                if not str(project_name).strip() or not str(owner).strip():
+                    st.error("项目名称和负责人均为必填项。")
+                elif not gift_lines and not new_line:
+                    st.error("请至少选择一个已有物料或加入一个新物料。")
+                else:
+                    try:
+                        for item in gift_lines:
+                            create_gift_project_request(project_name, item.get("record_id"), owner=owner)
+                        if new_line:
+                            create_new_gift_project_request(project_name, new_line["name"], owner=owner, remark=f"数量：{new_line['quantity']}\n{new_line['remark']}")
+                        refresh_page_cache_after_write("gift_projects", update_request_form=True)
+                        st.success("项目物料清单已批量写入。")
+                    except Exception as exc:
+                        st.error(f"批量写入失败：{exc}")
+        catalog_items = [*filtered_gallery]
+        for row_start in range(0, len(catalog_items), 6):
+            row_items = catalog_items[row_start : row_start + 6]
+            card_columns = (
+                st.columns([2, 1, 1, 1, 1, 1, 1], gap="small")
+                if row_start == 0
+                else st.columns(8, gap="small")
+            )
+            if row_start == 0:
+                with card_columns[0].container(border=True):
+                    with st.container(border=False):
+                        st.markdown('<span class="pudu-gift-new-category-card-marker"></span>', unsafe_allow_html=True)
+                        st.markdown('<div class="pudu-gift-new-category-card">需要新的周边品类点这个</div>', unsafe_allow_html=True)
+                        new_name = st.text_input("名称", key="gift_batch_new_name", label_visibility="collapsed", placeholder="新周边品类名称")
                         new_quantity = st.number_input("数量", min_value=1, step=1, key="gift_batch_new_quantity")
-                        new_remark = st.text_area("备注", key="gift_batch_new_remark", height=86)
+                        new_remark = st.text_input("备注", key="gift_batch_new_remark", placeholder="可选")
                         if st.button("加入清单", width="stretch", key="gift_batch_add_new"):
                             if not str(new_name).strip():
                                 st.warning("请填写新周边品类名称。")
@@ -12079,7 +12122,6 @@ def render_gift_projects_page() -> None:
                                     "remark": str(new_remark or "").strip(),
                                 }
                                 st.rerun()
-                        st.markdown('</div>', unsafe_allow_html=True)
             offset = 1 if row_start == 0 else 0
             for column_index, item in enumerate(row_items):
                 category_id = str(item.get("record_id") or "")
