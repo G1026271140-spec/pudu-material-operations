@@ -1106,7 +1106,7 @@ def inject_global_styles() -> None:
             background: #DDE8EE;
         }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details[open] > summary {
-            min-height: 7rem;
+            min-height: 5rem;
         }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary svg {
             display: none;
@@ -1117,6 +1117,12 @@ def inject_global_styles() -> None:
             padding: 0.65rem 0.7rem 0.8rem 0 !important;
             border: 0 !important;
             background: transparent !important;
+        }
+        .pudu-project-empty-stage {
+            padding: 0.8rem 0.25rem;
+            color: #8A99A5;
+            font-size: 0.76rem;
+            line-height: 1.5;
         }
         .st-key-gift_project_page_mode [data-testid="stRadio"] > div {
             gap: 1rem;
@@ -12017,9 +12023,12 @@ def render_gift_projects_page() -> None:
                     unsafe_allow_html=True,
                 )
                 if not stage_records:
-                    st.caption("当前流程阶段暂无物料")
+                    st.markdown(
+                        '<div class="pudu-project-empty-stage">当前流程阶段暂无物料</div>',
+                        unsafe_allow_html=True,
+                    )
                     continue
-                stage_columns = st.columns(min(4, len(stage_records)), gap="small")
+                stage_columns = st.columns(4, gap="small")
                 for item_index, item in enumerate(stage_records):
                     product = str(item.get("material_name") or item.get("category") or "")
                     usd_price = float(item.get("unit_price") or 0)
