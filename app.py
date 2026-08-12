@@ -1019,9 +1019,14 @@ def inject_global_styles() -> None:
             background: #F7F9FA;
             object-fit: contain;
         }
+        [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) [data-testid="stImage"] {
+            margin-bottom: 0.7rem;
+        }
         .pudu-project-progress-card-marker { display: none; }
         .pudu-project-progress-title {
-            margin-top: 0.25rem;
+            display: block;
+            margin-top: 0.45rem;
+            padding-top: 0.15rem;
             color: var(--pudu-ink);
             font-size: 0.82rem;
             font-weight: 750;
@@ -1060,33 +1065,47 @@ def inject_global_styles() -> None:
         }
         .pudu-project-progress-note-label { margin-top: 0.65rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
         .pudu-project-progress-note { margin-top: 0.3rem; margin-bottom: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
-        .pudu-project-progress-stage {
-            position: relative;
-            display: flex;
-            min-height: 5.4rem;
-            margin: 0.2rem 0 1.3rem;
-            padding: 0.8rem 0.55rem 1.35rem;
-            align-items: center;
-            justify-content: center;
-            clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%);
-            background: #EAF0F4;
-            color: var(--pudu-ink);
-            font-size: 0.78rem;
-            font-weight: 800;
-            text-align: center;
-            white-space: nowrap;
-        }
-        [data-testid="stExpander"]:has(.pudu-project-progress-stage) {
+        .pudu-project-progress-stage-marker { display: none; }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) {
             margin-bottom: 0.65rem;
             border-color: #D7E0E7 !important;
             border-radius: 8px !important;
             background: #FFFFFF;
         }
-        [data-testid="stExpander"]:has(.pudu-project-progress-stage) details > summary {
-            padding-top: 0.45rem;
-            padding-bottom: 0.45rem;
-            font-size: 0.78rem;
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details {
+            display: grid;
+            grid-template-columns: 7.5rem minmax(0, 1fr);
+            column-gap: 0.8rem;
+            align-items: stretch;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary {
+            grid-column: 1;
+            min-height: 3rem;
+            padding: 0.65rem 0.45rem 0.95rem !important;
+            align-items: center;
+            justify-content: center;
+            clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+            background: #EAF0F4;
+            font-size: 0.72rem;
             font-weight: 750;
+            text-align: center;
+            transition: transform 180ms ease, background-color 180ms ease, min-height 180ms ease;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary:hover {
+            z-index: 2;
+            transform: scale(1.045);
+            background: #DDE8EE;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details[open] > summary {
+            min-height: 7rem;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary svg {
+            display: none;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > div {
+            grid-column: 2;
+            min-width: 0;
+            padding: 0.65rem 0.7rem 0.8rem 0 !important;
         }
         .pudu-fixed-rule-row {
             display: grid;
@@ -11887,17 +11906,13 @@ def render_gift_projects_page() -> None:
                 (item for item in selected_records if gift_project_progress_stage(item.get("status")) == stage),
                 key=lambda item: str(item.get("material_name") or item.get("category") or ""),
             )
-            expander_label = f"{stage} · {len(stage_records)} 项物料" if stage_records else f"{stage} · 暂无物料"
+            expander_label = f"{stage} · {len(stage_records)}" if stage_records else stage
             with st.expander(expander_label, expanded=bool(stage_records)):
-                flow_col, materials_col = st.columns([1, 7], gap="medium")
-                with flow_col:
-                    st.markdown(f'<div class="pudu-project-progress-stage">{escape(stage)}</div>', unsafe_allow_html=True)
+                st.markdown('<span class="pudu-project-progress-stage-marker"></span>', unsafe_allow_html=True)
                 if not stage_records:
-                    with materials_col:
-                        st.caption("当前流程阶段暂无物料")
+                    st.caption("当前流程阶段暂无物料")
                     continue
-                with materials_col:
-                    stage_columns = st.columns(min(4, len(stage_records)), gap="small")
+                stage_columns = st.columns(min(4, len(stage_records)), gap="small")
                 for item_index, item in enumerate(stage_records):
                     product = str(item.get("material_name") or item.get("category") or "")
                     usd_price = float(item.get("unit_price") or 0)
