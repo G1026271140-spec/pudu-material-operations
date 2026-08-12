@@ -1078,6 +1078,8 @@ def inject_global_styles() -> None:
             grid-template-columns: 7.5rem minmax(0, 1fr);
             column-gap: 0.8rem;
             align-items: stretch;
+            border: 0 !important;
+            background: transparent !important;
         }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary {
             grid-column: 1;
@@ -11939,13 +11941,12 @@ def render_gift_projects_page() -> None:
             if str(project.get("project_name") or "").strip()
         }
     )
-    page_mode = st.pills(
+    page_mode = st.radio(
         "周边礼品项目功能",
         ["项目进度", "新增项目物料"],
-        selection_mode="single",
-        default="项目进度",
+        horizontal=True,
+        index=0,
         key="gift_project_page_mode",
-        width="stretch",
         label_visibility="collapsed",
     )
     if page_mode == "新增项目物料":
@@ -11958,17 +11959,20 @@ def render_gift_projects_page() -> None:
             render_existing_gift_project_form(selected_category)
         st.caption("先选择已有周边礼品；确认目录中没有需要的物料后，再新增品类。")
         filtered_gallery = filter_gift_gallery_records(gallery, "")
-        card_columns = st.columns(8, gap="small")
-        for index, item in enumerate(filtered_gallery):
-            category_id = str(item.get("record_id") or "")
-            product = str(item.get("category") or "")
-            with card_columns[index % 8].container(border=True):
-                render_gift_image(list(item.get("attachments") or []), product)
-                st.markdown(f"**{escape(product)}**")
-                if st.button("选择", width="stretch", key=f"gift_select_{category_id}"):
-                    st.session_state["gift_selected_category_id"] = category_id
-                    st.session_state["gift_create_mode"] = False
-                    st.rerun()
+        for row_start in range(0, len(filtered_gallery), 8):
+            row_items = filtered_gallery[row_start : row_start + 8]
+            card_columns = st.columns(8, gap="small")
+            for column_index, item in enumerate(row_items):
+                category_id = str(item.get("record_id") or "")
+                product = str(item.get("category") or "")
+                with card_columns[column_index].container(border=True):
+                    st.markdown('<span class="pudu-gift-catalog-card-marker"></span>', unsafe_allow_html=True)
+                    render_gift_image(list(item.get("attachments") or []), product)
+                    st.markdown(f'<div class="pudu-gift-catalog-title">{escape(product)}</div>', unsafe_allow_html=True)
+                    if st.button("选择", width="stretch", key=f"gift_select_{category_id}"):
+                        st.session_state["gift_selected_category_id"] = category_id
+                        st.session_state["gift_create_mode"] = False
+                        st.rerun()
         browse_confirmed = st.checkbox(
             "我已浏览现有周边礼品，确认没有需要的物料",
             key="gift_catalog_browse_confirmed",
