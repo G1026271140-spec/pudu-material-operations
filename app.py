@@ -1068,9 +1068,10 @@ def inject_global_styles() -> None:
         .pudu-project-progress-stage-marker { display: none; }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) {
             margin-bottom: 0.65rem;
-            border-color: #D7E0E7 !important;
-            border-radius: 8px !important;
-            background: #FFFFFF;
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
         }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details {
             display: grid;
@@ -1091,6 +1092,12 @@ def inject_global_styles() -> None:
             text-align: center;
             transition: transform 180ms ease, background-color 180ms ease, min-height 180ms ease;
         }
+        [data-testid="stExpander"]:has(.pudu-project-stage-requested) details > summary { background: #E7EDF2; }
+        [data-testid="stExpander"]:has(.pudu-project-stage-sourcing) details > summary { background: #FFF0B8; }
+        [data-testid="stExpander"]:has(.pudu-project-stage-confirm) details > summary { background: #DDF3F0; }
+        [data-testid="stExpander"]:has(.pudu-project-stage-design) details > summary { background: #FFE3CC; }
+        [data-testid="stExpander"]:has(.pudu-project-stage-arrived) details > summary { background: #DDF1E3; }
+        [data-testid="stExpander"]:has(.pudu-project-stage-shipped) details > summary { background: #E9E1F5; }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary:hover {
             z-index: 2;
             transform: scale(1.045);
@@ -6085,6 +6092,15 @@ GIFT_PROJECT_PROGRESS_STAGES = (
     "到货",
     "已发货",
 )
+
+GIFT_PROJECT_STAGE_CLASSES = {
+    "已提需": "requested",
+    "寻源中": "sourcing",
+    "待确认下单": "confirm",
+    "设计制作中": "design",
+    "到货": "arrived",
+    "已发货": "shipped",
+}
 
 
 def gift_project_progress_stage(status: object) -> str:
@@ -11884,16 +11900,60 @@ def render_gift_projects_page() -> None:
             if str(project.get("project_name") or "").strip()
         }
     )
+    page_mode = st.pills(
+        "周边礼品项目功能",
+        ["项目进度", "新增项目物料"],
+        selection_mode="single",
+        default="项目进度",
+        key="gift_project_page_mode",
+        width="stretch",
+        label_visibility="collapsed",
+    )
+    if page_mode == "新增项目物料":
+        selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
+        selected_category = next(
+            (item for item in gallery if str(item.get("record_id") or "") == selected_category_id),
+            None,
+        )
+        if selected_category is not None:
+            render_existing_gift_project_form(selected_category)
+        st.caption("先选择已有周边礼品；确认目录中没有需要的物料后，再新增品类。")
+        filtered_gallery = filter_gift_gallery_records(gallery, "")
+        card_columns = st.columns(8, gap="small")
+        for index, item in enumerate(filtered_gallery):
+            category_id = str(item.get("record_id") or "")
+            product = str(item.get("category") or "")
+            with card_columns[index % 8].container(border=True):
+                render_gift_image(list(item.get("attachments") or []), product)
+                st.markdown(f"**{escape(product)}**")
+                if st.button("选择", width="stretch", key=f"gift_select_{category_id}"):
+                    st.session_state["gift_selected_category_id"] = category_id
+                    st.session_state["gift_create_mode"] = False
+                    st.rerun()
+        browse_confirmed = st.checkbox(
+            "我已浏览现有周边礼品，确认没有需要的物料",
+            key="gift_catalog_browse_confirmed",
+        )
+        if st.button("新增周边礼品", disabled=not browse_confirmed, key="gift_start_create"):
+            st.session_state["gift_create_mode"] = True
+            st.session_state.pop("gift_selected_category_id", None)
+            st.rerun()
+        if st.session_state.get("gift_create_mode"):
+            render_new_gift_project_form()
+        return
+
     if not project_names:
         st.info("当前还没有可选择的周边礼品项目。")
         selected_project = ""
         selected_records = []
     else:
-        selected_project = st.radio(
+        selected_project = st.pills(
             "选择项目",
             project_names,
-            horizontal=True,
+            selection_mode="single",
+            default=project_names[0],
             key="gift_project_filter",
+            width="stretch",
         )
         selected_records = [
             item for item in project_records if item.get("project_name") == selected_project
@@ -11908,7 +11968,11 @@ def render_gift_projects_page() -> None:
             )
             expander_label = f"{stage} · {len(stage_records)}" if stage_records else stage
             with st.expander(expander_label, expanded=bool(stage_records)):
-                st.markdown('<span class="pudu-project-progress-stage-marker"></span>', unsafe_allow_html=True)
+                stage_class = GIFT_PROJECT_STAGE_CLASSES[stage]
+                st.markdown(
+                    f'<span class="pudu-project-progress-stage-marker pudu-project-stage-{stage_class}"></span>',
+                    unsafe_allow_html=True,
+                )
                 if not stage_records:
                     st.caption("当前流程阶段暂无物料")
                     continue
@@ -11942,52 +12006,6 @@ def render_gift_projects_page() -> None:
                         if supplier:
                             st.caption(f"供应商联系方式：{supplier}")
 
-    selected_category_id = str(st.session_state.get("gift_selected_category_id") or "")
-    selected_category = next(
-        (
-            item
-            for item in gallery
-            if str(item.get("record_id") or "") == selected_category_id
-        ),
-        None,
-    )
-    if selected_category is not None:
-        render_existing_gift_project_form(selected_category)
-
-    with st.expander("新增或补充项目物料", expanded=False):
-        st.caption("先选择已有周边礼品，再填写项目名称；如目录中没有所需物料，可确认后新增品类。")
-        filtered_gallery = filter_gift_gallery_records(gallery, "")
-        card_columns = st.columns(3, gap="small")
-        for index, item in enumerate(filtered_gallery):
-            category_id = str(item.get("record_id") or "")
-            product = str(item.get("category") or "")
-            with card_columns[index % 3].container(border=True):
-                render_gift_image(list(item.get("attachments") or []), product)
-                st.markdown(f"**{escape(product)}**")
-                if st.button(
-                    "补充到项目",
-                    icon=":material/add_task:",
-                    width="stretch",
-                    key=f"gift_select_{category_id}",
-                ):
-                    st.session_state["gift_selected_category_id"] = category_id
-                    st.session_state["gift_create_mode"] = False
-                    st.rerun()
-        browse_confirmed = st.checkbox(
-            "我已浏览并搜索现有周边礼品，确认没有需要的物料",
-            key="gift_catalog_browse_confirmed",
-        )
-        if st.button(
-            "新增周边礼品",
-            icon=":material/add_circle:",
-            disabled=not browse_confirmed,
-            key="gift_start_create",
-        ):
-            st.session_state["gift_create_mode"] = True
-            st.session_state.pop("gift_selected_category_id", None)
-            st.rerun()
-        if st.session_state.get("gift_create_mode"):
-            render_new_gift_project_form()
 
 
 def render_management_page() -> None:
