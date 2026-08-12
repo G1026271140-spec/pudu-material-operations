@@ -1166,6 +1166,21 @@ def inject_global_styles() -> None:
             font-weight: 750;
             line-height: 1.4;
         }
+        .pudu-gift-batch-cart {
+            margin: 0.7rem 0 1rem;
+            padding: 0.85rem 1rem;
+            border: 1px solid #B9D9D3;
+            border-radius: 8px;
+            background: #ECF8F6;
+        }
+        .pudu-gift-new-category-card {
+            min-height: 245px;
+            padding: 0.55rem;
+            border: 1px dashed #1B8A86;
+            border-radius: 8px;
+            background: #E8F7F5;
+        }
+        .pudu-gift-new-category-card h3 { margin: 0 0 0.55rem; color: #0D6663; font-size: 0.92rem; }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"],
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
             transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
@@ -1459,6 +1474,23 @@ def feishu_app_id() -> str:
 
 def feishu_app_secret() -> str:
     return get_secret_value("FEISHU_APP_SECRET")
+
+
+def feishu_approval_writeback_app_id() -> str:
+    """Return the dedicated app ID for approval callbacks and writeback APIs."""
+    return get_secret_value("FEISHU_APPROVAL_WRITEBACK_APP_ID")
+
+
+def feishu_approval_writeback_app_secret() -> str:
+    """Return the dedicated app secret for approval callbacks and writeback APIs."""
+    return get_secret_value("FEISHU_APPROVAL_WRITEBACK_APP_SECRET")
+
+
+def feishu_approval_writeback_config_args() -> tuple[str, str]:
+    return (
+        feishu_approval_writeback_app_id(),
+        feishu_approval_writeback_app_secret(),
+    )
 
 
 def feishu_bitable_app_token() -> str:
@@ -12047,10 +12079,12 @@ def render_gift_projects_page() -> None:
                                     "remark": str(new_remark or "").strip(),
                                 }
                                 st.rerun()
-                    continue
+                        st.markdown('</div>', unsafe_allow_html=True)
+            offset = 1 if row_start == 0 else 0
+            for column_index, item in enumerate(row_items):
                 category_id = str(item.get("record_id") or "")
                 product = str(item.get("category") or "")
-                with card_columns[column_index].container(border=True):
+                with card_columns[column_index + offset].container(border=True):
                     st.markdown('<span class="pudu-gift-catalog-card-marker"></span>', unsafe_allow_html=True)
                     render_gift_image(list(item.get("attachments") or []), product)
                     st.markdown(f'<div class="pudu-gift-catalog-title">{escape(product)}</div>', unsafe_allow_html=True)
