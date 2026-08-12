@@ -1005,10 +1005,8 @@ def inject_global_styles() -> None:
             font-weight: 700;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-project-progress-card-marker) > [data-testid="stVerticalBlock"] {
-            min-height: 330px;
-            height: 100%;
-            gap: 0.25rem;
-            padding: 0.55rem !important;
+            gap: 0.55rem;
+            padding: 0.7rem !important;
             border-color: #D8E1E8 !important;
             border-radius: 8px !important;
             background: #FFFFFF;
@@ -1023,8 +1021,7 @@ def inject_global_styles() -> None:
         }
         .pudu-project-progress-card-marker { display: none; }
         .pudu-project-progress-title {
-            min-height: 1.35rem;
-            margin-top: 0.35rem;
+            margin-top: 0.25rem;
             color: var(--pudu-ink);
             font-size: 0.82rem;
             font-weight: 750;
@@ -1052,9 +1049,8 @@ def inject_global_styles() -> None:
         .pudu-project-progress-status--arrived { background: #E3F5E9; border-color: #91D3A4; }
         .pudu-project-progress-status--stock { background: #DDF5F2; border-color: #82C9C1; }
         .pudu-project-progress-meta {
-            min-height: 3rem;
-            margin-top: 0.35rem;
-            padding: 0.4rem 0;
+            margin-top: 0.45rem;
+            padding: 0.55rem 0;
             border-top: 1px solid #E7EDF1;
             border-bottom: 1px solid #E7EDF1;
             color: var(--pudu-muted);
@@ -1062,16 +1058,16 @@ def inject_global_styles() -> None:
             line-height: 1.7;
             overflow-wrap: anywhere;
         }
-        .pudu-project-progress-note-label { margin-top: 0.45rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
-        .pudu-project-progress-note { min-height: 4rem; margin-top: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+        .pudu-project-progress-note-label { margin-top: 0.65rem; color: var(--pudu-ink); font-size: 0.7rem; font-weight: 750; }
+        .pudu-project-progress-note { margin-top: 0.3rem; margin-bottom: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
         .pudu-project-progress-stage {
-            margin: 0 0 0.75rem;
-            padding: 0.48rem 0.35rem;
+            margin: 1rem 0 0.75rem;
+            padding: 0.58rem 0.65rem;
             border-bottom: 3px solid #AAB8C3;
             color: var(--pudu-ink);
             font-size: 0.74rem;
             font-weight: 800;
-            text-align: center;
+            text-align: left;
             white-space: nowrap;
         }
         .pudu-fixed-rule-row {
@@ -11910,15 +11906,16 @@ def render_gift_projects_page() -> None:
             for status, count in sorted(status_counts.items())
         )
         st.caption(f"当前视图：{selected_project}　|　{status_text}")
-        card_columns = st.columns(6, gap="small")
-        for stage_index, stage in enumerate(GIFT_PROJECT_PROGRESS_STAGES):
+        for stage in GIFT_PROJECT_PROGRESS_STAGES:
             stage_records = sorted(
                 (item for item in selected_records if gift_project_progress_stage(item.get("status")) == stage),
                 key=lambda item: str(item.get("material_name") or item.get("category") or ""),
             )
-            with card_columns[stage_index]:
-                st.markdown(f'<div class="pudu-project-progress-stage">{escape(stage)} · {len(stage_records)}</div>', unsafe_allow_html=True)
-            for item in stage_records:
+            if not stage_records:
+                continue
+            st.markdown(f'<div class="pudu-project-progress-stage">{escape(stage)} · {len(stage_records)}</div>', unsafe_allow_html=True)
+            stage_columns = st.columns(min(4, len(stage_records)), gap="small")
+            for item_index, item in enumerate(stage_records):
                 product = str(item.get("material_name") or item.get("category") or "")
                 usd_price = float(item.get("unit_price") or 0)
                 rmb_price = float(item.get("unit_price_rmb") or 0)
