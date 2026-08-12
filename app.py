@@ -11865,65 +11865,23 @@ def render_gift_projects_page() -> None:
             if str(project.get("project_name") or "").strip()
         }
     )
-    selected_project = st.selectbox(
-        "项目筛选",
-        ["全部项目", *project_names],
-        key="gift_project_filter",
-        help="按项目查看所有周边礼品的状态、单价、备注和图片。",
-    )
-    selected_records = (
-        project_records
-        if selected_project == "全部项目"
-        else [item for item in project_records if item.get("project_name") == selected_project]
-    )
-    status_counts = Counter(
-        str(item.get("status") or "未填写") for item in selected_records
-    )
-    project_record_count = len(project_records)
-    metric_a, metric_b, metric_c = st.columns(3)
-    metric_a.metric("项目物料", f"{len(selected_records):,}")
-    metric_b.metric("关联项目", f"{len(project_names):,}")
-    metric_c.metric("物料状态", f"{len(status_counts):,}")
-
-    render_section_header(
-        "01",
-        "项目物料进度",
-        "按项目查看周边礼品的物料状态、单价、备注和图片",
-    )
-    search_query = st.text_input(
-        "搜索项目物料",
-        placeholder="搜索物料名称、状态或备注",
-        icon=":material/search:",
-        key="gift_project_management_search",
-    )
-    keywords = [
-        keyword.casefold()
-        for keyword in re.split(r"\s+", str(search_query or "").strip())
-        if keyword.strip()
-    ]
-    if keywords:
-        selected_records = [
-            item
-            for item in selected_records
-            if all(
-                keyword in " ".join(
-                    [
-                        str(item.get("material_name") or ""),
-                        str(item.get("status") or ""),
-                        str(item.get("remark") or ""),
-                    ]
-                ).casefold()
-                for keyword in keywords
-            )
-        ]
-    if not selected_records:
-        st.info("当前项目没有匹配的周边礼品记录。")
+    if not project_names:
+        st.info("当前还没有可选择的周边礼品项目。")
+        selected_project = ""
+        selected_records = []
     else:
-        status_text = " · ".join(
-            f"{escape(status)} {count}"
-            for status, count in sorted(status_counts.items())
+        selected_project = st.radio(
+            "选择项目",
+            project_names,
+            horizontal=True,
+            key="gift_project_filter",
         )
-        st.caption(f"当前视图：{selected_project}　|　{status_text}")
+        selected_records = [
+            item for item in project_records if item.get("project_name") == selected_project
+        ]
+    if project_names and not selected_records:
+        st.info("当前项目没有匹配的周边礼品记录。")
+    elif selected_records:
         for stage in GIFT_PROJECT_PROGRESS_STAGES:
             stage_records = sorted(
                 (item for item in selected_records if gift_project_progress_stage(item.get("status")) == stage),
