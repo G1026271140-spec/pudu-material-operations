@@ -19,10 +19,12 @@ $ProgressPreference = "SilentlyContinue"
 $CacheFiles = @(
     "data/page_data_cache.json",
     "data/request_form_cache.json",
-    "data/contact_departments_cache.json"
+    "data/contact_departments_cache.json",
+    "data/warehouse_location_cache.json"
 )
 $CacheDirectories = @(
-    "assets/gift_projects"
+    "assets/gift_projects",
+    "assets/warehouse_locations"
 )
 $CachePaths = $CacheFiles + $CacheDirectories
 $MutexName = "Local\PuduMaterialCacheRefresh"
@@ -187,18 +189,20 @@ try {
         Write-RunnerLog "Maintaining inventory row status before refreshing static cache."
         Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
 
-        Write-RunnerLog "Refreshing page data (including gift projects), request options, and contact directory cache."
+        Write-RunnerLog "Refreshing page data, request options, contact directory, and warehouse location image cache."
         foreach ($generator in @(
             "scripts/generate_page_data_cache.py",
             "scripts/generate_request_form_cache.py",
-            "scripts/generate_contact_departments_cache.py"
+            "scripts/generate_contact_departments_cache.py",
+            "scripts/generate_warehouse_location_cache.py"
         )) {
             Invoke-CheckedCommand $venvPython @($generator) | Out-Null
         }
-        Write-RunnerLog "Validating page cache and gift project catalog."
+        Write-RunnerLog "Validating page cache, gift project catalog, and warehouse location cache."
         Invoke-CheckedCommand $venvPython @("scripts/validate_page_data_cache.py") | Out-Null
         Write-RunnerLog "Validating active material combinations in the request cache."
         Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
+        Invoke-CheckedCommand $venvPython @("scripts/validate_warehouse_location_cache.py") | Out-Null
 
         Invoke-CheckedCommand $git (@("add", "--") + $CachePaths) | Out-Null
         & $git diff --cached --quiet -- @CachePaths

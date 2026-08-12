@@ -1,7 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-22 16:59:36",
+  "generated_at": "2026-08-12 09:26:32",
   "source": "manual_feishu_snapshot",
+  "image_count": 28,
   "shelves": [
     {
       "shelf_id": "recvoKiL5qHATm",
@@ -540,7 +541,7 @@
             },
             {
               "material_code": "MAT-0371",
-              "category": "工业产品线手册IR（Industrial Product Line Brochure）",
+              "category": "工业产品线手册IR(Industrial Product Line Brochure）",
               "model": "无需型号",
               "language": "英语(English)"
             }
@@ -603,25 +604,25 @@
         },
         {
           "material_code": "MAT-0371",
-          "category": "工业产品线手册IR（Industrial Product Line Brochure）",
+          "category": "工业产品线手册IR(Industrial Product Line Brochure）",
           "model": "无需型号",
           "language": "英语(English)"
         },
         {
           "material_code": "MAT-0381",
-          "category": "清洁产品线手册CR（Cleaning Product Line Brochure）",
+          "category": "清洁产品线手册CR(Cleaning Product Line Brochure）",
           "model": "无需型号",
           "language": "英语(English)"
         },
         {
           "material_code": "MAT-1024",
-          "category": "配送线产品手册DR(Delivery Robot Product Brochure)",
+          "category": "配送线产品手册SR(Delivery Robot Product Brochure)",
           "model": "无需型号",
           "language": "英语(English)"
         },
         {
           "material_code": "MAT-1025",
-          "category": "具身线产品手册ER(Embodied AI Robot Product Brochure)",
+          "category": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
           "model": "无需型号",
           "language": "英语(English)"
         }

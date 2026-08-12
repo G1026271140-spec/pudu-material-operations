@@ -39,32 +39,66 @@ def download_attachment(url: str, token: str) -> bytes:
         return response.read()
 
 
+IMAGE_SUFFIXES = {
+    ".avif",
+    ".bmp",
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".tif",
+    ".tiff",
+    ".webp",
+}
+
+
+def is_image_attachment(attachment: dict) -> bool:
+    media_type = str(attachment.get("type") or "").strip().lower()
+    suffix = Path(str(attachment.get("name") or "")).suffix.lower()
+    return media_type.startswith("image/") or suffix in IMAGE_SUFFIXES
+
+
 def cached_images(
     attachments: list[dict],
     *,
     prefix: str,
     access_token: str,
+    image_dir: Path = IMAGE_DIR,
+    cache_root: Path = ROOT,
 ) -> list[dict[str, str]]:
+    image_dir = image_dir.resolve()
+    cache_root = cache_root.resolve()
+    if cache_root != image_dir and cache_root not in image_dir.parents:
+        raise ValueError("仓库位置图片缓存目录必须位于项目目录内。")
     images: list[dict[str, str]] = []
     for index, attachment in enumerate(attachments, start=1):
-        media_type = str(attachment.get("type") or "")
-        if not media_type.startswith("image/"):
+        if not is_image_attachment(attachment):
             continue
         url = str(attachment.get("url") or attachment.get("tmp_url") or "").strip()
         file_token = str(attachment.get("file_token") or "").strip()
-        if not url or not file_token:
+        if not file_token:
             continue
         digest = hashlib.sha256(file_token.encode("utf-8")).hexdigest()[:12]
         file_name = f"{prefix}-{index:02d}-{digest}.webp"
-        target = IMAGE_DIR / file_name
-        raw = download_attachment(url, access_token)
-        with Image.open(io.BytesIO(raw)) as source:
-            image = ImageOps.exif_transpose(source).convert("RGB")
-            image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
-            image.save(target, "WEBP", quality=78, method=6)
+        target = image_dir / file_name
+        if not target.is_file() or target.stat().st_size <= 0:
+            if url:
+                raw = download_attachment(url, access_token)
+            else:
+                raw = app.load_feishu_attachment(file_token)
+            with Image.open(io.BytesIO(raw)) as source:
+                image = ImageOps.exif_transpose(source).convert("RGB")
+                image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+                temporary = target.with_suffix(target.suffix + ".tmp")
+                try:
+                    image.save(temporary, "WEBP", quality=78, method=6)
+                    temporary.replace(target)
+                finally:
+                    if temporary.exists():
+                        temporary.unlink()
         images.append(
             {
-                "path": f"assets/warehouse_locations/{file_name}",
+                "path": target.relative_to(cache_root).as_posix(),
                 "name": str(attachment.get("name") or file_name),
             }
         )
@@ -79,6 +113,25 @@ def material_summary(row: dict) -> dict[str, str]:
         "model": app.feishu_text(fields, "产品型号") or app.NO_MODEL_TEXT,
         "language": app.feishu_text(fields, "语种") or app.NO_LANGUAGE_TEXT,
     }
+
+
+def cleanup_obsolete_images(
+    referenced_images: set[str],
+    *,
+    image_dir: Path = IMAGE_DIR,
+    cache_root: Path = ROOT,
+) -> int:
+    image_dir = image_dir.resolve()
+    cache_root = cache_root.resolve()
+    if cache_root != image_dir and cache_root not in image_dir.parents:
+        raise ValueError("仓库位置图片缓存目录必须位于项目目录内。")
+    deleted_count = 0
+    for image_path in image_dir.glob("*.webp"):
+        relative = image_path.relative_to(cache_root).as_posix()
+        if relative not in referenced_images:
+            image_path.unlink()
+            deleted_count += 1
+    return deleted_count
 
 
 def build_cache() -> dict:
@@ -117,6 +170,8 @@ def build_cache() -> dict:
             attachment_items(fields, "货架图片"),
             prefix=f"shelf-{shelf_code.lower()}",
             access_token=access_token,
+            image_dir=IMAGE_DIR,
+            cache_root=ROOT,
         )
         referenced_images.update(image["path"] for image in shelf_images)
         row_records: list[dict] = []
@@ -130,6 +185,8 @@ def build_cache() -> dict:
                 attachment_items(location_fields, "图片"),
                 prefix=f"row-{row_code.lower() or location_id.lower()}",
                 access_token=access_token,
+                image_dir=IMAGE_DIR,
+                cache_root=ROOT,
             )
             referenced_images.update(image["path"] for image in row_images)
             row_materials = [
@@ -162,15 +219,14 @@ def build_cache() -> dict:
             }
         )
 
-    for image_path in IMAGE_DIR.glob("*.webp"):
-        relative = image_path.relative_to(ROOT).as_posix()
-        if relative not in referenced_images:
-            image_path.unlink()
+    cleanup_obsolete_images(referenced_images)
+    image_count = len(referenced_images)
 
     return {
         "schema_version": 1,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "source": "manual_feishu_snapshot",
+        "image_count": image_count,
         "shelves": output_shelves,
     }
 
@@ -178,10 +234,7 @@ def build_cache() -> dict:
 def main() -> None:
     cache = build_cache()
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
-    image_count = sum(
-        len(shelf["images"]) + sum(len(row["images"]) for row in shelf["rows"])
-        for shelf in cache["shelves"]
-    )
+    image_count = int(cache.get("image_count") or 0)
     print(
         f"Generated {CACHE_PATH} with {len(cache['shelves'])} shelves and {image_count} images."
     )
