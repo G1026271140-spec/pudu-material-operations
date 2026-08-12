@@ -1067,7 +1067,7 @@ def inject_global_styles() -> None:
         .pudu-project-progress-note { margin-top: 0.3rem; margin-bottom: 0.2rem; color: var(--pudu-ink); font-size: 0.7rem; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
         .pudu-project-progress-stage-marker { display: none; }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) {
-            margin-bottom: 0.65rem;
+            margin: 0 0 0.45rem !important;
             border: 0 !important;
             border-radius: 0 !important;
             background: transparent !important;
@@ -1113,6 +1113,45 @@ def inject_global_styles() -> None:
             grid-column: 2;
             min-width: 0;
             padding: 0.65rem 0.7rem 0.8rem 0 !important;
+            border: 0 !important;
+            background: transparent !important;
+        }
+        .st-key-gift_project_page_mode [data-testid="stRadio"] > div {
+            gap: 1rem;
+        }
+        .st-key-gift_project_page_mode label {
+            min-width: 9rem;
+            padding: 0.65rem 1.2rem !important;
+            justify-content: center;
+            border: 1px solid #A9C7E8;
+            border-radius: 6px;
+            background: #F4F8FC;
+            color: #174A7A;
+            font-weight: 750;
+        }
+        .st-key-gift_project_page_mode label:has(input:checked) {
+            border-color: #2672B9;
+            background: #2672B9;
+            color: #FFFFFF;
+        }
+        .st-key-gift_project_page_mode label > div:first-child { display: none; }
+        .pudu-gift-catalog-card-marker { display: none; }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) > [data-testid="stVerticalBlock"] {
+            min-height: 245px;
+            height: 100%;
+            gap: 0.35rem;
+            padding: 0.55rem !important;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-gift-catalog-card-marker) [data-testid="stImage"] img {
+            height: 112px;
+            object-fit: contain;
+        }
+        .pudu-gift-catalog-title {
+            height: 2.5rem;
+            overflow: hidden;
+            font-size: 0.72rem;
+            font-weight: 750;
+            line-height: 1.4;
         }
         .pudu-fixed-rule-row {
             display: grid;
