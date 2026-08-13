@@ -5587,9 +5587,7 @@ def notify_enabled_admins_of_restock(
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = material_restock_notification_card(draft, lines)
-    for open_id in recipients:
-        send_feishu_interactive_message(client, open_id, card)
-    return len(recipients)
+    return send_category_notification_to_available_admins(client, recipients, card)
 
 
 def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object]]:

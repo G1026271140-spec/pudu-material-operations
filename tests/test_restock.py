@@ -195,6 +195,27 @@ class RestockTests(unittest.TestCase):
             [call("ou-a", card), call("ou-b", card)]
         )
 
+    def test_restock_notification_skips_unavailable_admin(self) -> None:
+        client = MagicMock()
+        client.send_interactive_message.side_effect = [
+            app.FeishuBitableError(
+                'Feishu HTTP 400: {"code":230013,"msg":"Bot has NO availability to this user"}'
+            ),
+            "om-success",
+        ]
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(
+                app,
+                "enabled_admin_open_ids",
+                return_value=["ou-unavailable", "ou-ok"],
+            ),
+        ):
+            count = app.notify_enabled_admins_of_restock(self.draft, [])
+
+        self.assertEqual(count, 1)
+        self.assertEqual(client.send_interactive_message.call_count, 2)
+
     def test_restock_uses_page_cache_and_exposes_category_definition(self) -> None:
         self.category_row["fields"]["品类定义"] = app.CATEGORY_DEFINITION_PRINT
 
