@@ -105,6 +105,10 @@ GITHUB_CACHE_WORKFLOW_FILE = "refresh-static-cache.yml"
 GITHUB_CACHE_WORKFLOW_URL = (
     f"https://github.com/{GITHUB_REPOSITORY}/actions/workflows/{GITHUB_CACHE_WORKFLOW_FILE}"
 )
+INVENTORY_QUERY_URL = (
+    "https://pudutech.feishu.cn/wiki/G7vbwubTbiagPokSvAiceK8AnZc"
+    "?table=blkR84ObPdrZr82Y"
+)
 
 PRODUCT_COL = "物料品类(Material Category)"
 MODEL_COL = "产品型号(Product Model)"
@@ -146,7 +150,7 @@ MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "周边礼品项目")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
-MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理", "物料数据库")
+MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理")
 MATERIAL_DASHBOARD_MODULES = (
     "概览指标",
     "品类库存数量",
@@ -219,7 +223,6 @@ PAGE_CACHE_TABLES = {
     "restock": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
-    "material_database": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "inventory": (CATEGORY_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "gift_projects": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, GIFT_PROJECT_TABLE_NAME),
 }
@@ -341,7 +344,8 @@ def inject_global_styles() -> None:
             margin: 1rem 0;
             border-color: var(--pudu-line-soft);
         }
-        [data-testid="stSidebar"] .stButton > button {
+        [data-testid="stSidebar"] .stButton > button,
+        [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
             justify-content: flex-start;
             min-height: 40px;
             padding: 0 0.75rem;
@@ -351,7 +355,8 @@ def inject_global_styles() -> None:
             box-shadow: none;
             transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
-        [data-testid="stSidebar"] .stButton > button:hover {
+        [data-testid="stSidebar"] .stButton > button:hover,
+        [data-testid="stSidebar"] [data-testid="stLinkButton"] > a:hover {
             background: var(--pudu-blue-soft);
             border-color: #9FB8CB;
             color: var(--pudu-blue);
@@ -369,11 +374,11 @@ def inject_global_styles() -> None:
         .st-key-sidebar_open_request button {
             border-left: 3px solid var(--pudu-navy) !important;
         }
-        .st-key-sidebar_open_material_database button {
-            border-left: 3px solid var(--pudu-teal) !important;
-        }
         .st-key-sidebar_open_material_management button {
             border-left: 3px solid var(--pudu-teal) !important;
+        }
+        .st-key-sidebar_inventory_query [data-testid="stLinkButton"] > a {
+            border-left: 3px solid var(--pudu-gold) !important;
         }
         .st-key-sidebar_open_category button {
             border-left: 3px solid var(--pudu-gold) !important;
@@ -381,11 +386,6 @@ def inject_global_styles() -> None:
         .st-key-sidebar_open_request button:disabled {
             background: var(--pudu-navy-soft) !important;
             color: var(--pudu-navy) !important;
-            opacity: 1;
-        }
-        .st-key-sidebar_open_material_database button:disabled {
-            background: var(--pudu-teal-soft) !important;
-            color: #116A6E !important;
             opacity: 1;
         }
         .st-key-sidebar_open_material_management button:disabled {
@@ -2966,6 +2966,16 @@ def navigate_to_warehouse_locations(
     ):
         st.query_params["view"] = "warehouse"
         st.rerun()
+
+
+def render_inventory_query_link() -> None:
+    with st.container(key="sidebar_inventory_query"):
+        st.link_button(
+            ui_text("查询库存"),
+            INVENTORY_QUERY_URL,
+            icon=":material/search:",
+            width="stretch",
+        )
 
 
 def navigate_to_management(key: str, label: str = "返回库存管理") -> None:
@@ -7965,6 +7975,7 @@ def render_sidebar_link() -> None:
             "sidebar_open_warehouse_locations",
             "物料仓库位置查询",
         )
+        render_inventory_query_link()
         navigate_to_management_section(
             "sidebar_open_material_management",
             "物料管理",
@@ -11632,33 +11643,6 @@ def render_category_admin() -> None:
     else:
         st.caption("勾选一个品类可编辑；勾选多个可批量撤回。")
 
-def render_material_database_page() -> None:
-    action_spacer, action_col = st.columns([4, 1.35], vertical_alignment="center")
-    action_spacer.empty()
-    try:
-        table_url = feishu_bitable_web_url(MATERIAL_TABLE_NAME)
-    except Exception as exc:
-        action_col.button(
-            "打开飞书物料主数据表",
-            key="open_feishu_material_database_unavailable",
-            icon=":material/open_in_new:",
-            disabled=True,
-            width="stretch",
-        )
-        st.warning(f"暂时无法生成飞书物料主数据表链接：{exc}")
-    else:
-        action_col.link_button(
-            "打开飞书物料主数据表",
-            table_url,
-            icon=":material/open_in_new:",
-            width="stretch",
-        )
-    with st.spinner("物料数据加载中，请稍后......"):
-        records = load_feishu_inventory_records(active_only=True)
-    filtered_records = render_material_dashboard(records)
-    render_material_data_admin(filtered_records)
-
-
 def apply_changes(changes: list[dict[str, object]]) -> None:
     valid_changes = [item for item in changes if int(item["quantity"]) > 0]
     if not valid_changes:
@@ -12615,7 +12599,7 @@ def render_management_page() -> None:
     if current_section == "新增物料品类":
         st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = "品类管理"
         current_section = "物料管理"
-    elif current_section in {"品类管理", "物料数据库"}:
+    elif current_section == "品类管理":
         st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = current_section
         current_section = "物料管理"
     if current_section not in {
@@ -12642,7 +12626,7 @@ def render_management_page() -> None:
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
         "周边礼品项目": ("周边礼品项目", "项目物料进度管理", "按项目跟踪周边礼品的状态、单价、备注和图片。"),
-        "物料管理": ("物料管理", "库存工作台", "采购补库、品类维护与物料数据库统一管理。"),
+        "物料管理": ("物料管理", "库存工作台", "采购补库与物料品类统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     render_page_header(page_title, page_kicker, page_subtitle)
@@ -12667,15 +12651,12 @@ def render_management_page() -> None:
             {
                 "采购补库": "restock",
                 "品类管理": "category",
-                "物料数据库": "material_database",
             }[material_section]
         )
         if material_section == "采购补库":
             render_restock_form()
-        elif material_section == "品类管理":
-            render_add_category_form()
         else:
-            render_material_database_page()
+            render_add_category_form()
         return
     render_page_cache_toolbar("request")
     render_change_form(show_title=False)

@@ -41,8 +41,8 @@ EN_DISPLAY_TEXT = {
     "审批与发放": "Approval & Issuance",
     "物料管理": "Material Management",
     "物料仓库位置查询": "Warehouse Location Search",
+    "查询库存": "Check Inventory",
     "采购补库": "Purchase Restock",
-    "物料数据库": "Material Database",
     "品类管理": "Category Management",
     "修改与撤回": "Edit & Revoke",
     "数据同步": "Data Sync",
@@ -74,7 +74,6 @@ EN_DISPLAY_TEXT = {
     "未读取": "Not loaded",
     "刷新本页数据": "Refresh This Page",
     "刷新实时数据": "Refresh Live Data",
-    "打开飞书物料主数据表": "Open Feishu Material Database",
     "返回库存管理": "Back to Inventory Management",
     "查看实时库存表": "View Live Inventory",
     "打开审批发放页": "Open Approval & Issuance",
@@ -244,8 +243,8 @@ EN_DISPLAY_TEXT = {
     "品类基础信息": "Category Details",
     "配置品类名称、型号规则和可用语种": "Configure the category name, model rules, and languages",
     "库存工作台": "Inventory Workspace",
-    "采购补库、品类维护与物料数据库统一管理。": (
-        "Manage purchase restocking, categories, and the material database in one workspace."
+    "采购补库与物料品类统一管理。": (
+        "Manage purchase restocking and material categories in one workspace."
     ),
     "采购补库信息": "Purchase Restock Information",
     "填写补库基础信息并逐条添加采购物料": (

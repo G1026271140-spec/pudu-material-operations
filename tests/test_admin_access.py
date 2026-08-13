@@ -61,14 +61,36 @@ class AdminAccessTests(unittest.TestCase):
 
     def test_internal_material_navigation_requests_fullscreen_loading(self) -> None:
         session_state: dict[str, object] = {
-            app.MATERIAL_MANAGEMENT_CONTROL_KEY: "物料数据库",
+            app.MATERIAL_MANAGEMENT_CONTROL_KEY: "品类管理",
         }
         with patch.object(app.st, "session_state", session_state):
             app.request_material_management_navigation_loading()
 
         self.assertEqual(
             session_state[app.MANAGEMENT_NAVIGATION_LOADING_KEY],
-            "物料数据库",
+            "品类管理",
+        )
+
+    def test_material_database_page_is_not_exposed(self) -> None:
+        self.assertEqual(app.MATERIAL_MANAGEMENT_SECTIONS, ("采购补库", "品类管理"))
+        self.assertNotIn("material_database", app.PAGE_CACHE_TABLES)
+        self.assertFalse(hasattr(app, "render_material_database_page"))
+
+    def test_inventory_query_uses_requested_feishu_table(self) -> None:
+        container = MagicMock()
+        container.__enter__.return_value = container
+        with (
+            patch.object(app.st, "container", return_value=container) as st_container,
+            patch.object(app.st, "link_button") as link_button,
+        ):
+            app.render_inventory_query_link()
+
+        st_container.assert_called_once_with(key="sidebar_inventory_query")
+        link_button.assert_called_once_with(
+            "查询库存",
+            "https://pudutech.feishu.cn/wiki/G7vbwubTbiagPokSvAiceK8AnZc?table=blkR84ObPdrZr82Y",
+            icon=":material/search:",
+            width="stretch",
         )
 
     def test_all_material_management_pages_use_loading_overlay(self) -> None:
