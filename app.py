@@ -4156,9 +4156,10 @@ def feishu_inventory_dataframe_from_rows(
         category = feishu_text(fields, "物料品类")
         if not material_code or not category:
             continue
-        if normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
-            continue
-        if request_visible_only and not feishu_request_page_visible(fields):
+        if request_visible_only:
+            if not feishu_request_page_visible(fields):
+                continue
+        elif normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
             continue
         quantity = feishu_int(fields, "当前库存")
         unit_price = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
@@ -4217,19 +4218,16 @@ def feishu_options_from_rows(
     request_visible_only: bool = False,
 ) -> dict:
     category_products: list[str] = []
-    category_status_by_product: dict[str, str] = {}
     no_model_products: list[str] = []
     no_language_products: list[str] = []
     configured_language_products: list[str] = []
     for row in categories:
         fields = feishu_fields(row)
         product = feishu_text(fields, "物料品类")
-        category_status = normalize_enabled_status(feishu_text(fields, "启用状态"))
-        if product:
-            category_status_by_product[product] = category_status
-        if category_status != STATUS_ACTIVE:
-            continue
-        if request_visible_only and not feishu_request_page_visible(fields):
+        if request_visible_only:
+            if not feishu_request_page_visible(fields):
+                continue
+        elif normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
             continue
         if product:
             category_products.append(product)
@@ -4265,27 +4263,27 @@ def feishu_options_from_rows(
         if not inventory_df.empty
         else []
     )
-    dimension_models = [
-        feishu_text(feishu_fields(row), "产品型号")
-        for row in list(model_rows or [])
-        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
-    ]
-    active_model_rows = [
+    request_model_rows = [
         row
         for row in list(model_rows or [])
-        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态"))
+        if request_visible_only
+        or normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态"))
         == STATUS_ACTIVE
+    ]
+    dimension_models = [
+        feishu_text(feishu_fields(row), "产品型号")
+        for row in request_model_rows
     ]
     model_product_lines = {
         feishu_text(feishu_fields(row), "产品型号").strip(): feishu_text(
             feishu_fields(row), "产品线"
         ).strip()
-        for row in active_model_rows
+        for row in request_model_rows
         if feishu_text(feishu_fields(row), "产品型号").strip()
     }
     product_line_by_model_id = {
         feishu_record_id(row): feishu_text(feishu_fields(row), "产品线").strip()
-        for row in active_model_rows
+        for row in request_model_rows
         if feishu_record_id(row)
     }
     for material_row in list(material_rows or []):
@@ -6029,13 +6027,11 @@ def build_request_material_index(
     category_rows: list[dict],
 ) -> dict[tuple[str, str, str], dict]:
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
-    category_state_by_key = {
-        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")): (
-            normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")),
-            feishu_request_page_visible(feishu_fields(row)),
-        )
+    visible_category_keys = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类"))
         for row in category_rows
         if feishu_text(feishu_fields(row), "物料品类")
+        and feishu_request_page_visible(feishu_fields(row))
     }
     return {
         request_material_match_key(
@@ -6047,14 +6043,10 @@ def build_request_material_index(
             material_rows,
             active_only=False,
         )
-        if material_record_is_active(record)
-        and feishu_request_page_visible(
+        if feishu_request_page_visible(
             feishu_fields(raw_material_by_id[str(record["record_id"])])
         )
-        and category_state_by_key.get(
-            normalize_category_match_key(record["category"]),
-            (STATUS_ACTIVE, False),
-        ) == (STATUS_ACTIVE, True)
+        and normalize_category_match_key(record["category"]) in visible_category_keys
     }
 
 

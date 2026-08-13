@@ -349,10 +349,16 @@ class MaterialActivationTests(unittest.TestCase):
         )
 
         category_rows[0]["fields"]["启用状态"] = app.STATUS_INACTIVE
-        self.assertEqual(app.build_request_material_index(material_rows, category_rows), {})
+        material_rows[0]["fields"]["启用状态"] = app.STATUS_INACTIVE
+        self.assertEqual(
+            app.build_request_material_index(material_rows, category_rows)[lookup_key][
+                "record_id"
+            ],
+            "material-cr-zh",
+        )
 
     def test_request_inventory_requires_explicit_request_page_visibility(self) -> None:
-        visible = material_row("1", "显示品类", app.STATUS_ACTIVE)
+        visible = material_row("1", "显示品类", app.STATUS_INACTIVE)
         visible["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = app.REQUEST_PAGE_VISIBLE_VALUE
         hidden = material_row("2", "隐藏品类", app.STATUS_ACTIVE)
         hidden["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = "否"
@@ -371,7 +377,7 @@ class MaterialActivationTests(unittest.TestCase):
                 "record_id": "c1",
                 "fields": {
                     "物料品类": "显示品类",
-                    "启用状态": app.STATUS_ACTIVE,
+                    "启用状态": app.STATUS_INACTIVE,
                     app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
                 },
             },
@@ -399,6 +405,42 @@ class MaterialActivationTests(unittest.TestCase):
         )
 
         self.assertEqual(options["products"], ["显示品类"])
+
+    def test_request_product_lines_include_inactive_model_dimension_rows(self) -> None:
+        categories = [
+            {
+                "record_id": "c1",
+                "fields": {
+                    "物料品类": "显示品类",
+                    "启用状态": app.STATUS_INACTIVE,
+                    app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
+                },
+            }
+        ]
+        inventory_df = pd.DataFrame(
+            [["MAT-1", "显示品类", "M1", "英语", 10, 0, 0, ""]],
+            columns=app.INVENTORY_HEADERS,
+        )
+        model_rows = [
+            {
+                "record_id": "model-1",
+                "fields": {
+                    "产品型号": "M1",
+                    "产品线": "IR",
+                    "启用状态": app.STATUS_INACTIVE,
+                },
+            }
+        ]
+
+        options = app.feishu_options_from_rows(
+            categories,
+            inventory_df,
+            model_rows,
+            request_visible_only=True,
+        )
+
+        self.assertEqual(options["models"], ["M1"])
+        self.assertEqual(options["model_product_lines"], {"M1": "IR"})
 
     def test_request_cache_carries_model_product_lines(self) -> None:
         inventory_df = pd.DataFrame(
