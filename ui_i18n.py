@@ -120,6 +120,32 @@ EN_DISPLAY_TEXT = {
     ),
     "等待确认": "Awaiting Confirmation",
     "物料品类管理": "Material Category Management",
+    "通过品类、型号和语种选项池快速定位和维护物料": (
+        "Quickly locate and maintain materials by category, model, and language"
+    ),
+    "＋ 新增": "+ Add",
+    "✎ 编辑": "Edit",
+    "－ 删除": "- Delete",
+    "编辑所选品类": "Edit Selected Category",
+    "收起编辑器": "Collapse Editor",
+    "双击任一按钮可快速编辑；手机端点击按钮右侧铅笔。": (
+        "Double-click any option to edit quickly; on mobile, tap its pencil button."
+    ),
+    "当前为删除模式。删除会直接同步到飞书，请先确认库存和历史流水。": (
+        "Delete mode is active. Deletions sync directly to Feishu; verify inventory and transaction history first."
+    ),
+    "选择要删除的型号或物料行": "Select Models or Material Rows to Delete",
+    "我确认删除以上物料行": "I confirm deleting the material rows above",
+    "删除所选物料行": "Delete Selected Material Rows",
+    "删除所选型号下的物料行": "Delete Rows Under Selected Models",
+    "我确认删除所选品类及其全部物料行": (
+        "I confirm deleting the selected categories and all their material rows"
+    ),
+    "修改已有语种": "Rename Existing Languages",
+    "行": "rows",
+    "库存": "Inventory",
+    "个语种": "languages",
+    "未编码": "No code",
     "仓库位置图集": "Warehouse Location Gallery",
     "按物料、型号、语种、货架编号或位置说明查询存放位置。": (
         "Search storage locations by material, model, language, shelf, or location description."

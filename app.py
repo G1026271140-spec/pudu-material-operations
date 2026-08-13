@@ -105,6 +105,141 @@ GITHUB_CACHE_WORKFLOW_FILE = "refresh-static-cache.yml"
 GITHUB_CACHE_WORKFLOW_URL = (
     f"https://github.com/{GITHUB_REPOSITORY}/actions/workflows/{GITHUB_CACHE_WORKFLOW_FILE}"
 )
+
+CATEGORY_OPTION_POOL = st.components.v2.component(
+    "category_option_pool",
+    html='<div class="option-pool" role="listbox"></div>',
+    css="""
+        .option-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            padding: 2px 0 6px;
+        }
+        .option-item {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            max-width: 100%;
+            padding: 0;
+            overflow: hidden;
+            color: var(--st-text-color);
+            background: var(--st-secondary-background-color);
+            border: 1px solid color-mix(in srgb, var(--st-text-color) 20%, transparent);
+            border-radius: 7px;
+        }
+        .option-item.is-selected {
+            color: #0b4f66;
+            background: #e7f5f8;
+            border-color: #2b8295;
+            box-shadow: inset 0 0 0 1px #2b8295;
+        }
+        .option-pool.is-danger .option-item.is-selected {
+            color: #8b1e2d;
+            background: #fff0f1;
+            border-color: #c53d4d;
+            box-shadow: inset 0 0 0 1px #c53d4d;
+        }
+        .option-main,
+        .option-edit {
+            min-height: 38px;
+            color: inherit;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+        .option-main {
+            min-width: 0;
+            padding: 7px 11px;
+            font: inherit;
+            font-weight: 650;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+        .option-edit {
+            width: 36px;
+            flex: 0 0 36px;
+            border-left: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+            font-size: 17px;
+        }
+        .option-main:hover,
+        .option-edit:hover {
+            background: color-mix(in srgb, currentColor 7%, transparent);
+        }
+        .option-meta {
+            display: block;
+            margin-top: 1px;
+            color: color-mix(in srgb, currentColor 70%, transparent);
+            font-size: 12px;
+            font-weight: 450;
+        }
+    """,
+    js="""
+        export default function(component) {
+            const { data, parentElement, setStateValue, setTriggerValue } = component;
+            const root = parentElement.querySelector('.option-pool');
+            root.innerHTML = '';
+            root.classList.toggle('is-danger', Boolean(data.danger));
+            const selected = data.multi
+                ? new Set(Array.isArray(data.selected) ? data.selected : [])
+                : new Set(data.selected ? [data.selected] : []);
+            let clickTimer = null;
+
+            const commitSelection = (value) => {
+                if (data.multi) {
+                    if (selected.has(value)) selected.delete(value);
+                    else selected.add(value);
+                    setStateValue('selected', Array.from(selected));
+                } else {
+                    setStateValue('selected', value);
+                }
+            };
+
+            for (const option of data.options || []) {
+                const item = document.createElement('div');
+                item.className = 'option-item';
+                item.classList.toggle('is-selected', selected.has(option.value));
+                item.setAttribute('role', 'option');
+                item.setAttribute('aria-selected', selected.has(option.value) ? 'true' : 'false');
+
+                const main = document.createElement('button');
+                main.type = 'button';
+                main.className = 'option-main';
+                main.innerHTML = `<span>${option.label}</span>${option.meta ? `<span class="option-meta">${option.meta}</span>` : ''}`;
+                main.onclick = () => {
+                    clickTimer = window.setTimeout(() => commitSelection(option.value), 230);
+                };
+                main.ondblclick = (event) => {
+                    event.preventDefault();
+                    if (clickTimer) window.clearTimeout(clickTimer);
+                    setStateValue('selected', data.multi ? [option.value] : option.value);
+                    if (data.editable) setTriggerValue('edit', option.value);
+                };
+                item.appendChild(main);
+
+                if (data.editable) {
+                    const edit = document.createElement('button');
+                    edit.type = 'button';
+                    edit.className = 'option-edit';
+                    edit.setAttribute('aria-label', `编辑 ${option.label}`);
+                    edit.title = `编辑 ${option.label}`;
+                    edit.textContent = '✎';
+                    edit.onclick = () => {
+                        if (clickTimer) window.clearTimeout(clickTimer);
+                        setStateValue('selected', option.value);
+                        setTriggerValue('edit', option.value);
+                    };
+                    item.appendChild(edit);
+                }
+                root.appendChild(item);
+            }
+            return () => {
+                if (clickTimer) window.clearTimeout(clickTimer);
+            };
+        }
+    """,
+)
 INVENTORY_QUERY_URL = (
     "https://pudutech.feishu.cn/wiki/G7vbwubTbiagPokSvAiceK8AnZc"
     "?table=blkR84ObPdrZr82Y"
@@ -6357,6 +6492,104 @@ def load_feishu_category_records() -> list[dict]:
     return feishu_category_records_from_rows(feishu_category_rows())
 
 
+def category_pool_summary(
+    categories: list[dict],
+    inventory_records: list[dict],
+) -> list[dict[str, object]]:
+    inventory_by_category: dict[str, list[dict]] = {}
+    for record in inventory_records:
+        inventory_by_category.setdefault(str(record.get("category") or ""), []).append(record)
+    return [
+        {
+            "value": str(category.get("category") or ""),
+            "label": str(category.get("category") or ""),
+            "meta": (
+                f"{len(inventory_by_category.get(str(category.get('category') or ''), []))} {ui_text('行')}"
+                f" · {ui_text('库存')} {sum(int(record.get('quantity') or 0) for record in inventory_by_category.get(str(category.get('category') or ''), []))}"
+                f" · {ui_text(normalize_enabled_status(category.get('status')))}"
+            ),
+        }
+        for category in categories
+        if str(category.get("category") or "")
+    ]
+
+
+def category_model_pool_summary(records: list[dict]) -> list[dict[str, object]]:
+    records_by_model: dict[str, list[dict]] = {}
+    for record in records:
+        model = str(record.get("model") or NO_MODEL_TEXT)
+        records_by_model.setdefault(model, []).append(record)
+    return [
+        {
+            "value": model,
+            "label": model,
+            "meta": (
+                f"{len(model_records)} {ui_text('个语种')}"
+                f" · {ui_text('库存')} {sum(int(record.get('quantity') or 0) for record in model_records)}"
+            ),
+        }
+        for model, model_records in records_by_model.items()
+    ]
+
+
+def category_material_pool_summary(records: list[dict]) -> list[dict[str, object]]:
+    return [
+        {
+            "value": str(record.get("record_id") or ""),
+            "label": str(record.get("language") or NO_LANGUAGE_TEXT),
+            "meta": (
+                f"{str(record.get('material_code') or '未编码')}"
+                f" · {ui_text('库存')} {int(record.get('quantity') or 0)}"
+                f" · {ui_text(normalize_enabled_status(record.get('status')))}"
+            ),
+        }
+        for record in records
+        if str(record.get("record_id") or "")
+    ]
+
+
+def render_category_option_pool(
+    options: list[dict[str, object]],
+    *,
+    selected: str | list[str] | None,
+    key: str,
+    multi: bool = False,
+    editable: bool = False,
+    danger: bool = False,
+) -> tuple[str | list[str] | None, str]:
+    result = CATEGORY_OPTION_POOL(
+        key=key,
+        data={
+            "options": [
+                {
+                    "value": str(option.get("value") or ""),
+                    "label": escape(str(option.get("label") or "")),
+                    "meta": escape(str(option.get("meta") or "")),
+                }
+                for option in options
+            ],
+            "selected": selected,
+            "multi": multi,
+            "editable": editable,
+            "danger": danger,
+        },
+        on_selected_change=lambda: None,
+        on_edit_change=lambda: None,
+    )
+    next_selected = getattr(result, "selected", None)
+    valid_values = {str(option.get("value") or "") for option in options}
+    if multi:
+        normalized_selected: str | list[str] | None = [
+            str(value)
+            for value in list(next_selected or [])
+            if str(value) in valid_values
+        ]
+    else:
+        candidate = str(next_selected or selected or "")
+        normalized_selected = candidate if candidate in valid_values else None
+    return normalized_selected, str(getattr(result, "edit", "") or "")
+
+
 def parse_gift_project_record(row: dict) -> dict | None:
     fields = feishu_fields(row)
     project_name = feishu_text(fields, "项目名称").strip()
@@ -6848,6 +7081,7 @@ def build_category_inventory_plan(
     target_languages: list[str],
     *,
     model_renames: dict[str, str] | None = None,
+    language_renames: dict[str, str] | None = None,
     carry_model: str = "",
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
@@ -6869,6 +7103,13 @@ def build_category_inventory_plan(
         for source, target in (model_renames or {}).items()
         if str(source).strip() and str(target).strip() and str(source).strip() != str(target).strip()
     }
+    language_renames = {
+        str(source).strip(): str(target).strip()
+        for source, target in (language_renames or {}).items()
+        if str(source).strip()
+        and str(target).strip()
+        and str(source).strip() != str(target).strip()
+    }
     carry_model = carry_model.strip() or models[0]
     carry_language = carry_language.strip() or languages[0]
     if carry_model not in models:
@@ -6881,8 +7122,13 @@ def build_category_inventory_plan(
         source_model = str(source.get("model") or NO_MODEL_TEXT).strip() or NO_MODEL_TEXT
         source_language = str(source.get("language") or "").strip()
         renamed_source_model = model_renames.get(source_model, source_model)
+        renamed_source_language = language_renames.get(source_language, source_language)
         target_model = renamed_source_model if renamed_source_model in models else carry_model
-        target_language = source_language if source_language in languages else carry_language
+        target_language = (
+            renamed_source_language
+            if renamed_source_language in languages
+            else carry_language
+        )
         grouped.setdefault((target_model, target_language), []).append(dict(source))
 
     initial_quantities = initial_quantities or {}
@@ -6989,6 +7235,7 @@ def build_category_inventory_plan(
         "models": models,
         "languages": languages,
         "model_renames": model_renames,
+        "language_renames": language_renames,
         "targets": targets,
         "source_to_target_key": source_to_target_key,
         "delete_ids": unique_preserve(delete_ids),
@@ -7022,6 +7269,26 @@ def category_model_rename_values(editor_df: pd.DataFrame) -> dict[str, str]:
     if len(final_names) != len(set(final_names)):
         raise ValueError("修改后的产品型号不能与其他已有型号重名。")
     return model_renames
+
+
+def category_language_rename_values(editor_df: pd.DataFrame) -> dict[str, str]:
+    language_renames: dict[str, str] = {}
+    final_names: list[str] = []
+    for row in editor_df.to_dict("records"):
+        current_language = str(row.get("当前语种") or "").strip()
+        updated_language = str(row.get("修改后语种") or "").strip()
+        if not current_language:
+            continue
+        if not updated_language:
+            raise ValueError(f"请填写“{current_language}”修改后的语种名称。")
+        if updated_language == NO_LANGUAGE_TEXT:
+            raise ValueError("如需取消语种，请使用“该品类无需语种”选项。")
+        final_names.append(updated_language)
+        if current_language != updated_language:
+            language_renames[current_language] = updated_language
+    if len(final_names) != len(set(final_names)):
+        raise ValueError("修改后的语种不能与其他已有语种重名。")
+    return language_renames
 
 
 def category_inventory_target_values(editor_df: pd.DataFrame) -> dict[tuple[str, str], dict[str, object]]:
@@ -7110,6 +7377,31 @@ def count_feishu_item_transactions(
     return count
 
 
+def count_feishu_item_request_lines(
+    material_record_id: str,
+    product: str,
+    model: str,
+    language: str,
+) -> int:
+    count = 0
+    for row in feishu_rows(REQUEST_LINE_TABLE_NAME):
+        fields = feishu_fields(row)
+        linked_ids = feishu_link_ids_any(fields, ["物料", "物料编码"])
+        if material_record_id and material_record_id in linked_ids:
+            count += 1
+            continue
+        if (
+            not linked_ids
+            and feishu_text(fields, "物料品类") == product
+            and (feishu_text(fields, "产品型号") or NO_MODEL_TEXT)
+            == (model or NO_MODEL_TEXT)
+            and (feishu_text(fields, "语种") or NO_LANGUAGE_TEXT)
+            == (language or NO_LANGUAGE_TEXT)
+        ):
+            count += 1
+    return count
+
+
 def count_feishu_category_transactions(product: str) -> int:
     material_ids = {
         feishu_record_id(row)
@@ -7124,6 +7416,31 @@ def count_feishu_category_transactions(product: str) -> int:
         if feishu_text(fields, "物料品类") == product or material_ids.intersection(
             feishu_link_ids_any(fields, ["物料编码", "物料"])
         ):
+            count += 1
+    return count
+
+
+def count_feishu_category_business_references(
+    product: str,
+    category_record_id: str,
+) -> int:
+    material_ids = {
+        feishu_record_id(row)
+        for row in feishu_material_rows()
+        if feishu_text(feishu_fields(row), "物料品类") == product
+    }
+    count = 0
+    for row in feishu_rows(REQUEST_LINE_TABLE_NAME):
+        fields = feishu_fields(row)
+        if feishu_text(fields, "物料品类") == product or material_ids.intersection(
+            feishu_link_ids_any(fields, ["物料", "物料编码"])
+        ):
+            count += 1
+    for row in feishu_rows(GIFT_PROJECT_TABLE_NAME):
+        fields = feishu_fields(row)
+        if category_record_id in feishu_link_ids(
+            fields, GIFT_PROJECT_CATEGORY_LINK_FIELD
+        ) or product in feishu_link_texts(fields, GIFT_PROJECT_CATEGORY_LINK_FIELD):
             count += 1
     return count
 
@@ -7436,6 +7753,7 @@ def sync_feishu_category_inventory(
     category_customs_code: str = "",
     category_record_id: str = "",
     model_renames: dict[str, str] | None = None,
+    language_renames: dict[str, str] | None = None,
     carry_model: str = "",
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
@@ -7506,6 +7824,7 @@ def sync_feishu_category_inventory(
         models,
         languages,
         model_renames=model_renames,
+        language_renames=language_renames,
         carry_model=carry_model,
         carry_language=carry_language,
         initial_quantities=initial_quantities,
@@ -10080,6 +10399,200 @@ def render_new_category_review() -> None:
         st.rerun()
 
 
+def category_delete_blockers(records: list[dict]) -> list[str]:
+    blockers: list[str] = []
+    for record in records:
+        quantity = int(record.get("quantity") or 0)
+        transaction_count = count_feishu_item_transactions(
+            str(record.get("record_id") or ""),
+            str(record.get("category") or ""),
+            str(record.get("model") or NO_MODEL_TEXT),
+            str(record.get("language") or NO_LANGUAGE_TEXT),
+        )
+        request_line_count = count_feishu_item_request_lines(
+            str(record.get("record_id") or ""),
+            str(record.get("category") or ""),
+            str(record.get("model") or NO_MODEL_TEXT),
+            str(record.get("language") or NO_LANGUAGE_TEXT),
+        )
+        if quantity != 0 or transaction_count > 0 or request_line_count > 0:
+            blockers.append(
+                f"{record.get('material_code') or '-'}（库存 {quantity}，流水 {transaction_count}，申请明细 {request_line_count}）"
+            )
+    return blockers
+
+
+def update_category_inventory_counts(category: dict, remaining_records: list[dict]) -> None:
+    models = unique_preserve(
+        [str(record.get("model") or NO_MODEL_TEXT) for record in remaining_records]
+    )
+    languages = unique_preserve(
+        [str(record.get("language") or NO_LANGUAGE_TEXT) for record in remaining_records]
+    )
+    feishu_update_record_fields(
+        CATEGORY_TABLE_NAME,
+        str(category.get("record_id") or ""),
+        {
+            "库存行数": len(remaining_records),
+            "产品型号数量": len(models),
+            "语种数量": len(languages),
+        },
+    )
+
+
+def render_category_delete_workspace(
+    categories: list[dict],
+    inventory_records: list[dict],
+) -> None:
+    st.error("当前为删除模式。删除会直接同步到飞书，请先确认库存和历史流水。")
+    selected_categories, _ = render_category_option_pool(
+        category_pool_summary(categories, inventory_records),
+        selected=[],
+        key="category_delete_category_pool",
+        multi=True,
+        danger=True,
+    )
+    selected_category_names = [str(value) for value in list(selected_categories or [])]
+    category_by_name = {str(category.get("category") or ""): category for category in categories}
+
+    if len(selected_category_names) == 1:
+        selected_name = selected_category_names[0]
+        selected_category = category_by_name[selected_name]
+        category_records = [
+            record
+            for record in inventory_records
+            if str(record.get("category") or "") == selected_name
+        ]
+        st.markdown("**选择要删除的型号或物料行**")
+        selected_models, _ = render_category_option_pool(
+            category_model_pool_summary(category_records),
+            selected=[],
+            key=f"category_delete_model_pool_{selected_category['record_id']}",
+            multi=True,
+            danger=True,
+        )
+        selected_model_names = [str(value) for value in list(selected_models or [])]
+        model_scope = [
+            record
+            for record in category_records
+            if not selected_model_names
+            or str(record.get("model") or NO_MODEL_TEXT) in selected_model_names
+        ]
+        selected_material_ids, _ = render_category_option_pool(
+            category_material_pool_summary(model_scope),
+            selected=[],
+            key=f"category_delete_material_pool_{selected_category['record_id']}_{'|'.join(selected_model_names)}",
+            multi=True,
+            danger=True,
+        )
+        selected_material_id_set = {
+            str(value) for value in list(selected_material_ids or [])
+        }
+        selected_material_records = [
+            record
+            for record in model_scope
+            if str(record.get("record_id") or "") in selected_material_id_set
+        ]
+        model_records = [
+            record
+            for record in category_records
+            if str(record.get("model") or NO_MODEL_TEXT) in selected_model_names
+        ]
+        delete_scope = selected_material_records or model_records
+        if delete_scope:
+            st.caption(
+                f"准备删除 {len(delete_scope)} 条物料行；只有库存为 0 且没有库存流水的记录可以删除。"
+            )
+            row_confirmed = st.checkbox(
+                "我确认删除以上物料行",
+                key=f"category_delete_rows_confirm_{selected_category['record_id']}",
+            )
+            if st.button(
+                "删除所选物料行" if selected_material_records else "删除所选型号下的物料行",
+                icon=":material/delete:",
+                type="primary",
+                width="stretch",
+                key=f"category_delete_rows_{selected_category['record_id']}",
+            ):
+                blockers = category_delete_blockers(delete_scope)
+                if blockers:
+                    st.error("以下物料行不能删除：" + "；".join(blockers[:8]))
+                elif not row_confirmed:
+                    st.warning("请先勾选删除确认。")
+                else:
+                    deleted_ids = {
+                        str(record.get("record_id") or "") for record in delete_scope
+                    }
+                    with DATA_LOCK:
+                        for record in delete_scope:
+                            delete_feishu_inventory_item(str(record.get("record_id") or ""))
+                        update_category_inventory_counts(
+                            selected_category,
+                            [
+                                record
+                                for record in category_records
+                                if str(record.get("record_id") or "") not in deleted_ids
+                            ],
+                        )
+                    refresh_page_cache_after_write("category", update_request_form=True)
+                    st.session_state["category_added_message"] = (
+                        f"已删除 {len(delete_scope)} 条物料行。"
+                    )
+                    st.rerun()
+
+    if selected_category_names:
+        st.divider()
+        st.caption("删除整个品类时，会同时删除其全部物料行。品类库存必须为 0，且不能存在库存流水。")
+        category_confirmed = st.checkbox(
+            "我确认删除所选品类及其全部物料行",
+            key="category_delete_categories_confirm",
+        )
+        if st.button(
+            f"删除所选品类（{len(selected_category_names)}）",
+            icon=":material/delete_forever:",
+            width="stretch",
+            key="category_delete_categories",
+        ):
+            blocked: list[str] = []
+            for category_name in selected_category_names:
+                category_records = [
+                    record
+                    for record in inventory_records
+                    if str(record.get("category") or "") == category_name
+                ]
+                quantity_sum = sum(int(record.get("quantity") or 0) for record in category_records)
+                transaction_count = count_feishu_category_transactions(category_name)
+                business_reference_count = count_feishu_category_business_references(
+                    category_name,
+                    str(category_by_name[category_name].get("record_id") or ""),
+                )
+                if (
+                    quantity_sum != 0
+                    or transaction_count > 0
+                    or business_reference_count > 0
+                ):
+                    blocked.append(
+                        f"{category_name}（库存 {quantity_sum}，流水 {transaction_count}，业务关联 {business_reference_count}）"
+                    )
+            if blocked:
+                st.error("以下品类不能删除：" + "；".join(blocked[:8]))
+            elif not category_confirmed:
+                st.warning("请先勾选删除确认。")
+            else:
+                with DATA_LOCK:
+                    for category_name in selected_category_names:
+                        category = category_by_name[category_name]
+                        delete_feishu_category(
+                            category_name,
+                            str(category.get("record_id") or ""),
+                        )
+                refresh_page_cache_after_write("category", update_request_form=True)
+                st.session_state["category_added_message"] = (
+                    f"已删除 {len(selected_category_names)} 个物料品类。"
+                )
+                st.rerun()
+
+
 def render_add_category_form() -> None:
     if st.session_state.get(CATEGORY_EDIT_STAGE_KEY) == "review":
         render_category_edit_review()
@@ -10101,28 +10614,129 @@ def render_add_category_form() -> None:
     if warning:
         st.warning(warning)
 
-    render_section_header("01", "物料品类管理", "新增或调整品类名称、型号、语种和对应库存组合")
-    mode = st.radio(
+    render_section_header("01", "物料品类管理", "通过品类、型号和语种选项池快速定位和维护物料")
+    if st.session_state.get("category_management_mode") not in {
+        "＋ 新增",
+        "✎ 编辑",
+        "－ 删除",
+    }:
+        st.session_state["category_management_mode"] = "✎ 编辑"
+    mode = st.segmented_control(
         "操作类型",
-        ["新增品类", "编辑现有品类"],
-        horizontal=True,
-        label_visibility="collapsed",
+        ["＋ 新增", "✎ 编辑", "－ 删除"],
         key="category_management_mode",
-    )
-    is_edit = mode == "编辑现有品类"
+        label_visibility="collapsed",
+        width="stretch",
+    ) or "✎ 编辑"
+    is_edit = mode == "✎ 编辑"
     category_by_name = {str(item["category"]): item for item in categories}
 
     selected_category: dict | None = None
+    selected_model = ""
+    selected_material: dict | None = None
+    if mode == "－ 删除":
+        render_category_delete_workspace(categories, inventory_records)
+        return
     if is_edit:
         if not category_by_name:
             st.info("暂无可编辑的物料品类，请先新增品类。")
             return
-        selected_name = st.selectbox(
-            "选择物料品类",
-            list(category_by_name),
-            key="category_management_selected_name",
+        default_category = str(
+            st.session_state.get("category_management_selected_name")
+            or next(iter(category_by_name))
         )
+        selected_name_value, category_edit_request = render_category_option_pool(
+            category_pool_summary(categories, inventory_records),
+            selected=default_category,
+            key="category_edit_category_pool",
+            editable=True,
+        )
+        selected_name = str(selected_name_value or default_category)
+        st.session_state["category_management_selected_name"] = selected_name
         selected_category = category_by_name[selected_name]
+        selected_category_records = [
+            record for record in inventory_records if record["category"] == selected_name
+        ]
+        model_options = category_model_pool_summary(selected_category_records)
+        if model_options:
+            default_model = str(
+                st.session_state.get("category_pool_selected_model")
+                or model_options[0]["value"]
+            )
+            if default_model not in {str(option["value"]) for option in model_options}:
+                default_model = str(model_options[0]["value"])
+            selected_model_value, model_edit_request = render_category_option_pool(
+                model_options,
+                selected=default_model,
+                key=f"category_edit_model_pool_{selected_category['record_id']}",
+                editable=True,
+            )
+            selected_model = str(selected_model_value or default_model)
+            st.session_state["category_pool_selected_model"] = selected_model
+        else:
+            model_edit_request = ""
+        material_options = category_material_pool_summary(
+            [
+                record
+                for record in selected_category_records
+                if str(record.get("model") or NO_MODEL_TEXT) == selected_model
+            ]
+        )
+        if material_options:
+            default_material_id = str(material_options[0]["value"])
+            selected_material_id, material_edit_request = render_category_option_pool(
+                material_options,
+                selected=default_material_id,
+                key=f"category_edit_material_pool_{selected_category['record_id']}_{selected_model}",
+                editable=True,
+            )
+            selected_material = next(
+                (
+                    record
+                    for record in selected_category_records
+                    if str(record.get("record_id") or "") == str(selected_material_id or "")
+                ),
+                None,
+            )
+        else:
+            material_edit_request = ""
+
+        if category_edit_request:
+            st.session_state["category_pool_editor_open"] = selected_name
+            st.session_state["category_pool_edit_dimension"] = "category"
+        if model_edit_request:
+            st.session_state["category_pool_editor_open"] = selected_name
+            st.session_state["category_pool_edit_dimension"] = "model"
+            st.session_state["category_pool_focus_model"] = selected_model
+        if material_edit_request and selected_material is not None:
+            st.session_state["category_pool_editor_open"] = selected_name
+            st.session_state["category_pool_edit_dimension"] = "material"
+            st.session_state["category_pool_focus_model"] = selected_model
+            st.session_state["category_pool_focus_language"] = str(
+                selected_material.get("language") or NO_LANGUAGE_TEXT
+            )
+
+        open_col, hint_col = st.columns([1, 2.2], vertical_alignment="center")
+        if open_col.button(
+            "编辑所选品类",
+            icon=":material/edit:",
+            type="primary",
+            width="stretch",
+            key=f"category_open_editor_{selected_category['record_id']}",
+        ):
+            st.session_state["category_pool_editor_open"] = selected_name
+            st.session_state["category_pool_edit_dimension"] = "category"
+            st.rerun()
+        hint_col.caption("双击任一按钮可快速编辑；手机端点击按钮右侧铅笔。")
+        if st.session_state.get("category_pool_editor_open") != selected_name:
+            return
+        if st.button(
+            "收起编辑器",
+            icon=":material/close_fullscreen:",
+            key=f"category_close_editor_{selected_category['record_id']}",
+        ):
+            st.session_state.pop("category_pool_editor_open", None)
+            st.rerun()
 
     category_id = str((selected_category or {}).get("record_id") or "")
     old_product = str((selected_category or {}).get("category") or "")
@@ -10143,6 +10757,9 @@ def render_add_category_form() -> None:
     current_category_unit_price = (selected_category or {}).get("unit_price")
     current_category_customs_code = str((selected_category or {}).get("customs_code") or "")
     editor_key = category_id or "new"
+    pool_edit_dimension = str(st.session_state.get("category_pool_edit_dimension") or "")
+    pool_focus_model = str(st.session_state.get("category_pool_focus_model") or "")
+    pool_focus_language = str(st.session_state.get("category_pool_focus_language") or "")
 
     with st.container(border=True):
         product_key = f"category_name_{editor_key}"
@@ -10313,16 +10930,22 @@ def render_add_category_form() -> None:
             if str(source) in editable_current_models and str(target).strip()
         }
         if is_edit and editable_current_models and not no_model:
-            with st.expander("修改已有型号", expanded=False):
+            with st.expander(
+                "修改已有型号",
+                expanded=pool_edit_dimension == "model",
+            ):
                 st.caption("一次选择一个型号进行修改；应用后可继续选择其他型号，库存和历史关联保持不变。")
                 rename_select_col, rename_input_col, rename_button_col = st.columns(
                     [1.1, 1.5, 0.7],
                     vertical_alignment="bottom",
                 )
+                rename_source_key = f"category_model_rename_source_{editor_key}"
+                if pool_edit_dimension == "model" and pool_focus_model in editable_current_models:
+                    st.session_state[rename_source_key] = pool_focus_model
                 rename_source = rename_select_col.selectbox(
                     "选择要修改的型号",
                     editable_current_models,
-                    key=f"category_model_rename_source_{editor_key}",
+                    key=rename_source_key,
                 )
                 rename_token = uuid.uuid5(uuid.NAMESPACE_URL, rename_source).hex[:10]
                 rename_target = rename_input_col.text_input(
@@ -10385,7 +11008,111 @@ def render_add_category_form() -> None:
                 model_rename_error = str(exc)
                 st.error(model_rename_error)
 
+        language_renames: dict[str, str] = {}
+        language_rename_error = ""
+        editable_current_languages = [
+            language for language in current_languages if language != NO_LANGUAGE_TEXT
+        ]
+        language_rename_state_key = f"category_language_rename_state_{editor_key}"
+        language_rename_state = {
+            str(source): str(target)
+            for source, target in dict(
+                st.session_state.get(language_rename_state_key, {}) or {}
+            ).items()
+            if str(source) in editable_current_languages and str(target).strip()
+        }
+        if is_edit and editable_current_languages and not no_language:
+            with st.expander(
+                "修改已有语种",
+                expanded=pool_edit_dimension == "material",
+            ):
+                st.caption("一次选择一个语种进行修改；应用后库存和历史关联保持不变。")
+                rename_language_col, rename_language_input_col, rename_language_button_col = st.columns(
+                    [1.1, 1.5, 0.7],
+                    vertical_alignment="bottom",
+                )
+                language_rename_source_key = f"category_language_rename_source_{editor_key}"
+                if (
+                    pool_edit_dimension == "material"
+                    and pool_focus_language in editable_current_languages
+                ):
+                    st.session_state[language_rename_source_key] = pool_focus_language
+                language_rename_source = rename_language_col.selectbox(
+                    "选择要修改的语种",
+                    editable_current_languages,
+                    key=language_rename_source_key,
+                )
+                language_rename_token = uuid.uuid5(
+                    uuid.NAMESPACE_URL, language_rename_source
+                ).hex[:10]
+                language_rename_target = rename_language_input_col.text_input(
+                    "新的语种名称 *",
+                    value=language_rename_state.get(
+                        language_rename_source, language_rename_source
+                    ),
+                    key=f"category_language_rename_target_{editor_key}_{language_rename_token}",
+                ).strip()
+                if rename_language_button_col.button(
+                    "应用改名",
+                    icon=":material/edit:",
+                    width="stretch",
+                    key=f"category_apply_language_rename_{editor_key}",
+                ):
+                    candidate_state = dict(language_rename_state)
+                    if language_rename_target == language_rename_source:
+                        candidate_state.pop(language_rename_source, None)
+                    else:
+                        candidate_state[language_rename_source] = language_rename_target
+                    try:
+                        category_language_rename_values(
+                            pd.DataFrame(
+                                [
+                                    {
+                                        "当前语种": language,
+                                        "修改后语种": candidate_state.get(language, language),
+                                    }
+                                    for language in editable_current_languages
+                                ]
+                            )
+                        )
+                    except ValueError as exc:
+                        st.error(str(exc))
+                    else:
+                        st.session_state[language_rename_state_key] = candidate_state
+                        st.rerun()
+                if language_rename_state:
+                    st.info(
+                        f"{ui_text('已设置')}："
+                        + "；".join(
+                            f"{source} → {target}"
+                            for source, target in language_rename_state.items()
+                        )
+                    )
+            try:
+                all_language_renames = category_language_rename_values(
+                    pd.DataFrame(
+                        [
+                            {
+                                "当前语种": language,
+                                "修改后语种": language_rename_state.get(language, language),
+                            }
+                            for language in editable_current_languages
+                        ]
+                    )
+                )
+                language_renames = {
+                    source: target
+                    for source, target in all_language_renames.items()
+                    if source in selected_languages
+                }
+            except ValueError as exc:
+                language_rename_error = str(exc)
+                st.error(language_rename_error)
+
         renamed_selected_models = [model_renames.get(model, model) for model in selected_models]
+        renamed_selected_languages = [
+            language_renames.get(language, language) for language in selected_languages
+        ]
         models = (
             [NO_MODEL_TEXT]
             if no_model
@@ -10394,18 +11121,25 @@ def render_add_category_form() -> None:
         languages = (
             [NO_LANGUAGE_TEXT]
             if no_language
-            else unique_preserve(selected_languages + parse_custom_values(custom_languages_text))
+            else unique_preserve(
+                renamed_selected_languages + parse_custom_values(custom_languages_text)
+            )
         )
 
         carry_model = models[0] if models else ""
         carry_language = languages[0] if languages else ""
         renamed_source_models = set(model_renames)
+        renamed_source_languages = set(language_renames)
         removed_models = [
             model
             for model in current_models
             if model not in models and model not in renamed_source_models
         ]
-        removed_languages = [language for language in current_languages if language not in languages]
+        removed_languages = [
+            language
+            for language in current_languages
+            if language not in languages and language not in renamed_source_languages
+        ]
         if current_records and models and removed_models:
             carry_model = st.selectbox(
                 "被取消型号的历史关联迁移到 *",
@@ -10422,7 +11156,14 @@ def render_add_category_form() -> None:
             )
 
         plan: dict | None = None
-        if product and models and languages and not model_rename_error and not category_metadata_error:
+        if (
+            product
+            and models
+            and languages
+            and not model_rename_error
+            and not language_rename_error
+            and not category_metadata_error
+        ):
             try:
                 plan = build_category_inventory_plan(
                     current_records,
@@ -10430,6 +11171,7 @@ def render_add_category_form() -> None:
                     models,
                     languages,
                     model_renames=model_renames,
+                    language_renames=language_renames,
                     carry_model=carry_model,
                     carry_language=carry_language,
                 )
@@ -10542,6 +11284,7 @@ def render_add_category_form() -> None:
                 models,
                 languages,
                 model_renames=model_renames,
+                language_renames=language_renames,
                 carry_model=carry_model,
                 carry_language=carry_language,
                 target_values=target_values,
@@ -10549,16 +11292,25 @@ def render_add_category_form() -> None:
             plan = enforce_category_inventory_status(plan, category_status)
 
             selector_model_col, selector_language_col = st.columns(2)
+            selected_target_model_key = f"category_combo_model_{editor_key}_{signature}"
+            if pool_focus_model in models:
+                st.session_state[selected_target_model_key] = pool_focus_model
             selected_target_model = selector_model_col.selectbox(
                 "选择要编辑的产品型号",
                 models,
-                key=f"category_combo_model_{editor_key}_{signature}",
+                key=selected_target_model_key,
             )
+            selected_target_language_key = f"category_combo_language_{editor_key}_{signature}"
+            if pool_focus_language in languages:
+                st.session_state[selected_target_language_key] = pool_focus_language
             selected_target_language = selector_language_col.selectbox(
                 "选择要编辑的语种",
                 languages,
-                key=f"category_combo_language_{editor_key}_{signature}",
+                key=selected_target_language_key,
             )
+            st.session_state.pop("category_pool_focus_model", None)
+            st.session_state.pop("category_pool_focus_language", None)
+            st.session_state.pop("category_pool_edit_dimension", None)
             selected_target_key = (selected_target_model, selected_target_language)
             selected_target = next(
                 target for target in plan["targets"] if target["key"] == selected_target_key
@@ -10624,6 +11376,7 @@ def render_add_category_form() -> None:
                 models,
                 languages,
                 model_renames=model_renames,
+                language_renames=language_renames,
                 carry_model=carry_model,
                 carry_language=carry_language,
                 target_values=target_values,
@@ -10764,6 +11517,7 @@ def render_add_category_form() -> None:
                 "category_definition": category_definition,
                 "category_unit_price": category_unit_price, "category_customs_code": category_customs_code,
                 "category_record_id": category_id, "model_renames": dict(model_renames),
+                "language_renames": dict(language_renames),
                 "carry_model": carry_model, "carry_language": carry_language,
                 "target_values": {key: dict(value) for key, value in target_values.items()},
             }
@@ -10777,30 +11531,6 @@ def render_add_category_form() -> None:
             }
             st.session_state[CATEGORY_EDIT_STAGE_KEY] = "review"
             st.rerun()
-
-    if is_edit and selected_category is not None:
-        with st.expander("撤回当前品类"):
-            quantity_sum = sum(int(record["quantity"] or 0) for record in current_records)
-            st.caption("仅允许撤回库存合计为 0 且没有库存流水的品类。")
-            delete_confirmed = st.checkbox("确认撤回该品类", key=f"delete_category_confirm_{category_id}")
-            if st.button(
-                "撤回当前品类",
-                icon=":material/undo:",
-                width="stretch",
-                key=f"delete_category_{category_id}",
-            ):
-                transaction_count = count_feishu_category_transactions(old_product)
-                if quantity_sum != 0 or transaction_count > 0:
-                    st.error(f"当前库存合计 {quantity_sum}，流水 {transaction_count} 条，不能撤回。")
-                elif not delete_confirmed:
-                    st.warning("请先勾选确认撤回。")
-                else:
-                    with DATA_LOCK:
-                        delete_feishu_category(old_product, category_id)
-                    refresh_page_cache_after_write("category", update_request_form=True)
-                    st.session_state["category_added_message"] = f"已撤回物料品类“{old_product}”。"
-                    st.rerun()
-
 
 def add_material_category(
     product: str,

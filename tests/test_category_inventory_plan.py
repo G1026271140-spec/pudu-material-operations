@@ -453,6 +453,123 @@ class CategoryInventoryPlanTests(unittest.TestCase):
             [{"record_id": "line-1", "fields": {"物料编码": ["keeper-1"]}}],
         )
 
+    def test_language_rename_keeps_inventory_in_renamed_target(self) -> None:
+        records = [inventory_record("1", "BG1", "英语", 12)]
+
+        plan = app.build_category_inventory_plan(
+            records,
+            "旧品类",
+            ["BG1"],
+            ["English"],
+            language_renames={"英语": "English"},
+        )
+
+        self.assertEqual(plan["targets"][0]["language"], "English")
+        self.assertEqual(plan["targets"][0]["quantity"], 12)
+        self.assertEqual(plan["language_renames"], {"英语": "English"})
+
+    def test_language_rename_validation_rejects_duplicate_names(self) -> None:
+        editor_df = pd.DataFrame(
+            [
+                {"当前语种": "英语", "修改后语种": "英文"},
+                {"当前语种": "法语", "修改后语种": "英文"},
+            ]
+        )
+
+        with self.assertRaisesRegex(ValueError, "不能与其他已有语种重名"):
+            app.category_language_rename_values(editor_df)
+
+    def test_category_option_pool_summaries_follow_hierarchy(self) -> None:
+        categories = [
+            {
+                "record_id": "category-a",
+                "category": "品类A",
+                "status": app.STATUS_ACTIVE,
+            }
+        ]
+        records = [
+            inventory_record("1", "M1", "英语", 5),
+            inventory_record("2", "M1", "法语", 0, status=app.STATUS_INACTIVE),
+        ]
+        for record in records:
+            record["category"] = "品类A"
+
+        category_pool = app.category_pool_summary(categories, records)
+        model_pool = app.category_model_pool_summary(records)
+        material_pool = app.category_material_pool_summary(records)
+
+        self.assertEqual(category_pool[0]["value"], "品类A")
+        self.assertIn("2 行", str(category_pool[0]["meta"]))
+        self.assertEqual(model_pool[0]["value"], "M1")
+        self.assertIn("2 个语种", str(model_pool[0]["meta"]))
+        self.assertEqual(
+            [item["value"] for item in material_pool],
+            ["1", "2"],
+        )
+
+    @patch("app.feishu_rows")
+    def test_item_request_line_reference_blocks_material_deletion(self, mock_rows) -> None:
+        mock_rows.side_effect = lambda table_name: (
+            [
+                {
+                    "record_id": "line-1",
+                    "fields": {"物料": [{"record_id": "material-1"}]},
+                }
+            ]
+            if table_name == app.REQUEST_LINE_TABLE_NAME
+            else []
+        )
+        record = inventory_record("material-1", "M1", "英语", 0)
+
+        blockers = app.category_delete_blockers([record])
+
+        self.assertEqual(len(blockers), 1)
+        self.assertIn("申请明细 1", blockers[0])
+
+    @patch("app.feishu_rows")
+    @patch("app.feishu_material_rows")
+    def test_category_reference_detects_linked_material_and_gift_project(
+        self,
+        mock_material_rows,
+        mock_rows,
+    ) -> None:
+        mock_material_rows.return_value = [
+            {
+                "record_id": "material-1",
+                "fields": {"物料品类": "品类A"},
+            }
+        ]
+
+        def rows_for_table(table_name: str) -> list[dict]:
+            if table_name == app.REQUEST_LINE_TABLE_NAME:
+                return [
+                    {
+                        "record_id": "line-1",
+                        "fields": {"物料编码": [{"record_id": "material-1"}]},
+                    }
+                ]
+            if table_name == app.GIFT_PROJECT_TABLE_NAME:
+                return [
+                    {
+                        "record_id": "project-1",
+                        "fields": {
+                            app.GIFT_PROJECT_CATEGORY_LINK_FIELD: [
+                                {"record_id": "category-a", "text": "品类A"}
+                            ]
+                        },
+                    }
+                ]
+            return []
+
+        mock_rows.side_effect = rows_for_table
+
+        count = app.count_feishu_category_business_references(
+            "品类A",
+            "category-a",
+        )
+
+        self.assertEqual(count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
