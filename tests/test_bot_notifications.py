@@ -14,13 +14,17 @@ class BotNotificationTests(unittest.TestCase):
             "old_product": "旧冰箱贴",
             "product": "新冰箱贴",
             "edited_at": "2026-07-22 10:00:00",
+            "category_status": app.STATUS_ACTIVE,
+            "category_request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
             "current_records": [{
                 "model": "BellaBot", "language": "英语", "quantity": 10,
                 "unit_price": 1.5, "customs_code": "A1", "status": app.STATUS_ACTIVE,
+                "request_visible": app.REQUEST_PAGE_HIDDEN_VALUE,
             }],
             "targets": [{
                 "model": "BellaBot", "language": "英语", "quantity": 15,
                 "unit_price": 2, "customs_code": "A2", "status": app.STATUS_INACTIVE,
+                "request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
             }],
         }
         result = {
@@ -33,7 +37,14 @@ class BotNotificationTests(unittest.TestCase):
 
         self.assertTrue(card["config"]["wide_screen_mode"])
         self.assertEqual(card["header"]["template"], "blue")
-        for expected in ("旧冰箱贴", "新冰箱贴", "BellaBot / 英语", "10 → 15", "1.5 → 2"):
+        for expected in (
+            "旧冰箱贴",
+            "新冰箱贴",
+            "BellaBot / 英语",
+            "10 → 15",
+            "1.5 → 2",
+            "申领页显示：否 → 是",
+        ):
             self.assertIn(expected, serialized)
 
     def test_category_edit_change_rows_marks_unchanged_fields_and_keeps_unchanged_rows_filterable(self) -> None:
@@ -110,6 +121,7 @@ class BotNotificationTests(unittest.TestCase):
         draft = {
             "product": "新品类",
             "category_status": app.STATUS_ACTIVE,
+            "category_request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
             "created_at": "2026-07-27 18:00:00",
         }
         result = {
@@ -122,10 +134,12 @@ class BotNotificationTests(unittest.TestCase):
                     "model": "M1", "language": "英语", "quantity": 20,
                     "unit_price": 1.5, "customs_code": "4911101000",
                     "status": app.STATUS_ACTIVE,
+                    "request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
                 },
                 {
                     "model": "M1", "language": "日语", "quantity": 5,
                     "unit_price": 2, "customs_code": "", "status": app.STATUS_INACTIVE,
+                    "request_visible": app.REQUEST_PAGE_HIDDEN_VALUE,
                 },
             ],
         }
@@ -140,6 +154,7 @@ class BotNotificationTests(unittest.TestCase):
             "新品类", "2026-07-27 18:00:00", "库存组合 2 条",
             "初始库存 25 件", "M1 / 英语", "库存：20", "单价：1.5",
             "海关编码：4911101000", "M1 / 日语", "状态：停用",
+            "品类在申领页显示", "申领页显示：否",
         ):
             self.assertIn(expected, serialized)
 
@@ -152,6 +167,51 @@ class BotNotificationTests(unittest.TestCase):
             patch.object(app, "category_create_notification_card", return_value=card),
         ):
             count = app.notify_enabled_admins_of_category_create({}, {})
+
+        self.assertEqual(count, 2)
+        client.send_interactive_message.assert_any_call("ou-a", card)
+        client.send_interactive_message.assert_any_call("ou-b", card)
+
+    def test_category_delete_card_contains_deleted_material_details(self) -> None:
+        draft = {
+            "delete_kind": "material_rows",
+            "category_names": ["产品单页"],
+            "deleted_at": "2026-08-13 15:00:00",
+            "records": [
+                {
+                    "material_code": "MAT-0001",
+                    "category": "产品单页",
+                    "model": "BellaBot",
+                    "language": "韩语(Korean)",
+                    "quantity": 0,
+                    "status": app.STATUS_ACTIVE,
+                }
+            ],
+        }
+
+        card = app.category_delete_notification_card(draft)
+        serialized = json.dumps(card, ensure_ascii=False)
+
+        self.assertTrue(card["config"]["wide_screen_mode"])
+        self.assertEqual(card["header"]["template"], "red")
+        for expected in (
+            "删除物料行",
+            "MAT-0001",
+            "产品单页 / BellaBot / 韩语(Korean)",
+            "库存：0",
+            "状态：启用",
+        ):
+            self.assertIn(expected, serialized)
+
+    def test_category_delete_notification_goes_to_each_enabled_admin(self) -> None:
+        client = Mock()
+        card = {"config": {"wide_screen_mode": True}}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-a", "ou-b"]),
+            patch.object(app, "category_delete_notification_card", return_value=card),
+        ):
+            count = app.notify_enabled_admins_of_category_delete({})
 
         self.assertEqual(count, 2)
         client.send_interactive_message.assert_any_call("ou-a", card)

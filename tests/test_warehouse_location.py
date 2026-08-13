@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import app
@@ -68,6 +70,37 @@ class WarehouseLocationTests(unittest.TestCase):
         self.assertNotIn("库存数量", serialized)
         self.assertNotIn('"quantity"', serialized)
         self.assertGreater(len(cache.get("shelves") or []), 0)
+
+    def test_static_warehouse_cache_reloads_when_json_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_path = Path(temp_dir) / "warehouse_location_cache.json"
+            cache_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "generated_at": "2026-08-13 14:00:00",
+                        "shelves": [{"shelf_code": "OLD"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with patch.object(app, "WAREHOUSE_LOCATION_CACHE_PATH", cache_path):
+                app.load_warehouse_location_cache.clear()
+                first = app.load_warehouse_location_cache()
+                cache_path.write_text(
+                    json.dumps(
+                        {
+                            "schema_version": 1,
+                            "generated_at": "2026-08-13 15:00:00",
+                            "shelves": [{"shelf_code": "NEW-LONGER"}],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                second = app.load_warehouse_location_cache()
+
+        self.assertEqual(first["shelves"][0]["shelf_code"], "OLD")
+        self.assertEqual(second["shelves"][0]["shelf_code"], "NEW-LONGER")
 
     def test_shelves_with_materials_are_sorted_first(self) -> None:
         shelves = [

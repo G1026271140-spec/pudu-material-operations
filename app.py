@@ -77,6 +77,8 @@ CATEGORY_CREATE_STAGE_KEY = "category_create_stage"
 CATEGORY_CREATE_DRAFT_KEY = "category_create_draft"
 CATEGORY_EDIT_STAGE_KEY = "category_edit_stage"
 CATEGORY_EDIT_DRAFT_KEY = "category_edit_draft"
+CATEGORY_DELETE_STAGE_KEY = "category_delete_stage"
+CATEGORY_DELETE_DRAFT_KEY = "category_delete_draft"
 REQUEST_NO_PREFIX = "REQ"
 RESTOCK_NO_PREFIX = "RST"
 REQUEST_FORM_TITLE = "MKT营销物料领取流程(MKT Marketing Materials Collecting Process)"
@@ -130,16 +132,16 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
             border-radius: 7px;
         }
         .option-item.is-selected {
-            color: #0b4f66;
-            background: #e7f5f8;
-            border-color: #2b8295;
-            box-shadow: inset 0 0 0 1px #2b8295;
+            color: #ffffff;
+            background: #13758a;
+            border-color: #0d5f70;
+            box-shadow: inset 0 0 0 1px #0d5f70, 0 2px 6px rgba(13, 95, 112, 0.24);
         }
         .option-pool.is-danger .option-item.is-selected {
-            color: #8b1e2d;
-            background: #fff0f1;
-            border-color: #c53d4d;
-            box-shadow: inset 0 0 0 1px #c53d4d;
+            color: #ffffff;
+            background: #c93648;
+            border-color: #a92535;
+            box-shadow: inset 0 0 0 1px #a92535, 0 2px 6px rgba(169, 37, 53, 0.24);
         }
         .option-main,
         .option-edit {
@@ -156,6 +158,12 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
             font-weight: 650;
             text-align: left;
             overflow-wrap: anywhere;
+        }
+        .option-item.is-selected .option-main::before {
+            content: '✓';
+            display: inline-block;
+            margin-right: 7px;
+            font-weight: 800;
         }
         .option-edit {
             width: 36px;
@@ -300,6 +308,8 @@ REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
 REQUEST_FORM_CACHE_SCHEMA_VERSION = 3
 REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
 REQUEST_PAGE_VISIBLE_VALUE = "是"
+REQUEST_PAGE_HIDDEN_VALUE = "否"
+REQUEST_PAGE_VISIBILITY_OPTIONS = (REQUEST_PAGE_VISIBLE_VALUE, REQUEST_PAGE_HIDDEN_VALUE)
 PRIMARY_MODEL_PRODUCT_LINES = ("IR", "CR", "SR", "GR")
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
@@ -2294,6 +2304,14 @@ def normalize_enabled_status(value: object) -> str:
     return STATUS_INACTIVE if str(value or "").strip() == STATUS_INACTIVE else STATUS_ACTIVE
 
 
+def normalize_request_page_visibility(value: object) -> str:
+    return (
+        REQUEST_PAGE_VISIBLE_VALUE
+        if str(value or "").strip() == REQUEST_PAGE_VISIBLE_VALUE
+        else REQUEST_PAGE_HIDDEN_VALUE
+    )
+
+
 def material_record_is_active(record: dict) -> bool:
     return normalize_enabled_status(record.get("status")) == STATUS_ACTIVE
 
@@ -3307,13 +3325,16 @@ def page_data_runtime_cache() -> dict[str, object]:
 
 
 def page_data_cache_rows(table_name: str) -> list[dict]:
+    static_cache = load_static_page_data_cache()
+    static_generated_at = str(static_cache.get("generated_at") or "")
+    static_tables = dict(static_cache.get("tables") or {})
     runtime_cache = page_data_runtime_cache()
     runtime_lock = runtime_cache["lock"]
     with runtime_lock:  # type: ignore[union-attr]
         runtime_tables = dict(runtime_cache.get("tables") or {})
-        if table_name in runtime_tables:
+        runtime_updated_at = str(dict(runtime_cache.get("updated_at") or {}).get(table_name) or "")
+        if table_name in runtime_tables and runtime_updated_at >= static_generated_at:
             return list(runtime_tables[table_name])
-    static_tables = dict(load_static_page_data_cache().get("tables") or {})
     table_data = static_tables.get(table_name, [])
     if isinstance(table_data, dict):
         table_data = table_data.get("rows", [])
@@ -3380,11 +3401,16 @@ def page_cache_status(table_names: list[str] | tuple[str, ...]) -> tuple[str, st
     with runtime_lock:  # type: ignore[union-attr]
         runtime_tables = dict(runtime_cache.get("tables") or {})
         runtime_updated_at = dict(runtime_cache.get("updated_at") or {})
-    if normalized_names and all(table_name in runtime_tables for table_name in normalized_names):
+    static_cache = load_static_page_data_cache()
+    static_generated_at = str(static_cache.get("generated_at") or "")
+    if normalized_names and all(
+        table_name in runtime_tables
+        and str(runtime_updated_at.get(table_name) or "") >= static_generated_at
+        for table_name in normalized_names
+    ):
         timestamps = [str(runtime_updated_at.get(table_name) or "") for table_name in normalized_names]
         return "服务缓存已刷新", max(timestamps) if timestamps else ""
-    static_cache = load_static_page_data_cache()
-    return "部署静态缓存", str(static_cache.get("generated_at") or "")
+    return "部署静态缓存", static_generated_at
 
 
 def build_page_data_static_snapshot() -> dict[str, object]:
@@ -3573,9 +3599,14 @@ load_static_contact_department_cache.clear = load_static_json_file.clear  # type
 
 
 def get_contact_directory_cache() -> dict[str, object]:
+    static_cache = load_static_contact_department_cache()
     cached = st.session_state.get("contact_department_cache_data")
-    if not isinstance(cached, dict):
-        cached = load_static_contact_department_cache()
+    if (
+        not isinstance(cached, dict)
+        or str(static_cache.get("generated_at") or "")
+        > str(cached.get("generated_at") or "")
+    ):
+        cached = static_cache
         if not list(cached.get("departments") or []):
             cached = build_live_contact_department_cache()
         st.session_state["contact_department_cache_data"] = cached
@@ -4183,7 +4214,12 @@ def feishu_inventory_index() -> dict[tuple[str, str, str], dict]:
 
 
 def feishu_request_page_visible(fields: dict) -> bool:
-    return feishu_text(fields, REQUEST_PAGE_VISIBILITY_FIELD) == REQUEST_PAGE_VISIBLE_VALUE
+    return (
+        normalize_request_page_visibility(
+            feishu_text(fields, REQUEST_PAGE_VISIBILITY_FIELD)
+        )
+        == REQUEST_PAGE_VISIBLE_VALUE
+    )
 
 
 def feishu_inventory_dataframe_from_rows(
@@ -5577,11 +5613,20 @@ def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object
         after_customs_code = str(target.get("customs_code") or "")
         before_status = normalize_enabled_status(before.get("status")) if before else "-"
         after_status = normalize_enabled_status(target.get("status"))
+        before_request_visible = (
+            normalize_request_page_visibility(before.get("request_visible"))
+            if before
+            else "-"
+        )
+        after_request_visible = normalize_request_page_visibility(
+            target.get("request_visible")
+        )
         action = "新增" if before is None else ("修改" if (
             before_quantity != after_quantity
             or before_unit_price != after_unit_price
             or before_customs_code != after_customs_code
             or before_status != after_status
+            or before_request_visible != after_request_visible
         ) else "保留")
         rows.append({
             "操作": action,
@@ -5602,6 +5647,11 @@ def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object
                 else f"{before_status} → {after_status}" if before_status != after_status
                 else "—"
             ),
+            "申领页显示变化": (
+                f"新增 {after_request_visible}" if before is None
+                else f"{before_request_visible} → {after_request_visible}"
+                if before_request_visible != after_request_visible else "—"
+            ),
             "海关编码变化": (
                 f"新增 {after_customs_code or '-'}" if before is None
                 else f"{before_customs_code or '-'} → {after_customs_code or '-'}"
@@ -5617,7 +5667,11 @@ def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object
             rows.append({
                 "操作": "移除/迁移", "产品型号": key[0], "语种": key[1],
                 "库存变化": f"{int(before.get('quantity') or 0)} → 0", "单价变化": "-",
-                "状态变化": f"{normalize_enabled_status(before.get('status'))} → 移除", "海关编码变化": "-",
+                "状态变化": f"{normalize_enabled_status(before.get('status'))} → 移除",
+                "申领页显示变化": (
+                    f"{normalize_request_page_visibility(before.get('request_visible'))} → 移除"
+                ),
+                "海关编码变化": "-",
             })
     return rows
 
@@ -5634,6 +5688,8 @@ def category_edit_notification_card(
             f"**品类：** {_feishu_card_plain_text(draft.get('old_product'))} → "
             f"{_feishu_card_plain_text(draft.get('product'))}\n"
             f"**修改时间：** {_feishu_card_plain_text(draft.get('edited_at'))}\n"
+            f"**品类启用状态：** {_feishu_card_plain_text(draft.get('category_status'))}\n"
+            f"**品类在申领页显示：** {_feishu_card_plain_text(draft.get('category_request_visible'))}\n"
             f"**结果：** 目标组合 {int(result.get('target_count') or 0)} 条，"
             f"新增 {int(result.get('created_count') or 0)} 条，移除 {int(result.get('deleted_count') or 0)} 条，"
             f"库存差额 {int(result.get('quantity_difference') or 0):+,}"
@@ -5643,7 +5699,7 @@ def category_edit_notification_card(
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
             f"{index:02d}. [{row['操作']}] {row['产品型号']} / {row['语种']}\n"
             f"库存：{row['库存变化']}；单价：{row['单价变化']}；状态：{row['状态变化']}；"
-            f"海关编码：{row['海关编码变化']}"
+            f"申领页显示：{row['申领页显示变化']}；海关编码：{row['海关编码变化']}"
         )}})
     if not changed_rows:
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "库存组合明细无字段变化。"}})
@@ -5710,6 +5766,7 @@ def category_create_notification_card(
                 f"**物料品类：** {_feishu_card_plain_text(draft.get('product'))}\n"
                 f"**创建时间：** {_feishu_card_plain_text(draft.get('created_at'))}\n"
                 f"**品类状态：** {_feishu_card_plain_text(draft.get('category_status'))}\n"
+                f"**品类在申领页显示：** {_feishu_card_plain_text(draft.get('category_request_visible'))}\n"
                 f"**创建结果：** 库存组合 {int(result.get('target_count') or 0)} 条，"
                 f"型号 {len(list(result.get('models') or []))} 个，"
                 f"语种 {len(list(result.get('languages') or []))} 个，"
@@ -5730,6 +5787,7 @@ def category_create_notification_card(
                     f"库存：{int(target.get('quantity') or 0)}；"
                     f"单价：{float(target.get('unit_price') or 0):g}；"
                     f"状态：{_feishu_card_plain_text(target.get('status'))}；"
+                    f"申领页显示：{_feishu_card_plain_text(normalize_request_page_visibility(target.get('request_visible')))}；"
                     f"海关编码：{_feishu_card_plain_text(target.get('customs_code'))}"
                 ),
             },
@@ -5760,6 +5818,81 @@ def notify_enabled_admins_of_category_create(
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = category_create_notification_card(draft, result)
     return send_category_notification_to_available_admins(client, recipients, card)
+
+
+def category_delete_notification_card(draft: dict[str, object]) -> dict[str, object]:
+    rows = [
+        dict(row)
+        for row in list(draft.get("records") or [])
+        if isinstance(row, dict)
+    ]
+    category_names = unique_preserve(
+        [str(value) for value in list(draft.get("category_names") or []) if str(value)]
+    )
+    delete_kind = str(draft.get("delete_kind") or "material_rows")
+    action_label = "删除整品类" if delete_kind == "categories" else "删除物料行"
+    elements: list[dict[str, object]] = [
+        {
+            "tag": "markdown",
+            "content": (
+                f"**操作：** {action_label}\n"
+                f"**删除时间：** {_feishu_card_plain_text(draft.get('deleted_at'))}\n"
+                f"**涉及品类：** {_feishu_card_plain_text('、'.join(category_names) or '-')}\n"
+                f"**删除结果：** 品类 {len(category_names) if delete_kind == 'categories' else 0} 个，"
+                f"物料行 {len(rows)} 条"
+            ),
+        },
+        {"tag": "hr"},
+        {"tag": "markdown", "content": "**删除明细**"},
+    ]
+    for index, row in enumerate(rows[:40], start=1):
+        elements.append(
+            {
+                "tag": "div",
+                "text": {
+                    "tag": "plain_text",
+                    "content": (
+                        f"{index:02d}. {_feishu_card_plain_text(row.get('material_code') or '-')} | "
+                        f"{_feishu_card_plain_text(row.get('category'))} / "
+                        f"{_feishu_card_plain_text(row.get('model') or NO_MODEL_TEXT)} / "
+                        f"{_feishu_card_plain_text(row.get('language') or NO_LANGUAGE_TEXT)}\n"
+                        f"库存：{int(row.get('quantity') or 0)}；"
+                        f"状态：{_feishu_card_plain_text(normalize_enabled_status(row.get('status')))}；"
+                        f"申领页显示：{_feishu_card_plain_text(normalize_request_page_visibility(row.get('request_visible')))}"
+                    ),
+                },
+            }
+        )
+    if not rows:
+        elements.append(
+            {"tag": "div", "text": {"tag": "plain_text", "content": "所选品类没有物料行。"}}
+        )
+    if len(rows) > 40:
+        elements.append(
+            {"tag": "markdown", "content": f"另有 **{len(rows) - 40}** 条删除明细。"}
+        )
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "red",
+            "title": {"tag": "plain_text", "content": "物料管理删除已完成"},
+        },
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_category_delete(draft: dict[str, object]) -> int:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送删除通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    return send_category_notification_to_available_admins(
+        client,
+        recipients,
+        category_delete_notification_card(draft),
+    )
 
 
 def ensure_inventory_zero_since_field() -> bool:
@@ -6586,6 +6719,9 @@ def parse_feishu_inventory_record(
         "remark": feishu_text(fields, "备注"),
         "customs_code": feishu_text(fields, "海关编码"),
         "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
+        "request_visible": normalize_request_page_visibility(
+            feishu_text(fields, REQUEST_PAGE_VISIBILITY_FIELD)
+        ),
     }
 
 
@@ -6661,6 +6797,9 @@ def feishu_category_records_from_rows(rows: list[dict]) -> list[dict]:
                     and is_default_no_language_product(product)
                 ),
                 "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
+                "request_visible": normalize_request_page_visibility(
+                    feishu_text(fields, REQUEST_PAGE_VISIBILITY_FIELD)
+                ),
                 "unit_price": parse_optional_unit_price(unit_price_text),
                 "unit_price_rmb": feishu_float(fields, UNIT_PRICE_RMB_FIELD),
                 "customs_code": feishu_text(fields, "海关编码"),
@@ -6741,6 +6880,8 @@ def render_category_option_pool(
     editable: bool = False,
     danger: bool = False,
 ) -> tuple[str | list[str] | None, str]:
+    selection_state_key = f"{key}_selection"
+    current_selected = st.session_state.get(selection_state_key, selected)
     result = CATEGORY_OPTION_POOL(
         key=key,
         data={
@@ -6752,7 +6893,7 @@ def render_category_option_pool(
                 }
                 for option in options
             ],
-            "selected": selected,
+            "selected": current_selected,
             "multi": multi,
             "editable": editable,
             "danger": danger,
@@ -6769,8 +6910,9 @@ def render_category_option_pool(
             if str(value) in valid_values
         ]
     else:
-        candidate = str(next_selected or selected or "")
+        candidate = str(next_selected or current_selected or "")
         normalized_selected = candidate if candidate in valid_values else None
+    st.session_state[selection_state_key] = normalized_selected
     return normalized_selected, str(getattr(result, "edit", "") or "")
 
 
@@ -7270,6 +7412,7 @@ def build_category_inventory_plan(
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
     target_values: dict[tuple[str, str], dict[str, object]] | None = None,
+    default_request_visible: str = REQUEST_PAGE_VISIBLE_VALUE,
     referenced_ids: set[str] | None = None,
 ) -> dict:
     product = target_product.strip()
@@ -7375,6 +7518,11 @@ def build_category_inventory_plan(
                 if not sources or any(material_record_is_active(source) for source in sources)
                 else STATUS_INACTIVE
             )
+            request_visible = (
+                normalize_request_page_visibility((keeper or {}).get("request_visible"))
+                if keeper is not None
+                else normalize_request_page_visibility(default_request_visible)
+            )
             override = dict(target_values.get(key) or {})
             override_quantity = override.get("quantity")
             if override_quantity is not None and not pd.isna(override_quantity):
@@ -7386,6 +7534,10 @@ def build_category_inventory_plan(
                 customs_code = str(override.get("customs_code") or "").strip()
             if "status" in override:
                 status = normalize_enabled_status(override.get("status"))
+            if "request_visible" in override:
+                request_visible = normalize_request_page_visibility(
+                    override.get("request_visible")
+                )
             keeper_id = str((keeper or {}).get("record_id") or "")
             source_ids = [str(item.get("record_id") or "") for item in sources if item.get("record_id")]
             for source_id in source_ids:
@@ -7404,6 +7556,7 @@ def build_category_inventory_plan(
                     "remark": "\n".join(remarks),
                     "customs_code": customs_code,
                     "status": status,
+                    "request_visible": request_visible,
                     "material_code": str((keeper or {}).get("material_code") or ""),
                     "keeper_id": keeper_id,
                     "source_ids": source_ids,
@@ -7498,6 +7651,10 @@ def category_inventory_target_values(editor_df: pd.DataFrame) -> dict[tuple[str,
             "customs_code": str(row.get("海关编码") or "").strip(),
             "status": status,
         }
+        if "申领页显示" in row:
+            values[(model, language)]["request_visible"] = (
+                normalize_request_page_visibility(row.get("申领页显示"))
+            )
     return values
 
 
@@ -7512,10 +7669,22 @@ def category_inventory_preview_dataframe(targets: list[dict]) -> pd.DataFrame:
                 "单价": float(target.get("unit_price") or 0),
                 "海关编码": str(target.get("customs_code") or ""),
                 "启用状态": normalize_enabled_status(target.get("status")),
+                "申领页显示": normalize_request_page_visibility(
+                    target.get("request_visible")
+                ),
             }
             for index, target in enumerate(targets, start=1)
         ],
-        columns=["序号", "产品型号", "语种", "库存数量", "单价", "海关编码", "启用状态"],
+        columns=[
+            "序号",
+            "产品型号",
+            "语种",
+            "库存数量",
+            "单价",
+            "海关编码",
+            "启用状态",
+            "申领页显示",
+        ],
     )
 
 
@@ -7933,6 +8102,7 @@ def sync_feishu_category_inventory(
     target_languages: list[str],
     category_definition: str = "",
     category_status: str = STATUS_ACTIVE,
+    category_request_visible: str = REQUEST_PAGE_VISIBLE_VALUE,
     category_unit_price: float | None = None,
     category_customs_code: str = "",
     category_record_id: str = "",
@@ -7950,6 +8120,9 @@ def sync_feishu_category_inventory(
     old_product = old_product.strip()
     new_product = new_product.strip()
     category_status = normalize_enabled_status(category_status)
+    category_request_visible = normalize_request_page_visibility(
+        category_request_visible
+    )
     category_unit_price = None if category_unit_price is None else float(category_unit_price)
     category_customs_code = category_customs_code.strip()
     category_definition = category_definition.strip()
@@ -8013,6 +8186,7 @@ def sync_feishu_category_inventory(
         carry_language=carry_language,
         initial_quantities=initial_quantities,
         target_values=target_values,
+        default_request_visible=category_request_visible,
         referenced_ids=referenced_ids,
     )
     plan = enforce_category_inventory_status(plan, category_status)
@@ -8024,6 +8198,7 @@ def sync_feishu_category_inventory(
             "是否无需型号": "是" if no_model else "否",
             "是否无需语种": "是" if no_language else "否",
             "启用状态": category_status,
+            REQUEST_PAGE_VISIBILITY_FIELD: category_request_visible,
             "库存行数": plan["target_count"],
             "产品型号数量": len(plan["models"]),
             "语种数量": len(plan["languages"]),
@@ -8057,6 +8232,9 @@ def sync_feishu_category_inventory(
             "当前库存": int(target["quantity"]),
             "备注": target["remark"],
             "启用状态": target["status"],
+            REQUEST_PAGE_VISIBILITY_FIELD: normalize_request_page_visibility(
+                target.get("request_visible")
+            ),
             "品类关联": [category_record_id],
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
@@ -8084,6 +8262,9 @@ def sync_feishu_category_inventory(
             "当前库存": int(target["quantity"]),
             "备注": target["remark"],
             "启用状态": target["status"],
+            REQUEST_PAGE_VISIBILITY_FIELD: normalize_request_page_visibility(
+                target.get("request_visible")
+            ),
             "品类关联": [category_record_id],
         }
         set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(target["unit_price"]))
@@ -8109,6 +8290,7 @@ def sync_feishu_category_inventory(
         "是否无需型号": "是" if no_model else "否",
         "是否无需语种": "是" if no_language else "否",
         "启用状态": category_status,
+        REQUEST_PAGE_VISIBILITY_FIELD: category_request_visible,
         "库存行数": plan["target_count"],
         "产品型号数量": len(plan["models"]),
         "语种数量": len(plan["languages"]),
@@ -8128,6 +8310,7 @@ def sync_feishu_category_inventory(
         "deleted_count": deleted_count,
         "relation_update_count": relation_update_count,
         "category_definition": category_definition,
+        "category_request_visible": category_request_visible,
     }
 
 
@@ -10376,6 +10559,7 @@ def clear_new_category_creation_state() -> None:
     prefixes = (
         "category_name_new",
         "category_status_new",
+        "category_request_visible_new",
         "category_definition_new",
         "category_unit_price_new",
         "category_customs_code_new",
@@ -10411,6 +10595,7 @@ def restore_new_category_creation_state(
     allowed_form_keys = {
         "category_name_new",
         "category_status_new",
+        "category_request_visible_new",
         "category_definition_new",
         "category_unit_price_new",
         "category_customs_code_new",
@@ -10454,7 +10639,11 @@ def render_category_edit_review() -> None:
         render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
         render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
         render_request_review_field(info_cols[2], "品类定义", draft.get("category_definition"))
-        render_request_review_field(info_cols[3], "品类状态", draft.get("category_status"))
+        render_request_review_field(
+            info_cols[3],
+            "品类状态 / 申领页显示",
+            f"{draft.get('category_status')} / {draft.get('category_request_visible')}",
+        )
         if changed_rows:
             st.dataframe(
                 pd.DataFrame(changed_rows),
@@ -10530,17 +10719,22 @@ def render_new_category_review() -> None:
 
     with st.container(border=True):
         render_section_header("01", "品类信息确认", "确认基础信息后编辑每一条新增库存行")
-        info_cols = st.columns(5)
+        info_cols = st.columns(6)
         render_request_review_field(info_cols[0], "物料品类", product)
         render_request_review_field(info_cols[1], "品类定义", draft.get("category_definition"))
         render_request_review_field(info_cols[2], "品类启用状态", category_status)
         render_request_review_field(
             info_cols[3],
+            "品类在申领页显示",
+            draft.get("category_request_visible"),
+        )
+        render_request_review_field(
+            info_cols[4],
             "产品型号规则",
             NO_MODEL_TEXT if draft.get("no_model") else f"{len(list(draft.get('models') or []))} 个型号",
         )
         render_request_review_field(
-            info_cols[4],
+            info_cols[5],
             "语种规则",
             NO_LANGUAGE_TEXT
             if draft.get("no_language")
@@ -10586,6 +10780,12 @@ def render_new_category_review() -> None:
                 "启用状态": st.column_config.SelectboxColumn(
                     "启用状态",
                     options=list(MATERIAL_STATUS_OPTIONS),
+                    required=True,
+                    width="small",
+                ),
+                "申领页显示": st.column_config.SelectboxColumn(
+                    "申领页显示",
+                    options=list(REQUEST_PAGE_VISIBILITY_OPTIONS),
                     required=True,
                     width="small",
                 ),
@@ -10644,6 +10844,9 @@ def render_new_category_review() -> None:
                         target_languages=list(draft.get("languages") or []),
                         category_definition=str(draft.get("category_definition") or ""),
                         category_status=category_status,
+                        category_request_visible=normalize_request_page_visibility(
+                            draft.get("category_request_visible")
+                        ),
                         category_unit_price=draft.get("category_unit_price"),
                         category_customs_code=str(draft.get("category_customs_code") or ""),
                         target_values=edited_values,
@@ -10720,11 +10923,310 @@ def update_category_inventory_counts(category: dict, remaining_records: list[dic
     )
 
 
+def category_delete_preview_dataframe(records: list[dict]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "物料编码": str(record.get("material_code") or "-"),
+                "物料品类": str(record.get("category") or ""),
+                "产品型号": str(record.get("model") or NO_MODEL_TEXT),
+                "语种": str(record.get("language") or NO_LANGUAGE_TEXT),
+                "库存数量": int(record.get("quantity") or 0),
+                "单价": float(record.get("unit_price") or 0),
+                "启用状态": normalize_enabled_status(record.get("status")),
+                "申领页显示": normalize_request_page_visibility(
+                    record.get("request_visible")
+                ),
+            }
+            for record in records
+        ],
+        columns=[
+            "物料编码",
+            "物料品类",
+            "产品型号",
+            "语种",
+            "库存数量",
+            "单价",
+            "启用状态",
+            "申领页显示",
+        ],
+    )
+
+
+def category_delete_record_signature(record: dict) -> tuple[object, ...]:
+    return (
+        str(record.get("record_id") or ""),
+        str(record.get("material_code") or ""),
+        str(record.get("category") or ""),
+        str(record.get("model") or NO_MODEL_TEXT),
+        str(record.get("language") or NO_LANGUAGE_TEXT),
+        int(record.get("quantity") or 0),
+        float(record.get("unit_price") or 0),
+        normalize_enabled_status(record.get("status")),
+        normalize_request_page_visibility(record.get("request_visible")),
+    )
+
+
+def category_delete_changed_records(
+    preview_records: list[dict],
+    current_records: list[dict],
+) -> list[str]:
+    preview_by_id = {
+        str(record.get("record_id") or ""): category_delete_record_signature(record)
+        for record in preview_records
+        if str(record.get("record_id") or "")
+    }
+    current_by_id = {
+        str(record.get("record_id") or ""): category_delete_record_signature(record)
+        for record in current_records
+        if str(record.get("record_id") or "")
+    }
+    changed: list[str] = []
+    for record_id, preview_signature in preview_by_id.items():
+        current_signature = current_by_id.get(record_id)
+        if current_signature != preview_signature:
+            changed.append(str(preview_signature[1] or record_id))
+    return changed
+
+
+def category_delete_category_blockers(
+    category_names: list[str],
+    category_by_name: dict[str, dict],
+    inventory_records: list[dict],
+) -> list[str]:
+    blockers: list[str] = []
+    for category_name in category_names:
+        category = category_by_name.get(category_name)
+        if category is None:
+            blockers.append(f"{category_name}（品类已不存在）")
+            continue
+        records = [
+            record
+            for record in inventory_records
+            if str(record.get("category") or "") == category_name
+        ]
+        quantity_sum = sum(int(record.get("quantity") or 0) for record in records)
+        transaction_count = count_feishu_category_transactions(category_name)
+        business_reference_count = count_feishu_category_business_references(
+            category_name,
+            str(category.get("record_id") or ""),
+        )
+        if quantity_sum != 0 or transaction_count > 0 or business_reference_count > 0:
+            blockers.append(
+                f"{category_name}（库存 {quantity_sum}，流水 {transaction_count}，"
+                f"业务关联 {business_reference_count}）"
+            )
+    return blockers
+
+
+def start_category_delete_review(
+    *,
+    delete_kind: str,
+    category_names: list[str],
+    records: list[dict],
+) -> None:
+    st.session_state[CATEGORY_DELETE_DRAFT_KEY] = {
+        "delete_kind": delete_kind,
+        "category_names": unique_preserve(category_names),
+        "record_ids": unique_preserve(
+            [str(record.get("record_id") or "") for record in records if str(record.get("record_id") or "")]
+        ),
+        "records": [dict(record) for record in records],
+        "previewed_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    st.session_state[CATEGORY_DELETE_STAGE_KEY] = "review"
+
+
+def clear_category_delete_state() -> None:
+    st.session_state.pop(CATEGORY_DELETE_DRAFT_KEY, None)
+    st.session_state[CATEGORY_DELETE_STAGE_KEY] = "edit"
+    for key in list(st.session_state):
+        if str(key).startswith("category_delete_") and str(key) not in {
+            CATEGORY_DELETE_STAGE_KEY,
+            CATEGORY_DELETE_DRAFT_KEY,
+        }:
+            st.session_state.pop(key, None)
+
+
+def render_category_delete_review() -> None:
+    draft = st.session_state.get(CATEGORY_DELETE_DRAFT_KEY)
+    if not isinstance(draft, dict):
+        st.session_state[CATEGORY_DELETE_STAGE_KEY] = "edit"
+        st.rerun()
+    delete_kind = str(draft.get("delete_kind") or "material_rows")
+    category_names = [str(value) for value in list(draft.get("category_names") or [])]
+    records = [dict(record) for record in list(draft.get("records") or []) if isinstance(record, dict)]
+    preview_df = category_delete_preview_dataframe(records)
+
+    render_section_header(
+        "01",
+        "删除内容确认",
+        "核对全部删除明细；最终确认时会重新读取飞书并再次检查库存、流水和业务关联",
+    )
+    metric_a, metric_b, metric_c = st.columns(3)
+    metric_a.metric("删除类型", "整品类" if delete_kind == "categories" else "物料行")
+    metric_b.metric("涉及品类", f"{len(category_names):,}")
+    metric_c.metric("物料行", f"{len(records):,}")
+    with st.container(border=True):
+        st.markdown("**涉及品类**")
+        st.write("、".join(category_names) or "-")
+        if preview_df.empty:
+            st.info("所选品类没有物料行，确认后只删除品类记录。")
+        else:
+            st.dataframe(
+                preview_df,
+                width="stretch",
+                hide_index=True,
+                height=min(720, max(180, 38 * (len(preview_df) + 1))),
+            )
+    st.error("删除操作不可撤销。只有库存为 0 且不存在库存流水、申请明细或项目关联的数据才允许删除。")
+    confirmed = st.checkbox(
+        "我已核对以上全部删除明细，并确认执行不可撤销的删除操作",
+        key="category_delete_review_confirmed",
+    )
+    back_col, _, confirm_col = st.columns([1.1, 2.2, 1.6])
+    if back_col.button(
+        "返回修改",
+        icon=":material/arrow_back:",
+        width="stretch",
+        key="category_delete_review_back",
+    ):
+        st.session_state[CATEGORY_DELETE_STAGE_KEY] = "edit"
+        st.session_state.pop(CATEGORY_DELETE_DRAFT_KEY, None)
+        st.rerun()
+    if confirm_col.button(
+        "确认删除",
+        type="primary",
+        icon=":material/delete_forever:",
+        width="stretch",
+        disabled=not confirmed,
+        key="category_delete_review_submit",
+    ):
+        with st.spinner("正在重新检查飞书数据并执行删除，请勿关闭页面......"):
+            try:
+                refresh_page_cache_tables(
+                    (
+                        CATEGORY_TABLE_NAME,
+                        MATERIAL_TABLE_NAME,
+                        LEDGER_TABLE_NAME,
+                        REQUEST_LINE_TABLE_NAME,
+                        GIFT_PROJECT_TABLE_NAME,
+                    )
+                )
+                categories = load_feishu_category_records()
+                inventory_records = load_feishu_inventory_records()
+                category_by_name = {
+                    str(category.get("category") or ""): category for category in categories
+                }
+                if delete_kind == "categories":
+                    blockers = category_delete_category_blockers(
+                        category_names,
+                        category_by_name,
+                        inventory_records,
+                    )
+                    current_records = [
+                        record
+                        for record in inventory_records
+                        if str(record.get("category") or "") in set(category_names)
+                    ]
+                    preview_ids = {
+                        str(record.get("record_id") or "") for record in records
+                    }
+                    current_ids = {
+                        str(record.get("record_id") or "") for record in current_records
+                    }
+                    if preview_ids != current_ids:
+                        blockers.append("预览后品类下的物料行范围已变化")
+                    changed_records = category_delete_changed_records(
+                        records,
+                        current_records,
+                    )
+                    if changed_records:
+                        blockers.append(
+                            "预览后数据已变化：" + "、".join(changed_records[:8])
+                        )
+                else:
+                    record_ids = {str(value) for value in list(draft.get("record_ids") or [])}
+                    current_records = [
+                        record
+                        for record in inventory_records
+                        if str(record.get("record_id") or "") in record_ids
+                    ]
+                    missing_count = len(record_ids) - len(current_records)
+                    blockers = category_delete_blockers(current_records)
+                    if missing_count:
+                        blockers.append(f"{missing_count} 条物料行已被其他操作修改或删除")
+                    changed_records = category_delete_changed_records(records, current_records)
+                    if changed_records:
+                        blockers.append(
+                            "预览后数据已变化：" + "、".join(changed_records[:8])
+                        )
+                if blockers:
+                    st.error("删除前检查未通过：" + "；".join(blockers[:8]))
+                    return
+                with DATA_LOCK:
+                    if delete_kind == "categories":
+                        for category_name in category_names:
+                            category = category_by_name[category_name]
+                            delete_feishu_category(
+                                category_name,
+                                str(category.get("record_id") or ""),
+                            )
+                    else:
+                        deleted_ids = {
+                            str(record.get("record_id") or "") for record in current_records
+                        }
+                        for record in current_records:
+                            delete_feishu_inventory_item(str(record.get("record_id") or ""))
+                        for category_name in category_names:
+                            category = category_by_name.get(category_name)
+                            if category is None:
+                                continue
+                            update_category_inventory_counts(
+                                category,
+                                [
+                                    record
+                                    for record in inventory_records
+                                    if str(record.get("category") or "") == category_name
+                                    and str(record.get("record_id") or "") not in deleted_ids
+                                ],
+                            )
+            except Exception as exc:
+                st.error("删除失败，未能完成全部操作。请刷新飞书数据后检查。")
+                st.exception(exc)
+                return
+            notification_draft = {
+                **dict(draft),
+                "records": current_records,
+                "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            notification_count = 0
+            notification_warning = ""
+            try:
+                notification_count = notify_enabled_admins_of_category_delete(notification_draft)
+            except Exception as exc:
+                notification_warning = f"删除已完成，但管理员通知发送失败：{exc}"
+        refresh_page_cache_after_write("category", update_request_form=True)
+        clear_category_delete_state()
+        deleted_label = (
+            f"{len(category_names)} 个物料品类"
+            if delete_kind == "categories"
+            else f"{len(current_records)} 条物料行"
+        )
+        st.session_state["category_added_message"] = (
+            f"已删除 {deleted_label}。"
+            + (f" 已通知 {notification_count} 位管理员。" if notification_count else "")
+        )
+        if notification_warning:
+            st.session_state["category_admin_warning"] = notification_warning
+        st.rerun()
+
+
 def render_category_delete_workspace(
     categories: list[dict],
     inventory_records: list[dict],
 ) -> None:
-    st.error("当前为删除模式。删除会直接同步到飞书，请先确认库存和历史流水。")
+    st.warning("当前为删除模式。选择内容后会先进入删除预览，确认前不会写入飞书。")
     selected_categories, _ = render_category_option_pool(
         category_pool_summary(categories, inventory_records),
         selected=[],
@@ -10733,6 +11235,7 @@ def render_category_delete_workspace(
         danger=True,
     )
     selected_category_names = [str(value) for value in list(selected_categories or [])]
+    st.caption(f"已选择 {len(selected_category_names)} 个品类。选中项会显示白色勾选和红色背景。")
     category_by_name = {str(category.get("category") or ""): category for category in categories}
 
     if len(selected_category_names) == 1:
@@ -10752,6 +11255,7 @@ def render_category_delete_workspace(
             danger=True,
         )
         selected_model_names = [str(value) for value in list(selected_models or [])]
+        st.caption(f"已选择 {len(selected_model_names)} 个型号。")
         model_scope = [
             record
             for record in category_records
@@ -10773,6 +11277,7 @@ def render_category_delete_workspace(
             for record in model_scope
             if str(record.get("record_id") or "") in selected_material_id_set
         ]
+        st.caption(f"已选择 {len(selected_material_records)} 条具体物料行。")
         model_records = [
             record
             for record in category_records
@@ -10781,15 +11286,11 @@ def render_category_delete_workspace(
         delete_scope = selected_material_records or model_records
         if delete_scope:
             st.caption(
-                f"准备删除 {len(delete_scope)} 条物料行；只有库存为 0 且没有库存流水的记录可以删除。"
-            )
-            row_confirmed = st.checkbox(
-                "我确认删除以上物料行",
-                key=f"category_delete_rows_confirm_{selected_category['record_id']}",
+                f"准备删除 {len(delete_scope)} 条物料行；点击后先进入明细预览。"
             )
             if st.button(
-                "删除所选物料行" if selected_material_records else "删除所选型号下的物料行",
-                icon=":material/delete:",
+                "预览删除所选物料行" if selected_material_records else "预览删除所选型号下的物料行",
+                icon=":material/preview:",
                 type="primary",
                 width="stretch",
                 key=f"category_delete_rows_{selected_category['record_id']}",
@@ -10797,83 +11298,47 @@ def render_category_delete_workspace(
                 blockers = category_delete_blockers(delete_scope)
                 if blockers:
                     st.error("以下物料行不能删除：" + "；".join(blockers[:8]))
-                elif not row_confirmed:
-                    st.warning("请先勾选删除确认。")
                 else:
-                    deleted_ids = {
-                        str(record.get("record_id") or "") for record in delete_scope
-                    }
-                    with DATA_LOCK:
-                        for record in delete_scope:
-                            delete_feishu_inventory_item(str(record.get("record_id") or ""))
-                        update_category_inventory_counts(
-                            selected_category,
-                            [
-                                record
-                                for record in category_records
-                                if str(record.get("record_id") or "") not in deleted_ids
-                            ],
-                        )
-                    refresh_page_cache_after_write("category", update_request_form=True)
-                    st.session_state["category_added_message"] = (
-                        f"已删除 {len(delete_scope)} 条物料行。"
+                    start_category_delete_review(
+                        delete_kind="material_rows",
+                        category_names=[selected_name],
+                        records=delete_scope,
                     )
                     st.rerun()
 
     if selected_category_names:
         st.divider()
-        st.caption("删除整个品类时，会同时删除其全部物料行。品类库存必须为 0，且不能存在库存流水。")
-        category_confirmed = st.checkbox(
-            "我确认删除所选品类及其全部物料行",
-            key="category_delete_categories_confirm",
-        )
+        st.caption("删除整个品类时，会同时删除其全部物料行；点击后先进入完整预览。")
         if st.button(
-            f"删除所选品类（{len(selected_category_names)}）",
-            icon=":material/delete_forever:",
+            f"预览删除所选品类（{len(selected_category_names)}）",
+            icon=":material/preview:",
             width="stretch",
             key="category_delete_categories",
         ):
-            blocked: list[str] = []
-            for category_name in selected_category_names:
-                category_records = [
-                    record
-                    for record in inventory_records
-                    if str(record.get("category") or "") == category_name
-                ]
-                quantity_sum = sum(int(record.get("quantity") or 0) for record in category_records)
-                transaction_count = count_feishu_category_transactions(category_name)
-                business_reference_count = count_feishu_category_business_references(
-                    category_name,
-                    str(category_by_name[category_name].get("record_id") or ""),
-                )
-                if (
-                    quantity_sum != 0
-                    or transaction_count > 0
-                    or business_reference_count > 0
-                ):
-                    blocked.append(
-                        f"{category_name}（库存 {quantity_sum}，流水 {transaction_count}，业务关联 {business_reference_count}）"
-                    )
+            blocked = category_delete_category_blockers(
+                selected_category_names,
+                category_by_name,
+                inventory_records,
+            )
             if blocked:
                 st.error("以下品类不能删除：" + "；".join(blocked[:8]))
-            elif not category_confirmed:
-                st.warning("请先勾选删除确认。")
             else:
-                with DATA_LOCK:
-                    for category_name in selected_category_names:
-                        category = category_by_name[category_name]
-                        delete_feishu_category(
-                            category_name,
-                            str(category.get("record_id") or ""),
-                        )
-                refresh_page_cache_after_write("category", update_request_form=True)
-                st.session_state["category_added_message"] = (
-                    f"已删除 {len(selected_category_names)} 个物料品类。"
+                start_category_delete_review(
+                    delete_kind="categories",
+                    category_names=selected_category_names,
+                    records=[
+                        record
+                        for record in inventory_records
+                        if str(record.get("category") or "") in set(selected_category_names)
+                    ],
                 )
                 st.rerun()
 
 
 def render_add_category_form() -> None:
+    if st.session_state.get(CATEGORY_DELETE_STAGE_KEY) == "review":
+        render_category_delete_review()
+        return
     if st.session_state.get(CATEGORY_EDIT_STAGE_KEY) == "review":
         render_category_edit_review()
         return
@@ -10894,7 +11359,7 @@ def render_add_category_form() -> None:
     if warning:
         st.warning(warning)
 
-    render_section_header("01", "物料品类管理", "通过品类、型号和语种选项池快速定位和维护物料")
+    render_section_header("01", "物料品类管理", "新增、编辑或删除品类，并在提交前核对全部变更")
     if st.session_state.get("category_management_mode") not in {
         "＋ 新增",
         "✎ 编辑",
@@ -10912,8 +11377,6 @@ def render_add_category_form() -> None:
     category_by_name = {str(item["category"]): item for item in categories}
 
     selected_category: dict | None = None
-    selected_model = ""
-    selected_material: dict | None = None
     if mode == "－ 删除":
         render_category_delete_workspace(categories, inventory_records)
         return
@@ -10925,98 +11388,21 @@ def render_add_category_form() -> None:
             st.session_state.get("category_management_selected_name")
             or next(iter(category_by_name))
         )
-        selected_name_value, category_edit_request = render_category_option_pool(
-            category_pool_summary(categories, inventory_records),
-            selected=default_category,
-            key="category_edit_category_pool",
-            editable=True,
+        category_names = list(category_by_name)
+        if default_category not in category_by_name:
+            default_category = category_names[0]
+            st.session_state["category_management_selected_name"] = default_category
+        selected_name = st.selectbox(
+            "选择物料品类",
+            category_names,
+            index=category_names.index(default_category),
+            key="category_management_selected_name",
         )
-        selected_name = str(selected_name_value or default_category)
-        st.session_state["category_management_selected_name"] = selected_name
         selected_category = category_by_name[selected_name]
-        selected_category_records = [
-            record for record in inventory_records if record["category"] == selected_name
-        ]
-        model_options = category_model_pool_summary(selected_category_records)
-        if model_options:
-            default_model = str(
-                st.session_state.get("category_pool_selected_model")
-                or model_options[0]["value"]
-            )
-            if default_model not in {str(option["value"]) for option in model_options}:
-                default_model = str(model_options[0]["value"])
-            selected_model_value, model_edit_request = render_category_option_pool(
-                model_options,
-                selected=default_model,
-                key=f"category_edit_model_pool_{selected_category['record_id']}",
-                editable=True,
-            )
-            selected_model = str(selected_model_value or default_model)
-            st.session_state["category_pool_selected_model"] = selected_model
-        else:
-            model_edit_request = ""
-        material_options = category_material_pool_summary(
-            [
-                record
-                for record in selected_category_records
-                if str(record.get("model") or NO_MODEL_TEXT) == selected_model
-            ]
+        selected_record_count = sum(
+            1 for record in inventory_records if record["category"] == selected_name
         )
-        if material_options:
-            default_material_id = str(material_options[0]["value"])
-            selected_material_id, material_edit_request = render_category_option_pool(
-                material_options,
-                selected=default_material_id,
-                key=f"category_edit_material_pool_{selected_category['record_id']}_{selected_model}",
-                editable=True,
-            )
-            selected_material = next(
-                (
-                    record
-                    for record in selected_category_records
-                    if str(record.get("record_id") or "") == str(selected_material_id or "")
-                ),
-                None,
-            )
-        else:
-            material_edit_request = ""
-
-        if category_edit_request:
-            st.session_state["category_pool_editor_open"] = selected_name
-            st.session_state["category_pool_edit_dimension"] = "category"
-        if model_edit_request:
-            st.session_state["category_pool_editor_open"] = selected_name
-            st.session_state["category_pool_edit_dimension"] = "model"
-            st.session_state["category_pool_focus_model"] = selected_model
-        if material_edit_request and selected_material is not None:
-            st.session_state["category_pool_editor_open"] = selected_name
-            st.session_state["category_pool_edit_dimension"] = "material"
-            st.session_state["category_pool_focus_model"] = selected_model
-            st.session_state["category_pool_focus_language"] = str(
-                selected_material.get("language") or NO_LANGUAGE_TEXT
-            )
-
-        open_col, hint_col = st.columns([1, 2.2], vertical_alignment="center")
-        if open_col.button(
-            "编辑所选品类",
-            icon=":material/edit:",
-            type="primary",
-            width="stretch",
-            key=f"category_open_editor_{selected_category['record_id']}",
-        ):
-            st.session_state["category_pool_editor_open"] = selected_name
-            st.session_state["category_pool_edit_dimension"] = "category"
-            st.rerun()
-        hint_col.caption("双击任一按钮可快速编辑；手机端点击按钮右侧铅笔。")
-        if st.session_state.get("category_pool_editor_open") != selected_name:
-            return
-        if st.button(
-            "收起编辑器",
-            icon=":material/close_fullscreen:",
-            key=f"category_close_editor_{selected_category['record_id']}",
-        ):
-            st.session_state.pop("category_pool_editor_open", None)
-            st.rerun()
+        st.caption(f"当前品类共有 {selected_record_count} 条库存组合，修改后将先进入明细确认页。")
 
     category_id = str((selected_category or {}).get("record_id") or "")
     old_product = str((selected_category or {}).get("category") or "")
@@ -11030,6 +11416,11 @@ def render_add_category_form() -> None:
         bool(current_languages) and set(current_languages) == {NO_LANGUAGE_TEXT}
     )
     current_category_status = normalize_enabled_status((selected_category or {}).get("status"))
+    current_category_request_visible = normalize_request_page_visibility(
+        (selected_category or {}).get("request_visible")
+        if selected_category is not None
+        else REQUEST_PAGE_VISIBLE_VALUE
+    )
     current_category_definition = str(
         (selected_category or {}).get("category_definition")
         or CATEGORY_DEFINITION_PRINT
@@ -11037,9 +11428,9 @@ def render_add_category_form() -> None:
     current_category_unit_price = (selected_category or {}).get("unit_price")
     current_category_customs_code = str((selected_category or {}).get("customs_code") or "")
     editor_key = category_id or "new"
-    pool_edit_dimension = str(st.session_state.get("category_pool_edit_dimension") or "")
-    pool_focus_model = str(st.session_state.get("category_pool_focus_model") or "")
-    pool_focus_language = str(st.session_state.get("category_pool_focus_language") or "")
+    pool_edit_dimension = ""
+    pool_focus_model = ""
+    pool_focus_language = ""
 
     with st.container(border=True):
         product_key = f"category_name_{editor_key}"
@@ -11049,10 +11440,11 @@ def render_add_category_form() -> None:
             key=product_key,
             **({} if product_key in st.session_state else {"value": old_product}),
         ).strip()
-        metadata_definition_col, metadata_status_col, metadata_price_col, metadata_customs_col = st.columns(
-            [1.2, 1.2, 1, 1.2],
+        metadata_definition_col, metadata_status_col, metadata_visibility_col = st.columns(
+            3,
             vertical_alignment="bottom",
         )
+        metadata_price_col, metadata_customs_col = st.columns(2)
         category_definition_options = unique_preserve(
             list(CATEGORY_DEFINITION_OPTIONS)
             + [
@@ -11083,7 +11475,7 @@ def render_add_category_form() -> None:
             "品类启用状态 *",
             list(MATERIAL_STATUS_OPTIONS),
             horizontal=True,
-            help="停用品类不会出现在物料申请页；历史库存和申请记录仍会保留。",
+            help="该字段控制品类管理状态；申领页是否显示只由“是否在申领页显示”字段决定。",
             key=category_status_key,
             **(
                 {}
@@ -11405,6 +11797,23 @@ def render_add_category_form() -> None:
                 renamed_selected_languages + parse_custom_values(custom_languages_text)
             )
         )
+        category_request_visible_key = f"category_request_visible_{editor_key}"
+        category_request_visible = metadata_visibility_col.radio(
+            "品类在申领页显示 *",
+            list(REQUEST_PAGE_VISIBILITY_OPTIONS),
+            horizontal=True,
+            help="申领页只读取此字段；该设置与品类启用状态互相独立。",
+            key=category_request_visible_key,
+            **(
+                {}
+                if category_request_visible_key in st.session_state
+                else {
+                    "index": list(REQUEST_PAGE_VISIBILITY_OPTIONS).index(
+                        current_category_request_visible
+                    )
+                }
+            ),
+        )
 
         carry_model = models[0] if models else ""
         carry_language = languages[0] if languages else ""
@@ -11476,6 +11885,7 @@ def render_add_category_form() -> None:
                 "unit_price": float(category_unit_price or 0),
                 "customs_code": category_customs_code,
                 "status": category_status,
+                "request_visible": category_request_visible,
             }
             previous_category_defaults = st.session_state.get(defaults_state_key)
             saved_target_values = st.session_state.get(target_state_key, {})
@@ -11508,6 +11918,11 @@ def render_add_category_form() -> None:
                         if target["is_new"]
                         else target["status"]
                     ),
+                    "request_visible": normalize_request_page_visibility(
+                        category_defaults["request_visible"]
+                        if target["is_new"]
+                        else target.get("request_visible")
+                    ),
                 }
                 for target in plan["targets"]
             }
@@ -11526,6 +11941,7 @@ def render_add_category_form() -> None:
                 unit_price_key = f"{widget_prefix}_unit_price"
                 customs_key = f"{widget_prefix}_customs"
                 status_key = f"{widget_prefix}_status"
+                request_visible_key = f"{widget_prefix}_request_visible"
                 if quantity_key in st.session_state:
                     values["quantity"] = int(st.session_state[quantity_key])
                 if unit_price_key in st.session_state:
@@ -11534,6 +11950,10 @@ def render_add_category_form() -> None:
                     values["customs_code"] = str(st.session_state[customs_key] or "").strip()
                 if status_key in st.session_state:
                     values["status"] = normalize_enabled_status(st.session_state[status_key])
+                if request_visible_key in st.session_state:
+                    values["request_visible"] = normalize_request_page_visibility(
+                        st.session_state[request_visible_key]
+                    )
                 if category_status == STATUS_INACTIVE:
                     values["status"] = STATUS_INACTIVE
 
@@ -11545,6 +11965,9 @@ def render_add_category_form() -> None:
                 previous_price = float(previous_category_defaults.get("unit_price") or 0)
                 previous_customs = str(previous_category_defaults.get("customs_code") or "")
                 previous_status = normalize_enabled_status(previous_category_defaults.get("status"))
+                previous_request_visible = normalize_request_page_visibility(
+                    previous_category_defaults.get("request_visible")
+                )
                 for values in target_values.values():
                     if float(values.get("unit_price") or 0) == previous_price:
                         values["unit_price"] = category_defaults["unit_price"]
@@ -11552,6 +11975,11 @@ def render_add_category_form() -> None:
                         values["customs_code"] = category_defaults["customs_code"]
                     if normalize_enabled_status(values.get("status")) == previous_status:
                         values["status"] = category_defaults["status"]
+                    if (
+                        normalize_request_page_visibility(values.get("request_visible"))
+                        == previous_request_visible
+                    ):
+                        values["request_visible"] = category_defaults["request_visible"]
                 st.session_state[target_state_key] = target_values
                 st.session_state[defaults_state_key] = category_defaults
                 st.session_state[revision_key] = revision + 1
@@ -11568,6 +11996,7 @@ def render_add_category_form() -> None:
                 carry_model=carry_model,
                 carry_language=carry_language,
                 target_values=target_values,
+                default_request_visible=category_request_visible,
             )
             plan = enforce_category_inventory_status(plan, category_status)
 
@@ -11606,8 +12035,8 @@ def render_add_category_form() -> None:
             st.caption(
                 f"{ui_text('当前组合处理方式')}：{ui_text(str(selected_target['action']))}"
             )
-            quantity_col, price_col, customs_col, status_col = st.columns(
-                [1, 1, 1.4, 1.2],
+            quantity_col, price_col, customs_col, status_col, visibility_col = st.columns(
+                [1, 1, 1.4, 1.2, 1.2],
                 vertical_alignment="bottom",
             )
             selected_quantity = quantity_col.number_input(
@@ -11641,6 +12070,17 @@ def render_add_category_form() -> None:
                 disabled=category_status == STATUS_INACTIVE,
                 key=f"{selected_widget_prefix}_status",
             )
+            selected_request_visible = visibility_col.radio(
+                "申领页显示 *",
+                list(REQUEST_PAGE_VISIBILITY_OPTIONS),
+                index=list(REQUEST_PAGE_VISIBILITY_OPTIONS).index(
+                    normalize_request_page_visibility(
+                        selected_values.get("request_visible")
+                    )
+                ),
+                horizontal=True,
+                key=f"{selected_widget_prefix}_request_visible",
+            )
             target_values[selected_target_key] = {
                 "quantity": int(selected_quantity),
                 "unit_price": float(selected_unit_price),
@@ -11648,6 +12088,9 @@ def render_add_category_form() -> None:
                 "status": STATUS_INACTIVE
                 if category_status == STATUS_INACTIVE
                 else normalize_enabled_status(selected_status),
+                "request_visible": normalize_request_page_visibility(
+                    selected_request_visible
+                ),
             }
             st.session_state[target_state_key] = target_values
             plan = build_category_inventory_plan(
@@ -11660,6 +12103,7 @@ def render_add_category_form() -> None:
                 carry_model=carry_model,
                 carry_language=carry_language,
                 target_values=target_values,
+                default_request_visible=category_request_visible,
             )
             plan = enforce_category_inventory_status(plan, category_status)
 
@@ -11753,7 +12197,7 @@ def render_add_category_form() -> None:
         elif category_metadata_error:
             st.error(category_metadata_error)
         elif plan is None:
-            st.error("请检查库存组合中的数量、单价、海关编码和启用状态。")
+            st.error("请检查库存组合中的数量、单价、海关编码、启用状态和申领页显示。")
         elif plan["discarded_quantity"] > 0 and not discard_confirmed:
             st.warning("请确认直接舍弃未分配库存。")
         elif is_edit and not confirmed:
@@ -11766,6 +12210,7 @@ def render_add_category_form() -> None:
                 "models": list(models),
                 "languages": list(languages),
                 "category_status": category_status,
+                "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
                 "category_unit_price": category_unit_price,
                 "category_customs_code": category_customs_code,
@@ -11775,6 +12220,7 @@ def render_add_category_form() -> None:
                 "form_state": {
                     "category_name_new": product,
                     "category_status_new": category_status,
+                    "category_request_visible_new": category_request_visible,
                     "category_definition_new": category_definition,
                     "category_unit_price_new": category_unit_price_text,
                     "category_customs_code_new": category_customs_code,
@@ -11794,6 +12240,7 @@ def render_add_category_form() -> None:
                 "old_product": old_product, "new_product": product, "no_model": no_model,
                 "no_language": no_language, "target_models": list(models),
                 "target_languages": list(languages), "category_status": category_status,
+                "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
                 "category_unit_price": category_unit_price, "category_customs_code": category_customs_code,
                 "category_record_id": category_id, "model_renames": dict(model_renames),
@@ -11803,6 +12250,7 @@ def render_add_category_form() -> None:
             }
             st.session_state[CATEGORY_EDIT_DRAFT_KEY] = {
                 "old_product": old_product, "product": product, "category_status": category_status,
+                "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
                 "edited_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "current_records": [dict(row) for row in current_records],

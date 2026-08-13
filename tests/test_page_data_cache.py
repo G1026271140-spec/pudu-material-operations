@@ -182,6 +182,36 @@ class PageDataCacheTests(unittest.TestCase):
         self.assertEqual(result["row_count"], 1)
         self.assertEqual(rows, fresh_rows)
 
+    def test_newer_static_snapshot_overrides_older_runtime_cache(self) -> None:
+        static_rows = [{"record_id": "deployed-new", "fields": {}}]
+        runtime_rows = [{"record_id": "runtime-old", "fields": {}}]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_path = Path(temp_dir) / "page_data_cache.json"
+            cache_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "generated_at": "2026-08-13 15:00:00",
+                        "tables": {app.MATERIAL_TABLE_NAME: static_rows},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with patch.object(app, "PAGE_DATA_STATIC_CACHE_PATH", cache_path):
+                app.load_static_page_data_cache.clear()
+                runtime_cache = app.page_data_runtime_cache()
+                runtime_cache["tables"] = {app.MATERIAL_TABLE_NAME: runtime_rows}
+                runtime_cache["updated_at"] = {
+                    app.MATERIAL_TABLE_NAME: "2026-08-13 14:00:00"
+                }
+
+                rows = app.page_data_cache_rows(app.MATERIAL_TABLE_NAME)
+                source, updated_at = app.page_cache_status([app.MATERIAL_TABLE_NAME])
+
+        self.assertEqual(rows, static_rows)
+        self.assertEqual(source, "部署静态缓存")
+        self.assertEqual(updated_at, "2026-08-13 15:00:00")
+
     def test_empty_static_table_does_not_fall_back_to_network(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = Path(temp_dir) / "page_data_cache.json"

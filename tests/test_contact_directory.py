@@ -6,6 +6,28 @@ from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 
 
 class ContactDirectoryTests(unittest.TestCase):
+    def test_newer_static_directory_replaces_session_cache(self) -> None:
+        old_cache = {
+            "generated_at": "2026-08-13 14:00:00",
+            "departments": [{"department_id": "old", "name": "旧部门"}],
+            "users": [],
+        }
+        new_cache = {
+            "generated_at": "2026-08-13 15:00:00",
+            "departments": [{"department_id": "new", "name": "新部门"}],
+            "users": [],
+        }
+        session_state = {"contact_department_cache_data": old_cache}
+
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(app, "load_static_contact_department_cache", return_value=new_cache),
+        ):
+            result = app.get_contact_directory_cache()
+
+        self.assertIs(result, new_cache)
+        self.assertIs(session_state["contact_department_cache_data"], new_cache)
+
     def test_department_cache_builds_full_paths(self) -> None:
         cache = app.contact_department_cache_from_rows(
             [

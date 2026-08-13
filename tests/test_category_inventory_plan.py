@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pandas as pd
@@ -505,6 +506,69 @@ class CategoryInventoryPlanTests(unittest.TestCase):
         self.assertEqual(
             [item["value"] for item in material_pool],
             ["1", "2"],
+        )
+
+    def test_category_option_pool_keeps_selected_values_across_reruns(self) -> None:
+        session_state: dict[str, object] = {}
+        component_result = SimpleNamespace(selected=["品类A"], edit="")
+        options = [{"value": "品类A", "label": "品类A", "meta": "1 行"}]
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(
+                app,
+                "CATEGORY_OPTION_POOL",
+                return_value=component_result,
+            ) as component,
+        ):
+            app.render_category_option_pool(
+                options,
+                selected=[],
+                key="delete_pool",
+                multi=True,
+                danger=True,
+            )
+            app.render_category_option_pool(
+                options,
+                selected=[],
+                key="delete_pool",
+                multi=True,
+                danger=True,
+            )
+
+        self.assertEqual(session_state["delete_pool_selection"], ["品类A"])
+        self.assertEqual(component.call_args_list[1].kwargs["data"]["selected"], ["品类A"])
+
+    def test_category_delete_preview_contains_material_details(self) -> None:
+        record = inventory_record("1", "M1", "韩语", 0, status=app.STATUS_INACTIVE)
+        record["category"] = "产品单页"
+        record["material_code"] = "MAT-0001"
+
+        preview = app.category_delete_preview_dataframe([record])
+
+        self.assertEqual(preview.loc[0, "物料编码"], "MAT-0001")
+        self.assertEqual(preview.loc[0, "物料品类"], "产品单页")
+        self.assertEqual(preview.loc[0, "产品型号"], "M1")
+        self.assertEqual(preview.loc[0, "语种"], "韩语")
+        self.assertEqual(preview.loc[0, "启用状态"], app.STATUS_INACTIVE)
+        self.assertEqual(preview.loc[0, "申领页显示"], app.REQUEST_PAGE_HIDDEN_VALUE)
+
+    def test_category_delete_detects_changes_after_preview(self) -> None:
+        preview = inventory_record("1", "M1", "韩语", 0)
+        preview["material_code"] = "MAT-0001"
+        current = dict(preview)
+        current["quantity"] = 5
+
+        changed = app.category_delete_changed_records([preview], [current])
+
+        self.assertEqual(changed, ["MAT-0001"])
+
+    def test_new_material_rows_default_to_active_and_visible_on_request_page(self) -> None:
+        plan = app.build_category_inventory_plan([], "新品类", ["M1"], ["英语"])
+
+        self.assertEqual(plan["targets"][0]["status"], app.STATUS_ACTIVE)
+        self.assertEqual(
+            plan["targets"][0]["request_visible"],
+            app.REQUEST_PAGE_VISIBLE_VALUE,
         )
 
     @patch("app.feishu_rows")
