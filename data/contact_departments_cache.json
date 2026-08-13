@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-13 09:38:00",
+  "generated_at": "2026-08-13 10:33:42",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -12963,6 +12963,16 @@
       ]
     },
     {
+      "open_id": "ou_a614dde15652aacaf885315566334bb6",
+      "name": "王杰",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_312c872d52bd243dad178a21c1e3d80d",
       "name": "王杰",
       "department_ids": [
@@ -14346,6 +14356,16 @@
       ],
       "department_paths": [
         "渠道管理组"
+      ]
+    },
+    {
+      "open_id": "ou_ec44e213f65154bbc5a7a12327aed1c7",
+      "name": "耿明亮",
+      "department_ids": [
+        "od-89b909bd6f20be58d79447ab6849221e"
+      ],
+      "department_paths": [
+        "采购开发组"
       ]
     },
     {
@@ -20357,5 +20377,5 @@
       ]
     }
   ],
-  "user_count": 1876
+  "user_count": 1878
 }
