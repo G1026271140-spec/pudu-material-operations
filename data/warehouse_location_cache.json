@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-13 14:51:04",
+  "generated_at": "2026-08-13 16:33:08",
   "source": "manual_feishu_snapshot",
   "image_count": 28,
   "shelves": [
@@ -148,12 +148,6 @@
               "category": "产品单页(Product Flyer )",
               "model": "T300 Conveyor",
               "language": "简中(Simplified Chinese)"
-            },
-            {
-              "material_code": "MAT-1031",
-              "category": "产品单页(Product Flyer )",
-              "model": "HolaBot Pro",
-              "language": "简中(Simplified Chinese)"
             }
           ]
         },
@@ -239,12 +233,6 @@
             }
           ],
           "materials": [
-            {
-              "material_code": "MAT-0239",
-              "category": "产品单页(Product Flyer )",
-              "model": "PUDU HolaBot",
-              "language": "简中(Simplified Chinese)"
-            },
             {
               "material_code": "MAT-1028",
               "category": "产品单页(Product Flyer )",

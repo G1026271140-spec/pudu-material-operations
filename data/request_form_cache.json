@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-13 14:50:25",
+  "generated_at": "2026-08-13 16:32:25",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -51,6 +51,7 @@
     "D7",
     "D9",
     "ET1",
+    "Flash Arm",
     "FlashBot",
     "FlashBot Arm",
     "FlashBot Lite",
@@ -66,11 +67,13 @@
     "PuduBot 2",
     "SH1",
     "Pudu SwiftBot",
+    "SwiftBot",
     "SwiftBot Neo",
     "T300",
     "T300 Conveyor",
     "T600",
-    "新闪电匣"
+    "新闪电匣",
+    "猛犸MP2000"
   ],
   "model_product_lines": {
     "BG1": "CR",
@@ -104,7 +107,6 @@
     "MP2000": "IR",
     "Hulk": "新项目",
     "SwiftBot": "SR",
-    "Flash Arm": "GR",
     "猛犸MP2000": "IR"
   },
   "languages": [
@@ -164,7 +166,6 @@
           "languages": [
             "英语(English)",
             "简中(Simplified Chinese)",
-            "德语(German)",
             "日语(apanese)",
             "法语(French)",
             "西语(Spanish)",
@@ -172,6 +173,7 @@
             "俄语(Russian)",
             "繁中(Traditional Chinese)",
             "意大利语(Italian)",
+            "德语(German)",
             "韩语(Korean)"
           ],
           "product_line": "CR"
@@ -292,8 +294,7 @@
             "葡语(Portuguese)",
             "西语(Spanish)",
             "韩语(Korean)"
-          ],
-          "product_line": "GR"
+          ]
         },
         {
           "model": "FlashBot",
@@ -345,40 +346,6 @@
             "韩语(Korean)"
           ],
           "product_line": "SR"
-        },
-        {
-          "model": "PUDU HolaBot",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "日语(apanese)",
-            "法语(French)",
-            "西语(Spanish)",
-            "葡语(Portuguese)",
-            "俄语(Russian)",
-            "繁中(Traditional Chinese)",
-            "意大利语(Italian)",
-            "韩语(Korean)"
-          ],
-          "product_line": "新项目"
-        },
-        {
-          "model": "HolaBot Pro",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ],
-          "product_line": "新项目"
         },
         {
           "model": "Hulk",
@@ -583,23 +550,6 @@
             "韩语(Korean)"
           ],
           "product_line": "IR"
-        },
-        {
-          "model": "新闪电匣",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "日语(apanese)",
-            "法语(French)",
-            "西语(Spanish)",
-            "葡语(Portuguese)",
-            "俄语(Russian)",
-            "繁中(Traditional Chinese)",
-            "意大利语(Italian)",
-            "韩语(Korean)"
-          ],
-          "product_line": "新项目"
         },
         {
           "model": "猛犸MP2000",
@@ -1137,7 +1087,7 @@
       ]
     }
   ],
-  "combination_count": 550,
+  "combination_count": 517,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -1490,72 +1440,51 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0231",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0232",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0233",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "日语(apanese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0234",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "法语(French)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0235",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "西语(Spanish)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0236",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "葡语(Portuguese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0237",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "俄语(Russian)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0238",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0239",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
-      "language": "简中(Simplified Chinese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0240",
       "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "意大利语(Italian)",
       "quantity": 0
     },
@@ -1910,76 +1839,6 @@
       "quantity": 100
     },
     {
-      "material_code": "MAT-0291",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0292",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0293",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0294",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0295",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0296",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0297",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0298",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0299",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0300",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0301",
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
@@ -2274,60 +2133,11 @@
       "quantity": 300
     },
     {
-      "material_code": "MAT-0343",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0344",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0345",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0346",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0347",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0348",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0349",
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1250
-    },
-    {
-      "material_code": "MAT-0350",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "意大利语(Italian)",
-      "quantity": 0
+      "quantity": 1850
     },
     {
       "material_code": "MAT-0351",
@@ -4241,13 +4051,6 @@
       "quantity": 1000
     },
     {
-      "material_code": "MAT-1031",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 600
-    },
-    {
       "material_code": "MAT-1032",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
@@ -4542,76 +4345,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1075",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1076",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1077",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1078",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1079",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1080",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1081",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1082",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1083",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1084",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1085",
       "product": "产品单页(Product Flyer )",
       "model": "KettyBot Pro",
@@ -4636,13 +4369,6 @@
       "material_code": "MAT-1088",
       "product": "产品单页(Product Flyer )",
       "model": "PUDU CC1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1089",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
       "language": "韩语(Korean)",
       "quantity": 0
     },
@@ -4822,13 +4548,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1115",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1116",
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
@@ -5004,6 +4723,6 @@
       "quantity": 100
     }
   ],
-  "row_count": 552,
+  "row_count": 519,
   "built_from": "live_feishu"
 }
