@@ -120,6 +120,42 @@ class PageDataCacheTests(unittest.TestCase):
         self.assertEqual(result, rows)
         live_loader.assert_not_called()
 
+    def test_static_snapshot_reloads_when_file_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_path = Path(temp_dir) / "page_data_cache.json"
+            cache_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "generated_at": "2026-07-15 12:00:00",
+                        "tables": {app.MATERIAL_TABLE_NAME: [{"record_id": "old"}]},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with patch.object(app, "PAGE_DATA_STATIC_CACHE_PATH", cache_path):
+                first = app.load_static_page_data_cache()
+                cache_path.write_text(
+                    json.dumps(
+                        {
+                            "schema_version": 1,
+                            "generated_at": "2026-07-15 13:00:00",
+                            "tables": {
+                                app.MATERIAL_TABLE_NAME: [
+                                    {"record_id": "new"},
+                                    {"record_id": "new-2"},
+                                ]
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                second = app.load_static_page_data_cache()
+
+        self.assertEqual(first["generated_at"], "2026-07-15 12:00:00")
+        self.assertEqual(second["generated_at"], "2026-07-15 13:00:00")
+        self.assertEqual(len(second["tables"][app.MATERIAL_TABLE_NAME]), 2)
+
     def test_runtime_refresh_overrides_static_snapshot(self) -> None:
         static_rows = [{"record_id": "old", "fields": {}}]
         fresh_rows = [{"record_id": "new", "fields": {}}]

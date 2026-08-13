@@ -570,6 +570,62 @@ class MaterialActivationTests(unittest.TestCase):
             (True, [app.NO_LANGUAGE_TEXT]),
         )
 
+    def test_new_static_cache_replaces_locked_request_session(self) -> None:
+        def cache(generated_at: str, languages: list[str]) -> dict[str, object]:
+            inventory_rows = [
+                {
+                    "material_code": f"MAT-{index:04d}",
+                    "product": "产品单页",
+                    "model": "BellaBot",
+                    "language": language,
+                    "quantity": 0,
+                }
+                for index, language in enumerate(languages, start=1)
+            ]
+            return {
+                "schema_version": app.REQUEST_FORM_CACHE_SCHEMA_VERSION,
+                "source": "test",
+                "generated_at": generated_at,
+                "products": ["产品单页"],
+                "no_model_products": [],
+                "no_language_products": [],
+                "configured_language_products": ["产品单页"],
+                "models": ["BellaBot"],
+                "model_product_lines": {"BellaBot": "SR"},
+                "languages": languages,
+                "active_combinations": app.request_form_active_combinations(
+                    inventory_rows,
+                    {"BellaBot": "SR"},
+                ),
+                "combination_count": len(languages),
+                "inventory_rows": inventory_rows,
+                "row_count": len(inventory_rows),
+            }
+
+        old_cache = cache("2026-08-13 14:27:47", ["英语(English)"])
+        new_cache = cache(
+            "2026-08-13 14:50:25",
+            ["英语(English)", "简中(Simplified Chinese)", "韩语(Korean)"],
+        )
+        session_state = {
+            "request_form_cache_data": old_cache,
+            "request_form_cache_locked": True,
+        }
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(app, "request_form_cache_state", return_value={}),
+            patch.object(app, "request_form_cache_from_runtime_page_data", return_value=None),
+            patch.object(app, "load_static_request_form_cache", return_value=new_cache),
+        ):
+            context = app.get_request_form_selection_context()
+
+        self.assertEqual(
+            app.product_language_options("产品单页", "BellaBot", context),
+            ["英语(English)", "简中(Simplified Chinese)", "韩语(Korean)"],
+        )
+        self.assertIs(session_state["request_form_cache_data"], new_cache)
+        self.assertFalse(session_state["request_form_cache_locked"])
+
 
 if __name__ == "__main__":
     unittest.main()

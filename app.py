@@ -2732,6 +2732,22 @@ def build_live_request_form_cache() -> dict[str, object]:
 
 
 @st.cache_data(show_spinner=False)
+def load_static_json_file(
+    path_value: str,
+    modified_ns: int,
+    file_size: int,
+) -> object:
+    del modified_ns, file_size
+    return json.loads(Path(path_value).read_text(encoding="utf-8"))
+
+
+def static_cache_file_signature(path: Path) -> tuple[str, int, int]:
+    if not path.exists():
+        return str(path), 0, 0
+    stat = path.stat()
+    return str(path), stat.st_mtime_ns, stat.st_size
+
+
 def load_static_request_form_cache() -> dict[str, object]:
     if not REQUEST_FORM_STATIC_CACHE_PATH.exists():
         return {
@@ -2750,11 +2766,14 @@ def load_static_request_form_cache() -> dict[str, object]:
             "inventory_rows": [],
             "row_count": 0,
         }
-    data = json.loads(REQUEST_FORM_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+    data = load_static_json_file(*static_cache_file_signature(REQUEST_FORM_STATIC_CACHE_PATH))
     if not isinstance(data, dict):
         raise ValueError("申请页面静态缓存文件格式不正确。")
     validate_request_form_cache(data)
     return data
+
+
+load_static_request_form_cache.clear = load_static_json_file.clear  # type: ignore[attr-defined]
 
 
 def request_form_cache_state() -> dict[str, object]:
@@ -2785,8 +2804,8 @@ def refresh_request_form_cache_from_page_data() -> dict[str, object]:
         error="",
         updated_at=str(data.get("generated_at") or ""),
     )
-    if not st.session_state.get("request_form_cache_locked"):
-        st.session_state["request_form_cache_data"] = data
+    st.session_state["request_form_cache_data"] = data
+    st.session_state["request_form_cache_locked"] = False
     return data
 
 
@@ -2929,14 +2948,20 @@ def get_request_form_selection_context() -> dict[str, object]:
     live_data = state.get("data") if isinstance(state.get("data"), dict) else None
     runtime_data = request_form_cache_from_runtime_page_data()
     static_data = load_static_request_form_cache()
-    if "request_form_cache_data" not in st.session_state:
-        st.session_state["request_form_cache_data"] = runtime_data or live_data or static_data
-    elif (runtime_data or live_data) and not st.session_state.get("request_form_cache_locked"):
-        next_data = runtime_data or live_data
-        current_generated_at = str(st.session_state["request_form_cache_data"].get("generated_at") or "")
-        live_generated_at = str(next_data.get("generated_at") or "")
-        if live_generated_at and live_generated_at != current_generated_at:
+    current_data = st.session_state.get("request_form_cache_data")
+    candidates = [
+        data
+        for data in (static_data, live_data, runtime_data, current_data)
+        if isinstance(data, dict)
+    ]
+    if candidates:
+        next_data = max(
+            enumerate(candidates),
+            key=lambda item: (str(item[1].get("generated_at") or ""), item[0]),
+        )[1]
+        if next_data is not current_data:
             st.session_state["request_form_cache_data"] = next_data
+            st.session_state["request_form_cache_locked"] = False
     return request_form_cache_to_selection_context(dict(st.session_state["request_form_cache_data"]))
 
 
@@ -3260,14 +3285,16 @@ def load_feishu_rows_snapshot(table_name: str, app_id: str, app_secret: str, app
     return client.list_records(str(table["table_id"]))
 
 
-@st.cache_data(show_spinner=False)
 def load_static_page_data_cache() -> dict[str, object]:
     if not PAGE_DATA_STATIC_CACHE_PATH.exists():
         return {"schema_version": 1, "generated_at": "", "tables": {}}
-    data = json.loads(PAGE_DATA_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+    data = load_static_json_file(*static_cache_file_signature(PAGE_DATA_STATIC_CACHE_PATH))
     if not isinstance(data, dict) or not isinstance(data.get("tables"), dict):
         raise RuntimeError("页面静态缓存文件格式不正确。")
     return data
+
+
+load_static_page_data_cache.clear = load_static_json_file.clear  # type: ignore[attr-defined]
 
 
 @st.cache_resource(show_spinner=False)
@@ -3522,7 +3549,6 @@ def build_live_contact_department_cache() -> dict[str, object]:
     )
 
 
-@st.cache_data(show_spinner=False)
 def load_static_contact_department_cache() -> dict[str, object]:
     if not CONTACT_DEPARTMENT_STATIC_CACHE_PATH.exists():
         return {
@@ -3535,7 +3561,15 @@ def load_static_contact_department_cache() -> dict[str, object]:
             "users": [],
             "user_count": 0,
         }
-    return json.loads(CONTACT_DEPARTMENT_STATIC_CACHE_PATH.read_text(encoding="utf-8"))
+    data = load_static_json_file(
+        *static_cache_file_signature(CONTACT_DEPARTMENT_STATIC_CACHE_PATH)
+    )
+    if not isinstance(data, dict):
+        raise RuntimeError("通讯录静态缓存文件格式不正确。")
+    return data
+
+
+load_static_contact_department_cache.clear = load_static_json_file.clear  # type: ignore[attr-defined]
 
 
 def get_contact_directory_cache() -> dict[str, object]:
@@ -3622,13 +3656,21 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
     runtime_lock = runtime_cache["lock"]
     with runtime_lock:  # type: ignore[union-attr]
         runtime_tables = dict(runtime_cache.get("tables") or {})
+        runtime_updated_at = dict(runtime_cache.get("updated_at") or {})
     if not all(table_name in runtime_tables for table_name in REQUEST_FORM_CACHE_TABLES):
         return None
-    return request_form_cache_from_inventory(
+    data = request_form_cache_from_inventory(
         load_feishu_options(),
         load_feishu_request_inventory(),
         source="shared_runtime_page_cache",
     )
+    timestamps = [
+        str(runtime_updated_at.get(table_name) or "")
+        for table_name in REQUEST_FORM_CACHE_TABLES
+    ]
+    if all(timestamps):
+        data["generated_at"] = min(timestamps)
+    return data
 
 
 def render_page_cache_toolbar(page_key: str) -> None:
@@ -12717,14 +12759,16 @@ def render_inventory_view() -> None:
     render_download_center(df, filtered)
 
 
-@st.cache_data(show_spinner=False)
 def load_warehouse_location_cache() -> dict[str, object]:
     if not WAREHOUSE_LOCATION_CACHE_PATH.exists():
         return {"schema_version": 1, "generated_at": "", "shelves": []}
-    data = json.loads(WAREHOUSE_LOCATION_CACHE_PATH.read_text(encoding="utf-8"))
+    data = load_static_json_file(*static_cache_file_signature(WAREHOUSE_LOCATION_CACHE_PATH))
     if not isinstance(data, dict) or not isinstance(data.get("shelves"), list):
         raise RuntimeError("仓库位置静态缓存文件格式不正确。")
     return data
+
+
+load_warehouse_location_cache.clear = load_static_json_file.clear  # type: ignore[attr-defined]
 
 
 def warehouse_material_search_text(material: dict[str, object]) -> str:
