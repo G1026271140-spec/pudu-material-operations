@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-13 16:49:22",
+  "generated_at": "2026-08-13 17:51:18",
   "tables": {
     "物料品类": [
       {
@@ -12,7 +12,7 @@
           "单价（美元）": "0.06",
           "启用状态": "停用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Single Product Brochure",
           "备注": "",
           "库存行数": "180",
           "是否在申领页显示": "否",
@@ -401,7 +401,7 @@
           ],
           "物料品类": "产品折页(Single Product Brochure)",
           "物料品类编码": "001",
-          "装箱单产品类型": "Flyers",
+          "装箱单产品类型": "Brochures",
           "语种数量": "10"
         },
         "id": "rec27JD20Fj63J",
@@ -415,7 +415,7 @@
           "单价（美元）": "0",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Product Flyer",
           "备注": "",
           "库存行数": "286",
           "是否在申领页显示": "是",
@@ -1030,7 +1030,7 @@
           "单价（美元）": "0.8",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Product Brochure",
           "备注": "",
           "库存行数": "10",
           "是否在申领页显示": "是",
@@ -1093,7 +1093,7 @@
           "单价（美元）": "0.8",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Industrial Product Line Brochure",
           "备注": "",
           "库存行数": "2",
           "是否在申领页显示": "是",
@@ -1160,7 +1160,7 @@
           "单价（美元）": "0.8",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Cleaning Product Line Brochure",
           "备注": "",
           "库存行数": "10",
           "是否在申领页显示": "是",
@@ -1223,7 +1223,7 @@
           "单价（美元）": "0.8",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Delivery Robot Product Brochure",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "是",
@@ -1268,7 +1268,7 @@
           "单价（美元）": "0.8",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Embodied AI Robot Product Brochure",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "是",
@@ -1315,7 +1315,7 @@
           "单价（美元）": "0.8",
           "启用状态": "停用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Company Brochure",
           "备注": "",
           "库存行数": "10",
           "是否在申领页显示": "否",
@@ -1378,7 +1378,7 @@
           "单价（美元）": "11.83",
           "启用状态": "启用",
           "品类定义": "印刷物料",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Product Roll-Up Banner",
           "备注": "",
           "库存行数": "180",
           "是否在申领页显示": "是",
@@ -1781,7 +1781,7 @@
           "单价（美元）": "3.69",
           "启用状态": "启用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "PUDU Plush Toy",
           "备注": "",
           "库存行数": "18",
           "是否在申领页显示": "是",
@@ -1860,7 +1860,7 @@
           "单价（美元）": "2",
           "启用状态": "启用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Fridge Magnet",
           "备注": "",
           "库存行数": "21",
           "是否在申领页显示": "是",
@@ -1945,7 +1945,7 @@
           "单价（美元）": "5",
           "启用状态": "启用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Notebook Gift Box",
           "备注": "",
           "库存行数": "1",
           "是否在申领页显示": "是",
@@ -1990,7 +1990,7 @@
           "单价（美元）": "0.15",
           "启用状态": "启用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "PUDU Logo Non-woven Bag",
           "备注": "",
           "库存行数": "10",
           "是否在申领页显示": "是",
@@ -2053,7 +2053,7 @@
           "单价（美元）": "14.78",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Customized PUDU Backpack",
           "备注": "",
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2098,7 +2098,7 @@
           "单价（美元）": "0.25",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Premium PUDU Branded Gift Bag",
           "备注": "",
           "库存行数": "10",
           "是否在申领页显示": "否",
@@ -2161,7 +2161,7 @@
           "单价（美元）": "11.67",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Event Apparel",
           "备注": "",
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2206,7 +2206,7 @@
           "单价（美元）": "0.06",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Customized Fan",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2251,7 +2251,7 @@
           "单价（美元）": "0.58",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Souvenir Gift Box (Paper Bag)",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2296,7 +2296,7 @@
           "单价（美元）": "1.77",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Customized Cap",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2341,7 +2341,7 @@
           "单价（美元）": "1.48",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Full Product Set Fridge Magnet",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2386,7 +2386,7 @@
           "单价（美元）": "6.53",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Customized Golf Ball",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2431,7 +2431,7 @@
           "单价（美元）": "3.84",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Rechargeable Handheld Fan",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2476,7 +2476,7 @@
           "单价（美元）": "0.07",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Guest Badge / Arm Sticker",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2521,7 +2521,7 @@
           "单价（美元）": "0.66",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Staff Badge",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -2566,7 +2566,7 @@
           "单价（美元）": "0.74",
           "启用状态": "停用",
           "品类定义": "周边礼品",
-          "商业发票产品名称": null,
+          "商业发票产品名称": "Dealer Award Plaque",
           "备注": null,
           "库存行数": "1",
           "是否在申领页显示": "否",
@@ -4697,7 +4697,7 @@
         "fields": {
           "产品型号": "Flash Arm",
           "产品型号编码": "X033",
-          "产品线": null,
+          "产品线": "GR",
           "启用状态": "启用",
           "物料主数据": [
             {
@@ -4740,7 +4740,7 @@
         "fields": {
           "产品型号": "SwiftBot",
           "产品型号编码": "X034",
-          "产品线": null,
+          "产品线": "SR",
           "启用状态": "启用",
           "物料主数据": [
             {
@@ -4783,7 +4783,7 @@
         "fields": {
           "产品型号": "猛犸MP2000",
           "产品型号编码": "X035",
-          "产品线": null,
+          "产品线": "IR",
           "启用状态": "启用",
           "物料主数据": [
             {
@@ -4821,6 +4821,44 @@
         },
         "id": "recvsaaWWP0tvm",
         "record_id": "recvsaaWWP0tvm"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "产品型号编码": "X036",
+          "产品线": null,
+          "启用状态": null,
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ]
+        },
+        "id": "recvsalHzwUyeO",
+        "record_id": "recvsalHzwUyeO"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "产品型号编码": "X037",
+          "产品线": null,
+          "启用状态": null,
+          "物料主数据": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ]
+        },
+        "id": "recvsalSW99lP1",
+        "record_id": "recvsalSW99lP1"
       }
     ],
     "物料语种": [
@@ -100703,18 +100741,18 @@
               "file_token": "FEcLbvMD5owQR5xOwiNc19O8nLf",
               "name": "026329d8-1de1-4365-8d72-0c18f0a82231.jpg",
               "size": 1134140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/8037856b2214aa72d317.webp"
             },
             {
               "file_token": "IVi3bViUaoDJB2xiMlYcQlTRnsd",
               "name": "0950006d75ef6e3076c4282f475242fe(1).png",
               "size": 28337,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/d080d85efd6566443407.webp"
             }
           ],
@@ -100749,9 +100787,9 @@
               "file_token": "KAkebk1MuoUlwZxwQb0cwiSwnIb",
               "name": "76893361-4130-4141-8359-a3d240b7af73.png",
               "size": 166239,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/eb63fd20472ee48a7ba8.webp"
             }
           ],
@@ -100786,9 +100824,9 @@
               "file_token": "AE4Rb1HnjoA1hMxOd3acBWdunjd",
               "name": "image.png",
               "size": 94114,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/43dc0d9c2b7d49de4d01.webp"
             }
           ],
@@ -100823,9 +100861,9 @@
               "file_token": "FIaab7VkEoIRpOxf9ANctQ98nIb",
               "name": "9e95b14c-1ddc-403d-b292-1ad76fc2258e.jpg",
               "size": 262068,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/f50ae498e27a427e92d5.webp"
             }
           ],
@@ -100860,13 +100898,13 @@
               "file_token": "XGosb0o0Uouzn7xdxZIcsI8qn3e",
               "name": "20260813-164753.jpg",
               "size": 130503,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XGosb0o0Uouzn7xdxZIcsI8qn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XGosb0o0Uouzn7xdxZIcsI8qn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XGosb0o0Uouzn7xdxZIcsI8qn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XGosb0o0Uouzn7xdxZIcsI8qn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/713fb44d0289926d9e59.webp"
             }
           ],
-          "物料状态": "设计制作中",
+          "物料状态": "已到货",
           "负责人": null,
           "项目名称": "巴拿马活动"
         },
@@ -100897,9 +100935,9 @@
               "file_token": "GlTObQQGhoHUfRxjVoYcC0Vtnbd",
               "name": "img_v3_02149_de15c820-8c5a-4595-b1b1-0b20d1d2f07g.jpg",
               "size": 354165,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/3cba6d296614195a7aa7.webp"
             }
           ],
@@ -100934,9 +100972,9 @@
               "file_token": "Wg5EbXbo1oOxpRxIrYac4aOEnYe",
               "name": "image.png",
               "size": 244396,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Wg5EbXbo1oOxpRxIrYac4aOEnYe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Wg5EbXbo1oOxpRxIrYac4aOEnYe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Wg5EbXbo1oOxpRxIrYac4aOEnYe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Wg5EbXbo1oOxpRxIrYac4aOEnYe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/5fe90af578b9910d69c1.webp"
             }
           ],
@@ -100998,9 +101036,9 @@
               "file_token": "JJdkbKdFToAf3Lx7PNCclEPTnTh",
               "name": "企业微信截图_17865186083941.png",
               "size": 436318,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JJdkbKdFToAf3Lx7PNCclEPTnTh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JJdkbKdFToAf3Lx7PNCclEPTnTh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JJdkbKdFToAf3Lx7PNCclEPTnTh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A154%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JJdkbKdFToAf3Lx7PNCclEPTnTh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A155%7D%7D",
               "cached_path": "assets/gift_projects/f179e56146c3daedb353.webp"
             }
           ],
@@ -101130,7 +101168,7 @@
   },
   "row_counts": {
     "物料品类": 25,
-    "产品型号": 33,
+    "产品型号": 35,
     "物料语种": 12,
     "物料主数据": 764,
     "库存流水": 62,
