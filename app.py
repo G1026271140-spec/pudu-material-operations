@@ -7350,6 +7350,7 @@ def build_gift_project_fields(
     category_record_id: object,
     *,
     owner: object = "",
+    owner_open_id: object = "",
     remark: object = "",
     attachment_token: object = "",
 ) -> dict[str, object]:
@@ -7360,15 +7361,23 @@ def build_gift_project_fields(
         raise ValueError("请填写项目名称。")
     if not material or not category_id:
         raise ValueError("请选择有效的周边礼品。")
-    responsible = str(owner or "未指定负责人").strip()
     fields: dict[str, object] = {
         "项目名称": project,
-        "负责人": responsible,
         "物料名称": material,
         "物料状态": GIFT_PROJECT_STATUS_REQUESTED,
         "物料品类关联": [category_id],
         "备注": str(remark or "").strip(),
     }
+    responsible = str(owner or "").strip()
+    responsible_open_id = str(owner_open_id or "").strip()
+    if responsible_open_id:
+        if not responsible_open_id.startswith("ou_"):
+            raise ValueError("负责人通讯录 ID 无效，请重新选择负责人。")
+        fields["负责人"] = [{"id": responsible_open_id}]
+    elif responsible:
+        if feishu_field_type(GIFT_PROJECT_TABLE_NAME, "负责人") == 11:
+            raise ValueError("负责人必须从飞书通讯录中选择，不能直接填写姓名。")
+        fields["负责人"] = responsible
     file_token = str(attachment_token or "").strip()
     if file_token:
         fields["物料图片"] = [{"file_token": file_token}]
@@ -7394,36 +7403,78 @@ def create_gift_project_request(
     category_record_id: object,
     *,
     owner: object = "",
+    owner_open_id: object = "",
     remark: object = "",
     attachment_token: object = "",
 ) -> dict:
-    category_id = str(category_record_id or "").strip()
-    category = next(
-        (
-            item
-            for item in feishu_category_records_from_rows(
-                fresh_feishu_rows(CATEGORY_TABLE_NAME)
-            )
-            if str(item.get("record_id") or "") == category_id
-        ),
-        None,
-    )
-    if category is None:
-        raise ValueError("所选周边礼品不存在，请刷新页面后重试。")
-    if category.get("category_definition") != CATEGORY_DEFINITION_GIFT:
-        raise ValueError("所选品类不是周边礼品，不能写入项目礼品申请。")
-    fields = build_gift_project_fields(
+    created = create_gift_project_requests_batch(
         project_name,
-        category.get("category"),
-        category_id,
+        [category_record_id],
         owner=owner,
+        owner_open_id=owner_open_id,
         remark=remark,
         attachment_token=attachment_token,
     )
-    created = feishu_batch_create_records(GIFT_PROJECT_TABLE_NAME, [fields])
-    if not created:
-        raise RuntimeError("项目周边礼品需求写入失败。")
     return created[0]
+
+
+def create_gift_project_requests_batch(
+    project_name: object,
+    category_record_ids: list[object],
+    *,
+    owner: object = "",
+    owner_open_id: object = "",
+    remark: object = "",
+    attachment_token: object = "",
+) -> list[dict]:
+    category_ids = unique_preserve(
+        [
+            str(value or "").strip()
+            for value in category_record_ids
+            if str(value or "").strip()
+        ]
+    )
+    if not category_ids:
+        raise ValueError("请至少选择一个有效的周边礼品。")
+    categories = {
+        str(item.get("record_id") or ""): item
+        for item in feishu_category_records_from_rows(
+            fresh_feishu_rows(CATEGORY_TABLE_NAME)
+        )
+    }
+    missing_ids = [
+        category_id for category_id in category_ids if category_id not in categories
+    ]
+    if missing_ids:
+        raise ValueError("部分周边礼品不存在，请刷新页面后重新选择。")
+    invalid_categories = [
+        str(categories[category_id].get("category") or category_id)
+        for category_id in category_ids
+        if categories[category_id].get("category_definition") != CATEGORY_DEFINITION_GIFT
+    ]
+    if invalid_categories:
+        raise ValueError(
+            "以下品类不是周边礼品，不能写入项目礼品申请："
+            + "、".join(invalid_categories)
+        )
+    records = [
+        build_gift_project_fields(
+            project_name,
+            categories[category_id].get("category"),
+            category_id,
+            owner=owner,
+            owner_open_id=owner_open_id,
+            remark=remark,
+            attachment_token=attachment_token,
+        )
+        for category_id in category_ids
+    ]
+    created = feishu_batch_create_records(GIFT_PROJECT_TABLE_NAME, records)
+    if len(created) != len(records):
+        raise RuntimeError(
+            f"项目周边礼品需求应写入 {len(records)} 条，飞书仅返回 {len(created)} 条。"
+        )
+    return created
 
 
 def build_category_inventory_plan(
@@ -8363,6 +8414,7 @@ def create_new_gift_project_request(
     material_name: object,
     *,
     owner: object = "",
+    owner_open_id: object = "",
     unit_price: float = 0.0,
     remark: object = "",
     attachment_token: object = "",
@@ -8405,6 +8457,7 @@ def create_new_gift_project_request(
         project_name,
         category_result["category_record_id"],
         owner=owner,
+        owner_open_id=owner_open_id,
         remark=remark,
         attachment_token=attachment_token,
     )
@@ -14021,11 +14074,47 @@ def render_gift_projects_page() -> None:
         label_visibility="collapsed",
     )
     if page_mode == "新增项目物料":
+        directory_users = get_contact_users()
+        owner_by_id = {
+            str(item.get("open_id") or ""): item
+            for item in directory_users
+            if str(item.get("open_id") or "").strip()
+        }
+        owner_name_counts: dict[str, int] = {}
+        for item in directory_users:
+            owner_name = str(item.get("name") or "")
+            owner_name_counts[owner_name] = owner_name_counts.get(owner_name, 0) + 1
+
+        def gift_owner_label(open_id: object) -> str:
+            item = owner_by_id.get(str(open_id), {})
+            name = str(item.get("name") or open_id)
+            department_paths = unique_preserve(
+                [str(value) for value in list(item.get("department_paths") or [])]
+            )
+            label = f"{name} · {'、'.join(department_paths)}" if department_paths else name
+            return (
+                f"{label} · {str(open_id)[-6:]}"
+                if owner_name_counts.get(name, 0) > 1
+                else label
+            )
+
         project_col, owner_col = st.columns(2)
         required_field_label(project_col, "项目名称")
         project_name = project_col.text_input("项目名称", key="gift_batch_project_name", label_visibility="collapsed")
         required_field_label(owner_col, "负责人")
-        owner = owner_col.text_input("负责人", placeholder="填写负责人姓名", key="gift_batch_owner", label_visibility="collapsed")
+        owner_open_id = owner_col.selectbox(
+            "负责人",
+            list(owner_by_id),
+            index=None,
+            format_func=gift_owner_label,
+            placeholder="输入姓名搜索负责人",
+            disabled=not owner_by_id,
+            key="gift_batch_owner_open_id",
+            label_visibility="collapsed",
+        )
+        owner = str(owner_by_id.get(str(owner_open_id), {}).get("name") or "")
+        if not owner_by_id:
+            owner_col.caption("通讯录中暂无可选成员，请刷新本页数据后重试。")
         st.caption("可从下方卡片多选已有周边礼品；也可用第一张卡片新建周边礼品并加入同一清单。")
         filtered_gallery = filter_gift_gallery_records(gallery, "")
         selected_ids = set(st.session_state.get("gift_batch_selected_ids", []))
@@ -14042,16 +14131,27 @@ def render_gift_projects_page() -> None:
                     width="stretch",
                 )
             if st.button("批量提交", type="primary", key="gift_batch_submit"):
-                if not str(project_name).strip() or not str(owner).strip():
+                if not str(project_name).strip() or not str(owner_open_id or "").strip():
                     st.error("项目名称和负责人均为必填项。")
                 elif not gift_lines and not new_line:
                     st.error("请至少选择一个已有物料或加入一个新物料。")
                 else:
                     try:
-                        for item in gift_lines:
-                            create_gift_project_request(project_name, item.get("record_id"), owner=owner)
+                        if gift_lines:
+                            create_gift_project_requests_batch(
+                                project_name,
+                                [item.get("record_id") for item in gift_lines],
+                                owner=owner,
+                                owner_open_id=owner_open_id,
+                            )
                         if new_line:
-                            create_new_gift_project_request(project_name, new_line["name"], owner=owner, remark=f"数量：{new_line['quantity']}\n{new_line['remark']}")
+                            create_new_gift_project_request(
+                                project_name,
+                                new_line["name"],
+                                owner=owner,
+                                owner_open_id=owner_open_id,
+                                remark=f"数量：{new_line['quantity']}\n{new_line['remark']}",
+                            )
                         refresh_page_cache_after_write("gift_projects", update_request_form=True)
                         st.success("项目物料清单已批量写入。")
                     except Exception as exc:

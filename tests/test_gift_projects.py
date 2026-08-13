@@ -327,6 +327,27 @@ class GiftProjectTests(unittest.TestCase):
         self.assertEqual(fields["物料品类关联"], ["category-gift"])
         self.assertEqual(fields["物料图片"], [{"file_token": "file-1"}])
 
+    def test_project_payload_uses_owner_open_id_for_person_field(self) -> None:
+        fields = app.build_gift_project_fields(
+            "新品发布会",
+            "活动徽章",
+            "category-gift",
+            owner="高鸿源",
+            owner_open_id="ou_owner",
+        )
+
+        self.assertEqual(fields["负责人"], [{"id": "ou_owner"}])
+
+    def test_project_payload_rejects_free_text_for_person_field(self) -> None:
+        with patch.object(app, "feishu_field_type", return_value=11):
+            with self.assertRaisesRegex(ValueError, "必须从飞书通讯录中选择"):
+                app.build_gift_project_fields(
+                    "新品发布会",
+                    "活动徽章",
+                    "category-gift",
+                    owner="高鸿源",
+                )
+
     def test_project_statuses_map_to_progress_stages(self) -> None:
         cases = {
             "已提需": "已提需",
@@ -374,6 +395,44 @@ class GiftProjectTests(unittest.TestCase):
         self.assertEqual(result["record_id"], "project-line-1")
         create_records.assert_called_once()
         self.assertEqual(create_records.call_args.args[0], app.GIFT_PROJECT_TABLE_NAME)
+
+    def test_existing_gift_requests_use_one_batch_write(self) -> None:
+        second_category = {
+            **self.gift_category,
+            "record_id": "category-gift-2",
+            "fields": {
+                **self.gift_category["fields"],
+                "物料品类": "定制奖牌",
+            },
+        }
+        with (
+            patch.object(
+                app,
+                "fresh_feishu_rows",
+                return_value=[self.gift_category, second_category],
+            ),
+            patch.object(
+                app,
+                "feishu_batch_create_records",
+                return_value=[
+                    {"record_id": "project-line-1"},
+                    {"record_id": "project-line-2"},
+                ],
+            ) as create_records,
+        ):
+            created = app.create_gift_project_requests_batch(
+                "项目A",
+                ["category-gift", "category-gift-2"],
+                owner="高鸿源",
+                owner_open_id="ou_owner",
+            )
+
+        self.assertEqual(len(created), 2)
+        create_records.assert_called_once()
+        payload = create_records.call_args.args[1]
+        self.assertEqual(len(payload), 2)
+        self.assertEqual(payload[0]["负责人"], [{"id": "ou_owner"}])
+        self.assertEqual(payload[1]["负责人"], [{"id": "ou_owner"}])
 
     def test_existing_gift_request_allows_inactive_gift_definition(self) -> None:
         inactive_gift = {
@@ -431,6 +490,7 @@ class GiftProjectTests(unittest.TestCase):
             "项目B",
             "category-new",
             owner="",
+            owner_open_id="",
             remark="",
             attachment_token="file-new",
         )
