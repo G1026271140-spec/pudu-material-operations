@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-12 16:33:12",
+  "generated_at": "2026-08-13 09:38:00",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -6640,10 +6640,10 @@
       "open_id": "ou_6e02daea7163033ea22b62cad4f504de",
       "name": "张宇同",
       "department_ids": [
-        "od-d08d7dd9bd9eff22e6c9c8f18681cea6"
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
       ],
       "department_paths": [
-        "营销运营组"
+        "X LAB"
       ]
     },
     {
@@ -8535,11 +8535,13 @@
       "name": "曾飞",
       "department_ids": [
         "od-87008252685ec50922f3b015a8d6f2fc",
+        "od-8647dad561eae9e0be25174f4ce46116",
         "od-306e7e8186e4bfd316136d0dfc4f21b1",
         "od-b5d68400954d5ac54cf34c5602d46444"
       ],
       "department_paths": [
         "SE管理部",
+        "硬件平台部",
         "硬件平台部电机组",
         "通用互联团队"
       ]
@@ -9308,16 +9310,6 @@
       ],
       "department_paths": [
         "美洲服务部"
-      ]
-    },
-    {
-      "open_id": "ou_30aafab18f6d898a490f62f31fd49862",
-      "name": "李小丰",
-      "department_ids": [
-        "od-8647dad561eae9e0be25174f4ce46116"
-      ],
-      "department_paths": [
-        "硬件平台部"
       ]
     },
     {
@@ -11857,16 +11849,6 @@
     {
       "open_id": "ou_15b1fe41665d7182896b2212042b460e",
       "name": "沈兆春",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
-      ]
-    },
-    {
-      "open_id": "ou_79e43cab85b581d98d890f535edcd8cb",
-      "name": "沈国英",
       "department_ids": [
         "od-9e387510e5f803ba2124d78b4af8d0ea"
       ],
@@ -16247,16 +16229,6 @@
       ]
     },
     {
-      "open_id": "ou_39f3a4092a1079b9d9667d6297ca8a34",
-      "name": "谷小雪",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
-      ]
-    },
-    {
       "open_id": "ou_474caa16433a6f61d2ca6ddd15020508",
       "name": "费可欣",
       "department_ids": [
@@ -16914,16 +16886,6 @@
       ],
       "department_paths": [
         "桐乡品控组"
-      ]
-    },
-    {
-      "open_id": "ou_f85275cb9fd52664ac76f05733194824",
-      "name": "邵正华",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
       ]
     },
     {
@@ -20395,5 +20357,5 @@
       ]
     }
   ],
-  "user_count": 1880
+  "user_count": 1876
 }
