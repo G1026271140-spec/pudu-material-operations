@@ -297,7 +297,10 @@ MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存"
 DEFAULT_LOW_STOCK_THRESHOLD = 100
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
-REQUEST_FORM_CACHE_SCHEMA_VERSION = 2
+REQUEST_FORM_CACHE_SCHEMA_VERSION = 3
+REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
+REQUEST_PAGE_VISIBLE_VALUE = "是"
+PRIMARY_MODEL_PRODUCT_LINES = ("IR", "CR", "SR", "GR")
 REQUEST_FORM_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "request_form_cache.json"
 PAGE_DATA_STATIC_CACHE_PATH = Path(__file__).resolve().parent / "data" / "page_data_cache.json"
 WAREHOUSE_LOCATION_CACHE_PATH = (
@@ -2468,6 +2471,41 @@ def product_model_state(product: str, selection_context: dict[str, object]) -> t
     return is_no_model_product, scoped_models
 
 
+def product_model_line_groups(
+    product: str,
+    selection_context: dict[str, object],
+) -> tuple[bool, list[tuple[str, list[str]]]]:
+    _, scoped_models = product_model_state(product, selection_context)
+    product_lines = {
+        str(model).strip(): str(product_line).strip()
+        for model, product_line in dict(
+            selection_context.get("model_product_lines") or {}
+        ).items()
+    }
+    grouped: dict[str, list[str]] = {
+        product_line: [] for product_line in PRIMARY_MODEL_PRODUCT_LINES
+    }
+    other_groups: dict[str, list[str]] = {}
+    for model in scoped_models:
+        product_line = product_lines.get(model, "")
+        if product_line in grouped:
+            grouped[product_line].append(model)
+        else:
+            other_groups.setdefault(product_line or "未分组", []).append(model)
+    primary_group_count = sum(bool(grouped[product_line]) for product_line in PRIMARY_MODEL_PRODUCT_LINES)
+    groups = [
+        (product_line, grouped[product_line])
+        for product_line in PRIMARY_MODEL_PRODUCT_LINES
+        if grouped[product_line]
+    ]
+    groups.extend(
+        (product_line, models)
+        for product_line, models in other_groups.items()
+        if models
+    )
+    return primary_group_count >= 2, groups
+
+
 def selection_context_has_inventory_combination(
     selection_context: dict[str, object],
     product: str,
@@ -2515,7 +2553,13 @@ def product_language_state(
 
 def request_form_active_combinations(
     rows: list[dict[str, object]],
+    model_product_lines: dict[str, str] | None = None,
 ) -> list[dict[str, object]]:
+    normalized_product_lines = {
+        str(model).strip(): str(product_line).strip()
+        for model, product_line in dict(model_product_lines or {}).items()
+        if str(model).strip() and str(product_line).strip()
+    }
     product_models: dict[str, dict[str, list[str]]] = {}
     for item in rows:
         if not isinstance(item, dict):
@@ -2536,6 +2580,11 @@ def request_form_active_combinations(
                     {
                         "model": model,
                         "languages": sort_languages(model_languages[model]),
+                        **(
+                            {"product_line": normalized_product_lines[model]}
+                            if model in normalized_product_lines
+                            else {}
+                        ),
                     }
                     for model in sort_model_options(list(model_languages))
                 ],
@@ -2570,7 +2619,12 @@ def validate_request_form_cache(
             f"申请页面缓存行数不一致：配置 {row_count}，实际 {len(rows)}。"
         )
 
-    expected_combinations = request_form_active_combinations(rows)
+    model_product_lines = {
+        str(model).strip(): str(product_line).strip()
+        for model, product_line in dict(cache_data.get("model_product_lines") or {}).items()
+        if str(model).strip() and str(product_line).strip()
+    }
+    expected_combinations = request_form_active_combinations(rows, model_product_lines)
     expected_count = request_form_combination_count(expected_combinations)
     if schema_version >= 2:
         cached_combinations = list(cache_data.get("active_combinations") or [])
@@ -2634,7 +2688,12 @@ def request_form_cache_from_inventory(
                     "quantity": int(item[4] or 0),
                 }
             )
-    active_combinations = request_form_active_combinations(rows)
+    model_product_lines = {
+        str(model).strip(): str(product_line).strip()
+        for model, product_line in dict(options.get("model_product_lines") or {}).items()
+        if str(model).strip() and str(product_line).strip()
+    }
+    active_combinations = request_form_active_combinations(rows, model_product_lines)
     active_product_keys = {
         normalize_option_label(str(item.get("product") or ""))
         for item in active_combinations
@@ -2655,6 +2714,7 @@ def request_form_cache_from_inventory(
             list(options.get("configured_language_products") or [])
         ),
         "models": sort_models(list(options.get("models") or [])),
+        "model_product_lines": model_product_lines,
         "languages": sort_languages(list(options.get("languages") or [])),
         "active_combinations": active_combinations,
         "combination_count": request_form_combination_count(active_combinations),
@@ -2666,7 +2726,7 @@ def request_form_cache_from_inventory(
 
 
 def build_live_request_form_cache() -> dict[str, object]:
-    inventory_df = load_feishu_inventory_snapshot(*feishu_config_args())
+    inventory_df = load_feishu_request_inventory_snapshot(*feishu_config_args())
     options = load_feishu_options_snapshot(*feishu_config_args())
     return request_form_cache_from_inventory(options, inventory_df, source="live_feishu")
 
@@ -2683,6 +2743,7 @@ def load_static_request_form_cache() -> dict[str, object]:
             "no_language_products": [],
             "configured_language_products": [],
             "models": [],
+            "model_product_lines": {},
             "languages": [],
             "active_combinations": [],
             "combination_count": 0,
@@ -2715,7 +2776,7 @@ def refresh_request_form_cache_sync() -> dict[str, object]:
 def refresh_request_form_cache_from_page_data() -> dict[str, object]:
     data = request_form_cache_from_inventory(
         load_feishu_options(),
-        load_feishu_inventory(),
+        load_feishu_request_inventory(),
         source="session_page_refresh",
     )
     set_request_form_cache_state(
@@ -2804,6 +2865,13 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
     return {
         "products": products,
         "models": models,
+        "model_product_lines": {
+            str(model).strip(): str(product_line).strip()
+            for model, product_line in dict(
+                cache_data.get("model_product_lines") or {}
+            ).items()
+            if str(model).strip() and str(product_line).strip()
+        },
         "languages": languages,
         "no_model_product_keys": {
             normalize_option_label(product) for product in list(cache_data.get("no_model_products") or [])
@@ -3558,7 +3626,7 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
         return None
     return request_form_cache_from_inventory(
         load_feishu_options(),
-        load_feishu_inventory(),
+        load_feishu_request_inventory(),
         source="shared_runtime_page_cache",
     )
 
@@ -4072,7 +4140,15 @@ def feishu_inventory_index() -> dict[tuple[str, str, str], dict]:
     return index
 
 
-def feishu_inventory_dataframe_from_rows(rows: list[dict]) -> pd.DataFrame:
+def feishu_request_page_visible(fields: dict) -> bool:
+    return feishu_text(fields, REQUEST_PAGE_VISIBILITY_FIELD) == REQUEST_PAGE_VISIBLE_VALUE
+
+
+def feishu_inventory_dataframe_from_rows(
+    rows: list[dict],
+    *,
+    request_visible_only: bool = False,
+) -> pd.DataFrame:
     data: list[list[object]] = []
     for row in rows:
         fields = feishu_fields(row)
@@ -4081,6 +4157,8 @@ def feishu_inventory_dataframe_from_rows(rows: list[dict]) -> pd.DataFrame:
         if not material_code or not category:
             continue
         if normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
+            continue
+        if request_visible_only and not feishu_request_page_visible(fields):
             continue
         quantity = feishu_int(fields, "当前库存")
         unit_price = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
@@ -4106,8 +4184,27 @@ def load_feishu_inventory_snapshot(app_id: str, app_secret: str, app_token: str)
     )
 
 
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def load_feishu_request_inventory_snapshot(
+    app_id: str,
+    app_secret: str,
+    app_token: str,
+) -> pd.DataFrame:
+    return feishu_inventory_dataframe_from_rows(
+        load_feishu_rows_snapshot(MATERIAL_TABLE_NAME, app_id, app_secret, app_token),
+        request_visible_only=True,
+    )
+
+
 def load_feishu_inventory() -> pd.DataFrame:
     return feishu_inventory_dataframe_from_rows(feishu_rows(MATERIAL_TABLE_NAME))
+
+
+def load_feishu_request_inventory() -> pd.DataFrame:
+    return feishu_inventory_dataframe_from_rows(
+        feishu_rows(MATERIAL_TABLE_NAME),
+        request_visible_only=True,
+    )
 
 
 def feishu_options_from_rows(
@@ -4115,6 +4212,9 @@ def feishu_options_from_rows(
     inventory_df: pd.DataFrame,
     model_rows: list[dict] | None = None,
     language_rows: list[dict] | None = None,
+    material_rows: list[dict] | None = None,
+    *,
+    request_visible_only: bool = False,
 ) -> dict:
     category_products: list[str] = []
     category_status_by_product: dict[str, str] = {}
@@ -4128,6 +4228,8 @@ def feishu_options_from_rows(
         if product:
             category_status_by_product[product] = category_status
         if category_status != STATUS_ACTIVE:
+            continue
+        if request_visible_only and not feishu_request_page_visible(fields):
             continue
         if product:
             category_products.append(product)
@@ -4168,6 +4270,40 @@ def feishu_options_from_rows(
         for row in list(model_rows or [])
         if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
     ]
+    active_model_rows = [
+        row
+        for row in list(model_rows or [])
+        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态"))
+        == STATUS_ACTIVE
+    ]
+    model_product_lines = {
+        feishu_text(feishu_fields(row), "产品型号").strip(): feishu_text(
+            feishu_fields(row), "产品线"
+        ).strip()
+        for row in active_model_rows
+        if feishu_text(feishu_fields(row), "产品型号").strip()
+    }
+    product_line_by_model_id = {
+        feishu_record_id(row): feishu_text(feishu_fields(row), "产品线").strip()
+        for row in active_model_rows
+        if feishu_record_id(row)
+    }
+    for material_row in list(material_rows or []):
+        material_fields = feishu_fields(material_row)
+        model = feishu_text(material_fields, "产品型号").strip()
+        linked_product_lines = [
+            product_line_by_model_id.get(model_id, "")
+            for model_id in feishu_link_ids_any(
+                material_fields,
+                list(MODEL_LINK_FIELD_CANDIDATES),
+            )
+        ]
+        linked_product_line = next(
+            (product_line for product_line in linked_product_lines if product_line),
+            "",
+        )
+        if model and linked_product_line:
+            model_product_lines[model] = linked_product_line
     models = sort_models(dimension_models or inventory_models)
     inventory_languages = (
         unique_preserve(list(inventory_df[LANGUAGE_COL].astype(str)))
@@ -4192,6 +4328,7 @@ def feishu_options_from_rows(
         "no_language_products": unique_preserve(no_language_products),
         "configured_language_products": unique_preserve(configured_language_products),
         "models": models,
+        "model_product_lines": model_product_lines,
         "languages": languages,
         "no_model_text": NO_MODEL_TEXT,
         "no_language_text": NO_LANGUAGE_TEXT,
@@ -4203,18 +4340,26 @@ def feishu_options_from_rows(
 def load_feishu_options_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
     return feishu_options_from_rows(
         load_feishu_rows_snapshot(CATEGORY_TABLE_NAME, app_id, app_secret, app_token),
-        load_feishu_inventory_snapshot(app_id, app_secret, app_token),
+        load_feishu_request_inventory_snapshot(app_id, app_secret, app_token),
         load_feishu_rows_snapshot(MODEL_TABLE_NAME, app_id, app_secret, app_token),
         page_data_cache_rows(LANGUAGE_TABLE_NAME),
+        load_feishu_rows_snapshot(MATERIAL_TABLE_NAME, app_id, app_secret, app_token),
+        request_visible_only=True,
     )
 
 
 def load_feishu_options() -> dict:
+    material_rows = safe_feishu_rows(MATERIAL_TABLE_NAME)
     return feishu_options_from_rows(
         safe_feishu_rows(CATEGORY_TABLE_NAME),
-        load_feishu_inventory(),
+        feishu_inventory_dataframe_from_rows(
+            material_rows,
+            request_visible_only=True,
+        ),
         safe_feishu_rows(MODEL_TABLE_NAME),
         safe_feishu_rows(LANGUAGE_TABLE_NAME),
+        material_rows,
+        request_visible_only=True,
     )
 
 
@@ -5884,9 +6029,11 @@ def build_request_material_index(
     category_rows: list[dict],
 ) -> dict[tuple[str, str, str], dict]:
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
-    category_status_by_key = {
-        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")):
-            normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态"))
+    category_state_by_key = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")): (
+            normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")),
+            feishu_request_page_visible(feishu_fields(row)),
+        )
         for row in category_rows
         if feishu_text(feishu_fields(row), "物料品类")
     }
@@ -5901,10 +6048,13 @@ def build_request_material_index(
             active_only=False,
         )
         if material_record_is_active(record)
-        and category_status_by_key.get(
+        and feishu_request_page_visible(
+            feishu_fields(raw_material_by_id[str(record["record_id"])])
+        )
+        and category_state_by_key.get(
             normalize_category_match_key(record["category"]),
-            STATUS_ACTIVE,
-        ) == STATUS_ACTIVE
+            (STATUS_ACTIVE, False),
+        ) == (STATUS_ACTIVE, True)
     }
 
 
@@ -8626,6 +8776,115 @@ def normalize_request_option_state(
         st.session_state[state_key] = options[0] if options else None
 
 
+def sync_request_model_line_selection(
+    state_key: str,
+    group_keys: list[str],
+    changed_key: str,
+    multiple: bool,
+) -> None:
+    selected_values: list[str] = []
+    for group_key in group_keys:
+        value = st.session_state.get(group_key)
+        if multiple:
+            if isinstance(value, list):
+                selected_values.extend(str(item) for item in value if str(item).strip())
+        elif group_key == changed_key and isinstance(value, str) and value:
+            selected_values = [value]
+    selected_values = unique_preserve(selected_values)
+    st.session_state[state_key] = selected_values if multiple else (selected_values[0] if selected_values else None)
+    if not multiple:
+        for group_key in group_keys:
+            if group_key != changed_key:
+                st.session_state[group_key] = None
+    mark_request_form_dirty()
+
+
+def render_request_model_selector(
+    product: str,
+    selection_context: dict[str, object],
+    model_options: list[str],
+    *,
+    multiple: bool,
+    state_key: str,
+) -> list[str]:
+    use_product_line_layout, groups = product_model_line_groups(
+        product,
+        selection_context,
+    )
+    normalize_request_option_state(state_key, model_options, multiple=multiple)
+    if not use_product_line_layout:
+        selected = st.pills(
+            "产品型号",
+            model_options,
+            selection_mode="multi" if multiple else "single",
+            required=not multiple,
+            format_func=request_option_display_label,
+            key=state_key,
+            on_change=mark_request_form_dirty,
+            width="stretch",
+        )
+        return list(selected or []) if multiple else [selected] if selected else []
+
+    current = st.session_state.get(state_key)
+    selected_values = list(current or []) if multiple else [current] if current else []
+    group_options = {name: options for name, options in groups}
+    primary_groups = [
+        (name, list(group_options.get(name, [])))
+        for name in PRIMARY_MODEL_PRODUCT_LINES
+    ]
+    other_groups = [
+        (name, options)
+        for name, options in groups
+        if name not in PRIMARY_MODEL_PRODUCT_LINES and options
+    ]
+    selectable_groups = [item for item in primary_groups + other_groups if item[1]]
+    group_keys = [f"{state_key}_{name}" for name, _ in selectable_groups]
+    for group_key, (_, options) in zip(group_keys, selectable_groups):
+        scoped_selected = [value for value in selected_values if value in options]
+        st.session_state[group_key] = scoped_selected if multiple else (
+            scoped_selected[0] if scoped_selected else None
+        )
+
+    st.markdown('<span class="pudu-model-line-grid-marker"></span>', unsafe_allow_html=True)
+    for start in range(0, len(primary_groups), 2):
+        columns = st.columns(2, gap="small")
+        for column, (name, options) in zip(columns, primary_groups[start : start + 2]):
+            group_key = f"{state_key}_{name}"
+            with column.container(border=True, height=156):
+                st.caption(name)
+                if options:
+                    st.pills(
+                        f"{name} 产品型号",
+                        options,
+                        selection_mode="multi" if multiple else "single",
+                        format_func=request_option_display_label,
+                        key=group_key,
+                        on_change=sync_request_model_line_selection,
+                        args=(state_key, group_keys, group_key, multiple),
+                        label_visibility="collapsed",
+                        width="stretch",
+                    )
+                else:
+                    st.caption("暂无型号")
+    for name, options in other_groups:
+        group_key = f"{state_key}_{name}"
+        with st.container(border=True):
+            st.caption(name)
+            st.pills(
+                "其他产品线型号",
+                options,
+                selection_mode="multi" if multiple else "single",
+                format_func=request_option_display_label,
+                key=group_key,
+                on_change=sync_request_model_line_selection,
+                args=(state_key, group_keys, group_key, multiple),
+                label_visibility="collapsed",
+                width="stretch",
+            )
+    current = st.session_state.get(state_key)
+    return list(current or []) if multiple else [current] if current else []
+
+
 def prepare_request_line_editor_state() -> None:
     load_data = st.session_state.pop("request_line_editor_load", None)
     if isinstance(load_data, dict):
@@ -9207,25 +9466,12 @@ def render_request_material_builder(
                             f"request_cart_models_v2_{'multi' if model_multi else 'single'}_"
                             f"{get_ui_language()}_{product_state_key}"
                         )
-                        normalize_request_option_state(
-                            model_widget_key,
+                        selected_models = render_request_model_selector(
+                            catalog_product,
+                            selection_context,
                             model_options,
                             multiple=model_multi,
-                        )
-                        selected_model_values = st.pills(
-                            "产品型号",
-                            model_options,
-                            selection_mode="multi" if model_multi else "single",
-                            required=not model_multi,
-                            format_func=request_option_display_label,
-                            key=model_widget_key,
-                            on_change=mark_request_form_dirty,
-                            width="stretch",
-                        )
-                        selected_models = (
-                            list(selected_model_values or [])
-                            if model_multi
-                            else [selected_model_values] if selected_model_values else []
+                            state_key=model_widget_key,
                         )
 
                         language_options = request_language_options_for_models(

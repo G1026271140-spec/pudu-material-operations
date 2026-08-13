@@ -1,7 +1,7 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-13 10:33:25",
+  "generated_at": "2026-08-13 14:27:47",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -12,7 +12,6 @@
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
-    "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_model_products": [
@@ -22,16 +21,12 @@
     "配送线产品手册SR(Delivery Robot Product Brochure)",
     "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "定制扇子",
-    "定制帽子"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_language_products": [
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
-    "笔记本礼盒(Notebook Gift Box)",
-    "定制帽子",
-    "定制扇子"
+    "笔记本礼盒(Notebook Gift Box)"
   ],
   "configured_language_products": [
     "产品单页(Product Flyer )",
@@ -56,27 +51,62 @@
     "D7",
     "D9",
     "ET1",
-    "Flash Arm",
     "FlashBot",
+    "FlashBot Arm",
     "FlashBot Lite",
     "FlashBot Max",
     "PUDU HolaBot",
     "HolaBot Pro",
     "Hulk",
     "KettyBot Pro",
+    "MP2000",
     "MT1",
     "MT1 Max",
     "MT1 Vac",
     "PuduBot 2",
     "SH1",
-    "SwiftBot",
+    "Pudu SwiftBot",
     "SwiftBot Neo",
     "T300",
     "T300 Conveyor",
     "T600",
-    "新闪电匣",
-    "猛犸MP2000"
+    "新闪电匣"
   ],
+  "model_product_lines": {
+    "BG1": "CR",
+    "BellaBot": "SR",
+    "Bellabot pro": "SR",
+    "CC1 PRO": "CR",
+    "D5": "GR",
+    "D7": "GR",
+    "D9": "GR",
+    "ET1": "CR",
+    "FlashBot": "CR",
+    "KettyBot Pro": "SR",
+    "MT1": "CR",
+    "MT1 Max": "CR",
+    "MT1 Vac": "CR",
+    "PUDU CC1": "CR",
+    "PUDU HolaBot": "新项目",
+    "PuduBot 2": "SR",
+    "SH1": "CR",
+    "Pudu SwiftBot": "SR",
+    "T300": "IR",
+    "T600": "IR",
+    "新闪电匣": "新项目",
+    "无需型号": "新项目",
+    "FlashBot Arm": "GR",
+    "FlashBot Lite": "SR",
+    "FlashBot Max": "SR",
+    "HolaBot Pro": "新项目",
+    "SwiftBot Neo": "SR",
+    "T300 Conveyor": "IR",
+    "MP2000": "IR",
+    "Hulk": "新项目",
+    "SwiftBot": "SR",
+    "Flash Arm": "GR",
+    "猛犸MP2000": "IR"
+  },
   "languages": [
     "无需语种",
     "英语(English)",
@@ -98,299 +128,149 @@
         {
           "model": "BellaBot",
           "languages": [
-            "英语(English)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "Bellabot pro",
-          "languages": [
-            "简中(Simplified Chinese)",
-            "法语(French)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "SR"
         },
         {
           "model": "BG1",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "PUDU CC1",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "法语(French)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "CC1 PRO",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "法语(French)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "D5",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "D7",
-          "languages": [
-            "简中(Simplified Chinese)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "D9",
-          "languages": [
-            "简中(Simplified Chinese)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "ET1",
-          "languages": [
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "GR"
         },
         {
           "model": "Flash Arm",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "FlashBot",
-          "languages": [
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "GR"
         },
         {
           "model": "FlashBot Lite",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "SR"
         },
         {
           "model": "FlashBot Max",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "PUDU HolaBot",
-          "languages": [
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "SR"
         },
         {
           "model": "HolaBot Pro",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "新项目"
         },
         {
           "model": "Hulk",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "新项目"
         },
         {
           "model": "KettyBot Pro",
           "languages": [
-            "英语(English)",
-            "法语(French)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "SR"
         },
         {
           "model": "MT1",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "法语(French)",
-            "意大利语(Italian)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "MT1 Max",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "法语(French)",
-            "意大利语(Italian)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "MT1 Vac",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "法语(French)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "PuduBot 2",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "SR"
         },
         {
           "model": "SH1",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "SwiftBot",
-          "languages": [
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "SwiftBot Neo",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "SR"
         },
         {
           "model": "T300",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "法语(French)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "IR"
         },
         {
           "model": "T300 Conveyor",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "IR"
         },
         {
           "model": "T600",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "法语(French)",
-            "意大利语(Italian)",
-            "韩语(Korean)"
-          ]
-        },
-        {
-          "model": "新闪电匣",
-          "languages": [
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "IR"
         },
         {
           "model": "猛犸MP2000",
           "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
+            "英语(English)"
+          ],
+          "product_line": "IR"
         }
       ]
     },
@@ -402,7 +282,8 @@
           "languages": [
             "英语(English)",
             "简中(Simplified Chinese)"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -414,7 +295,8 @@
           "languages": [
             "英语(English)",
             "简中(Simplified Chinese)"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -425,7 +307,8 @@
           "model": "无需型号",
           "languages": [
             "英语(English)"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -436,19 +319,22 @@
           "model": "KettyBot Pro",
           "languages": [
             "简中(Simplified Chinese)"
-          ]
+          ],
+          "product_line": "SR"
         },
         {
           "model": "PuduBot 2",
           "languages": [
             "德语(German)"
-          ]
+          ],
+          "product_line": "SR"
         },
         {
           "model": "SH1",
           "languages": [
             "英语(English)"
-          ]
+          ],
+          "product_line": "CR"
         }
       ]
     },
@@ -459,19 +345,15 @@
           "model": "BellaBot",
           "languages": [
             "无需语种"
-          ]
-        },
-        {
-          "model": "CC1 PRO",
-          "languages": [
-            "无需语种"
-          ]
+          ],
+          "product_line": "SR"
         },
         {
           "model": "PUDU HolaBot",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -482,72 +364,71 @@
           "model": "BellaBot",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "SR"
         },
         {
           "model": "Bellabot pro",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "SR"
         },
         {
           "model": "BG1",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "CR"
         },
         {
           "model": "PUDU CC1",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "CR"
         },
         {
           "model": "D5",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "GR"
         },
         {
           "model": "D7",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "GR"
         },
         {
           "model": "KettyBot Pro",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "SR"
         },
         {
           "model": "MT1",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "CR"
         },
         {
           "model": "T300",
           "languages": [
             "无需语种"
-          ]
+          ],
+          "product_line": "IR"
         },
         {
           "model": "猛犸MP2000",
           "languages": [
             "无需语种"
-          ]
-        }
-      ]
-    },
-    {
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "models": [
-        {
-          "model": "无需型号",
-          "languages": [
-            "无需语种"
-          ]
+          ],
+          "product_line": "IR"
         }
       ]
     },
@@ -558,7 +439,8 @@
           "model": "无需型号",
           "languages": [
             "英语(English)"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -569,7 +451,8 @@
           "model": "无需型号",
           "languages": [
             "英语(English)"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -581,12 +464,13 @@
           "languages": [
             "英语(English)",
             "简中(Simplified Chinese)"
-          ]
+          ],
+          "product_line": "新项目"
         }
       ]
     }
   ],
-  "combination_count": 178,
+  "combination_count": 45,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -603,25 +487,11 @@
       "quantity": 1650
     },
     {
-      "material_code": "MAT-0194",
-      "product": "产品单页(Product Flyer )",
-      "model": "KettyBot Pro",
-      "language": "法语(French)",
-      "quantity": 250
-    },
-    {
       "material_code": "MAT-0201",
       "product": "产品单页(Product Flyer )",
       "model": "PuduBot 2",
       "language": "英语(English)",
       "quantity": 290
-    },
-    {
-      "material_code": "MAT-0209",
-      "product": "产品单页(Product Flyer )",
-      "model": "PuduBot 2",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 250
     },
     {
       "material_code": "MAT-0241",
@@ -631,46 +501,11 @@
       "quantity": 1500
     },
     {
-      "material_code": "MAT-0244",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU CC1",
-      "language": "法语(French)",
-      "quantity": 150
-    },
-    {
-      "material_code": "MAT-0249",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU CC1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 100
-    },
-    {
-      "material_code": "MAT-0254",
-      "product": "产品单页(Product Flyer )",
-      "model": "Bellabot pro",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0259",
-      "product": "产品单页(Product Flyer )",
-      "model": "Bellabot pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1200
-    },
-    {
       "material_code": "MAT-0261",
       "product": "产品单页(Product Flyer )",
       "model": "SH1",
       "language": "英语(English)",
       "quantity": 2300
-    },
-    {
-      "material_code": "MAT-0269",
-      "product": "产品单页(Product Flyer )",
-      "model": "SH1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1100
     },
     {
       "material_code": "MAT-0271",
@@ -680,60 +515,11 @@
       "quantity": 2000
     },
     {
-      "material_code": "MAT-0272",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300",
-      "language": "德语(German)",
-      "quantity": 100
-    },
-    {
-      "material_code": "MAT-0274",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300",
-      "language": "法语(French)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-0279",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 750
-    },
-    {
       "material_code": "MAT-0281",
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "英语(English)",
       "quantity": 300
-    },
-    {
-      "material_code": "MAT-0282",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1",
-      "language": "德语(German)",
-      "quantity": 500
-    },
-    {
-      "material_code": "MAT-0284",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1",
-      "language": "法语(French)",
-      "quantity": 30
-    },
-    {
-      "material_code": "MAT-0289",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 30
-    },
-    {
-      "material_code": "MAT-0290",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1",
-      "language": "意大利语(Italian)",
-      "quantity": 100
     },
     {
       "material_code": "MAT-0301",
@@ -743,46 +529,11 @@
       "quantity": 2000
     },
     {
-      "material_code": "MAT-0304",
-      "product": "产品单页(Product Flyer )",
-      "model": "CC1 PRO",
-      "language": "法语(French)",
-      "quantity": 130
-    },
-    {
-      "material_code": "MAT-0309",
-      "product": "产品单页(Product Flyer )",
-      "model": "CC1 PRO",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 500
-    },
-    {
       "material_code": "MAT-0311",
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "英语(English)",
       "quantity": 2300
-    },
-    {
-      "material_code": "MAT-0314",
-      "product": "产品单页(Product Flyer )",
-      "model": "T600",
-      "language": "法语(French)",
-      "quantity": 500
-    },
-    {
-      "material_code": "MAT-0319",
-      "product": "产品单页(Product Flyer )",
-      "model": "T600",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 350
-    },
-    {
-      "material_code": "MAT-0320",
-      "product": "产品单页(Product Flyer )",
-      "model": "T600",
-      "language": "意大利语(Italian)",
-      "quantity": 320
     },
     {
       "material_code": "MAT-0321",
@@ -792,20 +543,6 @@
       "quantity": 1000
     },
     {
-      "material_code": "MAT-0324",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Vac",
-      "language": "法语(French)",
-      "quantity": 150
-    },
-    {
-      "material_code": "MAT-0329",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Vac",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 280
-    },
-    {
       "material_code": "MAT-0331",
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
@@ -813,46 +550,11 @@
       "quantity": 1500
     },
     {
-      "material_code": "MAT-0334",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Max",
-      "language": "法语(French)",
-      "quantity": 200
-    },
-    {
-      "material_code": "MAT-0339",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Max",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1250
-    },
-    {
-      "material_code": "MAT-0340",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Max",
-      "language": "意大利语(Italian)",
-      "quantity": 300
-    },
-    {
       "material_code": "MAT-0341",
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "英语(English)",
       "quantity": 650
-    },
-    {
-      "material_code": "MAT-0342",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "德语(German)",
-      "quantity": 300
-    },
-    {
-      "material_code": "MAT-0349",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1250
     },
     {
       "material_code": "MAT-0361",
@@ -918,13 +620,6 @@
       "quantity": 300
     },
     {
-      "material_code": "MAT-0701",
-      "product": "公仔(Plush Toy)",
-      "model": "CC1 PRO",
-      "language": "无需语种",
-      "quantity": 400
-    },
-    {
       "material_code": "MAT-0761",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BellaBot",
@@ -936,7 +631,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "KettyBot Pro",
       "language": "无需语种",
-      "quantity": -1
+      "quantity": 0
     },
     {
       "material_code": "MAT-0821",
@@ -974,13 +669,6 @@
       "quantity": 300
     },
     {
-      "material_code": "MAT-0941",
-      "product": "笔记本礼盒(Notebook Gift Box)",
-      "model": "无需型号",
-      "language": "无需语种",
-      "quantity": 208
-    },
-    {
       "material_code": "MAT-0951",
       "product": "普渡logo无纺布手提袋(PUDU logo bag)",
       "model": "无需型号",
@@ -988,39 +676,11 @@
       "quantity": 300
     },
     {
-      "material_code": "MAT-0994",
-      "product": "产品单页(Product Flyer )",
-      "model": "D5",
-      "language": "德语(German)",
-      "quantity": 20
-    },
-    {
-      "material_code": "MAT-0998",
-      "product": "产品单页(Product Flyer )",
-      "model": "D5",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1800
-    },
-    {
       "material_code": "MAT-1000",
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "英语(English)",
       "quantity": 1050
-    },
-    {
-      "material_code": "MAT-1008",
-      "product": "产品单页(Product Flyer )",
-      "model": "D7",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1794
-    },
-    {
-      "material_code": "MAT-1018",
-      "product": "产品单页(Product Flyer )",
-      "model": "D9",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 300
     },
     {
       "material_code": "MAT-1023",
@@ -1044,48 +704,6 @@
       "quantity": 360
     },
     {
-      "material_code": "MAT-1026",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Vac",
-      "language": "韩语(Korean)",
-      "quantity": 500
-    },
-    {
-      "material_code": "MAT-1027",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1350
-    },
-    {
-      "material_code": "MAT-1028",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1300
-    },
-    {
-      "material_code": "MAT-1029",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 250
-    },
-    {
-      "material_code": "MAT-1030",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
-      "material_code": "MAT-1031",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 600
-    },
-    {
       "material_code": "MAT-1032",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
@@ -1107,178 +725,10 @@
       "quantity": 135
     },
     {
-      "material_code": "MAT-1036",
-      "product": "产品单页(Product Flyer )",
-      "model": "BG1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1037",
-      "product": "产品单页(Product Flyer )",
-      "model": "BellaBot",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1038",
-      "product": "产品单页(Product Flyer )",
-      "model": "Bellabot pro",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1039",
-      "product": "产品单页(Product Flyer )",
-      "model": "CC1 PRO",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1040",
-      "product": "产品单页(Product Flyer )",
-      "model": "D5",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1041",
-      "product": "产品单页(Product Flyer )",
-      "model": "D7",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1042",
-      "product": "产品单页(Product Flyer )",
-      "model": "D9",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1043",
-      "product": "产品单页(Product Flyer )",
-      "model": "ET1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1044",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1045",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1046",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1047",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1048",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1049",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1050",
       "product": "产品单页(Product Flyer )",
       "model": "Flash Arm",
       "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1051",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1052",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1053",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1054",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1055",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1056",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1057",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1058",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1059",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1060",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "繁中(Traditional Chinese)",
       "quantity": 0
     },
     {
@@ -1289,262 +739,10 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1062",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1063",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1064",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Lite",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1065",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1066",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1067",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1068",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1069",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1070",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1071",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1072",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1073",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1074",
-      "product": "产品单页(Product Flyer )",
-      "model": "FlashBot Max",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1075",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1076",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1077",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1078",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1079",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1080",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1081",
       "product": "产品单页(Product Flyer )",
       "model": "HolaBot Pro",
       "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1082",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1083",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1084",
-      "product": "产品单页(Product Flyer )",
-      "model": "HolaBot Pro",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1085",
-      "product": "产品单页(Product Flyer )",
-      "model": "KettyBot Pro",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1086",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1087",
-      "product": "产品单页(Product Flyer )",
-      "model": "MT1 Max",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1088",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU CC1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1089",
-      "product": "产品单页(Product Flyer )",
-      "model": "PUDU HolaBot",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1090",
-      "product": "产品单页(Product Flyer )",
-      "model": "PuduBot 2",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1091",
-      "product": "产品单页(Product Flyer )",
-      "model": "SH1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1092",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1093",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1094",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1095",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1096",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1097",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1098",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "繁中(Traditional Chinese)",
       "quantity": 0
     },
     {
@@ -1555,164 +753,10 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1100",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1101",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1102",
-      "product": "产品单页(Product Flyer )",
-      "model": "SwiftBot Neo",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1103",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1104",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1105",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1106",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1107",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1108",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1109",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1110",
       "product": "产品单页(Product Flyer )",
       "model": "T300 Conveyor",
       "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1111",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1112",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1113",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1114",
-      "product": "产品单页(Product Flyer )",
-      "model": "T600",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1115",
-      "product": "产品单页(Product Flyer )",
-      "model": "新闪电匣",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1116",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1117",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1118",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1119",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1120",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1121",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1122",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "繁中(Traditional Chinese)",
       "quantity": 0
     },
     {
@@ -1723,101 +767,10 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1124",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1125",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1126",
-      "product": "产品单页(Product Flyer )",
-      "model": "猛犸MP2000",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1127",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1128",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1129",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1130",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1131",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1132",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1133",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1134",
       "product": "产品单页(Product Flyer )",
       "model": "Hulk",
       "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1135",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1136",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1137",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "韩语(Korean)",
       "quantity": 0
     },
     {
@@ -1839,9 +792,9 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "猛犸MP2000",
       "language": "无需语种",
-      "quantity": 0
+      "quantity": 100
     }
   ],
-  "row_count": 179,
+  "row_count": 46,
   "built_from": "live_feishu"
 }

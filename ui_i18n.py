@@ -146,6 +146,9 @@ EN_DISPLAY_TEXT = {
     "库存": "Inventory",
     "个语种": "languages",
     "未编码": "No code",
+    "暂无型号": "No models",
+    "未分组": "Unassigned",
+    "新项目": "New Project",
     "仓库位置图集": "Warehouse Location Gallery",
     "按物料、型号、语种、货架编号或位置说明查询存放位置。": (
         "Search storage locations by material, model, language, shelf, or location description."

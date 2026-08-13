@@ -308,6 +308,7 @@ class MaterialActivationTests(unittest.TestCase):
                 "record_id": "material-cr-zh",
                 "fields": {
                     "物料编码": "MAT-0389",
+                    app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
                     "物料品类": "清洁产品线手册CR（Cleaning Product Line Brochure）",
                     "产品型号": app.NO_MODEL_TEXT,
                     "语种": "简中(Simplified Chinese)",
@@ -320,6 +321,7 @@ class MaterialActivationTests(unittest.TestCase):
                 "record_id": "category-cr",
                 "fields": {
                     "物料品类": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+                    app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
                     "启用状态": app.STATUS_ACTIVE,
                 },
             }
@@ -334,8 +336,115 @@ class MaterialActivationTests(unittest.TestCase):
 
         self.assertEqual(material_index[lookup_key]["record_id"], "material-cr-zh")
 
+        material_rows[0]["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = "否"
+        self.assertEqual(app.build_request_material_index(material_rows, category_rows), {})
+        material_rows[0]["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = (
+            app.REQUEST_PAGE_VISIBLE_VALUE
+        )
+
+        category_rows[0]["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = "否"
+        self.assertEqual(app.build_request_material_index(material_rows, category_rows), {})
+        category_rows[0]["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = (
+            app.REQUEST_PAGE_VISIBLE_VALUE
+        )
+
         category_rows[0]["fields"]["启用状态"] = app.STATUS_INACTIVE
         self.assertEqual(app.build_request_material_index(material_rows, category_rows), {})
+
+    def test_request_inventory_requires_explicit_request_page_visibility(self) -> None:
+        visible = material_row("1", "显示品类", app.STATUS_ACTIVE)
+        visible["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = app.REQUEST_PAGE_VISIBLE_VALUE
+        hidden = material_row("2", "隐藏品类", app.STATUS_ACTIVE)
+        hidden["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = "否"
+        blank = material_row("3", "空白品类", app.STATUS_ACTIVE)
+
+        df = app.feishu_inventory_dataframe_from_rows(
+            [visible, hidden, blank],
+            request_visible_only=True,
+        )
+
+        self.assertEqual(df[app.INVENTORY_HEADERS[0]].tolist(), ["MAT-1"])
+
+    def test_request_options_require_explicit_category_visibility(self) -> None:
+        categories = [
+            {
+                "record_id": "c1",
+                "fields": {
+                    "物料品类": "显示品类",
+                    "启用状态": app.STATUS_ACTIVE,
+                    app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
+                },
+            },
+            {
+                "record_id": "c2",
+                "fields": {
+                    "物料品类": "隐藏品类",
+                    "启用状态": app.STATUS_ACTIVE,
+                    app.REQUEST_PAGE_VISIBILITY_FIELD: "否",
+                },
+            },
+        ]
+        inventory_df = pd.DataFrame(
+            [
+                ["MAT-1", "显示品类", "M1", "英语", 10, 0, 0, ""],
+                ["MAT-2", "隐藏品类", "M1", "英语", 10, 0, 0, ""],
+            ],
+            columns=app.INVENTORY_HEADERS,
+        )
+
+        options = app.feishu_options_from_rows(
+            categories,
+            inventory_df,
+            request_visible_only=True,
+        )
+
+        self.assertEqual(options["products"], ["显示品类"])
+
+    def test_request_cache_carries_model_product_lines(self) -> None:
+        inventory_df = pd.DataFrame(
+            [
+                ["MAT-1", "品类A", "M1", "英语", 10, 0, 0, ""],
+                ["MAT-2", "品类A", "M2", "英语", 10, 0, 0, ""],
+            ],
+            columns=app.INVENTORY_HEADERS,
+        )
+        options = {
+            "products": ["品类A"],
+            "no_model_products": [],
+            "no_language_products": [],
+            "configured_language_products": [],
+            "models": ["M1", "M2"],
+            "model_product_lines": {"M1": "IR", "M2": "新项目"},
+            "languages": ["英语"],
+        }
+
+        cache = app.request_form_cache_from_inventory(options, inventory_df, source="test")
+        context = app.request_form_cache_to_selection_context(cache)
+
+        self.assertEqual(cache["model_product_lines"], {"M1": "IR", "M2": "新项目"})
+        self.assertEqual(
+            cache["active_combinations"][0]["models"],
+            [
+                {"model": "M1", "languages": ["英语"], "product_line": "IR"},
+                {"model": "M2", "languages": ["英语"], "product_line": "新项目"},
+            ],
+        )
+        self.assertEqual(context["model_product_lines"], {"M1": "IR", "M2": "新项目"})
+
+    def test_model_product_line_layout_requires_multiple_primary_lines(self) -> None:
+        context = {
+            "product_models": {"品类A": ["M1", "M2", "M3"]},
+            "model_product_lines": {"M1": "IR", "M2": "CR", "M3": "新项目"},
+        }
+
+        use_layout, groups = app.product_model_line_groups("品类A", context)
+
+        self.assertTrue(use_layout)
+        self.assertEqual(groups, [("IR", ["M1"]), ("CR", ["M2"]), ("新项目", ["M3"])])
+
+        context["model_product_lines"] = {"M1": "IR", "M2": "IR", "M3": ""}
+        use_layout, _ = app.product_model_line_groups("品类A", context)
+        self.assertFalse(use_layout)
 
     def test_request_combination_must_exist_in_active_inventory_rows(self) -> None:
         context = app.request_form_cache_to_selection_context(
