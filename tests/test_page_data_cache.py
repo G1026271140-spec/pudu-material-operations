@@ -23,6 +23,29 @@ class PageDataCacheTests(unittest.TestCase):
             app.REQUEST_FORM_CACHE_TABLES,
         )
 
+    def test_shipping_page_uses_category_cache(self) -> None:
+        self.assertEqual(
+            app.PAGE_CACHE_TABLES["shipping"],
+            (app.CATEGORY_TABLE_NAME,),
+        )
+
+    def test_cached_category_keeps_shipping_fields(self) -> None:
+        records = app.feishu_category_records_from_rows(
+            [
+                {
+                    "record_id": "category-1",
+                    "fields": {
+                        "物料品类": "产品单页(Product Flyer)",
+                        app.COMMERCIAL_INVOICE_NAME_FIELD: "Product Flyer",
+                        app.PACKING_LIST_PRODUCT_TYPE_FIELD: "Flyers",
+                    },
+                }
+            ]
+        )
+
+        self.assertEqual(records[0]["commercial_invoice_name"], "Product Flyer")
+        self.assertEqual(records[0]["packing_list_product_type"], "Flyers")
+
     def test_gift_project_table_is_in_page_and_global_cache_configuration(self) -> None:
         self.assertIn(app.GIFT_PROJECT_TABLE_NAME, app.ALL_PAGE_CACHE_TABLES)
         self.assertEqual(

@@ -24,6 +24,7 @@ from feishu_bitable import FeishuBitableClient, FeishuBitableConfig, FeishuBitab
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
+from shipping_page import render_shipping_template_page
 from ui_i18n import (
     LANGUAGE_EN,
     LANGUAGE_ZH,
@@ -63,6 +64,9 @@ LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 
 UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 UNIT_PRICE_RMB_FIELD = "单价（人民币）"
 GIFT_PROJECT_CATEGORY_LINK_FIELD = "物料品类关联"
+COMMERCIAL_INVOICE_NAME_FIELD = "商业发票产品名称"
+PACKING_LIST_PRODUCT_TYPE_FIELD = "装箱单产品类型"
+PACKING_LIST_PRODUCT_TYPE_OPTIONS = ("Flyers", "Brochures", "Banners", "Give aways")
 STATUS_ACTIVE = "启用"
 STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
@@ -291,7 +295,7 @@ ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
-MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "周边礼品项目")
+MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "发货模板填写", "周边礼品项目")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理")
 MATERIAL_DASHBOARD_MODULES = (
@@ -373,6 +377,7 @@ PAGE_CACHE_TABLES = {
     "maintenance": ALL_PAGE_CACHE_TABLES,
     "inventory": (CATEGORY_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "gift_projects": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, GIFT_PROJECT_TABLE_NAME),
+    "shipping": (CATEGORY_TABLE_NAME,),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
 
@@ -2025,6 +2030,19 @@ def set_feishu_customs_code(
         return
     if feishu_accepts_plain_value(table_name, field_name):
         fields[field_name] = text
+
+
+def set_shipping_category_fields(
+    fields: dict[str, object],
+    commercial_invoice_name: object,
+    packing_list_product_type: object,
+) -> None:
+    invoice_name = str(commercial_invoice_name or "").strip()
+    packing_type = str(packing_list_product_type or "").strip()
+    if feishu_has_field(CATEGORY_TABLE_NAME, COMMERCIAL_INVOICE_NAME_FIELD):
+        fields[COMMERCIAL_INVOICE_NAME_FIELD] = invoice_name
+    if feishu_has_field(CATEGORY_TABLE_NAME, PACKING_LIST_PRODUCT_TYPE_FIELD):
+        fields[PACKING_LIST_PRODUCT_TYPE_FIELD] = packing_type
 
 
 def set_first_person_or_plain_field(
@@ -5688,6 +5706,8 @@ def category_edit_notification_card(
             f"**修改时间：** {_feishu_card_plain_text(draft.get('edited_at'))}\n"
             f"**品类启用状态：** {_feishu_card_plain_text(draft.get('category_status'))}\n"
             f"**品类在申领页显示：** {_feishu_card_plain_text(draft.get('category_request_visible'))}\n"
+            f"**商业发票产品名称：** {_feishu_card_plain_text(draft.get('commercial_invoice_name'))}\n"
+            f"**装箱单产品类型：** {_feishu_card_plain_text(draft.get('packing_list_product_type'))}\n"
             f"**结果：** 目标组合 {int(result.get('target_count') or 0)} 条，"
             f"新增 {int(result.get('created_count') or 0)} 条，移除 {int(result.get('deleted_count') or 0)} 条，"
             f"库存差额 {int(result.get('quantity_difference') or 0):+,}"
@@ -5765,6 +5785,8 @@ def category_create_notification_card(
                 f"**创建时间：** {_feishu_card_plain_text(draft.get('created_at'))}\n"
                 f"**品类状态：** {_feishu_card_plain_text(draft.get('category_status'))}\n"
                 f"**品类在申领页显示：** {_feishu_card_plain_text(draft.get('category_request_visible'))}\n"
+                f"**商业发票产品名称：** {_feishu_card_plain_text(draft.get('commercial_invoice_name'))}\n"
+                f"**装箱单产品类型：** {_feishu_card_plain_text(draft.get('packing_list_product_type'))}\n"
                 f"**创建结果：** 库存组合 {int(result.get('target_count') or 0)} 条，"
                 f"型号 {len(list(result.get('models') or []))} 个，"
                 f"语种 {len(list(result.get('languages') or []))} 个，"
@@ -6788,6 +6810,12 @@ def feishu_category_records_from_rows(rows: list[dict]) -> list[dict]:
                 "record_id": feishu_record_id(row),
                 "category": product,
                 "category_definition": feishu_text(fields, "品类定义"),
+                "commercial_invoice_name": feishu_text(
+                    fields, COMMERCIAL_INVOICE_NAME_FIELD
+                ),
+                "packing_list_product_type": feishu_text(
+                    fields, PACKING_LIST_PRODUCT_TYPE_FIELD
+                ),
                 "no_model": feishu_text(fields, "是否无需型号") == "是",
                 "no_language": feishu_text(fields, "是否无需语种") == "是"
                 or (
@@ -8103,6 +8131,8 @@ def sync_feishu_category_inventory(
     category_request_visible: str = REQUEST_PAGE_VISIBLE_VALUE,
     category_unit_price: float | None = None,
     category_customs_code: str = "",
+    commercial_invoice_name: str = "",
+    packing_list_product_type: str = "",
     category_record_id: str = "",
     model_renames: dict[str, str] | None = None,
     language_renames: dict[str, str] | None = None,
@@ -8123,6 +8153,10 @@ def sync_feishu_category_inventory(
     )
     category_unit_price = None if category_unit_price is None else float(category_unit_price)
     category_customs_code = category_customs_code.strip()
+    commercial_invoice_name = commercial_invoice_name.strip()
+    packing_list_product_type = packing_list_product_type.strip()
+    if not commercial_invoice_name:
+        raise ValueError("商业发票产品名称不能为空。")
     category_definition = category_definition.strip()
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
@@ -8206,6 +8240,11 @@ def sync_feishu_category_inventory(
             category_fields["品类定义"] = category_definition
         set_feishu_unit_price(CATEGORY_TABLE_NAME, category_fields, category_unit_price)
         set_feishu_customs_code(CATEGORY_TABLE_NAME, category_fields, category_customs_code)
+        set_shipping_category_fields(
+            category_fields,
+            commercial_invoice_name,
+            packing_list_product_type,
+        )
         created = feishu_batch_create_records(
             CATEGORY_TABLE_NAME,
             [category_fields],
@@ -8297,6 +8336,11 @@ def sync_feishu_category_inventory(
         category_update_fields["品类定义"] = category_definition
     set_feishu_unit_price(CATEGORY_TABLE_NAME, category_update_fields, category_unit_price)
     set_feishu_customs_code(CATEGORY_TABLE_NAME, category_update_fields, category_customs_code)
+    set_shipping_category_fields(
+        category_update_fields,
+        commercial_invoice_name,
+        packing_list_product_type,
+    )
     feishu_update_record_fields(CATEGORY_TABLE_NAME, category_record_id, category_update_fields)
 
     return {
@@ -8309,6 +8353,8 @@ def sync_feishu_category_inventory(
         "relation_update_count": relation_update_count,
         "category_definition": category_definition,
         "category_request_visible": category_request_visible,
+        "commercial_invoice_name": commercial_invoice_name,
+        "packing_list_product_type": packing_list_product_type,
     }
 
 
@@ -8345,6 +8391,8 @@ def create_new_gift_project_request(
         category_definition=CATEGORY_DEFINITION_GIFT,
         category_status=STATUS_ACTIVE,
         category_unit_price=float(unit_price),
+        commercial_invoice_name=product,
+        packing_list_product_type="Give aways",
         target_values={
             (NO_MODEL_TEXT, NO_LANGUAGE_TEXT): {
                 "quantity": 0,
@@ -8648,6 +8696,12 @@ def render_sidebar_link() -> None:
             "库存登记",
             "库存登记",
             ":material/edit_note:",
+        )
+        navigate_to_management_section(
+            "sidebar_open_shipping_template",
+            "发货模板填写",
+            "发货模板填写",
+            ":material/description:",
         )
         navigate_to_management_section(
             "sidebar_open_gift_projects",
@@ -10561,6 +10615,8 @@ def clear_new_category_creation_state() -> None:
         "category_definition_new",
         "category_unit_price_new",
         "category_customs_code_new",
+        "category_commercial_invoice_name_new",
+        "category_packing_list_product_type_new",
         "category_no_model_new",
         "category_no_language_new",
         "category_models_new",
@@ -10597,6 +10653,8 @@ def restore_new_category_creation_state(
         "category_definition_new",
         "category_unit_price_new",
         "category_customs_code_new",
+        "category_commercial_invoice_name_new",
+        "category_packing_list_product_type_new",
         "category_no_model_new",
         "category_no_language_new",
         "category_models_new",
@@ -10633,7 +10691,7 @@ def render_category_edit_review() -> None:
     metric_b.metric("目标组合", f"{len(list(draft.get('targets') or [])):,}")
     metric_c.metric("库存差额", f"{int(draft.get('quantity_difference') or 0):+,}")
     with st.container(border=True):
-        info_cols = st.columns(4)
+        info_cols = st.columns(6)
         render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
         render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
         render_request_review_field(info_cols[2], "品类定义", draft.get("category_definition"))
@@ -10641,6 +10699,12 @@ def render_category_edit_review() -> None:
             info_cols[3],
             "品类状态 / 申领页显示",
             f"{draft.get('category_status')} / {draft.get('category_request_visible')}",
+        )
+        render_request_review_field(
+            info_cols[4], "商业发票产品名称", draft.get("commercial_invoice_name")
+        )
+        render_request_review_field(
+            info_cols[5], "装箱单产品类型", draft.get("packing_list_product_type")
         )
         if changed_rows:
             st.dataframe(
@@ -10717,7 +10781,7 @@ def render_new_category_review() -> None:
 
     with st.container(border=True):
         render_section_header("01", "品类信息确认", "确认基础信息后编辑每一条新增库存行")
-        info_cols = st.columns(6)
+        info_cols = st.columns(8)
         render_request_review_field(info_cols[0], "物料品类", product)
         render_request_review_field(info_cols[1], "品类定义", draft.get("category_definition"))
         render_request_review_field(info_cols[2], "品类启用状态", category_status)
@@ -10737,6 +10801,12 @@ def render_new_category_review() -> None:
             NO_LANGUAGE_TEXT
             if draft.get("no_language")
             else f"{len(list(draft.get('languages') or []))} 个语种",
+        )
+        render_request_review_field(
+            info_cols[6], "商业发票产品名称", draft.get("commercial_invoice_name")
+        )
+        render_request_review_field(
+            info_cols[7], "装箱单产品类型", draft.get("packing_list_product_type")
         )
 
     with st.container(border=True):
@@ -10847,6 +10917,12 @@ def render_new_category_review() -> None:
                         ),
                         category_unit_price=draft.get("category_unit_price"),
                         category_customs_code=str(draft.get("category_customs_code") or ""),
+                        commercial_invoice_name=str(
+                            draft.get("commercial_invoice_name") or ""
+                        ),
+                        packing_list_product_type=str(
+                            draft.get("packing_list_product_type") or ""
+                        ),
                         target_values=edited_values,
                     )
                 except Exception as exc:
@@ -11425,6 +11501,12 @@ def render_add_category_form() -> None:
     )
     current_category_unit_price = (selected_category or {}).get("unit_price")
     current_category_customs_code = str((selected_category or {}).get("customs_code") or "")
+    current_commercial_invoice_name = str(
+        (selected_category or {}).get("commercial_invoice_name") or ""
+    )
+    current_packing_list_product_type = str(
+        (selected_category or {}).get("packing_list_product_type") or ""
+    )
     editor_key = category_id or "new"
     pool_edit_dimension = ""
     pool_focus_model = ""
@@ -11442,6 +11524,38 @@ def render_add_category_form() -> None:
             3,
             vertical_alignment="bottom",
         )
+        shipping_name_col, shipping_type_col = st.columns([2, 1])
+        commercial_invoice_name_key = f"category_commercial_invoice_name_{editor_key}"
+        commercial_invoice_name = shipping_name_col.text_input(
+            "商业发票产品名称 *",
+            placeholder="例如：Product Flyer",
+            key=commercial_invoice_name_key,
+            **(
+                {}
+                if commercial_invoice_name_key in st.session_state
+                else {"value": current_commercial_invoice_name}
+            ),
+        ).strip()
+        packing_type_options = unique_preserve(
+            list(PACKING_LIST_PRODUCT_TYPE_OPTIONS)
+            + ([current_packing_list_product_type] if current_packing_list_product_type else [])
+        )
+        packing_list_product_type_key = f"category_packing_list_product_type_{editor_key}"
+        packing_list_product_type = shipping_type_col.selectbox(
+            "装箱单产品类型",
+            packing_type_options,
+            key=packing_list_product_type_key,
+            **(
+                {}
+                if packing_list_product_type_key in st.session_state
+                else {
+                    "index": packing_type_options.index(current_packing_list_product_type)
+                    if current_packing_list_product_type in packing_type_options
+                    else 0
+                }
+            ),
+        )
+        st.caption("商业发票产品名称为发货模板下拉选项；选择后会同步带出装箱单类型、单价和海关编码。")
         metadata_price_col, metadata_customs_col = st.columns(2)
         category_definition_options = unique_preserve(
             list(CATEGORY_DEFINITION_OPTIONS)
@@ -12188,6 +12302,8 @@ def render_add_category_form() -> None:
             st.error("请填写物料品类名称。")
         elif product != old_product and product in existing_names:
             st.error("该物料品类名称已经存在。")
+        elif not commercial_invoice_name:
+            st.error("请填写商业发票产品名称。")
         elif not models:
             st.error("请至少保留或新增一个产品型号，或勾选“无需产品型号”。")
         elif not languages:
@@ -12212,6 +12328,8 @@ def render_add_category_form() -> None:
                 "category_definition": category_definition,
                 "category_unit_price": category_unit_price,
                 "category_customs_code": category_customs_code,
+                "commercial_invoice_name": commercial_invoice_name,
+                "packing_list_product_type": packing_list_product_type,
                 "targets": [dict(target) for target in plan["targets"]],
                 "target_state_key": target_state_key,
                 "revision_key": revision_key,
@@ -12222,6 +12340,8 @@ def render_add_category_form() -> None:
                     "category_definition_new": category_definition,
                     "category_unit_price_new": category_unit_price_text,
                     "category_customs_code_new": category_customs_code,
+                    "category_commercial_invoice_name_new": commercial_invoice_name,
+                    "category_packing_list_product_type_new": packing_list_product_type,
                     "category_no_model_new": no_model,
                     "category_no_language_new": no_language,
                     "category_models_new": list(selected_models),
@@ -12241,6 +12361,8 @@ def render_add_category_form() -> None:
                 "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
                 "category_unit_price": category_unit_price, "category_customs_code": category_customs_code,
+                "commercial_invoice_name": commercial_invoice_name,
+                "packing_list_product_type": packing_list_product_type,
                 "category_record_id": category_id, "model_renames": dict(model_renames),
                 "language_renames": dict(language_renames),
                 "carry_model": carry_model, "carry_language": carry_language,
@@ -12250,6 +12372,8 @@ def render_add_category_form() -> None:
                 "old_product": old_product, "product": product, "category_status": category_status,
                 "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
+                "commercial_invoice_name": commercial_invoice_name,
+                "packing_list_product_type": packing_list_product_type,
                 "edited_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "current_records": [dict(row) for row in current_records],
                 "targets": [dict(target) for target in plan["targets"]],
@@ -14062,6 +14186,7 @@ def render_management_page() -> None:
         current_section = "物料管理"
     if current_section not in {
         "库存登记",
+        "发货模板填写",
         "周边礼品项目",
         "物料管理",
     }:
@@ -14083,6 +14208,7 @@ def render_management_page() -> None:
         return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
+        "发货模板填写": ("发货模板填写", "商业发票与装箱单", "选择物料并填写纸箱分配，生成可下载的 INV 与 PL Excel。"),
         "周边礼品项目": ("周边礼品项目", "项目物料进度管理", "按项目跟踪周边礼品的状态、单价、备注和图片。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库与物料品类统一管理。"),
     }
@@ -14093,6 +14219,10 @@ def render_management_page() -> None:
     if current_section == "周边礼品项目":
         render_page_cache_toolbar("gift_projects")
         render_gift_projects_page()
+        return
+    if current_section == "发货模板填写":
+        render_page_cache_toolbar("shipping")
+        render_shipping_template_page(load_feishu_category_records())
         return
     if current_section == "物料管理":
         if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) not in MATERIAL_MANAGEMENT_SECTIONS:
