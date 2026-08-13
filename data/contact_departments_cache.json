@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-13 10:33:42",
+  "generated_at": "2026-08-13 14:50:40",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -6914,9 +6914,11 @@
       "open_id": "ou_ce72767c7ac9590109eeb0ba3104587c",
       "name": "张杰雄",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-f610c7036dc1e1e4dd10f168c41a1d61"
       ],
       "department_paths": [
+        "X LAB",
         "服务代表组"
       ]
     },

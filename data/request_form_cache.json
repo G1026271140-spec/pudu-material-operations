@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-13 14:43:08",
+  "generated_at": "2026-08-13 14:50:25",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -994,11 +994,11 @@
           "product_line": "CR"
         },
         {
-          "model": "PUDU HolaBot",
+          "model": "KettyBot Pro",
           "languages": [
             "无需语种"
           ],
-          "product_line": "新项目"
+          "product_line": "SR"
         }
       ]
     },
@@ -3874,21 +3874,21 @@
       "product": "公仔(Plush Toy)",
       "model": "BellaBot",
       "language": "无需语种",
-      "quantity": -1
+      "quantity": 300
     },
     {
-      "material_code": "MAT-0631",
+      "material_code": "MAT-0591",
       "product": "公仔(Plush Toy)",
-      "model": "PUDU HolaBot",
+      "model": "KettyBot Pro",
       "language": "无需语种",
-      "quantity": 300
+      "quantity": 0
     },
     {
       "material_code": "MAT-0641",
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 0
+      "quantity": 400
     },
     {
       "material_code": "MAT-0761",
