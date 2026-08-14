@@ -106,6 +106,26 @@ class ShippingTemplateTests(unittest.TestCase):
         self.assertEqual(workbook["PL (2)"]["I16"].number_format, "0.00")
         self.assertEqual(workbook["PL (2)"]["K16"].number_format, "0.000")
 
+    def test_generated_workbook_removes_all_cell_fills(self) -> None:
+        _, data = generate_shipping_workbook(
+            template_date=date(2026, 8, 14),
+            address_code="US",
+            recipient={"contact": "A"},
+            lines=[ShippingLine("L1", "Flyer", "Flyer", "Flyers", 10, 0.06, "4911101000")],
+            cartons=[Carton(1, 1, 2, 3, 50, 40, 30)],
+            allocations=[CartonAllocation(1, "L1", 10)],
+        )
+        workbook = load_workbook(BytesIO(data), data_only=False)
+
+        filled_cells = [
+            f"{worksheet.title}!{cell.coordinate}"
+            for worksheet in workbook.worksheets
+            for row in worksheet.iter_rows()
+            for cell in row
+            if cell.fill.fill_type is not None
+        ]
+        self.assertEqual(filled_cells, [])
+
     def test_invoice_aggregates_one_product_split_across_cartons(self) -> None:
         _, data = generate_shipping_workbook(
             template_date=date(2026, 8, 13),

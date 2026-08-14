@@ -10,6 +10,8 @@ from typing import Iterable
 
 from openpyxl import load_workbook
 from openpyxl.cell.cell import MergedCell
+from openpyxl.styles import PatternFill
+from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 
@@ -355,6 +357,14 @@ def _write_packing_list(
     ws.cell(total_row, 11).number_format = "0.000"
 
 
+def _clear_workbook_fills(workbook: Workbook) -> None:
+    empty_fill = PatternFill()
+    for worksheet in workbook.worksheets:
+        for row in worksheet.iter_rows():
+            for cell in row:
+                cell.fill = copy(empty_fill)
+
+
 def generate_shipping_workbook(
     *,
     template_date: date,
@@ -392,6 +402,7 @@ def generate_shipping_workbook(
     )
     _write_invoice(invoice_sheet, line_list)
     _write_packing_list(packing_sheet, line_list, carton_list, allocation_list)
+    _clear_workbook_fills(workbook)
     workbook.calculation.fullCalcOnLoad = True
     workbook.calculation.forceFullCalc = True
     output = BytesIO()
