@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-14 10:59:29",
+  "generated_at": "2026-08-14 14:55:19",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -21,14 +21,12 @@
     "配送线产品手册SR(Delivery Robot Product Brochure)",
     "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "一棵大树"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_language_products": [
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
-    "笔记本礼盒(Notebook Gift Box)",
-    "一棵大树"
+    "笔记本礼盒(Notebook Gift Box)"
   ],
   "configured_language_products": [
     "产品单页(Product Flyer )",
@@ -1763,7 +1761,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": 750
+      "quantity": 1250
     },
     {
       "material_code": "MAT-0280",
@@ -1973,7 +1971,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "简中(Simplified Chinese)",
-      "quantity": 350
+      "quantity": 850
     },
     {
       "material_code": "MAT-0320",
@@ -2148,7 +2146,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "英语(English)",
-      "quantity": 0
+      "quantity": 500
     },
     {
       "material_code": "MAT-0352",
@@ -2204,7 +2202,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0
+      "quantity": 500
     },
     {
       "material_code": "MAT-0360",
@@ -3828,7 +3826,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1800
+      "quantity": 2300
     },
     {
       "material_code": "MAT-0999",
@@ -3898,7 +3896,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D7",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1794
+      "quantity": 3294
     },
     {
       "material_code": "MAT-1009",
@@ -3912,7 +3910,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D7",
       "language": "英语(English)",
-      "quantity": 500
+      "quantity": 1000
     },
     {
       "material_code": "MAT-1011",
@@ -4591,7 +4589,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0
+      "quantity": 500
     },
     {
       "material_code": "MAT-1122",
@@ -4605,7 +4603,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "英语(English)",
-      "quantity": 0
+      "quantity": 500
     },
     {
       "material_code": "MAT-1124",
@@ -4724,7 +4722,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "猛犸MP2000",
       "language": "无需语种",
-      "quantity": 100
+      "quantity": 200
     }
   ],
   "row_count": 519,

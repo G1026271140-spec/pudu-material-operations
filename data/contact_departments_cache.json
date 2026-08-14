@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-14 10:59:51",
+  "generated_at": "2026-08-14 14:55:37",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1766,6 +1766,16 @@
       ],
       "department_paths": [
         "CRPBU机械组"
+      ]
+    },
+    {
+      "open_id": "ou_3a710bcbefcbb0102fe7fc1b0497533a",
+      "name": "任董董",
+      "department_ids": [
+        "od-0d2e69b5098d365910e13a12f726cd12"
+      ],
+      "department_paths": [
+        "桐乡综合组"
       ]
     },
     {
@@ -4604,6 +4614,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_3195ffa9f5999ed2f551b40899a87f87",
+      "name": "吴雄",
+      "department_ids": [
+        "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
+      ],
+      "department_paths": [
+        "硬件测试组"
       ]
     },
     {
@@ -7467,6 +7487,16 @@
       ]
     },
     {
+      "open_id": "ou_4adea676f245a81e333c89f7c4e4ec09",
+      "name": "张霖希",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_31db67347e454879423d66d7cf8093c3",
       "name": "张颖",
       "department_ids": [
@@ -7544,16 +7574,6 @@
       ],
       "department_paths": [
         "项目交付组"
-      ]
-    },
-    {
-      "open_id": "ou_517a362bdfbaef3e816819da0962dd6b",
-      "name": "彭伟",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
       ]
     },
     {
@@ -9295,6 +9315,16 @@
       ]
     },
     {
+      "open_id": "ou_b444fed2ef5a671bfa9d08f85d815835",
+      "name": "李如梦",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_73494b6263440c2506bbaedfbb3b7de9",
       "name": "李姣霖",
       "department_ids": [
@@ -9808,6 +9838,16 @@
       ],
       "department_paths": [
         "IRPBU硬件组"
+      ]
+    },
+    {
+      "open_id": "ou_429fcffce7a5dc84df64245f9f85576f",
+      "name": "李永祺",
+      "department_ids": [
+        "od-9ad23d5284430da79278f14ad7fbadd6"
+      ],
+      "department_paths": [
+        "CRPBU算法组"
       ]
     },
     {
@@ -11780,6 +11820,16 @@
       ],
       "department_paths": [
         "M LAB"
+      ]
+    },
+    {
+      "open_id": "ou_2ca5085c355eb4c7d5c80af579e9a797",
+      "name": "江堃",
+      "department_ids": [
+        "od-1f59ca891cc0f50d13d93de3dffbaa5d"
+      ],
+      "department_paths": [
+        "CRPBU嵌入式组"
       ]
     },
     {
@@ -14077,6 +14127,16 @@
       ]
     },
     {
+      "open_id": "ou_e39b3508783e0bcccf4f8880c7a96b14",
+      "name": "程烨",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_b86e01ff21f37d15ff7eb05a8cc04d4a",
       "name": "程玉梅",
       "department_ids": [
@@ -15435,6 +15495,16 @@
       ]
     },
     {
+      "open_id": "ou_61906f5826379d8047893475b9104ae5",
+      "name": "董涛",
+      "department_ids": [
+        "od-8e45a1055cf45a02f1c906e2c67e58af"
+      ],
+      "department_paths": [
+        "生产质量组"
+      ]
+    },
+    {
       "open_id": "ou_4a9c5a78bca3754e7838f80d9e3cf6a1",
       "name": "董盈希",
       "department_ids": [
@@ -15958,6 +16028,16 @@
       ],
       "department_paths": [
         "建湖生产组"
+      ]
+    },
+    {
+      "open_id": "ou_ef862e710873c55cb819a256fdc3ccc7",
+      "name": "裴阳",
+      "department_ids": [
+        "od-9ad23d5284430da79278f14ad7fbadd6"
+      ],
+      "department_paths": [
+        "CRPBU算法组"
       ]
     },
     {
@@ -19049,6 +19129,16 @@
       ]
     },
     {
+      "open_id": "ou_9c35fdef07adab5f38168db0464866b2",
+      "name": "霍霄",
+      "department_ids": [
+        "od-351136960c7fbc3cedd00a20c4f6699b"
+      ],
+      "department_paths": [
+        "CRPBU系统测试组"
+      ]
+    },
+    {
       "open_id": "ou_045870533dc8fa55a0cdaeb1220f650c",
       "name": "韦兰艳",
       "department_ids": [
@@ -20569,5 +20659,5 @@
       ]
     }
   ],
-  "user_count": 1897
+  "user_count": 1906
 }
