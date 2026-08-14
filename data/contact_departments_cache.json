@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-13 16:49:57",
+  "generated_at": "2026-08-14 10:32:53",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -3663,6 +3663,16 @@
       ]
     },
     {
+      "open_id": "ou_fc4a27162e9c15b06bc4bf7c8ac75ce4",
+      "name": "刘雅欣",
+      "department_ids": [
+        "od-4057bb1dddb7771e3e1fcb52fbb7f995"
+      ],
+      "department_paths": [
+        "区域市场组"
+      ]
+    },
+    {
       "open_id": "ou_a8df6bde8783318c746a37801994a79c",
       "name": "刘雨婷",
       "department_ids": [
@@ -3882,6 +3892,16 @@
       ],
       "department_paths": [
         "报告&税务组"
+      ]
+    },
+    {
+      "open_id": "ou_003f924f395978235b58ceb29105c134",
+      "name": "叶汝嘉",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
       ]
     },
     {
@@ -4270,6 +4290,16 @@
       ],
       "department_paths": [
         "GRPBU算法组"
+      ]
+    },
+    {
+      "open_id": "ou_e462f6c8dc8b89e0b8c1cf323f4c0a3c",
+      "name": "吴晓燕",
+      "department_ids": [
+        "od-0e24460647c4ddfb9ee39322af0c583d"
+      ],
+      "department_paths": [
+        "SR测试组"
       ]
     },
     {
@@ -9395,6 +9425,16 @@
       ]
     },
     {
+      "open_id": "ou_027457b06141ba8231b7b0a3426af411",
+      "name": "李峰",
+      "department_ids": [
+        "od-d90d38def427cf71640b80459d6b5118"
+      ],
+      "department_paths": [
+        "M LAB"
+      ]
+    },
+    {
       "open_id": "ou_cfdc0002bcb4ea2de191cd30605399cc",
       "name": "李希寇贝",
       "department_ids": [
@@ -9514,16 +9554,6 @@
       ],
       "department_paths": [
         "通用导航及底盘团队"
-      ]
-    },
-    {
-      "open_id": "ou_fbfd1cdfe7081fb43d6f0330f0902bf5",
-      "name": "李慧",
-      "department_ids": [
-        "od-2c0bf991e0b608110fdc558188f948ac"
-      ],
-      "department_paths": [
-        "财经BP组"
       ]
     },
     {
@@ -9862,6 +9892,16 @@
       ],
       "department_paths": [
         "采购代表组"
+      ]
+    },
+    {
+      "open_id": "ou_c4125966d6e5e811e35661bfcc4c7649",
+      "name": "李添骏",
+      "department_ids": [
+        "od-4460d5aedeb32b282f1fd1cf0fc5c8eb"
+      ],
+      "department_paths": [
+        "GRPBU软件组"
       ]
     },
     {
@@ -10576,6 +10616,16 @@
       ],
       "department_paths": [
         "GRPBU硬件组"
+      ]
+    },
+    {
+      "open_id": "ou_cfe59748295aaf39cd73c7f69ac10de0",
+      "name": "杨晨",
+      "department_ids": [
+        "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
+      ],
+      "department_paths": [
+        "硬件测试组"
       ]
     },
     {
@@ -12275,6 +12325,16 @@
       ]
     },
     {
+      "open_id": "ou_a391548d18cec6cae6f0fc75280d789b",
+      "name": "潘楚欣",
+      "department_ids": [
+        "od-b18350f1312163245be431262fac55f3"
+      ],
+      "department_paths": [
+        "视觉设计组"
+      ]
+    },
+    {
       "open_id": "ou_1313ea0f52ed5d4d183b8c4cf19552da",
       "name": "潘皓",
       "department_ids": [
@@ -13301,6 +13361,16 @@
       ]
     },
     {
+      "open_id": "ou_2163c7299054401b9012171c71b34100",
+      "name": "王立壮",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
+      ]
+    },
+    {
       "open_id": "ou_fa709c8fef20f3fe16ca0683d9b79187",
       "name": "王继伟",
       "department_ids": [
@@ -13484,6 +13554,16 @@
       ],
       "department_paths": [
         "欧洲服务B组"
+      ]
+    },
+    {
+      "open_id": "ou_6dbd8f9756faf00b5bc968b9ae027a21",
+      "name": "王麒翔",
+      "department_ids": [
+        "od-c85ebe41cdf07b2290fc9e0cb0f334e8"
+      ],
+      "department_paths": [
+        "GRPBU机械组"
       ]
     },
     {
@@ -14348,6 +14428,16 @@
       "department_paths": [
         "CR项目管理组",
         "PDT管理部"
+      ]
+    },
+    {
+      "open_id": "ou_04107bd81d485bd3e29a933d6442d666",
+      "name": "罗琨鹏",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
       ]
     },
     {
@@ -15514,6 +15604,16 @@
       "department_paths": [
         "X LAB",
         "X LAB测试组"
+      ]
+    },
+    {
+      "open_id": "ou_4060afcfa3ce5b9ca0a4a5f6c983daf5",
+      "name": "蔡少乐",
+      "department_ids": [
+        "od-821a8df99001a505f8ecfd37f1ed07ec"
+      ],
+      "department_paths": [
+        "GRPBU电机组"
       ]
     },
     {
@@ -20459,5 +20559,5 @@
       ]
     }
   ],
-  "user_count": 1886
+  "user_count": 1896
 }

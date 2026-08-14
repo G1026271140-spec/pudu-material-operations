@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-13 16:49:41",
+  "generated_at": "2026-08-14 10:32:34",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -21,12 +21,14 @@
     "配送线产品手册SR(Delivery Robot Product Brochure)",
     "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)"
+    "普渡logo无纺布手提袋(PUDU logo bag)",
+    "一棵大树"
   ],
   "no_language_products": [
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
-    "笔记本礼盒(Notebook Gift Box)"
+    "笔记本礼盒(Notebook Gift Box)",
+    "一棵大树"
   ],
   "configured_language_products": [
     "产品单页(Product Flyer )",
@@ -106,6 +108,7 @@
     "T300 Conveyor": "IR",
     "MP2000": "IR",
     "Hulk": "新项目",
+    "Flash Arm": "GR",
     "SwiftBot": "SR",
     "猛犸MP2000": "IR"
   },
@@ -294,7 +297,8 @@
             "葡语(Portuguese)",
             "西语(Spanish)",
             "韩语(Korean)"
-          ]
+          ],
+          "product_line": "GR"
         },
         {
           "model": "FlashBot",
