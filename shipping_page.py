@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import MutableMapping
 from datetime import date
 import pandas as pd
 import streamlit as st
@@ -20,6 +21,27 @@ from shipping_template import (
 PACKING_TYPE_OPTIONS = ("Flyers", "Brochures", "Banners", "Give aways")
 LINE_IDS_KEY = "shipping_template_line_ids"
 ALLOCATION_ROWS_KEY = "shipping_template_allocations"
+LINE_FIELD_SUFFIXES = (
+    "category",
+    "invoice_name",
+    "packing_name",
+    "packing_type",
+    "quantity",
+    "unit_price",
+    "customs",
+    "model",
+    "sku",
+)
+CARTON_FIELD_DEFAULTS: dict[str, object] = {
+    "carton_quantity": 1,
+    "net_weight": 0.0,
+    "gross_weight": 0.0,
+    "override_cbm": False,
+    "length": 0.0,
+    "width": 0.0,
+    "height": 0.0,
+    "cbm_override": 0.0,
+}
 
 
 def _new_line_id() -> str:
@@ -55,32 +77,70 @@ def _apply_category_to_line(line_id: str, category_by_id: dict[str, dict[str, ob
     st.session_state[f"shipping_customs_{line_id}"] = str(category.get("customs_code") or "")
 
 
-def _initialize_line(line_id: str, category: dict[str, object] | None) -> None:
+def initialize_shipping_line_state(
+    session_state: MutableMapping[str, object],
+    line_id: str,
+    category: dict[str, object] | None,
+    source_line_id: str | None = None,
+) -> None:
     category = category or {}
     category_id = str(category.get("record_id") or "")
     invoice_name = str(category.get("commercial_invoice_name") or category.get("category") or "").strip()
     defaults: dict[str, object] = {
-        f"shipping_category_{line_id}": category_id,
-        f"shipping_invoice_name_{line_id}": invoice_name,
-        f"shipping_packing_name_{line_id}": invoice_name,
-        f"shipping_packing_type_{line_id}": str(
+        "category": category_id,
+        "invoice_name": invoice_name,
+        "packing_name": invoice_name,
+        "packing_type": str(
             category.get("packing_list_product_type") or PACKING_TYPE_OPTIONS[-1]
         ),
-        f"shipping_quantity_{line_id}": 1,
-        f"shipping_unit_price_{line_id}": float(category.get("unit_price") or 0),
-        f"shipping_customs_{line_id}": str(category.get("customs_code") or ""),
-        f"shipping_model_{line_id}": DEFAULT_PRODUCT_MODEL,
-        f"shipping_sku_{line_id}": "/",
+        "quantity": 1,
+        "unit_price": float(category.get("unit_price") or 0),
+        "customs": str(category.get("customs_code") or ""),
+        "model": DEFAULT_PRODUCT_MODEL,
+        "sku": "/",
     }
-    for key, value in defaults.items():
-        st.session_state.setdefault(key, value)
+    for suffix, default_value in defaults.items():
+        target_key = f"shipping_{suffix}_{line_id}"
+        source_key = f"shipping_{suffix}_{source_line_id}" if source_line_id else ""
+        source_value = (
+            session_state[source_key]
+            if source_key and source_key in session_state
+            else default_value
+        )
+        session_state.setdefault(target_key, source_value)
+
+
+def _initialize_line(
+    line_id: str,
+    category: dict[str, object] | None,
+    source_line_id: str | None = None,
+) -> None:
+    initialize_shipping_line_state(
+        st.session_state,
+        line_id,
+        category,
+        source_line_id,
+    )
+
+
+def initialize_shipping_carton_state(
+    session_state: MutableMapping[str, object],
+    carton_no: int,
+    source_carton_no: int | None = None,
+) -> None:
+    for suffix, default_value in CARTON_FIELD_DEFAULTS.items():
+        target_key = f"shipping_{suffix}_{carton_no}"
+        source_key = f"shipping_{suffix}_{source_carton_no}" if source_carton_no else ""
+        source_value = (
+            session_state[source_key]
+            if source_key and source_key in session_state
+            else default_value
+        )
+        session_state.setdefault(target_key, source_value)
 
 
 def _delete_line_state(line_id: str) -> None:
-    for suffix in (
-        "category", "invoice_name", "packing_name", "packing_type", "quantity",
-        "unit_price", "customs", "model", "sku",
-    ):
+    for suffix in LINE_FIELD_SUFFIXES:
         st.session_state.pop(f"shipping_{suffix}_{line_id}", None)
 
 
@@ -155,17 +215,13 @@ def _render_invoice_lines(categories: list[dict]) -> list[ShippingLine]:
 
     header_col, add_col = st.columns([5, 1], vertical_alignment="center")
     header_col.subheader("商业发票物料明细")
-    if add_col.button(
+    add_line_clicked = add_col.button(
         "新增明细",
         icon=":material/add:",
         type="primary",
         width="stretch",
         key="shipping_add_invoice_line",
-    ):
-        new_id = _new_line_id()
-        _initialize_line(new_id, default_category)
-        st.session_state[LINE_IDS_KEY] = [*line_ids, new_id]
-        st.rerun()
+    )
 
     lines: list[ShippingLine] = []
     for index, line_id in enumerate(line_ids, start=1):
@@ -257,6 +313,12 @@ def _render_invoice_lines(categories: list[dict]) -> list[ShippingLine]:
                     sku=sku.strip() or "/",
                 )
             )
+    if add_line_clicked:
+        new_id = _new_line_id()
+        source_line_id = line_ids[-1] if line_ids else None
+        _initialize_line(new_id, default_category, source_line_id)
+        st.session_state[LINE_IDS_KEY] = [*line_ids, new_id]
+        st.rerun()
     return lines
 
 
@@ -274,6 +336,11 @@ def _render_cartons() -> list[Carton]:
     )
     cartons: list[Carton] = []
     for carton_no in range(1, carton_count + 1):
+        initialize_shipping_carton_state(
+            st.session_state,
+            carton_no,
+            carton_no - 1 if carton_no > 1 else None,
+        )
         with st.container(border=True):
             st.markdown(f"**纸箱 {carton_no:02d}**")
             first = st.columns(4)
@@ -281,7 +348,6 @@ def _render_cartons() -> list[Carton]:
                 "箱数",
                 min_value=1,
                 step=1,
-                value=1,
                 key=f"shipping_carton_quantity_{carton_no}",
             )
             net_weight = first[1].number_input(
