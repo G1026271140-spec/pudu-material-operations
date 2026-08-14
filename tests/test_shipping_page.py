@@ -14,51 +14,32 @@ class ShippingPageStateTests(unittest.TestCase):
             "customs_code": "4911101000",
         }
 
-    def test_new_shipping_line_copies_latest_entry_values(self) -> None:
+    def test_product_state_uses_category_defaults_without_overwriting_edits(self) -> None:
         state: dict[str, object] = {
-            "shipping_category_source": "category-2",
-            "shipping_invoice_name_source": "Custom Invoice Name",
-            "shipping_packing_name_source": "Custom Packing Name",
-            "shipping_packing_type_source": "Brochures",
-            "shipping_quantity_source": 36,
-            "shipping_unit_price_source": 2.75,
-            "shipping_customs_source": "99887766",
-            "shipping_model_source": "BellaBot",
-            "shipping_sku_source": "SKU-36",
+            "shipping_product_invoice_name_category-1": "Manual Invoice Name",
         }
 
-        shipping_page.initialize_shipping_line_state(
+        shipping_page.initialize_shipping_product_state(
             state,
-            "target",
-            self.category,
-            "source",
-        )
-
-        for suffix in shipping_page.LINE_FIELD_SUFFIXES:
-            self.assertEqual(
-                state[f"shipping_{suffix}_target"],
-                state[f"shipping_{suffix}_source"],
-            )
-
-    def test_existing_shipping_line_values_are_not_overwritten_on_refresh(self) -> None:
-        state: dict[str, object] = {
-            "shipping_quantity_target": 88,
-            "shipping_invoice_name_target": "Manual Name",
-        }
-
-        shipping_page.initialize_shipping_line_state(
-            state,
-            "target",
+            "category-1",
             self.category,
         )
 
-        self.assertEqual(state["shipping_quantity_target"], 88)
-        self.assertEqual(state["shipping_invoice_name_target"], "Manual Name")
-        self.assertEqual(state["shipping_customs_target"], "4911101000")
+        self.assertEqual(
+            state["shipping_product_invoice_name_category-1"],
+            "Manual Invoice Name",
+        )
+        self.assertEqual(
+            state["shipping_product_packing_name_category-1"],
+            "Product Flyer",
+        )
+        self.assertEqual(
+            state["shipping_product_customs_category-1"],
+            "4911101000",
+        )
 
     def test_new_carton_copies_previous_carton_values(self) -> None:
         state: dict[str, object] = {
-            "shipping_carton_quantity_1": 4,
             "shipping_net_weight_1": 12.5,
             "shipping_gross_weight_1": 13.2,
             "shipping_override_cbm_1": True,
@@ -76,14 +57,82 @@ class ShippingPageStateTests(unittest.TestCase):
                 state[f"shipping_{suffix}_1"],
             )
 
-    def test_first_carton_uses_stable_defaults(self) -> None:
-        state: dict[str, object] = {}
+    def test_new_carton_copies_previous_contents_and_quantities(self) -> None:
+        state: dict[str, object] = {
+            "shipping_carton_categories_1": ["category-1", "category-2"],
+            "shipping_carton_item_quantity_1_category-1": 20,
+            "shipping_carton_item_quantity_1_category-2": 8,
+        }
 
-        shipping_page.initialize_shipping_carton_state(state, 1)
+        shipping_page.initialize_shipping_carton_contents_state(
+            state,
+            2,
+            {"category-1", "category-2"},
+            1,
+        )
 
-        self.assertEqual(state["shipping_carton_quantity_1"], 1)
-        self.assertEqual(state["shipping_net_weight_1"], 0.0)
-        self.assertFalse(state["shipping_override_cbm_1"])
+        self.assertEqual(
+            state["shipping_carton_categories_2"],
+            ["category-1", "category-2"],
+        )
+        self.assertEqual(
+            state["shipping_carton_item_quantity_2_category-1"],
+            20,
+        )
+        self.assertEqual(
+            state["shipping_carton_item_quantity_2_category-2"],
+            8,
+        )
+
+    def test_carton_contents_remove_stale_and_duplicate_categories(self) -> None:
+        state: dict[str, object] = {
+            "shipping_carton_categories_1": [
+                "category-1",
+                "stale-category",
+                "category-1",
+            ],
+        }
+
+        shipping_page.initialize_shipping_carton_contents_state(
+            state,
+            1,
+            {"category-1"},
+        )
+
+        self.assertEqual(
+            state["shipping_carton_categories_1"],
+            ["category-1"],
+        )
+
+    def test_same_category_across_cartons_creates_one_invoice_total(self) -> None:
+        carton_items = [
+            {"carton_no": 1, "category_id": "category-1", "quantity": 100},
+            {"carton_no": 1, "category_id": "category-2", "quantity": 20},
+            {"carton_no": 2, "category_id": "category-1", "quantity": 50},
+        ]
+
+        ordered, totals = shipping_page.aggregate_shipping_carton_items(carton_items)
+        allocations = shipping_page.build_shipping_carton_allocations(carton_items)
+
+        self.assertEqual(ordered, ["category-1", "category-2"])
+        self.assertEqual(totals, {"category-1": 150, "category-2": 20})
+        self.assertEqual(
+            [(item.carton_no, item.line_id, item.quantity) for item in allocations],
+            [
+                (1, "category-1", 100),
+                (1, "category-2", 20),
+                (2, "category-1", 50),
+            ],
+        )
+
+    def test_same_category_cannot_repeat_inside_one_carton(self) -> None:
+        with self.assertRaisesRegex(ValueError, "不能重复选择"):
+            shipping_page.aggregate_shipping_carton_items(
+                [
+                    {"carton_no": 1, "category_id": "category-1", "quantity": 6},
+                    {"carton_no": 1, "category_id": "category-1", "quantity": 4},
+                ]
+            )
 
 
 if __name__ == "__main__":

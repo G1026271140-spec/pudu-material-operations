@@ -87,6 +87,40 @@ class ShippingTemplateTests(unittest.TestCase):
         self.assertEqual(workbook["PL (2)"]["I16"].number_format, "0.00")
         self.assertEqual(workbook["PL (2)"]["K16"].number_format, "0.000")
 
+    def test_invoice_aggregates_one_product_split_across_cartons(self) -> None:
+        _, data = generate_shipping_workbook(
+            template_date=date(2026, 8, 13),
+            address_code="DE",
+            recipient={"contact": "A"},
+            lines=[
+                ShippingLine(
+                    "category-1",
+                    "Product Flyer",
+                    "Product Flyer",
+                    "Flyers",
+                    150,
+                    0.06,
+                    "4911101000",
+                )
+            ],
+            cartons=[
+                Carton(1, 1, 10, 11, 50, 40, 30),
+                Carton(2, 1, 12, 13, 50, 40, 30),
+            ],
+            allocations=[
+                CartonAllocation(1, "category-1", 100),
+                CartonAllocation(2, "category-1", 50),
+            ],
+        )
+        workbook = load_workbook(BytesIO(data), data_only=False)
+
+        self.assertEqual(workbook["INV"]["B16"].value, "Product Flyer")
+        self.assertEqual(workbook["INV"]["E16"].value, 150)
+        self.assertEqual(workbook["PL (2)"]["A15"].value, 1)
+        self.assertEqual(workbook["PL (2)"]["G15"].value, 100)
+        self.assertEqual(workbook["PL (2)"]["A16"].value, 2)
+        self.assertEqual(workbook["PL (2)"]["G16"].value, 50)
+
 
 if __name__ == "__main__":
     unittest.main()

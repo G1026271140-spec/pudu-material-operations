@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import uuid
 from collections.abc import MutableMapping
 from datetime import date
-import pandas as pd
 import streamlit as st
 
 from shipping_template import (
@@ -19,21 +17,7 @@ from shipping_template import (
 
 
 PACKING_TYPE_OPTIONS = ("Flyers", "Brochures", "Banners", "Give aways")
-LINE_IDS_KEY = "shipping_template_line_ids"
-ALLOCATION_ROWS_KEY = "shipping_template_allocations"
-LINE_FIELD_SUFFIXES = (
-    "category",
-    "invoice_name",
-    "packing_name",
-    "packing_type",
-    "quantity",
-    "unit_price",
-    "customs",
-    "model",
-    "sku",
-)
 CARTON_FIELD_DEFAULTS: dict[str, object] = {
-    "carton_quantity": 1,
     "net_weight": 0.0,
     "gross_weight": 0.0,
     "override_cbm": False,
@@ -42,10 +26,6 @@ CARTON_FIELD_DEFAULTS: dict[str, object] = {
     "height": 0.0,
     "cbm_override": 0.0,
 }
-
-
-def _new_line_id() -> str:
-    return uuid.uuid4().hex[:10]
 
 
 def _category_label(category: dict[str, object]) -> str:
@@ -62,65 +42,29 @@ def _category_options(categories: list[dict]) -> list[dict[str, object]]:
     ]
 
 
-def _apply_category_to_line(line_id: str, category_by_id: dict[str, dict[str, object]]) -> None:
-    category_id = str(st.session_state.get(f"shipping_category_{line_id}") or "")
-    category = category_by_id.get(category_id)
-    if not category:
-        return
-    invoice_name = str(category.get("commercial_invoice_name") or category.get("category") or "").strip()
-    st.session_state[f"shipping_invoice_name_{line_id}"] = invoice_name
-    st.session_state[f"shipping_packing_name_{line_id}"] = invoice_name
-    st.session_state[f"shipping_packing_type_{line_id}"] = str(
-        category.get("packing_list_product_type") or PACKING_TYPE_OPTIONS[-1]
-    )
-    st.session_state[f"shipping_unit_price_{line_id}"] = float(category.get("unit_price") or 0)
-    st.session_state[f"shipping_customs_{line_id}"] = str(category.get("customs_code") or "")
-
-
-def initialize_shipping_line_state(
+def initialize_shipping_product_state(
     session_state: MutableMapping[str, object],
-    line_id: str,
+    category_id: str,
     category: dict[str, object] | None,
-    source_line_id: str | None = None,
 ) -> None:
     category = category or {}
-    category_id = str(category.get("record_id") or "")
     invoice_name = str(category.get("commercial_invoice_name") or category.get("category") or "").strip()
     defaults: dict[str, object] = {
-        "category": category_id,
         "invoice_name": invoice_name,
         "packing_name": invoice_name,
         "packing_type": str(
             category.get("packing_list_product_type") or PACKING_TYPE_OPTIONS[-1]
         ),
-        "quantity": 1,
         "unit_price": float(category.get("unit_price") or 0),
         "customs": str(category.get("customs_code") or ""),
         "model": DEFAULT_PRODUCT_MODEL,
         "sku": "/",
     }
     for suffix, default_value in defaults.items():
-        target_key = f"shipping_{suffix}_{line_id}"
-        source_key = f"shipping_{suffix}_{source_line_id}" if source_line_id else ""
-        source_value = (
-            session_state[source_key]
-            if source_key and source_key in session_state
-            else default_value
+        session_state.setdefault(
+            f"shipping_product_{suffix}_{category_id}",
+            default_value,
         )
-        session_state.setdefault(target_key, source_value)
-
-
-def _initialize_line(
-    line_id: str,
-    category: dict[str, object] | None,
-    source_line_id: str | None = None,
-) -> None:
-    initialize_shipping_line_state(
-        st.session_state,
-        line_id,
-        category,
-        source_line_id,
-    )
 
 
 def initialize_shipping_carton_state(
@@ -139,9 +83,89 @@ def initialize_shipping_carton_state(
         session_state.setdefault(target_key, source_value)
 
 
-def _delete_line_state(line_id: str) -> None:
-    for suffix in LINE_FIELD_SUFFIXES:
-        st.session_state.pop(f"shipping_{suffix}_{line_id}", None)
+def _carton_categories_key(carton_no: int) -> str:
+    return f"shipping_carton_categories_{carton_no}"
+
+
+def _carton_item_quantity_key(carton_no: int, category_id: str) -> str:
+    return f"shipping_carton_item_quantity_{carton_no}_{category_id}"
+
+
+def _normalized_category_ids(
+    value: object,
+    valid_category_ids: set[str],
+) -> list[str]:
+    values = list(value) if isinstance(value, (list, tuple, set)) else []
+    normalized: list[str] = []
+    for item in values:
+        category_id = str(item or "")
+        if category_id in valid_category_ids and category_id not in normalized:
+            normalized.append(category_id)
+    return normalized
+
+
+def initialize_shipping_carton_contents_state(
+    session_state: MutableMapping[str, object],
+    carton_no: int,
+    valid_category_ids: set[str],
+    source_carton_no: int | None = None,
+) -> None:
+    target_key = _carton_categories_key(carton_no)
+    if target_key not in session_state:
+        source_value = (
+            session_state.get(_carton_categories_key(source_carton_no), [])
+            if source_carton_no
+            else []
+        )
+        session_state[target_key] = _normalized_category_ids(
+            source_value,
+            valid_category_ids,
+        )
+    else:
+        session_state[target_key] = _normalized_category_ids(
+            session_state.get(target_key),
+            valid_category_ids,
+        )
+
+    selected_category_ids = list(session_state.get(target_key) or [])
+    for category_id in selected_category_ids:
+        quantity_key = _carton_item_quantity_key(carton_no, category_id)
+        source_quantity_key = (
+            _carton_item_quantity_key(source_carton_no, category_id)
+            if source_carton_no
+            else ""
+        )
+        source_quantity = (
+            session_state[source_quantity_key]
+            if source_quantity_key and source_quantity_key in session_state
+            else 1
+        )
+        session_state.setdefault(quantity_key, source_quantity)
+
+
+def aggregate_shipping_carton_items(
+    carton_items: list[dict[str, object]],
+) -> tuple[list[str], dict[str, int]]:
+    ordered_category_ids: list[str] = []
+    quantities_by_category: dict[str, int] = {}
+    categories_by_carton: dict[int, set[str]] = {}
+    for item in carton_items:
+        carton_no = int(item.get("carton_no") or 0)
+        category_id = str(item.get("category_id") or "").strip()
+        quantity = int(item.get("quantity") or 0)
+        if carton_no <= 0 or not category_id:
+            raise ValueError("箱内物料必须包含有效箱号和物料品类。")
+        if quantity <= 0:
+            raise ValueError("箱内物料数量必须大于 0。")
+        carton_categories = categories_by_carton.setdefault(carton_no, set())
+        if category_id in carton_categories:
+            raise ValueError(f"箱子 {carton_no:02d} 内不能重复选择同一物料品类。")
+        carton_categories.add(category_id)
+        if category_id not in quantities_by_category:
+            ordered_category_ids.append(category_id)
+            quantities_by_category[category_id] = 0
+        quantities_by_category[category_id] += quantity
+    return ordered_category_ids, quantities_by_category
 
 
 def _render_recipient_fields(template_date: date) -> tuple[date, str, dict[str, object]]:
@@ -203,130 +227,20 @@ def _render_recipient_fields(template_date: date) -> tuple[date, str, dict[str, 
     }
 
 
-def _render_invoice_lines(categories: list[dict]) -> list[ShippingLine]:
+def _render_cartons_and_contents(
+    categories: list[dict],
+) -> tuple[list[Carton], list[dict[str, object]], dict[str, dict[str, object]]]:
     category_options = _category_options(categories)
     category_by_id = {str(item.get("record_id") or ""): item for item in category_options}
-    if LINE_IDS_KEY not in st.session_state or not st.session_state[LINE_IDS_KEY]:
-        st.session_state[LINE_IDS_KEY] = [_new_line_id()]
-    line_ids = list(st.session_state[LINE_IDS_KEY])
-    default_category = category_options[0] if category_options else None
-    for line_id in line_ids:
-        _initialize_line(line_id, default_category)
+    valid_category_ids = set(category_by_id)
 
-    header_col, add_col = st.columns([5, 1], vertical_alignment="center")
-    header_col.subheader("商业发票物料明细")
-    add_line_clicked = add_col.button(
-        "新增明细",
-        icon=":material/add:",
-        type="primary",
-        width="stretch",
-        key="shipping_add_invoice_line",
+    st.subheader("按箱填写装箱单")
+    st.caption(
+        "先填写每个实际箱子的货物；同一箱内品类不会重复，不同箱子可选择同一品类。"
     )
-
-    lines: list[ShippingLine] = []
-    for index, line_id in enumerate(line_ids, start=1):
-        with st.container(border=True):
-            title_col, delete_col = st.columns([8, 1], vertical_alignment="center")
-            title_col.markdown(f"**明细 {index:02d}**")
-            if delete_col.button(
-                "删除",
-                icon=":material/delete:",
-                width="stretch",
-                disabled=len(line_ids) == 1,
-                key=f"shipping_delete_line_{line_id}",
-            ):
-                _delete_line_state(line_id)
-                st.session_state[LINE_IDS_KEY] = [value for value in line_ids if value != line_id]
-                st.session_state.pop(ALLOCATION_ROWS_KEY, None)
-                st.rerun()
-
-            if category_options:
-                category_ids = list(category_by_id)
-                current_category_id = str(st.session_state.get(f"shipping_category_{line_id}") or "")
-                if current_category_id not in category_by_id:
-                    st.session_state[f"shipping_category_{line_id}"] = category_ids[0]
-                    _apply_category_to_line(line_id, category_by_id)
-                st.selectbox(
-                    "物料品类",
-                    category_ids,
-                    key=f"shipping_category_{line_id}",
-                    format_func=lambda value, mapping=category_by_id: _category_label(mapping[value]),
-                    on_change=_apply_category_to_line,
-                    args=(line_id, category_by_id),
-                )
-            else:
-                st.warning("当前没有可选择的物料品类，仍可手动填写全部字段。")
-
-            name_a, name_b, type_col = st.columns([1.5, 1.5, 1])
-            invoice_name = name_a.text_input(
-                "商业发票产品名称",
-                key=f"shipping_invoice_name_{line_id}",
-            )
-            packing_name = name_b.text_input(
-                "装箱单产品名称",
-                key=f"shipping_packing_name_{line_id}",
-            )
-            current_type = str(st.session_state.get(f"shipping_packing_type_{line_id}") or "")
-            packing_type_options = list(PACKING_TYPE_OPTIONS)
-            if current_type and current_type not in packing_type_options:
-                packing_type_options.append(current_type)
-            packing_type = type_col.selectbox(
-                "装箱单产品类型",
-                packing_type_options,
-                key=f"shipping_packing_type_{line_id}",
-            )
-            quantity_col, price_col, customs_col = st.columns([1, 1, 1.4])
-            quantity = quantity_col.number_input(
-                "数量",
-                min_value=1,
-                step=1,
-                key=f"shipping_quantity_{line_id}",
-            )
-            unit_price = price_col.number_input(
-                "单价（美元）",
-                min_value=0.0,
-                step=0.01,
-                format="%.3f",
-                key=f"shipping_unit_price_{line_id}",
-            )
-            customs_code = customs_col.text_input(
-                "海关编码",
-                key=f"shipping_customs_{line_id}",
-            )
-            with st.expander("其他发票字段", expanded=False):
-                sku_col, model_col = st.columns([1, 4])
-                sku = sku_col.text_input("SKU", key=f"shipping_sku_{line_id}")
-                product_model = model_col.text_input(
-                    "Product Model",
-                    key=f"shipping_model_{line_id}",
-                )
-            lines.append(
-                ShippingLine(
-                    line_id=line_id,
-                    invoice_name=invoice_name.strip(),
-                    packing_name=packing_name.strip(),
-                    packing_type=packing_type,
-                    quantity=int(quantity),
-                    unit_price=float(unit_price),
-                    customs_code=customs_code.strip(),
-                    product_model=product_model.strip() or DEFAULT_PRODUCT_MODEL,
-                    sku=sku.strip() or "/",
-                )
-            )
-    if add_line_clicked:
-        new_id = _new_line_id()
-        source_line_id = line_ids[-1] if line_ids else None
-        _initialize_line(new_id, default_category, source_line_id)
-        st.session_state[LINE_IDS_KEY] = [*line_ids, new_id]
-        st.rerun()
-    return lines
-
-
-def _render_cartons() -> list[Carton]:
-    st.subheader("纸箱信息")
     carton_count = int(
         st.number_input(
-            "纸箱组数",
+            "实际箱数",
             min_value=1,
             max_value=100,
             value=1,
@@ -334,35 +248,49 @@ def _render_cartons() -> list[Carton]:
             key="shipping_carton_count",
         )
     )
+    if not category_options:
+        st.warning("当前没有可选择的物料品类，请先更新物料品类缓存。")
+
     cartons: list[Carton] = []
+    carton_items: list[dict[str, object]] = []
     for carton_no in range(1, carton_count + 1):
+        source_carton_no = carton_no - 1 if carton_no > 1 else None
         initialize_shipping_carton_state(
             st.session_state,
             carton_no,
-            carton_no - 1 if carton_no > 1 else None,
+            source_carton_no,
+        )
+        initialize_shipping_carton_contents_state(
+            st.session_state,
+            carton_no,
+            valid_category_ids,
+            source_carton_no,
         )
         with st.container(border=True):
-            st.markdown(f"**纸箱 {carton_no:02d}**")
-            first = st.columns(4)
-            carton_quantity = first[0].number_input(
-                "箱数",
-                min_value=1,
-                step=1,
-                key=f"shipping_carton_quantity_{carton_no}",
+            selected_before = list(
+                st.session_state.get(_carton_categories_key(carton_no)) or []
             )
-            net_weight = first[1].number_input(
+            title_col, item_count_col = st.columns(
+                [5, 1],
+                vertical_alignment="center",
+            )
+            title_col.markdown(f"**箱子 {carton_no:02d}**")
+            item_count_col.metric("品类", len(selected_before))
+
+            weights = st.columns(3)
+            net_weight = weights[0].number_input(
                 "净重（KG）",
                 min_value=0.0,
                 step=0.1,
                 key=f"shipping_net_weight_{carton_no}",
             )
-            gross_weight = first[2].number_input(
+            gross_weight = weights[1].number_input(
                 "毛重（KG）",
                 min_value=0.0,
                 step=0.1,
                 key=f"shipping_gross_weight_{carton_no}",
             )
-            override_cbm = first[3].toggle(
+            override_cbm = weights[2].toggle(
                 "手动填写体积",
                 key=f"shipping_override_cbm_{carton_no}",
             )
@@ -388,10 +316,97 @@ def _render_cartons() -> list[Carton]:
             else:
                 dimensions[3].metric("体积（CBM）", f"{calculated_cbm:.3f}")
                 cbm_override = None
+
+            selected_category_ids = st.multiselect(
+                "箱内物料品类",
+                list(category_by_id),
+                key=_carton_categories_key(carton_no),
+                format_func=lambda value, mapping=category_by_id: _category_label(
+                    mapping[value]
+                ),
+                placeholder="选择这个箱子中的物料品类",
+            )
+            if not selected_category_ids:
+                st.info("这个箱子还没有添加物料。")
+            for item_index, category_id in enumerate(selected_category_ids):
+                category = category_by_id[category_id]
+                initialize_shipping_product_state(
+                    st.session_state,
+                    category_id,
+                    category,
+                )
+                quantity_key = _carton_item_quantity_key(carton_no, category_id)
+                if quantity_key not in st.session_state:
+                    source_quantity_key = (
+                        _carton_item_quantity_key(source_carton_no, category_id)
+                        if source_carton_no
+                        else ""
+                    )
+                    previous_category_id = (
+                        selected_category_ids[item_index - 1]
+                        if item_index > 0
+                        else ""
+                    )
+                    previous_quantity_key = (
+                        _carton_item_quantity_key(carton_no, previous_category_id)
+                        if previous_category_id
+                        else ""
+                    )
+                    default_quantity = (
+                        st.session_state[source_quantity_key]
+                        if source_quantity_key in st.session_state
+                        else st.session_state.get(previous_quantity_key, 1)
+                    )
+                    st.session_state[quantity_key] = max(
+                        1,
+                        int(default_quantity or 1),
+                    )
+
+                item_info_col, quantity_col = st.columns(
+                    [4, 1],
+                    vertical_alignment="bottom",
+                )
+                product_name = str(category.get("category") or "未命名品类")
+                packing_name = str(
+                    st.session_state.get(
+                        f"shipping_product_packing_name_{category_id}"
+                    )
+                    or product_name
+                )
+                packing_type = str(
+                    st.session_state.get(
+                        f"shipping_product_packing_type_{category_id}"
+                    )
+                    or PACKING_TYPE_OPTIONS[-1]
+                )
+                customs_code = str(
+                    st.session_state.get(
+                        f"shipping_product_customs_{category_id}"
+                    )
+                    or ""
+                )
+                item_info_col.markdown(f"**{product_name}**")
+                item_info_col.caption(
+                    f"装箱单：{packing_name} · {packing_type} · 海关编码 {customs_code or '-'}"
+                )
+                quantity = quantity_col.number_input(
+                    "数量",
+                    min_value=1,
+                    step=1,
+                    key=quantity_key,
+                )
+                carton_items.append(
+                    {
+                        "carton_no": carton_no,
+                        "category_id": category_id,
+                        "quantity": int(quantity),
+                    }
+                )
+
             cartons.append(
                 Carton(
                     carton_no=carton_no,
-                    carton_quantity=int(carton_quantity),
+                    carton_quantity=1,
                     net_weight=float(net_weight),
                     gross_weight=float(gross_weight),
                     length_cm=float(length_cm),
@@ -400,93 +415,126 @@ def _render_cartons() -> list[Carton]:
                     cbm_override=None if cbm_override is None else float(cbm_override),
                 )
             )
-    return cartons
+    return cartons, carton_items, category_by_id
 
 
-def _allocation_defaults(lines: list[ShippingLine], carton_count: int) -> list[dict[str, object]]:
-    existing = st.session_state.get(ALLOCATION_ROWS_KEY)
-    rows = [dict(row) for row in existing] if isinstance(existing, list) else []
-    valid_line_numbers = set(range(1, len(lines) + 1))
-    rows = [
-        row for row in rows
-        if int(row.get("物料行") or 0) in valid_line_numbers
-        and 1 <= int(row.get("箱号") or 0) <= carton_count
-    ]
-    allocated_lines = {int(row.get("物料行") or 0) for row in rows}
-    for index, line in enumerate(lines, start=1):
-        if index not in allocated_lines:
-            rows.append({"箱号": 1, "物料行": index, "产品名称": line.packing_name, "数量": line.quantity})
-    for row in rows:
-        line_index = int(row.get("物料行") or 0)
-        if line_index in valid_line_numbers:
-            row["产品名称"] = lines[line_index - 1].packing_name
-    return rows
-
-
-def _render_allocations(lines: list[ShippingLine], cartons: list[Carton]) -> list[CartonAllocation]:
-    st.subheader("箱内货物分配")
-    defaults = _allocation_defaults(lines, len(cartons))
-    edited = st.data_editor(
-        pd.DataFrame(defaults, columns=["箱号", "物料行", "产品名称", "数量"]),
-        width="stretch",
-        hide_index=True,
-        num_rows="dynamic",
-        row_height=36,
-        column_config={
-            "箱号": st.column_config.SelectboxColumn(
-                "箱号", options=list(range(1, len(cartons) + 1)), required=True, width="small"
-            ),
-            "物料行": st.column_config.SelectboxColumn(
-                "物料行", options=list(range(1, len(lines) + 1)), required=True, width="small"
-            ),
-            "产品名称": st.column_config.TextColumn("产品名称", disabled=True, width="large"),
-            "数量": st.column_config.NumberColumn(
-                "数量", min_value=1, step=1, required=True, width="small"
-            ),
-        },
-        key=f"shipping_allocation_editor_{len(lines)}_{len(cartons)}",
+def _render_invoice_summary(
+    category_by_id: dict[str, dict[str, object]],
+    carton_items: list[dict[str, object]],
+) -> list[ShippingLine]:
+    ordered_category_ids, quantities_by_category = aggregate_shipping_carton_items(
+        carton_items
     )
-    rows: list[dict[str, object]] = []
-    allocations: list[CartonAllocation] = []
-    for _, row in edited.iterrows():
-        if pd.isna(row.get("箱号")) or pd.isna(row.get("物料行")) or pd.isna(row.get("数量")):
-            continue
-        carton_no = int(row["箱号"])
-        line_number = int(row["物料行"])
-        if not (1 <= carton_no <= len(cartons) and 1 <= line_number <= len(lines)):
-            continue
-        quantity = int(row["数量"])
-        normalized = {
-            "箱号": carton_no,
-            "物料行": line_number,
-            "产品名称": lines[line_number - 1].packing_name,
-            "数量": quantity,
-        }
-        rows.append(normalized)
-        allocations.append(
-            CartonAllocation(
-                carton_no=carton_no,
-                line_id=lines[line_number - 1].line_id,
-                quantity=quantity,
-            )
+    st.subheader("INV 自动汇总")
+    st.caption("每个物料品类只生成一行，数量为所有箱子中该品类数量的合计。")
+    if not ordered_category_ids:
+        st.info("请先在箱内清单中选择物料品类。")
+        return []
+
+    lines: list[ShippingLine] = []
+    for category_id in ordered_category_ids:
+        category = category_by_id[category_id]
+        initialize_shipping_product_state(
+            st.session_state,
+            category_id,
+            category,
         )
-    st.session_state[ALLOCATION_ROWS_KEY] = rows
-    return allocations
+        product_name = str(category.get("category") or "未命名品类")
+        total_quantity = quantities_by_category[category_id]
+        with st.container(border=True):
+            name_col, quantity_col = st.columns(
+                [5, 1],
+                vertical_alignment="center",
+            )
+            name_col.markdown(f"**{product_name}**")
+            quantity_col.metric("汇总数量", total_quantity)
+
+            names = st.columns([1.5, 1.5, 1])
+            invoice_name = names[0].text_input(
+                "商业发票产品名称",
+                key=f"shipping_product_invoice_name_{category_id}",
+            )
+            packing_name = names[1].text_input(
+                "装箱单产品名称",
+                key=f"shipping_product_packing_name_{category_id}",
+            )
+            current_type = str(
+                st.session_state.get(
+                    f"shipping_product_packing_type_{category_id}"
+                )
+                or ""
+            )
+            packing_type_options = list(PACKING_TYPE_OPTIONS)
+            if current_type and current_type not in packing_type_options:
+                packing_type_options.append(current_type)
+            packing_type = names[2].selectbox(
+                "装箱单产品类型",
+                packing_type_options,
+                key=f"shipping_product_packing_type_{category_id}",
+            )
+
+            details = st.columns([1, 1.4])
+            unit_price = details[0].number_input(
+                "单价（美元）",
+                min_value=0.0,
+                step=0.01,
+                format="%.3f",
+                key=f"shipping_product_unit_price_{category_id}",
+            )
+            customs_code = details[1].text_input(
+                "海关编码",
+                key=f"shipping_product_customs_{category_id}",
+            )
+            with st.expander("其他发票字段", expanded=False):
+                sku_col, model_col = st.columns([1, 4])
+                sku = sku_col.text_input(
+                    "SKU",
+                    key=f"shipping_product_sku_{category_id}",
+                )
+                product_model = model_col.text_input(
+                    "Product Model",
+                    key=f"shipping_product_model_{category_id}",
+                )
+
+            lines.append(
+                ShippingLine(
+                    line_id=category_id,
+                    invoice_name=invoice_name.strip(),
+                    packing_name=packing_name.strip(),
+                    packing_type=packing_type,
+                    quantity=total_quantity,
+                    unit_price=float(unit_price),
+                    customs_code=customs_code.strip(),
+                    product_model=product_model.strip() or DEFAULT_PRODUCT_MODEL,
+                    sku=sku.strip() or "/",
+                )
+            )
+    return lines
+
+
+def build_shipping_carton_allocations(
+    carton_items: list[dict[str, object]],
+) -> list[CartonAllocation]:
+    aggregate_shipping_carton_items(carton_items)
+    return [
+        CartonAllocation(
+            carton_no=int(item["carton_no"]),
+            line_id=str(item["category_id"]),
+            quantity=int(item["quantity"]),
+        )
+        for item in carton_items
+    ]
 
 
 def _render_live_summary(
     lines: list[ShippingLine], cartons: list[Carton], allocations: list[CartonAllocation]
 ) -> None:
-    allocated = {line.line_id: 0 for line in lines}
-    for allocation in allocations:
-        allocated[allocation.line_id] = allocated.get(allocation.line_id, 0) + allocation.quantity
-    mismatch_count = sum(1 for line in lines if allocated.get(line.line_id, 0) != line.quantity)
     metrics = st.columns(5)
-    metrics[0].metric("发票物料", len(lines))
-    metrics[1].metric("总数量", sum(line.quantity for line in lines))
-    metrics[2].metric("纸箱数", sum(carton.carton_quantity for carton in cartons))
-    metrics[3].metric("毛重", f"{sum(carton.gross_weight for carton in cartons):g} KG")
-    metrics[4].metric("分配差异", mismatch_count)
+    metrics[0].metric("实际箱数", len(cartons))
+    metrics[1].metric("PL 货物行", len(allocations))
+    metrics[2].metric("INV 品类", len(lines))
+    metrics[3].metric("货物总数量", sum(allocation.quantity for allocation in allocations))
+    metrics[4].metric("毛重", f"{sum(carton.gross_weight for carton in cartons):g} KG")
 
 
 def render_shipping_template_page(
@@ -496,9 +544,9 @@ def render_shipping_template_page(
     if not isinstance(template_date, date):
         template_date = date.today()
     template_date, address_code, recipient = _render_recipient_fields(template_date)
-    lines = _render_invoice_lines(categories)
-    cartons = _render_cartons()
-    allocations = _render_allocations(lines, cartons)
+    cartons, carton_items, category_by_id = _render_cartons_and_contents(categories)
+    lines = _render_invoice_summary(category_by_id, carton_items)
+    allocations = build_shipping_carton_allocations(carton_items)
     _render_live_summary(lines, cartons, allocations)
 
     generated = st.session_state.get("shipping_generated_workbook")
