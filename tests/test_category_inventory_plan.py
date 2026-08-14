@@ -675,24 +675,33 @@ class CategoryInventoryPlanTests(unittest.TestCase):
             app.REQUEST_PAGE_VISIBLE_VALUE,
         )
 
-    @patch("app.feishu_rows")
-    def test_item_request_line_reference_blocks_material_deletion(self, mock_rows) -> None:
-        mock_rows.side_effect = lambda table_name: (
-            [
-                {
-                    "record_id": "line-1",
-                    "fields": {"物料": [{"record_id": "material-1"}]},
-                }
-            ]
-            if table_name == app.REQUEST_LINE_TABLE_NAME
-            else []
+    def test_material_deletion_ignores_stock_and_historical_references(self) -> None:
+        record = inventory_record("material-1", "M1", "英语", 99)
+
+        self.assertEqual(app.category_delete_blockers([record]), [])
+
+    def test_category_deletion_only_blocks_missing_categories(self) -> None:
+        categories = {"品类A": {"record_id": "category-a", "category": "品类A"}}
+        inventory_records = [
+            {**inventory_record("material-1", "M1", "英语", 99), "category": "品类A"}
+        ]
+
+        self.assertEqual(
+            app.category_delete_category_blockers(
+                ["品类A"],
+                categories,
+                inventory_records,
+            ),
+            [],
         )
-        record = inventory_record("material-1", "M1", "英语", 0)
-
-        blockers = app.category_delete_blockers([record])
-
-        self.assertEqual(len(blockers), 1)
-        self.assertIn("申请明细 1", blockers[0])
+        self.assertEqual(
+            app.category_delete_category_blockers(
+                ["已删除品类"],
+                categories,
+                inventory_records,
+            ),
+            ["已删除品类（品类已不存在）"],
+        )
 
     @patch("app.feishu_rows")
     @patch("app.feishu_material_rows")

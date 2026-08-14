@@ -11533,26 +11533,7 @@ def render_new_category_review() -> None:
 
 
 def category_delete_blockers(records: list[dict]) -> list[str]:
-    blockers: list[str] = []
-    for record in records:
-        quantity = int(record.get("quantity") or 0)
-        transaction_count = count_feishu_item_transactions(
-            str(record.get("record_id") or ""),
-            str(record.get("category") or ""),
-            str(record.get("model") or NO_MODEL_TEXT),
-            str(record.get("language") or NO_LANGUAGE_TEXT),
-        )
-        request_line_count = count_feishu_item_request_lines(
-            str(record.get("record_id") or ""),
-            str(record.get("category") or ""),
-            str(record.get("model") or NO_MODEL_TEXT),
-            str(record.get("language") or NO_LANGUAGE_TEXT),
-        )
-        if quantity != 0 or transaction_count > 0 or request_line_count > 0:
-            blockers.append(
-                f"{record.get('material_code') or '-'}（库存 {quantity}，流水 {transaction_count}，申请明细 {request_line_count}）"
-            )
-    return blockers
+    return []
 
 
 def update_category_inventory_counts(category: dict, remaining_records: list[dict]) -> None:
@@ -11644,29 +11625,11 @@ def category_delete_category_blockers(
     category_by_name: dict[str, dict],
     inventory_records: list[dict],
 ) -> list[str]:
-    blockers: list[str] = []
-    for category_name in category_names:
-        category = category_by_name.get(category_name)
-        if category is None:
-            blockers.append(f"{category_name}（品类已不存在）")
-            continue
-        records = [
-            record
-            for record in inventory_records
-            if str(record.get("category") or "") == category_name
-        ]
-        quantity_sum = sum(int(record.get("quantity") or 0) for record in records)
-        transaction_count = count_feishu_category_transactions(category_name)
-        business_reference_count = count_feishu_category_business_references(
-            category_name,
-            str(category.get("record_id") or ""),
-        )
-        if quantity_sum != 0 or transaction_count > 0 or business_reference_count > 0:
-            blockers.append(
-                f"{category_name}（库存 {quantity_sum}，流水 {transaction_count}，"
-                f"业务关联 {business_reference_count}）"
-            )
-    return blockers
+    return [
+        f"{category_name}（品类已不存在）"
+        for category_name in category_names
+        if category_name not in category_by_name
+    ]
 
 
 def category_delete_material_scope(
@@ -11734,7 +11697,7 @@ def render_category_delete_review() -> None:
     render_section_header(
         "01",
         "删除内容确认",
-        "核对全部删除明细；最终确认时会重新读取飞书并再次检查库存、流水和业务关联",
+        "核对全部删除明细；最终确认时会重新读取飞书并检查删除范围是否发生变化",
     )
     metric_a, metric_b, metric_c = st.columns(3)
     metric_a.metric("删除类型", "整品类" if delete_kind == "categories" else "物料行")
@@ -11752,7 +11715,10 @@ def render_category_delete_review() -> None:
                 hide_index=True,
                 height=min(720, max(180, 38 * (len(preview_df) + 1))),
             )
-    st.error("删除操作不可撤销。只有库存为 0 且不存在库存流水、申请明细或项目关联的数据才允许删除。")
+    st.error(
+        "删除操作不可撤销。库存数量、库存流水、申请明细和项目关联不会阻止删除；"
+        "关联历史记录不会被联动删除。"
+    )
     confirmed = st.checkbox(
         "我已核对以上全部删除明细，并确认执行不可撤销的删除操作",
         key="category_delete_review_confirmed",
@@ -13562,7 +13528,7 @@ def render_material_data_admin(records: list[dict] | None = None) -> None:
     selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
 
     delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
-    delete_col_a.caption("仅允许删除库存为 0 且没有流水记录的库存行。")
+    delete_col_a.caption("库存数量和流水记录不会阻止删除；历史记录不会被联动删除。")
     delete_confirmed = delete_col_b.checkbox("确认批量删除", key="item_batch_delete_confirmed")
     if delete_col_c.button(
         "批量删除选中库存行",
@@ -13575,25 +13541,17 @@ def render_material_data_admin(records: list[dict] | None = None) -> None:
         elif not delete_confirmed:
             st.warning("请先勾选确认批量删除。")
         else:
-            blocked: list[str] = []
-            for row in selected_records:
-                tx_count = count_feishu_item_transactions(row["record_id"], row["category"], row["model"], row["language"])
-                if int(row["quantity"] or 0) != 0 or tx_count > 0:
-                    blocked.append(f"{row['material_code']}（库存 {row['quantity']}，流水 {tx_count}）")
-            if blocked:
-                st.error("以下库存行不能删除：" + "；".join(blocked[:8]))
-            else:
-                with DATA_LOCK:
-                    try:
-                        for row in selected_records:
-                            delete_feishu_inventory_item(row["record_id"])
-                    except Exception as exc:
-                        st.error("批量删除库存行失败。")
-                        st.exception(exc)
-                        return
-                st.session_state["material_admin_message"] = f"已删除 {len(selected_records)} 条库存行。"
-                refresh_page_cache_after_write("material_database", update_request_form=True)
-                st.rerun()
+            with DATA_LOCK:
+                try:
+                    for row in selected_records:
+                        delete_feishu_inventory_item(row["record_id"])
+                except Exception as exc:
+                    st.error("批量删除库存行失败。")
+                    st.exception(exc)
+                    return
+            st.session_state["material_admin_message"] = f"已删除 {len(selected_records)} 条库存行。"
+            refresh_page_cache_after_write("material_database", update_request_form=True)
+            st.rerun()
 
     if len(selected_records) == 1:
         item = selected_records[0]
@@ -13736,7 +13694,7 @@ def render_category_admin() -> None:
     selected_records = [record_map[item_id] for item_id in selected_ids if item_id in record_map]
 
     delete_col_a, delete_col_b, delete_col_c = st.columns([1.5, 1, 1])
-    delete_col_a.caption("仅允许撤回所有库存行为 0 且没有流水记录的品类。")
+    delete_col_a.caption("库存数量和流水记录不会阻止撤回；历史记录不会被联动删除。")
     delete_confirmed = delete_col_b.checkbox("确认批量撤回", key="category_batch_delete_confirmed")
     if delete_col_c.button(
         "批量撤回选中品类",
@@ -13749,27 +13707,17 @@ def render_category_admin() -> None:
         elif not delete_confirmed:
             st.warning("请先勾选确认批量撤回。")
         else:
-            blocked: list[str] = []
-            for row in selected_records:
-                product = str(row["category"])
-                stats = summary.get(product, {"nonzero_count": 0})
-                tx_count = count_feishu_category_transactions(product)
-                if int(stats.get("nonzero_count", 0)) > 0 or tx_count > 0:
-                    blocked.append(f"{product}（非零库存行 {stats.get('nonzero_count', 0)}，流水 {tx_count}）")
-            if blocked:
-                st.error("以下品类不能撤回：" + "；".join(blocked[:8]))
-            else:
-                with DATA_LOCK:
-                    try:
-                        for row in selected_records:
-                            delete_feishu_category(str(row["category"]), str(row["record_id"]))
-                    except Exception as exc:
-                        st.error("批量撤回物料品类失败。")
-                        st.exception(exc)
-                        return
-                st.session_state["category_admin_message"] = f"已撤回 {len(selected_records)} 个物料品类。"
-                refresh_page_cache_after_write("category", update_request_form=True)
-                st.rerun()
+            with DATA_LOCK:
+                try:
+                    for row in selected_records:
+                        delete_feishu_category(str(row["category"]), str(row["record_id"]))
+                except Exception as exc:
+                    st.error("批量撤回物料品类失败。")
+                    st.exception(exc)
+                    return
+            st.session_state["category_admin_message"] = f"已撤回 {len(selected_records)} 个物料品类。"
+            refresh_page_cache_after_write("category", update_request_form=True)
+            st.rerun()
 
     if len(selected_records) == 1:
         category = selected_records[0]
