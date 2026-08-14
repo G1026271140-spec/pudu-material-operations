@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import app
@@ -405,6 +406,7 @@ class GiftProjectTests(unittest.TestCase):
                 "物料品类": "定制奖牌",
             },
         }
+
         with (
             patch.object(
                 app,
@@ -433,6 +435,46 @@ class GiftProjectTests(unittest.TestCase):
         self.assertEqual(len(payload), 2)
         self.assertEqual(payload[0]["负责人"], [{"id": "ou_owner"}])
         self.assertEqual(payload[1]["负责人"], [{"id": "ou_owner"}])
+
+    def test_collapsed_project_stage_does_not_keep_expanded_grid_height(self) -> None:
+        app_source = Path(app.__file__).read_text(encoding="utf-8")
+
+        self.assertIn(
+            'details:not([open]) > div {\n            display: none !important;',
+            app_source,
+        )
+        self.assertIn(
+            'details[open] {\n            display: grid;',
+            app_source,
+        )
+
+    def test_remove_gift_batch_selected_item_preserves_other_items(self) -> None:
+        session_state: dict[str, object] = {
+            "gift_batch_selected_ids": ["gift-3", "gift-1", "gift-2"],
+            "gift_batch_new_line": {"name": "待新建礼品", "quantity": 8},
+            "gift_batch_project_name": "项目 A",
+        }
+
+        remaining = app.remove_gift_batch_selected_item(session_state, "gift-2")
+
+        self.assertEqual(remaining, ["gift-1", "gift-3"])
+        self.assertEqual(session_state["gift_batch_selected_ids"], remaining)
+        self.assertIn("gift_batch_new_line", session_state)
+        self.assertEqual(session_state["gift_batch_project_name"], "项目 A")
+
+    def test_remove_gift_batch_new_item_preserves_existing_selection(self) -> None:
+        session_state: dict[str, object] = {
+            "gift_batch_selected_ids": ["gift-1", "gift-2"],
+            "gift_batch_new_line": {"name": "待新建礼品", "quantity": 8},
+        }
+
+        app.remove_gift_batch_new_item(session_state)
+
+        self.assertNotIn("gift_batch_new_line", session_state)
+        self.assertEqual(
+            session_state["gift_batch_selected_ids"],
+            ["gift-1", "gift-2"],
+        )
 
     def test_existing_gift_request_allows_inactive_gift_definition(self) -> None:
         inactive_gift = {

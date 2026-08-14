@@ -9,6 +9,7 @@ import time
 import unicodedata
 import uuid
 from collections import Counter
+from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
@@ -1284,12 +1285,21 @@ def inject_global_styles() -> None:
             box-shadow: none !important;
         }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details {
+            border: 0 !important;
+            background: transparent !important;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details[open] {
             display: grid;
             grid-template-columns: 7.5rem minmax(0, 1fr);
             column-gap: 0.8rem;
             align-items: stretch;
-            border: 0 !important;
-            background: transparent !important;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details:not([open]) {
+            display: block;
+            width: 7.5rem;
+        }
+        [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details:not([open]) > div {
+            display: none !important;
         }
         [data-testid="stExpander"]:has(.pudu-project-progress-stage-marker) details > summary {
             grid-column: 1;
@@ -1433,6 +1443,34 @@ def inject_global_styles() -> None:
             border: 1px solid #B9D9D3 !important;
             border-radius: 8px !important;
             background: #ECF8F6;
+        }
+        .pudu-gift-batch-item-marker { display: none; }
+        [data-testid="stHorizontalBlock"]:has(.pudu-gift-batch-item-marker) {
+            min-height: 3rem;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.4rem 0;
+            border-top: 1px solid #CDE4E0;
+        }
+        .pudu-gift-batch-item-name {
+            color: #12263A;
+            font-size: 0.82rem;
+            font-weight: 800;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+        .pudu-gift-batch-item-meta {
+            color: #53706E;
+            font-size: 0.72rem;
+            font-weight: 650;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+        [data-testid="stHorizontalBlock"]:has(.pudu-gift-batch-item-marker) .stButton button {
+            min-height: 2rem;
+            padding: 0.3rem 0.45rem;
+            font-size: 0.72rem;
+            white-space: nowrap;
         }
         .pudu-gift-new-category-card {
             min-height: 78px;
@@ -14313,6 +14351,32 @@ def render_gift_project_detail_drawer(item: dict) -> None:
         st.markdown(f"**供应商联系方式**　{escape(supplier)}")
 
 
+def remove_gift_batch_selected_item(
+    session_state: MutableMapping[str, object],
+    category_id: object,
+) -> list[str]:
+    target_id = str(category_id or "").strip()
+    selected_ids = session_state.get("gift_batch_selected_ids", [])
+    if not isinstance(selected_ids, (list, tuple, set)):
+        selected_ids = []
+    remaining_ids = sorted(
+        {
+            str(value or "").strip()
+            for value in selected_ids
+            if str(value or "").strip()
+            and str(value or "").strip() != target_id
+        }
+    )
+    session_state["gift_batch_selected_ids"] = remaining_ids
+    return remaining_ids
+
+
+def remove_gift_batch_new_item(
+    session_state: MutableMapping[str, object],
+) -> None:
+    session_state.pop("gift_batch_new_line", None)
+
+
 def render_gift_projects_page() -> None:
     message = st.session_state.pop("gift_project_submit_message", "")
     if message:
@@ -14407,12 +14471,52 @@ def render_gift_projects_page() -> None:
             st.markdown('<span class="pudu-gift-batch-cart-marker"></span>', unsafe_allow_html=True)
             st.markdown(f"**购物清单：** {len(gift_lines) + (1 if new_line else 0)} 项")
             if gift_lines or new_line:
-                st.dataframe(
-                    [{"物料名称": item.get("category"), "类型": "已有品类"} for item in gift_lines]
-                    + ([{"物料名称": new_line["name"], "类型": f"待新建品类 · 数量 {new_line['quantity']}"}] if new_line else []),
-                    hide_index=True,
-                    width="stretch",
-                )
+                for item in gift_lines:
+                    category_id = str(item.get("record_id") or "")
+                    product = str(item.get("category") or "未命名周边礼品")
+                    name_col, type_col, remove_col = st.columns([4.5, 2.2, 0.9])
+                    name_col.markdown(
+                        '<span class="pudu-gift-batch-item-marker"></span>'
+                        f'<div class="pudu-gift-batch-item-name">{escape(product)}</div>',
+                        unsafe_allow_html=True,
+                    )
+                    type_col.markdown(
+                        '<div class="pudu-gift-batch-item-meta">已有品类</div>',
+                        unsafe_allow_html=True,
+                    )
+                    if remove_col.button(
+                        "移除",
+                        icon=":material/delete:",
+                        key=f"gift_cart_remove_{category_id}",
+                        help=f"从购物清单移除：{product}",
+                        width="stretch",
+                    ):
+                        remove_gift_batch_selected_item(st.session_state, category_id)
+                        st.rerun()
+                if new_line:
+                    new_name = str(new_line.get("name") or "未命名周边礼品")
+                    new_quantity = int(new_line.get("quantity") or 1)
+                    name_col, type_col, remove_col = st.columns([4.5, 2.2, 0.9])
+                    name_col.markdown(
+                        '<span class="pudu-gift-batch-item-marker"></span>'
+                        f'<div class="pudu-gift-batch-item-name">{escape(new_name)}</div>',
+                        unsafe_allow_html=True,
+                    )
+                    type_col.markdown(
+                        '<div class="pudu-gift-batch-item-meta">'
+                        f"待新建品类 · 数量 {new_quantity}"
+                        "</div>",
+                        unsafe_allow_html=True,
+                    )
+                    if remove_col.button(
+                        "移除",
+                        icon=":material/delete:",
+                        key="gift_cart_remove_new",
+                        help=f"从购物清单移除：{new_name}",
+                        width="stretch",
+                    ):
+                        remove_gift_batch_new_item(st.session_state)
+                        st.rerun()
             if st.button("批量提交", type="primary", key="gift_batch_submit"):
                 if not str(project_name).strip() or not str(owner_open_id or "").strip():
                     st.error("项目名称和负责人均为必填项。")
