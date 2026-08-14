@@ -89,9 +89,16 @@ try {
         throw "Submission worker repository has local changes and was not updated."
     }
 
-    Invoke-CheckedCommand $git @("-C", $RepoPath, "fetch", "origin", "master")
-    Invoke-CheckedCommand $git @("-C", $RepoPath, "switch", "master")
-    Invoke-CheckedCommand $git @("-C", $RepoPath, "pull", "--ff-only", "origin", "master")
+    try {
+        Invoke-CheckedCommand $git @("-C", $RepoPath, "fetch", "origin", "master")
+        Invoke-CheckedCommand $git @("-C", $RepoPath, "switch", "master")
+        Invoke-CheckedCommand $git @("-C", $RepoPath, "pull", "--ff-only", "origin", "master")
+    } catch {
+        Write-RunnerLog (
+            "GitHub update was unavailable; continuing with the existing clean worker copy: {0}" `
+                -f $_.Exception.Message
+        ) "WARN"
+    }
 
     $repoSecretsDirectory = Join-Path $RepoPath ".streamlit"
     New-Item -ItemType Directory -Path $repoSecretsDirectory -Force | Out-Null
