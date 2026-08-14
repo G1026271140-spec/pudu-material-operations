@@ -126,6 +126,34 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
             width: 100%;
             padding: 2px 0 6px;
         }
+        .option-pool.is-grouped {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+            gap: 8px;
+        }
+        .option-group {
+            min-width: 0;
+            padding: 7px;
+            border: 1px solid color-mix(in srgb, var(--st-text-color) 16%, transparent);
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--st-secondary-background-color) 74%, transparent);
+        }
+        .option-group-title {
+            margin: 0 0 5px;
+            color: color-mix(in srgb, var(--st-text-color) 78%, transparent);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .option-group-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .option-group-empty {
+            color: color-mix(in srgb, var(--st-text-color) 52%, transparent);
+            font-size: 11px;
+        }
         .option-item {
             display: inline-flex;
             align-items: center;
@@ -189,6 +217,36 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
             font-size: 12px;
             font-weight: 450;
         }
+        .option-pool.is-compact {
+            gap: 5px;
+            padding: 0 0 3px;
+        }
+        .option-pool.is-compact .option-item {
+            min-height: 29px;
+            border-radius: 5px;
+        }
+        .option-pool.is-compact .option-main,
+        .option-pool.is-compact .option-edit {
+            min-height: 29px;
+        }
+        .option-pool.is-compact .option-main {
+            padding: 4px 7px;
+            font-size: 12px;
+            line-height: 1.18;
+        }
+        .option-pool.is-compact .option-item.is-selected .option-main::before {
+            margin-right: 4px;
+        }
+        .option-pool.is-compact .option-meta {
+            display: inline;
+            margin: 0 0 0 5px;
+            font-size: 10px;
+        }
+        @media (max-width: 760px) {
+            .option-pool.is-grouped {
+                grid-template-columns: 1fr;
+            }
+        }
     """,
     js="""
         export default function(component) {
@@ -196,24 +254,39 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
             const root = parentElement.querySelector('.option-pool');
             root.innerHTML = '';
             root.classList.toggle('is-danger', Boolean(data.danger));
+            root.classList.toggle('is-compact', Boolean(data.compact));
+            root.classList.toggle('is-grouped', Boolean(data.grouped));
             const selected = data.multi
                 ? new Set(Array.isArray(data.selected) ? data.selected : [])
                 : new Set(data.selected ? [data.selected] : []);
             let clickTimer = null;
 
+            const syncSelectionStyles = () => {
+                for (const item of root.querySelectorAll('.option-item')) {
+                    const isSelected = selected.has(item.dataset.value);
+                    item.classList.toggle('is-selected', isSelected);
+                    item.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+                }
+            };
+
             const commitSelection = (value) => {
                 if (data.multi) {
                     if (selected.has(value)) selected.delete(value);
                     else selected.add(value);
+                    syncSelectionStyles();
                     setStateValue('selected', Array.from(selected));
                 } else {
+                    selected.clear();
+                    selected.add(value);
+                    syncSelectionStyles();
                     setStateValue('selected', value);
                 }
             };
 
-            for (const option of data.options || []) {
+            const renderOption = (target, option) => {
                 const item = document.createElement('div');
                 item.className = 'option-item';
+                item.dataset.value = option.value;
                 item.classList.toggle('is-selected', selected.has(option.value));
                 item.setAttribute('role', 'option');
                 item.setAttribute('aria-selected', selected.has(option.value) ? 'true' : 'false');
@@ -222,15 +295,19 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
                 main.type = 'button';
                 main.className = 'option-main';
                 main.innerHTML = `<span>${option.label}</span>${option.meta ? `<span class="option-meta">${option.meta}</span>` : ''}`;
-                main.onclick = () => {
-                    clickTimer = window.setTimeout(() => commitSelection(option.value), 230);
-                };
-                main.ondblclick = (event) => {
-                    event.preventDefault();
-                    if (clickTimer) window.clearTimeout(clickTimer);
-                    setStateValue('selected', data.multi ? [option.value] : option.value);
-                    if (data.editable) setTriggerValue('edit', option.value);
-                };
+                if (data.editable) {
+                    main.onclick = () => {
+                        clickTimer = window.setTimeout(() => commitSelection(option.value), 230);
+                    };
+                    main.ondblclick = (event) => {
+                        event.preventDefault();
+                        if (clickTimer) window.clearTimeout(clickTimer);
+                        setStateValue('selected', data.multi ? [option.value] : option.value);
+                        setTriggerValue('edit', option.value);
+                    };
+                } else {
+                    main.onclick = () => commitSelection(option.value);
+                }
                 item.appendChild(main);
 
                 if (data.editable) {
@@ -247,7 +324,44 @@ CATEGORY_OPTION_POOL = st.components.v2.component(
                     };
                     item.appendChild(edit);
                 }
-                root.appendChild(item);
+                target.appendChild(item);
+            };
+
+            if (data.grouped) {
+                const groupedOptions = new Map();
+                for (const option of data.options || []) {
+                    const groupName = option.group || '其他';
+                    if (!groupedOptions.has(groupName)) groupedOptions.set(groupName, []);
+                    groupedOptions.get(groupName).push(option);
+                }
+                const configuredOrder = Array.isArray(data.group_order) ? data.group_order : [];
+                const groupNames = [
+                    ...configuredOrder,
+                    ...Array.from(groupedOptions.keys()).filter((name) => !configuredOrder.includes(name)),
+                ];
+                for (const groupName of groupNames) {
+                    const groupOptions = groupedOptions.get(groupName) || [];
+                    const group = document.createElement('section');
+                    group.className = 'option-group';
+                    const title = document.createElement('div');
+                    title.className = 'option-group-title';
+                    title.textContent = `${groupName} · ${groupOptions.length}`;
+                    group.appendChild(title);
+                    const items = document.createElement('div');
+                    items.className = 'option-group-items';
+                    if (groupOptions.length) {
+                        for (const option of groupOptions) renderOption(items, option);
+                    } else {
+                        const empty = document.createElement('div');
+                        empty.className = 'option-group-empty';
+                        empty.textContent = '暂无选项';
+                        items.appendChild(empty);
+                    }
+                    group.appendChild(items);
+                    root.appendChild(group);
+                }
+            } else {
+                for (const option of data.options || []) renderOption(root, option);
             }
             return () => {
                 if (clickTimer) window.clearTimeout(clickTimer);
@@ -7164,6 +7278,12 @@ def category_pool_summary(
         {
             "value": str(category.get("category") or ""),
             "label": str(category.get("category") or ""),
+            "group": (
+                CATEGORY_DEFINITION_GIFT
+                if str(category.get("category_definition") or "").strip()
+                == CATEGORY_DEFINITION_GIFT
+                else CATEGORY_DEFINITION_PRINT
+            ),
             "meta": (
                 f"{len(inventory_by_category.get(str(category.get('category') or ''), []))} {ui_text('行')}"
                 f" · {ui_text('库存')} {sum(int(record.get('quantity') or 0) for record in inventory_by_category.get(str(category.get('category') or ''), []))}"
@@ -7209,6 +7329,24 @@ def category_material_pool_summary(records: list[dict]) -> list[dict[str, object
     ]
 
 
+def category_language_pool_summary(records: list[dict]) -> list[dict[str, object]]:
+    records_by_language: dict[str, list[dict]] = {}
+    for record in records:
+        language = str(record.get("language") or NO_LANGUAGE_TEXT)
+        records_by_language.setdefault(language, []).append(record)
+    return [
+        {
+            "value": language,
+            "label": language,
+            "meta": (
+                f"{len(unique_preserve([str(record.get('model') or NO_MODEL_TEXT) for record in language_records]))} {ui_text('个型号')}"
+                f" · {ui_text('库存')} {sum(int(record.get('quantity') or 0) for record in language_records)}"
+            ),
+        }
+        for language, language_records in records_by_language.items()
+    ]
+
+
 def render_category_option_pool(
     options: list[dict[str, object]],
     *,
@@ -7217,6 +7355,8 @@ def render_category_option_pool(
     multi: bool = False,
     editable: bool = False,
     danger: bool = False,
+    compact: bool = False,
+    grouped: bool = False,
 ) -> tuple[str | list[str] | None, str]:
     selection_state_key = f"{key}_selection"
     current_selected = st.session_state.get(selection_state_key, selected)
@@ -7228,6 +7368,7 @@ def render_category_option_pool(
                     "value": str(option.get("value") or ""),
                     "label": escape(str(option.get("label") or "")),
                     "meta": escape(str(option.get("meta") or "")),
+                    "group": escape(str(option.get("group") or "")),
                 }
                 for option in options
             ],
@@ -7235,6 +7376,9 @@ def render_category_option_pool(
             "multi": multi,
             "editable": editable,
             "danger": danger,
+            "compact": compact,
+            "grouped": grouped,
+            "group_order": list(CATEGORY_DEFINITION_OPTIONS) if grouped else [],
         },
         on_selected_change=lambda: None,
         on_edit_change=lambda: None,
@@ -11463,6 +11607,29 @@ def category_delete_category_blockers(
     return blockers
 
 
+def category_delete_material_scope(
+    records: list[dict],
+    selected_models: list[str],
+    selected_languages: list[str],
+) -> list[dict]:
+    model_set = set(selected_models)
+    language_set = set(selected_languages)
+    if not model_set and not language_set:
+        return []
+    return [
+        record
+        for record in records
+        if (
+            not model_set
+            or str(record.get("model") or NO_MODEL_TEXT) in model_set
+        )
+        and (
+            not language_set
+            or str(record.get("language") or NO_LANGUAGE_TEXT) in language_set
+        )
+    ]
+
+
 def start_category_delete_review(
     *,
     delete_kind: str,
@@ -11671,69 +11838,71 @@ def render_category_delete_workspace(
     inventory_records: list[dict],
 ) -> None:
     st.warning("当前为删除模式。选择内容后会先进入删除预览，确认前不会写入飞书。")
-    selected_categories, _ = render_category_option_pool(
+    selected_category, _ = render_category_option_pool(
         category_pool_summary(categories, inventory_records),
-        selected=[],
+        selected=None,
         key="category_delete_category_pool",
-        multi=True,
+        multi=False,
         danger=True,
+        compact=True,
+        grouped=True,
     )
-    selected_category_names = [str(value) for value in list(selected_categories or [])]
-    st.caption(f"已选择 {len(selected_category_names)} 个品类。选中项会显示白色勾选和红色背景。")
+    selected_category_name = str(selected_category or "")
+    selected_category_names = [selected_category_name] if selected_category_name else []
+    st.caption(
+        f"已选择品类：{selected_category_name}"
+        if selected_category_name
+        else "请选择 1 个品类。"
+    )
     category_by_name = {str(category.get("category") or ""): category for category in categories}
 
-    if len(selected_category_names) == 1:
-        selected_name = selected_category_names[0]
+    if selected_category_name:
+        selected_name = selected_category_name
         selected_category = category_by_name[selected_name]
         category_records = [
             record
             for record in inventory_records
             if str(record.get("category") or "") == selected_name
         ]
-        st.markdown("**选择要删除的型号或物料行**")
-        selected_models, _ = render_category_option_pool(
-            category_model_pool_summary(category_records),
-            selected=[],
-            key=f"category_delete_model_pool_{selected_category['record_id']}",
-            multi=True,
-            danger=True,
-        )
+        st.markdown("**选择要删除的型号和语种**")
+        model_column, language_column = st.columns(2, gap="small")
+        with model_column:
+            st.caption("产品型号（可多选）")
+            selected_models, _ = render_category_option_pool(
+                category_model_pool_summary(category_records),
+                selected=[],
+                key=f"category_delete_model_pool_{selected_category['record_id']}",
+                multi=True,
+                danger=True,
+                compact=True,
+            )
+        with language_column:
+            st.caption("语种（可多选）")
+            selected_languages, _ = render_category_option_pool(
+                category_language_pool_summary(category_records),
+                selected=[],
+                key=f"category_delete_language_pool_{selected_category['record_id']}",
+                multi=True,
+                danger=True,
+                compact=True,
+            )
         selected_model_names = [str(value) for value in list(selected_models or [])]
-        st.caption(f"已选择 {len(selected_model_names)} 个型号。")
-        model_scope = [
-            record
-            for record in category_records
-            if not selected_model_names
-            or str(record.get("model") or NO_MODEL_TEXT) in selected_model_names
-        ]
-        selected_material_ids, _ = render_category_option_pool(
-            category_material_pool_summary(model_scope),
-            selected=[],
-            key=f"category_delete_material_pool_{selected_category['record_id']}_{'|'.join(selected_model_names)}",
-            multi=True,
-            danger=True,
+        selected_language_names = [str(value) for value in list(selected_languages or [])]
+        delete_scope = category_delete_material_scope(
+            category_records,
+            selected_model_names,
+            selected_language_names,
         )
-        selected_material_id_set = {
-            str(value) for value in list(selected_material_ids or [])
-        }
-        selected_material_records = [
-            record
-            for record in model_scope
-            if str(record.get("record_id") or "") in selected_material_id_set
-        ]
-        st.caption(f"已选择 {len(selected_material_records)} 条具体物料行。")
-        model_records = [
-            record
-            for record in category_records
-            if str(record.get("model") or NO_MODEL_TEXT) in selected_model_names
-        ]
-        delete_scope = selected_material_records or model_records
+        st.caption(
+            f"已选择 {len(selected_model_names)} 个型号、{len(selected_language_names)} 个语种，"
+            f"对应 {len(delete_scope)} 条物料行。"
+        )
         if delete_scope:
             st.caption(
                 f"准备删除 {len(delete_scope)} 条物料行；点击后先进入明细预览。"
             )
             if st.button(
-                "预览删除所选物料行" if selected_material_records else "预览删除所选型号下的物料行",
+                "预览删除所选型号和语种对应物料行",
                 icon=":material/preview:",
                 type="primary",
                 width="stretch",
@@ -11749,6 +11918,8 @@ def render_category_delete_workspace(
                         records=delete_scope,
                     )
                     st.rerun()
+        elif selected_model_names or selected_language_names:
+            st.warning("当前选择的型号与语种组合没有对应物料行。")
 
     if selected_category_names:
         st.divider()

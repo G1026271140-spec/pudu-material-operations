@@ -497,12 +497,18 @@ class CategoryInventoryPlanTests(unittest.TestCase):
 
         category_pool = app.category_pool_summary(categories, records)
         model_pool = app.category_model_pool_summary(records)
+        language_pool = app.category_language_pool_summary(records)
         material_pool = app.category_material_pool_summary(records)
 
         self.assertEqual(category_pool[0]["value"], "品类A")
         self.assertIn("2 行", str(category_pool[0]["meta"]))
         self.assertEqual(model_pool[0]["value"], "M1")
         self.assertIn("2 个语种", str(model_pool[0]["meta"]))
+        self.assertEqual(
+            [item["value"] for item in language_pool],
+            ["英语", "法语"],
+        )
+        self.assertIn("1 个型号", str(language_pool[0]["meta"]))
         self.assertEqual(
             [item["value"] for item in material_pool],
             ["1", "2"],
@@ -537,6 +543,104 @@ class CategoryInventoryPlanTests(unittest.TestCase):
 
         self.assertEqual(session_state["delete_pool_selection"], ["品类A"])
         self.assertEqual(component.call_args_list[1].kwargs["data"]["selected"], ["品类A"])
+
+    def test_category_option_pool_passes_single_compact_grouped_configuration(self) -> None:
+        session_state: dict[str, object] = {}
+        component_result = SimpleNamespace(selected="品类B", edit="")
+        options = [
+            {
+                "value": "品类A",
+                "label": "品类A",
+                "meta": "1 行",
+                "group": app.CATEGORY_DEFINITION_PRINT,
+            },
+            {
+                "value": "品类B",
+                "label": "品类B",
+                "meta": "2 行",
+                "group": app.CATEGORY_DEFINITION_GIFT,
+            },
+        ]
+        with (
+            patch.object(app.st, "session_state", session_state),
+            patch.object(
+                app,
+                "CATEGORY_OPTION_POOL",
+                return_value=component_result,
+            ) as component,
+        ):
+            selected, _ = app.render_category_option_pool(
+                options,
+                selected=None,
+                key="category_delete_pool",
+                multi=False,
+                danger=True,
+                compact=True,
+                grouped=True,
+            )
+
+        data = component.call_args.kwargs["data"]
+        self.assertEqual(selected, "品类B")
+        self.assertFalse(data["multi"])
+        self.assertTrue(data["compact"])
+        self.assertTrue(data["grouped"])
+        self.assertEqual(data["group_order"], list(app.CATEGORY_DEFINITION_OPTIONS))
+        self.assertEqual(
+            [item["group"] for item in data["options"]],
+            list(app.CATEGORY_DEFINITION_OPTIONS),
+        )
+
+    def test_category_delete_scope_supports_multiple_models_and_languages(self) -> None:
+        records = [
+            inventory_record("1", "M1", "英语", 0),
+            inventory_record("2", "M1", "韩语", 0),
+            inventory_record("3", "M2", "英语", 0),
+            inventory_record("4", "M2", "日语", 0),
+        ]
+
+        self.assertEqual(
+            [record["record_id"] for record in app.category_delete_material_scope(records, ["M1", "M2"], ["英语"])],
+            ["1", "3"],
+        )
+        self.assertEqual(
+            [record["record_id"] for record in app.category_delete_material_scope(records, ["M1"], [])],
+            ["1", "2"],
+        )
+        self.assertEqual(app.category_delete_material_scope(records, [], []), [])
+
+    def test_category_pool_carries_definition_for_grouped_delete_layout(self) -> None:
+        categories = [
+            {
+                "category": "品类A",
+                "category_definition": app.CATEGORY_DEFINITION_GIFT,
+                "status": app.STATUS_ACTIVE,
+            }
+        ]
+
+        summary = app.category_pool_summary(categories, [])
+
+        self.assertEqual(summary[0]["group"], app.CATEGORY_DEFINITION_GIFT)
+
+    def test_category_pool_defaults_unknown_definition_to_print_group(self) -> None:
+        categories = [
+            {
+                "category": "品类A",
+                "category_definition": "",
+                "status": app.STATUS_ACTIVE,
+            },
+            {
+                "category": "品类B",
+                "category_definition": "旧定义",
+                "status": app.STATUS_ACTIVE,
+            },
+        ]
+
+        summary = app.category_pool_summary(categories, [])
+
+        self.assertEqual(
+            [item["group"] for item in summary],
+            [app.CATEGORY_DEFINITION_PRINT, app.CATEGORY_DEFINITION_PRINT],
+        )
 
     def test_category_delete_preview_contains_material_details(self) -> None:
         record = inventory_record("1", "M1", "韩语", 0, status=app.STATUS_INACTIVE)
