@@ -10,9 +10,21 @@ class FullscreenSyncTests(unittest.TestCase):
     def test_overlay_contains_required_message_and_escapes_detail(self) -> None:
         html = app.fullscreen_sync_overlay_html("提交 <测试>")
 
-        self.assertIn("数据正在同步，请勿重复点击", html)
+        self.assertIn("数据已提交，请稍等", html)
+        self.assertIn("倒计时", html)
+        self.assertIn("pudu-sync-overlay__countdown", html)
+        self.assertIn("数据正在写入，您可以离开该页面，感谢您的使用", html)
         self.assertIn("提交 &lt;测试&gt;", html)
         self.assertIn('aria-busy="true"', html)
+
+    def test_overlay_css_switches_message_after_ten_second_countdown(self) -> None:
+        source = Path(app.__file__).read_text(encoding="utf-8")
+
+        self.assertIn("animation: pudu-sync-countdown 10s", source)
+        self.assertIn("animation: pudu-sync-phase-out 0s linear 10s forwards", source)
+        self.assertIn("animation: pudu-sync-phase-in 0s linear 10s forwards", source)
+        for remaining_seconds in range(10, 0, -1):
+            self.assertIn(f'content: "{remaining_seconds}"', source)
 
     def test_overlay_clears_busy_state_after_success(self) -> None:
         session_state: dict[str, object] = {}

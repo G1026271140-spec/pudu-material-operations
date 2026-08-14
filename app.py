@@ -1824,6 +1824,11 @@ def inject_global_styles() -> None:
             display: block;
             letter-spacing: 0;
         }
+        .pudu-sync-overlay__copy {
+            position: relative;
+            min-width: 0;
+            min-height: 3.05rem;
+        }
         .pudu-sync-overlay__copy strong {
             color: var(--pudu-ink);
             font-size: 0.98rem;
@@ -1834,6 +1839,22 @@ def inject_global_styles() -> None:
             color: var(--pudu-muted);
             font-size: 0.78rem;
             line-height: 1.45;
+        }
+        .pudu-sync-overlay__initial {
+            animation: pudu-sync-phase-out 0s linear 10s forwards;
+        }
+        .pudu-sync-overlay__delayed {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            visibility: hidden;
+            animation: pudu-sync-phase-in 0s linear 10s forwards;
+        }
+        .pudu-sync-overlay__countdown::before {
+            content: "10";
+            color: var(--pudu-teal);
+            font-weight: 750;
+            animation: pudu-sync-countdown 10s steps(1, end) forwards;
         }
         .pudu-update-ticker {
             width: 100%;
@@ -1861,6 +1882,24 @@ def inject_global_styles() -> None:
         }
         @keyframes pudu-sync-spin {
             to { transform: rotate(360deg); }
+        }
+        @keyframes pudu-sync-countdown {
+            0%, 9.999% { content: "10"; }
+            10%, 19.999% { content: "9"; }
+            20%, 29.999% { content: "8"; }
+            30%, 39.999% { content: "7"; }
+            40%, 49.999% { content: "6"; }
+            50%, 59.999% { content: "5"; }
+            60%, 69.999% { content: "4"; }
+            70%, 79.999% { content: "3"; }
+            80%, 89.999% { content: "2"; }
+            90%, 100% { content: "1"; }
+        }
+        @keyframes pudu-sync-phase-out {
+            to { opacity: 0; visibility: hidden; }
+        }
+        @keyframes pudu-sync-phase-in {
+            to { opacity: 1; visibility: visible; }
         }
         @keyframes pudu-update-scroll {
             from { transform: translateX(0); }
@@ -1959,11 +1998,16 @@ def render_page_header(title: str, kicker: str, subtitle: str, status: str = "�
 def fullscreen_sync_overlay_html(message: str) -> str:
     return f"""
         <div class="pudu-sync-overlay" role="status" aria-live="assertive" aria-busy="true">
-            <div class="pudu-sync-overlay__panel">
+            <div class="pudu-sync-overlay__panel" data-sync-operation="{escape(message)}">
                 <div class="pudu-sync-overlay__spinner" aria-hidden="true"></div>
                 <div class="pudu-sync-overlay__copy">
-                    <strong>{escape(message)}</strong>
-                    <span>数据正在同步，请勿重复点击</span>
+                    <div class="pudu-sync-overlay__initial">
+                        <strong>数据已提交，请稍等</strong>
+                        <span>倒计时 <b class="pudu-sync-overlay__countdown"></b> 秒</span>
+                    </div>
+                    <div class="pudu-sync-overlay__delayed">
+                        <strong>数据正在写入，您可以离开该页面，感谢您的使用</strong>
+                    </div>
                 </div>
             </div>
         </div>
