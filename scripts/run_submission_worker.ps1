@@ -133,7 +133,11 @@ try {
     }
 
     $env:PUDU_SUBMISSION_WORKER_LOG_DIR = $LogDirectory
-    $workerArguments = @("scripts/submission_worker.py")
+    $workerScriptPath = Join-Path $RepoPath "scripts\submission_worker.py"
+    if (-not (Test-Path -LiteralPath $workerScriptPath)) {
+        throw "Submission worker script was not found: $workerScriptPath"
+    }
+    $workerArguments = @($workerScriptPath)
     if ($SetupOnly) {
         $workerArguments += "--setup"
         Write-RunnerLog "Creating or repairing the Feishu submission queue table."
