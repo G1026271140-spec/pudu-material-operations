@@ -144,8 +144,17 @@ try {
     } else {
         Write-RunnerLog "Starting the recoverable submission worker."
     }
-    & $venvPython @workerArguments
-    $ExitCode = $LASTEXITCODE
+    Push-Location -LiteralPath $RepoPath
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        & $venvPython @workerArguments 2>&1 |
+            ForEach-Object { Write-RunnerLog ([string]$_) }
+        $ExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+        Pop-Location
+    }
     if ($ExitCode -ne 0) {
         throw "Submission worker exited with code $ExitCode."
     }
