@@ -28,6 +28,15 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from shipping_page import render_shipping_template_page
+from submission_queue import (
+    QUEUE_STATUS_COMPLETED,
+    QUEUE_STATUS_FAILED,
+    QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    SubmissionTask,
+    enqueue_submission_task,
+    ensure_submission_queue_table,
+    find_task_by_idempotency_key,
+)
 from ui_i18n import (
     LANGUAGE_EN,
     LANGUAGE_ZH,
@@ -5503,6 +5512,23 @@ def find_completed_submission(submission_token: str) -> tuple[dict, int] | None:
     return None
 
 
+def cleanup_incomplete_submission_rows(submission_token: str) -> int:
+    client = feishu_client()
+    if client is None or not submission_token:
+        return 0
+    request_rows = submission_token_rows(submission_token)
+    if not request_rows:
+        return 0
+    _, lines_by_request_id = request_line_rows_by_request_id()
+    removed = 0
+    for row in request_rows:
+        record_id = feishu_record_id(row)
+        if record_id and not lines_by_request_id.get(record_id):
+            client.delete_record(feishu_table_id(REQUEST_TABLE_NAME), record_id)
+            removed += 1
+    return removed
+
+
 def ensure_unique_request_no(request_record_id: str, request_no: str, submission_token: str) -> str:
     client = feishu_client()
     if client is None:
@@ -6813,11 +6839,13 @@ def submit_feishu_material_request(
         if client is None:
             raise RuntimeError("飞书未配置，无法上传附件。")
         for attachment in attachments:
-            file_token = client.upload_media(
-                str(attachment.get("name") or ""),
-                bytes(attachment.get("content") or b""),
-                str(attachment.get("content_type") or "application/octet-stream"),
-            )
+            file_token = str(attachment.get("file_token") or "").strip()
+            if not file_token:
+                file_token = client.upload_media(
+                    str(attachment.get("name") or ""),
+                    bytes(attachment.get("content") or b""),
+                    str(attachment.get("content_type") or "application/octet-stream"),
+                )
             attachment_values.append({"file_token": file_token})
 
     request_no = next_request_no()
@@ -6923,6 +6951,100 @@ def submit_feishu_material_request(
         request_no = feishu_text(feishu_fields(canonical_row), "申请单号") or request_no
         created_new_request = feishu_record_id(canonical_row) == request_record_id
     return request_no, len(line_records), created_new_request
+
+
+def queued_material_request_payload(
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> dict[str, object]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建后台申请任务。")
+    attachment_tokens: list[dict[str, str]] = []
+    for attachment in list(request_payload.get("attachments") or []):
+        if not isinstance(attachment, dict):
+            continue
+        file_token = str(attachment.get("file_token") or "").strip()
+        if not file_token:
+            file_token = client.upload_media(
+                str(attachment.get("name") or ""),
+                bytes(attachment.get("content") or b""),
+                str(attachment.get("content_type") or "application/octet-stream"),
+            )
+        attachment_tokens.append(
+            {
+                "name": str(attachment.get("name") or ""),
+                "content_type": str(
+                    attachment.get("content_type") or "application/octet-stream"
+                ),
+                "file_token": file_token,
+            }
+        )
+
+    queued_request = {
+        key: request_payload.get(key)
+        for key in (
+            "title",
+            "department",
+            "department_id",
+            "requester",
+            "requester_open_id",
+            "customer_name",
+            "country",
+            "recipient_info",
+            "freight_payer",
+            "material_usage",
+            "attachment_note",
+            "submission_token",
+        )
+    }
+    queued_request["attachments"] = attachment_tokens
+    queued_lines = [
+        {
+            "product": str(line.get("product") or ""),
+            "model": str(line.get("model") or ""),
+            "language": str(line.get("language") or ""),
+            "quantity": int(line.get("quantity") or 0),
+            "remark": str(line.get("remark") or ""),
+        }
+        for line in lines
+        if isinstance(line, dict)
+    ]
+    return {
+        "version": 1,
+        "request_payload": queued_request,
+        "lines": queued_lines,
+    }
+
+
+def enqueue_feishu_material_request(
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> tuple[SubmissionTask, bool]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建后台申请任务。")
+    submission_token = str(request_payload.get("submission_token") or "").strip()
+    if not submission_token:
+        raise RuntimeError("申请提交幂等键不能为空。")
+    table_id = ensure_submission_queue_table(client)
+    existing = find_task_by_idempotency_key(client, submission_token, table_id)
+    if existing is not None:
+        if existing.status == QUEUE_STATUS_FAILED:
+            return enqueue_submission_task(
+                client,
+                QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+                submission_token,
+                existing.payload,
+            )
+        return existing, False
+    payload = queued_material_request_payload(request_payload, lines)
+    return enqueue_submission_task(
+        client,
+        QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+        submission_token,
+        payload,
+    )
 
 
 def feishu_person_text(fields: dict, names: list[str]) -> str:
@@ -10073,69 +10195,30 @@ def render_request_review() -> None:
         if errors:
             st.warning("；".join(errors))
             return
-        notification_count = 0
-        sales_receipt_count = 0
-        sales_permission_result = ""
-        notification_warning = ""
-        with fullscreen_data_sync("正在提交申请并同步审批通知"):
+        with fullscreen_data_sync("正在创建可恢复的后台申请任务"):
             with DATA_LOCK:
                 try:
-                    request_no, line_count, created_new_request = submit_feishu_material_request(
+                    task, created_new_task = enqueue_feishu_material_request(
                         draft,
                         lines,
                     )
                 except Exception as exc:
-                    st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
+                    st.error("申请未能进入后台队列，请检查飞书写入权限后重试。")
                     st.exception(exc)
                     return
-            try:
-                with DATA_LOCK:
-                    sales_permission_result = ensure_requester_sales_permission(draft)
-            except Exception as exc:
-                notification_warning = (
-                    "申请已成功，但申请人的销售权限自动登记失败："
-                    f"{exc}"
-                )
-            if created_new_request:
-                try:
-                    notification_count = notify_enabled_admins_of_material_request(
-                        request_no,
-                        draft,
-                        lines,
-                    )
-                except Exception as exc:
-                    admin_warning = (
-                        "申请已成功，但机器人提醒发送失败。管理员可在审批页查看申请，"
-                        f"并检查机器人权限或用户权限表：{exc}"
-                    )
-                    notification_warning = "；".join(
-                        item for item in [notification_warning, admin_warning] if item
-                    )
-                try:
-                    sales_receipt_count = notify_sales_request_received(
-                        request_no,
-                        draft,
-                        lines,
-                    )
-                except Exception as exc:
-                    sales_warning = f"申请人回执发送失败：{exc}"
-                    notification_warning = "；".join(
-                        item for item in [notification_warning, sales_warning] if item
-                    )
-            st.cache_data.clear()
         clear_request_application_state()
-        notification_text = (
-            f"机器人已提醒 {notification_count} 位管理员。" if notification_count else ""
-        )
-        if sales_receipt_count:
-            notification_text += "已向申请人发送处理回执。"
-        if sales_permission_result in {"created", "updated"}:
-            notification_text += "已自动登记申请人的销售身份。"
-        st.session_state["request_submit_message"] = (
-            f"已提交申请单 {request_no}，共 {line_count} 条申请明细。{notification_text}"
-        )
-        if notification_warning:
-            st.session_state["request_submit_warning"] = notification_warning
+        if task.status == QUEUE_STATUS_COMPLETED:
+            request_no = str(task.result.get("request_no") or "").strip()
+            st.session_state["request_submit_message"] = (
+                f"申请单 {request_no or task.task_id[:8]} 已处理完成。"
+            )
+        else:
+            action_text = "已进入" if created_new_task else "已存在于"
+            st.session_state["request_submit_message"] = (
+                f"申请任务 {task.task_id[:8]} {action_text}后台队列。"
+                "您现在可以关闭页面；Windows Worker 会继续处理，"
+                "完成后机器人将通知申请人和管理员。"
+            )
         st.session_state["request_scroll_to_top"] = True
         st.rerun()
 

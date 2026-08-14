@@ -59,6 +59,26 @@ class FeishuBitableClient:
             "items",
         )
 
+    def create_table(
+        self,
+        table_name: str,
+        fields: list[dict[str, Any]],
+        *,
+        default_view_name: str = "表格",
+    ) -> dict[str, Any]:
+        response = self._request(
+            "POST",
+            f"/bitable/v1/apps/{self._quoted_app_token()}/tables",
+            payload={
+                "table": {
+                    "name": table_name,
+                    "default_view_name": default_view_name,
+                    "fields": fields,
+                }
+            },
+        )
+        return dict(response.get("data", {}))
+
     def create_field(
         self,
         table_id: str,
@@ -540,7 +560,7 @@ class FeishuBitableClient:
                 request_params["page_token"] = page_token
             response = self._request("GET", path, params=request_params)
             data = response.get("data", {})
-            items.extend(data.get(data_key, []))
+            items.extend(data.get(data_key) or [])
             if not data.get("has_more"):
                 break
             page_token = str(data.get("page_token", ""))

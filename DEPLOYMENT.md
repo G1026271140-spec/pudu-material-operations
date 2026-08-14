@@ -60,6 +60,37 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_feishu_card_worker_ta
 
 计划任务名称默认为 `PUDU Feishu Card Worker`。更新代码后重启该任务即可加载新版本；电脑必须保持联网，任务会在登录时启动并在异常退出后自动重启。
 
+### 营销申请后台任务
+
+营销物料申请采用可恢复后台队列。Streamlit Cloud 只负责上传附件并把完整申请写入飞书「后台任务队列」；独立 Windows Worker 负责创建申请单、申请明细、登记销售身份并发送申请人和管理员机器人消息。应用显示任务已进入后台队列后，用户可以关闭页面，不会中断后续写入。
+
+在保持联网的 Windows 电脑上安装或更新 Worker：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install_submission_worker_task.ps1
+```
+
+计划任务名称为 `PUDU Submission Worker`，登录后常驻运行，锁屏不影响处理，异常退出后一分钟自动重启。它使用 `%LOCALAPPDATA%\PuduSubmissionWorker` 下的独立 Git 副本、虚拟环境、Secrets 和日志，不会读写桌面工作区，也不会与 `%LOCALAPPDATA%\PuduMaterialCacheRunner` 中的缓存刷新程序发生 Git 冲突。
+
+任务使用 `提交幂等键` 防止 Worker 重启造成重复申请，处理过程会分阶段保存进度。单次任务最多重试 10 次，退避时间最高 15 分钟；Worker 在处理中退出后，10 分钟租约过期即可由重启后的进程接管。日志位置：
+
+```text
+%LOCALAPPDATA%\PuduSubmissionWorker\logs\worker.log
+%LOCALAPPDATA%\PuduSubmissionWorker\logs\bootstrap.log
+```
+
+手动检查或恢复失败任务：
+
+```powershell
+Stop-ScheduledTask -TaskName "PUDU Submission Worker"
+cd "$env:LOCALAPPDATA\PuduSubmissionWorker\repo"
+.\.venv\Scripts\python.exe scripts\submission_worker.py --once
+.\.venv\Scripts\python.exe scripts\submission_worker.py --retry-failed --once
+Start-ScheduledTask -TaskName "PUDU Submission Worker"
+```
+
+代码推送到 `master` 后重新运行安装脚本，安装器会停止旧 Worker、快进更新独立副本、校验或修复队列表结构，再启动新版本。
+
 营销物料申请成功后，机器人会自动向“用户权限表”内角色包含“管理员”且“是否启用”为“是”的账号发送无操作按钮的申请通知卡片。卡片完整展示申请信息、收件信息、物料用途与全部明细，并提示管理员关注飞书审批进度。申请人若尚未登记，应用会新增一条仅包含“销售”身份的启用记录；应用不会自动添加管理员身份。启用的申请人会收到已进入审批流程的回执和物料明细。机器人提醒失败不会影响申请数据的写入。
 
 “物料管理”统一包含采购补库、品类管理和物料数据库。采购补库确认后直接增加物料主数据库存，并为每条明细写入“物料采购（增加库存）”流水；完成后机器人会向全部启用管理员发送补库卡片，列明补库单号、补库人、采购单号、补库说明、每条物料及库存变化。采购补库与物料申领共用静态选项缓存，Windows 本地缓存任务会在每天 `10:30` 和 `16:30` 同步更新。
@@ -77,6 +108,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_feishu_card_worker_ta
 - 申请明细
 - 库存批量操作
 - 用户权限表
+- 后台任务队列
 
 “物料申请单”包含独立文本字段：`客户名称`、`国家`、`收件人信息`、`运费承担者`。审批发放页不读取仓库静态缓存；进入页面及点击“刷新实时数据”时直接从飞书读取申请单、申请明细和物料主数据。
 
