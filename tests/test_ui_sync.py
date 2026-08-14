@@ -19,12 +19,15 @@ class FullscreenSyncTests(unittest.TestCase):
 
     def test_overlay_css_switches_message_after_ten_second_countdown(self) -> None:
         source = Path(app.__file__).read_text(encoding="utf-8")
+        html = app.fullscreen_sync_overlay_html("正在测试")
 
-        self.assertIn("animation: pudu-sync-countdown 10s", source)
+        self.assertIn("animation: pudu-sync-countdown-second 1s linear forwards", source)
         self.assertIn("animation: pudu-sync-phase-out 0s linear 10s forwards", source)
         self.assertIn("animation: pudu-sync-phase-in 0s linear 10s forwards", source)
         for remaining_seconds in range(10, 0, -1):
-            self.assertIn(f'content: "{remaining_seconds}"', source)
+            self.assertIn(f"<i>{remaining_seconds}</i>", html)
+        for elapsed_seconds in range(1, 10):
+            self.assertIn(f"animation-delay: {elapsed_seconds}s", source)
 
     def test_overlay_clears_busy_state_after_success(self) -> None:
         session_state: dict[str, object] = {}

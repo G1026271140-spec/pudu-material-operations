@@ -1850,12 +1850,30 @@ def inject_global_styles() -> None:
             visibility: hidden;
             animation: pudu-sync-phase-in 0s linear 10s forwards;
         }
-        .pudu-sync-overlay__countdown::before {
-            content: "10";
+        .pudu-sync-overlay__countdown {
+            display: inline-grid;
+            min-width: 1.35em;
             color: var(--pudu-teal);
             font-weight: 750;
-            animation: pudu-sync-countdown 10s steps(1, end) forwards;
+            text-align: center;
+            vertical-align: baseline;
         }
+        .pudu-sync-overlay__countdown i {
+            grid-area: 1 / 1;
+            opacity: 0;
+            visibility: hidden;
+            font-style: normal;
+            animation: pudu-sync-countdown-second 1s linear forwards;
+        }
+        .pudu-sync-overlay__countdown i:nth-child(2) { animation-delay: 1s; }
+        .pudu-sync-overlay__countdown i:nth-child(3) { animation-delay: 2s; }
+        .pudu-sync-overlay__countdown i:nth-child(4) { animation-delay: 3s; }
+        .pudu-sync-overlay__countdown i:nth-child(5) { animation-delay: 4s; }
+        .pudu-sync-overlay__countdown i:nth-child(6) { animation-delay: 5s; }
+        .pudu-sync-overlay__countdown i:nth-child(7) { animation-delay: 6s; }
+        .pudu-sync-overlay__countdown i:nth-child(8) { animation-delay: 7s; }
+        .pudu-sync-overlay__countdown i:nth-child(9) { animation-delay: 8s; }
+        .pudu-sync-overlay__countdown i:nth-child(10) { animation-delay: 9s; }
         .pudu-update-ticker {
             width: 100%;
             margin: 0.15rem 0 0.75rem;
@@ -1883,17 +1901,9 @@ def inject_global_styles() -> None:
         @keyframes pudu-sync-spin {
             to { transform: rotate(360deg); }
         }
-        @keyframes pudu-sync-countdown {
-            0%, 9.999% { content: "10"; }
-            10%, 19.999% { content: "9"; }
-            20%, 29.999% { content: "8"; }
-            30%, 39.999% { content: "7"; }
-            40%, 49.999% { content: "6"; }
-            50%, 59.999% { content: "5"; }
-            60%, 69.999% { content: "4"; }
-            70%, 79.999% { content: "3"; }
-            80%, 89.999% { content: "2"; }
-            90%, 100% { content: "1"; }
+        @keyframes pudu-sync-countdown-second {
+            0%, 99.999% { opacity: 1; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; }
         }
         @keyframes pudu-sync-phase-out {
             to { opacity: 0; visibility: hidden; }
@@ -2003,7 +2013,14 @@ def fullscreen_sync_overlay_html(message: str) -> str:
                 <div class="pudu-sync-overlay__copy">
                     <div class="pudu-sync-overlay__initial">
                         <strong>数据已提交，请稍等</strong>
-                        <span>倒计时 <b class="pudu-sync-overlay__countdown"></b> 秒</span>
+                        <span>
+                            倒计时
+                            <b class="pudu-sync-overlay__countdown" aria-hidden="true">
+                                <i>10</i><i>9</i><i>8</i><i>7</i><i>6</i>
+                                <i>5</i><i>4</i><i>3</i><i>2</i><i>1</i>
+                            </b>
+                            秒
+                        </span>
                     </div>
                     <div class="pudu-sync-overlay__delayed">
                         <strong>数据正在写入，您可以离开该页面，感谢您的使用</strong>
