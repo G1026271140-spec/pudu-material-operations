@@ -10462,6 +10462,13 @@ def prepare_restock_line_editor_state() -> None:
         st.session_state["restock_material_edit_index"] = None
 
 
+def finish_restock_line_entry(
+    session_state: MutableMapping[str, object],
+) -> None:
+    session_state["restock_material_edit_index"] = None
+    session_state.pop("restock_line_editor_reset", None)
+
+
 def restock_scoped_models(
     selection_context: dict[str, object],
     product: str,
@@ -10691,7 +10698,7 @@ def render_restock_material_builder(
                 st.session_state["restock_material_table_version"] = (
                     int(st.session_state.get("restock_material_table_version", 0)) + 1
                 )
-                st.session_state["restock_line_editor_reset"] = True
+                finish_restock_line_entry(st.session_state)
                 st.rerun()
 
         lines = get_restock_material_lines()

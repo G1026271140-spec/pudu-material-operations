@@ -56,6 +56,44 @@ class RestockTests(unittest.TestCase):
 
         self.assertEqual(value, "RST-20260721-ABC123")
 
+    def test_finished_restock_line_keeps_current_entry_values(self) -> None:
+        session_state: dict[str, object] = {
+            "restock_material_edit_index": 2,
+            "restock_line_editor_reset": True,
+            "restock_line_category_definition": app.CATEGORY_DEFINITION_PRINT,
+            "restock_line_product": "产品单页(Product Flyer)",
+            "restock_line_model": "BellaBot",
+            "restock_line_language": "英语(English)",
+            "restock_line_quantity": 500,
+            "restock_line_remark": "同批次补库",
+        }
+
+        app.finish_restock_line_entry(session_state)
+
+        self.assertIsNone(session_state["restock_material_edit_index"])
+        self.assertNotIn("restock_line_editor_reset", session_state)
+        self.assertEqual(
+            {
+                key: session_state[key]
+                for key in (
+                    "restock_line_category_definition",
+                    "restock_line_product",
+                    "restock_line_model",
+                    "restock_line_language",
+                    "restock_line_quantity",
+                    "restock_line_remark",
+                )
+            },
+            {
+                "restock_line_category_definition": app.CATEGORY_DEFINITION_PRINT,
+                "restock_line_product": "产品单页(Product Flyer)",
+                "restock_line_model": "BellaBot",
+                "restock_line_language": "英语(English)",
+                "restock_line_quantity": 500,
+                "restock_line_remark": "同批次补库",
+            },
+        )
+
     def test_submit_restock_increases_inventory_and_writes_ledger(self) -> None:
         client = MagicMock()
         with (
