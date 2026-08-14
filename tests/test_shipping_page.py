@@ -1,6 +1,34 @@
 import unittest
 
 import shipping_page
+from streamlit.testing.v1 import AppTest
+
+
+def render_shipping_carton_page_fixture() -> None:
+    import shipping_page
+
+    shipping_page._render_cartons_and_contents(
+        [
+            {
+                "record_id": "print-1",
+                "category": "产品单页",
+                "category_definition": shipping_page.CATEGORY_DEFINITION_PRINT,
+                "commercial_invoice_name": "Product Flyer",
+                "packing_list_product_type": "Flyers",
+                "unit_price": 0.06,
+                "customs_code": "4911101000",
+            },
+            {
+                "record_id": "gift-1",
+                "category": "帆布袋",
+                "category_definition": shipping_page.CATEGORY_DEFINITION_GIFT,
+                "commercial_invoice_name": "Canvas Bag",
+                "packing_list_product_type": "Give aways",
+                "unit_price": 2.0,
+                "customs_code": "4202920000",
+            },
+        ]
+    )
 
 
 class ShippingPageStateTests(unittest.TestCase):
@@ -8,6 +36,7 @@ class ShippingPageStateTests(unittest.TestCase):
         self.category = {
             "record_id": "category-1",
             "category": "产品单页",
+            "category_definition": shipping_page.CATEGORY_DEFINITION_PRINT,
             "commercial_invoice_name": "Product Flyer",
             "packing_list_product_type": "Flyers",
             "unit_price": 1.25,
@@ -38,15 +67,46 @@ class ShippingPageStateTests(unittest.TestCase):
             "4911101000",
         )
 
+    def test_carton_page_renders_two_pools_and_automatic_metrics(self) -> None:
+        app_test = AppTest.from_function(
+            render_shipping_carton_page_fixture,
+            default_timeout=10,
+        ).run()
+
+        self.assertFalse(list(app_test.exception))
+        self.assertEqual(
+            [item.label for item in app_test.pills],
+            ["印刷物料品类", "周边礼品品类"],
+        )
+        self.assertEqual(
+            [item.label for item in app_test.number_input[:5]],
+            ["实际箱数", "长（CM） *", "宽（CM） *", "高（CM） *", "毛重（KG） *"],
+        )
+        self.assertEqual(
+            [item.label for item in app_test.metric],
+            ["品类", "体积（自动）", "包材重量（自动）", "净重（自动）"],
+        )
+
+        app_test.pills[0].set_value(["print-1"])
+        app_test.pills[1].set_value(["gift-1"])
+        app_test.number_input[1].set_value(50)
+        app_test.number_input[2].set_value(40)
+        app_test.number_input[3].set_value(25)
+        app_test.number_input[4].set_value(15)
+        app_test.run()
+
+        self.assertFalse(list(app_test.exception))
+        self.assertEqual(app_test.metric[0].value, "2")
+        self.assertEqual(app_test.metric[1].value, "0.050 CBM")
+        self.assertEqual(app_test.metric[2].value, "1 KG")
+        self.assertEqual(app_test.metric[3].value, "14 KG")
+
     def test_new_carton_copies_previous_carton_values(self) -> None:
         state: dict[str, object] = {
-            "shipping_net_weight_1": 12.5,
             "shipping_gross_weight_1": 13.2,
-            "shipping_override_cbm_1": True,
             "shipping_length_1": 60.0,
             "shipping_width_1": 40.0,
             "shipping_height_1": 35.0,
-            "shipping_cbm_override_1": 0.084,
         }
 
         shipping_page.initialize_shipping_carton_state(state, 2, 1)
@@ -56,6 +116,36 @@ class ShippingPageStateTests(unittest.TestCase):
                 state[f"shipping_{suffix}_2"],
                 state[f"shipping_{suffix}_1"],
             )
+
+    def test_carton_metrics_are_calculated_from_required_inputs(self) -> None:
+        scenarios = [
+            (50, 40, 25, 15, 0.05, 1.0, 14.0),
+            (60, 40, 50, 30, 0.12, 2.0, 28.0),
+            (80, 60, 50, 31, 0.24, 3.0, 28.0),
+        ]
+
+        for length, width, height, gross, cbm, packaging, net in scenarios:
+            with self.subTest(gross=gross, cbm=cbm):
+                calculated_cbm = shipping_page.calculate_carton_cbm(
+                    length,
+                    width,
+                    height,
+                )
+                calculated_packaging = shipping_page.estimate_packaging_weight(
+                    calculated_cbm,
+                    gross,
+                )
+                self.assertAlmostEqual(calculated_cbm, cbm)
+                self.assertEqual(calculated_packaging, packaging)
+                self.assertEqual(
+                    shipping_page.calculate_net_weight(gross, calculated_packaging),
+                    net,
+                )
+
+    def test_packaging_weight_uses_higher_volume_or_weight_tier(self) -> None:
+        self.assertEqual(shipping_page.estimate_packaging_weight(0.04, 20), 2.0)
+        self.assertEqual(shipping_page.estimate_packaging_weight(0.2, 10), 3.0)
+        self.assertEqual(shipping_page.calculate_net_weight(1, 1), 0.0)
 
     def test_new_carton_copies_previous_contents_and_quantities(self) -> None:
         state: dict[str, object] = {
@@ -82,6 +172,51 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertEqual(
             state["shipping_carton_item_quantity_2_category-2"],
             8,
+        )
+
+    def test_category_options_are_split_into_definition_pools(self) -> None:
+        category_by_id = {
+            "print-1": {
+                "category_definition": shipping_page.CATEGORY_DEFINITION_PRINT,
+            },
+            "gift-1": {
+                "category_definition": shipping_page.CATEGORY_DEFINITION_GIFT,
+            },
+            "legacy-1": {"category_definition": ""},
+        }
+
+        self.assertEqual(
+            shipping_page.shipping_category_pool_options(category_by_id),
+            {
+                "print": ["print-1", "legacy-1"],
+                "gift": ["gift-1"],
+            },
+        )
+
+    def test_existing_carton_selection_migrates_into_definition_pools(self) -> None:
+        state: dict[str, object] = {
+            "shipping_carton_categories_1": ["print-1", "gift-1"],
+        }
+        pool_options = {
+            "print": ["print-1"],
+            "gift": ["gift-1"],
+        }
+
+        shipping_page.initialize_shipping_carton_category_pool_state(
+            state,
+            1,
+            pool_options,
+        )
+
+        self.assertEqual(state["shipping_carton_categories_print_1"], ["print-1"])
+        self.assertEqual(state["shipping_carton_categories_gift_1"], ["gift-1"])
+        self.assertEqual(
+            shipping_page.shipping_carton_category_pool_selection(
+                state,
+                1,
+                pool_options,
+            ),
+            ["print-1", "gift-1"],
         )
 
     def test_carton_contents_remove_stale_and_duplicate_categories(self) -> None:

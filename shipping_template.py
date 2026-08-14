@@ -132,6 +132,29 @@ def validate_shipping_data(
     if len(carton_by_no) != len(carton_list):
         raise ValueError("箱号重复。")
 
+    for carton in carton_list:
+        missing_fields = [
+            label
+            for label, value in (
+                ("长", carton.length_cm),
+                ("宽", carton.width_cm),
+                ("高", carton.height_cm),
+                ("毛重", carton.gross_weight),
+            )
+            if float(value) <= 0
+        ]
+        if missing_fields:
+            raise ValueError(
+                f"箱子 {carton.carton_no:02d} 请填写必填项："
+                + "、".join(missing_fields)
+            )
+        if float(carton.net_weight) <= 0:
+            raise ValueError(
+                f"箱子 {carton.carton_no:02d} 的毛重必须大于自动估算的包材重量。"
+            )
+        if float(carton.net_weight) >= float(carton.gross_weight):
+            raise ValueError(f"箱子 {carton.carton_no:02d} 的净重必须小于毛重。")
+
     allocated_by_line = {line.line_id: 0 for line in line_list}
     used_cartons: set[int] = set()
     for allocation in allocation_list:

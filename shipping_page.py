@@ -17,15 +17,32 @@ from shipping_template import (
 
 
 PACKING_TYPE_OPTIONS = ("Flyers", "Brochures", "Banners", "Give aways")
+CATEGORY_DEFINITION_PRINT = "印刷物料"
+CATEGORY_DEFINITION_GIFT = "周边礼品"
+CATEGORY_DEFINITION_POOLS = (
+    ("print", CATEGORY_DEFINITION_PRINT),
+    ("gift", CATEGORY_DEFINITION_GIFT),
+)
 CARTON_FIELD_DEFAULTS: dict[str, object] = {
-    "net_weight": 0.0,
     "gross_weight": 0.0,
-    "override_cbm": False,
     "length": 0.0,
     "width": 0.0,
     "height": 0.0,
-    "cbm_override": 0.0,
 }
+
+
+def calculate_carton_cbm(length_cm: float, width_cm: float, height_cm: float) -> float:
+    return float(length_cm * width_cm * height_cm / 1_000_000)
+
+
+def estimate_packaging_weight(cbm: float, gross_weight: float) -> float:
+    volume_tier = 1 if cbm <= 0.05 else 2 if cbm <= 0.12 else 3
+    weight_tier = 1 if gross_weight <= 15 else 2 if gross_weight <= 30 else 3
+    return float(max(volume_tier, weight_tier))
+
+
+def calculate_net_weight(gross_weight: float, packaging_weight: float) -> float:
+    return max(0.0, round(float(gross_weight) - float(packaging_weight), 3))
 
 
 def _category_label(category: dict[str, object]) -> str:
@@ -87,6 +104,10 @@ def _carton_categories_key(carton_no: int) -> str:
     return f"shipping_carton_categories_{carton_no}"
 
 
+def _carton_category_pool_key(carton_no: int, pool_id: str) -> str:
+    return f"shipping_carton_categories_{pool_id}_{carton_no}"
+
+
 def _carton_item_quantity_key(carton_no: int, category_id: str) -> str:
     return f"shipping_carton_item_quantity_{carton_no}_{category_id}"
 
@@ -102,6 +123,57 @@ def _normalized_category_ids(
         if category_id in valid_category_ids and category_id not in normalized:
             normalized.append(category_id)
     return normalized
+
+
+def shipping_category_pool_options(
+    category_by_id: dict[str, dict[str, object]],
+) -> dict[str, list[str]]:
+    options = {pool_id: [] for pool_id, _ in CATEGORY_DEFINITION_POOLS}
+    for category_id, category in category_by_id.items():
+        definition = str(category.get("category_definition") or "").strip()
+        pool_id = "gift" if definition == CATEGORY_DEFINITION_GIFT else "print"
+        options[pool_id].append(category_id)
+    return options
+
+
+def initialize_shipping_carton_category_pool_state(
+    session_state: MutableMapping[str, object],
+    carton_no: int,
+    pool_options: dict[str, list[str]],
+) -> None:
+    selected_category_ids = list(
+        session_state.get(_carton_categories_key(carton_no)) or []
+    )
+    for pool_id, _ in CATEGORY_DEFINITION_POOLS:
+        pool_key = _carton_category_pool_key(carton_no, pool_id)
+        valid_category_ids = set(pool_options.get(pool_id, []))
+        if pool_key not in session_state:
+            session_state[pool_key] = [
+                category_id
+                for category_id in selected_category_ids
+                if category_id in valid_category_ids
+            ]
+        else:
+            session_state[pool_key] = _normalized_category_ids(
+                session_state.get(pool_key),
+                valid_category_ids,
+            )
+
+
+def shipping_carton_category_pool_selection(
+    session_state: MutableMapping[str, object],
+    carton_no: int,
+    pool_options: dict[str, list[str]],
+) -> list[str]:
+    selected: list[str] = []
+    for pool_id, _ in CATEGORY_DEFINITION_POOLS:
+        selected.extend(
+            _normalized_category_ids(
+                session_state.get(_carton_category_pool_key(carton_no, pool_id)),
+                set(pool_options.get(pool_id, [])),
+            )
+        )
+    return selected
 
 
 def initialize_shipping_carton_contents_state(
@@ -233,6 +305,7 @@ def _render_cartons_and_contents(
     category_options = _category_options(categories)
     category_by_id = {str(item.get("record_id") or ""): item for item in category_options}
     valid_category_ids = set(category_by_id)
+    category_pool_options = shipping_category_pool_options(category_by_id)
 
     st.subheader("按箱填写装箱单")
     st.caption(
@@ -266,10 +339,18 @@ def _render_cartons_and_contents(
             valid_category_ids,
             source_carton_no,
         )
+        initialize_shipping_carton_category_pool_state(
+            st.session_state,
+            carton_no,
+            category_pool_options,
+        )
         with st.container(border=True):
-            selected_before = list(
-                st.session_state.get(_carton_categories_key(carton_no)) or []
+            selected_before = shipping_carton_category_pool_selection(
+                st.session_state,
+                carton_no,
+                category_pool_options,
             )
+            st.session_state[_carton_categories_key(carton_no)] = selected_before
             title_col, item_count_col = st.columns(
                 [5, 1],
                 vertical_alignment="center",
@@ -277,55 +358,96 @@ def _render_cartons_and_contents(
             title_col.markdown(f"**箱子 {carton_no:02d}**")
             item_count_col.metric("品类", len(selected_before))
 
-            weights = st.columns(3)
-            net_weight = weights[0].number_input(
-                "净重（KG）",
-                min_value=0.0,
-                step=0.1,
-                key=f"shipping_net_weight_{carton_no}",
+            dimensions = st.columns(4)
+            dimensions[0].markdown(
+                '<span class="pudu-required-control-marker"></span>',
+                unsafe_allow_html=True,
             )
-            gross_weight = weights[1].number_input(
-                "毛重（KG）",
+            length_cm = dimensions[0].number_input(
+                "长（CM） *",
+                min_value=0.0,
+                step=1.0,
+                key=f"shipping_length_{carton_no}",
+            )
+            dimensions[1].markdown(
+                '<span class="pudu-required-control-marker"></span>',
+                unsafe_allow_html=True,
+            )
+            width_cm = dimensions[1].number_input(
+                "宽（CM） *",
+                min_value=0.0,
+                step=1.0,
+                key=f"shipping_width_{carton_no}",
+            )
+            dimensions[2].markdown(
+                '<span class="pudu-required-control-marker"></span>',
+                unsafe_allow_html=True,
+            )
+            height_cm = dimensions[2].number_input(
+                "高（CM） *",
+                min_value=0.0,
+                step=1.0,
+                key=f"shipping_height_{carton_no}",
+            )
+            calculated_cbm = calculate_carton_cbm(length_cm, width_cm, height_cm)
+            dimensions[3].metric("体积（自动）", f"{calculated_cbm:.3f} CBM")
+
+            weights = st.columns(3)
+            weights[0].markdown(
+                '<span class="pudu-required-control-marker"></span>',
+                unsafe_allow_html=True,
+            )
+            gross_weight = weights[0].number_input(
+                "毛重（KG） *",
                 min_value=0.0,
                 step=0.1,
                 key=f"shipping_gross_weight_{carton_no}",
             )
-            override_cbm = weights[2].toggle(
-                "手动填写体积",
-                key=f"shipping_override_cbm_{carton_no}",
+            packaging_weight = estimate_packaging_weight(
+                calculated_cbm,
+                float(gross_weight),
             )
-            dimensions = st.columns(4)
-            length_cm = dimensions[0].number_input(
-                "长（CM）", min_value=0.0, step=1.0, key=f"shipping_length_{carton_no}"
+            net_weight = calculate_net_weight(
+                float(gross_weight),
+                packaging_weight,
             )
-            width_cm = dimensions[1].number_input(
-                "宽（CM）", min_value=0.0, step=1.0, key=f"shipping_width_{carton_no}"
+            weights[1].metric(
+                "包材重量（自动）",
+                f"{packaging_weight:g} KG",
+                help="根据箱体积和毛重自动估算为 1、2 或 3 KG。",
             )
-            height_cm = dimensions[2].number_input(
-                "高（CM）", min_value=0.0, step=1.0, key=f"shipping_height_{carton_no}"
+            weights[2].metric(
+                "净重（自动）",
+                f"{net_weight:g} KG",
+                help="净重等于毛重减去自动估算的包材重量。",
             )
-            calculated_cbm = float(length_cm * width_cm * height_cm / 1_000_000)
-            if override_cbm:
-                cbm_override = dimensions[3].number_input(
-                    "体积（CBM）",
-                    min_value=0.0,
-                    step=0.001,
-                    format="%.3f",
-                    key=f"shipping_cbm_override_{carton_no}",
-                )
-            else:
-                dimensions[3].metric("体积（CBM）", f"{calculated_cbm:.3f}")
-                cbm_override = None
 
-            selected_category_ids = st.multiselect(
-                "箱内物料品类",
-                list(category_by_id),
-                key=_carton_categories_key(carton_no),
-                format_func=lambda value, mapping=category_by_id: _category_label(
-                    mapping[value]
-                ),
-                placeholder="选择这个箱子中的物料品类",
-            )
+            selected_category_ids: list[str] = []
+            pool_columns = st.columns(2, gap="small")
+            for pool_column, (pool_id, definition) in zip(
+                pool_columns,
+                CATEGORY_DEFINITION_POOLS,
+            ):
+                options = category_pool_options.get(pool_id, [])
+                with pool_column.container(border=True):
+                    st.markdown(f"**{definition}**")
+                    st.caption(f"可选 {len(options)} 项")
+                    if options:
+                        pool_selection = st.pills(
+                            f"{definition}品类",
+                            options,
+                            selection_mode="multi",
+                            format_func=lambda value, mapping=category_by_id: _category_label(
+                                mapping[value]
+                            ),
+                            key=_carton_category_pool_key(carton_no, pool_id),
+                            label_visibility="collapsed",
+                            width="stretch",
+                        )
+                        selected_category_ids.extend(pool_selection or [])
+                    else:
+                        st.caption("暂无可选品类")
+            st.session_state[_carton_categories_key(carton_no)] = selected_category_ids
             if not selected_category_ids:
                 st.info("这个箱子还没有添加物料。")
             for item_index, category_id in enumerate(selected_category_ids):
@@ -352,11 +474,12 @@ def _render_cartons_and_contents(
                         if previous_category_id
                         else ""
                     )
-                    default_quantity = (
-                        st.session_state[source_quantity_key]
-                        if source_quantity_key in st.session_state
-                        else st.session_state.get(previous_quantity_key, 1)
-                    )
+                    if source_quantity_key and source_quantity_key in st.session_state:
+                        default_quantity = st.session_state[source_quantity_key]
+                    elif previous_quantity_key:
+                        default_quantity = st.session_state.get(previous_quantity_key, 1)
+                    else:
+                        default_quantity = 1
                     st.session_state[quantity_key] = max(
                         1,
                         int(default_quantity or 1),
@@ -412,7 +535,6 @@ def _render_cartons_and_contents(
                     length_cm=float(length_cm),
                     width_cm=float(width_cm),
                     height_cm=float(height_cm),
-                    cbm_override=None if cbm_override is None else float(cbm_override),
                 )
             )
     return cartons, carton_items, category_by_id

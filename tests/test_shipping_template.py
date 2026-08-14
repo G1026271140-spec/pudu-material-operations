@@ -47,6 +47,25 @@ class ShippingTemplateTests(unittest.TestCase):
                 [CartonAllocation(1, "L1", 9)],
             )
 
+    def test_validation_requires_dimensions_and_gross_weight(self) -> None:
+        line = ShippingLine("L1", "Flyers", "Flyers", "flyers", 10, 0.06, "4911101000")
+        allocation = CartonAllocation(1, "L1", 10)
+
+        with self.assertRaisesRegex(ValueError, "请填写必填项：长、毛重"):
+            validate_shipping_data(
+                [line],
+                [Carton(1, 1, 0, 0, 0, 40, 30)],
+                [allocation],
+            )
+
+    def test_validation_rejects_nonpositive_automatic_net_weight(self) -> None:
+        with self.assertRaisesRegex(ValueError, "毛重必须大于自动估算的包材重量"):
+            validate_shipping_data(
+                [ShippingLine("L1", "Flyers", "Flyers", "flyers", 10, 0.06, "4911101000")],
+                [Carton(1, 1, 0, 1, 40, 30, 20)],
+                [CartonAllocation(1, "L1", 10)],
+            )
+
     def test_generated_workbook_expands_rows_and_keeps_carton_groups(self) -> None:
         lines = [
             ShippingLine(f"L{index}", f"Invoice {index}", f"Packing {index}", "type", 2, 1.5, "123456")
