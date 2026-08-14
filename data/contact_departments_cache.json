@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-14 10:32:53",
+  "generated_at": "2026-08-14 10:59:51",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -15739,6 +15739,16 @@
       ]
     },
     {
+      "open_id": "ou_9fa4d0265dd33996f4bd6365ae80670e",
+      "name": "蔡雨婷",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
+      ]
+    },
+    {
       "open_id": "ou_42855db758786e26d1e44dc7600359c1",
       "name": "薛学星",
       "department_ids": [
@@ -20559,5 +20569,5 @@
       ]
     }
   ],
-  "user_count": 1896
+  "user_count": 1897
 }
