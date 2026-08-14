@@ -125,6 +125,13 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertEqual(app_test.text_input[0].value, "TH")
         self.assertEqual(app_test.code[0].value, "2026-MKT-TH0814")
 
+        app_test.text_input[0].set_value("巴拿马")
+        app_test.run()
+
+        self.assertFalse(list(app_test.exception))
+        self.assertEqual(app_test.text_input[0].value, "PA")
+        self.assertEqual(app_test.code[0].value, "2026-MKT-PA0814")
+
     def test_new_carton_copies_previous_carton_values(self) -> None:
         state: dict[str, object] = {
             "shipping_gross_weight_1": 13.2,

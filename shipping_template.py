@@ -14,34 +14,12 @@ from openpyxl.styles import PatternFill
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from country_codes import COUNTRY_CODE_ALIASES, COUNTRY_CODES
+
 
 TEMPLATE_PATH = Path(__file__).resolve().parent / "assets" / "shipping" / "骏博发货模板.xlsx"
 DEFAULT_PRODUCT_MODEL = "sample items no commercial Value, Custom purpose only"
 DEFAULT_PAYMENT_TERM = "Free of Charge,No commercial Value, Custom purpose only"
-
-COUNTRY_CODE_ALIASES = {
-    "中国": "CN", "china": "CN", "香港": "HK", "hong kong": "HK", "澳门": "MO", "macao": "MO",
-    "台湾": "TW", "taiwan": "TW", "美国": "US", "美利坚": "US", "united states": "US", "usa": "US",
-    "加拿大": "CA", "canada": "CA", "墨西哥": "MX", "mexico": "MX", "巴西": "BR", "brazil": "BR",
-    "阿根廷": "AR", "argentina": "AR", "智利": "CL", "chile": "CL", "秘鲁": "PE", "peru": "PE",
-    "哥伦比亚": "CO", "colombia": "CO", "英国": "GB", "united kingdom": "GB", "england": "GB",
-    "法国": "FR", "france": "FR", "德国": "DE", "germany": "DE", "意大利": "IT", "italy": "IT",
-    "西班牙": "ES", "spain": "ES", "葡萄牙": "PT", "portugal": "PT", "荷兰": "NL", "netherlands": "NL",
-    "比利时": "BE", "belgium": "BE", "瑞士": "CH", "switzerland": "CH", "奥地利": "AT", "austria": "AT",
-    "波兰": "PL", "poland": "PL", "捷克": "CZ", "czech": "CZ", "匈牙利": "HU", "hungary": "HU",
-    "罗马尼亚": "RO", "romania": "RO", "希腊": "GR", "greece": "GR", "瑞典": "SE", "sweden": "SE",
-    "挪威": "NO", "norway": "NO", "丹麦": "DK", "denmark": "DK", "芬兰": "FI", "finland": "FI",
-    "爱尔兰": "IE", "ireland": "IE", "俄罗斯": "RU", "russia": "RU", "乌克兰": "UA", "ukraine": "UA",
-    "土耳其": "TR", "turkey": "TR", "阿联酋": "AE", "united arab emirates": "AE", "uae": "AE",
-    "沙特": "SA", "saudi arabia": "SA", "以色列": "IL", "israel": "IL", "埃及": "EG", "egypt": "EG",
-    "南非": "ZA", "south africa": "ZA", "尼日利亚": "NG", "nigeria": "NG", "肯尼亚": "KE", "kenya": "KE",
-    "印度": "IN", "india": "IN", "巴基斯坦": "PK", "pakistan": "PK", "孟加拉": "BD", "bangladesh": "BD",
-    "日本": "JP", "japan": "JP", "韩国": "KR", "south korea": "KR", "korea": "KR",
-    "新加坡": "SG", "singapore": "SG", "马来西亚": "MY", "malaysia": "MY", "泰国": "TH", "thailand": "TH",
-    "越南": "VN", "vietnam": "VN", "印度尼西亚": "ID", "indonesia": "ID", "印尼": "ID",
-    "菲律宾": "PH", "philippines": "PH", "澳大利亚": "AU", "australia": "AU", "新西兰": "NZ", "new zealand": "NZ",
-}
-
 
 @dataclass(frozen=True)
 class ShippingLine:
@@ -91,15 +69,27 @@ def _compact_number(value: object) -> str:
 
 
 def infer_address_code(address: object) -> str:
-    normalized = str(address or "").strip().lower()
+    normalized = str(address or "").strip().casefold()
     if not normalized:
         return ""
+    compact_code = re.sub(r"[^A-Za-z]", "", normalized).upper()
+    if len(normalized) <= 5 and compact_code in COUNTRY_CODES:
+        return compact_code
     matches = [
         (len(alias), code)
         for alias, code in COUNTRY_CODE_ALIASES.items()
-        if alias.lower() in normalized
+        if _country_alias_matches(normalized, alias)
     ]
     return max(matches, default=(0, ""))[1]
+
+
+def _country_alias_matches(normalized: str, alias: str) -> bool:
+    if alias.isascii():
+        return re.search(
+            rf"(?<![a-z]){re.escape(alias)}(?![a-z])",
+            normalized,
+        ) is not None
+    return alias in normalized
 
 
 def normalize_address_code(value: object) -> str:

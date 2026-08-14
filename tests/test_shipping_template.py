@@ -6,6 +6,7 @@ from io import BytesIO
 
 from openpyxl import load_workbook
 
+from country_codes import COUNTRY_CODES
 from shipping_template import (
     Carton,
     CartonAllocation,
@@ -28,10 +29,22 @@ class ShippingTemplateTests(unittest.TestCase):
         self.assertEqual(normalize_address_code("泰国"), "TH")
         self.assertEqual(normalize_address_code("Thailand"), "TH")
         self.assertEqual(normalize_address_code(" th "), "TH")
+        self.assertEqual(normalize_address_code("巴拿马"), "PA")
+        self.assertEqual(normalize_address_code("Panama"), "PA")
+        self.assertEqual(infer_address_code("Panama City, Panama"), "PA")
+        self.assertEqual(normalize_address_code("科特迪瓦"), "CI")
+        self.assertEqual(normalize_address_code("Côte d'Ivoire"), "CI")
+        self.assertEqual(normalize_address_code("新西兰"), "NZ")
+        self.assertGreaterEqual(len(COUNTRY_CODES), 249)
         self.assertEqual(
             build_invoice_number(date(2026, 8, 14), "泰国"),
             "2026-MKT-TH0814",
         )
+
+    def test_country_matching_does_not_treat_codes_as_address_substrings(self) -> None:
+        self.assertEqual(infer_address_code("Bucharest, Romania"), "RO")
+        self.assertEqual(infer_address_code("Shipping office"), "")
+        self.assertEqual(normalize_address_code("custom"), "CUSTOM")
 
     def test_validation_supports_many_products_per_carton_and_product_split(self) -> None:
         lines = [
