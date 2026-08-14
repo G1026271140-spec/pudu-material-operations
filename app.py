@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import threading
@@ -9,6 +10,7 @@ import unicodedata
 import uuid
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from difflib import SequenceMatcher
 from html import escape
@@ -294,6 +296,7 @@ MAX_REQUEST_LINE_COUNT = 20
 ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
+FULLSCREEN_SYNC_IN_PROGRESS_KEY = "_fullscreen_sync_in_progress"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "发货模板填写", "周边礼品项目")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
@@ -380,6 +383,12 @@ PAGE_CACHE_TABLES = {
     "shipping": (CATEGORY_TABLE_NAME,),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
+GIFT_PROJECT_POLL_INTERVAL_SECONDS = 60
+GIFT_PROJECT_SEEN_SIGNATURE_KEY = "gift_project_seen_signature"
+GIFT_PROJECT_LATEST_SIGNATURE_KEY = "gift_project_latest_signature"
+GIFT_PROJECT_UPDATE_AVAILABLE_KEY = "gift_project_update_available"
+GIFT_PROJECT_UPDATE_CHECKED_AT_KEY = "gift_project_update_checked_at"
+GIFT_PROJECT_NEXT_POLL_AT_KEY = "gift_project_next_poll_at"
 
 
 def get_ui_language() -> str:
@@ -1624,6 +1633,101 @@ def inject_global_styles() -> None:
         [data-testid="stMainMenuButton"] {
             display: none;
         }
+        .pudu-sync-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(244, 247, 248, 0.88);
+            backdrop-filter: blur(3px);
+            cursor: wait;
+            pointer-events: all;
+        }
+        .pudu-sync-overlay__panel {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            width: min(420px, calc(100vw - 2rem));
+            padding: 1rem 1.15rem;
+            border: 1px solid #B9CBD4;
+            border-radius: 8px;
+            background: #FFFFFF;
+            box-shadow: 0 18px 48px rgba(23, 42, 61, 0.2);
+        }
+        .pudu-sync-overlay__spinner {
+            width: 28px;
+            height: 28px;
+            flex: 0 0 28px;
+            border: 3px solid #D8E8ED;
+            border-top-color: var(--pudu-teal);
+            border-radius: 50%;
+            animation: pudu-sync-spin 0.8s linear infinite;
+        }
+        .pudu-sync-overlay__copy strong,
+        .pudu-sync-overlay__copy span {
+            display: block;
+            letter-spacing: 0;
+        }
+        .pudu-sync-overlay__copy strong {
+            color: var(--pudu-ink);
+            font-size: 0.98rem;
+            line-height: 1.45;
+        }
+        .pudu-sync-overlay__copy span {
+            margin-top: 0.16rem;
+            color: var(--pudu-muted);
+            font-size: 0.78rem;
+            line-height: 1.45;
+        }
+        .pudu-update-ticker {
+            width: 100%;
+            margin: 0.15rem 0 0.75rem;
+            overflow: hidden;
+            border: 1px solid #E1C16E;
+            border-radius: 5px;
+            background: #FFF9E9;
+            color: #755313;
+        }
+        .pudu-update-ticker__track {
+            display: inline-block;
+            min-width: 100%;
+            padding: 0.32rem 0;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            animation: pudu-update-scroll 15s linear infinite;
+        }
+        .pudu-update-ticker__track::before,
+        .pudu-update-ticker__track::after {
+            content: '';
+            display: inline-block;
+            width: 100%;
+        }
+        @keyframes pudu-sync-spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pudu-update-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .pudu-sync-overlay__spinner,
+            .pudu-update-ticker__track {
+                animation: none;
+            }
+            .pudu-update-ticker__track {
+                display: block;
+                padding: 0.32rem 0.55rem;
+                white-space: normal;
+            }
+            .pudu-update-ticker__track::before,
+            .pudu-update-ticker__track::after {
+                display: none;
+            }
+        }
         @media (max-width: 900px) {
             [data-testid="stMainBlockContainer"] {
                 padding: 3.5rem 1rem 3rem;
@@ -1697,6 +1801,41 @@ def render_page_header(title: str, kicker: str, subtitle: str, status: str = "�
         """,
         unsafe_allow_html=True,
     )
+
+
+def fullscreen_sync_overlay_html(message: str) -> str:
+    return f"""
+        <div class="pudu-sync-overlay" role="status" aria-live="assertive" aria-busy="true">
+            <div class="pudu-sync-overlay__panel">
+                <div class="pudu-sync-overlay__spinner" aria-hidden="true"></div>
+                <div class="pudu-sync-overlay__copy">
+                    <strong>{escape(message)}</strong>
+                    <span>数据正在同步，请勿重复点击</span>
+                </div>
+            </div>
+        </div>
+    """
+
+
+def fullscreen_sync_in_progress() -> bool:
+    return bool(st.session_state.get(FULLSCREEN_SYNC_IN_PROGRESS_KEY))
+
+
+@contextmanager
+def fullscreen_data_sync(message: str = "正在同步数据，请稍候..."):
+    placeholder = st.empty()
+    st.session_state[FULLSCREEN_SYNC_IN_PROGRESS_KEY] = True
+    placeholder.markdown(
+        fullscreen_sync_overlay_html(message),
+        unsafe_allow_html=True,
+    )
+    # Give the frontend a chance to paint before a blocking network request starts.
+    time.sleep(0.08)
+    try:
+        yield
+    finally:
+        st.session_state[FULLSCREEN_SYNC_IN_PROGRESS_KEY] = False
+        placeholder.empty()
 
 
 def render_section_header(index: str, title: str, description: str = "") -> None:
@@ -3391,6 +3530,137 @@ def safe_feishu_rows(table_name: str) -> list[dict]:
         raise
 
 
+def stable_feishu_rows_signature(rows: list[dict]) -> str:
+    ignored_keys = {"cached_path", "tmp_url", "url"}
+
+    def stable_value(value: object) -> object:
+        if isinstance(value, dict):
+            return {
+                str(key): stable_value(item)
+                for key, item in value.items()
+                if str(key) not in ignored_keys
+            }
+        if isinstance(value, list):
+            return [stable_value(item) for item in value]
+        return value
+
+    normalized = sorted(
+        (stable_value(dict(row)) for row in rows),
+        key=lambda row: (
+            str(dict(row).get("record_id") or dict(row).get("id") or ""),
+            json.dumps(row, ensure_ascii=False, sort_keys=True, default=str),
+        ),
+    )
+    payload = json.dumps(
+        normalized,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def gift_project_page_signature(table_rows: dict[str, list[dict]]) -> str:
+    signatures = {
+        table_name: stable_feishu_rows_signature(list(table_rows.get(table_name) or []))
+        for table_name in PAGE_CACHE_TABLES["gift_projects"]
+    }
+    payload = json.dumps(signatures, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+@st.cache_data(
+    show_spinner=False,
+    ttl=GIFT_PROJECT_POLL_INTERVAL_SECONDS - 5,
+)
+def live_gift_project_poll_snapshot() -> dict[str, object]:
+    table_rows = {
+        table_name: safe_fresh_feishu_rows(table_name)
+        for table_name in PAGE_CACHE_TABLES["gift_projects"]
+    }
+    return {
+        "signature": gift_project_page_signature(table_rows),
+        "checked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+
+def mark_gift_project_snapshot_seen(
+    table_rows: dict[str, list[dict]] | None = None,
+) -> str:
+    current_rows = table_rows or {
+        table_name: page_data_cache_rows(table_name)
+        for table_name in PAGE_CACHE_TABLES["gift_projects"]
+    }
+    signature = gift_project_page_signature(current_rows)
+    st.session_state[GIFT_PROJECT_SEEN_SIGNATURE_KEY] = signature
+    st.session_state[GIFT_PROJECT_LATEST_SIGNATURE_KEY] = signature
+    st.session_state[GIFT_PROJECT_UPDATE_AVAILABLE_KEY] = False
+    return signature
+
+
+def gift_project_update_state(
+    current_signature: str,
+    live_signature: str,
+    checked_at: str = "",
+) -> bool:
+    seen_signature = str(
+        st.session_state.get(GIFT_PROJECT_SEEN_SIGNATURE_KEY) or current_signature
+    )
+    st.session_state.setdefault(GIFT_PROJECT_SEEN_SIGNATURE_KEY, seen_signature)
+    st.session_state[GIFT_PROJECT_LATEST_SIGNATURE_KEY] = live_signature
+    st.session_state[GIFT_PROJECT_UPDATE_CHECKED_AT_KEY] = checked_at
+    update_available = bool(live_signature and live_signature != seen_signature)
+    st.session_state[GIFT_PROJECT_UPDATE_AVAILABLE_KEY] = update_available
+    return update_available
+
+
+def render_gift_project_update_ticker() -> None:
+    message = "检测到周边礼品数据有更新。当前操作不会被打断，完成编辑后请点击“刷新本页数据”查看最新内容。"
+    st.markdown(
+        f"""
+        <div class="pudu-update-ticker" role="status" aria-live="polite">
+            <div class="pudu-update-ticker__track">{escape(message)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+@st.fragment(run_every=GIFT_PROJECT_POLL_INTERVAL_SECONDS)
+def render_gift_project_update_monitor(current_signature: str) -> None:
+    now = time.monotonic()
+    next_poll_at = float(
+        st.session_state.get(GIFT_PROJECT_NEXT_POLL_AT_KEY) or 0
+    )
+    if not next_poll_at:
+        st.session_state[GIFT_PROJECT_NEXT_POLL_AT_KEY] = (
+            now + GIFT_PROJECT_POLL_INTERVAL_SECONDS
+        )
+        if st.session_state.get(GIFT_PROJECT_UPDATE_AVAILABLE_KEY):
+            render_gift_project_update_ticker()
+        return
+    if now < next_poll_at:
+        if st.session_state.get(GIFT_PROJECT_UPDATE_AVAILABLE_KEY):
+            render_gift_project_update_ticker()
+        return
+    if fullscreen_sync_in_progress():
+        return
+    st.session_state[GIFT_PROJECT_NEXT_POLL_AT_KEY] = (
+        now + GIFT_PROJECT_POLL_INTERVAL_SECONDS
+    )
+    try:
+        snapshot = live_gift_project_poll_snapshot()
+    except Exception:
+        return
+    if gift_project_update_state(
+        current_signature,
+        str(snapshot.get("signature") or ""),
+        str(snapshot.get("checked_at") or ""),
+    ):
+        render_gift_project_update_ticker()
+
+
 def refresh_page_cache_tables(table_names: list[str] | tuple[str, ...]) -> dict[str, object]:
     normalized_names = unique_preserve([str(table_name) for table_name in table_names])
     refreshed_tables = {table_name: safe_fresh_feishu_rows(table_name) for table_name in normalized_names}
@@ -3742,12 +4012,14 @@ def render_page_cache_toolbar(page_key: str) -> None:
         icon=":material/refresh:",
         width="stretch",
     ):
-        with st.spinner("正在同步本页数据，请稍后......"):
+        with fullscreen_data_sync("正在同步本页数据"):
             try:
                 result = refresh_page_cache_tables(table_names)
                 if page_key == "request":
                     refresh_request_form_cache_from_page_data()
                     refresh_contact_departments_from_feishu()
+                elif page_key == "gift_projects":
+                    mark_gift_project_snapshot_seen()
             except Exception as exc:
                 st.error("本页数据刷新失败，请检查飞书连接和数据表权限。")
                 st.exception(exc)
@@ -3763,6 +4035,8 @@ def refresh_page_cache_after_write(page_key: str, *, update_request_form: bool =
         refresh_page_cache_tables(PAGE_CACHE_TABLES[page_key])
         if update_request_form:
             refresh_request_form_cache_from_page_data()
+        if page_key == "gift_projects":
+            mark_gift_project_snapshot_seen()
     except Exception as exc:
         st.session_state["post_write_cache_warning"] = (
             f"业务数据已保存，但页面缓存刷新失败：{exc}。请点击“刷新本页数据”重试。"
@@ -8691,7 +8965,7 @@ def render_github_cache_publish() -> None:
             icon=":material/cloud_upload:",
             width="stretch",
         ):
-            with st.spinner("正在提交 GitHub 缓存发布任务，请稍后......"):
+            with fullscreen_data_sync("正在提交 GitHub 缓存发布任务"):
                 try:
                     trigger_github_cache_refresh()
                 except Exception as exc:
@@ -8789,7 +9063,7 @@ def render_sidebar_link() -> None:
                     icon=":material/refresh:",
                     width="stretch",
                 ):
-                    with st.spinner("全部页面数据同步中，请稍后......"):
+                    with fullscreen_data_sync("正在更新全部页面数据缓存"):
                         try:
                             maintenance = maintain_inventory_status()
                             result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
@@ -9538,7 +9812,11 @@ def render_request_review() -> None:
         if errors:
             st.warning("；".join(errors))
             return
-        with st.spinner("正在提交申请，请勿重复点击..."):
+        notification_count = 0
+        sales_receipt_count = 0
+        sales_permission_result = ""
+        notification_warning = ""
+        with fullscreen_data_sync("正在提交申请并同步审批通知"):
             with DATA_LOCK:
                 try:
                     request_no, line_count, created_new_request = submit_feishu_material_request(
@@ -9549,20 +9827,15 @@ def render_request_review() -> None:
                     st.error("提交申请失败。请检查申请单/申请明细表字段、物料组合和飞书写入权限。")
                     st.exception(exc)
                     return
-        notification_count = 0
-        sales_receipt_count = 0
-        sales_permission_result = ""
-        notification_warning = ""
-        try:
-            with DATA_LOCK:
-                sales_permission_result = ensure_requester_sales_permission(draft)
-        except Exception as exc:
-            notification_warning = (
-                "申请已成功，但申请人的销售权限自动登记失败："
-                f"{exc}"
-            )
-        if created_new_request:
-            with st.spinner("申请已提交，正在通知审批人......"):
+            try:
+                with DATA_LOCK:
+                    sales_permission_result = ensure_requester_sales_permission(draft)
+            except Exception as exc:
+                notification_warning = (
+                    "申请已成功，但申请人的销售权限自动登记失败："
+                    f"{exc}"
+                )
+            if created_new_request:
                 try:
                     notification_count = notify_enabled_admins_of_material_request(
                         request_no,
@@ -9588,7 +9861,7 @@ def render_request_review() -> None:
                     notification_warning = "；".join(
                         item for item in [notification_warning, sales_warning] if item
                     )
-        st.cache_data.clear()
+            st.cache_data.clear()
         clear_request_application_state()
         notification_text = (
             f"机器人已提醒 {notification_count} 位管理员。" if notification_count else ""
@@ -10553,7 +10826,9 @@ def render_restock_review() -> None:
         if errors:
             st.warning("；".join(errors))
             return
-        with st.spinner("正在补充库存并写入库存流水，请稍后......"):
+        notification_count = 0
+        notification_warning = ""
+        with fullscreen_data_sync("正在补充库存并写入库存流水"):
             with DATA_LOCK:
                 try:
                     completed_lines = submit_inventory_restock(draft)
@@ -10561,14 +10836,11 @@ def render_restock_review() -> None:
                     st.error("采购补库失败。请检查物料状态、库存字段和飞书写入权限。")
                     st.exception(exc)
                     return
-        notification_count = 0
-        notification_warning = ""
-        with st.spinner("补库已完成，正在通知管理员......"):
             try:
                 notification_count = notify_enabled_admins_of_restock(draft, completed_lines)
             except Exception as exc:
                 notification_warning = f"补库已完成，但管理员通知发送失败：{exc}"
-        refresh_page_cache_after_write("restock", update_request_form=True)
+            refresh_page_cache_after_write("restock", update_request_form=True)
         restock_no = str(draft.get("restock_no") or "")
         clear_restock_form_state()
         st.session_state["restock_submit_message"] = (
@@ -10775,7 +11047,7 @@ def render_category_edit_review() -> None:
         st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
         st.rerun()
     if confirm_col.button("确认保存修改", type="primary", icon=":material/check_circle:", width="stretch", key="category_edit_review_confirm"):
-        with st.spinner("正在保存品类配置并发送管理员通知，请勿关闭页面......"):
+        with fullscreen_data_sync("正在保存品类配置并通知管理员"):
             with DATA_LOCK:
                 try:
                     result = sync_feishu_category_inventory(**dict(draft["sync_args"]))
@@ -10789,7 +11061,7 @@ def render_category_edit_review() -> None:
                 notification_count = notify_enabled_admins_of_category_edit(draft, result)
             except Exception as exc:
                 notification_warning = f"品类已保存，但管理员通知发送失败：{exc}"
-        refresh_page_cache_after_write("category", update_request_form=True)
+            refresh_page_cache_after_write("category", update_request_form=True)
         st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
         st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
         st.session_state["category_added_message"] = (
@@ -10953,7 +11225,7 @@ def render_new_category_review() -> None:
         if preview_error:
             st.warning("请先修正全部库存行后再确认创建。")
             return
-        with st.spinner("正在创建物料品类、库存行并发送管理员通知，请勿关闭页面......"):
+        with fullscreen_data_sync("正在创建物料品类和库存行"):
             with DATA_LOCK:
                 try:
                     result = sync_feishu_category_inventory(
@@ -10997,7 +11269,7 @@ def render_new_category_review() -> None:
                 )
             except Exception as exc:
                 notification_warning = f"品类已创建，但管理员通知发送失败：{exc}"
-        refresh_page_cache_after_write("category", update_request_form=True)
+            refresh_page_cache_after_write("category", update_request_form=True)
         clear_new_category_creation_state()
         st.session_state["category_added_message"] = (
             f"物料品类“{product}”已创建，共生成 {result['created_count']} 条库存行，"
@@ -11229,7 +11501,7 @@ def render_category_delete_review() -> None:
         disabled=not confirmed,
         key="category_delete_review_submit",
     ):
-        with st.spinner("正在重新检查飞书数据并执行删除，请勿关闭页面......"):
+        with fullscreen_data_sync("正在检查关联数据并执行删除"):
             try:
                 refresh_page_cache_tables(
                     (
@@ -11333,7 +11605,7 @@ def render_category_delete_review() -> None:
                 notification_count = notify_enabled_admins_of_category_delete(notification_draft)
             except Exception as exc:
                 notification_warning = f"删除已完成，但管理员通知发送失败：{exc}"
-        refresh_page_cache_after_write("category", update_request_form=True)
+            refresh_page_cache_after_write("category", update_request_form=True)
         clear_category_delete_state()
         deleted_label = (
             f"{len(category_names)} 个物料品类"
@@ -12664,16 +12936,17 @@ def render_transaction_admin() -> None:
         elif not revert_confirmed:
             st.warning("请先勾选确认批量撤回。")
         else:
-            with DATA_LOCK:
-                try:
-                    for transaction_id in active_selected_ids:
-                        revert_feishu_transaction(transaction_id, revert_note)
-                except Exception as exc:
-                    st.error("批量撤回失败。请检查飞书应用是否有物料主数据和库存流水编辑权限。")
-                    st.exception(exc)
-                    return
+            try:
+                with fullscreen_data_sync("正在撤回选中的库存提交"):
+                    with DATA_LOCK:
+                        for transaction_id in active_selected_ids:
+                            revert_feishu_transaction(transaction_id, revert_note)
+                    refresh_page_cache_after_write("maintenance", update_request_form=True)
+            except Exception as exc:
+                st.error("批量撤回失败。请检查飞书应用是否有物料主数据和库存流水编辑权限。")
+                st.exception(exc)
+                return
             st.session_state["transaction_admin_message"] = f"已撤回 {len(active_selected_ids)} 条提交记录。"
-            refresh_page_cache_after_write("maintenance", update_request_form=True)
             st.rerun()
 
     if len(active_selected_ids) == 1:
@@ -12746,23 +13019,24 @@ def render_transaction_admin() -> None:
                 if not replace_confirmed:
                     st.warning("请先勾选确认修正。")
                 else:
-                    with DATA_LOCK:
-                        try:
-                            replace_feishu_transaction(
-                                selected_id,
-                                replace_action,
-                                replace_product,
-                                replace_model,
-                                replace_language,
-                                int(replace_quantity),
-                                replace_note,
-                            )
-                        except Exception as exc:
-                            st.error("修正失败。请检查选中物料是否存在、飞书字段类型是否允许写入。")
-                            st.exception(exc)
-                            return
+                    with fullscreen_data_sync("正在保存库存提交修正"):
+                        with DATA_LOCK:
+                            try:
+                                replace_feishu_transaction(
+                                    selected_id,
+                                    replace_action,
+                                    replace_product,
+                                    replace_model,
+                                    replace_language,
+                                    int(replace_quantity),
+                                    replace_note,
+                                )
+                            except Exception as exc:
+                                st.error("修正失败。请检查选中物料是否存在、飞书字段类型是否允许写入。")
+                                st.exception(exc)
+                                return
+                        refresh_page_cache_after_write("maintenance", update_request_form=True)
                     st.session_state["transaction_admin_message"] = "已撤回原提交，并保存新的修正提交。"
-                    refresh_page_cache_after_write("maintenance", update_request_form=True)
                     st.rerun()
     elif len(selected_ids) > 1:
         st.info("已选择多条记录，可批量撤回；如需编辑，请只勾选一条有效记录。")
@@ -13899,7 +14173,7 @@ def render_existing_gift_project_form(category: dict) -> None:
     if not str(project_name or "").strip():
         st.warning("请填写项目名称。")
         return
-    with st.spinner("正在写入项目周边礼品需求，请稍后......"):
+    with fullscreen_data_sync("正在写入项目周边礼品需求"):
         try:
             attachment_token = upload_gift_project_attachment(uploaded_file)
             create_gift_project_request(
@@ -13912,7 +14186,7 @@ def render_existing_gift_project_form(category: dict) -> None:
             st.error("项目周边礼品需求提交失败，请检查飞书字段和应用写入权限。")
             st.exception(exc)
             return
-    refresh_page_cache_after_write("gift_projects", update_request_form=True)
+        refresh_page_cache_after_write("gift_projects", update_request_form=True)
     st.session_state.pop("gift_selected_category_id", None)
     st.session_state["gift_project_submit_message"] = (
         f"项目“{str(project_name).strip()}”的周边礼品“{product}”已提交，状态为“{GIFT_PROJECT_STATUS_REQUESTED}”。"
@@ -13992,7 +14266,7 @@ def render_new_gift_project_form() -> None:
     if not str(project_name or "").strip() or not str(material_name or "").strip():
         st.warning("请填写项目名称和新的物料名称。")
         return
-    with st.spinner("正在创建周边礼品品类并写入项目需求，请稍后......"):
+    with fullscreen_data_sync("正在创建周边礼品并写入项目需求"):
         try:
             attachment_token = upload_gift_project_attachment(uploaded_file)
             create_new_gift_project_request(
@@ -14006,7 +14280,7 @@ def render_new_gift_project_form() -> None:
             st.error("新增周边礼品失败，请检查品类名称、飞书字段和应用写入权限。")
             st.exception(exc)
             return
-    refresh_page_cache_after_write("gift_projects", update_request_form=True)
+        refresh_page_cache_after_write("gift_projects", update_request_form=True)
     for key in list(st.session_state):
         if str(key).startswith("gift_new_"):
             st.session_state.pop(key, None)
@@ -14052,6 +14326,15 @@ def render_gift_projects_page() -> None:
             project_rows,
             material_rows,
         )
+    current_signature = gift_project_page_signature(
+        {
+            CATEGORY_TABLE_NAME: category_rows,
+            MATERIAL_TABLE_NAME: material_rows,
+            GIFT_PROJECT_TABLE_NAME: project_rows,
+        }
+    )
+    st.session_state.setdefault(GIFT_PROJECT_SEEN_SIGNATURE_KEY, current_signature)
+    render_gift_project_update_monitor(current_signature)
 
     project_records = gift_project_management_records(
         category_rows,
@@ -14136,26 +14419,36 @@ def render_gift_projects_page() -> None:
                 elif not gift_lines and not new_line:
                     st.error("请至少选择一个已有物料或加入一个新物料。")
                 else:
-                    try:
-                        if gift_lines:
-                            create_gift_project_requests_batch(
-                                project_name,
-                                [item.get("record_id") for item in gift_lines],
-                                owner=owner,
-                                owner_open_id=owner_open_id,
+                    with fullscreen_data_sync("正在批量写入项目物料清单"):
+                        try:
+                            if gift_lines:
+                                create_gift_project_requests_batch(
+                                    project_name,
+                                    [item.get("record_id") for item in gift_lines],
+                                    owner=owner,
+                                    owner_open_id=owner_open_id,
+                                )
+                            if new_line:
+                                create_new_gift_project_request(
+                                    project_name,
+                                    new_line["name"],
+                                    owner=owner,
+                                    owner_open_id=owner_open_id,
+                                    remark=f"数量：{new_line['quantity']}\n{new_line['remark']}",
+                                )
+                            refresh_page_cache_after_write(
+                                "gift_projects",
+                                update_request_form=True,
                             )
-                        if new_line:
-                            create_new_gift_project_request(
-                                project_name,
-                                new_line["name"],
-                                owner=owner,
-                                owner_open_id=owner_open_id,
-                                remark=f"数量：{new_line['quantity']}\n{new_line['remark']}",
-                            )
-                        refresh_page_cache_after_write("gift_projects", update_request_form=True)
-                        st.success("项目物料清单已批量写入。")
-                    except Exception as exc:
-                        st.error(f"批量写入失败：{exc}")
+                        except Exception as exc:
+                            st.error(f"批量写入失败：{exc}")
+                            return
+                    st.session_state["gift_batch_selected_ids"] = []
+                    st.session_state.pop("gift_batch_new_line", None)
+                    st.session_state["gift_project_submit_message"] = (
+                        "项目物料清单已批量写入。"
+                    )
+                    st.rerun()
         catalog_items = [*filtered_gallery]
         for row_start in range(0, len(catalog_items), 6):
             row_items = catalog_items[row_start : row_start + 6]
