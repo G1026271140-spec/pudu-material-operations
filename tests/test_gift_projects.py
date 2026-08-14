@@ -448,6 +448,19 @@ class GiftProjectTests(unittest.TestCase):
             app_source,
         )
 
+    def test_gift_detail_drawer_styles_do_not_reposition_all_popovers(self) -> None:
+        app_source = Path(app.__file__).read_text(encoding="utf-8")
+
+        self.assertNotIn('\n        div[role="dialog"] {', app_source)
+        self.assertIn(
+            'div[role="dialog"]:has(.pudu-gift-detail-drawer-marker)',
+            app_source,
+        )
+        self.assertIn(
+            '<span class="pudu-gift-detail-drawer-marker"></span>',
+            app_source,
+        )
+
     def test_remove_gift_batch_selected_item_preserves_other_items(self) -> None:
         session_state: dict[str, object] = {
             "gift_batch_selected_ids": ["gift-3", "gift-1", "gift-2"],

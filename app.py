@@ -1163,7 +1163,8 @@ def inject_global_styles() -> None:
         .pudu-product-card-marker,
         .pudu-gift-card-marker,
         .pudu-cart-marker,
-        .pudu-full-cart-popover-marker {
+        .pudu-full-cart-popover-marker,
+        .pudu-gift-detail-drawer-marker {
             display: none;
         }
         .st-key-request_compact_cart button {
@@ -1665,10 +1666,10 @@ def inject_global_styles() -> None:
             border-color: #9DB9CC !important;
             box-shadow: 0 9px 22px rgba(22, 58, 79, 0.14);
         }
-        div[role="dialog"] {
+        div[role="dialog"]:has(.pudu-gift-detail-drawer-marker) {
             animation: pudu-detail-drawer-in 240ms ease-out both;
         }
-        div[role="dialog"] > div {
+        div[role="dialog"]:has(.pudu-gift-detail-drawer-marker) > div {
             width: min(520px, 94vw) !important;
             max-width: min(520px, 94vw) !important;
             height: 100vh;
@@ -14509,6 +14510,10 @@ def render_new_gift_project_form() -> None:
 
 @st.dialog("周边礼品完整信息", width="large")
 def render_gift_project_detail_drawer(item: dict) -> None:
+    st.markdown(
+        '<span class="pudu-gift-detail-drawer-marker"></span>',
+        unsafe_allow_html=True,
+    )
     product = str(item.get("material_name") or item.get("category") or "未命名物料")
     render_gift_image(list(item.get("attachments") or []), product)
     st.markdown(f"## {escape(product)}")
