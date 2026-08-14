@@ -13,6 +13,7 @@ from shipping_template import (
     build_invoice_number,
     generate_shipping_workbook,
     infer_address_code,
+    normalize_address_code,
 )
 
 
@@ -240,6 +241,16 @@ def aggregate_shipping_carton_items(
     return ordered_category_ids, quantities_by_category
 
 
+def _normalize_shipping_address_code_input() -> None:
+    raw_value = str(st.session_state.get("shipping_address_code") or "").strip()
+    if not raw_value:
+        st.session_state["shipping_address_code"] = ""
+        return
+    normalized_code = normalize_address_code(raw_value)
+    if normalized_code:
+        st.session_state["shipping_address_code"] = normalized_code
+
+
 def _render_recipient_fields(template_date: date) -> tuple[date, str, dict[str, object]]:
     with st.container(border=True):
         st.subheader("发票与收件信息")
@@ -263,10 +274,11 @@ def _render_recipient_fields(template_date: date) -> tuple[date, str, dict[str, 
             st.session_state["shipping_address_for_code"] = address
             st.session_state["shipping_auto_address_code"] = inferred_code
         address_code = top_b.text_input(
-            "收货地址英文缩写",
+            "国家名称或英文缩写",
             key="shipping_address_code",
-            placeholder="例如：MX",
-            max_chars=8,
+            placeholder="例如：泰国、Thailand 或 TH",
+            max_chars=64,
+            on_change=_normalize_shipping_address_code_input,
         )
         try:
             invoice_number = build_invoice_number(selected_date, address_code)

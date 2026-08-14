@@ -13,6 +13,7 @@ from shipping_template import (
     build_invoice_number,
     generate_shipping_workbook,
     infer_address_code,
+    normalize_address_code,
     validate_shipping_data,
 )
 
@@ -22,6 +23,15 @@ class ShippingTemplateTests(unittest.TestCase):
         self.assertEqual(build_invoice_number(date(2026, 8, 13), " mx "), "2026-MKT-MX0813")
         self.assertEqual(infer_address_code("墨西哥城客户仓库"), "MX")
         self.assertEqual(infer_address_code("Paris, France"), "FR")
+
+    def test_country_names_are_normalized_to_address_codes(self) -> None:
+        self.assertEqual(normalize_address_code("泰国"), "TH")
+        self.assertEqual(normalize_address_code("Thailand"), "TH")
+        self.assertEqual(normalize_address_code(" th "), "TH")
+        self.assertEqual(
+            build_invoice_number(date(2026, 8, 14), "泰国"),
+            "2026-MKT-TH0814",
+        )
 
     def test_validation_supports_many_products_per_carton_and_product_split(self) -> None:
         lines = [

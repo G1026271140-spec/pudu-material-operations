@@ -90,11 +90,6 @@ def _compact_number(value: object) -> str:
     return str(int(number)) if number.is_integer() else f"{number:g}"
 
 
-def normalize_address_code(value: object) -> str:
-    code = re.sub(r"[^A-Za-z0-9]", "", str(value or "").upper())
-    return code[:8]
-
-
 def infer_address_code(address: object) -> str:
     normalized = str(address or "").strip().lower()
     if not normalized:
@@ -105,6 +100,14 @@ def infer_address_code(address: object) -> str:
         if alias.lower() in normalized
     ]
     return max(matches, default=(0, ""))[1]
+
+
+def normalize_address_code(value: object) -> str:
+    inferred_code = infer_address_code(value)
+    if inferred_code:
+        return inferred_code
+    code = re.sub(r"[^A-Za-z0-9]", "", str(value or "").upper())
+    return code[:8]
 
 
 def build_invoice_number(template_date: date, address_code: object) -> str:

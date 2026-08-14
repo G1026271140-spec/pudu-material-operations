@@ -31,6 +31,14 @@ def render_shipping_carton_page_fixture() -> None:
     )
 
 
+def render_shipping_recipient_page_fixture() -> None:
+    from datetime import date
+
+    import shipping_page
+
+    shipping_page._render_recipient_fields(date(2026, 8, 14))
+
+
 class ShippingPageStateTests(unittest.TestCase):
     def setUp(self) -> None:
         self.category = {
@@ -100,6 +108,22 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertEqual(app_test.metric[1].value, "0.050 CBM")
         self.assertEqual(app_test.metric[2].value, "1 KG")
         self.assertEqual(app_test.metric[3].value, "14 KG")
+
+    def test_country_name_input_is_replaced_with_address_code(self) -> None:
+        app_test = AppTest.from_function(
+            render_shipping_recipient_page_fixture,
+            default_timeout=10,
+        ).run()
+
+        self.assertFalse(list(app_test.exception))
+        country_input = app_test.text_input[0]
+        self.assertEqual(country_input.label, "国家名称或英文缩写")
+        country_input.set_value("泰国")
+        app_test.run()
+
+        self.assertFalse(list(app_test.exception))
+        self.assertEqual(app_test.text_input[0].value, "TH")
+        self.assertEqual(app_test.code[0].value, "2026-MKT-TH0814")
 
     def test_new_carton_copies_previous_carton_values(self) -> None:
         state: dict[str, object] = {
