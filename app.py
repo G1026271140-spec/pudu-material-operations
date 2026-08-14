@@ -1802,9 +1802,9 @@ def inject_global_styles() -> None:
         .pudu-sync-overlay__panel {
             display: flex;
             align-items: center;
-            gap: 0.9rem;
-            width: min(420px, calc(100vw - 2rem));
-            padding: 1rem 1.15rem;
+            gap: 1rem;
+            width: min(540px, calc(100vw - 2rem));
+            padding: 1.05rem 1.25rem;
             border: 1px solid #B9CBD4;
             border-radius: 8px;
             background: #FFFFFF;
@@ -1819,41 +1819,51 @@ def inject_global_styles() -> None:
             border-radius: 50%;
             animation: pudu-sync-spin 0.8s linear infinite;
         }
-        .pudu-sync-overlay__copy strong,
-        .pudu-sync-overlay__copy span {
-            display: block;
-            letter-spacing: 0;
-        }
         .pudu-sync-overlay__copy {
-            position: relative;
+            display: grid;
+            flex: 1 1 auto;
+            align-items: center;
             min-width: 0;
-            min-height: 3.05rem;
+            min-height: 2rem;
         }
         .pudu-sync-overlay__copy strong {
+            display: block;
+            margin: 0;
             color: var(--pudu-ink);
-            font-size: 0.98rem;
-            line-height: 1.45;
+            font-size: 1rem;
+            font-weight: 680;
+            line-height: 1.5;
+            letter-spacing: 0;
         }
-        .pudu-sync-overlay__copy span {
-            margin-top: 0.16rem;
-            color: var(--pudu-muted);
-            font-size: 0.78rem;
-            line-height: 1.45;
+        .pudu-sync-overlay__initial,
+        .pudu-sync-overlay__delayed {
+            grid-area: 1 / 1;
+            min-width: 0;
         }
         .pudu-sync-overlay__initial {
             animation: pudu-sync-phase-out 0s linear 10s forwards;
         }
         .pudu-sync-overlay__delayed {
-            position: absolute;
-            inset: 0;
             opacity: 0;
             visibility: hidden;
             animation: pudu-sync-phase-in 0s linear 10s forwards;
         }
+        .pudu-sync-overlay__delayed strong {
+            text-wrap: balance;
+        }
+        .pudu-sync-overlay__nowrap {
+            white-space: nowrap;
+        }
+        .pudu-sync-overlay__countdown-wrap {
+            display: inline-flex;
+            align-items: baseline;
+            margin-left: 0.1rem;
+            color: var(--pudu-teal);
+            white-space: nowrap;
+        }
         .pudu-sync-overlay__countdown {
             display: inline-grid;
-            min-width: 1.35em;
-            color: var(--pudu-teal);
+            min-width: 1.25em;
             font-weight: 750;
             text-align: center;
             vertical-align: baseline;
@@ -1949,6 +1959,16 @@ def inject_global_styles() -> None:
                 gap: 0.75rem;
             }
         }
+        @media (max-width: 520px) {
+            .pudu-sync-overlay__panel {
+                gap: 0.8rem;
+                padding: 0.95rem 1rem;
+            }
+            .pudu-sync-overlay__copy strong {
+                font-size: 0.94rem;
+                line-height: 1.5;
+            }
+        }
         @media (max-width: 640px) {
             [data-testid="stMainBlockContainer"] {
                 padding-left: 0.75rem;
@@ -2012,18 +2032,15 @@ def fullscreen_sync_overlay_html(message: str) -> str:
                 <div class="pudu-sync-overlay__spinner" aria-hidden="true"></div>
                 <div class="pudu-sync-overlay__copy">
                     <div class="pudu-sync-overlay__initial">
-                        <strong>数据已提交，请稍等</strong>
-                        <span>
-                            倒计时
-                            <b class="pudu-sync-overlay__countdown" aria-hidden="true">
+                        <strong>
+                            数据已提交，请稍等<span class="pudu-sync-overlay__countdown-wrap">(<b class="pudu-sync-overlay__countdown" aria-hidden="true">
                                 <i>10</i><i>9</i><i>8</i><i>7</i><i>6</i>
                                 <i>5</i><i>4</i><i>3</i><i>2</i><i>1</i>
-                            </b>
-                            秒
-                        </span>
+                            </b>)</span>
+                        </strong>
                     </div>
                     <div class="pudu-sync-overlay__delayed">
-                        <strong>数据正在写入，您可以离开该页面，感谢您的使用</strong>
+                        <strong>数据正在写入，您可以<span class="pudu-sync-overlay__nowrap">离开该页面，</span><span class="pudu-sync-overlay__nowrap">感谢您的使用</span></strong>
                     </div>
                 </div>
             </div>

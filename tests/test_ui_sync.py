@@ -11,9 +11,17 @@ class FullscreenSyncTests(unittest.TestCase):
         html = app.fullscreen_sync_overlay_html("提交 <测试>")
 
         self.assertIn("数据已提交，请稍等", html)
-        self.assertIn("倒计时", html)
+        self.assertNotIn("倒计时", html)
+        self.assertNotIn("秒", html)
+        self.assertIn("pudu-sync-overlay__countdown-wrap", html)
         self.assertIn("pudu-sync-overlay__countdown", html)
-        self.assertIn("数据正在写入，您可以离开该页面，感谢您的使用", html)
+        self.assertRegex(
+            html,
+            r"数据已提交，请稍等<span[^>]*>\(<b[^>]*>",
+        )
+        plain_text = re.sub(r"<[^>]+>", "", html)
+        plain_text = re.sub(r"\s+", "", plain_text)
+        self.assertIn("数据正在写入，您可以离开该页面，感谢您的使用", plain_text)
         self.assertIn("提交 &lt;测试&gt;", html)
         self.assertIn('aria-busy="true"', html)
 
@@ -24,6 +32,9 @@ class FullscreenSyncTests(unittest.TestCase):
         self.assertIn("animation: pudu-sync-countdown-second 1s linear forwards", source)
         self.assertIn("animation: pudu-sync-phase-out 0s linear 10s forwards", source)
         self.assertIn("animation: pudu-sync-phase-in 0s linear 10s forwards", source)
+        self.assertIn("width: min(540px, calc(100vw - 2rem))", source)
+        self.assertIn("text-wrap: balance", source)
+        self.assertIn("@media (max-width: 520px)", source)
         for remaining_seconds in range(10, 0, -1):
             self.assertIn(f"<i>{remaining_seconds}</i>", html)
         for elapsed_seconds in range(1, 10):
