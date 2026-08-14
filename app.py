@@ -6456,7 +6456,7 @@ def sales_request_received_notification_card(
     header_title = (
         "Your marketing material request has entered the approval process"
         if english
-        else "您提交的营销物料申请已进入审批流程"
+        else "您提交的营销申请将于一分钟后进入审批流程"
     )
     detail_title = "Material details" if english else "物料明细"
     info_title = "Request information" if english else "申请信息"

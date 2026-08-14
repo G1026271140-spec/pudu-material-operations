@@ -619,7 +619,11 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(card["schema"], "2.0")
         self.assertEqual(
             card["header"]["title"]["content"],
-            "您提交的营销物料申请已进入审批流程",
+            "您提交的营销申请将于一分钟后进入审批流程",
+        )
+        self.assertEqual(
+            card["config"]["summary"]["content"],
+            "您提交的营销申请将于一分钟后进入审批流程",
         )
         body_elements = card["body"]["elements"]
         self.assertIn("物料明细", json.dumps(body_elements[0], ensure_ascii=False))
