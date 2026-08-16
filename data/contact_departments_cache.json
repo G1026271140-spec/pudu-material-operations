@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-15 16:31:34",
+  "generated_at": "2026-08-16 10:31:31",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1420,16 +1420,6 @@
       ],
       "department_paths": [
         "九江生产组"
-      ]
-    },
-    {
-      "open_id": "ou_ef278c277461489fadb0adbb66f6d819",
-      "name": "严惊鸣",
-      "department_ids": [
-        "od-89b909bd6f20be58d79447ab6849221e"
-      ],
-      "department_paths": [
-        "采购开发组"
       ]
     },
     {
@@ -20697,5 +20687,5 @@
       ]
     }
   ],
-  "user_count": 1910
+  "user_count": 1909
 }
