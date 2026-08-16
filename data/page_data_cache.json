@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-16 10:31:03",
+  "generated_at": "2026-08-16 16:30:55",
   "tables": {
     "物料品类": [
       {
@@ -24312,17 +24312,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvqQfROxwiF3"
+                "recvqQfROxwiF3",
+                "recvsqwgz2ijQB"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "301",
+          "当前库存": "302",
           "文本 6": null,
           "是否在申领页显示": "是",
           "海关编码": "4911101000",
@@ -33390,10 +33392,14 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsqvCPQKyGS"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01",
+              "text_arr": [
+                "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01"
+              ],
               "type": "text"
             }
           ],
@@ -84315,17 +84321,21 @@
             }
           ],
           "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
+          "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsqwgz2m8Wt"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "1",
           "文本 6": null,
           "是否在申领页显示": "是",
           "海关编码": "4901990000",
@@ -84421,10 +84431,14 @@
           "库存归零时间": "2026-08-10 16:30:34",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsqvEQv1kJw"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02",
+              "text_arr": [
+                "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02"
+              ],
               "type": "text"
             }
           ],
@@ -90031,6 +90045,226 @@
         },
         "id": "recvsgjP5RQCqB",
         "record_id": "recvsgjP5RQCqB"
+      },
+      {
+        "fields": {
+          "产品型号": "T300",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvsgpfqN8ZEG"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260814-005-01",
+              "text_arr": [
+                "REQ-20260814-005-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01",
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1786850742404,
+          "变更前数量": "2000",
+          "变更后数量": "2000",
+          "备注": "DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED",
+          "幂等键": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01",
+          "库存变化": "0",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "0",
+          "流水类型": "销售领用出库",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfKDY"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0271",
+              "text_arr": [
+                "MAT-0271"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvsqvCPQKyGS",
+        "record_id": "recvsqvCPQKyGS"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvsgpfqNl7IK"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260814-005-02",
+              "text_arr": [
+                "REQ-20260814-005-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02",
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1786850750306,
+          "变更前数量": "0",
+          "变更后数量": "0",
+          "备注": "DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED",
+          "幂等键": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02",
+          "库存变化": "0",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "0",
+          "流水类型": "销售领用出库",
+          "物料品类": "工业产品线手册IR(Industrial Product Line Brochure）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvrRn6RSoUIm"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1139",
+              "text_arr": [
+                "MAT-1139"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "简中(Simplified Chinese)"
+        },
+        "id": "recvsqvEQv1kJw",
+        "record_id": "recvsqvEQv1kJw"
+      },
+      {
+        "fields": {
+          "产品型号": "BellaBot",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1786850893503,
+          "变更前数量": "301",
+          "变更后数量": "302",
+          "备注": "补库单 RST-20260816-EA4851；补库人：高鸿源",
+          "幂等键": "restock:ea4851d7833645799213a8d8a18cfd4f:1",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "1",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfz9u"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0181",
+              "text_arr": [
+                "MAT-0181"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvsqwgz2ijQB",
+        "record_id": "recvsqwgz2ijQB"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1786850893503,
+          "变更前数量": "0",
+          "变更后数量": "1",
+          "备注": "补库单 RST-20260816-EA4851；补库人：高鸿源",
+          "幂等键": "restock:ea4851d7833645799213a8d8a18cfd4f:2",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "1",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "工业产品线手册IR(Industrial Product Line Brochure）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvrRn6RSqJHl"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1138",
+              "text_arr": [
+                "MAT-1138"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvsqwgz2m8Wt",
+        "record_id": "recvsqwgz2m8Wt"
       }
     ],
     "物料申请单": [
@@ -92789,8 +93023,8 @@
           "备注": "客户名称：AAA\n国家：AAA\n收件人信息：AAA\n运费承担者：普渡付款(PUDU)\n物料用途：AA\n申请人：高鸿源",
           "审批实例Code": "DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED",
           "审批意见": null,
-          "审批时间": null,
-          "审批状态": "待审批",
+          "审批时间": 1786850735468,
+          "审批状态": "已发放",
           "客户名称": "AAA",
           "市场负责人": null,
           "库存流水": null,
@@ -92846,8 +93080,8 @@
           ],
           "申请部门|区域": "市场营销部",
           "相关附件": null,
-          "管理员通知时间": 1786701455016,
-          "管理员通知状态": null,
+          "管理员通知时间": 1786850760860,
+          "管理员通知状态": "已发送",
           "运费承担者": "普渡付款(PUDU)"
         },
         "id": "recvsgpdNudDez",
@@ -103022,9 +103256,9 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1786850742404",
           "品类": [
             {
               "record_ids": [
@@ -103050,13 +103284,17 @@
           "实际发放物料品类": null,
           "实际发放物料编码": null,
           "实际发放语种": null,
-          "审批通过数量": "50",
+          "审批通过数量": "0",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsqvCPQKyGS"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01",
+              "text_arr": [
+                "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-01"
+              ],
               "type": "text"
             }
           ],
@@ -103074,7 +103312,7 @@
             }
           ],
           "提交时库存快照": "2000",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260814-005-01",
           "物料编码": [
             {
@@ -103145,9 +103383,9 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1786850750306",
           "品类": [
             {
               "record_ids": [
@@ -103173,13 +103411,17 @@
           "实际发放物料品类": null,
           "实际发放物料编码": null,
           "实际发放语种": null,
-          "审批通过数量": "1",
+          "审批通过数量": "0",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsqvEQv1kJw"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02",
+              "text_arr": [
+                "issue:DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED:REQ-20260814-005-02"
+              ],
               "type": "text"
             }
           ],
@@ -103197,7 +103439,7 @@
             }
           ],
           "提交时库存快照": "0",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260814-005-02",
           "物料编码": [
             {
@@ -103832,7 +104074,7 @@
     "产品型号": 35,
     "物料语种": 12,
     "物料主数据": 757,
-    "库存流水": 79,
+    "库存流水": 83,
     "物料申请单": 41,
     "申请明细": 83,
     "项目周边礼品物料筹备详情list": 18
