@@ -586,17 +586,29 @@ class FeishuBitableClient:
             headers["Authorization"] = f"Bearer {self.tenant_access_token()}"
 
         body = json.dumps(payload).encode("utf-8") if payload is not None else None
-        req = request.Request(url, data=body, headers=headers, method=method)
-        try:
-            with request.urlopen(req, timeout=30) as response:
-                data = json.loads(response.read().decode("utf-8"))
-        except error.HTTPError as exc:
-            text = exc.read().decode("utf-8", errors="replace")
-            raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
+        read_only = method.upper() in {"GET", "HEAD"}
+        attempts = 5 if read_only else 1
+        for attempt in range(attempts):
+            req = request.Request(url, data=body, headers=headers, method=method)
+            try:
+                with request.urlopen(req, timeout=30) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+            except error.HTTPError as exc:
+                text = exc.read().decode("utf-8", errors="replace")
+                transient = exc.code in {429, 500, 502, 503, 504} or "1254607" in text
+                if read_only and transient and attempt < attempts - 1:
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
 
-        if data.get("code") != 0:
-            raise FeishuBitableError(f"Feishu API {data.get('code')}: {data.get('msg')}")
-        return data
+            code = data.get("code")
+            if code == 0:
+                return data
+            if read_only and code in {1254607, 2200} and attempt < attempts - 1:
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            raise FeishuBitableError(f"Feishu API {code}: {data.get('msg')}")
+        raise FeishuBitableError("Feishu read request exhausted all retry attempts")
 
     def _quoted_app_token(self) -> str:
         return parse.quote(self.config.app_token)
