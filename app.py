@@ -776,6 +776,20 @@ def inject_global_styles() -> None:
             border-bottom: 1px solid #D9E4EA;
             background: #F8FBFC;
         }
+        [data-testid="stHorizontalBlock"]:has(.pudu-page-header) {
+            align-items: center;
+            margin: 0 -0.5rem 1.35rem;
+            padding: 0.9rem 0.5rem 1.05rem;
+            border-top: 1px solid #D9E4EA;
+            border-bottom: 1px solid #D9E4EA;
+            background: #F8FBFC;
+        }
+        [data-testid="stHorizontalBlock"]:has(.pudu-page-header) .pudu-page-header {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
         .pudu-page-kicker {
             color: var(--pudu-teal);
             font-size: 0.75rem;
@@ -795,6 +809,22 @@ def inject_global_styles() -> None:
             color: var(--pudu-muted);
             font-size: 0.875rem;
             line-height: 1.65;
+        }
+        [class*="st-key-refresh_page_cache_"] button {
+            min-height: 44px !important;
+            border: 1px solid #164E7A !important;
+            border-radius: 9px !important;
+            background: #1F5C8D !important;
+            color: #FFFFFF !important;
+            font-weight: 700 !important;
+            box-shadow: 0 5px 14px rgba(31, 92, 141, 0.24) !important;
+        }
+        [class*="st-key-refresh_page_cache_"] button:hover {
+            border-color: #0E3D62 !important;
+            background: #164E7A !important;
+            color: #FFFFFF !important;
+            transform: translateY(-1px);
+            box-shadow: 0 7px 18px rgba(31, 92, 141, 0.30) !important;
         }
         .pudu-section-heading {
             display: flex;
@@ -2116,11 +2146,17 @@ def inject_global_styles() -> None:
     )
 
 
-def render_page_header(title: str, kicker: str, subtitle: str) -> None:
+def render_page_header(
+    title: str,
+    kicker: str,
+    subtitle: str,
+    *,
+    page_key: str = "",
+) -> None:
     title = ui_text(title)
     kicker = ui_text(kicker)
     subtitle = ui_text(subtitle)
-    st.markdown(
+    header_html = (
         f"""
         <div class="pudu-page-header">
             <div>
@@ -2129,9 +2165,14 @@ def render_page_header(title: str, kicker: str, subtitle: str) -> None:
                 <div class="pudu-page-subtitle">{escape(subtitle)}</div>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
+    if page_key:
+        title_col, button_col = st.columns([8, 1.45], vertical_alignment="center")
+        title_col.markdown(header_html, unsafe_allow_html=True)
+        render_page_cache_refresh_button(page_key, button_col)
+        return
+    st.markdown(header_html, unsafe_allow_html=True)
 
 
 def fullscreen_sync_overlay_html(message: str) -> str:
@@ -3952,7 +3993,7 @@ def page_update_state(
 
 
 def render_page_update_ticker() -> None:
-    message = "检测到本页数据有更新。当前操作不会被打断，完成编辑后请点击“刷新本页数据”查看最新内容。"
+    message = "检测到本页数据有更新。当前操作不会被打断，如您需要查看新数据，请点击上方“刷新本页数据”。"
     st.markdown(
         f"""
         <div class="pudu-update-ticker" role="status" aria-live="polite">
@@ -4351,8 +4392,12 @@ def render_page_cache_toolbar(page_key: str) -> None:
     if warning:
         st.warning(warning)
 
-    _, button_col = st.columns([5, 1.35], vertical_alignment="center")
-    if button_col.button(
+
+
+def render_page_cache_refresh_button(page_key: str, container: object = st) -> None:
+    table_names = PAGE_CACHE_TABLES[page_key]
+    message_key = f"page_cache_message_{page_key}"
+    if container.button(
         "刷新本页数据",
         key=f"refresh_page_cache_{page_key}",
         icon=":material/refresh:",
@@ -10574,6 +10619,7 @@ def render_change_form(show_title: bool = True) -> None:
             "营销物料领取登记",
             "申请工作台",
             "登记客户、收件信息和领取明细，提交后进入审批发放流程。",
+            page_key="request",
         )
     message = st.session_state.pop("request_submit_message", "")
     if message:
@@ -13822,6 +13868,7 @@ def render_inventory_view() -> None:
         "实时物料库存表",
         "库存视图",
         "按物料品类、产品型号和语种查看当前库存与价值。",
+        page_key="inventory",
     )
     if not auth_gate():
         return
@@ -14856,6 +14903,7 @@ def render_management_page() -> None:
             "申请信息确认",
             "提交前核对",
             "确认申请信息和全部物料明细后再同步至飞书。",
+            page_key="request",
         )
         render_request_review()
         return
@@ -14866,7 +14914,22 @@ def render_management_page() -> None:
         "物料管理": ("物料管理", "库存工作台", "采购补库与物料品类统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
-    render_page_header(page_title, page_kicker, page_subtitle)
+    page_cache_key = {
+        "库存登记": "request",
+        "发货模板填写": "shipping",
+        "周边礼品项目": "gift_projects",
+        "物料管理": (
+            "category"
+            if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) == "品类管理"
+            else "restock"
+        ),
+    }[current_section]
+    render_page_header(
+        page_title,
+        page_kicker,
+        page_subtitle,
+        page_key=page_cache_key,
+    )
     if management_section_requires_admin(current_section) and not admin_auth_gate():
         return
     if current_section == "周边礼品项目":
