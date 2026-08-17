@@ -796,26 +796,6 @@ def inject_global_styles() -> None:
             font-size: 0.875rem;
             line-height: 1.65;
         }
-        .pudu-header-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            white-space: nowrap;
-            padding: 0.42rem 0.7rem;
-            border: 1px solid #BFDCD8;
-            border-radius: 999px;
-            background: var(--pudu-teal-soft);
-            color: #116A6E;
-            font-size: 0.75rem;
-            font-weight: 620;
-        }
-        .pudu-header-status::before {
-            content: "";
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--pudu-green);
-        }
         .pudu-section-heading {
             display: flex;
             align-items: flex-start;
@@ -2086,9 +2066,6 @@ def inject_global_styles() -> None:
             .pudu-page-title {
                 font-size: 1.55rem;
             }
-            .pudu-header-status {
-                white-space: normal;
-            }
             [data-testid="stHorizontalBlock"] {
                 gap: 0.75rem;
             }
@@ -2139,11 +2116,10 @@ def inject_global_styles() -> None:
     )
 
 
-def render_page_header(title: str, kicker: str, subtitle: str, status: str = "飞书数据已连接") -> None:
+def render_page_header(title: str, kicker: str, subtitle: str) -> None:
     title = ui_text(title)
     kicker = ui_text(kicker)
     subtitle = ui_text(subtitle)
-    status = ui_text(status)
     st.markdown(
         f"""
         <div class="pudu-page-header">
@@ -2152,7 +2128,6 @@ def render_page_header(title: str, kicker: str, subtitle: str, status: str = "�
                 <div class="pudu-page-title">{escape(title)}</div>
                 <div class="pudu-page-subtitle">{escape(subtitle)}</div>
             </div>
-            <div class="pudu-header-status">{escape(status)}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -4376,10 +4351,7 @@ def render_page_cache_toolbar(page_key: str) -> None:
     if warning:
         st.warning(warning)
 
-    source, updated_at = page_cache_status(table_names)
-    status_col, button_col = st.columns([5, 1.35], vertical_alignment="center")
-    updated_text = updated_at or "未记录"
-    status_col.caption(f"数据来源：{source}　更新时间：{updated_text}")
+    _, button_col = st.columns([5, 1.35], vertical_alignment="center")
     if button_col.button(
         "刷新本页数据",
         key=f"refresh_page_cache_{page_key}",
@@ -14227,17 +14199,10 @@ def render_warehouse_location_view() -> None:
         "物料仓库位置查询",
         "仓库位置图集",
         "按物料、型号、语种、货架编号或位置说明查询存放位置。",
-        status="静态位置缓存",
     )
     cache = load_warehouse_location_cache()
     shelves = [dict(item) for item in list(cache.get("shelves") or []) if isinstance(item, dict)]
     st.info("本页面仅用于查询物料存放位置。如需拿取物料，请先提交物料申请。")
-    generated_at = str(cache.get("generated_at") or ("Not recorded" if english else "未记录"))
-    st.caption(
-        f"Source: manually published static cache  Updated: {generated_at}  This page does not automatically sync Feishu data."
-        if english
-        else f"位置数据来源：人工发布的静态缓存　更新时间：{generated_at}　页面不会自动同步飞书数据。"
-    )
     with st.container(border=True):
         search_col, shelf_col = st.columns([2.4, 1])
         query = search_col.text_input(
@@ -14891,7 +14856,6 @@ def render_management_page() -> None:
             "申请信息确认",
             "提交前核对",
             "确认申请信息和全部物料明细后再同步至飞书。",
-            status="等待确认",
         )
         render_request_review()
         return
