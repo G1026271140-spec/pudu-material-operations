@@ -1223,6 +1223,11 @@ def inject_global_styles() -> None:
             max-height: 0 !important;
             overflow: visible !important;
         }
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarUserContent"],
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarNav"],
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarResizeHandle"] {
+            display: none !important;
+        }
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
             min-height: 36px;
