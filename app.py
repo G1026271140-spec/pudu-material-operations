@@ -1138,6 +1138,24 @@ def inject_global_styles() -> None:
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebarUserContent"] {
             padding-top: 0.25rem !important;
         }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] {
+            width: 260px !important;
+            min-width: 260px !important;
+            max-width: 260px !important;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
+        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
+            min-height: 36px;
+            padding: 0 0.6rem;
+            font-size: 0.78rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-brand-name {
+            font-size: 0.86rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-brand-subtitle,
+        .stApp:has(.pudu-request-page-marker) .pudu-sidebar-label {
+            font-size: 0.66rem;
+        }
         .stApp:has(.pudu-request-page-marker) .st-key-sidebar_brand {
             margin-bottom: 0.65rem;
             padding-top: 0;
@@ -1200,6 +1218,14 @@ def inject_global_styles() -> None:
         .stApp:has(.pudu-request-page-marker) [data-baseweb="select"] {
             font-size: 0.8rem;
         }
+        .stApp:has(.pudu-request-page-marker) .st-key-request_requester_open_id [data-baseweb="select"] > div,
+        .stApp:has(.pudu-request-page-marker) .st-key-request_requester_manual [data-baseweb="input"] {
+            border-color: var(--pudu-required-line) !important;
+        }
+        .stApp:has(.pudu-request-page-marker) .st-key-request_requester_open_id [data-baseweb="select"] > div:focus-within,
+        .stApp:has(.pudu-request-page-marker) .st-key-request_requester_manual [data-baseweb="input"]:focus-within {
+            border-color: var(--pudu-required-focus) !important;
+        }
         .stApp:has(.pudu-request-page-marker) [data-testid="stVerticalBlock"] {
             gap: 0.55rem;
         }
@@ -1216,6 +1242,22 @@ def inject_global_styles() -> None:
         }
         .stApp:has(.pudu-request-page-marker) .pudu-generated-title strong {
             font-size: 0.8rem;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
+            min-height: 235px;
+            padding: 0.48rem !important;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stImage"] img,
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) .pudu-product-image-placeholder {
+            height: 96px;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-product-card-kicker {
+            font-size: 0.61rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-product-card-title {
+            min-height: 2.1rem;
+            font-size: 0.76rem;
+            line-height: 1.35;
         }
         .pudu-required-star {
             color: var(--pudu-red);
@@ -9551,21 +9593,18 @@ def initialize_request_form_state() -> None:
         st.session_state["request_submission_token"] = uuid.uuid4().hex
 
 
-def render_request_contact_fields(
-    department_col: object,
-    requester_col: object,
-) -> tuple[str, str, str, str]:
-    required_field_label(department_col, "申请部门")
-    required_field_label(requester_col, "申请人")
+def render_request_contact_fields(requester_col: object) -> tuple[str, str, str, str]:
+    requester_hint = "Enter the English name" if get_ui_language() == LANGUAGE_EN else "填写中文名称"
+    required_field_label(requester_col, "申请人", requester_hint)
     try:
         departments = get_contact_departments()
         directory_users = get_contact_users()
     except Exception as exc:
         st.warning(f"飞书通讯录暂时不可用，无法自动识别申请部门：{exc}")
         department = ""
-        render_readonly_request_department(department_col, department)
         requester = requester_col.text_input(
             "申请人",
+            placeholder=requester_hint,
             key="request_requester_manual",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
@@ -9612,7 +9651,11 @@ def render_request_contact_fields(
         index=None,
         key="request_requester_open_id",
         format_func=user_label,
-        placeholder="输入姓名搜索申请人" if directory_users else "通讯录中暂无可选成员",
+        placeholder=(
+            "Enter the English name"
+            if get_ui_language() == LANGUAGE_EN
+            else "填写中文名称"
+        ) if directory_users else "通讯录中暂无可选成员",
         disabled=not user_options,
         label_visibility="collapsed",
         on_change=sync_request_department_from_selected_applicant,
@@ -9639,14 +9682,13 @@ def render_request_contact_fields(
         if department_id
         else ""
     )
-    render_readonly_request_department(department_col, department)
     st.session_state["request_department"] = department
     st.session_state["request_department_id"] = department_id or None
     st.session_state["request_requester"] = requester
     if not users:
         requester_col.caption("通讯录中暂无可选成员，请刷新本页数据后重试。")
     elif requester_open_id and not department:
-        department_col.caption("该申请人未关联有效部门，请联系管理员维护通讯录。")
+        requester_col.caption("该申请人未关联有效部门，请联系管理员维护通讯录。")
     return department, str(department_id or ""), requester, str(requester_open_id or "")
 
 
@@ -10284,7 +10326,7 @@ def render_request_material_builder(
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")
         else:
-            card_columns = st.columns(4, gap="small")
+            card_columns = st.columns(6, gap="small")
             for index, catalog_product in enumerate(filtered_products):
                 product_state_key = normalize_option_label(catalog_product)
                 _, scoped_models = product_model_state(
@@ -10294,7 +10336,7 @@ def render_request_material_builder(
                 model_options = unique_preserve(scoped_models)
                 if not model_options:
                     continue
-                with card_columns[index % 4].container(border=True):
+                with card_columns[index % 6].container(border=True):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
                     category_image_path = request_category_image_path(catalog_product)
                     if category_image_path:
@@ -10503,20 +10545,19 @@ def render_change_form(show_title: bool = True) -> None:
 
     with st.container(border=True):
         render_section_header("01", "申请与业务信息", "填写领取申请的基础信息")
-        top_cols = st.columns(4)
+        top_cols = st.columns([1.35, 1, 1])
         department, department_id, requester, requester_open_id = render_request_contact_fields(
-            top_cols[0],
-            top_cols[1],
+            top_cols[0]
         )
-        required_field_label(top_cols[2], "客户名称")
-        customer_name = top_cols[2].text_input(
+        required_field_label(top_cols[1], "客户名称")
+        customer_name = top_cols[1].text_input(
             "客户名称",
             key="request_customer_name",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        required_field_label(top_cols[3], "国家")
-        country = top_cols[3].text_input(
+        required_field_label(top_cols[2], "国家")
+        country = top_cols[2].text_input(
             "国家",
             key="request_country",
             label_visibility="collapsed",
@@ -10536,7 +10577,7 @@ def render_change_form(show_title: bool = True) -> None:
             unsafe_allow_html=True,
         )
 
-        middle_cols = st.columns([2.4, 1])
+        middle_cols = st.columns(2)
         recipient_hint = (
             "Include the full delivery address and postal code, recipient company, recipient name, and contact details."
             if get_ui_language() == LANGUAGE_EN
@@ -10545,16 +10586,31 @@ def render_change_form(show_title: bool = True) -> None:
         required_field_label(middle_cols[0], "收件人信息", recipient_hint)
         recipient_info = middle_cols[0].text_area(
             "收件人信息",
-            placeholder="包含具体收货地址及邮编，收件公司，收件人及其联系方式",
+            placeholder="",
             height=64,
             key="request_recipient_info",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        required_field_label(middle_cols[1], "运费的承担者")
+        required_field_label(middle_cols[1], "物料用途", (
+            "For promotional materials, please specify the exact name of the event."
+            if get_ui_language() == LANGUAGE_EN
+            else "活动物料请注明具体活动名称"
+        ))
+        material_usage = middle_cols[1].text_area(
+            "物料用途",
+            placeholder="",
+            height=64,
+            key="request_material_usage",
+            label_visibility="collapsed",
+            on_change=mark_request_form_dirty,
+        )
+
+        freight_cols = st.columns([1, 2])
+        required_field_label(freight_cols[0], "运费的承担者")
         if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
             st.session_state["request_freight_payer"] = DEFAULT_FREIGHT_PAYER
-        freight_payer = middle_cols[1].selectbox(
+        freight_payer = freight_cols[0].selectbox(
             "运费的承担者",
             FREIGHT_PAYER_OPTIONS,
             key="request_freight_payer",
@@ -10562,20 +10618,6 @@ def render_change_form(show_title: bool = True) -> None:
             on_change=mark_request_form_dirty,
         )
 
-        usage_hint = (
-            "For promotional materials, please specify the exact name of the event."
-            if get_ui_language() == LANGUAGE_EN
-            else "活动物料请注明具体活动名称"
-        )
-        required_field_label(st, "物料用途", usage_hint)
-        material_usage = st.text_area(
-            "物料用途",
-            placeholder="活动物料请注明具体活动名称",
-            height=60,
-            key="request_material_usage",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
     lines, preview_clicked = render_request_material_builder(
         selection_context,
         products,
