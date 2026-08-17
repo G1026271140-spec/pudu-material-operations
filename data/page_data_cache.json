@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-17 15:45:00",
+  "generated_at": "2026-08-17 16:28:19",
   "tables": {
     "物料品类": [
       {
@@ -2763,12 +2763,12 @@
           "创建时间": null,
           "单价（人民币）": 0,
           "单价（美元）": "0",
-          "启用状态": "启用",
+          "启用状态": "停用",
           "品类定义": "周边礼品",
           "商业发票产品名称": "PUDU定制眼镜",
           "备注": null,
           "库存行数": "1",
-          "是否在申领页显示": "是",
+          "是否在申领页显示": "否",
           "是否无需型号": "是",
           "是否无需语种": "是",
           "海关编码": null,
@@ -24157,10 +24157,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsxxxIUqXu5"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260817-003",
+              "text_arr": [
+                "REQ-20260817-003"
+              ],
               "type": "text"
             }
           ],
@@ -24176,10 +24180,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsxxz4t9Rr5"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260817-003-01",
+              "text_arr": [
+                "REQ-20260817-003-01"
+              ],
               "type": "text"
             }
           ],
@@ -69515,10 +69523,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsxxxIUqXu5"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260817-003",
+              "text_arr": [
+                "REQ-20260817-003"
+              ],
               "type": "text"
             }
           ],
@@ -69534,10 +69546,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsxxz4tD1db"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260817-003-02",
+              "text_arr": [
+                "REQ-20260817-003-02"
+              ],
               "type": "text"
             }
           ],
@@ -99916,6 +99932,77 @@
         },
         "id": "recvswVdLLqj1I",
         "record_id": "recvswVdLLqj1I"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "国家": "111",
+          "备注": "客户名称：111\n国家：111\n收件人信息：111\n运费承担者：普渡付款(PUDU)\n物料用途：111\n申请人：高鸿源",
+          "审批实例Code": "704A03BC-95EB-48CE-9D53-91DB93E3FEF3",
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "111",
+          "市场负责人": null,
+          "库存流水": null,
+          "提交幂等键": "626d71dcc9984b999a0abaac1a41505f",
+          "提交时间": 1786954633119,
+          "收件人信息": "111",
+          "期望发放日期": null,
+          "标题": "111-高鸿源-营销物料领取",
+          "物料明细": [
+            {
+              "record_ids": [
+                "recvpTIQtFR2Os",
+                "rec27IsS6kfzEc"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1012,MAT-0185",
+              "text_arr": [
+                "MAT-1012",
+                "MAT-0185"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料用途": "111",
+          "用途|活动": "111",
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012o_f0dcd27f-b0a5-421e-a9e4-95741c712e0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "申请人.部门": [
+            "市场营销部"
+          ],
+          "申请单号": "REQ-20260817-003",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvsxxz4t9Rr5",
+                "recvsxxz4tD1db"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260817-003-01,REQ-20260817-003-02",
+              "text_arr": [
+                "REQ-20260817-003-01",
+                "REQ-20260817-003-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请部门|区域": "市场营销部",
+          "相关附件": null,
+          "管理员通知时间": 1786954635948,
+          "管理员通知状态": null,
+          "运费承担者": "普渡付款(PUDU)"
+        },
+        "id": "recvsxxxIUqXu5",
+        "record_id": "recvsxxxIUqXu5"
       }
     ],
     "申请明细": [
@@ -110725,6 +110812,252 @@
         },
         "id": "recvswVfivbBb2",
         "record_id": "recvswVfivbBb2"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMfBhyYrT"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X002",
+              "text_arr": [
+                "X002"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": [
+            {
+              "text": "BellaBot",
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": [
+            {
+              "text": "产品单页(Product Flyer )",
+              "type": "text"
+            }
+          ],
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "10",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvsxxxIUqXu5"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260817-003",
+              "text_arr": [
+                "REQ-20260817-003"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260817-003-01",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfzEc"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0185",
+              "text_arr": [
+                "MAT-0185"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "10",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvTMZD"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y05",
+              "text_arr": [
+                "Y05"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": [
+            {
+              "text": "西语(Spanish)",
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvsxxz4t9Rr5",
+        "record_id": "recvsxxz4t9Rr5"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyRndNA"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X006",
+              "text_arr": [
+                "X006"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": [
+            {
+              "text": "D7",
+              "type": "text"
+            }
+          ],
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": [
+            {
+              "text": "产品单页(Product Flyer )",
+              "type": "text"
+            }
+          ],
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "10",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvsxxxIUqXu5"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260817-003",
+              "text_arr": [
+                "REQ-20260817-003"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260817-003-02",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvpTIQtFR2Os"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1012",
+              "text_arr": [
+                "MAT-1012"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "10",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvTMZD"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y05",
+              "text_arr": [
+                "Y05"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": [
+            {
+              "text": "西语(Spanish)",
+              "type": "text"
+            }
+          ],
+          "附件": null
+        },
+        "id": "recvsxxz4tD1db",
+        "record_id": "recvsxxz4tD1db"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -111272,8 +111605,8 @@
     "物料语种": 12,
     "物料主数据": 843,
     "库存流水": 89,
-    "物料申请单": 3,
-    "申请明细": 89,
+    "物料申请单": 4,
+    "申请明细": 91,
     "项目周边礼品物料筹备详情list": 15
   },
   "gift_image_cache": {

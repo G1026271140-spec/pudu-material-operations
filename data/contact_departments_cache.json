@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-17 15:45:51",
+  "generated_at": "2026-08-17 16:28:58",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -7285,6 +7285,16 @@
       ]
     },
     {
+      "open_id": "ou_5746f469684659b84855853980bac079",
+      "name": "张爱林",
+      "department_ids": [
+        "od-13e447d65e4d340b80b0485b459f3ad0"
+      ],
+      "department_paths": [
+        "GRPBU"
+      ]
+    },
+    {
       "open_id": "ou_a22ef06d5058bd1a3e57653caea17e90",
       "name": "张爱茂",
       "department_ids": [
@@ -10938,16 +10948,6 @@
       ],
       "department_paths": [
         "成本管理组"
-      ]
-    },
-    {
-      "open_id": "ou_24d64a6e84fec86d1d6a32983795b21f",
-      "name": "杨金龙",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
       ]
     },
     {
