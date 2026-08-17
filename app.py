@@ -608,7 +608,14 @@ def inject_global_styles() -> None:
             z-index: 1001 !important;
             width: 52px !important;
             transform: translateY(-50%) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
             pointer-events: auto;
+        }
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarCollapseButton"] button {
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
         }
         [data-testid="stSidebarCollapseButton"] button {
             width: 44px;
@@ -1204,6 +1211,16 @@ def inject_global_styles() -> None:
             height: 0 !important;
             min-height: 0 !important;
             padding: 0 !important;
+            overflow: visible !important;
+        }
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"] {
+            position: static !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            max-height: 0 !important;
             overflow: visible !important;
         }
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
