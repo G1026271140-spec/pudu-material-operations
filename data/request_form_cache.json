@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-17 10:31:39",
+  "generated_at": "2026-08-17 11:02:28",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -12,6 +12,7 @@
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
+    "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_model_products": [
@@ -719,6 +720,54 @@
           "product_line": "CR"
         },
         {
+          "model": "D5",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "GR"
+        },
+        {
+          "model": "D7",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "GR"
+        },
+        {
+          "model": "D9",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "GR"
+        },
+        {
           "model": "ET1",
           "languages": [
             "英语(English)",
@@ -733,6 +782,22 @@
             "意大利语(Italian)"
           ],
           "product_line": "CR"
+        },
+        {
+          "model": "Flash Arm",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "GR"
         },
         {
           "model": "FlashBot",
@@ -751,18 +816,66 @@
           "product_line": "CR"
         },
         {
-          "model": "PUDU HolaBot",
+          "model": "FlashBot Arm",
           "languages": [
             "英语(English)",
             "简中(Simplified Chinese)",
+            "俄语(Russian)",
             "德语(German)",
+            "意大利语(Italian)",
             "日语(apanese)",
             "法语(French)",
-            "西语(Spanish)",
-            "葡语(Portuguese)",
-            "俄语(Russian)",
             "繁中(Traditional Chinese)",
-            "意大利语(Italian)"
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "GR"
+        },
+        {
+          "model": "FlashBot Lite",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "SR"
+        },
+        {
+          "model": "FlashBot Max",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "SR"
+        },
+        {
+          "model": "Hulk",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
           ],
           "product_line": "新项目"
         },
@@ -781,6 +894,22 @@
             "意大利语(Italian)"
           ],
           "product_line": "SR"
+        },
+        {
+          "model": "MP2000",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "IR"
         },
         {
           "model": "MT1",
@@ -863,6 +992,22 @@
           "product_line": "CR"
         },
         {
+          "model": "Pudu SwiftBot",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "SR"
+        },
+        {
           "model": "SwiftBot",
           "languages": [
             "英语(English)",
@@ -875,6 +1020,22 @@
             "俄语(Russian)",
             "繁中(Traditional Chinese)",
             "意大利语(Italian)"
+          ],
+          "product_line": "SR"
+        },
+        {
+          "model": "SwiftBot Neo",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
           ],
           "product_line": "SR"
         },
@@ -895,6 +1056,22 @@
           "product_line": "IR"
         },
         {
+          "model": "T300 Conveyor",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)"
+          ],
+          "product_line": "IR"
+        },
+        {
           "model": "T600",
           "languages": [
             "英语(English)",
@@ -909,22 +1086,6 @@
             "意大利语(Italian)"
           ],
           "product_line": "IR"
-        },
-        {
-          "model": "新闪电匣",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "德语(German)",
-            "日语(apanese)",
-            "法语(French)",
-            "西语(Spanish)",
-            "葡语(Portuguese)",
-            "俄语(Russian)",
-            "繁中(Traditional Chinese)",
-            "意大利语(Italian)"
-          ],
-          "product_line": "新项目"
         }
       ]
     },
@@ -1051,6 +1212,18 @@
       ]
     },
     {
+      "product": "笔记本礼盒(Notebook Gift Box)",
+      "models": [
+        {
+          "model": "无需型号",
+          "languages": [
+            "无需语种"
+          ],
+          "product_line": "新项目"
+        }
+      ]
+    },
+    {
       "product": "普渡logo无纺布手提袋(PUDU logo bag)",
       "models": [
         {
@@ -1089,7 +1262,7 @@
       ]
     }
   ],
-  "combination_count": 517,
+  "combination_count": 618,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -2772,72 +2945,65 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0451",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0452",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "德语(German)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0453",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "日语(apanese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0454",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "法语(French)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0455",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "西语(Spanish)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0456",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "葡语(Portuguese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0457",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "俄语(Russian)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0458",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "繁中(Traditional Chinese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0459",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "简中(Simplified Chinese)",
       "quantity": 0
     },
     {
       "material_code": "MAT-0460",
       "product": "产品易拉宝(Product Roll-Up)",
-      "model": "PUDU HolaBot",
+      "model": "BG1",
       "language": "意大利语(Italian)",
       "quantity": 0
     },
@@ -3192,76 +3358,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0511",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0512",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0513",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0514",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0515",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0516",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0517",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0518",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0519",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0520",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "新闪电匣",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0521",
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "CC1 PRO",
@@ -3549,69 +3645,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-0562",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0563",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0564",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0565",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0566",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0567",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0568",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0569",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0570",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "BG1",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-0571",
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "ET1",
@@ -3771,6 +3804,13 @@
       "model": "BG1",
       "language": "无需语种",
       "quantity": 300
+    },
+    {
+      "material_code": "MAT-0941",
+      "product": "笔记本礼盒(Notebook Gift Box)",
+      "model": "无需型号",
+      "language": "无需语种",
+      "quantity": 208
     },
     {
       "material_code": "MAT-0951",
@@ -4723,8 +4763,848 @@
       "model": "猛犸MP2000",
       "language": "无需语种",
       "quantity": 200
+    },
+    {
+      "material_code": "MAT-1149",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1150",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1151",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1152",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1153",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1154",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1155",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1156",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1157",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1158",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D5",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1159",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1160",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1161",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1162",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1163",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1164",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1165",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1166",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1167",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1168",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D7",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1169",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1170",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1171",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1172",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1173",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1174",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1175",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1176",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1177",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1178",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "D9",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1179",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1180",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1181",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1182",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1183",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1184",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1185",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1186",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1187",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1188",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Flash Arm",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1189",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1190",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1191",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1192",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1193",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1194",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1195",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1196",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1197",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1198",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Arm",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1199",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1200",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1201",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1202",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1203",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1204",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1205",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1206",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1207",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1208",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Lite",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1209",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1210",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1211",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1212",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1213",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1214",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1215",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1216",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1217",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1218",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Max",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1219",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1220",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1221",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1222",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1223",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1224",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1225",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1226",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1227",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1228",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Hulk",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1229",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1230",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1231",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1232",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1233",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1234",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1235",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1236",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1237",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1238",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "MP2000",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1239",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1240",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1241",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1242",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1243",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1244",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1245",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1246",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1247",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1248",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "Pudu SwiftBot",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1249",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1250",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1251",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1252",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1253",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1254",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1255",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1256",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1257",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1258",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "SwiftBot Neo",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1259",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1260",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1261",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1262",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1263",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1264",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1265",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1266",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1267",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1268",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T300 Conveyor",
+      "language": "西语(Spanish)",
+      "quantity": 0
     }
   ],
-  "row_count": 519,
+  "row_count": 620,
   "built_from": "live_feishu"
 }

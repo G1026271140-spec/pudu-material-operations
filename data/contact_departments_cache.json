@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-17 10:31:59",
+  "generated_at": "2026-08-17 11:02:52",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1966,10 +1966,10 @@
       "open_id": "ou_ec9efa61196afbb73d68b9b5a878d3c8",
       "name": "何康成",
       "department_ids": [
-        "od-5e0c85effb5980fef902cf64007ea666"
+        "od-d90d38def427cf71640b80459d6b5118"
       ],
       "department_paths": [
-        "M LAB测试组"
+        "M LAB"
       ]
     },
     {
@@ -4502,6 +4502,16 @@
       ],
       "department_paths": [
         "建湖生产组"
+      ]
+    },
+    {
+      "open_id": "ou_fc1ccccac58129266cccd26b8728725f",
+      "name": "吴蒙",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
       ]
     },
     {
@@ -11731,6 +11741,16 @@
       ]
     },
     {
+      "open_id": "ou_f41c49dbe71c1fbe85af1eadb8ca9f01",
+      "name": "樊凌志",
+      "department_ids": [
+        "od-258af88b87ee07177fa50fcd637be6af"
+      ],
+      "department_paths": [
+        "CR项目管理组"
+      ]
+    },
+    {
       "open_id": "ou_e6bd9271711341b4ac08ddcefaf54355",
       "name": "欧祥",
       "department_ids": [
@@ -13340,6 +13360,16 @@
       ],
       "department_paths": [
         "渠道管理组"
+      ]
+    },
+    {
+      "open_id": "ou_1f0dc30d0dee4dd53a94c16b8fabb699",
+      "name": "王柯秦",
+      "department_ids": [
+        "od-e0a6dbed43b62c85d21f33fa9bb21aff"
+      ],
+      "department_paths": [
+        "CRPBU软件组"
       ]
     },
     {
@@ -15239,6 +15269,16 @@
       ]
     },
     {
+      "open_id": "ou_06d5cb806ed1c73156eabe38b9005a90",
+      "name": "胡舒霖",
+      "department_ids": [
+        "od-5e4ce3726c5963582cc77a891cabf052"
+      ],
+      "department_paths": [
+        "九江品控组"
+      ]
+    },
+    {
       "open_id": "ou_6d61c6ea9bc34b91b011dc590bdc64ea",
       "name": "胡茂灿",
       "department_ids": [
@@ -15862,6 +15902,16 @@
       ],
       "department_paths": [
         "证券事务组"
+      ]
+    },
+    {
+      "open_id": "ou_f00ca17786990df27fe754aa26301ed6",
+      "name": "蔡振男",
+      "department_ids": [
+        "od-ee55428dc13b208d651cb609357eb26c"
+      ],
+      "department_paths": [
+        "CRPBU硬件组"
       ]
     },
     {
@@ -19871,6 +19921,16 @@
       ]
     },
     {
+      "open_id": "ou_7809637a9da2a7f872b8a024571caa3d",
+      "name": "高琦秀泽",
+      "department_ids": [
+        "od-e0a6dbed43b62c85d21f33fa9bb21aff"
+      ],
+      "department_paths": [
+        "CRPBU软件组"
+      ]
+    },
+    {
       "open_id": "ou_599914d6ddd975d09f455454de5752c2",
       "name": "高畅",
       "department_ids": [
@@ -20887,5 +20947,5 @@
       ]
     }
   ],
-  "user_count": 1929
+  "user_count": 1935
 }
