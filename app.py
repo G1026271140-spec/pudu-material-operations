@@ -1127,6 +1127,96 @@ def inject_global_styles() -> None:
             font-weight: 540;
             margin: 0 0 0.35rem;
         }
+        /* Compact material-request workspace. The marker keeps these density
+           changes scoped to the request page instead of shrinking admin tools. */
+        .stApp:has(.pudu-request-page-marker) [data-testid="stHeader"] {
+            height: 1.75rem;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stMainBlockContainer"] {
+            padding-top: 0.35rem;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebarUserContent"] {
+            padding-top: 0.25rem !important;
+        }
+        .stApp:has(.pudu-request-page-marker) .st-key-sidebar_brand {
+            margin-bottom: 0.65rem;
+            padding-top: 0;
+            padding-bottom: 0.65rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-page-header {
+            margin-bottom: 0.7rem;
+            padding-top: 0.45rem;
+            padding-bottom: 0.65rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-page-kicker {
+            margin-bottom: 0.18rem;
+            font-size: 0.68rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-page-title {
+            font-size: 1.55rem;
+            line-height: 1.18;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-page-subtitle {
+            margin-top: 0.2rem;
+            font-size: 0.78rem;
+            line-height: 1.4;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-section-heading) > [data-testid="stVerticalBlock"] {
+            padding: 0.7rem 0.85rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-section-heading {
+            gap: 0.55rem;
+            margin-bottom: 0.55rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-section-index {
+            min-width: 24px;
+            height: 24px;
+            font-size: 0.68rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-section-title {
+            font-size: 0.88rem;
+            line-height: 1.3;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-section-description,
+        .stApp:has(.pudu-request-page-marker) [data-testid="stCaptionContainer"] {
+            font-size: 0.7rem;
+            line-height: 1.35;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-field-label {
+            margin-bottom: 0.2rem;
+            font-size: 0.73rem;
+            gap: 0.15rem 0.45rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-inline-required-hint {
+            font-size: 0.67rem;
+        }
+        .stApp:has(.pudu-request-page-marker) div[data-baseweb="input"],
+        .stApp:has(.pudu-request-page-marker) div[data-baseweb="select"] > div {
+            min-height: 36px;
+            font-size: 0.8rem;
+        }
+        .stApp:has(.pudu-request-page-marker) input,
+        .stApp:has(.pudu-request-page-marker) textarea,
+        .stApp:has(.pudu-request-page-marker) [data-baseweb="select"] {
+            font-size: 0.8rem;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stVerticalBlock"] {
+            gap: 0.55rem;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stHorizontalBlock"] {
+            gap: 0.7rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-generated-title {
+            min-height: 34px;
+            margin-bottom: 0.5rem;
+            padding: 0.38rem 0.6rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-generated-title span {
+            font-size: 0.7rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .pudu-generated-title strong {
+            font-size: 0.8rem;
+        }
         .pudu-required-star {
             color: var(--pudu-red);
             font-weight: 700;
@@ -10386,6 +10476,10 @@ def render_request_material_builder(
 def render_change_form(show_title: bool = True) -> None:
     initialize_request_form_state()
     scroll_request_page_to_top_if_needed()
+    st.markdown(
+        '<span class="pudu-request-page-marker" aria-hidden="true"></span>',
+        unsafe_allow_html=True,
+    )
     if st.session_state.get("request_form_stage") == "review":
         render_request_review()
         return
@@ -10452,7 +10546,7 @@ def render_change_form(show_title: bool = True) -> None:
         recipient_info = middle_cols[0].text_area(
             "收件人信息",
             placeholder="包含具体收货地址及邮编，收件公司，收件人及其联系方式",
-            height=84,
+            height=64,
             key="request_recipient_info",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
@@ -10477,7 +10571,7 @@ def render_change_form(show_title: bool = True) -> None:
         material_usage = st.text_area(
             "物料用途",
             placeholder="活动物料请注明具体活动名称",
-            height=76,
+            height=60,
             key="request_material_usage",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
