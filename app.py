@@ -10429,7 +10429,7 @@ def render_request_material_builder(
         )
         lines = render_compact_request_cart(cart_col, lines)
         preview_clicked = preview_col.button(
-            "预览购物车并提交查看",
+            "查看购物车并提交申请",
             key="request_preview",
             type="primary",
             icon=":material/preview:",
