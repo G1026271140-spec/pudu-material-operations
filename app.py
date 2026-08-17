@@ -511,12 +511,11 @@ PAGE_CACHE_TABLES = {
     "shipping": (CATEGORY_TABLE_NAME,),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
-GIFT_PROJECT_POLL_INTERVAL_SECONDS = 60
-GIFT_PROJECT_SEEN_SIGNATURE_KEY = "gift_project_seen_signature"
-GIFT_PROJECT_LATEST_SIGNATURE_KEY = "gift_project_latest_signature"
-GIFT_PROJECT_UPDATE_AVAILABLE_KEY = "gift_project_update_available"
-GIFT_PROJECT_UPDATE_CHECKED_AT_KEY = "gift_project_update_checked_at"
-GIFT_PROJECT_NEXT_POLL_AT_KEY = "gift_project_next_poll_at"
+PAGE_DATA_POLL_INTERVAL_SECONDS = 60
+
+
+def page_update_session_key(page_key: str, suffix: str) -> str:
+    return f"page_update_{page_key}_{suffix}"
 
 
 def get_ui_language() -> str:
@@ -3868,10 +3867,10 @@ def stable_feishu_rows_signature(rows: list[dict]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def gift_project_page_signature(table_rows: dict[str, list[dict]]) -> str:
+def page_data_signature(page_key: str, table_rows: dict[str, list[dict]]) -> str:
     signatures = {
         table_name: stable_feishu_rows_signature(list(table_rows.get(table_name) or []))
-        for table_name in PAGE_CACHE_TABLES["gift_projects"]
+        for table_name in PAGE_CACHE_TABLES[page_key]
     }
     payload = json.dumps(signatures, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -3879,51 +3878,57 @@ def gift_project_page_signature(table_rows: dict[str, list[dict]]) -> str:
 
 @st.cache_data(
     show_spinner=False,
-    ttl=GIFT_PROJECT_POLL_INTERVAL_SECONDS - 5,
+    ttl=PAGE_DATA_POLL_INTERVAL_SECONDS - 5,
 )
-def live_gift_project_poll_snapshot() -> dict[str, object]:
+def live_page_poll_snapshot(page_key: str) -> dict[str, object]:
     table_rows = {
         table_name: safe_fresh_feishu_rows(table_name)
-        for table_name in PAGE_CACHE_TABLES["gift_projects"]
+        for table_name in PAGE_CACHE_TABLES[page_key]
     }
     return {
-        "signature": gift_project_page_signature(table_rows),
+        "signature": page_data_signature(page_key, table_rows),
         "checked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
 
 
-def mark_gift_project_snapshot_seen(
+def mark_page_snapshot_seen(
+    page_key: str,
     table_rows: dict[str, list[dict]] | None = None,
 ) -> str:
     current_rows = table_rows or {
         table_name: page_data_cache_rows(table_name)
-        for table_name in PAGE_CACHE_TABLES["gift_projects"]
+        for table_name in PAGE_CACHE_TABLES[page_key]
     }
-    signature = gift_project_page_signature(current_rows)
-    st.session_state[GIFT_PROJECT_SEEN_SIGNATURE_KEY] = signature
-    st.session_state[GIFT_PROJECT_LATEST_SIGNATURE_KEY] = signature
-    st.session_state[GIFT_PROJECT_UPDATE_AVAILABLE_KEY] = False
+    signature = page_data_signature(page_key, current_rows)
+    st.session_state[page_update_session_key(page_key, "seen_signature")] = signature
+    st.session_state[page_update_session_key(page_key, "latest_signature")] = signature
+    st.session_state[page_update_session_key(page_key, "update_available")] = False
     return signature
 
 
-def gift_project_update_state(
+def page_update_state(
+    page_key: str,
     current_signature: str,
     live_signature: str,
     checked_at: str = "",
 ) -> bool:
+    seen_key = page_update_session_key(page_key, "seen_signature")
+    latest_key = page_update_session_key(page_key, "latest_signature")
+    checked_key = page_update_session_key(page_key, "checked_at")
+    available_key = page_update_session_key(page_key, "update_available")
     seen_signature = str(
-        st.session_state.get(GIFT_PROJECT_SEEN_SIGNATURE_KEY) or current_signature
+        st.session_state.get(seen_key) or current_signature
     )
-    st.session_state.setdefault(GIFT_PROJECT_SEEN_SIGNATURE_KEY, seen_signature)
-    st.session_state[GIFT_PROJECT_LATEST_SIGNATURE_KEY] = live_signature
-    st.session_state[GIFT_PROJECT_UPDATE_CHECKED_AT_KEY] = checked_at
+    st.session_state.setdefault(seen_key, seen_signature)
+    st.session_state[latest_key] = live_signature
+    st.session_state[checked_key] = checked_at
     update_available = bool(live_signature and live_signature != seen_signature)
-    st.session_state[GIFT_PROJECT_UPDATE_AVAILABLE_KEY] = update_available
+    st.session_state[available_key] = update_available
     return update_available
 
 
-def render_gift_project_update_ticker() -> None:
-    message = "检测到周边礼品数据有更新。当前操作不会被打断，完成编辑后请点击“刷新本页数据”查看最新内容。"
+def render_page_update_ticker() -> None:
+    message = "检测到本页数据有更新。当前操作不会被打断，完成编辑后请点击“刷新本页数据”查看最新内容。"
     st.markdown(
         f"""
         <div class="pudu-update-ticker" role="status" aria-live="polite">
@@ -3934,38 +3939,41 @@ def render_gift_project_update_ticker() -> None:
     )
 
 
-@st.fragment(run_every=GIFT_PROJECT_POLL_INTERVAL_SECONDS)
-def render_gift_project_update_monitor(current_signature: str) -> None:
+@st.fragment(run_every=PAGE_DATA_POLL_INTERVAL_SECONDS)
+def render_page_update_monitor(page_key: str, current_signature: str) -> None:
+    next_poll_key = page_update_session_key(page_key, "next_poll_at")
+    available_key = page_update_session_key(page_key, "update_available")
     now = time.monotonic()
     next_poll_at = float(
-        st.session_state.get(GIFT_PROJECT_NEXT_POLL_AT_KEY) or 0
+        st.session_state.get(next_poll_key) or 0
     )
     if not next_poll_at:
-        st.session_state[GIFT_PROJECT_NEXT_POLL_AT_KEY] = (
-            now + GIFT_PROJECT_POLL_INTERVAL_SECONDS
+        st.session_state[next_poll_key] = (
+            now + PAGE_DATA_POLL_INTERVAL_SECONDS
         )
-        if st.session_state.get(GIFT_PROJECT_UPDATE_AVAILABLE_KEY):
-            render_gift_project_update_ticker()
+        if st.session_state.get(available_key):
+            render_page_update_ticker()
         return
     if now < next_poll_at:
-        if st.session_state.get(GIFT_PROJECT_UPDATE_AVAILABLE_KEY):
-            render_gift_project_update_ticker()
+        if st.session_state.get(available_key):
+            render_page_update_ticker()
         return
     if fullscreen_sync_in_progress():
         return
-    st.session_state[GIFT_PROJECT_NEXT_POLL_AT_KEY] = (
-        now + GIFT_PROJECT_POLL_INTERVAL_SECONDS
+    st.session_state[next_poll_key] = (
+        now + PAGE_DATA_POLL_INTERVAL_SECONDS
     )
     try:
-        snapshot = live_gift_project_poll_snapshot()
+        snapshot = live_page_poll_snapshot(page_key)
     except Exception:
         return
-    if gift_project_update_state(
+    if page_update_state(
+        page_key,
         current_signature,
         str(snapshot.get("signature") or ""),
         str(snapshot.get("checked_at") or ""),
     ):
-        render_gift_project_update_ticker()
+        render_page_update_ticker()
 
 
 def refresh_page_cache_tables(table_names: list[str] | tuple[str, ...]) -> dict[str, object]:
@@ -4301,6 +4309,16 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
 
 def render_page_cache_toolbar(page_key: str) -> None:
     table_names = PAGE_CACHE_TABLES[page_key]
+    current_rows = {
+        table_name: page_data_cache_rows(table_name)
+        for table_name in table_names
+    }
+    current_signature = page_data_signature(page_key, current_rows)
+    st.session_state.setdefault(
+        page_update_session_key(page_key, "seen_signature"),
+        current_signature,
+    )
+    render_page_update_monitor(page_key, current_signature)
     message_key = f"page_cache_message_{page_key}"
     message = st.session_state.pop(message_key, "")
     if message:
@@ -4325,8 +4343,7 @@ def render_page_cache_toolbar(page_key: str) -> None:
                 if page_key == "request":
                     refresh_request_form_cache_from_page_data()
                     refresh_contact_departments_from_feishu()
-                elif page_key == "gift_projects":
-                    mark_gift_project_snapshot_seen()
+                mark_page_snapshot_seen(page_key)
             except Exception as exc:
                 st.error("本页数据刷新失败，请检查飞书连接和数据表权限。")
                 st.exception(exc)
@@ -4342,8 +4359,7 @@ def refresh_page_cache_after_write(page_key: str, *, update_request_form: bool =
         refresh_page_cache_tables(PAGE_CACHE_TABLES[page_key])
         if update_request_form:
             refresh_request_form_cache_from_page_data()
-        if page_key == "gift_projects":
-            mark_gift_project_snapshot_seen()
+        mark_page_snapshot_seen(page_key)
     except Exception as exc:
         st.session_state["post_write_cache_warning"] = (
             f"业务数据已保存，但页面缓存刷新失败：{exc}。请点击“刷新本页数据”重试。"
@@ -14542,16 +14558,6 @@ def render_gift_projects_page() -> None:
             project_rows,
             material_rows,
         )
-    current_signature = gift_project_page_signature(
-        {
-            CATEGORY_TABLE_NAME: category_rows,
-            MATERIAL_TABLE_NAME: material_rows,
-            GIFT_PROJECT_TABLE_NAME: project_rows,
-        }
-    )
-    st.session_state.setdefault(GIFT_PROJECT_SEEN_SIGNATURE_KEY, current_signature)
-    render_gift_project_update_monitor(current_signature)
-
     project_records = gift_project_management_records(
         category_rows,
         project_rows,

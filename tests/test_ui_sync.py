@@ -139,7 +139,8 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
             key: value for key, value in session_state.items()
         }
         with patch.object(app.st, "session_state", session_state):
-            changed = app.gift_project_update_state(
+            changed = app.page_update_state(
+                "gift_projects",
                 "cached-signature",
                 "live-signature",
                 "2026-08-14 09:30:00",
@@ -148,25 +149,27 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
         self.assertTrue(changed)
         for key, value in original_editor_values.items():
             self.assertEqual(session_state[key], value)
-        self.assertTrue(session_state[app.GIFT_PROJECT_UPDATE_AVAILABLE_KEY])
+        self.assertTrue(
+            session_state[
+                app.page_update_session_key("gift_projects", "update_available")
+            ]
+        )
 
     def test_same_signature_does_not_mark_an_update(self) -> None:
         session_state: dict[str, object] = {}
         with patch.object(app.st, "session_state", session_state):
-            changed = app.gift_project_update_state("same", "same")
+            changed = app.page_update_state("request", "same", "same")
 
         self.assertFalse(changed)
-        self.assertFalse(session_state[app.GIFT_PROJECT_UPDATE_AVAILABLE_KEY])
+        self.assertFalse(
+            session_state[app.page_update_session_key("request", "update_available")]
+        )
 
-    def test_gift_page_polling_covers_all_page_tables(self) -> None:
-        self.assertEqual(app.GIFT_PROJECT_POLL_INTERVAL_SECONDS, 60)
+    def test_page_polling_covers_every_cached_page(self) -> None:
+        self.assertEqual(app.PAGE_DATA_POLL_INTERVAL_SECONDS, 60)
         self.assertEqual(
-            set(app.PAGE_CACHE_TABLES["gift_projects"]),
-            {
-                app.CATEGORY_TABLE_NAME,
-                app.MATERIAL_TABLE_NAME,
-                app.GIFT_PROJECT_TABLE_NAME,
-            },
+            set(app.PAGE_CACHE_TABLES),
+            {"request", "restock", "category", "maintenance", "inventory", "gift_projects", "shipping"},
         )
 
     def test_first_monitor_render_defers_live_poll_for_sixty_seconds(self) -> None:
@@ -174,13 +177,13 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
         with (
             patch.object(app.st, "session_state", session_state),
             patch.object(app.time, "monotonic", return_value=100.0),
-            patch.object(app, "live_gift_project_poll_snapshot") as live_poll,
+            patch.object(app, "live_page_poll_snapshot") as live_poll,
         ):
-            app.render_gift_project_update_monitor.__wrapped__("cached-signature")
+            app.render_page_update_monitor.__wrapped__("category", "cached-signature")
 
         live_poll.assert_not_called()
         self.assertEqual(
-            session_state[app.GIFT_PROJECT_NEXT_POLL_AT_KEY],
+            session_state[app.page_update_session_key("category", "next_poll_at")],
             160.0,
         )
 
