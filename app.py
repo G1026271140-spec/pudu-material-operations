@@ -2013,7 +2013,8 @@ def inject_global_styles() -> None:
             border-color: var(--pudu-line-soft);
         }
         [data-testid="stAppDeployButton"],
-        [data-testid="stMainMenuButton"] {
+        [data-testid="stMainMenuButton"],
+        [data-testid="stExpandSidebarButton"] {
             display: none;
         }
         .pudu-sync-overlay {
