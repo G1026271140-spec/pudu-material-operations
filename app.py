@@ -594,13 +594,38 @@ def inject_global_styles() -> None:
             background: var(--pudu-canvas);
         }
         [data-testid="stHeader"] {
-            height: 56px;
-            background: rgba(255, 255, 255, 0.96);
-            border-bottom: 1px solid var(--pudu-line-soft);
+            height: 0;
+            min-height: 0;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            pointer-events: none;
+        }
+        [data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] {
+            position: fixed;
+            top: 0.65rem;
+            left: 0.65rem;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        [data-testid="stSidebarCollapsedControl"] button {
+            width: 34px;
+            height: 34px;
+            min-height: 34px;
+            padding: 0 !important;
+            border: 1px solid var(--pudu-line) !important;
+            border-radius: 8px !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            color: var(--pudu-navy) !important;
+            box-shadow: 0 2px 8px rgba(31, 35, 41, 0.12) !important;
+        }
+        [data-testid="stSidebarCollapsedControl"] button:hover {
+            border-color: #9FB8CB !important;
+            background: var(--pudu-blue-soft) !important;
         }
         [data-testid="stMainBlockContainer"] {
             max-width: 1320px;
-            padding: 3.5rem 2.25rem 4rem;
+            padding: 0.65rem 2.25rem 4rem;
         }
         h1, h2, h3 {
             color: var(--pudu-ink);
@@ -1128,11 +1153,8 @@ def inject_global_styles() -> None:
         }
         /* Compact material-request workspace. The marker keeps these density
            changes scoped to the request page instead of shrinking admin tools. */
-        .stApp:has(.pudu-request-page-marker) [data-testid="stHeader"] {
-            height: 1.75rem;
-        }
         .stApp:has(.pudu-request-page-marker) [data-testid="stMainBlockContainer"] {
-            padding-top: 0.35rem;
+            padding-top: 0.3rem;
         }
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebarUserContent"] {
             padding-top: 0.25rem !important;
@@ -2027,7 +2049,7 @@ def inject_global_styles() -> None:
         }
         @media (max-width: 900px) {
             [data-testid="stMainBlockContainer"] {
-                padding: 3.5rem 1rem 3rem;
+                padding: 0.65rem 1rem 3rem;
             }
             .pudu-page-header {
                 align-items: flex-start;
