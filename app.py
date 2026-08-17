@@ -1180,7 +1180,7 @@ def inject_global_styles() -> None:
         }
         [data-testid="stSidebar"][aria-expanded="false"] {
             position: fixed !important;
-            top: 50% !important;
+            top: 50vh !important;
             left: 0.75rem !important;
             z-index: 1000 !important;
             width: 44px !important;
@@ -14988,7 +14988,7 @@ def main() -> None:
         page_title=ui_text("营销物料管理系统"),
         page_icon=str(APP_ICON_PATH) if APP_ICON_PATH.exists() else ":material/inventory_2:",
         layout="wide",
-        initial_sidebar_state="auto",
+        initial_sidebar_state="expanded",
     )
     inject_global_styles()
     stop_on_invalid_feishu_config()
