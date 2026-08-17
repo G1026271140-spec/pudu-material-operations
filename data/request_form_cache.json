@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-16 16:31:13",
+  "generated_at": "2026-08-17 10:31:39",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -12,8 +12,7 @@
     "产品易拉宝(Product Roll-Up)",
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "保龄球"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_model_products": [
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -22,14 +21,12 @@
     "配送线产品手册SR(Delivery Robot Product Brochure)",
     "具身线产品手册GR(Embodied AI Robot Product Brochure)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "保龄球"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_language_products": [
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
-    "笔记本礼盒(Notebook Gift Box)",
-    "保龄球"
+    "笔记本礼盒(Notebook Gift Box)"
   ],
   "configured_language_products": [
     "产品单页(Product Flyer )",
@@ -42,8 +39,7 @@
     "公仔(Plush Toy)",
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
-    "普渡logo无纺布手提袋(PUDU logo bag)",
-    "保龄球"
+    "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "models": [
     "BellaBot",
@@ -1091,21 +1087,9 @@
           "product_line": "新项目"
         }
       ]
-    },
-    {
-      "product": "保龄球",
-      "models": [
-        {
-          "model": "无需型号",
-          "languages": [
-            "无需语种"
-          ],
-          "product_line": "新项目"
-        }
-      ]
     }
   ],
-  "combination_count": 518,
+  "combination_count": 517,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -4739,15 +4723,8 @@
       "model": "猛犸MP2000",
       "language": "无需语种",
       "quantity": 200
-    },
-    {
-      "material_code": "MAT-1152",
-      "product": "保龄球",
-      "model": "无需型号",
-      "language": "无需语种",
-      "quantity": 0
     }
   ],
-  "row_count": 520,
+  "row_count": 519,
   "built_from": "live_feishu"
 }
