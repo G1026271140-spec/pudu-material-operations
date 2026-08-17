@@ -9143,7 +9143,8 @@ def create_new_gift_project_request(
         target_models=[NO_MODEL_TEXT],
         target_languages=[NO_LANGUAGE_TEXT],
         category_definition=CATEGORY_DEFINITION_GIFT,
-        category_status=STATUS_ACTIVE,
+        category_status=STATUS_INACTIVE,
+        category_request_visible=REQUEST_PAGE_HIDDEN_VALUE,
         category_unit_price=float(unit_price),
         commercial_invoice_name=product,
         packing_list_product_type="Give aways",
@@ -9151,7 +9152,8 @@ def create_new_gift_project_request(
             (NO_MODEL_TEXT, NO_LANGUAGE_TEXT): {
                 "quantity": 0,
                 "unit_price": float(unit_price),
-                "status": STATUS_ACTIVE,
+                "status": STATUS_INACTIVE,
+                "request_visible": REQUEST_PAGE_HIDDEN_VALUE,
             }
         },
     )
@@ -14384,7 +14386,7 @@ def render_existing_gift_project_form(category: dict) -> None:
 
 def render_new_gift_project_form() -> None:
     with st.container(border=True):
-        render_section_header("03", "新增周边礼品", "同时创建物料品类、零库存行和项目需求")
+        render_section_header("03", "新增周边礼品", "创建默认停用且不在申领页显示的品类、零库存行和项目需求")
         render_gift_fixed_rules()
         project_col, product_col, price_col = st.columns([1.2, 1.6, 0.8])
         required_field_label(project_col, "项目名称")

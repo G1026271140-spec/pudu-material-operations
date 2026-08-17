@@ -537,10 +537,15 @@ class GiftProjectTests(unittest.TestCase):
         self.assertTrue(sync_kwargs["no_language"])
         self.assertEqual(sync_kwargs["target_models"], [app.NO_MODEL_TEXT])
         self.assertEqual(sync_kwargs["target_languages"], [app.NO_LANGUAGE_TEXT])
+        self.assertEqual(sync_kwargs["category_status"], app.STATUS_INACTIVE)
         self.assertEqual(
-            sync_kwargs["target_values"][(app.NO_MODEL_TEXT, app.NO_LANGUAGE_TEXT)]["quantity"],
-            0,
+            sync_kwargs["category_request_visible"],
+            app.REQUEST_PAGE_HIDDEN_VALUE,
         )
+        target_values = sync_kwargs["target_values"][(app.NO_MODEL_TEXT, app.NO_LANGUAGE_TEXT)]
+        self.assertEqual(target_values["quantity"], 0)
+        self.assertEqual(target_values["status"], app.STATUS_INACTIVE)
+        self.assertEqual(target_values["request_visible"], app.REQUEST_PAGE_HIDDEN_VALUE)
         create_project.assert_called_once_with(
             "项目B",
             "category-new",
