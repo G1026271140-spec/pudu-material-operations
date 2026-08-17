@@ -602,11 +602,8 @@ def inject_global_styles() -> None:
             pointer-events: none;
         }
         [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarCollapseButton"] {
-            position: fixed;
-            top: 50%;
-            left: 0.75rem;
-            z-index: 1000;
-            transform: translateY(-50%);
+            position: static;
+            transform: none;
             pointer-events: auto;
         }
         [data-testid="stSidebarCollapseButton"] button {
@@ -1172,13 +1169,26 @@ def inject_global_styles() -> None:
             max-width: 260px !important;
         }
         [data-testid="stSidebar"][aria-expanded="false"] {
-            width: 0 !important;
-            min-width: 0 !important;
-            max-width: 0 !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 0.75rem !important;
+            z-index: 1000 !important;
+            width: 44px !important;
+            min-width: 44px !important;
+            max-width: 44px !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            max-height: 44px !important;
+            transform: translateY(-50%) !important;
+            background: transparent !important;
             border-right: 0 !important;
             overflow: visible !important;
         }
         [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarHeader"] {
+            width: 44px !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            padding: 0 !important;
             overflow: visible !important;
         }
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
