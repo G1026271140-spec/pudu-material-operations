@@ -602,8 +602,12 @@ def inject_global_styles() -> None:
             pointer-events: none;
         }
         [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarCollapseButton"] {
-            position: static;
-            transform: none;
+            position: fixed !important;
+            top: 50vh !important;
+            left: 12px !important;
+            z-index: 1001 !important;
+            width: 52px !important;
+            transform: translateY(-50%) !important;
             pointer-events: auto;
         }
         [data-testid="stSidebarCollapseButton"] button {
@@ -1180,24 +1184,25 @@ def inject_global_styles() -> None:
         }
         [data-testid="stSidebar"][aria-expanded="false"] {
             position: fixed !important;
-            top: 50vh !important;
-            left: 0.75rem !important;
+            top: 0 !important;
+            left: 0 !important;
             z-index: 1000 !important;
-            width: 44px !important;
-            min-width: 44px !important;
-            max-width: 44px !important;
-            height: 44px !important;
-            min-height: 44px !important;
-            max-height: 44px !important;
-            transform: translateY(-50%) !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            max-height: 0 !important;
+            transform: none !important;
             background: transparent !important;
             border-right: 0 !important;
             overflow: visible !important;
         }
         [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarHeader"] {
-            width: 44px !important;
-            height: 44px !important;
-            min-height: 44px !important;
+            position: static !important;
+            width: 0 !important;
+            height: 0 !important;
+            min-height: 0 !important;
             padding: 0 !important;
             overflow: visible !important;
         }
@@ -14982,6 +14987,37 @@ def render_management_page_with_navigation_loading() -> None:
             time.sleep(remaining)
 
 
+def restore_default_sidebar_on_page_load() -> None:
+    st.components.v1.html(
+        """
+        <script>
+        (() => {
+          const parentDocument = window.parent.document;
+          const marker = "puduDefaultSidebarApplied";
+          if (parentDocument.body.dataset[marker] === "true") return;
+          let attempts = 0;
+          const timer = window.setInterval(() => {
+            attempts += 1;
+            const sidebar = parentDocument.querySelector('[data-testid="stSidebar"]');
+            const button = parentDocument.querySelector(
+              '[data-testid="stSidebarCollapseButton"] button'
+            );
+            if (sidebar && button) {
+              parentDocument.body.dataset[marker] = "true";
+              if (sidebar.getAttribute("aria-expanded") === "false") button.click();
+              window.clearInterval(timer);
+            } else if (attempts >= 50) {
+              window.clearInterval(timer);
+            }
+          }, 100);
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
 def main() -> None:
     install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
@@ -14991,6 +15027,7 @@ def main() -> None:
         initial_sidebar_state="expanded",
     )
     inject_global_styles()
+    restore_default_sidebar_on_page_load()
     stop_on_invalid_feishu_config()
     render_sidebar_link()
 
