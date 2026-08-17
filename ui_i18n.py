@@ -188,8 +188,9 @@ EN_DISPLAY_TEXT = {
     "申请物料清单": "Requested Materials",
     "选择申请物料": "Choose Materials",
     "预览购物车并提交查看": "Review Cart & Continue",
-    "像购物一样选择规格并加入采购车，最多 20 种": (
-        "Choose options and add materials to your cart, up to 20 material types"
+    "选择对应物料的规格并加入采购车，当前版本一次性最多采购20种物料。": (
+        "Choose the appropriate material specifications and add them to the cart. "
+        "The current version supports up to 20 material types per request."
     ),
     "搜索物料": "Search Materials",
     "输入品类名称搜索": "Search by material category",

@@ -10386,7 +10386,7 @@ def render_request_material_builder(
         render_section_header(
             "02",
             "选择申请物料",
-            f"像购物一样选择规格并加入采购车，最多 {MAX_REQUEST_LINE_COUNT} 种",
+            f"选择对应物料的规格并加入采购车，当前版本一次性最多采购{MAX_REQUEST_LINE_COUNT}种物料。",
         )
         if not products:
             st.error("当前没有可申请的物料品类，请先刷新数据或联系管理员。")
@@ -10402,6 +10402,7 @@ def render_request_material_builder(
             key="request_catalog_search",
             placeholder="输入品类名称搜索",
             icon=":material/search:",
+            label_visibility="collapsed",
         )
         lines = render_compact_request_cart(cart_col, lines)
         preview_clicked = preview_col.button(
