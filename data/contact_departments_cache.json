@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-17 11:02:52",
+  "generated_at": "2026-08-17 15:32:54",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1140,16 +1140,6 @@
       ],
       "department_paths": [
         "中东战队"
-      ]
-    },
-    {
-      "open_id": "ou_138103798404ee01861b78de54bb98c5",
-      "name": "Alex Ooi Hee Choon",
-      "department_ids": [
-        "od-247c1809ab3a0fde82c875ffa05e7de9"
-      ],
-      "department_paths": [
-        "马来战队"
       ]
     },
     {
@@ -4628,9 +4618,11 @@
       "open_id": "ou_3195ffa9f5999ed2f551b40899a87f87",
       "name": "吴雄",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
       ],
       "department_paths": [
+        "X LAB",
         "硬件测试组"
       ]
     },
@@ -5613,6 +5605,16 @@
       ]
     },
     {
+      "open_id": "ou_f41e464b04a853709a2e92a16196e4d8",
+      "name": "孙从辉",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_4ce566d5eb7dc9b5ec3f582c6bd5aabc",
       "name": "孙天锋",
       "department_ids": [
@@ -6578,9 +6580,11 @@
       "open_id": "ou_ccabfbf8843ee6e87da53b54a1890f9b",
       "name": "张利松",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-5d441daa075643882e57dc112e94aa3c"
       ],
       "department_paths": [
+        "X LAB",
         "X LAB测试组"
       ]
     },
@@ -10237,16 +10241,6 @@
       ]
     },
     {
-      "open_id": "ou_09a6defb5cf2e41bfbc316775ab14b63",
-      "name": "李隽男",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_05a0976d9b00b521e207ef7dc7c59897",
       "name": "李雪萌",
       "department_ids": [
@@ -10819,6 +10813,16 @@
     {
       "open_id": "ou_2b7330c633679d6d7f09c913444367c3",
       "name": "杨玉江",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_005aac7917286d3d52e4dddad2d81a0f",
+      "name": "杨玉珍",
       "department_ids": [
         "od-7c4c394d59fe1b9f14e3629e853dea7c"
       ],
@@ -11525,16 +11529,6 @@
       ]
     },
     {
-      "open_id": "ou_1118c13906b780ecde6f82fd3c09dd9f",
-      "name": "梁安玲",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_a90780b7477c937a8cadb355774f8ba4",
       "name": "梁家玮",
       "department_ids": [
@@ -11788,6 +11782,16 @@
       ],
       "department_paths": [
         "IRPBU软件组"
+      ]
+    },
+    {
+      "open_id": "ou_7b9188cca6cd17429000b8bcc7892098",
+      "name": "欧阳海",
+      "department_ids": [
+        "od-0d2e69b5098d365910e13a12f726cd12"
+      ],
+      "department_paths": [
+        "桐乡综合组"
       ]
     },
     {
@@ -12367,12 +12371,14 @@
       "name": "温雯曦",
       "department_ids": [
         "od-6f65635089baafd7e93f931f6f432fff",
+        "od-1fd86a029c8f9337c98371ce5c1cded7",
         "od-44ef8f07c2bc27a78c0d6ccbd4a7ff31",
         "od-518ea4bbe9d0cff39ee3f05a2bdb7729",
         "od-2215f5418e37914d077f58727c5490e3"
       ],
       "department_paths": [
         "IR测试组",
+        "平台软件测试组",
         "测试部",
         "硬件测试组",
         "项目成员挂靠"
@@ -14699,16 +14705,6 @@
       ]
     },
     {
-      "open_id": "ou_dcd36712469c582eebb137ae945c0680",
-      "name": "罗龙",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_895de1a6bc82c076b10f3ffd9a03de18",
       "name": "美洲直营客服001",
       "department_ids": [
@@ -15020,16 +15016,6 @@
       ],
       "department_paths": [
         "AI Infra部"
-      ]
-    },
-    {
-      "open_id": "ou_4b8b304bfbf211bb5961262623cdbbe9",
-      "name": "肖雨婷",
-      "department_ids": [
-        "od-8ea21aec8f51e3d04d0b9216c974f732"
-      ],
-      "department_paths": [
-        "法务部"
       ]
     },
     {
@@ -20947,5 +20933,5 @@
       ]
     }
   ],
-  "user_count": 1935
+  "user_count": 1933
 }
