@@ -6713,9 +6713,15 @@ def submit_feishu_material_request(
         existing_row, existing_line_count = existing_submission
         return feishu_text(feishu_fields(existing_row), "申请单号"), existing_line_count, False
 
-    material_rows = feishu_material_rows()
+    # The queue may run immediately after a category/inventory task. Always
+    # validate submissions against live Feishu rows instead of the static page
+    # cache, which can legitimately lag behind the preceding background write.
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
-    material_index = build_request_material_index(material_rows, feishu_category_rows())
+    material_index = build_request_material_index(
+        material_rows,
+        fresh_feishu_rows(CATEGORY_TABLE_NAME),
+    )
     seen_keys: set[tuple[str, str, str]] = set()
     prepared_lines: list[dict[str, object]] = []
     for item in valid_lines:
