@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-17 16:32:08",
+  "generated_at": "2026-08-17 17:46:21",
   "source": "manual_feishu_snapshot",
   "image_count": 28,
   "shelves": [
@@ -363,12 +363,6 @@
               "material_code": "MAT-0091",
               "category": "产品折页(Single Product Brochure)",
               "model": "T300",
-              "language": "英语(English)"
-            },
-            {
-              "material_code": "MAT-0051",
-              "category": "产品折页(Single Product Brochure)",
-              "model": "PUDU HolaBot",
               "language": "英语(English)"
             },
             {
@@ -744,12 +738,6 @@
         }
       ],
       "materials": [
-        {
-          "material_code": "MAT-0631",
-          "category": "公仔(Plush Toy)",
-          "model": "PUDU HolaBot",
-          "language": "无需语种"
-        },
         {
           "material_code": "MAT-0701",
           "category": "公仔(Plush Toy)",

@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-17 16:31:29",
+  "generated_at": "2026-08-17 17:45:44",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -59,8 +59,6 @@
     "FlashBot Arm",
     "FlashBot Lite",
     "FlashBot Max",
-    "PUDU HolaBot",
-    "HolaBot Pro",
     "Hulk",
     "KettyBot Pro",
     "MP2000",
@@ -92,7 +90,6 @@
     "MT1 Max": "CR",
     "MT1 Vac": "CR",
     "PUDU CC1": "CR",
-    "PUDU HolaBot": "新项目",
     "PuduBot 2": "SR",
     "SH1": "CR",
     "Pudu SwiftBot": "SR",
@@ -102,7 +99,6 @@
     "FlashBot Arm": "GR",
     "FlashBot Lite": "SR",
     "FlashBot Max": "SR",
-    "HolaBot Pro": "新项目",
     "SwiftBot Neo": "SR",
     "T300 Conveyor": "IR",
     "MP2000": "IR",
