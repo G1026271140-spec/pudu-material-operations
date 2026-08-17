@@ -603,28 +603,37 @@ def inject_global_styles() -> None:
         }
         [data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] {
             position: fixed;
-            top: 0.65rem;
-            left: 0.65rem;
+            top: 0.75rem;
+            left: 0.75rem;
             z-index: 1000;
             pointer-events: auto;
         }
-        [data-testid="stSidebarCollapsedControl"] button {
-            width: 34px;
-            height: 34px;
-            min-height: 34px;
+        [data-testid="stSidebarCollapsedControl"] button,
+        [data-testid="stSidebarCollapseButton"] button {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
             padding: 0 !important;
             border: 1px solid var(--pudu-line) !important;
-            border-radius: 8px !important;
+            border-radius: 10px !important;
             background: rgba(255, 255, 255, 0.96) !important;
             color: var(--pudu-navy) !important;
             box-shadow: 0 2px 8px rgba(31, 35, 41, 0.12) !important;
         }
-        [data-testid="stSidebarCollapsedControl"] button:hover {
+        [data-testid="stSidebarCollapsedControl"] button svg,
+        [data-testid="stSidebarCollapseButton"] button svg {
+            width: 22px !important;
+            height: 22px !important;
+        }
+        [data-testid="stSidebarCollapsedControl"] button:hover,
+        [data-testid="stSidebarCollapseButton"] button:hover {
             border-color: #9FB8CB !important;
             background: var(--pudu-blue-soft) !important;
         }
         [data-testid="stMainBlockContainer"] {
-            max-width: 1320px;
+            width: 100%;
+            max-width: none;
             padding: 0.65rem 2.25rem 4rem;
         }
         h1, h2, h3 {
@@ -1159,10 +1168,16 @@ def inject_global_styles() -> None:
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebarUserContent"] {
             padding-top: 0.25rem !important;
         }
-        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] {
+        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"][aria-expanded="true"] {
             width: 260px !important;
             min-width: 260px !important;
             max-width: 260px !important;
+        }
+        [data-testid="stSidebar"][aria-expanded="false"] {
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            border-right: 0 !important;
         }
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
