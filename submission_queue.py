@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import time
 import uuid
 from dataclasses import dataclass
@@ -10,6 +11,12 @@ from feishu_bitable import FeishuBitableClient
 
 
 QUEUE_TABLE_NAME = "后台任务队列"
+QUEUE_PAYLOAD_TABLE_NAME = "后台任务载荷"
+QUEUE_PAYLOAD_INLINE_LIMIT = 12_000
+QUEUE_PAYLOAD_CHUNK_SIZE = 12_000
+QUEUE_PAYLOAD_FIELD_TASK_ID = "任务ID"
+QUEUE_PAYLOAD_FIELD_INDEX = "分片序号"
+QUEUE_PAYLOAD_FIELD_CONTENT = "分片内容"
 QUEUE_TASK_TYPE_MATERIAL_REQUEST = "营销物料申请"
 QUEUE_TASK_TYPE_RESTOCK = "采购补库"
 QUEUE_TASK_TYPE_CATEGORY_SYNC = "物料品类同步"
@@ -167,7 +174,54 @@ def ensure_submission_queue_table(client: FeishuBitableClient) -> str:
         if field_name not in existing_fields:
             client.create_field(table_id, field_name, field_type)
     setattr(client, "_submission_queue_table_id", table_id)
+    ensure_submission_payload_table(client)
     return table_id
+
+
+def ensure_submission_payload_table(client: FeishuBitableClient) -> str:
+    cached = str(getattr(client, "_submission_payload_table_id", "") or "").strip()
+    if cached:
+        return cached
+    matching = [table for table in client.list_tables() if str(table.get("name") or "").strip() == QUEUE_PAYLOAD_TABLE_NAME]
+    if matching:
+        table_id = str(matching[0].get("table_id") or "").strip()
+    else:
+        created = client.create_table(
+            QUEUE_PAYLOAD_TABLE_NAME,
+            [
+                {"field_name": QUEUE_PAYLOAD_FIELD_TASK_ID, "type": 1},
+                {"field_name": QUEUE_PAYLOAD_FIELD_INDEX, "type": 2},
+                {"field_name": QUEUE_PAYLOAD_FIELD_CONTENT, "type": 1},
+            ],
+            default_view_name="载荷分片",
+        )
+        table_id = str(created.get("table_id") or "").strip()
+    if not table_id:
+        raise RuntimeError("后台任务载荷表创建成功但未返回 table_id。")
+    setattr(client, "_submission_payload_table_id", table_id)
+    return table_id
+
+
+def _load_chunked_payloads(client: FeishuBitableClient, task_ids: set[str]) -> dict[str, dict[str, Any]]:
+    if not task_ids:
+        return {}
+    grouped: dict[str, list[tuple[int, str]]] = {}
+    for record in client.list_records(ensure_submission_payload_table(client)):
+        fields = dict(record.get("fields") or {})
+        task_id = _text(fields.get(QUEUE_PAYLOAD_FIELD_TASK_ID))
+        if task_id not in task_ids:
+            continue
+        grouped.setdefault(task_id, []).append(
+            (_integer(fields.get(QUEUE_PAYLOAD_FIELD_INDEX)), _text(fields.get(QUEUE_PAYLOAD_FIELD_CONTENT)))
+        )
+    resolved: dict[str, dict[str, Any]] = {}
+    for task_id, chunks in grouped.items():
+        raw = "".join(content for _, content in sorted(chunks))
+        try:
+            resolved[task_id] = _json_object(raw)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+    return resolved
 
 
 def list_submission_tasks(
@@ -175,12 +229,23 @@ def list_submission_tasks(
     table_id: str | None = None,
 ) -> list[SubmissionTask]:
     resolved_table_id = table_id or ensure_submission_queue_table(client)
+    records = client.list_records(resolved_table_id)
+    chunk_task_ids: set[str] = set()
+    for record in records:
+        fields = dict(record.get("fields") or {})
+        payload = _json_object(fields.get(QUEUE_FIELD_PAYLOAD))
+        task_id = _text(fields.get(QUEUE_FIELD_TASK_ID))
+        if payload.get("storage") == "chunks" or (task_id and not payload):
+            chunk_task_ids.add(task_id)
+    chunked_payloads = _load_chunked_payloads(client, chunk_task_ids)
     tasks: list[SubmissionTask] = []
-    for record in client.list_records(resolved_table_id):
+    for record in records:
         try:
             task = task_from_record(record)
         except (TypeError, ValueError, json.JSONDecodeError):
             continue
+        if task.task_id in chunked_payloads:
+            task = SubmissionTask(**{**task.__dict__, "payload": chunked_payloads[task.task_id]})
         if task.record_id and task.task_id:
             tasks.append(task)
     return tasks
@@ -241,23 +306,52 @@ def enqueue_submission_task(
             ), False
         return existing, False
 
-    now = timestamp_ms()
     task_id = uuid.uuid4().hex
+    serialized_payload = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    stored_payload = serialized_payload
+    payload_table_id = ""
+    chunk_record_ids: list[str] = []
+    if len(serialized_payload) > QUEUE_PAYLOAD_INLINE_LIMIT:
+        payload_table_id = ensure_submission_payload_table(client)
+        chunks = [serialized_payload[index:index + QUEUE_PAYLOAD_CHUNK_SIZE] for index in range(0, len(serialized_payload), QUEUE_PAYLOAD_CHUNK_SIZE)]
+        created_chunks = client.batch_create_records(
+            payload_table_id,
+            [
+                {QUEUE_PAYLOAD_FIELD_TASK_ID: task_id, QUEUE_PAYLOAD_FIELD_INDEX: index, QUEUE_PAYLOAD_FIELD_CONTENT: content}
+                for index, content in enumerate(chunks)
+            ],
+        )
+        if len(created_chunks) != len(chunks):
+            raise RuntimeError("后台任务载荷分片未完整写入。")
+        chunk_record_ids = [str(row.get("record_id") or "") for row in created_chunks]
+        stored_payload = json.dumps(
+            {"storage": "chunks", "task_id": task_id, "chunks": len(chunks), "sha256": hashlib.sha256(serialized_payload.encode("utf-8")).hexdigest()},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    now = timestamp_ms()
     fields = {
         QUEUE_FIELD_TASK_ID: task_id,
         QUEUE_FIELD_TASK_TYPE: task_type,
         QUEUE_FIELD_IDEMPOTENCY_KEY: idempotency_key.strip(),
         QUEUE_FIELD_STATUS: QUEUE_STATUS_PENDING,
-        QUEUE_FIELD_PAYLOAD: json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+        QUEUE_FIELD_PAYLOAD: stored_payload,
         QUEUE_FIELD_SUBMITTED_AT: now,
         QUEUE_FIELD_RETRY_COUNT: 0,
     }
     created_rows = client.batch_create_records(table_id, [fields])
     if not created_rows:
+        for record_id in chunk_record_ids:
+            if record_id:
+                client.delete_record(payload_table_id, record_id)
         raise RuntimeError("后台任务写入失败，飞书未返回任务记录。")
     created_record = dict(created_rows[0])
     created_record["fields"] = dict(created_record.get("fields") or fields)
     created_task = task_from_record(created_record)
+    verified = next((item for item in list_submission_tasks(client, table_id) if item.task_id == task_id), None)
+    if verified is None or verified.payload != payload:
+        raise RuntimeError("后台任务载荷写入后校验失败，任务未可靠入队。")
+    created_task = verified
 
     canonical = find_task_by_idempotency_key(client, idempotency_key, table_id)
     if canonical is not None and canonical.record_id != created_task.record_id:

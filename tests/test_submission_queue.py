@@ -27,7 +27,7 @@ class FakeQueueClient:
         *,
         default_view_name: str,
     ) -> dict:
-        table_id = "tbl-queue"
+        table_id = "tbl-queue" if table_name == queue.QUEUE_TABLE_NAME else "tbl-payload"
         self.tables.append({"table_id": table_id, "name": table_name})
         self.fields[table_id] = [
             {"field_name": field["field_name"], "type": field["type"]}
@@ -86,9 +86,27 @@ class SubmissionQueueTests(unittest.TestCase):
         self.assertEqual(client.tables[0]["name"], queue.QUEUE_TABLE_NAME)
         field_names = {field["field_name"] for field in client.fields[table_id]}
         self.assertEqual(field_names, {name for name, _ in queue.QUEUE_FIELDS})
+        self.assertEqual(client.tables[1]["name"], queue.QUEUE_PAYLOAD_TABLE_NAME)
 
         self.assertEqual(queue.ensure_submission_queue_table(client), table_id)
-        self.assertEqual(client.list_tables_count, 1)
+        self.assertEqual(client.list_tables_count, 2)
+
+    def test_large_payload_is_chunked_and_read_back_exactly(self) -> None:
+        client = FakeQueueClient()
+        payload = {"sync_args": {"rows": ["物料数据" * 1000 for _ in range(20)]}}
+
+        task, created = queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_CATEGORY_SYNC,
+            "large-token",
+            payload,
+        )
+
+        self.assertTrue(created)
+        self.assertEqual(task.payload, payload)
+        self.assertGreater(len(client.records["tbl-payload"]), 1)
+        persisted = queue.list_submission_tasks(client)[0]
+        self.assertEqual(persisted.payload, payload)
 
     def test_enqueue_is_idempotent_when_create_returns_only_record_id(self) -> None:
         client = FakeQueueClient()
