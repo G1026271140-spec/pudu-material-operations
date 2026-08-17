@@ -108,6 +108,20 @@ class SubmissionQueueTests(unittest.TestCase):
         persisted = queue.list_submission_tasks(client)[0]
         self.assertEqual(persisted.payload, payload)
 
+    def test_payload_verification_uses_json_normalized_collections(self) -> None:
+        client = FakeQueueClient()
+        payload = {"sync_args": {"selection": ("型号", "中文")}}
+
+        task, created = queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_CATEGORY_SYNC,
+            "tuple-token",
+            payload,
+        )
+
+        self.assertTrue(created)
+        self.assertEqual(task.payload["sync_args"]["selection"], ["型号", "中文"])
+
     def test_enqueue_is_idempotent_when_create_returns_only_record_id(self) -> None:
         client = FakeQueueClient()
 

@@ -348,8 +348,9 @@ def enqueue_submission_task(
     created_record = dict(created_rows[0])
     created_record["fields"] = dict(created_record.get("fields") or fields)
     created_task = task_from_record(created_record)
+    expected_payload = _json_object(serialized_payload)
     verified = next((item for item in list_submission_tasks(client, table_id) if item.task_id == task_id), None)
-    if verified is None or verified.payload != payload:
+    if verified is None or verified.payload != expected_payload:
         raise RuntimeError("后台任务载荷写入后校验失败，任务未可靠入队。")
     created_task = verified
 
