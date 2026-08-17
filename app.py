@@ -34,6 +34,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
+    QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
@@ -428,7 +429,7 @@ FULLSCREEN_SYNC_IN_PROGRESS_KEY = "_fullscreen_sync_in_progress"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
 MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "发货模板填写", "周边礼品项目")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
-MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理")
+MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理", "型号管理", "语种管理")
 MATERIAL_DASHBOARD_MODULES = (
     "概览指标",
     "品类库存数量",
@@ -505,6 +506,8 @@ PAGE_CACHE_TABLES = {
     "request": REQUEST_FORM_CACHE_TABLES,
     "restock": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "category": (CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
+    "model_management": (MODEL_TABLE_NAME, MATERIAL_TABLE_NAME),
+    "language_management": (LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME),
     "maintenance": ALL_PAGE_CACHE_TABLES,
     "inventory": (CATEGORY_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "gift_projects": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, GIFT_PROJECT_TABLE_NAME),
@@ -2791,6 +2794,120 @@ def add_material_language_link(
     language_record_id = language_ids.get(language.strip() or NO_LANGUAGE_TEXT, "")
     if link_field and language_record_id:
         fields[link_field] = [language_record_id]
+
+
+def dimension_management_config(kind: str) -> dict[str, object]:
+    if kind == "model":
+        return {
+            "table": MODEL_TABLE_NAME,
+            "name_field": "产品型号",
+            "code_field": "产品型号编码",
+            "material_name_field": "产品型号",
+            "link_fields": MODEL_LINK_FIELD_CANDIDATES,
+            "label": "型号",
+        }
+    if kind == "language":
+        return {
+            "table": LANGUAGE_TABLE_NAME,
+            "name_field": "语言种类",
+            "code_field": "",
+            "material_name_field": "语种",
+            "link_fields": LANGUAGE_LINK_FIELD_CANDIDATES,
+            "label": "语种",
+        }
+    raise ValueError("不支持的基础维度类型。")
+
+
+def dimension_management_records(kind: str, rows: list[dict] | None = None) -> list[dict[str, str]]:
+    config = dimension_management_config(kind)
+    table_name = str(config["table"])
+    name_field = str(config["name_field"])
+    code_field = str(config["code_field"])
+    records: list[dict[str, str]] = []
+    for row in list(rows if rows is not None else safe_feishu_rows(table_name)):
+        fields = feishu_fields(row)
+        name = (
+            feishu_language_name(fields)
+            if kind == "language"
+            else feishu_text(fields, name_field).strip()
+        )
+        record_id = feishu_record_id(row)
+        if name and record_id:
+            records.append(
+                {
+                    "record_id": record_id,
+                    "name": name,
+                    "code": feishu_text(fields, code_field).strip() if code_field else "",
+                    "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
+                }
+            )
+    records.sort(key=lambda item: item["name"].casefold())
+    return records
+
+
+def dimension_material_references(kind: str, record_id: str, name: str) -> list[str]:
+    config = dimension_management_config(kind)
+    target_name = normalize_option_label(name).casefold()
+    referenced_ids: list[str] = []
+    for row in fresh_feishu_rows(MATERIAL_TABLE_NAME):
+        fields = feishu_fields(row)
+        linked_ids = feishu_link_ids_any(fields, list(config["link_fields"]))  # type: ignore[arg-type]
+        material_name = feishu_text(fields, str(config["material_name_field"]))
+        if record_id in linked_ids or normalize_option_label(material_name).casefold() == target_name:
+            referenced_ids.append(feishu_record_id(row))
+    return unique_preserve([value for value in referenced_ids if value])
+
+
+def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
+    kind = str(draft.get("kind") or "")
+    operation = str(draft.get("operation") or "")
+    config = dimension_management_config(kind)
+    table_name = str(config["table"])
+    name_field = str(config["name_field"])
+    code_field = str(config["code_field"])
+    label = str(config["label"])
+    records = dimension_management_records(kind, fresh_feishu_rows(table_name))
+    by_id = {item["record_id"]: item for item in records}
+    normalized_names = {
+        normalize_option_label(item["name"]).casefold(): item for item in records
+    }
+    record_id = str(draft.get("record_id") or "")
+    name = str(draft.get("name") or "").strip()
+    status = normalize_enabled_status(draft.get("status"))
+    if operation == "create":
+        if not name:
+            raise ValueError(f"请填写{label}名称。")
+        if normalize_option_label(name).casefold() in normalized_names:
+            raise ValueError(f"该{label}已经存在。")
+        fields: dict[str, object] = {name_field: name, "启用状态": status}
+        if code_field:
+            numeric_codes = [int(item["code"]) for item in records if item["code"].isdigit()]
+            fields[code_field] = str(max(numeric_codes, default=0) + 1)
+        created = feishu_batch_create_records(table_name, [fields])
+        return {"operation": operation, "created_count": len(created)}
+    if record_id not in by_id:
+        raise ValueError(f"所选{label}不存在，请刷新页面后重试。")
+    current = by_id[record_id]
+    if operation == "edit":
+        if not name:
+            raise ValueError(f"请填写{label}名称。")
+        duplicate = normalized_names.get(normalize_option_label(name).casefold())
+        if duplicate and duplicate["record_id"] != record_id:
+            raise ValueError(f"该{label}名称已经存在。")
+        feishu_update_record_fields(table_name, record_id, {name_field: name, "启用状态": status})
+        material_updates = [
+            {"record_id": material_id, "fields": {str(config["material_name_field"]): name}}
+            for material_id in dimension_material_references(kind, record_id, current["name"])
+        ]
+        updated_material_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, material_updates)
+        return {"operation": operation, "updated_count": 1, "updated_material_count": updated_material_count}
+    if operation == "delete":
+        references = dimension_material_references(kind, record_id, current["name"])
+        if references:
+            raise ValueError(f"该{label}仍被 {len(references)} 条物料数据引用，不能删除；请先调整相关物料。")
+        deleted_count = feishu_batch_delete_record_ids(table_name, [record_id])
+        return {"operation": operation, "deleted_count": deleted_count}
+    raise ValueError("不支持的基础维度管理操作。")
 
 
 def storage_mode_label() -> str:
@@ -12064,6 +12181,140 @@ def render_category_delete_workspace(
                 st.rerun()
 
 
+def render_dimension_management_page(kind: str) -> None:
+    config = dimension_management_config(kind)
+    label = str(config["label"])
+    table_name = str(config["table"])
+    state_prefix = f"dimension_management_{kind}"
+    draft_key = f"{state_prefix}_draft"
+    message_key = f"{state_prefix}_message"
+    message = st.session_state.pop(message_key, "")
+    if message:
+        st.success(message)
+    draft = st.session_state.get(draft_key)
+    if isinstance(draft, dict):
+        operation_labels = {"create": "新增", "edit": "编辑", "delete": "删除"}
+        operation = str(draft.get("operation") or "")
+        render_section_header(
+            "02",
+            f"确认{operation_labels.get(operation, '')}{label}",
+            "确认后任务将进入后台队列，页面可直接关闭。",
+        )
+        with st.container(border=True):
+            preview_cols = st.columns(3)
+            render_request_review_field(preview_cols[0], "操作", operation_labels.get(operation, operation))
+            render_request_review_field(preview_cols[1], f"{label}名称", draft.get("name"))
+            render_request_review_field(preview_cols[2], "启用状态", draft.get("status"))
+            if operation == "delete":
+                st.warning(f"删除{label}前，后台任务会再次检查是否仍被物料数据引用。")
+        back_col, _, confirm_col = st.columns([1.1, 2.2, 1.45])
+        if back_col.button("返回修改", key=f"{state_prefix}_back", icon=":material/arrow_back:", width="stretch"):
+            st.session_state.pop(draft_key, None)
+            st.rerun()
+        if confirm_col.button(
+            f"确认{operation_labels.get(operation, '')}",
+            key=f"{state_prefix}_confirm",
+            type="primary",
+            icon=":material/send:",
+            width="stretch",
+        ):
+            with fullscreen_data_sync("正在提交数据，请稍后......"):
+                try:
+                    task, _ = enqueue_feishu_background_write(
+                        QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
+                        {"draft": dict(draft)},
+                    )
+                except Exception as exc:
+                    st.error(f"{label}管理任务未能进入后台队列，请重试。")
+                    st.exception(exc)
+                    return
+            st.session_state.pop(draft_key, None)
+            st.session_state[message_key] = (
+                f"{label}{operation_labels.get(operation, '')}任务已进入后台队列（任务 {task.task_id[:8]}）。"
+            )
+            st.rerun()
+        return
+
+    with st.spinner(f"{label}数据加载中，请稍后......"):
+        records = dimension_management_records(kind, safe_feishu_rows(table_name))
+    render_section_header("01", f"{label}管理", f"新增、编辑或删除{label}，提交前需核对变更。")
+    mode = st.segmented_control(
+        "操作类型",
+        ["＋ 新增", "✎ 编辑", "－ 删除"],
+        key=f"{state_prefix}_mode",
+        label_visibility="collapsed",
+        width="stretch",
+        default="✎ 编辑",
+    ) or "✎ 编辑"
+    operation = {"＋ 新增": "create", "✎ 编辑": "edit", "－ 删除": "delete"}[mode]
+    selected: dict[str, str] | None = None
+    if operation != "create":
+        if not records:
+            st.info(f"暂无可{('编辑' if operation == 'edit' else '删除')}的{label}。")
+            return
+        selected_id = st.selectbox(
+            f"选择{label}",
+            [item["record_id"] for item in records],
+            format_func=lambda value: next(
+                (f"{item['name']} · {item['status']}" for item in records if item["record_id"] == value),
+                str(value),
+            ),
+            key=f"{state_prefix}_selected_id",
+        )
+        selected = next(item for item in records if item["record_id"] == selected_id)
+    default_name = str((selected or {}).get("name") or "")
+    default_status = str((selected or {}).get("status") or STATUS_ACTIVE)
+    if operation == "delete":
+        st.error(f"删除仍被物料主数据引用的{label}会被后台拒绝。")
+        name = default_name
+        status = default_status
+    else:
+        form_cols = st.columns([2.2, 1])
+        name = form_cols[0].text_input(
+            f"{label}名称",
+            value=default_name,
+            key=f"{state_prefix}_{operation}_name_{(selected or {}).get('record_id', 'new')}",
+        )
+        status = form_cols[1].selectbox(
+            "启用状态",
+            MATERIAL_STATUS_OPTIONS,
+            index=list(MATERIAL_STATUS_OPTIONS).index(default_status),
+            key=f"{state_prefix}_{operation}_status_{(selected or {}).get('record_id', 'new')}",
+        )
+    _, preview_col = st.columns([3, 1.25])
+    if preview_col.button(
+        f"预览{ {'create': '新增', 'edit': '修改', 'delete': '删除'}[operation] }",
+        key=f"{state_prefix}_{operation}_preview",
+        type="primary",
+        icon=":material/preview:",
+        width="stretch",
+    ):
+        normalized_name = str(name or "").strip()
+        if not normalized_name:
+            st.warning(f"请填写{label}名称。")
+            return
+        duplicate = next(
+            (
+                item for item in records
+                if normalize_option_label(item["name"]).casefold()
+                == normalize_option_label(normalized_name).casefold()
+                and item["record_id"] != str((selected or {}).get("record_id") or "")
+            ),
+            None,
+        )
+        if operation != "delete" and duplicate:
+            st.warning(f"该{label}名称已经存在。")
+            return
+        st.session_state[draft_key] = {
+            "kind": kind,
+            "operation": operation,
+            "record_id": str((selected or {}).get("record_id") or ""),
+            "name": normalized_name,
+            "status": status,
+        }
+        st.rerun()
+
+
 def render_add_category_form() -> None:
     if st.session_state.get(CATEGORY_DELETE_STAGE_KEY) == "review":
         render_category_delete_review()
@@ -14948,9 +15199,14 @@ def render_management_page() -> None:
         "发货模板填写": "shipping",
         "周边礼品项目": "gift_projects",
         "物料管理": (
-            "category"
-            if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) == "品类管理"
-            else "restock"
+            {
+                "品类管理": "category",
+                "型号管理": "model_management",
+                "语种管理": "language_management",
+            }.get(
+                str(st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) or ""),
+                "restock",
+            )
         ),
     }[current_section]
     render_page_header(
@@ -14984,12 +15240,18 @@ def render_management_page() -> None:
             {
                 "采购补库": "restock",
                 "品类管理": "category",
+                "型号管理": "model_management",
+                "语种管理": "language_management",
             }[material_section]
         )
         if material_section == "采购补库":
             render_restock_form()
-        else:
+        elif material_section == "品类管理":
             render_add_category_form()
+        elif material_section == "型号管理":
+            render_dimension_management_page("model")
+        else:
+            render_dimension_management_page("language")
         return
     render_page_cache_toolbar("request")
     render_change_form(show_title=False)

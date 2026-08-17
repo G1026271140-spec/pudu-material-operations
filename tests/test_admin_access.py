@@ -72,7 +72,10 @@ class AdminAccessTests(unittest.TestCase):
         )
 
     def test_material_database_page_is_not_exposed(self) -> None:
-        self.assertEqual(app.MATERIAL_MANAGEMENT_SECTIONS, ("采购补库", "品类管理"))
+        self.assertEqual(
+            app.MATERIAL_MANAGEMENT_SECTIONS,
+            ("采购补库", "品类管理", "型号管理", "语种管理"),
+        )
         self.assertNotIn("material_database", app.PAGE_CACHE_TABLES)
         self.assertFalse(hasattr(app, "render_material_database_page"))
 

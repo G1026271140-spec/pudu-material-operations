@@ -21,6 +21,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
+    QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
@@ -190,6 +191,8 @@ def process_task(
         }
     if task.task_type == QUEUE_TASK_TYPE_CATEGORY_DELETE:
         return inventory_app.execute_category_delete(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT:
+        return inventory_app.execute_dimension_management(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REVERT:
         ids = [str(value) for value in list(payload.get("transaction_ids") or [])]
         for transaction_id in ids:

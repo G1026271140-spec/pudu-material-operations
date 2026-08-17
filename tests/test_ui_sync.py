@@ -169,7 +169,11 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
         self.assertEqual(app.PAGE_DATA_POLL_INTERVAL_SECONDS, 60)
         self.assertEqual(
             set(app.PAGE_CACHE_TABLES),
-            {"request", "restock", "category", "maintenance", "inventory", "gift_projects", "shipping"},
+            {
+                "request", "restock", "category", "model_management",
+                "language_management", "maintenance", "inventory",
+                "gift_projects", "shipping",
+            },
         )
 
     def test_first_monitor_render_defers_live_poll_for_sixty_seconds(self) -> None:
