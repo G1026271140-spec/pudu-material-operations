@@ -57,7 +57,7 @@ class DimensionManagementTests(unittest.TestCase):
         )
         self.assertEqual(result["updated_material_count"], 1)
 
-    def test_delete_referenced_model_is_blocked(self) -> None:
+    def test_delete_referenced_model_cascades_to_material_master_data(self) -> None:
         model_rows = [
             {"record_id": "m1", "fields": {"产品型号编码": "1", "产品型号": "P1", "启用状态": "启用"}}
         ]
@@ -70,13 +70,19 @@ class DimensionManagementTests(unittest.TestCase):
 
         with (
             patch.object(app, "fresh_feishu_rows", side_effect=rows),
-            patch.object(app, "feishu_batch_delete_record_ids") as delete,
+            patch.object(app, "feishu_batch_delete_record_ids", side_effect=[1, 1]) as delete,
         ):
-            with self.assertRaisesRegex(ValueError, "仍被 1 条物料数据引用"):
-                app.execute_dimension_management(
-                    {"kind": "model", "operation": "delete", "record_id": "m1", "name": "P1"}
-                )
-        delete.assert_not_called()
+            result = app.execute_dimension_management(
+                {"kind": "model", "operation": "delete", "record_id": "m1", "name": "P1"}
+            )
+        self.assertEqual(
+            delete.call_args_list,
+            [
+                unittest.mock.call(app.MATERIAL_TABLE_NAME, ["mat1"]),
+                unittest.mock.call(app.MODEL_TABLE_NAME, ["m1"]),
+            ],
+        )
+        self.assertEqual(result["deleted_material_count"], 1)
 
 
 if __name__ == "__main__":

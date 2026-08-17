@@ -252,6 +252,27 @@ def list_submission_tasks(
     return tasks
 
 
+def _is_feishu_data_not_ready_error(exc: Exception) -> bool:
+    message = str(exc).casefold()
+    return "1254607" in message or "data not ready" in message
+
+
+def _list_submission_tasks_with_readiness_retry(
+    client: FeishuBitableClient,
+    table_id: str,
+    *,
+    attempts: int = 6,
+) -> list[SubmissionTask]:
+    for attempt in range(attempts):
+        try:
+            return list_submission_tasks(client, table_id)
+        except Exception as exc:
+            if not _is_feishu_data_not_ready_error(exc) or attempt >= attempts - 1:
+                raise
+            time.sleep(0.5 * (attempt + 1))
+    return []
+
+
 def find_task_by_idempotency_key(
     client: FeishuBitableClient,
     idempotency_key: str,
@@ -262,7 +283,7 @@ def find_task_by_idempotency_key(
         return None
     matches = [
         task
-        for task in list_submission_tasks(client, table_id)
+        for task in _list_submission_tasks_with_readiness_retry(client, table_id)
         if task.idempotency_key == normalized_key
         and task.status != QUEUE_STATUS_CANCELLED
     ]
@@ -350,7 +371,14 @@ def enqueue_submission_task(
     created_record["fields"] = dict(created_record.get("fields") or fields)
     created_task = task_from_record(created_record)
     expected_payload = _json_object(serialized_payload)
-    verified = next((item for item in list_submission_tasks(client, table_id) if item.task_id == task_id), None)
+    verified = next(
+        (
+            item
+            for item in _list_submission_tasks_with_readiness_retry(client, table_id)
+            if item.task_id == task_id
+        ),
+        None,
+    )
     if verified is None or verified.payload != expected_payload:
         raise RuntimeError("后台任务载荷写入后校验失败，任务未可靠入队。")
     created_task = verified

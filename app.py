@@ -2903,10 +2903,13 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
         return {"operation": operation, "updated_count": 1, "updated_material_count": updated_material_count}
     if operation == "delete":
         references = dimension_material_references(kind, record_id, current["name"])
-        if references:
-            raise ValueError(f"该{label}仍被 {len(references)} 条物料数据引用，不能删除；请先调整相关物料。")
+        deleted_material_count = feishu_batch_delete_record_ids(MATERIAL_TABLE_NAME, references)
         deleted_count = feishu_batch_delete_record_ids(table_name, [record_id])
-        return {"operation": operation, "deleted_count": deleted_count}
+        return {
+            "operation": operation,
+            "deleted_count": deleted_count,
+            "deleted_material_count": deleted_material_count,
+        }
     raise ValueError("不支持的基础维度管理操作。")
 
 
@@ -12206,7 +12209,7 @@ def render_dimension_management_page(kind: str) -> None:
             render_request_review_field(preview_cols[1], f"{label}名称", draft.get("name"))
             render_request_review_field(preview_cols[2], "启用状态", draft.get("status"))
             if operation == "delete":
-                st.warning(f"删除{label}前，后台任务会再次检查是否仍被物料数据引用。")
+                st.warning(f"删除{label}时，会同时删除所有引用该{label}的物料主数据。此操作不可撤销。")
         back_col, _, confirm_col = st.columns([1.1, 2.2, 1.45])
         if back_col.button("返回修改", key=f"{state_prefix}_back", icon=":material/arrow_back:", width="stretch"):
             st.session_state.pop(draft_key, None)
@@ -12265,7 +12268,7 @@ def render_dimension_management_page(kind: str) -> None:
     default_name = str((selected or {}).get("name") or "")
     default_status = str((selected or {}).get("status") or STATUS_ACTIVE)
     if operation == "delete":
-        st.error(f"删除仍被物料主数据引用的{label}会被后台拒绝。")
+        st.error(f"删除该{label}会同时删除引用它的物料主数据，请在预览后仔细确认。")
         name = default_name
         status = default_status
     else:

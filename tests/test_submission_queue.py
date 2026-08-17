@@ -77,6 +77,32 @@ class FakeQueueClient:
 
 
 class SubmissionQueueTests(unittest.TestCase):
+    def test_enqueue_retries_when_feishu_data_is_not_ready(self) -> None:
+        client = FakeQueueClient()
+        original_list_records = client.list_records
+        queue_reads = 0
+
+        def list_records(table_id: str, page_size: int = 500) -> list[dict]:
+            nonlocal queue_reads
+            if table_id == "tbl-queue" and client.records.get(table_id):
+                queue_reads += 1
+                if queue_reads == 1:
+                    raise RuntimeError("Feishu HTTP 400: code=1254607 Data not ready, please try again later")
+            return original_list_records(table_id, page_size)
+
+        client.list_records = list_records  # type: ignore[method-assign]
+        with patch.object(queue.time, "sleep") as sleep:
+            task, created = queue.enqueue_submission_task(
+                client,
+                queue.QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
+                "dimension-delete-token",
+                {"draft": {"operation": "delete"}},
+            )
+
+        self.assertTrue(created)
+        self.assertTrue(task.task_id)
+        sleep.assert_called_once_with(0.5)
+
     def test_queue_table_is_created_with_recovery_fields(self) -> None:
         client = FakeQueueClient()
 
