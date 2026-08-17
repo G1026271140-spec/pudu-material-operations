@@ -601,14 +601,14 @@ def inject_global_styles() -> None:
             box-shadow: none;
             pointer-events: none;
         }
-        [data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] {
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarCollapseButton"] {
             position: fixed;
-            top: 0.75rem;
+            top: 50%;
             left: 0.75rem;
             z-index: 1000;
+            transform: translateY(-50%);
             pointer-events: auto;
         }
-        [data-testid="stSidebarCollapsedControl"] button,
         [data-testid="stSidebarCollapseButton"] button {
             width: 44px;
             height: 44px;
@@ -621,12 +621,10 @@ def inject_global_styles() -> None:
             color: var(--pudu-navy) !important;
             box-shadow: 0 2px 8px rgba(31, 35, 41, 0.12) !important;
         }
-        [data-testid="stSidebarCollapsedControl"] button svg,
         [data-testid="stSidebarCollapseButton"] button svg {
             width: 22px !important;
             height: 22px !important;
         }
-        [data-testid="stSidebarCollapsedControl"] button:hover,
         [data-testid="stSidebarCollapseButton"] button:hover {
             border-color: #9FB8CB !important;
             background: var(--pudu-blue-soft) !important;
@@ -1178,6 +1176,10 @@ def inject_global_styles() -> None:
             min-width: 0 !important;
             max-width: 0 !important;
             border-right: 0 !important;
+            overflow: visible !important;
+        }
+        [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarHeader"] {
+            overflow: visible !important;
         }
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
         .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
