@@ -55,6 +55,8 @@ from ui_i18n import (
 
 
 DEFAULT_PASSWORD = "376493"
+# 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
+APP_VERSION = "V0.9.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -775,6 +777,22 @@ def inject_global_styles() -> None:
         }
         .st-key-sidebar_data_system_group .pudu-sidebar-label {
             margin: 0.15rem 0 0.5rem;
+        }
+        .pudu-sidebar-system-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin: 0.15rem 0 0.5rem;
+        }
+        .pudu-sidebar-system-heading .pudu-sidebar-label {
+            margin: 0;
+        }
+        .pudu-app-version {
+            color: var(--pudu-muted) !important;
+            font-size: 0.68rem;
+            font-weight: 600;
+            white-space: nowrap;
         }
         .st-key-sidebar_data_system_group [data-testid="stExpander"] {
             margin-top: 0.5rem;
@@ -9729,7 +9747,10 @@ def render_sidebar_link() -> None:
         st.divider()
         with st.container(key="sidebar_data_system_group"):
             st.markdown(
-                f'<div class="pudu-sidebar-label">{escape(ui_text("数据与系统"))}</div>',
+                '<div class="pudu-sidebar-system-heading">'
+                f'<div class="pudu-sidebar-label">{escape(ui_text("数据与系统"))}</div>'
+                f'<div class="pudu-app-version">当前应用版本 {escape(APP_VERSION)}</div>'
+                '</div>',
                 unsafe_allow_html=True,
             )
             if not st.session_state.get("admin_unlocked"):

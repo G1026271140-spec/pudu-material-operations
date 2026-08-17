@@ -5,6 +5,9 @@ import app
 
 
 class AdminAccessTests(unittest.TestCase):
+    def test_application_version_is_shown_in_sidebar(self) -> None:
+        self.assertEqual(app.APP_VERSION, "V0.9.1")
+
     def test_category_navigation_and_workbench_control_use_different_state_keys(self) -> None:
         self.assertNotEqual(
             app.MANAGEMENT_NAVIGATION_KEY,
