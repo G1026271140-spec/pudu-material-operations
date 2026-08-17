@@ -113,16 +113,6 @@ class RequestDraftTests(unittest.TestCase):
 
         self.assertTrue(any("最多可添加 20 种" in error for error in errors))
 
-    def test_attachment_merge_keeps_latest_file_with_same_name(self) -> None:
-        merged = app.merge_request_attachments(
-            [{"name": "address.xlsx", "content": b"old", "content_type": "old/type"}],
-            [{"name": "address.xlsx", "content": b"new", "content_type": "new/type"}],
-        )
-
-        self.assertEqual(len(merged), 1)
-        self.assertEqual(merged[0]["content"], b"new")
-        self.assertEqual(merged[0]["content_type"], "new/type")
-
     def test_material_table_updates_quantity_remark_and_selection(self) -> None:
         lines = [
             {

@@ -177,9 +177,8 @@ class SubmissionQueueTests(unittest.TestCase):
         persisted = queue.list_submission_tasks(client)[0]
         self.assertTrue(persisted.result["admin_notification_done"])
 
-    def test_queued_request_uploads_files_once_and_removes_binary_content(self) -> None:
+    def test_queued_request_ignores_legacy_attachment_content(self) -> None:
         client = MagicMock()
-        client.upload_media.return_value = "file-token-1"
         request_payload = {
             "submission_token": "token-3",
             "requester": "销售甲",
@@ -192,26 +191,24 @@ class SubmissionQueueTests(unittest.TestCase):
             ],
         }
 
-        with patch.object(app, "feishu_client", return_value=client):
-            payload = app.queued_material_request_payload(
-                request_payload,
-                [
-                    {
-                        "product": "产品单页",
-                        "model": "BellaBot",
-                        "language": "英语",
-                        "quantity": 2,
-                        "remark": "",
-                    }
-                ],
-            )
+        payload = app.queued_material_request_payload(
+            request_payload,
+            [
+                {
+                    "product": "产品单页",
+                    "model": "BellaBot",
+                    "language": "英语",
+                    "quantity": 2,
+                    "remark": "",
+                }
+            ],
+        )
 
         serialized = json.dumps(payload, ensure_ascii=False)
         self.assertNotIn("binary", serialized)
         request = dict(payload["request_payload"])
-        attachment = list(request["attachments"])[0]
-        self.assertEqual(attachment["file_token"], "file-token-1")
-        client.upload_media.assert_called_once()
+        self.assertNotIn("attachments", request)
+        client.upload_media.assert_not_called()
 
 
 if __name__ == "__main__":

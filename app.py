@@ -31,7 +31,13 @@ from shipping_page import render_shipping_template_page
 from submission_queue import (
     QUEUE_STATUS_COMPLETED,
     QUEUE_STATUS_FAILED,
+    QUEUE_TASK_TYPE_CATEGORY_DELETE,
+    QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    QUEUE_TASK_TYPE_RESTOCK,
+    QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
+    QUEUE_TASK_TYPE_TRANSACTION_REVERT,
     SubmissionTask,
     enqueue_submission_task,
     ensure_submission_queue_table,
@@ -116,8 +122,6 @@ REQUEST_MANUAL_PRODUCT_ORDER = (
     "配送线产品手册DR",
     "具身线产品手册ER",
 )
-MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024
-MAX_ATTACHMENTS_PER_REQUEST = 100
 GITHUB_REPOSITORY = "G1026271140-spec/pudu-material-inventory"
 GITHUB_CACHE_WORKFLOW_FILE = "refresh-static-cache.yml"
 GITHUB_CACHE_WORKFLOW_URL = (
@@ -1844,55 +1848,6 @@ def inject_global_styles() -> None:
             line-height: 1.5;
             letter-spacing: 0;
         }
-        .pudu-sync-overlay__initial,
-        .pudu-sync-overlay__delayed {
-            grid-area: 1 / 1;
-            min-width: 0;
-        }
-        .pudu-sync-overlay__initial {
-            animation: pudu-sync-phase-out 0s linear 10s forwards;
-        }
-        .pudu-sync-overlay__delayed {
-            opacity: 0;
-            visibility: hidden;
-            animation: pudu-sync-phase-in 0s linear 10s forwards;
-        }
-        .pudu-sync-overlay__delayed strong {
-            text-wrap: balance;
-        }
-        .pudu-sync-overlay__nowrap {
-            white-space: nowrap;
-        }
-        .pudu-sync-overlay__countdown-wrap {
-            display: inline-flex;
-            align-items: baseline;
-            margin-left: 0.1rem;
-            color: var(--pudu-teal);
-            white-space: nowrap;
-        }
-        .pudu-sync-overlay__countdown {
-            display: inline-grid;
-            min-width: 1.25em;
-            font-weight: 750;
-            text-align: center;
-            vertical-align: baseline;
-        }
-        .pudu-sync-overlay__countdown i {
-            grid-area: 1 / 1;
-            opacity: 0;
-            visibility: hidden;
-            font-style: normal;
-            animation: pudu-sync-countdown-second 1s linear forwards;
-        }
-        .pudu-sync-overlay__countdown i:nth-child(2) { animation-delay: 1s; }
-        .pudu-sync-overlay__countdown i:nth-child(3) { animation-delay: 2s; }
-        .pudu-sync-overlay__countdown i:nth-child(4) { animation-delay: 3s; }
-        .pudu-sync-overlay__countdown i:nth-child(5) { animation-delay: 4s; }
-        .pudu-sync-overlay__countdown i:nth-child(6) { animation-delay: 5s; }
-        .pudu-sync-overlay__countdown i:nth-child(7) { animation-delay: 6s; }
-        .pudu-sync-overlay__countdown i:nth-child(8) { animation-delay: 7s; }
-        .pudu-sync-overlay__countdown i:nth-child(9) { animation-delay: 8s; }
-        .pudu-sync-overlay__countdown i:nth-child(10) { animation-delay: 9s; }
         .pudu-update-ticker {
             width: 100%;
             margin: 0.15rem 0 0.75rem;
@@ -1919,16 +1874,6 @@ def inject_global_styles() -> None:
         }
         @keyframes pudu-sync-spin {
             to { transform: rotate(360deg); }
-        }
-        @keyframes pudu-sync-countdown-second {
-            0%, 99.999% { opacity: 1; visibility: visible; }
-            100% { opacity: 0; visibility: hidden; }
-        }
-        @keyframes pudu-sync-phase-out {
-            to { opacity: 0; visibility: hidden; }
-        }
-        @keyframes pudu-sync-phase-in {
-            to { opacity: 1; visibility: visible; }
         }
         @keyframes pudu-update-scroll {
             from { transform: translateX(0); }
@@ -2040,17 +1985,7 @@ def fullscreen_sync_overlay_html(message: str) -> str:
             <div class="pudu-sync-overlay__panel" data-sync-operation="{escape(message)}">
                 <div class="pudu-sync-overlay__spinner" aria-hidden="true"></div>
                 <div class="pudu-sync-overlay__copy">
-                    <div class="pudu-sync-overlay__initial">
-                        <strong>
-                            数据已提交，请稍等<span class="pudu-sync-overlay__countdown-wrap">(<b class="pudu-sync-overlay__countdown" aria-hidden="true">
-                                <i>10</i><i>9</i><i>8</i><i>7</i><i>6</i>
-                                <i>5</i><i>4</i><i>3</i><i>2</i><i>1</i>
-                            </b>)</span>
-                        </strong>
-                    </div>
-                    <div class="pudu-sync-overlay__delayed">
-                        <strong>数据正在写入，您可以<span class="pudu-sync-overlay__nowrap">离开该页面，</span><span class="pudu-sync-overlay__nowrap">感谢您的使用</span></strong>
-                    </div>
+                    <strong>{escape(message)}</strong>
                 </div>
             </div>
         </div>
@@ -5589,7 +5524,7 @@ def material_lookup_by_key() -> dict[tuple[str, str, str], dict]:
     return feishu_inventory_index()
 
 
-def request_note_text(request_payload: dict[str, object], attachment_note: str = "") -> str:
+def request_note_text(request_payload: dict[str, object]) -> str:
     parts = [
         ("客户名称", request_payload.get("customer_name")),
         ("国家", request_payload.get("country")),
@@ -5597,7 +5532,6 @@ def request_note_text(request_payload: dict[str, object], attachment_note: str =
         ("运费承担者", request_payload.get("freight_payer")),
         ("物料用途", request_payload.get("material_usage")),
         ("申请人", request_payload.get("requester")),
-        ("相关附件", attachment_note),
     ]
     return "\n".join(f"{label}：{str(value).strip()}" for label, value in parts if str(value or "").strip())
 
@@ -5893,15 +5827,6 @@ def material_request_notification_card(
 ) -> dict[str, object]:
     valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
     total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
-    attachments = list(request_payload.get("attachments") or [])
-    attachment_names = [
-        _feishu_card_plain_text(
-            attachment.get("name") if isinstance(attachment, dict) else attachment,
-            max_length=200,
-        )
-        for attachment in attachments
-    ]
-
     application_fields: list[tuple[str, object]] = [
         ("申请单号", request_no),
         ("申请人", request_payload.get("requester")),
@@ -5912,10 +5837,6 @@ def material_request_notification_card(
         ("运费承担者", request_payload.get("freight_payer")),
         ("申请合计", f"{len(valid_lines)} 种，共 {total_quantity} 件"),
     ]
-    if attachment_names:
-        application_fields.append(
-            ("相关附件", "、".join(attachment_names))
-        )
     department = _feishu_card_plain_text(request_payload.get("department"), max_length=100)
     requester = _feishu_card_plain_text(request_payload.get("requester"), max_length=100)
     material_usage = _feishu_card_plain_text(
@@ -6828,26 +6749,6 @@ def submit_feishu_material_request(
 
     now = datetime.now()
     material_usage = str(request_payload.get("material_usage") or "").strip()
-    attachments = list(request_payload.get("attachments") or [])
-    attachment_values: list[dict[str, str]] = []
-    if attachments:
-        if not feishu_has_field(REQUEST_TABLE_NAME, "相关附件"):
-            raise RuntimeError("物料申请单缺少“相关附件”附件字段。")
-        if feishu_field_type(REQUEST_TABLE_NAME, "相关附件") != 17:
-            raise RuntimeError("物料申请单的“相关附件”必须是附件类型字段。")
-        client = feishu_client()
-        if client is None:
-            raise RuntimeError("飞书未配置，无法上传附件。")
-        for attachment in attachments:
-            file_token = str(attachment.get("file_token") or "").strip()
-            if not file_token:
-                file_token = client.upload_media(
-                    str(attachment.get("name") or ""),
-                    bytes(attachment.get("content") or b""),
-                    str(attachment.get("content_type") or "application/octet-stream"),
-                )
-            attachment_values.append({"file_token": file_token})
-
     request_no = next_request_no()
     request_fields: dict[str, object] = {
         "申请单号": request_no,
@@ -6866,10 +6767,8 @@ def submit_feishu_material_request(
         "物料用途": material_usage,
         "审批状态": REQUEST_STATUS_PENDING,
         "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
-        "备注": request_note_text(request_payload, str(request_payload.get("attachment_note") or "")),
+        "备注": request_note_text(request_payload),
     }
-    if attachment_values:
-        request_fields["相关附件"] = attachment_values
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["提交幂等键"], submission_token)
     set_first_person_or_plain_field(
         REQUEST_TABLE_NAME,
@@ -6890,8 +6789,6 @@ def submit_feishu_material_request(
         ["申请部门ID", "申请部门 open_department_id"],
         request_payload.get("department_id"),
     )
-    set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["附件说明", "相关附件说明"], request_payload.get("attachment_note"))
-
     request_record = feishu_create_record(REQUEST_TABLE_NAME, request_fields)
     request_record_id = feishu_record_id(request_record)
     if not request_record_id:
@@ -6957,30 +6854,6 @@ def queued_material_request_payload(
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
 ) -> dict[str, object]:
-    client = feishu_client()
-    if client is None:
-        raise RuntimeError("飞书未配置，无法创建后台申请任务。")
-    attachment_tokens: list[dict[str, str]] = []
-    for attachment in list(request_payload.get("attachments") or []):
-        if not isinstance(attachment, dict):
-            continue
-        file_token = str(attachment.get("file_token") or "").strip()
-        if not file_token:
-            file_token = client.upload_media(
-                str(attachment.get("name") or ""),
-                bytes(attachment.get("content") or b""),
-                str(attachment.get("content_type") or "application/octet-stream"),
-            )
-        attachment_tokens.append(
-            {
-                "name": str(attachment.get("name") or ""),
-                "content_type": str(
-                    attachment.get("content_type") or "application/octet-stream"
-                ),
-                "file_token": file_token,
-            }
-        )
-
     queued_request = {
         key: request_payload.get(key)
         for key in (
@@ -6994,11 +6867,9 @@ def queued_material_request_payload(
             "recipient_info",
             "freight_payer",
             "material_usage",
-            "attachment_note",
             "submission_token",
         )
     }
-    queued_request["attachments"] = attachment_tokens
     queued_lines = [
         {
             "product": str(line.get("product") or ""),
@@ -7045,6 +6916,42 @@ def enqueue_feishu_material_request(
         submission_token,
         payload,
     )
+
+
+def enqueue_feishu_background_write(
+    task_type: str,
+    payload: dict[str, object],
+    idempotency_key: str | None = None,
+) -> tuple[SubmissionTask, bool]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建后台写入任务。")
+    return enqueue_submission_task(
+        client,
+        task_type,
+        str(idempotency_key or uuid.uuid4().hex),
+        payload,
+    )
+
+
+def serialize_category_sync_args(args: dict[str, object]) -> dict[str, object]:
+    queued = dict(args)
+    target_values = dict(queued.pop("target_values", {}) or {})
+    queued["target_values_rows"] = [
+        {"model": str(key[0]), "language": str(key[1]), "values": dict(value)}
+        for key, value in target_values.items()
+    ]
+    return queued
+
+
+def deserialize_category_sync_args(args: dict[str, object]) -> dict[str, object]:
+    restored = dict(args)
+    rows = list(restored.pop("target_values_rows", []) or [])
+    restored["target_values"] = {
+        (str(row.get("model") or ""), str(row.get("language") or "")): dict(row.get("values") or {})
+        for row in rows if isinstance(row, dict)
+    }
+    return restored
 
 
 def feishu_person_text(fields: dict, names: list[str]) -> str:
@@ -9124,6 +9031,25 @@ def create_new_gift_project_request(
     }
 
 
+def process_gift_project_batch(args: dict[str, object]) -> dict[str, int]:
+    existing_ids = list(args.get("category_record_ids") or [])
+    created_count = 0
+    if existing_ids:
+        created_count += len(create_gift_project_requests_batch(
+            args.get("project_name"), existing_ids,
+            owner=args.get("owner", ""), owner_open_id=args.get("owner_open_id", ""),
+        ))
+    new_line = args.get("new_line")
+    if isinstance(new_line, dict):
+        create_new_gift_project_request(
+            args.get("project_name"), new_line.get("name"),
+            owner=args.get("owner", ""), owner_open_id=args.get("owner_open_id", ""),
+            remark=f"数量：{int(new_line.get('quantity') or 1)}\n{str(new_line.get('remark') or '')}",
+        )
+        created_count += 1
+    return {"created_count": created_count}
+
+
 def find_feishu_category_record(product: str) -> dict | None:
     for row in feishu_rows("物料品类"):
         if feishu_text(feishu_fields(row), "物料品类") == product:
@@ -9519,10 +9445,8 @@ def initialize_request_form_state() -> None:
         "request_freight_payer": DEFAULT_FREIGHT_PAYER,
         "request_material_usage": "",
         "request_material_lines": [],
-        "request_saved_attachments": [],
         "request_form_stage": "edit",
         "request_material_table_version": 0,
-        "request_attachment_upload_version": 0,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -9937,39 +9861,6 @@ def apply_request_material_table_edits(
     return updated_lines, list(dict.fromkeys(selected_indices))
 
 
-def serialize_request_uploads(uploaded_files: object) -> list[dict[str, object]]:
-    if not uploaded_files:
-        return []
-    return [
-        {
-            "name": str(file.name),
-            "content": bytes(file.getvalue()),
-            "content_type": str(file.type or "application/octet-stream"),
-        }
-        for file in uploaded_files
-    ]
-
-
-def merge_request_attachments(
-    saved_attachments: object,
-    uploaded_attachments: object,
-) -> list[dict[str, object]]:
-    merged: dict[str, dict[str, object]] = {}
-    for attachment in list(saved_attachments or []) + list(uploaded_attachments or []):
-        if not isinstance(attachment, dict):
-            continue
-        name = str(attachment.get("name", "")).strip()
-        content = attachment.get("content", b"")
-        if not name or not isinstance(content, (bytes, bytearray)):
-            continue
-        merged[name] = {
-            "name": name,
-            "content": bytes(content),
-            "content_type": str(attachment.get("content_type") or "application/octet-stream"),
-        }
-    return list(merged.values())
-
-
 def validate_request_draft(draft: dict[str, object]) -> list[str]:
     errors: list[str] = []
     missing = [
@@ -10002,18 +9893,6 @@ def validate_request_draft(draft: dict[str, object]) -> list[str]:
         if int(line.get("quantity") or 0) <= 0:
             errors.append(f"第 {index + 1} 条物料数量必须大于 0")
 
-    attachments = list(draft.get("attachments") or [])
-    if len(attachments) > MAX_ATTACHMENTS_PER_REQUEST:
-        errors.append(f"相关附件最多上传 {MAX_ATTACHMENTS_PER_REQUEST} 个")
-    oversized_names: list[str] = []
-    for attachment in attachments:
-        if not isinstance(attachment, dict):
-            continue
-        content = attachment.get("content", b"")
-        if isinstance(content, (bytes, bytearray)) and len(content) > MAX_ATTACHMENT_SIZE_BYTES:
-            oversized_names.append(str(attachment.get("name", "")))
-    if oversized_names:
-        errors.append("以下附件超过飞书单文件 20 MB 限制：" + "、".join(oversized_names))
     return errors
 
 
@@ -10036,16 +9915,8 @@ def restore_request_form_from_draft(draft: dict[str, object]) -> None:
     st.session_state["request_material_lines"] = [
         dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)
     ]
-    st.session_state["request_saved_attachments"] = [
-        dict(attachment)
-        for attachment in list(draft.get("attachments") or [])
-        if isinstance(attachment, dict)
-    ]
     st.session_state["request_material_table_version"] = (
         int(st.session_state.get("request_material_table_version", 0)) + 1
-    )
-    st.session_state["request_attachment_upload_version"] = (
-        int(st.session_state.get("request_attachment_upload_version", 0)) + 1
     )
     st.session_state["request_line_editor_reset"] = True
     st.session_state["request_form_stage"] = "edit"
@@ -10105,21 +9976,14 @@ def render_request_review() -> None:
         st.rerun()
 
     lines = [dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)]
-    attachments = [
-        dict(attachment)
-        for attachment in list(draft.get("attachments") or [])
-        if isinstance(attachment, dict)
-    ]
     total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
     material_types_label = escape(ui_text("物料种类"))
     total_quantity_label = escape(ui_text("申请总数量"))
-    attachment_count_label = escape(ui_text("附件数量"))
     st.markdown(
         f"""
         <div class="pudu-review-metrics">
             <div class="pudu-review-metric"><span>{material_types_label}</span><strong>{len(lines)}</strong></div>
             <div class="pudu-review-metric"><span>{total_quantity_label}</span><strong>{total_quantity}</strong></div>
-            <div class="pudu-review-metric"><span>{attachment_count_label}</span><strong>{len(attachments)}</strong></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -10145,11 +10009,6 @@ def render_request_review() -> None:
         render_request_review_field(detail_cols[0], "运费承担者", draft.get("freight_payer"))
         render_request_review_field(detail_cols[1], "物料用途", draft.get("material_usage"))
         render_request_review_field(detail_cols[2], "收件人信息", draft.get("recipient_info"))
-        render_request_review_field(
-            st,
-            "相关附件",
-            "、".join(str(item.get("name", "")) for item in attachments) or "无",
-        )
 
     with st.container(border=True):
         render_section_header("02", "申请物料清单", f"共 {len(lines)} 种物料")
@@ -10195,7 +10054,7 @@ def render_request_review() -> None:
         if errors:
             st.warning("；".join(errors))
             return
-        with fullscreen_data_sync("正在创建可恢复的后台申请任务"):
+        with fullscreen_data_sync("正在提交数据，请稍后......"):
             with DATA_LOCK:
                 try:
                     task, created_new_task = enqueue_feishu_material_request(
@@ -10603,14 +10462,13 @@ def render_change_form(show_title: bool = True) -> None:
             on_change=mark_request_form_dirty,
         )
 
-        bottom_cols = st.columns([2.4, 1])
         usage_hint = (
             "For promotional materials, please specify the exact name of the event."
             if get_ui_language() == LANGUAGE_EN
             else "活动物料请注明具体活动名称"
         )
-        required_field_label(bottom_cols[0], "物料用途", usage_hint)
-        material_usage = bottom_cols[0].text_area(
+        required_field_label(st, "物料用途", usage_hint)
+        material_usage = st.text_area(
             "物料用途",
             placeholder="活动物料请注明具体活动名称",
             height=76,
@@ -10618,56 +10476,11 @@ def render_change_form(show_title: bool = True) -> None:
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
-        bottom_cols[1].markdown(
-            f'<div class="pudu-field-label">{escape(ui_text("相关附件"))}</div>',
-            unsafe_allow_html=True,
-        )
-        upload_version = int(st.session_state.get("request_attachment_upload_version", 0))
-        uploaded_files: list[object] = []
-        with bottom_cols[1].popover(
-            "上传或管理附件",
-            icon=":material/attach_file:",
-            width="stretch",
-            key=f"request_attachment_popover_{upload_version}",
-        ):
-            uploaded_files = st.file_uploader(
-                "相关附件",
-                accept_multiple_files=True,
-                help="单个附件不超过 20 MB，最多上传 100 个。",
-                key=f"request_attachment_upload_{upload_version}",
-                on_change=mark_request_form_dirty,
-            )
-            saved_names = [
-                str(item.get("name", ""))
-                for item in list(st.session_state.get("request_saved_attachments") or [])
-                if isinstance(item, dict)
-            ]
-            if saved_names:
-                st.caption("已保留：" + "、".join(saved_names))
-            if (saved_names or uploaded_files) and st.button(
-                "清空附件",
-                key=f"request_clear_attachments_{upload_version}",
-                icon=":material/delete:",
-                width="stretch",
-            ):
-                st.session_state["request_saved_attachments"] = []
-                st.session_state["request_attachment_upload_version"] = upload_version + 1
-                mark_request_form_dirty()
-                st.rerun()
-        attachment_count = len(list(st.session_state.get("request_saved_attachments") or [])) + len(
-            uploaded_files or []
-        )
-        bottom_cols[1].caption(f"已选择 {attachment_count} 个附件" if attachment_count else "未上传附件")
-
     lines, preview_clicked = render_request_material_builder(
         selection_context,
         products,
     )
     if preview_clicked:
-        attachments = merge_request_attachments(
-            st.session_state.get("request_saved_attachments"),
-            serialize_request_uploads(uploaded_files),
-        )
         generated_title = build_request_title(material_usage, requester)
         draft = {
             "title": generated_title,
@@ -10680,16 +10493,13 @@ def render_change_form(show_title: bool = True) -> None:
             "recipient_info": recipient_info,
             "freight_payer": freight_payer,
             "material_usage": material_usage,
-            "attachment_note": "\n".join(str(item.get("name", "")) for item in attachments),
             "submission_token": st.session_state["request_submission_token"],
-            "attachments": attachments,
             "lines": [dict(line) for line in lines],
         }
         errors = validate_request_draft(draft)
         if errors:
             st.warning("；".join(errors))
             return
-        st.session_state["request_saved_attachments"] = attachments
         st.session_state["request_draft_payload"] = draft
         st.session_state["request_form_stage"] = "review"
         st.session_state["request_scroll_to_top"] = True
@@ -11177,30 +10987,22 @@ def render_restock_review() -> None:
         if errors:
             st.warning("；".join(errors))
             return
-        notification_count = 0
-        notification_warning = ""
-        with fullscreen_data_sync("正在补充库存并写入库存流水"):
-            with DATA_LOCK:
-                try:
-                    completed_lines = submit_inventory_restock(draft)
-                except Exception as exc:
-                    st.error("采购补库失败。请检查物料状态、库存字段和飞书写入权限。")
-                    st.exception(exc)
-                    return
+        with fullscreen_data_sync("正在提交数据，请稍后......"):
             try:
-                notification_count = notify_enabled_admins_of_restock(draft, completed_lines)
+                task, _ = enqueue_feishu_background_write(
+                    QUEUE_TASK_TYPE_RESTOCK,
+                    {"draft": dict(draft)},
+                    str(draft.get("restock_no") or ""),
+                )
             except Exception as exc:
-                notification_warning = f"补库已完成，但管理员通知发送失败：{exc}"
-            refresh_page_cache_after_write("restock", update_request_form=True)
+                st.error("采购补库任务未能进入后台队列，请重试。")
+                st.exception(exc)
+                return
         restock_no = str(draft.get("restock_no") or "")
         clear_restock_form_state()
         st.session_state["restock_submit_message"] = (
-            f"补库单 {restock_no} 已完成，共补充 {len(completed_lines)} 种、"
-            f"{sum(int(line.get('quantity') or 0) for line in completed_lines)} 件物料。"
-            + (f"已通知 {notification_count} 位管理员。" if notification_count else "")
+            f"补库单 {restock_no} 已进入后台队列（任务 {task.task_id[:8]}），可关闭页面。"
         )
-        if notification_warning:
-            st.session_state["restock_submit_warning"] = notification_warning
         st.rerun()
 
 
@@ -11391,38 +11193,32 @@ def render_category_edit_review() -> None:
             )
         else:
             st.info("库存组合没有发生变化；请返回检查是否只修改了品类名称或基础配置。")
-    st.info("点击“确认保存修改”后将立即写入飞书；完成后页面顶部会显示全宽结果提示，并通知管理员。")
+    st.info("点击“确认保存修改”后任务将进入后台队列；页面可直接关闭，Worker 完成后会通知管理员。")
     back_col, _, confirm_col = st.columns([1.1, 2.2, 1.5])
     if back_col.button("返回修改", icon=":material/arrow_back:", width="stretch", key="category_edit_review_back"):
         st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
         st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
         st.rerun()
     if confirm_col.button("确认保存修改", type="primary", icon=":material/check_circle:", width="stretch", key="category_edit_review_confirm"):
-        with fullscreen_data_sync("正在保存品类配置并通知管理员"):
-            with DATA_LOCK:
-                try:
-                    result = sync_feishu_category_inventory(**dict(draft["sync_args"]))
-                except Exception as exc:
-                    st.error("保存品类配置失败。数据未全部同步，请刷新页面检查飞书字段和关联后重试。")
-                    st.exception(exc)
-                    return
-            notification_count = 0
-            notification_warning = ""
+        with fullscreen_data_sync("正在提交数据，请稍后......"):
             try:
-                notification_count = notify_enabled_admins_of_category_edit(draft, result)
+                task, _ = enqueue_feishu_background_write(
+                    QUEUE_TASK_TYPE_CATEGORY_SYNC,
+                    {
+                        "sync_args": serialize_category_sync_args(dict(draft["sync_args"])),
+                        "draft": {key: value for key, value in dict(draft).items() if key != "sync_args"},
+                        "notification_kind": "edit",
+                    },
+                )
             except Exception as exc:
-                notification_warning = f"品类已保存，但管理员通知发送失败：{exc}"
-            refresh_page_cache_after_write("category", update_request_form=True)
+                st.error("品类修改任务未能进入后台队列，请重试。")
+                st.exception(exc)
+                return
         st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
         st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
         st.session_state["category_added_message"] = (
-            f"物料品类“{draft['product']}”已保存：目标组合 {result['target_count']} 条，"
-            f"新增 {result['created_count']} 条，移除旧行 {result['deleted_count']} 条，"
-            f"迁移关联 {result['relation_update_count']} 条，库存差额 {result['quantity_difference']:+,}。"
-            + (f" 已通知 {notification_count} 位管理员。" if notification_count else "")
+            f"物料品类“{draft['product']}”的修改已进入后台队列（任务 {task.task_id[:8]}）。"
         )
-        if notification_warning:
-            st.session_state["category_admin_warning"] = notification_warning
         st.rerun()
 
 
@@ -11576,10 +11372,7 @@ def render_new_category_review() -> None:
         if preview_error:
             st.warning("请先修正全部库存行后再确认创建。")
             return
-        with fullscreen_data_sync("正在创建物料品类和库存行"):
-            with DATA_LOCK:
-                try:
-                    result = sync_feishu_category_inventory(
+        sync_args = dict(
                         old_product="",
                         new_product=product,
                         no_model=bool(draft.get("no_model")),
@@ -11601,34 +11394,26 @@ def render_new_category_review() -> None:
                         ),
                         target_values=edited_values,
                     )
-                except Exception as exc:
-                    st.error("创建物料品类失败，尚未完成全部库存行写入。请检查飞书数据后重试。")
-                    st.exception(exc)
-                    return
-            notification_count = 0
-            notification_warning = ""
-            notification_draft = {
+        notification_draft = {
                 **dict(draft),
                 "product": product,
                 "category_status": category_status,
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
+        with fullscreen_data_sync("正在提交数据，请稍后......"):
             try:
-                notification_count = notify_enabled_admins_of_category_create(
-                    notification_draft,
-                    result,
+                task, _ = enqueue_feishu_background_write(
+                    QUEUE_TASK_TYPE_CATEGORY_SYNC,
+                    {"sync_args": serialize_category_sync_args(sync_args), "draft": notification_draft, "notification_kind": "create"},
                 )
             except Exception as exc:
-                notification_warning = f"品类已创建，但管理员通知发送失败：{exc}"
-            refresh_page_cache_after_write("category", update_request_form=True)
+                st.error("品类创建任务未能进入后台队列，请重试。")
+                st.exception(exc)
+                return
         clear_new_category_creation_state()
         st.session_state["category_added_message"] = (
-            f"物料品类“{product}”已创建，共生成 {result['created_count']} 条库存行，"
-            f"初始库存合计 {result['target_quantity']:,}。"
-            + (f" 已通知 {notification_count} 位管理员。" if notification_count else "")
+            f"物料品类“{product}”的创建已进入后台队列（任务 {task.task_id[:8]}）。"
         )
-        if notification_warning:
-            st.session_state["category_admin_warning"] = notification_warning
         st.rerun()
 
 
@@ -11784,6 +11569,49 @@ def clear_category_delete_state() -> None:
             st.session_state.pop(key, None)
 
 
+def execute_category_delete(draft: dict[str, object]) -> dict[str, int]:
+    delete_kind = str(draft.get("delete_kind") or "")
+    category_names = [str(value) for value in list(draft.get("category_names") or [])]
+    preview_records = [dict(row) for row in list(draft.get("records") or []) if isinstance(row, dict)]
+    refresh_page_cache_tables((CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME, REQUEST_LINE_TABLE_NAME, GIFT_PROJECT_TABLE_NAME))
+    categories = load_feishu_category_records()
+    inventory_records = load_feishu_inventory_records()
+    category_by_name = {str(item.get("category") or ""): item for item in categories}
+    if delete_kind == "categories":
+        blockers = category_delete_category_blockers(category_names, category_by_name, inventory_records)
+        current_records = [row for row in inventory_records if str(row.get("category") or "") in set(category_names)]
+        if {str(row.get("record_id") or "") for row in preview_records} != {str(row.get("record_id") or "") for row in current_records}:
+            blockers.append("预览后品类下的物料行范围已变化")
+    else:
+        record_ids = {str(value) for value in list(draft.get("record_ids") or [])}
+        current_records = [row for row in inventory_records if str(row.get("record_id") or "") in record_ids]
+        blockers = category_delete_blockers(current_records)
+        if len(record_ids) != len(current_records):
+            blockers.append("部分物料行已被其他操作修改或删除")
+    changed = category_delete_changed_records(preview_records, current_records)
+    if changed:
+        blockers.append("预览后数据已变化：" + "、".join(changed[:8]))
+    if blockers:
+        raise RuntimeError("删除前检查未通过：" + "；".join(blockers[:8]))
+    if delete_kind == "categories":
+        for name in category_names:
+            delete_feishu_category(name, str(category_by_name[name].get("record_id") or ""))
+    else:
+        deleted_ids = {str(row.get("record_id") or "") for row in current_records}
+        for row in current_records:
+            delete_feishu_inventory_item(str(row.get("record_id") or ""))
+        for name in category_names:
+            category = category_by_name.get(name)
+            if category:
+                update_category_inventory_counts(category, [row for row in inventory_records if str(row.get("category") or "") == name and str(row.get("record_id") or "") not in deleted_ids])
+    notice = {**draft, "records": current_records, "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    try:
+        notified = notify_enabled_admins_of_category_delete(notice)
+    except Exception:
+        notified = 0
+    return {"deleted_count": len(current_records), "notification_count": notified}
+
+
 def render_category_delete_review() -> None:
     draft = st.session_state.get(CATEGORY_DELETE_DRAFT_KEY)
     if not isinstance(draft, dict):
@@ -11841,123 +11669,25 @@ def render_category_delete_review() -> None:
         disabled=not confirmed,
         key="category_delete_review_submit",
     ):
-        with fullscreen_data_sync("正在检查关联数据并执行删除"):
+        with fullscreen_data_sync("正在提交数据，请稍后......"):
             try:
-                refresh_page_cache_tables(
-                    (
-                        CATEGORY_TABLE_NAME,
-                        MATERIAL_TABLE_NAME,
-                        LEDGER_TABLE_NAME,
-                        REQUEST_LINE_TABLE_NAME,
-                        GIFT_PROJECT_TABLE_NAME,
-                    )
+                task, _ = enqueue_feishu_background_write(
+                    QUEUE_TASK_TYPE_CATEGORY_DELETE,
+                    {"draft": dict(draft)},
                 )
-                categories = load_feishu_category_records()
-                inventory_records = load_feishu_inventory_records()
-                category_by_name = {
-                    str(category.get("category") or ""): category for category in categories
-                }
-                if delete_kind == "categories":
-                    blockers = category_delete_category_blockers(
-                        category_names,
-                        category_by_name,
-                        inventory_records,
-                    )
-                    current_records = [
-                        record
-                        for record in inventory_records
-                        if str(record.get("category") or "") in set(category_names)
-                    ]
-                    preview_ids = {
-                        str(record.get("record_id") or "") for record in records
-                    }
-                    current_ids = {
-                        str(record.get("record_id") or "") for record in current_records
-                    }
-                    if preview_ids != current_ids:
-                        blockers.append("预览后品类下的物料行范围已变化")
-                    changed_records = category_delete_changed_records(
-                        records,
-                        current_records,
-                    )
-                    if changed_records:
-                        blockers.append(
-                            "预览后数据已变化：" + "、".join(changed_records[:8])
-                        )
-                else:
-                    record_ids = {str(value) for value in list(draft.get("record_ids") or [])}
-                    current_records = [
-                        record
-                        for record in inventory_records
-                        if str(record.get("record_id") or "") in record_ids
-                    ]
-                    missing_count = len(record_ids) - len(current_records)
-                    blockers = category_delete_blockers(current_records)
-                    if missing_count:
-                        blockers.append(f"{missing_count} 条物料行已被其他操作修改或删除")
-                    changed_records = category_delete_changed_records(records, current_records)
-                    if changed_records:
-                        blockers.append(
-                            "预览后数据已变化：" + "、".join(changed_records[:8])
-                        )
-                if blockers:
-                    st.error("删除前检查未通过：" + "；".join(blockers[:8]))
-                    return
-                with DATA_LOCK:
-                    if delete_kind == "categories":
-                        for category_name in category_names:
-                            category = category_by_name[category_name]
-                            delete_feishu_category(
-                                category_name,
-                                str(category.get("record_id") or ""),
-                            )
-                    else:
-                        deleted_ids = {
-                            str(record.get("record_id") or "") for record in current_records
-                        }
-                        for record in current_records:
-                            delete_feishu_inventory_item(str(record.get("record_id") or ""))
-                        for category_name in category_names:
-                            category = category_by_name.get(category_name)
-                            if category is None:
-                                continue
-                            update_category_inventory_counts(
-                                category,
-                                [
-                                    record
-                                    for record in inventory_records
-                                    if str(record.get("category") or "") == category_name
-                                    and str(record.get("record_id") or "") not in deleted_ids
-                                ],
-                            )
             except Exception as exc:
-                st.error("删除失败，未能完成全部操作。请刷新飞书数据后检查。")
+                st.error("删除任务未能进入后台队列，请重试。")
                 st.exception(exc)
                 return
-            notification_draft = {
-                **dict(draft),
-                "records": current_records,
-                "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-            notification_count = 0
-            notification_warning = ""
-            try:
-                notification_count = notify_enabled_admins_of_category_delete(notification_draft)
-            except Exception as exc:
-                notification_warning = f"删除已完成，但管理员通知发送失败：{exc}"
-            refresh_page_cache_after_write("category", update_request_form=True)
         clear_category_delete_state()
         deleted_label = (
             f"{len(category_names)} 个物料品类"
             if delete_kind == "categories"
-            else f"{len(current_records)} 条物料行"
+            else f"{len(records)} 条物料行"
         )
         st.session_state["category_added_message"] = (
-            f"已删除 {deleted_label}。"
-            + (f" 已通知 {notification_count} 位管理员。" if notification_count else "")
+            f"删除 {deleted_label} 的操作已进入后台队列（任务 {task.task_id[:8]}）。"
         )
-        if notification_warning:
-            st.session_state["category_admin_warning"] = notification_warning
         st.rerun()
 
 
@@ -13281,16 +13011,16 @@ def render_transaction_admin() -> None:
             st.warning("请先勾选确认批量撤回。")
         else:
             try:
-                with fullscreen_data_sync("正在撤回选中的库存提交"):
-                    with DATA_LOCK:
-                        for transaction_id in active_selected_ids:
-                            revert_feishu_transaction(transaction_id, revert_note)
-                    refresh_page_cache_after_write("maintenance", update_request_form=True)
+                with fullscreen_data_sync("正在提交数据，请稍后......"):
+                    task, _ = enqueue_feishu_background_write(
+                        QUEUE_TASK_TYPE_TRANSACTION_REVERT,
+                        {"transaction_ids": active_selected_ids, "note": revert_note},
+                    )
             except Exception as exc:
                 st.error("批量撤回失败。请检查飞书应用是否有物料主数据和库存流水编辑权限。")
                 st.exception(exc)
                 return
-            st.session_state["transaction_admin_message"] = f"已撤回 {len(active_selected_ids)} 条提交记录。"
+            st.session_state["transaction_admin_message"] = f"{len(active_selected_ids)} 条撤回操作已进入后台队列（任务 {task.task_id[:8]}）。"
             st.rerun()
 
     if len(active_selected_ids) == 1:
@@ -13363,24 +13093,17 @@ def render_transaction_admin() -> None:
                 if not replace_confirmed:
                     st.warning("请先勾选确认修正。")
                 else:
-                    with fullscreen_data_sync("正在保存库存提交修正"):
-                        with DATA_LOCK:
-                            try:
-                                replace_feishu_transaction(
-                                    selected_id,
-                                    replace_action,
-                                    replace_product,
-                                    replace_model,
-                                    replace_language,
-                                    int(replace_quantity),
-                                    replace_note,
-                                )
-                            except Exception as exc:
-                                st.error("修正失败。请检查选中物料是否存在、飞书字段类型是否允许写入。")
-                                st.exception(exc)
-                                return
-                        refresh_page_cache_after_write("maintenance", update_request_form=True)
-                    st.session_state["transaction_admin_message"] = "已撤回原提交，并保存新的修正提交。"
+                    with fullscreen_data_sync("正在提交数据，请稍后......"):
+                        try:
+                            task, _ = enqueue_feishu_background_write(
+                                QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
+                                {"args": {"transaction_record_id": selected_id, "action": replace_action, "product": replace_product, "model": replace_model, "language": replace_language, "quantity": int(replace_quantity), "note": replace_note}},
+                            )
+                        except Exception as exc:
+                            st.error("修正任务未能进入后台队列，请重试。")
+                            st.exception(exc)
+                            return
+                    st.session_state["transaction_admin_message"] = f"库存修正已进入后台队列（任务 {task.task_id[:8]}）。"
                     st.rerun()
     elif len(selected_ids) > 1:
         st.info("已选择多条记录，可批量撤回；如需编辑，请只勾选一条有效记录。")
@@ -14499,23 +14222,20 @@ def render_existing_gift_project_form(category: dict) -> None:
     if not str(project_name or "").strip():
         st.warning("请填写项目名称。")
         return
-    with fullscreen_data_sync("正在写入项目周边礼品需求"):
+    with fullscreen_data_sync("正在提交数据，请稍后......"):
         try:
             attachment_token = upload_gift_project_attachment(uploaded_file)
-            create_gift_project_request(
-                project_name,
-                category_id,
-                remark=remark,
-                attachment_token=attachment_token,
+            task, _ = enqueue_feishu_background_write(
+                QUEUE_TASK_TYPE_GIFT_PROJECT,
+                {"operation": "existing", "args": {"project_name": project_name, "category_record_id": category_id, "remark": remark, "attachment_token": attachment_token}},
             )
         except Exception as exc:
             st.error("项目周边礼品需求提交失败，请检查飞书字段和应用写入权限。")
             st.exception(exc)
             return
-        refresh_page_cache_after_write("gift_projects", update_request_form=True)
     st.session_state.pop("gift_selected_category_id", None)
     st.session_state["gift_project_submit_message"] = (
-        f"项目“{str(project_name).strip()}”的周边礼品“{product}”已提交，状态为“{GIFT_PROJECT_STATUS_REQUESTED}”。"
+        f"项目“{str(project_name).strip()}”的周边礼品“{product}”已进入后台队列（任务 {task.task_id[:8]}）。"
     )
     st.rerun()
 
@@ -14592,27 +14312,23 @@ def render_new_gift_project_form() -> None:
     if not str(project_name or "").strip() or not str(material_name or "").strip():
         st.warning("请填写项目名称和新的物料名称。")
         return
-    with fullscreen_data_sync("正在创建周边礼品并写入项目需求"):
+    with fullscreen_data_sync("正在提交数据，请稍后......"):
         try:
             attachment_token = upload_gift_project_attachment(uploaded_file)
-            create_new_gift_project_request(
-                project_name,
-                material_name,
-                unit_price=float(unit_price),
-                remark=remark,
-                attachment_token=attachment_token,
+            task, _ = enqueue_feishu_background_write(
+                QUEUE_TASK_TYPE_GIFT_PROJECT,
+                {"operation": "new", "args": {"project_name": project_name, "material_name": material_name, "unit_price": float(unit_price), "remark": remark, "attachment_token": attachment_token}},
             )
         except Exception as exc:
             st.error("新增周边礼品失败，请检查品类名称、飞书字段和应用写入权限。")
             st.exception(exc)
             return
-        refresh_page_cache_after_write("gift_projects", update_request_form=True)
     for key in list(st.session_state):
         if str(key).startswith("gift_new_"):
             st.session_state.pop(key, None)
     st.session_state["gift_create_mode"] = False
     st.session_state["gift_project_submit_message"] = (
-        f"周边礼品“{str(material_name).strip()}”及项目“{str(project_name).strip()}”已创建，状态为“{GIFT_PROJECT_STATUS_REQUESTED}”。"
+        f"周边礼品“{str(material_name).strip()}”及项目“{str(project_name).strip()}”已进入后台队列（任务 {task.task_id[:8]}）。"
     )
     st.rerun()
 
@@ -14815,34 +14531,19 @@ def render_gift_projects_page() -> None:
                 elif not gift_lines and not new_line:
                     st.error("请至少选择一个已有物料或加入一个新物料。")
                 else:
-                    with fullscreen_data_sync("正在批量写入项目物料清单"):
+                    with fullscreen_data_sync("正在提交数据，请稍后......"):
                         try:
-                            if gift_lines:
-                                create_gift_project_requests_batch(
-                                    project_name,
-                                    [item.get("record_id") for item in gift_lines],
-                                    owner=owner,
-                                    owner_open_id=owner_open_id,
-                                )
-                            if new_line:
-                                create_new_gift_project_request(
-                                    project_name,
-                                    new_line["name"],
-                                    owner=owner,
-                                    owner_open_id=owner_open_id,
-                                    remark=f"数量：{new_line['quantity']}\n{new_line['remark']}",
-                                )
-                            refresh_page_cache_after_write(
-                                "gift_projects",
-                                update_request_form=True,
+                            task, _ = enqueue_feishu_background_write(
+                                QUEUE_TASK_TYPE_GIFT_PROJECT,
+                                {"operation": "batch", "args": {"project_name": project_name, "category_record_ids": [item.get("record_id") for item in gift_lines], "owner": owner, "owner_open_id": owner_open_id, "new_line": new_line}},
                             )
                         except Exception as exc:
-                            st.error(f"批量写入失败：{exc}")
+                            st.error(f"批量任务未能进入后台队列：{exc}")
                             return
                     st.session_state["gift_batch_selected_ids"] = []
                     st.session_state.pop("gift_batch_new_line", None)
                     st.session_state["gift_project_submit_message"] = (
-                        "项目物料清单已批量写入。"
+                        f"项目物料清单已进入后台队列（任务 {task.task_id[:8]}）。"
                     )
                     st.rerun()
         catalog_items = [*filtered_gallery]

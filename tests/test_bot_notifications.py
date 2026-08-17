@@ -491,7 +491,6 @@ class BotNotificationTests(unittest.TestCase):
             "recipient_info": "销售甲，12345，示例地址",
             "freight_payer": "普渡付款(PUDU)",
             "material_usage": "柏林展会",
-            "attachments": [{"name": "收件信息.pdf"}],
         }
         lines = [
             {
@@ -522,7 +521,6 @@ class BotNotificationTests(unittest.TestCase):
             "销售甲，12345，示例地址",
             "普渡付款(PUDU)",
             "柏林展会",
-            "收件信息.pdf",
             "产品折页 / BellaBot / 英语 × 3",
             "现场派发",
         ):

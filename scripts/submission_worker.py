@@ -18,7 +18,13 @@ if str(ROOT) not in sys.path:
 import app as inventory_app
 from submission_queue import (
     QUEUE_STATUS_FAILED,
+    QUEUE_TASK_TYPE_CATEGORY_DELETE,
+    QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    QUEUE_TASK_TYPE_RESTOCK,
+    QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
+    QUEUE_TASK_TYPE_TRANSACTION_REVERT,
     SubmissionTask,
     checkpoint_submission_task,
     claim_next_submission_task,
@@ -159,6 +165,53 @@ def process_task(
 ) -> dict[str, object]:
     if task.task_type == QUEUE_TASK_TYPE_MATERIAL_REQUEST:
         return process_material_request(task, checkpoint)
+    payload = dict(task.payload)
+    if task.task_type == QUEUE_TASK_TYPE_RESTOCK:
+        lines = inventory_app.submit_inventory_restock(dict(payload["draft"]))
+        notified = inventory_app.notify_enabled_admins_of_restock(dict(payload["draft"]), lines)
+        return {"line_count": len(lines), "notification_count": notified}
+    if task.task_type == QUEUE_TASK_TYPE_CATEGORY_SYNC:
+        result = inventory_app.sync_feishu_category_inventory(
+            **inventory_app.deserialize_category_sync_args(dict(payload["sync_args"]))
+        )
+        draft = dict(payload.get("draft") or {})
+        notice_kind = str(payload.get("notification_kind") or "")
+        notified = 0
+        if notice_kind == "create":
+            notified = inventory_app.notify_enabled_admins_of_category_create(draft, result)
+        elif notice_kind == "edit":
+            notified = inventory_app.notify_enabled_admins_of_category_edit(draft, result)
+        return {
+            "target_count": int(result.get("target_count") or 0),
+            "created_count": int(result.get("created_count") or 0),
+            "updated_count": int(result.get("updated_count") or 0),
+            "deleted_count": int(result.get("deleted_count") or 0),
+            "notification_count": notified,
+        }
+    if task.task_type == QUEUE_TASK_TYPE_CATEGORY_DELETE:
+        return inventory_app.execute_category_delete(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REVERT:
+        ids = [str(value) for value in list(payload.get("transaction_ids") or [])]
+        for transaction_id in ids:
+            inventory_app.revert_feishu_transaction(transaction_id, str(payload.get("note") or ""))
+        return {"reverted_count": len(ids)}
+    if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REPLACE:
+        logs = inventory_app.replace_feishu_transaction(**dict(payload["args"]))
+        return {"log_count": len(logs)}
+    if task.task_type == QUEUE_TASK_TYPE_GIFT_PROJECT:
+        operation = str(payload.get("operation") or "")
+        args = dict(payload.get("args") or {})
+        if operation == "existing":
+            result = inventory_app.create_gift_project_request(**args)
+        elif operation == "new":
+            result = inventory_app.create_new_gift_project_request(**args)
+        elif operation == "batch":
+            result = inventory_app.process_gift_project_batch(args)
+        else:
+            raise RuntimeError(f"不支持的周边礼品任务操作：{operation}")
+        if operation == "batch":
+            return dict(result)
+        return {"completed": True}
     raise RuntimeError(f"不支持的后台任务类型：{task.task_type}")
 
 
@@ -177,7 +230,7 @@ def notify_terminal_failure(task: SubmissionTask, error: Exception) -> None:
     if client is None:
         return
     message = (
-        f"营销物料申请后台任务处理失败。任务ID：{task.task_id[:8]}。"
+        f"后台写入任务“{task.task_type}”处理失败。任务ID：{task.task_id[:8]}。"
         "任务数据仍保留在“后台任务队列”，请管理员检查 Worker 日志后重试。"
         f"\n错误：{str(error)[:500]}"
     )

@@ -62,7 +62,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_feishu_card_worker_ta
 
 ### 营销申请后台任务
 
-营销物料申请采用可恢复后台队列。Streamlit Cloud 只负责上传附件并把完整申请写入飞书「后台任务队列」；独立 Windows Worker 负责创建申请单、申请明细、登记销售身份并发送申请人和管理员机器人消息。应用显示任务已进入后台队列后，用户可以关闭页面，不会中断后续写入。
+应用内业务写入统一采用后台队列。Streamlit Cloud 把物料申请、采购补库、品类维护、库存提交修正/撤回和周边礼品项目操作写入飞书「后台任务队列」；独立 Windows Worker 负责执行实际业务表写入和通知。物料申请不再支持附件。应用显示任务已进入后台队列后，用户可以关闭页面，不会中断后续写入。
 
 在保持联网的 Windows 电脑上安装或更新 Worker：
 
