@@ -481,7 +481,7 @@ class BotNotificationTests(unittest.TestCase):
         self.assertNotIn("申请合计", text)
         self.assertNotIn("审批与发放页面", text)
 
-    def test_admin_notification_card_has_structured_title_and_no_action_button(self) -> None:
+    def test_admin_notification_card_has_inventory_review_and_actions(self) -> None:
         payload = {
             "title": "展会使用-销售甲-营销物料领取",
             "requester": "销售甲",
@@ -502,15 +502,27 @@ class BotNotificationTests(unittest.TestCase):
             }
         ]
 
-        card = app.material_request_notification_card("REQ-1", payload, lines)
+        review_context = {
+            "request": {
+                "record_id": "request-1",
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_review_version": 0,
+            },
+            "lines": [{**lines[0], "current_stock": 2}],
+            "result": app.INVENTORY_RESULT_INSUFFICIENT,
+            "snapshot_at": "2026-08-18 10:00:00",
+        }
+        with patch.object(app.st, "secrets", {"STREAMLIT_APP_URL": app.DEFAULT_STREAMLIT_APP_URL}):
+            card = app.material_request_notification_card(
+                "REQ-1", payload, lines, review_context=review_context
+            )
 
         serialized = json.dumps(card, ensure_ascii=False)
         self.assertEqual(card["schema"], "2.0")
         self.assertEqual(card["header"]["template"], "orange")
         self.assertEqual(
             card["header"]["title"]["content"],
-            "来自海外销售部的销售甲的营销物料即将进入审批流程，"
-            "本批物料的用途为柏林展会，请关注飞书审批进度。",
+            "营销物料申请库存确认",
         )
         for expected in (
             "REQ-1",
@@ -521,14 +533,17 @@ class BotNotificationTests(unittest.TestCase):
             "销售甲，12345，示例地址",
             "普渡付款(PUDU)",
             "柏林展会",
-            "产品折页 / BellaBot / 英语 × 3",
-            "现场派发",
+            "产品折页 / BellaBot / 英语",
+            "申请 3｜实时库存 2｜库存不足，需要制作",
+            "查看详情",
+            "编辑申请",
+            "确认库存",
         ):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)
-        self.assertNotIn('"tag": "button"', serialized)
+        self.assertIn('"tag": "button"', serialized)
         self.assertNotIn('"tag": "action"', serialized)
-        application_section = card["body"]["elements"][0]
+        application_section = card["body"]["elements"][1]
         field_grid = application_section["columns"][0]["elements"][1]
         first_field = field_grid["columns"][0]["elements"][0]["columns"][0]
         self.assertEqual(first_field["vertical_spacing"], "2px")
@@ -588,7 +603,7 @@ class BotNotificationTests(unittest.TestCase):
 
         self.assertEqual(
             card["header"]["title"]["content"],
-            "Your marketing material request has entered the approval process",
+            "Your marketing material request is being reviewed for inventory availability and will enter the approval process after confirmation",
         )
         self.assertIn("Request No.", serialized)
         self.assertIn("REQ-EN-1", serialized)
@@ -617,11 +632,11 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(card["schema"], "2.0")
         self.assertEqual(
             card["header"]["title"]["content"],
-            "您提交的营销申请将于一分钟后进入审批流程",
+            "您提交的营销物料申请正在进行库存确认，确认后将进入审批流程",
         )
         self.assertEqual(
             card["config"]["summary"]["content"],
-            "您提交的营销申请将于一分钟后进入审批流程",
+            "您提交的营销物料申请正在进行库存确认，确认后将进入审批流程",
         )
         body_elements = card["body"]["elements"]
         self.assertIn("物料明细", json.dumps(body_elements[0], ensure_ascii=False))

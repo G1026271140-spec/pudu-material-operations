@@ -9,6 +9,18 @@ from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 
 
 class FeishuBitableBotApiTests(unittest.TestCase):
+    def test_interactive_message_update_uses_patch(self) -> None:
+        card = {"schema": "2.0", "body": {"elements": []}}
+        self.client._request = Mock(return_value={"code": 0})
+
+        self.client.update_interactive_message("om-card", card)
+
+        self.client._request.assert_called_once_with(
+            "PATCH",
+            "/im/v1/messages/om-card",
+            payload={"content": json.dumps(card, ensure_ascii=False)},
+        )
+
     def setUp(self) -> None:
         self.client = FeishuBitableClient(FeishuBitableConfig("app", "secret", "token"))
 

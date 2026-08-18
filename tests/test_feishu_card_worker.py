@@ -8,8 +8,36 @@ from scripts import feishu_card_worker as worker
 
 
 class FeishuCardWorkerTests(unittest.TestCase):
-    def test_request_edit_callback_and_cache_service_are_removed(self) -> None:
-        self.assertFalse(hasattr(worker, "handle_card_action"))
+    def test_inventory_confirm_callback_enters_background_queue(self) -> None:
+        task = SimpleNamespace(task_id="abcdef123456")
+        event = SimpleNamespace(
+            action=SimpleNamespace(
+                value={
+                    "action": "confirm_request_inventory",
+                    "request_id": "request-1",
+                    "version": 2,
+                }
+            ),
+            operator=SimpleNamespace(open_id="ou-admin"),
+        )
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "enqueue_feishu_background_write", return_value=(task, True)) as enqueue,
+        ):
+            response = worker.handle_card_action(SimpleNamespace(event=event))
+
+        enqueue.assert_called_once_with(
+            worker.inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+            {
+                "draft": {
+                    "request_id": "request-1",
+                    "expected_version": 2,
+                    "operator_open_id": "ou-admin",
+                }
+            },
+            idempotency_key="request-inventory-confirm:request-1:2",
+        )
+        self.assertEqual(response.toast.type, "success")
         self.assertFalse(hasattr(worker, "REQUEST_CACHE_REFRESH_SECONDS"))
         self.assertFalse(hasattr(worker, "request_cache_refresh_loop"))
 

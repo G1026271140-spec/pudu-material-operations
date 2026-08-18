@@ -9,6 +9,11 @@ from pathlib import Path
 import lark_oapi as lark
 from lark_oapi import ws
 from lark_oapi.api.im.v1 import P2ImMessageReceiveV1
+from lark_oapi.event.callback.model.p2_card_action_trigger import (
+    CallBackToast,
+    P2CardActionTrigger,
+    P2CardActionTriggerResponse,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -185,6 +190,47 @@ def handle_inventory_message(data: P2ImMessageReceiveV1) -> None:
     ).start()
 
 
+def card_action_response(kind: str, content: str) -> P2CardActionTriggerResponse:
+    response = P2CardActionTriggerResponse()
+    response.toast = CallBackToast({"type": kind, "content": content})
+    return response
+
+
+def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse:
+    event = data.event
+    action = event.action if event else None
+    value = dict(action.value or {}) if action and isinstance(action.value, dict) else {}
+    if str(value.get("action") or "") != "confirm_request_inventory":
+        return card_action_response("warning", "暂不支持该卡片操作。")
+    operator = event.operator if event else None
+    operator_open_id = str(operator.open_id or "").strip() if operator else ""
+    request_id = str(value.get("request_id") or "").strip()
+    version = int(value.get("version") or 0)
+    try:
+        if operator_open_id not in inventory_app.enabled_admin_open_ids():
+            raise PermissionError("只有已启用管理员可以确认库存。")
+        task, _ = inventory_app.enqueue_feishu_background_write(
+            inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+            {
+                "draft": {
+                    "request_id": request_id,
+                    "expected_version": version,
+                    "operator_open_id": operator_open_id,
+                }
+            },
+            idempotency_key=f"request-inventory-confirm:{request_id}:{version}",
+        )
+        return card_action_response(
+            "success",
+            f"库存确认已进入后台队列（任务 {task.task_id[:8]}）。",
+        )
+    except PermissionError as exc:
+        return card_action_response("error", str(exc))
+    except Exception as exc:
+        logging.exception("Confirming request inventory failed")
+        return card_action_response("error", f"库存确认提交失败：{str(exc)[:120]}")
+
+
 def main() -> int:
     logging.basicConfig(
         level=logging.WARNING,
@@ -194,6 +240,7 @@ def main() -> int:
     handler = (
         lark.EventDispatcherHandler.builder("", "")
         .register_p2_im_message_receive_v1(handle_inventory_message)
+        .register_p2_card_action_trigger(handle_card_action)
         .build()
     )
     logging.info("Starting Feishu inventory query worker.")

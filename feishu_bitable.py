@@ -351,6 +351,20 @@ class FeishuBitableClient:
             raise FeishuBitableError("Feishu did not return a message_id.")
         return message_id
 
+    def update_interactive_message(
+        self,
+        message_id: str,
+        card: dict[str, Any],
+    ) -> None:
+        normalized_message_id = message_id.strip()
+        if not normalized_message_id or not card:
+            raise FeishuBitableError("Feishu message_id and interactive card cannot be empty.")
+        self._request(
+            "PATCH",
+            f"/im/v1/messages/{parse.quote(normalized_message_id, safe='')}",
+            payload={"content": json.dumps(card, ensure_ascii=False)},
+        )
+
     def download_message_resource(
         self,
         message_id: str,
