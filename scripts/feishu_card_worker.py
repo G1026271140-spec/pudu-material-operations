@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import sys
 import threading
@@ -10,6 +12,7 @@ import lark_oapi as lark
 from lark_oapi import ws
 from lark_oapi.api.im.v1 import P2ImMessageReceiveV1
 from lark_oapi.event.callback.model.p2_card_action_trigger import (
+    CallBackCard,
     CallBackToast,
     P2CardActionTrigger,
     P2CardActionTriggerResponse,
@@ -196,19 +199,56 @@ def card_action_response(kind: str, content: str) -> P2CardActionTriggerResponse
     return response
 
 
+def card_update_response(card: dict[str, object], content: str = "") -> P2CardActionTriggerResponse:
+    response = P2CardActionTriggerResponse()
+    response.card = CallBackCard({"type": "raw", "data": card})
+    if content:
+        response.toast = CallBackToast({"type": "success", "content": content})
+    return response
+
+
 def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse:
     event = data.event
     action = event.action if event else None
     value = dict(action.value or {}) if action and isinstance(action.value, dict) else {}
-    if str(value.get("action") or "") != "confirm_request_inventory":
-        return card_action_response("warning", "暂不支持该卡片操作。")
     operator = event.operator if event else None
     operator_open_id = str(operator.open_id or "").strip() if operator else ""
-    request_id = str(value.get("request_id") or "").strip()
-    version = int(value.get("version") or 0)
+    action_name = str(getattr(action, "name", "") or "") if action else ""
     try:
         if operator_open_id not in inventory_app.enabled_admin_open_ids():
-            raise PermissionError("只有已启用管理员可以确认库存。")
+            raise PermissionError("只有已启用管理员可以处理库存确认。")
+        action_key = str(value.get("action") or "")
+        if action_key == "edit_request_inventory":
+            request_id = str(value.get("request_id") or "").strip()
+            return card_update_response(inventory_app.request_inventory_card_edit_form(request_id))
+        if action_name.startswith("save_inventory_edit__"):
+            parts = action_name.split("__")
+            if len(parts) != 3:
+                raise RuntimeError("编辑表单标识无效，请打开最新卡片重试。")
+            request_id = parts[1]
+            version = int(parts[2] or 0)
+            draft = inventory_app.request_inventory_card_edit_draft(
+                request_id,
+                version,
+                operator_open_id,
+                dict(getattr(action, "form_value", {}) or {}),
+            )
+            task, _ = inventory_app.enqueue_feishu_background_write(
+                inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+                {"draft": draft},
+                idempotency_key=(
+                    f"request-inventory-card-edit:{request_id}:{version}:"
+                    f"{hashlib.sha256(json.dumps(draft, ensure_ascii=False, sort_keys=True, default=str).encode('utf-8')).hexdigest()}"
+                ),
+            )
+            return card_action_response(
+                "success",
+                f"申请修改已进入后台队列（任务 {task.task_id[:8]}）。完成后卡片会自动更新。",
+            )
+        if action_key != "confirm_request_inventory":
+            return card_action_response("warning", "暂不支持该卡片操作。")
+        request_id = str(value.get("request_id") or "").strip()
+        version = int(value.get("version") or 0)
         task, _ = inventory_app.enqueue_feishu_background_write(
             inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
             {

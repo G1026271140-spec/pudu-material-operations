@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.3"
+APP_VERSION = "V0.9.4"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -6298,17 +6298,6 @@ def material_request_notification_card(
     ]
     request_id = str(review_request.get("record_id") or "")
     if request_id:
-        base_url = str(st.secrets.get("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL)).rstrip("/") + "/"
-        link_args = {"view": "request_inventory_review", "request_id": request_id}
-        if operator_open_id:
-            link_args.update(
-                {
-                    "operator": operator_open_id,
-                    "review_token": request_review_access_token(request_id, operator_open_id),
-                }
-            )
-        common_query = url_parse.urlencode(link_args)
-        edit_query = url_parse.urlencode({**link_args, "mode": "edit"})
         elements.append(
             {
                 "tag": "column_set",
@@ -6322,22 +6311,20 @@ def material_request_notification_card(
                         "elements": [
                             {
                                 "tag": "button",
-                                "text": {"tag": "plain_text", "content": "查看详情"},
-                                "type": "default",
-                                "url": f"{base_url}?{common_query}",
-                            }
-                        ],
-                    },
-                    {
-                        "tag": "column",
-                        "width": "weighted",
-                        "weight": 1,
-                        "elements": [
-                            {
-                                "tag": "button",
                                 "text": {"tag": "plain_text", "content": "编辑申请"},
                                 "type": "default",
-                                "url": f"{base_url}?{edit_query}",
+                                "disabled": review_status == INVENTORY_REVIEW_CONFIRMED,
+                                "behaviors": [
+                                    {
+                                        "type": "callback",
+                                        "value": {
+                                            "action": "edit_request_inventory",
+                                            "request_id": request_id,
+                                            "request_no": request_no,
+                                            "version": int(review_request.get("inventory_review_version") or 0),
+                                        },
+                                    }
+                                ],
                             }
                         ],
                     },
@@ -6349,14 +6336,19 @@ def material_request_notification_card(
                             {
                                 "tag": "button",
                                 "text": {"tag": "plain_text", "content": "确认库存"},
-                                "type": "primary",
+                                "type": "primary_filled",
                                 "disabled": review_status == INVENTORY_REVIEW_CONFIRMED,
-                                "value": {
-                                    "action": "confirm_request_inventory",
-                                    "request_id": request_id,
-                                    "request_no": request_no,
-                                    "version": int(review_request.get("inventory_review_version") or 0),
-                                },
+                                "behaviors": [
+                                    {
+                                        "type": "callback",
+                                        "value": {
+                                            "action": "confirm_request_inventory",
+                                            "request_id": request_id,
+                                            "request_no": request_no,
+                                            "version": int(review_request.get("inventory_review_version") or 0),
+                                        },
+                                    }
+                                ],
                             }
                         ],
                     },
@@ -6380,6 +6372,186 @@ def material_request_notification_card(
             "padding": "12px 12px 20px 12px",
             "elements": elements,
         },
+    }
+
+
+def request_inventory_card_edit_form(request_id: str) -> dict[str, object]:
+    context = request_inventory_review_context(request_id=request_id)
+    request = dict(context["request"])
+    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
+        raise RuntimeError("该申请已经完成库存核实，不能继续修改。")
+    material_rows = list(context.get("material_rows") or [])
+    active_materials: list[dict[str, str]] = []
+    for row in material_rows:
+        fields = feishu_fields(row)
+        if normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
+            continue
+        active_materials.append(
+            {
+                "record_id": feishu_record_id(row),
+                "product": feishu_text(fields, "物料品类"),
+                "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
+                "language": feishu_text(fields, "语种") or NO_LANGUAGE_TEXT,
+            }
+        )
+
+    form_elements: list[dict[str, object]] = []
+    for index, line in enumerate(list(context["lines"])):
+        product = str(line.get("product") or "")
+        candidates = [item for item in active_materials if item["product"] == product]
+        models = unique_preserve(
+            [str(line.get("model") or NO_MODEL_TEXT), *[item["model"] for item in candidates]]
+        )
+        languages = unique_preserve(
+            [str(line.get("language") or NO_LANGUAGE_TEXT), *[item["language"] for item in candidates]]
+        )
+        form_elements.extend(
+            [
+                {
+                    "tag": "markdown",
+                    "content": (
+                        f"**{index + 1:02d}. {product}**\n"
+                        f"申请数量 {int(line.get('quantity') or 0)}｜品类保持不变"
+                    ),
+                },
+                {
+                    "tag": "select_static",
+                    "name": f"model_{index}",
+                    "required": True,
+                    "width": "fill",
+                    "placeholder": {"tag": "plain_text", "content": "选择型号"},
+                    "initial_option": str(line.get("model") or NO_MODEL_TEXT),
+                    "options": [
+                        {"text": {"tag": "plain_text", "content": item}, "value": item}
+                        for item in models
+                    ],
+                },
+                {
+                    "tag": "select_static",
+                    "name": f"language_{index}",
+                    "required": True,
+                    "width": "fill",
+                    "placeholder": {"tag": "plain_text", "content": "选择语种"},
+                    "initial_option": str(line.get("language") or NO_LANGUAGE_TEXT),
+                    "options": [
+                        {"text": {"tag": "plain_text", "content": item}, "value": item}
+                        for item in languages
+                    ],
+                },
+            ]
+        )
+    form_elements.extend(
+        [
+            {
+                "tag": "input",
+                "name": "change_note",
+                "required": True,
+                "input_type": "multiline_text",
+                "rows": 2,
+                "max_length": 500,
+                "width": "fill",
+                "label": {"tag": "plain_text", "content": "申请物料更改信息说明"},
+                "placeholder": {"tag": "plain_text", "content": "请说明本次修改原因"},
+            },
+            {
+                "tag": "button",
+                "name": (
+                    f"save_inventory_edit__{request_id}__"
+                    f"{int(request.get('inventory_review_version') or 0)}"
+                ),
+                "text": {"tag": "plain_text", "content": "保存修改"},
+                "type": "primary_filled",
+                "width": "fill",
+                "form_action_type": "submit",
+                "confirm": {
+                    "title": {"tag": "plain_text", "content": "确认保存修改"},
+                    "text": {"tag": "plain_text", "content": "修改将写入后台队列并通知申请人。"},
+                },
+            },
+        ]
+    )
+    return {
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "default",
+            "summary": {"content": "营销物料申请库存确认｜编辑"},
+        },
+        "header": {
+            "template": "wathet",
+            "title": {"tag": "plain_text", "content": "营销物料申请库存确认"},
+            "subtitle": {
+                "tag": "plain_text",
+                "content": f"{request.get('request_no') or '-'}｜仅修改型号和语种",
+            },
+            "icon": {"tag": "standard_icon", "token": "approve_colorful"},
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "vertical_spacing": "12px",
+            "elements": [
+                {
+                    "tag": "markdown",
+                    "content": "**卡片内编辑**\n品类和申请数量保持不变，只调整型号与语种。",
+                },
+                {
+                    "tag": "form",
+                    "name": "request_inventory_edit_form",
+                    "vertical_spacing": "12px",
+                    "elements": form_elements,
+                },
+            ],
+        },
+    }
+
+
+def request_inventory_card_edit_draft(
+    request_id: str,
+    expected_version: int,
+    operator_open_id: str,
+    form_value: dict[str, object],
+) -> dict[str, object]:
+    context = request_inventory_review_context(request_id=request_id)
+    request = dict(context["request"])
+    if int(request.get("inventory_review_version") or 0) != expected_version:
+        raise RuntimeError("申请已发生修改，请打开最新卡片后重新编辑。")
+    material_rows = list(context.get("material_rows") or [])
+    desired: list[dict[str, object]] = []
+    for index, line in enumerate(list(context["lines"])):
+        product = str(line.get("product") or "")
+        model = str(form_value.get(f"model_{index}") or "").strip()
+        language = str(form_value.get(f"language_{index}") or "").strip()
+        matched = next(
+            (
+                row
+                for row in material_rows
+                if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
+                and feishu_text(feishu_fields(row), "物料品类") == product
+                and (feishu_text(feishu_fields(row), "产品型号") or NO_MODEL_TEXT) == model
+                and (feishu_text(feishu_fields(row), "语种") or NO_LANGUAGE_TEXT) == language
+            ),
+            None,
+        )
+        if matched is None:
+            raise RuntimeError(f"{product} 不存在“{model} / {language}”这一可用物料组合。")
+        desired.append(
+            {
+                "material_record_id": feishu_record_id(matched),
+                "quantity": int(line.get("quantity") or 0),
+                "remark": str(line.get("remark") or ""),
+            }
+        )
+    change_note = str(form_value.get("change_note") or "").strip()
+    if not change_note:
+        raise RuntimeError("请填写申请物料更改信息说明。")
+    return {
+        "request_id": request_id,
+        "expected_version": expected_version,
+        "operator_open_id": operator_open_id,
+        "change_note": change_note,
+        "before_lines": _request_review_line_summary(list(context["lines"])),
+        "lines": desired,
     }
 
 

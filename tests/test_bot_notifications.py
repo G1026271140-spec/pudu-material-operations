@@ -535,12 +535,12 @@ class BotNotificationTests(unittest.TestCase):
             "柏林展会",
             "产品折页 / BellaBot / 英语",
             "申请 3｜实时库存 2｜库存不足，需要制作",
-            "查看详情",
             "编辑申请",
             "确认库存",
         ):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)
+        self.assertNotIn("view=request_inventory_review", serialized)
         self.assertIn('"tag": "button"', serialized)
         self.assertNotIn('"tag": "action"', serialized)
         application_section = card["body"]["elements"][1]

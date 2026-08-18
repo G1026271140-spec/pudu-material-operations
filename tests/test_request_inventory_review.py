@@ -7,6 +7,101 @@ import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_card_edit_form_keeps_category_and_only_offers_its_dimensions(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_review_version": 2,
+            },
+            "lines": [
+                {
+                    "product": "产品单页",
+                    "model": "BellaBot",
+                    "language": "中文",
+                    "quantity": 5,
+                }
+            ],
+            "material_rows": [
+                {
+                    "record_id": "mat-1",
+                    "fields": {
+                        "物料品类": "产品单页",
+                        "产品型号": "BellaBot",
+                        "语种": "中文",
+                        "启用状态": "启用",
+                    },
+                },
+                {
+                    "record_id": "mat-2",
+                    "fields": {
+                        "物料品类": "产品单页",
+                        "产品型号": "D7",
+                        "语种": "英语",
+                        "启用状态": "启用",
+                    },
+                },
+                {
+                    "record_id": "mat-3",
+                    "fields": {
+                        "物料品类": "其他品类",
+                        "产品型号": "CC1",
+                        "语种": "日语",
+                        "启用状态": "启用",
+                    },
+                },
+            ],
+        }
+        with patch.object(app, "request_inventory_review_context", return_value=context):
+            card = app.request_inventory_card_edit_form("request-1")
+
+        serialized = str(card)
+        self.assertIn("品类和申请数量保持不变", serialized)
+        self.assertIn("BellaBot", serialized)
+        self.assertIn("D7", serialized)
+        self.assertNotIn("CC1", serialized)
+        self.assertNotIn("其他品类", serialized)
+
+    def test_card_edit_draft_resolves_selected_model_language_combination(self) -> None:
+        context = {
+            "request": {"inventory_review_version": 1},
+            "lines": [
+                {
+                    "record_id": "line-1",
+                    "material_record_id": "mat-1",
+                    "product": "产品单页",
+                    "model": "BellaBot",
+                    "language": "中文",
+                    "quantity": 5,
+                    "remark": "保留备注",
+                }
+            ],
+            "material_rows": [
+                {
+                    "record_id": "mat-2",
+                    "fields": {
+                        "物料品类": "产品单页",
+                        "产品型号": "D7",
+                        "语种": "英语",
+                        "启用状态": "启用",
+                    },
+                }
+            ],
+        }
+        with patch.object(app, "request_inventory_review_context", return_value=context):
+            draft = app.request_inventory_card_edit_draft(
+                "request-1",
+                1,
+                "ou-admin",
+                {"model_0": "D7", "language_0": "英语", "change_note": "改为英文版本"},
+            )
+
+        self.assertEqual(draft["lines"][0]["material_record_id"], "mat-2")
+        self.assertEqual(draft["lines"][0]["quantity"], 5)
+        self.assertEqual(draft["lines"][0]["remark"], "保留备注")
+        self.assertEqual(draft["change_note"], "改为英文版本")
+
     def test_zero_and_negative_inventory_are_insufficient(self) -> None:
         self.assertEqual(
             app.request_inventory_review_result(

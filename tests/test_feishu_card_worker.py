@@ -8,6 +8,49 @@ from scripts import feishu_card_worker as worker
 
 
 class FeishuCardWorkerTests(unittest.TestCase):
+    def test_inventory_edit_button_returns_inline_card_form(self) -> None:
+        event = SimpleNamespace(
+            action=SimpleNamespace(
+                name="",
+                value={"action": "edit_request_inventory", "request_id": "request-1"},
+            ),
+            operator=SimpleNamespace(open_id="ou-admin"),
+        )
+        card = {"schema": "2.0", "body": {"elements": []}}
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "request_inventory_card_edit_form", return_value=card),
+        ):
+            response = worker.handle_card_action(SimpleNamespace(event=event))
+
+        self.assertEqual(response.card.type, "raw")
+        self.assertEqual(response.card.data, card)
+
+    def test_inline_inventory_edit_form_enters_background_queue(self) -> None:
+        task = SimpleNamespace(task_id="abcdef123456")
+        form_value = {"model_0": "D7", "language_0": "英语", "change_note": "调整版本"}
+        event = SimpleNamespace(
+            action=SimpleNamespace(
+                name="save_inventory_edit__request-1__2",
+                value={},
+                form_value=form_value,
+            ),
+            operator=SimpleNamespace(open_id="ou-admin"),
+        )
+        draft = {"request_id": "request-1", "expected_version": 2, "lines": []}
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "request_inventory_card_edit_draft", return_value=draft) as build,
+            patch.object(worker.inventory_app, "enqueue_feishu_background_write", return_value=(task, True)) as enqueue,
+        ):
+            response = worker.handle_card_action(SimpleNamespace(event=event))
+
+        build.assert_called_once_with("request-1", 2, "ou-admin", form_value)
+        self.assertEqual(enqueue.call_args.args[0], worker.inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT)
+        self.assertEqual(enqueue.call_args.args[1], {"draft": draft})
+        self.assertTrue(enqueue.call_args.kwargs["idempotency_key"].startswith("request-inventory-card-edit:request-1:2:"))
+        self.assertEqual(response.toast.type, "success")
+
     def test_inventory_confirm_callback_enters_background_queue(self) -> None:
         task = SimpleNamespace(task_id="abcdef123456")
         event = SimpleNamespace(
