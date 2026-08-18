@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 import socket
+import subprocess
 import sys
 import time
 from logging.handlers import RotatingFileHandler
@@ -41,6 +42,18 @@ from submission_queue import (
 DEFAULT_POLL_SECONDS = 5.0
 DEFAULT_LEASE_SECONDS = 600
 MAX_RETRIES = 10
+RELOAD_EXIT_CODE = 75
+
+
+def repository_revision() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
 
 
 def worker_id() -> str:
@@ -286,9 +299,15 @@ def process_one(worker_name: str) -> bool:
     return True
 
 
-def run_forever(poll_seconds: float) -> None:
+def run_forever(poll_seconds: float) -> bool:
     name = worker_id()
-    logging.info("Submission worker started: %s", name)
+    started_revision = repository_revision()
+    logging.info(
+        "Submission worker started: %s; app_version=%s; revision=%s",
+        name,
+        inventory_app.APP_VERSION,
+        started_revision or "unknown",
+    )
     while True:
         try:
             processed = process_one(name)
@@ -297,6 +316,14 @@ def run_forever(poll_seconds: float) -> None:
             processed = False
         if not processed:
             time.sleep(max(1.0, poll_seconds))
+        current_revision = repository_revision()
+        if started_revision and current_revision and current_revision != started_revision:
+            logging.warning(
+                "Repository revision changed from %s to %s; reloading worker.",
+                started_revision,
+                current_revision,
+            )
+            return True
 
 
 def acquire_single_instance_mutex() -> int:
@@ -360,8 +387,7 @@ def main(argv: list[str] | None = None) -> int:
             while process_one(name):
                 pass
             return 0
-        run_forever(args.poll_seconds)
-        return 0
+        return RELOAD_EXIT_CODE if run_forever(args.poll_seconds) else 0
     finally:
         release_single_instance_mutex(mutex_handle)
 

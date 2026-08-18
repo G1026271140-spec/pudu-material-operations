@@ -148,9 +148,15 @@ try {
     $previousErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-        & $venvPython @workerArguments 2>&1 |
-            ForEach-Object { Write-RunnerLog ([string]$_) }
-        $ExitCode = $LASTEXITCODE
+        do {
+            & $venvPython @workerArguments 2>&1 |
+                ForEach-Object { Write-RunnerLog ([string]$_) }
+            $ExitCode = $LASTEXITCODE
+            if ($ExitCode -eq 75 -and -not $SetupOnly) {
+                Write-RunnerLog "Worker detected a new repository revision; restarting with the updated code."
+                Start-Sleep -Seconds 2
+            }
+        } while ($ExitCode -eq 75 -and -not $SetupOnly)
     } finally {
         $ErrorActionPreference = $previousErrorActionPreference
         Pop-Location
