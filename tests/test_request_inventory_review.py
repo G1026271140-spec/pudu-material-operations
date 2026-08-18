@@ -240,6 +240,8 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(request_fields["库存审查状态"], app.INVENTORY_REVIEW_CONFIRMED)
         self.assertEqual(request_fields["库存审查结论"], app.INVENTORY_RESULT_INSUFFICIENT)
         self.assertEqual(request_fields["库存审查人"], [{"id": "ou_admin"}])
+        self.assertEqual(request_fields["申请物料最后修改人"], [{"id": "ou_admin"}])
+        self.assertEqual(request_fields["申请物料最后修改时间"], 123456)
         notify.assert_called_once()
         self.assertTrue(result["confirmed"])
 

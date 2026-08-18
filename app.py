@@ -58,7 +58,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.9"
+APP_VERSION = "V1.0.0"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -8329,11 +8329,17 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         "库存审查状态": INVENTORY_REVIEW_CONFIRMED,
         "库存审查结论": str(context["result"]),
         "库存审查时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存审查时间", now),
+        "申请物料最后修改时间": feishu_datetime_value(
+            REQUEST_TABLE_NAME,
+            "申请物料最后修改时间",
+            now,
+        ),
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
     }
     person_value = _request_review_person_value(operator_open_id)
     if person_value:
         request_updates["库存审查人"] = person_value
+        request_updates["申请物料最后修改人"] = person_value
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
     notify_enabled_admins_of_material_request(
         str(request.get("request_no") or ""), request, list(context["lines"])

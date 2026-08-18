@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V0.9.9")
+        self.assertEqual(app.APP_VERSION, "V1.0.0")
 
     def test_submission_success_message_is_bilingual(self) -> None:
         with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
