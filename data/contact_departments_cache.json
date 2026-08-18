@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-18 10:26:03",
+  "generated_at": "2026-08-18 10:32:09",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -17937,6 +17937,16 @@
       ]
     },
     {
+      "open_id": "ou_054e69f94cf60d41221ce97d1f26ea7e",
+      "name": "金寅泰",
+      "department_ids": [
+        "od-249de05d151ab691398f06bca2457576"
+      ],
+      "department_paths": [
+        "解决方案部"
+      ]
+    },
+    {
       "open_id": "ou_f07be57c2a44f7df014455835ccc254b",
       "name": "金晨日",
       "department_ids": [
@@ -20963,5 +20973,5 @@
       ]
     }
   ],
-  "user_count": 1936
+  "user_count": 1937
 }
