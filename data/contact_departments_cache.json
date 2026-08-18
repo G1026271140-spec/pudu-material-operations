@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-18 13:58:49",
+  "generated_at": "2026-08-18 16:38:58",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -4625,16 +4625,6 @@
       ]
     },
     {
-      "open_id": "ou_55e53944283007458b549523fdafd337",
-      "name": "吴陈杰",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_3195ffa9f5999ed2f551b40899a87f87",
       "name": "吴雄",
       "department_ids": [
@@ -7204,16 +7194,6 @@
       ],
       "department_paths": [
         "硬件测试组"
-      ]
-    },
-    {
-      "open_id": "ou_d5d4caef2353c51637a90482d1318076",
-      "name": "张浩",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
       ]
     },
     {
@@ -13399,16 +13379,6 @@
       ]
     },
     {
-      "open_id": "ou_1f0dc30d0dee4dd53a94c16b8fabb699",
-      "name": "王柯秦",
-      "department_ids": [
-        "od-e0a6dbed43b62c85d21f33fa9bb21aff"
-      ],
-      "department_paths": [
-        "CRPBU软件组"
-      ]
-    },
-    {
       "open_id": "ou_725b2aa339967af39ea77416a2da27dd",
       "name": "王梅",
       "department_ids": [
@@ -14078,6 +14048,16 @@
       ],
       "department_paths": [
         "通用调度团队"
+      ]
+    },
+    {
+      "open_id": "ou_bfbc121be76d4bd0309ab2291010c1df",
+      "name": "石杰",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
       ]
     },
     {
@@ -20983,5 +20963,5 @@
       ]
     }
   ],
-  "user_count": 1938
+  "user_count": 1936
 }

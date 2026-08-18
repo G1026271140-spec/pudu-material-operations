@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-18 13:58:11",
+  "generated_at": "2026-08-18 16:38:16",
   "tables": {
     "物料品类": [
       {
@@ -39360,17 +39360,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvqz0DL1K818"
+                "recvqz0DL1K818",
+                "recvsCRHdYwcfq"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01",
               "text_arr": [
-                ""
+                "",
+                "issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01"
               ],
               "type": "text"
             }
           ],
-          "当前库存": "1500",
+          "当前库存": "1450",
           "文本 6": null,
           "是否在申领页显示": "是",
           "海关编码": "4901990000",
@@ -98737,6 +98739,63 @@
         },
         "id": "recvsCOhJadD4z",
         "record_id": "recvsCOhJadD4z"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvsCMY3EoWli"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260818-003-01",
+              "text_arr": [
+                "REQ-20260818-003-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01",
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1787033317567,
+          "变更前数量": "1500",
+          "变更后数量": "1450",
+          "备注": "A71BA121-BAEC-475B-954D-B05DB286201A",
+          "幂等键": "issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01",
+          "库存变化": "-50",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "50",
+          "流水类型": "销售领用出库",
+          "物料品类": "品牌手册(Product Brochure (All\nBanner)）",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfWRw"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0361",
+              "text_arr": [
+                "MAT-0361"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvsCRHdYwcfq",
+        "record_id": "recvsCRHdYwcfq"
       }
     ],
     "物料申请单": [
@@ -99265,8 +99324,8 @@
           "备注": "客户名称：马来本地的销售要50本产品手册\n国家：马来西亚\n收件人信息：人肉带\n运费承担者：普渡付款(PUDU)\n物料用途：马来本地的销售要50本产品手册\n申请人：谢志成",
           "审批实例Code": "A71BA121-BAEC-475B-954D-B05DB286201A",
           "审批意见": null,
-          "审批时间": null,
-          "审批状态": "待审批",
+          "审批时间": 1787033308652,
+          "审批状态": "已发放",
           "客户名称": "马来本地的销售要50本产品手册",
           "市场负责人": null,
           "库存审查人": [
@@ -111332,10 +111391,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01",
           "原申请数量": "50",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1787033317567",
           "品类": [
             {
               "record_ids": [
@@ -111357,7 +111416,7 @@
           ],
           "备注": null,
           "实际发放产品型号": null,
-          "实际发放数量": "0",
+          "实际发放数量": "50",
           "实际发放物料品类": null,
           "实际发放物料编码": null,
           "实际发放语种": null,
@@ -111365,10 +111424,14 @@
           "库存审查时库存": "1500",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsCRHdYwcfq"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01",
+              "text_arr": [
+                "issue:A71BA121-BAEC-475B-954D-B05DB286201A:REQ-20260818-003-01"
+              ],
               "type": "text"
             }
           ],
@@ -111388,7 +111451,7 @@
           ],
           "提交时库存快照": "1500",
           "明细变更说明": null,
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260818-003-01",
           "物料编码": [
             {
@@ -111974,7 +112037,7 @@
     "产品型号": 32,
     "物料语种": 12,
     "物料主数据": 831,
-    "库存流水": 95,
+    "库存流水": 96,
     "物料申请单": 7,
     "申请明细": 96,
     "项目周边礼品物料筹备详情list": 15
