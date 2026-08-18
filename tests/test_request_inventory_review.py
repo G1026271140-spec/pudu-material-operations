@@ -88,8 +88,47 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertIn("品类和申请数量保持不变", serialized)
         self.assertIn("BellaBot", serialized)
         self.assertIn("D7", serialized)
+        self.assertIn("material_0", serialized)
+        self.assertNotIn("model_0", serialized)
+        self.assertNotIn("language_0", serialized)
         self.assertNotIn("CC1", serialized)
         self.assertNotIn("其他品类", serialized)
+
+    def test_combined_dimension_selection_maps_directly_to_material_row(self) -> None:
+        context = {
+            "request": {"inventory_review_version": 1},
+            "lines": [
+                {
+                    "record_id": "line-1",
+                    "material_record_id": "mat-1",
+                    "product": "产品单页",
+                    "model": "MT1 Vac",
+                    "language": "英语",
+                    "quantity": 1,
+                    "remark": "",
+                }
+            ],
+            "material_rows": [
+                {
+                    "record_id": "mat-2",
+                    "fields": {
+                        "物料品类": "产品单页",
+                        "产品型号": "BellaBot",
+                        "语种": "简中",
+                        "启用状态": "启用",
+                    },
+                }
+            ],
+        }
+        with patch.object(app, "request_inventory_review_context", return_value=context):
+            draft = app.request_inventory_card_edit_draft(
+                "request-1",
+                1,
+                "ou-admin",
+                {"material_0": "mat-2", "change_note": "切换版本"},
+            )
+
+        self.assertEqual(draft["lines"][0]["material_record_id"], "mat-2")
 
     def test_card_edit_draft_resolves_selected_model_language_combination(self) -> None:
         context = {

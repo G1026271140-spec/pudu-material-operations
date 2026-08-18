@@ -207,11 +207,14 @@ def process_card_action_async(
     operator_open_id: str,
     message_id: str,
 ) -> None:
+    request_id = str(value.get("request_id") or "").strip()
+    if not request_id and action_name.startswith("save_inventory_edit__"):
+        parts = action_name.split("__")
+        request_id = parts[1] if len(parts) == 3 else ""
     try:
         if operator_open_id not in inventory_app.enabled_admin_open_ids():
             raise PermissionError("只有已启用管理员可以处理库存确认。")
         if action_key == "edit_request_inventory":
-            request_id = str(value.get("request_id") or "").strip()
             if not message_id:
                 raise RuntimeError("飞书未返回卡片消息标识，请在最新卡片中重试。")
             card = inventory_app.request_inventory_card_edit_form(request_id)
@@ -242,7 +245,6 @@ def process_card_action_async(
             )
             return
         if action_key == "confirm_request_inventory":
-            request_id = str(value.get("request_id") or "").strip()
             version = int(value.get("version") or 0)
             inventory_app.enqueue_feishu_background_write(
                 inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
@@ -257,13 +259,24 @@ def process_card_action_async(
             )
             return
         raise RuntimeError("暂不支持该卡片操作。")
-    except Exception:
+    except Exception as exc:
         logging.exception(
             "Asynchronous card action failed: action=%s name=%s message=%s",
             action_key,
             action_name,
             message_id,
         )
+        if message_id and request_id:
+            try:
+                client = inventory_app.feishu_client()
+                if client is not None:
+                    error_card = inventory_app.request_inventory_card_edit_form(
+                        request_id,
+                        error_message=str(exc),
+                    )
+                    client.update_interactive_message(message_id, error_card)
+            except Exception:
+                logging.exception("Updating card with asynchronous action error failed")
 
 
 def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse:

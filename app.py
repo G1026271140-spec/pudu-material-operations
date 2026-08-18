@@ -58,7 +58,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.7"
+APP_VERSION = "V0.9.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -6395,7 +6395,11 @@ def material_request_notification_card(
     }
 
 
-def request_inventory_card_edit_form(request_id: str) -> dict[str, object]:
+def request_inventory_card_edit_form(
+    request_id: str,
+    *,
+    error_message: str = "",
+) -> dict[str, object]:
     context = request_inventory_review_context(request_id=request_id)
     request = dict(context["request"])
     if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
@@ -6419,11 +6423,23 @@ def request_inventory_card_edit_form(request_id: str) -> dict[str, object]:
     for index, line in enumerate(list(context["lines"])):
         product = str(line.get("product") or "")
         candidates = [item for item in active_materials if item["product"] == product]
-        models = unique_preserve(
-            [str(line.get("model") or NO_MODEL_TEXT), *[item["model"] for item in candidates]]
-        )
-        languages = unique_preserve(
-            [str(line.get("language") or NO_LANGUAGE_TEXT), *[item["language"] for item in candidates]]
+        current_material_id = str(line.get("material_record_id") or "")
+        if current_material_id and all(item["record_id"] != current_material_id for item in candidates):
+            candidates.insert(
+                0,
+                {
+                    "record_id": current_material_id,
+                    "product": product,
+                    "model": str(line.get("model") or NO_MODEL_TEXT),
+                    "language": str(line.get("language") or NO_LANGUAGE_TEXT),
+                },
+            )
+        unique_candidates = list(
+            {
+                item["record_id"]: item
+                for item in candidates
+                if str(item.get("record_id") or "")
+            }.values()
         )
         form_elements.extend(
             [
@@ -6436,26 +6452,20 @@ def request_inventory_card_edit_form(request_id: str) -> dict[str, object]:
                 },
                 {
                     "tag": "select_static",
-                    "name": f"model_{index}",
+                    "name": f"material_{index}",
                     "required": True,
                     "width": "fill",
-                    "placeholder": {"tag": "plain_text", "content": "选择型号"},
-                    "initial_option": str(line.get("model") or NO_MODEL_TEXT),
+                    "placeholder": {"tag": "plain_text", "content": "选择型号 / 语种"},
+                    "initial_option": current_material_id,
                     "options": [
-                        {"text": {"tag": "plain_text", "content": item}, "value": item}
-                        for item in models
-                    ],
-                },
-                {
-                    "tag": "select_static",
-                    "name": f"language_{index}",
-                    "required": True,
-                    "width": "fill",
-                    "placeholder": {"tag": "plain_text", "content": "选择语种"},
-                    "initial_option": str(line.get("language") or NO_LANGUAGE_TEXT),
-                    "options": [
-                        {"text": {"tag": "plain_text", "content": item}, "value": item}
-                        for item in languages
+                        {
+                            "text": {
+                                "tag": "plain_text",
+                                "content": f"{item['model']} / {item['language']}",
+                            },
+                            "value": item["record_id"],
+                        }
+                        for item in unique_candidates
                     ],
                 },
             ]
@@ -6511,6 +6521,16 @@ def request_inventory_card_edit_form(request_id: str) -> dict[str, object]:
             "padding": "12px 12px 20px 12px",
             "vertical_spacing": "12px",
             "elements": [
+                *(
+                    [
+                        {
+                            "tag": "markdown",
+                            "content": f"**<font color='red'>保存失败</font>**\n{_feishu_card_plain_text(error_message, max_length=500)}",
+                        }
+                    ]
+                    if error_message
+                    else []
+                ),
                 {
                     "tag": "markdown",
                     "content": "**卡片内编辑**\n品类和申请数量保持不变，只调整型号与语种。",
@@ -6540,6 +6560,7 @@ def request_inventory_card_edit_draft(
     desired: list[dict[str, object]] = []
     for index, line in enumerate(list(context["lines"])):
         product = str(line.get("product") or "")
+        material_id = str(form_value.get(f"material_{index}") or "").strip()
         model = str(form_value.get(f"model_{index}") or "").strip()
         language = str(form_value.get(f"language_{index}") or "").strip()
         matched = next(
@@ -6548,13 +6569,20 @@ def request_inventory_card_edit_draft(
                 for row in material_rows
                 if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
                 and feishu_text(feishu_fields(row), "物料品类") == product
-                and (feishu_text(feishu_fields(row), "产品型号") or NO_MODEL_TEXT) == model
-                and (feishu_text(feishu_fields(row), "语种") or NO_LANGUAGE_TEXT) == language
+                and (
+                    (material_id and feishu_record_id(row) == material_id)
+                    or (
+                        not material_id
+                        and (feishu_text(feishu_fields(row), "产品型号") or NO_MODEL_TEXT) == model
+                        and (feishu_text(feishu_fields(row), "语种") or NO_LANGUAGE_TEXT) == language
+                    )
+                )
             ),
             None,
         )
         if matched is None:
-            raise RuntimeError(f"{product} 不存在“{model} / {language}”这一可用物料组合。")
+            selected_label = f"{model} / {language}" if not material_id else "所选型号 / 语种"
+            raise RuntimeError(f"{product} 不存在“{selected_label}”这一可用物料组合，请重新选择。")
         desired.append(
             {
                 "material_record_id": feishu_record_id(matched),
