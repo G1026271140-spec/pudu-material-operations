@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-17 17:46:00",
+  "generated_at": "2026-08-18 10:26:03",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -2375,6 +2375,16 @@
       ]
     },
     {
+      "open_id": "ou_54361dcd9b600bb5a1206d3b61a76d75",
+      "name": "储林",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_c85353175827fd469fb9226d07d53e5d",
       "name": "全文浩",
       "department_ids": [
@@ -2684,6 +2694,16 @@
       ],
       "department_paths": [
         "质量部"
+      ]
+    },
+    {
+      "open_id": "ou_e02f373bce9a55fe1eae59c63ef8923f",
+      "name": "刘东梅",
+      "department_ids": [
+        "od-b5594223b60818b552a17a06fc341b13"
+      ],
+      "department_paths": [
+        "桐乡品控组"
       ]
     },
     {
@@ -13981,16 +14001,6 @@
       ]
     },
     {
-      "open_id": "ou_7a91caeea8a037eeef3e02a7651909fe",
-      "name": "白鹏",
-      "department_ids": [
-        "od-0d2e69b5098d365910e13a12f726cd12"
-      ],
-      "department_paths": [
-        "桐乡综合组"
-      ]
-    },
-    {
       "open_id": "ou_e30dc261f76b6d054210115fe83d3d3d",
       "name": "盘杰华",
       "department_ids": [
@@ -15252,6 +15262,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_9f6ce105d8e3973d9db5ecab85c22baa",
+      "name": "胡翔翔",
+      "department_ids": [
+        "od-057136d1f73860bc2ea5a9fb1a421adf"
+      ],
+      "department_paths": [
+        "工程部"
       ]
     },
     {
@@ -20007,6 +20027,16 @@
       ]
     },
     {
+      "open_id": "ou_9c600666a6de87b645ae0de09268b35d",
+      "name": "魏军丽",
+      "department_ids": [
+        "od-b5594223b60818b552a17a06fc341b13"
+      ],
+      "department_paths": [
+        "桐乡品控组"
+      ]
+    },
+    {
       "open_id": "ou_7a865fabc2212c6422017a9737039724",
       "name": "魏康宁",
       "department_ids": [
@@ -20933,5 +20963,5 @@
       ]
     }
   ],
-  "user_count": 1933
+  "user_count": 1936
 }
