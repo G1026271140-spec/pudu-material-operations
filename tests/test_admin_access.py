@@ -6,7 +6,19 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V0.9.6")
+        self.assertEqual(app.APP_VERSION, "V0.9.7")
+
+    def test_submission_success_message_is_bilingual(self) -> None:
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
+            self.assertEqual(
+                app.data_submission_success_message(),
+                "数据提交成功，请您关注飞书审批进度，感谢您的使用。",
+            )
+        with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN):
+            self.assertEqual(
+                app.data_submission_success_message(),
+                "Data submitted successfully. Please follow the Feishu approval progress. Thank you for using this application.",
+            )
 
     def test_inventory_review_page_is_not_exposed(self) -> None:
         self.assertFalse(hasattr(app, "render_request_inventory_review_page"))

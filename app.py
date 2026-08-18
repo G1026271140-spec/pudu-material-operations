@@ -58,7 +58,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.6"
+APP_VERSION = "V0.9.7"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -541,6 +541,15 @@ def get_ui_language() -> str:
 
 def ui_text(value: object) -> str:
     return str(translate_ui_text(value, get_ui_language()))
+
+
+def data_submission_success_message() -> str:
+    if get_ui_language() == LANGUAGE_EN:
+        return (
+            "Data submitted successfully. Please follow the Feishu approval progress. "
+            "Thank you for using this application."
+        )
+    return "数据提交成功，请您关注飞书审批进度，感谢您的使用。"
 
 
 def request_option_display_label(value: object) -> str:
@@ -11267,18 +11276,7 @@ def render_request_review() -> None:
                     st.exception(exc)
                     return
         clear_request_application_state()
-        if task.status == QUEUE_STATUS_COMPLETED:
-            request_no = str(task.result.get("request_no") or "").strip()
-            st.session_state["request_submit_message"] = (
-                f"申请单 {request_no or task.task_id[:8]} 已处理完成。"
-            )
-        else:
-            action_text = "已进入" if created_new_task else "已存在于"
-            st.session_state["request_submit_message"] = (
-                f"申请任务 {task.task_id[:8]} {action_text}后台队列。"
-                "您现在可以关闭页面；Windows Worker 会继续处理，"
-                "完成后机器人将通知申请人和管理员。"
-            )
+        st.session_state["request_submit_message"] = data_submission_success_message()
         st.session_state["request_scroll_to_top"] = True
         st.rerun()
 
@@ -12207,9 +12205,7 @@ def render_restock_review() -> None:
                 return
         restock_no = str(draft.get("restock_no") or "")
         clear_restock_form_state()
-        st.session_state["restock_submit_message"] = (
-            f"补库单 {restock_no} 已进入后台队列（任务 {task.task_id[:8]}），可关闭页面。"
-        )
+        st.session_state["restock_submit_message"] = data_submission_success_message()
         st.rerun()
 
 
@@ -12423,9 +12419,7 @@ def render_category_edit_review() -> None:
                 return
         st.session_state.pop(CATEGORY_EDIT_DRAFT_KEY, None)
         st.session_state[CATEGORY_EDIT_STAGE_KEY] = "edit"
-        st.session_state["category_added_message"] = (
-            f"物料品类“{draft['product']}”的修改已进入后台队列（任务 {task.task_id[:8]}）。"
-        )
+        st.session_state["category_added_message"] = data_submission_success_message()
         st.rerun()
 
 
@@ -12618,9 +12612,7 @@ def render_new_category_review() -> None:
                 st.exception(exc)
                 return
         clear_new_category_creation_state()
-        st.session_state["category_added_message"] = (
-            f"物料品类“{product}”的创建已进入后台队列（任务 {task.task_id[:8]}）。"
-        )
+        st.session_state["category_added_message"] = data_submission_success_message()
         st.rerun()
 
 
@@ -12892,9 +12884,7 @@ def render_category_delete_review() -> None:
             if delete_kind == "categories"
             else f"{len(records)} 条物料行"
         )
-        st.session_state["category_added_message"] = (
-            f"删除 {deleted_label} 的操作已进入后台队列（任务 {task.task_id[:8]}）。"
-        )
+        st.session_state["category_added_message"] = data_submission_success_message()
         st.rerun()
 
 
@@ -13063,9 +13053,7 @@ def render_dimension_management_page(kind: str) -> None:
                     st.exception(exc)
                     return
             st.session_state.pop(draft_key, None)
-            st.session_state[message_key] = (
-                f"{label}{operation_labels.get(operation, '')}任务已进入后台队列（任务 {task.task_id[:8]}）。"
-            )
+            st.session_state[message_key] = data_submission_success_message()
             st.rerun()
         return
 
@@ -14361,7 +14349,7 @@ def render_transaction_admin() -> None:
                 st.error("批量撤回失败。请检查飞书应用是否有物料主数据和库存流水编辑权限。")
                 st.exception(exc)
                 return
-            st.session_state["transaction_admin_message"] = f"{len(active_selected_ids)} 条撤回操作已进入后台队列（任务 {task.task_id[:8]}）。"
+            st.session_state["transaction_admin_message"] = data_submission_success_message()
             st.rerun()
 
     if len(active_selected_ids) == 1:
@@ -14444,7 +14432,7 @@ def render_transaction_admin() -> None:
                             st.error("修正任务未能进入后台队列，请重试。")
                             st.exception(exc)
                             return
-                    st.session_state["transaction_admin_message"] = f"库存修正已进入后台队列（任务 {task.task_id[:8]}）。"
+                    st.session_state["transaction_admin_message"] = data_submission_success_message()
                     st.rerun()
     elif len(selected_ids) > 1:
         st.info("已选择多条记录，可批量撤回；如需编辑，请只勾选一条有效记录。")
@@ -15569,9 +15557,7 @@ def render_existing_gift_project_form(category: dict) -> None:
             st.exception(exc)
             return
     st.session_state.pop("gift_selected_category_id", None)
-    st.session_state["gift_project_submit_message"] = (
-        f"项目“{str(project_name).strip()}”的周边礼品“{product}”已进入后台队列（任务 {task.task_id[:8]}）。"
-    )
+    st.session_state["gift_project_submit_message"] = data_submission_success_message()
     st.rerun()
 
 
@@ -15662,9 +15648,7 @@ def render_new_gift_project_form() -> None:
         if str(key).startswith("gift_new_"):
             st.session_state.pop(key, None)
     st.session_state["gift_create_mode"] = False
-    st.session_state["gift_project_submit_message"] = (
-        f"周边礼品“{str(material_name).strip()}”及项目“{str(project_name).strip()}”已进入后台队列（任务 {task.task_id[:8]}）。"
-    )
+    st.session_state["gift_project_submit_message"] = data_submission_success_message()
     st.rerun()
 
 
@@ -15867,9 +15851,7 @@ def render_gift_projects_page() -> None:
                             return
                     st.session_state["gift_batch_selected_ids"] = []
                     st.session_state.pop("gift_batch_new_line", None)
-                    st.session_state["gift_project_submit_message"] = (
-                        f"项目物料清单已进入后台队列（任务 {task.task_id[:8]}）。"
-                    )
+                    st.session_state["gift_project_submit_message"] = data_submission_success_message()
                     st.rerun()
         catalog_items = [*filtered_gallery]
         for row_start in range(0, len(catalog_items), 6):

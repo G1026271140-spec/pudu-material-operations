@@ -12,7 +12,6 @@ import lark_oapi as lark
 from lark_oapi import ws
 from lark_oapi.api.im.v1 import P2ImMessageReceiveV1
 from lark_oapi.event.callback.model.p2_card_action_trigger import (
-    CallBackCard,
     CallBackToast,
     P2CardActionTrigger,
     P2CardActionTriggerResponse,
@@ -199,28 +198,28 @@ def card_action_response(kind: str, content: str) -> P2CardActionTriggerResponse
     return response
 
 
-def card_update_response(card: dict[str, object], content: str = "") -> P2CardActionTriggerResponse:
-    response = P2CardActionTriggerResponse()
-    response.card = CallBackCard({"type": "raw", "data": card})
-    if content:
-        response.toast = CallBackToast({"type": "success", "content": content})
-    return response
-
-
-def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse:
-    event = data.event
-    action = event.action if event else None
-    value = dict(action.value or {}) if action and isinstance(action.value, dict) else {}
-    operator = event.operator if event else None
-    operator_open_id = str(operator.open_id or "").strip() if operator else ""
-    action_name = str(getattr(action, "name", "") or "") if action else ""
+def process_card_action_async(
+    *,
+    action_key: str,
+    action_name: str,
+    value: dict[str, object],
+    form_value: dict[str, object],
+    operator_open_id: str,
+    message_id: str,
+) -> None:
     try:
         if operator_open_id not in inventory_app.enabled_admin_open_ids():
             raise PermissionError("只有已启用管理员可以处理库存确认。")
-        action_key = str(value.get("action") or "")
         if action_key == "edit_request_inventory":
             request_id = str(value.get("request_id") or "").strip()
-            return card_update_response(inventory_app.request_inventory_card_edit_form(request_id))
+            if not message_id:
+                raise RuntimeError("飞书未返回卡片消息标识，请在最新卡片中重试。")
+            card = inventory_app.request_inventory_card_edit_form(request_id)
+            client = inventory_app.feishu_client()
+            if client is None:
+                raise RuntimeError("飞书未配置，无法更新库存编辑卡片。")
+            client.update_interactive_message(message_id, card)
+            return
         if action_name.startswith("save_inventory_edit__"):
             parts = action_name.split("__")
             if len(parts) != 3:
@@ -231,9 +230,9 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
                 request_id,
                 version,
                 operator_open_id,
-                dict(getattr(action, "form_value", {}) or {}),
+                form_value,
             )
-            task, _ = inventory_app.enqueue_feishu_background_write(
+            inventory_app.enqueue_feishu_background_write(
                 inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
                 {"draft": draft},
                 idempotency_key=(
@@ -241,34 +240,60 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
                     f"{hashlib.sha256(json.dumps(draft, ensure_ascii=False, sort_keys=True, default=str).encode('utf-8')).hexdigest()}"
                 ),
             )
-            return card_action_response(
-                "success",
-                f"申请修改已进入后台队列（任务 {task.task_id[:8]}）。完成后卡片会自动更新。",
+            return
+        if action_key == "confirm_request_inventory":
+            request_id = str(value.get("request_id") or "").strip()
+            version = int(value.get("version") or 0)
+            inventory_app.enqueue_feishu_background_write(
+                inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+                {
+                    "draft": {
+                        "request_id": request_id,
+                        "expected_version": version,
+                        "operator_open_id": operator_open_id,
+                    }
+                },
+                idempotency_key=f"request-inventory-confirm:{request_id}:{version}",
             )
-        if action_key != "confirm_request_inventory":
-            return card_action_response("warning", "暂不支持该卡片操作。")
-        request_id = str(value.get("request_id") or "").strip()
-        version = int(value.get("version") or 0)
-        task, _ = inventory_app.enqueue_feishu_background_write(
-            inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
-            {
-                "draft": {
-                    "request_id": request_id,
-                    "expected_version": version,
-                    "operator_open_id": operator_open_id,
-                }
-            },
-            idempotency_key=f"request-inventory-confirm:{request_id}:{version}",
+            return
+        raise RuntimeError("暂不支持该卡片操作。")
+    except Exception:
+        logging.exception(
+            "Asynchronous card action failed: action=%s name=%s message=%s",
+            action_key,
+            action_name,
+            message_id,
         )
-        return card_action_response(
-            "success",
-            f"库存确认已进入后台队列（任务 {task.task_id[:8]}）。",
-        )
-    except PermissionError as exc:
-        return card_action_response("error", str(exc))
-    except Exception as exc:
-        logging.exception("Confirming request inventory failed")
-        return card_action_response("error", f"库存确认提交失败：{str(exc)[:120]}")
+
+
+def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse:
+    event = data.event
+    action = event.action if event else None
+    value = dict(action.value or {}) if action and isinstance(action.value, dict) else {}
+    operator = event.operator if event else None
+    operator_open_id = str(operator.open_id or "").strip() if operator else ""
+    action_name = str(getattr(action, "name", "") or "") if action else ""
+    action_key = str(value.get("action") or "")
+    if action_key not in {"edit_request_inventory", "confirm_request_inventory"} and not action_name.startswith(
+        "save_inventory_edit__"
+    ):
+        return card_action_response("warning", "暂不支持该卡片操作。")
+    context = getattr(event, "context", None) if event else None
+    message_id = str(getattr(context, "open_message_id", "") or "")
+    threading.Thread(
+        target=process_card_action_async,
+        kwargs={
+            "action_key": action_key,
+            "action_name": action_name,
+            "value": value,
+            "form_value": dict(getattr(action, "form_value", {}) or {}),
+            "operator_open_id": operator_open_id,
+            "message_id": message_id,
+        },
+        name=f"card-action-{(message_id or 'unknown')[-8:]}",
+        daemon=True,
+    ).start()
+    return card_action_response("success", "正在处理，请稍候，卡片将自动更新。")
 
 
 def main() -> int:

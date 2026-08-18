@@ -8,26 +8,47 @@ from scripts import feishu_card_worker as worker
 
 
 class FeishuCardWorkerTests(unittest.TestCase):
-    def test_inventory_edit_button_returns_inline_card_form(self) -> None:
+    def test_async_edit_load_updates_original_card_message(self) -> None:
+        client = Mock()
+        card = {"schema": "2.0"}
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "request_inventory_card_edit_form", return_value=card),
+            patch.object(worker.inventory_app, "feishu_client", return_value=client),
+        ):
+            worker.process_card_action_async(
+                action_key="edit_request_inventory",
+                action_name="",
+                value={"request_id": "request-1"},
+                form_value={},
+                operator_open_id="ou-admin",
+                message_id="om-card-1",
+            )
+
+        client.update_interactive_message.assert_called_once_with("om-card-1", card)
+
+    def test_inventory_edit_button_returns_immediately_and_starts_background_load(self) -> None:
+        thread = Mock()
         event = SimpleNamespace(
             action=SimpleNamespace(
                 name="",
                 value={"action": "edit_request_inventory", "request_id": "request-1"},
             ),
             operator=SimpleNamespace(open_id="ou-admin"),
+            context=SimpleNamespace(open_message_id="om-card-1"),
         )
-        card = {"schema": "2.0", "body": {"elements": []}}
-        with (
-            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
-            patch.object(worker.inventory_app, "request_inventory_card_edit_form", return_value=card),
-        ):
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
             response = worker.handle_card_action(SimpleNamespace(event=event))
 
-        self.assertEqual(response.card.type, "raw")
-        self.assertEqual(response.card.data, card)
+        self.assertEqual(response.toast.type, "success")
+        self.assertIn("正在处理", response.toast.content)
+        self.assertEqual(thread_class.call_args.kwargs["target"], worker.process_card_action_async)
+        self.assertEqual(thread_class.call_args.kwargs["kwargs"]["message_id"], "om-card-1")
+        thread.start.assert_called_once_with()
 
-    def test_inline_inventory_edit_form_enters_background_queue(self) -> None:
+    def test_inline_inventory_edit_form_starts_background_processing(self) -> None:
         task = SimpleNamespace(task_id="abcdef123456")
+        thread = Mock()
         form_value = {"model_0": "D7", "language_0": "英语", "change_note": "调整版本"}
         event = SimpleNamespace(
             action=SimpleNamespace(
@@ -36,23 +57,19 @@ class FeishuCardWorkerTests(unittest.TestCase):
                 form_value=form_value,
             ),
             operator=SimpleNamespace(open_id="ou-admin"),
+            context=SimpleNamespace(open_message_id="om-card-1"),
         )
-        draft = {"request_id": "request-1", "expected_version": 2, "lines": []}
-        with (
-            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
-            patch.object(worker.inventory_app, "request_inventory_card_edit_draft", return_value=draft) as build,
-            patch.object(worker.inventory_app, "enqueue_feishu_background_write", return_value=(task, True)) as enqueue,
-        ):
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
             response = worker.handle_card_action(SimpleNamespace(event=event))
 
-        build.assert_called_once_with("request-1", 2, "ou-admin", form_value)
-        self.assertEqual(enqueue.call_args.args[0], worker.inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT)
-        self.assertEqual(enqueue.call_args.args[1], {"draft": draft})
-        self.assertTrue(enqueue.call_args.kwargs["idempotency_key"].startswith("request-inventory-card-edit:request-1:2:"))
+        kwargs = thread_class.call_args.kwargs["kwargs"]
+        self.assertEqual(kwargs["action_name"], "save_inventory_edit__request-1__2")
+        self.assertEqual(kwargs["form_value"], form_value)
         self.assertEqual(response.toast.type, "success")
+        thread.start.assert_called_once_with()
 
-    def test_inventory_confirm_callback_enters_background_queue(self) -> None:
-        task = SimpleNamespace(task_id="abcdef123456")
+    def test_inventory_confirm_callback_returns_before_queue_work(self) -> None:
+        thread = Mock()
         event = SimpleNamespace(
             action=SimpleNamespace(
                 value={
@@ -62,25 +79,17 @@ class FeishuCardWorkerTests(unittest.TestCase):
                 }
             ),
             operator=SimpleNamespace(open_id="ou-admin"),
+            context=SimpleNamespace(open_message_id="om-card-1"),
         )
-        with (
-            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
-            patch.object(worker.inventory_app, "enqueue_feishu_background_write", return_value=(task, True)) as enqueue,
-        ):
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
             response = worker.handle_card_action(SimpleNamespace(event=event))
 
-        enqueue.assert_called_once_with(
-            worker.inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
-            {
-                "draft": {
-                    "request_id": "request-1",
-                    "expected_version": 2,
-                    "operator_open_id": "ou-admin",
-                }
-            },
-            idempotency_key="request-inventory-confirm:request-1:2",
+        self.assertEqual(
+            thread_class.call_args.kwargs["kwargs"]["action_key"],
+            "confirm_request_inventory",
         )
         self.assertEqual(response.toast.type, "success")
+        thread.start.assert_called_once_with()
         self.assertFalse(hasattr(worker, "REQUEST_CACHE_REFRESH_SECONDS"))
         self.assertFalse(hasattr(worker, "request_cache_refresh_loop"))
 
