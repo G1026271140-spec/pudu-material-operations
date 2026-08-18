@@ -58,7 +58,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.8"
+APP_VERSION = "V0.9.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -6688,11 +6688,7 @@ def notify_requester_of_inventory_edit(
 
     english = requester_prefers_english(request)
 
-    def line_elements(
-        lines: list[dict[str, object]],
-        *,
-        show_inventory: bool = False,
-    ) -> list[dict[str, object]]:
+    def line_elements(lines: list[dict[str, object]]) -> list[dict[str, object]]:
         elements: list[dict[str, object]] = []
         for index, item in enumerate(lines, start=1):
             content = (
@@ -6701,19 +6697,6 @@ def notify_requester_of_inventory_edit(
                 f"{item.get('language') or NO_LANGUAGE_TEXT} "
                 f"× {int(item.get('quantity') or 0)}"
             )
-            if show_inventory:
-                stock = int(item.get("current_stock") or 0)
-                sufficient = stock > 0 and stock >= int(item.get("quantity") or 0)
-                status = (
-                    "Sufficient" if english and sufficient else
-                    "Insufficient, production required" if english else
-                    INVENTORY_RESULT_SUFFICIENT if sufficient else "库存不足，需要制作"
-                )
-                content += (
-                    f"\nCurrent stock {stock}｜{status}"
-                    if english
-                    else f"\n当前库存 {stock}｜{status}"
-                )
             elements.append(_feishu_card_text_element(content, lines=4))
         return elements or [
             _feishu_card_text_element("None" if english else "无", text_color="grey-500")
@@ -6761,8 +6744,8 @@ def notify_requester_of_inventory_edit(
                     color="grey",
                 ),
                 _feishu_notification_section(
-                    "After change and inventory" if english else "修改后与库存核实",
-                    line_elements(after_lines, show_inventory=True),
+                    "After change" if english else "修改后",
+                    line_elements(after_lines),
                     color="green",
                     focus=True,
                 ),
