@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-18 16:38:41",
+  "generated_at": "2026-08-18 18:26:17",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -2441,7 +2441,7 @@
       "product": "品牌手册(Product Brochure (All\nBanner)）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 456
+      "quantity": 454
     },
     {
       "material_code": "MAT-0370",
@@ -3715,7 +3715,7 @@
       "product": "公仔(Plush Toy)",
       "model": "BellaBot",
       "language": "无需语种",
-      "quantity": 299
+      "quantity": 298
     },
     {
       "material_code": "MAT-0591",
@@ -3729,7 +3729,7 @@
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 400
+      "quantity": 399
     },
     {
       "material_code": "MAT-0761",
