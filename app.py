@@ -58,7 +58,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.5"
+APP_VERSION = "V0.9.6"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -6235,6 +6235,7 @@ def material_request_notification_card(
     header_title = "营销物料申请库存确认"
     review_result = str(context.get("result") or "")
     review_status = str(review_request.get("inventory_review_status") or INVENTORY_REVIEW_PENDING)
+    review_status_display = review_status
     snapshot_at = str(context.get("snapshot_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     inventory_elements: list[dict[str, object]] = []
     for index, line in enumerate(valid_lines, start=1):
@@ -6259,7 +6260,7 @@ def material_request_notification_card(
             [
                 _feishu_notification_field_grid(
                     [
-                        ("审查状态", review_status),
+                        ("审查状态", review_status_display),
                         ("库存结论", review_result or "待计算"),
                         ("库存快照时间", snapshot_at),
                         ("申请变更次数", review_request.get("inventory_review_version", 0)),
@@ -6293,7 +6294,7 @@ def material_request_notification_card(
         ),
     ]
     request_id = str(review_request.get("record_id") or "")
-    if request_id:
+    if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
         elements.append(
             {
                 "tag": "column_set",
@@ -6362,6 +6363,20 @@ def material_request_notification_card(
             "template": "green" if review_status == INVENTORY_REVIEW_CONFIRMED else "orange",
             "title": {"tag": "plain_text", "content": header_title},
             "icon": {"tag": "standard_icon", "token": "approve_colorful"},
+            "text_tag_list": [
+                {
+                    "tag": "text_tag",
+                    "text": {
+                        "tag": "plain_text",
+                        "content": (
+                            INVENTORY_REVIEW_CONFIRMED
+                            if review_status == INVENTORY_REVIEW_CONFIRMED
+                            else "待确认库存"
+                        ),
+                    },
+                    "color": "green" if review_status == INVENTORY_REVIEW_CONFIRMED else "orange",
+                }
+            ],
         },
         "body": {
             "direction": "vertical",

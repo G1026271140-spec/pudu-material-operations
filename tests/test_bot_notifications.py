@@ -551,6 +551,39 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(first_field["elements"][1]["text"]["text_size"], "normal")
         self.assertEqual(field_grid["columns"][0]["vertical_spacing"], "16px")
 
+    def test_confirmed_inventory_card_hides_all_actions(self) -> None:
+        payload = {"requester": "销售甲", "department": "海外销售部"}
+        lines = [
+            {
+                "product": "产品单页",
+                "model": "D7",
+                "language": "英语",
+                "quantity": 2,
+                "current_stock": 5,
+            }
+        ]
+        card = app.material_request_notification_card(
+            "REQ-1",
+            payload,
+            lines,
+            review_context={
+                "request": {
+                    "record_id": "request-1",
+                    "inventory_review_status": app.INVENTORY_REVIEW_CONFIRMED,
+                    "inventory_review_version": 1,
+                },
+                "lines": lines,
+                "result": app.INVENTORY_RESULT_SUFFICIENT,
+                "snapshot_at": "2026-08-18 10:00:00",
+            },
+        )
+
+        serialized = json.dumps(card, ensure_ascii=False)
+        self.assertIn(app.INVENTORY_REVIEW_CONFIRMED, serialized)
+        self.assertNotIn("编辑申请", serialized)
+        self.assertNotIn("确认库存", serialized)
+        self.assertNotIn('"tag": "button"', serialized)
+
     def test_notify_sends_once_to_each_enabled_administrator(self) -> None:
         client = Mock()
         card = {"header": {"template": "orange"}}
