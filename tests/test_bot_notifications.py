@@ -512,10 +512,9 @@ class BotNotificationTests(unittest.TestCase):
             "result": app.INVENTORY_RESULT_INSUFFICIENT,
             "snapshot_at": "2026-08-18 10:00:00",
         }
-        with patch.object(app.st, "secrets", {"STREAMLIT_APP_URL": app.DEFAULT_STREAMLIT_APP_URL}):
-            card = app.material_request_notification_card(
-                "REQ-1", payload, lines, review_context=review_context
-            )
+        card = app.material_request_notification_card(
+            "REQ-1", payload, lines, review_context=review_context
+        )
 
         serialized = json.dumps(card, ensure_ascii=False)
         self.assertEqual(card["schema"], "2.0")

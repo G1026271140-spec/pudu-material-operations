@@ -1,12 +1,40 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_requester_inventory_edit_notification_is_structured_card(self) -> None:
+        client = Mock()
+        request = {"request_no": "REQ-1", "requester_open_id": "ou-user"}
+        before = [
+            {"product": "公仔", "model": "BellaBot", "language": "无需语种", "quantity": 1}
+        ]
+        after = [
+            {
+                "product": "公仔",
+                "model": "KettyBot Pro",
+                "language": "无需语种",
+                "quantity": 1,
+                "current_stock": 0,
+            }
+        ]
+        with patch.object(app, "feishu_client", return_value=client):
+            app.notify_requester_of_inventory_edit(request, before, after, "原型号库存不足")
+
+        client.send_interactive_message.assert_called_once()
+        card = client.send_interactive_message.call_args.args[1]
+        serialized = str(card)
+        self.assertIn("营销物料申请已调整", serialized)
+        self.assertIn("修改前", serialized)
+        self.assertIn("修改后与库存核实", serialized)
+        self.assertIn("原型号库存不足", serialized)
+        self.assertIn(app.INVENTORY_REVIEW_CONFIRMED, serialized)
+        client.send_text_message.assert_not_called()
+
     def test_card_edit_form_keeps_category_and_only_offers_its_dimensions(self) -> None:
         context = {
             "request": {
@@ -173,6 +201,66 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(request_fields["库存审查人"], [{"id": "ou_admin"}])
         notify.assert_called_once()
         self.assertTrue(result["confirmed"])
+
+    def test_editing_request_also_marks_inventory_as_confirmed(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "status": app.REQUEST_STATUS_PENDING,
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_review_version": 0,
+            },
+            "lines": [
+                {
+                    "record_id": "line-1",
+                    "material_record_id": "mat-1",
+                    "product": "产品单页",
+                    "model": "D7",
+                    "language": "英语",
+                    "quantity": 2,
+                    "remark": "",
+                }
+            ],
+            "material_rows": [
+                {
+                    "record_id": "mat-1",
+                    "fields": {
+                        "物料品类": "产品单页",
+                        "产品型号": "D7",
+                        "语种": "英语",
+                        "当前库存": 5,
+                    },
+                }
+            ],
+        }
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_has_field", return_value=True),
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_batch_update_record_fields"),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+            patch.object(app, "ensure_request_change_record_fields"),
+            patch.object(app, "feishu_batch_create_records"),
+            patch.object(app, "notify_requester_of_inventory_edit"),
+            patch.object(app, "notify_enabled_admins_of_material_request"),
+        ):
+            app.execute_request_inventory_edit(
+                {
+                    "request_id": "request-1",
+                    "expected_version": 0,
+                    "operator_open_id": "ou_admin",
+                    "change_note": "调整型号语种",
+                    "lines": [
+                        {"material_record_id": "mat-1", "quantity": 2, "remark": ""}
+                    ],
+                }
+            )
+
+        request_fields = update_request.call_args.args[2]
+        self.assertEqual(request_fields["库存审查状态"], app.INVENTORY_REVIEW_CONFIRMED)
+        self.assertEqual(request_fields["库存审查人"], [{"id": "ou_admin"}])
+        self.assertEqual(request_fields["库存审查时间"], 123456)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import hashlib
-import hmac
 import os
 import re
 import threading
@@ -59,7 +58,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V0.9.4"
+APP_VERSION = "V0.9.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -121,9 +120,6 @@ INVENTORY_REVIEW_CONFIRMED = "已核实库存"
 INVENTORY_RESULT_SUFFICIENT = "库存充足"
 INVENTORY_RESULT_PARTIAL = "部分库存不足"
 INVENTORY_RESULT_INSUFFICIENT = "全部库存不足"
-DEFAULT_STREAMLIT_APP_URL = (
-    "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
-)
 FREIGHT_PAYER_OPTIONS = [
     "申请部门承担",
     "市场部承担",
@@ -6638,23 +6634,96 @@ def notify_requester_of_inventory_edit(
     if client is None:
         raise RuntimeError("飞书未配置，无法发送申请变更通知。")
 
-    def labels(lines: list[dict[str, object]]) -> list[str]:
-        return [
-            f"{item.get('product') or '-'} / {item.get('model') or NO_MODEL_TEXT} / "
-            f"{item.get('language') or NO_LANGUAGE_TEXT} × {int(item.get('quantity') or 0)}"
-            for item in lines
+    english = requester_prefers_english(request)
+
+    def line_elements(
+        lines: list[dict[str, object]],
+        *,
+        show_inventory: bool = False,
+    ) -> list[dict[str, object]]:
+        elements: list[dict[str, object]] = []
+        for index, item in enumerate(lines, start=1):
+            content = (
+                f"{index:02d}. {item.get('product') or '-'} / "
+                f"{item.get('model') or NO_MODEL_TEXT} / "
+                f"{item.get('language') or NO_LANGUAGE_TEXT} "
+                f"× {int(item.get('quantity') or 0)}"
+            )
+            if show_inventory:
+                stock = int(item.get("current_stock") or 0)
+                sufficient = stock > 0 and stock >= int(item.get("quantity") or 0)
+                status = (
+                    "Sufficient" if english and sufficient else
+                    "Insufficient, production required" if english else
+                    INVENTORY_RESULT_SUFFICIENT if sufficient else "库存不足，需要制作"
+                )
+                content += (
+                    f"\nCurrent stock {stock}｜{status}"
+                    if english
+                    else f"\n当前库存 {stock}｜{status}"
+                )
+            elements.append(_feishu_card_text_element(content, lines=4))
+        return elements or [
+            _feishu_card_text_element("None" if english else "无", text_color="grey-500")
         ]
 
-    before_text = "；".join(labels(before_lines)) or "无"
-    after_text = "；".join(labels(after_lines)) or "无"
-    text = (
-        f"您的营销物料申请 {request.get('request_no') or '-'} 已由库存管理员调整。\n"
-        f"修改前：{before_text}\n"
-        f"修改后：{after_text}\n"
-        f"申请物料更改信息说明：{change_note}\n"
-        "当前申请将重新进行库存确认，请以最新申请明细为准。"
+    title = (
+        "Marketing material request updated"
+        if english
+        else "营销物料申请已调整"
     )
-    send_feishu_text_message(client, requester_open_id, text)
+    card = {
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "default",
+            "summary": {"content": title},
+        },
+        "header": {
+            "template": "green",
+            "title": {"tag": "plain_text", "content": title},
+            "subtitle": {
+                "tag": "plain_text",
+                "content": str(request.get("request_no") or "-"),
+            },
+            "icon": {"tag": "standard_icon", "token": "notice_colorful"},
+            "text_tag_list": [
+                {
+                    "tag": "text_tag",
+                    "text": {
+                        "tag": "plain_text",
+                        "content": "Inventory verified" if english else INVENTORY_REVIEW_CONFIRMED,
+                    },
+                    "color": "green",
+                }
+            ],
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "vertical_spacing": "12px",
+            "elements": [
+                _feishu_notification_section(
+                    "Before change" if english else "修改前",
+                    line_elements(before_lines),
+                    color="grey",
+                ),
+                _feishu_notification_section(
+                    "After change and inventory" if english else "修改后与库存核实",
+                    line_elements(after_lines, show_inventory=True),
+                    color="green",
+                    focus=True,
+                ),
+                _feishu_notification_section(
+                    "Change explanation" if english else "申请物料更改信息说明",
+                    [_feishu_card_text_element(change_note, lines=6)],
+                    color="orange",
+                    last=True,
+                ),
+            ],
+        },
+    }
+    send_feishu_interactive_message(client, requester_open_id, card)
     return 1
 
 
@@ -7647,6 +7716,8 @@ def queued_material_request_payload(
             "language": str(line.get("language") or ""),
             "quantity": int(line.get("quantity") or 0),
             "remark": str(line.get("remark") or ""),
+            "current_stock": int(line.get("current_stock") or 0),
+            "inventory_status": str(line.get("inventory_status") or ""),
         }
         for line in lines
         if isinstance(line, dict)
@@ -7930,24 +8001,6 @@ def _json_list(value: object) -> list[str]:
     return [str(item) for item in parsed if str(item)] if isinstance(parsed, list) else []
 
 
-def request_review_access_token(request_id: str, operator_open_id: str) -> str:
-    message = f"{request_id}:{operator_open_id}".encode("utf-8")
-    return hmac.new(feishu_app_secret().encode("utf-8"), message, hashlib.sha256).hexdigest()
-
-
-def valid_request_review_access_token(
-    request_id: str,
-    operator_open_id: str,
-    token: str,
-) -> bool:
-    if not request_id or not operator_open_id or not token:
-        return False
-    return hmac.compare_digest(
-        request_review_access_token(request_id, operator_open_id),
-        token,
-    )
-
-
 def request_inventory_review_context(
     *,
     request_id: str = "",
@@ -8171,7 +8224,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     result = request_inventory_review_result(prepared)
     now = datetime.now()
     request_updates: dict[str, object] = {
-        "库存审查状态": INVENTORY_REVIEW_PENDING,
+        "库存审查状态": INVENTORY_REVIEW_CONFIRMED,
         "库存审查结论": result,
         "申请物料更改信息说明": change_note,
         "申请物料最后修改时间": feishu_datetime_value(REQUEST_TABLE_NAME, "申请物料最后修改时间", now),
@@ -8181,6 +8234,12 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     person_value = _request_review_person_value(operator_open_id)
     if person_value:
         request_updates["申请物料最后修改人"] = person_value
+        request_updates["库存审查人"] = person_value
+    request_updates["库存审查时间"] = feishu_datetime_value(
+        REQUEST_TABLE_NAME,
+        "库存审查时间",
+        now,
+    )
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
 
     ensure_request_change_record_fields()
@@ -16064,155 +16123,6 @@ def restore_default_sidebar_on_page_load() -> None:
     )
 
 
-def render_request_inventory_review_page() -> None:
-    request_id = str(st.query_params.get("request_id", "")).strip()
-    edit_mode = str(st.query_params.get("mode", "")) == "edit"
-    operator_open_id = str(st.query_params.get("operator", "")).strip()
-    review_token = str(st.query_params.get("review_token", "")).strip()
-    if not request_id:
-        st.error("缺少申请单标识，请从管理员库存确认卡片重新打开。")
-        return
-    signed_admin = (
-        valid_request_review_access_token(request_id, operator_open_id, review_token)
-        and operator_open_id in enabled_admin_open_ids()
-    )
-    if not signed_admin and not admin_auth_gate():
-        st.info("该页面仅供已授权管理员查看和编辑。")
-        return
-    with st.spinner("正在读取申请单和实时库存，请稍后......"):
-        context = request_inventory_review_context(request_id=request_id)
-    request = dict(context["request"])
-    lines = [dict(line) for line in list(context["lines"])]
-    render_page_header(
-        "库存确认工作台",
-        "营销物料申请库存确认",
-        f"申请单 {request.get('request_no') or '-'}；库存数据读取于 {context.get('snapshot_at')}",
-        page_key="",
-    )
-    summary_cols = st.columns(4)
-    summary_cols[0].metric("申请人", str(request.get("requester") or "-"))
-    summary_cols[1].metric("库存审查状态", str(request.get("inventory_review_status") or INVENTORY_REVIEW_PENDING))
-    summary_cols[2].metric("库存审查结论", str(context.get("result") or "-"))
-    summary_cols[3].metric("申请变更次数", int(request.get("inventory_review_version") or 0))
-    review_df = pd.DataFrame(
-        [
-            {
-                "物料": f"{line.get('product')} / {line.get('model')} / {line.get('language')}",
-                "申请数量": int(line.get("quantity") or 0),
-                "当前实时库存": int(line.get("current_stock") or 0),
-                "库存判断": str(line.get("inventory_status") or ""),
-                "备注": str(line.get("remark") or ""),
-            }
-            for line in lines
-        ]
-    )
-    st.dataframe(review_df, width="stretch", hide_index=True)
-    st.caption(f"收件人信息：{request.get('recipient_info') or '-'}")
-    st.caption(f"物料用途：{request.get('material_usage') or '-'}")
-    if not edit_mode:
-        if st.button("编辑本次申请", type="primary", icon=":material/edit:"):
-            st.query_params["mode"] = "edit"
-            st.rerun()
-        return
-    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
-        st.warning("该申请已经完成库存核实，不能继续编辑。")
-        return
-
-    material_records = load_feishu_inventory_records(active_only=True)
-    label_by_id = {
-        str(item["record_id"]): (
-            f"{item['material_code']}｜{item['category']} / {item['model']} / {item['language']}"
-        )
-        for item in material_records
-    }
-    id_by_label = {label: record_id for record_id, label in label_by_id.items()}
-    edit_df = pd.DataFrame(
-        [
-            {
-                "物料": label_by_id.get(str(line.get("material_record_id") or ""), ""),
-                "申请数量": int(line.get("quantity") or 0),
-                "备注": str(line.get("remark") or ""),
-            }
-            for line in lines
-        ]
-    )
-    st.markdown("#### 编辑申请物料")
-    edited_df = st.data_editor(
-        edit_df,
-        width="stretch",
-        hide_index=True,
-        num_rows="dynamic",
-        column_config={
-            "物料": st.column_config.SelectboxColumn(
-                "物料",
-                options=list(id_by_label),
-                required=True,
-                width="large",
-            ),
-            "申请数量": st.column_config.NumberColumn(
-                "申请数量", min_value=1, step=1, required=True
-            ),
-            "备注": st.column_config.TextColumn("备注"),
-        },
-        key=f"request_inventory_editor_{request_id}_{request.get('inventory_review_version', 0)}",
-    )
-    change_note = st.text_area(
-        "申请物料更改信息说明 *",
-        placeholder="请说明替换、增加、删除物料或调整数量的原因；该说明会发送给申请人。",
-        key=f"request_inventory_change_note_{request_id}",
-    )
-    confirmed = st.checkbox(
-        "我已核对修改内容，并确认向申请人发送变更通知",
-        key=f"request_inventory_edit_confirmed_{request_id}",
-    )
-    if st.button(
-        "提交申请修改",
-        type="primary",
-        icon=":material/send:",
-        disabled=not confirmed,
-        width="stretch",
-    ):
-        rows = [dict(row) for row in edited_df.to_dict("records")]
-        invalid_labels = [str(row.get("物料") or "") for row in rows if str(row.get("物料") or "") not in id_by_label]
-        if not rows:
-            st.error("申请必须至少保留一条物料明细。")
-            return
-        if invalid_labels:
-            st.error("申请中存在无效物料，请重新选择。")
-            return
-        if not change_note.strip():
-            st.error("请填写申请物料更改信息说明。")
-            return
-        payload_lines = [
-            {
-                "material_record_id": id_by_label[str(row["物料"])],
-                "quantity": int(row.get("申请数量") or 0),
-                "remark": str(row.get("备注") or ""),
-            }
-            for row in rows
-        ]
-        with fullscreen_data_sync("正在提交数据，请稍后......"):
-            task, _ = enqueue_feishu_background_write(
-                QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
-                {
-                    "draft": {
-                        "request_id": request_id,
-                        "expected_version": int(request.get("inventory_review_version") or 0),
-                        "change_note": change_note.strip(),
-                        "operator_open_id": operator_open_id if signed_admin else "",
-                        "before_lines": _request_review_line_summary(lines),
-                        "lines": payload_lines,
-                    }
-                },
-                idempotency_key=(
-                    f"request-inventory-edit:{request_id}:"
-                    f"{int(request.get('inventory_review_version') or 0)}:"
-                    f"{hashlib.sha256(json.dumps(payload_lines, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()}"
-                ),
-            )
-        st.success(f"申请修改已进入后台队列（任务 {task.task_id[:8]}），完成后会通知申请人和管理员。")
-
-
 def main() -> None:
     install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
@@ -16232,8 +16142,6 @@ def main() -> None:
             render_inventory_view()
         elif view == "warehouse":
             render_warehouse_location_view()
-        elif view == "request_inventory_review":
-            render_request_inventory_review_page()
         else:
             render_management_page_with_navigation_loading()
     except FeishuBitableError as exc:
