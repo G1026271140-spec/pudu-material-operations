@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-19 10:32:44",
+  "generated_at": "2026-08-19 07:27:44",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1260,6 +1260,16 @@
       ],
       "department_paths": [
         "亚太战区"
+      ]
+    },
+    {
+      "open_id": "ou_d3873b1e7e1ad0b937c839949dd9d359",
+      "name": "Passpoom Rengsampratuan",
+      "department_ids": [
+        "od-1961c9d1ed2b6e96f3be8602246ab92f"
+      ],
+      "department_paths": [
+        "泰国战队"
       ]
     },
     {
@@ -13911,6 +13921,16 @@
       ]
     },
     {
+      "open_id": "ou_71d6b90f9e15a19cb0280bbd7f7ec7ca",
+      "name": "田明月",
+      "department_ids": [
+        "od-517b7bb6437c97e2c6c7aa5bb4ea4196"
+      ],
+      "department_paths": [
+        "CRPBU机电测试组"
+      ]
+    },
+    {
       "open_id": "ou_c7a16241421ed4759df845258e207bef",
       "name": "田洋洋",
       "department_ids": [
@@ -19209,6 +19229,16 @@
       ]
     },
     {
+      "open_id": "ou_45bfdce052b232bf2c6f33e83718f7d6",
+      "name": "陈锦",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_0483a6ba2172dd96d91f47164ccd3e84",
       "name": "陈锦培",
       "department_ids": [
@@ -19754,6 +19784,16 @@
       ],
       "department_paths": [
         "CRPBU软件组"
+      ]
+    },
+    {
+      "open_id": "ou_545490ad7b3b8831245823fda5917dee",
+      "name": "马林",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
       ]
     },
     {
@@ -20911,16 +20951,6 @@
       ]
     },
     {
-      "open_id": "ou_97c476c9ed2369d0b25a054e5ceeaf29",
-      "name": "齐海燕",
-      "department_ids": [
-        "od-5e4ce3726c5963582cc77a891cabf052"
-      ],
-      "department_paths": [
-        "九江品控组"
-      ]
-    },
-    {
       "open_id": "ou_52b3876ac389d90034975236188e85b5",
       "name": "龙久俊",
       "department_ids": [
@@ -21013,5 +21043,5 @@
       ]
     }
   ],
-  "user_count": 1941
+  "user_count": 1944
 }
