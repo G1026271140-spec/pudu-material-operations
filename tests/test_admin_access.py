@@ -20,8 +20,8 @@ class AdminAccessTests(unittest.TestCase):
                 "Data submitted successfully. Please follow the Feishu approval progress. Thank you for using this application.",
             )
 
-    def test_inventory_review_page_is_not_exposed(self) -> None:
-        self.assertFalse(hasattr(app, "render_request_inventory_review_page"))
+    def test_inventory_review_page_is_available_for_signed_admin_links(self) -> None:
+        self.assertTrue(callable(app.render_request_inventory_review_page))
 
     def test_category_navigation_and_workbench_control_use_different_state_keys(self) -> None:
         self.assertNotEqual(

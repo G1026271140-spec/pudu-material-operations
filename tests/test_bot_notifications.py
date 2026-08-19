@@ -512,9 +512,17 @@ class BotNotificationTests(unittest.TestCase):
             "result": app.INVENTORY_RESULT_INSUFFICIENT,
             "snapshot_at": "2026-08-18 10:00:00",
         }
-        card = app.material_request_notification_card(
-            "REQ-1", payload, lines, review_context=review_context
-        )
+        with (
+            patch.object(app, "get_secret_value", return_value="https://example.test/"),
+            patch.object(app, "request_review_access_token", return_value="signed-token"),
+        ):
+            card = app.material_request_notification_card(
+                "REQ-1",
+                payload,
+                lines,
+                review_context=review_context,
+                operator_open_id="ou-admin",
+            )
 
         serialized = json.dumps(card, ensure_ascii=False)
         self.assertEqual(card["schema"], "2.0")
@@ -534,12 +542,15 @@ class BotNotificationTests(unittest.TestCase):
             "柏林展会",
             "产品折页 / BellaBot / 英语",
             "申请 3｜实时库存 2｜库存不足，需要制作",
-            "编辑申请",
-            "确认库存",
+            "调整配货方案",
+            "按原申请确认",
         ):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)
-        self.assertNotIn("view=request_inventory_review", serialized)
+        self.assertIn("view=request_inventory_review", serialized)
+        self.assertIn("signed-token", serialized)
+        self.assertIn('"type": "open_url"', serialized)
+        self.assertIn('"action": "confirm_request_inventory"', serialized)
         self.assertIn('"tag": "button"', serialized)
         self.assertNotIn('"tag": "action"', serialized)
         application_section = card["body"]["elements"][1]
@@ -580,8 +591,8 @@ class BotNotificationTests(unittest.TestCase):
 
         serialized = json.dumps(card, ensure_ascii=False)
         self.assertIn(app.INVENTORY_REVIEW_CONFIRMED, serialized)
-        self.assertNotIn("编辑申请", serialized)
-        self.assertNotIn("确认库存", serialized)
+        self.assertNotIn("调整配货方案", serialized)
+        self.assertNotIn("按原申请确认", serialized)
         self.assertNotIn('"tag": "button"', serialized)
 
     def test_notify_sends_once_to_each_enabled_administrator(self) -> None:

@@ -93,6 +93,30 @@ class FeishuCardWorkerTests(unittest.TestCase):
         self.assertFalse(hasattr(worker, "REQUEST_CACHE_REFRESH_SECONDS"))
         self.assertFalse(hasattr(worker, "request_cache_refresh_loop"))
 
+    def test_inventory_confirm_executes_directly_without_queue_write(self) -> None:
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "execute_request_inventory_confirm") as confirm,
+            patch.object(worker.inventory_app, "enqueue_feishu_background_write") as enqueue,
+        ):
+            worker.process_card_action_async(
+                action_key="confirm_request_inventory",
+                action_name="",
+                value={"request_id": "request-1", "version": 2},
+                form_value={},
+                operator_open_id="ou-admin",
+                message_id="om-card-1",
+            )
+
+        confirm.assert_called_once_with(
+            {
+                "request_id": "request-1",
+                "expected_version": 2,
+                "operator_open_id": "ou-admin",
+            }
+        )
+        enqueue.assert_not_called()
+
     def test_direct_image_message_starts_inventory_query(self) -> None:
         event = SimpleNamespace(
             sender=SimpleNamespace(sender_type="user"),

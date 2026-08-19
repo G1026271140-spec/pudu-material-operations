@@ -7,6 +7,53 @@ import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_cached_allocation_catalog_uses_cache_and_keeps_current_disabled_item(self) -> None:
+        cache = {"inventory_rows": [{"material_code": "MAT-1"}]}
+        material_rows = [
+            {
+                "record_id": "mat-1",
+                "fields": {
+                    "物料编码": "MAT-1",
+                    "物料品类": "产品单页",
+                    "产品型号": "D7",
+                    "语种": "英语",
+                    "当前库存": 4,
+                    "启用状态": "启用",
+                    "申领页显示": "是",
+                },
+            },
+            {
+                "record_id": "mat-current",
+                "fields": {
+                    "物料编码": "MAT-OLD",
+                    "物料品类": "旧物料",
+                    "产品型号": "旧型号",
+                    "语种": "无需语种",
+                    "当前库存": 0,
+                    "启用状态": "停用",
+                    "申领页显示": "否",
+                },
+            },
+            {
+                "record_id": "mat-hidden",
+                "fields": {
+                    "物料编码": "MAT-HIDDEN",
+                    "物料品类": "隐藏物料",
+                    "启用状态": "启用",
+                    "申领页显示": "是",
+                },
+            },
+        ]
+
+        records = app.cached_allocation_material_records(
+            cache,
+            material_rows,
+            current_material_ids={"mat-current"},
+        )
+
+        self.assertEqual([record["record_id"] for record in records], ["mat-1", "mat-current"])
+        self.assertEqual(records[0]["quantity"], 4)
+
     def test_requester_inventory_edit_notification_is_structured_card(self) -> None:
         client = Mock()
         request = {"request_no": "REQ-1", "requester_open_id": "ou-user"}

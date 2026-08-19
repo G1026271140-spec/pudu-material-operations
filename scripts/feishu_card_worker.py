@@ -246,16 +246,12 @@ def process_card_action_async(
             return
         if action_key == "confirm_request_inventory":
             version = int(value.get("version") or 0)
-            inventory_app.enqueue_feishu_background_write(
-                inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+            inventory_app.execute_request_inventory_confirm(
                 {
-                    "draft": {
-                        "request_id": request_id,
-                        "expected_version": version,
-                        "operator_open_id": operator_open_id,
-                    }
-                },
-                idempotency_key=f"request-inventory-confirm:{request_id}:{version}",
+                    "request_id": request_id,
+                    "expected_version": version,
+                    "operator_open_id": operator_open_id,
+                }
             )
             return
         raise RuntimeError("暂不支持该卡片操作。")
