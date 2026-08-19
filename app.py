@@ -2259,19 +2259,15 @@ def fullscreen_sync_overlay_html(message: str) -> str:
     """
 
 
-def fullscreen_success_and_close(message: str) -> None:
-    close_script = """
-        <script>
-        window.setTimeout(() => {
-            window.close();
-        }, 1000);
-        </script>
-    """
+def close_application_window() -> None:
     st.html(
-        fullscreen_sync_overlay_html(message) + close_script,
+        """
+        <script>
+        window.close();
+        </script>
+        """,
         unsafe_allow_javascript=True,
     )
-    time.sleep(1.05)
 
 
 def fullscreen_sync_in_progress() -> bool:
@@ -11513,7 +11509,7 @@ def render_request_review() -> None:
                     st.exception(exc)
                     return
         clear_request_application_state()
-        fullscreen_success_and_close("申请已提交，即将自动关闭应用。")
+        close_application_window()
         st.stop()
 
 
@@ -16626,7 +16622,7 @@ def render_request_inventory_review_page() -> None:
                 f"{hashlib.sha256(json.dumps(payload_lines, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()}"
             ),
         )
-    fullscreen_success_and_close("配货方案已提交，即将自动关闭应用。")
+    close_application_window()
     st.stop()
 
 
