@@ -6308,20 +6308,6 @@ def material_request_notification_card(
     ]
     request_id = str(review_request.get("record_id") or "")
     if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
-        base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
-        edit_args = {
-            "view": "request_inventory_review",
-            "request_id": request_id,
-            "mode": "edit",
-        }
-        if operator_open_id:
-            edit_args.update(
-                {
-                    "operator": operator_open_id,
-                    "review_token": request_review_access_token(request_id, operator_open_id),
-                }
-            )
-        edit_url = f"{base_url}?{url_parse.urlencode(edit_args)}"
         elements.append(
             {
                 "tag": "column_set",
@@ -6337,15 +6323,10 @@ def material_request_notification_card(
                                 "tag": "button",
                                 "text": {"tag": "plain_text", "content": "调整配货方案"},
                                 "type": "default",
-                                "behaviors": [
-                                    {
-                                        "type": "open_url",
-                                        "default_url": edit_url,
-                                        "pc_url": edit_url,
-                                        "ios_url": edit_url,
-                                        "android_url": edit_url,
-                                    }
-                                ],
+                                "value": {
+                                    "action": "edit_request_inventory",
+                                    "request_id": request_id,
+                                },
                             }
                         ],
                     },

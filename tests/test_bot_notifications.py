@@ -512,17 +512,13 @@ class BotNotificationTests(unittest.TestCase):
             "result": app.INVENTORY_RESULT_INSUFFICIENT,
             "snapshot_at": "2026-08-18 10:00:00",
         }
-        with (
-            patch.object(app, "get_secret_value", return_value="https://example.test/"),
-            patch.object(app, "request_review_access_token", return_value="signed-token"),
-        ):
-            card = app.material_request_notification_card(
-                "REQ-1",
-                payload,
-                lines,
-                review_context=review_context,
-                operator_open_id="ou-admin",
-            )
+        card = app.material_request_notification_card(
+            "REQ-1",
+            payload,
+            lines,
+            review_context=review_context,
+            operator_open_id="ou-admin",
+        )
 
         serialized = json.dumps(card, ensure_ascii=False)
         self.assertEqual(card["schema"], "2.0")
@@ -547,9 +543,7 @@ class BotNotificationTests(unittest.TestCase):
         ):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)
-        self.assertIn("view=request_inventory_review", serialized)
-        self.assertIn("signed-token", serialized)
-        self.assertIn('"type": "open_url"', serialized)
+        self.assertIn('"action": "edit_request_inventory"', serialized)
         self.assertIn('"action": "confirm_request_inventory"', serialized)
         self.assertIn('"tag": "button"', serialized)
         self.assertNotIn('"tag": "action"', serialized)
