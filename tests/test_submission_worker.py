@@ -46,6 +46,17 @@ def material_request_task(result: dict | None = None) -> SubmissionTask:
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_main_requests_retry_when_another_worker_is_exiting(self) -> None:
+        with (
+            patch.object(worker, "configure_logging"),
+            patch.object(worker, "acquire_single_instance_mutex", return_value=-1),
+            patch.object(worker, "release_single_instance_mutex") as release,
+        ):
+            exit_code = worker.main([])
+
+        self.assertEqual(exit_code, worker.ALREADY_RUNNING_EXIT_CODE)
+        release.assert_not_called()
+
     def test_material_request_runs_idempotent_submission_and_notifications(self) -> None:
         task = material_request_task()
         checkpoints: list[dict] = []

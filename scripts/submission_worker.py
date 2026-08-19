@@ -43,6 +43,7 @@ DEFAULT_POLL_SECONDS = 5.0
 DEFAULT_LEASE_SECONDS = 600
 MAX_RETRIES = 10
 RELOAD_EXIT_CODE = 75
+ALREADY_RUNNING_EXIT_CODE = 76
 
 
 def repository_revision() -> str:
@@ -369,8 +370,8 @@ def main(argv: list[str] | None = None) -> int:
     log_path = configure_logging()
     mutex_handle = acquire_single_instance_mutex()
     if mutex_handle < 0:
-        logging.info("Submission worker is already running; this instance will exit.")
-        return 0
+        logging.info("Submission worker is already running; retrying takeover shortly.")
+        return ALREADY_RUNNING_EXIT_CODE
     try:
         client = inventory_app.feishu_client()
         if client is None:

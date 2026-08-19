@@ -155,8 +155,11 @@ try {
             if ($ExitCode -eq 75 -and -not $SetupOnly) {
                 Write-RunnerLog "Worker detected a new repository revision; restarting with the updated code."
                 Start-Sleep -Seconds 2
+            } elseif ($ExitCode -eq 76 -and -not $SetupOnly) {
+                Write-RunnerLog "Another worker still owns the instance lock; waiting to take over."
+                Start-Sleep -Seconds 2
             }
-        } while ($ExitCode -eq 75 -and -not $SetupOnly)
+        } while (($ExitCode -eq 75 -or $ExitCode -eq 76) -and -not $SetupOnly)
     } finally {
         $ErrorActionPreference = $previousErrorActionPreference
         Pop-Location
