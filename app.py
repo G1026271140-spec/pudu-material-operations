@@ -124,6 +124,7 @@ INVENTORY_RESULT_INSUFFICIENT = "全部库存不足"
 DEFAULT_STREAMLIT_APP_URL = (
     "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
 )
+DEFAULT_ALLOCATION_PWA_URL = "https://gquhtm3ghb2.feishuapp.com/app/app_17cdwe1a3vm"
 FREIGHT_PAYER_OPTIONS = [
     "申请部门承担",
     "市场部承担",
@@ -6308,7 +6309,10 @@ def material_request_notification_card(
     ]
     request_id = str(review_request.get("record_id") or "")
     if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
-        base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
+        base_url = get_secret_value(
+            "ALLOCATION_PWA_URL",
+            DEFAULT_ALLOCATION_PWA_URL,
+        ).rstrip("/") + "/"
         edit_args = {
             "allocation": "request",
             "request_id": request_id,

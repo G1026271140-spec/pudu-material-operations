@@ -31,10 +31,12 @@ FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
 STREAMLIT_APP_URL = "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
+ALLOCATION_PWA_URL = "https://gquhtm3ghb2.feishuapp.com/app/app_17cdwe1a3vm"
 ```
 
 缺少任意一项飞书配置时，应用会直接停止并提示补齐配置。
 `STREAMLIT_APP_URL` 用于机器人消息中的审批链接；当前生产地址已内置，可不配置，应用地址变更时再覆盖。
+`ALLOCATION_PWA_URL` 用于管理员卡片中的独立配货 PWA。PWA 会把启用物料目录按版本保存到每位管理员设备的 IndexedDB；当前申请与实时库存仍在打开时从飞书读取，提交时再次校验并进入后台任务队列。
 
 ## 飞书权限
 
