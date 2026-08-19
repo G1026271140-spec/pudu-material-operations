@@ -2259,6 +2259,21 @@ def fullscreen_sync_overlay_html(message: str) -> str:
     """
 
 
+def fullscreen_success_and_close(message: str) -> None:
+    close_script = """
+        <script>
+        window.setTimeout(() => {
+            window.close();
+        }, 1000);
+        </script>
+    """
+    st.html(
+        fullscreen_sync_overlay_html(message) + close_script,
+        unsafe_allow_javascript=True,
+    )
+    time.sleep(1.05)
+
+
 def fullscreen_sync_in_progress() -> bool:
     return bool(st.session_state.get(FULLSCREEN_SYNC_IN_PROGRESS_KEY))
 
@@ -11480,9 +11495,8 @@ def render_request_review() -> None:
                     st.exception(exc)
                     return
         clear_request_application_state()
-        st.session_state["request_submit_message"] = data_submission_success_message()
-        st.session_state["request_scroll_to_top"] = True
-        st.rerun()
+        fullscreen_success_and_close("申请已提交，即将自动关闭应用。")
+        st.stop()
 
 
 def render_compact_request_cart(container: object, lines: list[dict[str, object]]) -> list[dict[str, object]]:
@@ -16594,7 +16608,8 @@ def render_request_inventory_review_page() -> None:
                 f"{hashlib.sha256(json.dumps(payload_lines, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()}"
             ),
         )
-    st.success(f"配货方案已提交（任务 {task.task_id[:8]}），完成后会自动更新管理员卡片。")
+    fullscreen_success_and_close("配货方案已提交，即将自动关闭应用。")
+    st.stop()
 
 
 def main() -> None:

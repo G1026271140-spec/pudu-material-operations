@@ -7,6 +7,20 @@ import app
 
 
 class FullscreenSyncTests(unittest.TestCase):
+    def test_success_overlay_closes_window_after_one_second(self) -> None:
+        with (
+            patch.object(app.st, "html") as html,
+            patch.object(app.time, "sleep") as sleep,
+        ):
+            app.fullscreen_success_and_close("申请已提交，即将自动关闭应用。")
+
+        rendered = html.call_args.args[0]
+        self.assertIn("申请已提交，即将自动关闭应用。", rendered)
+        self.assertIn("window.close()", rendered)
+        self.assertIn("1000", rendered)
+        html.assert_called_once_with(rendered, unsafe_allow_javascript=True)
+        sleep.assert_called_once_with(1.05)
+
     def test_overlay_contains_required_message_and_escapes_detail(self) -> None:
         html = app.fullscreen_sync_overlay_html("提交 <测试>")
 
