@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-19 16:27:13",
+  "generated_at": "2026-08-19 16:31:16",
   "tables": {
     "物料品类": [
       {
@@ -22569,13 +22569,15 @@
             {
               "record_ids": [
                 "recvqQfROxwiF3",
-                "recvsqwgz2ijQB"
+                "recvsqwgz2ijQB",
+                "recvsJh2bf6sXg"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",",
+              "text": ",,issue:8817C902-BFDD-4A06-8393-1343CD42BB27:REQ-20260819-003-01",
               "text_arr": [
                 "",
-                ""
+                "",
+                "issue:8817C902-BFDD-4A06-8393-1343CD42BB27:REQ-20260819-003-01"
               ],
               "type": "text"
             }
