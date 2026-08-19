@@ -6808,8 +6808,6 @@ def notify_requester_of_inventory_edit(
                 {
                     "tag": "markdown",
                     "content": contact_text,
-                    "text_size": "notation",
-                    "text_color": "grey-500",
                 },
             ],
         },
@@ -8355,13 +8353,17 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     request = dict(context["request"])
     if str(request.get("status") or "") != REQUEST_STATUS_PENDING:
         raise RuntimeError("只有待审批申请可以修改。")
-    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
-        raise RuntimeError("该申请已经完成库存核实，不能继续修改。")
     current_version = int(request.get("inventory_review_version") or 0)
-    if (
+    recovering_notifications = (
         current_version == expected_version + 1
         and str(request.get("inventory_change_note") or "") == change_note
+    )
+    if (
+        str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED
+        and not recovering_notifications
     ):
+        raise RuntimeError("该申请已经完成库存核实，不能继续修改。")
+    if recovering_notifications:
         before_lines = [
             dict(item) for item in list(draft.get("before_lines") or []) if isinstance(item, dict)
         ]

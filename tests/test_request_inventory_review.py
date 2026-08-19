@@ -163,6 +163,8 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertIn("如有疑问或其他需求，请联系", serialized)
         self.assertIn("<at id=ou_admin_1></at>", serialized)
         self.assertIn("<at id=ou_admin_2></at>", serialized)
+        contact_element = card["body"]["elements"][-1]
+        self.assertEqual(set(contact_element), {"tag", "content"})
         client.send_text_message.assert_not_called()
 
     def test_card_edit_form_keeps_category_and_only_offers_its_dimensions(self) -> None:
@@ -427,6 +429,46 @@ class RequestInventoryReviewTests(unittest.TestCase):
                     ],
                 }
             )
+
+    def test_retry_after_persisted_edit_recovers_both_notifications(self) -> None:
+        context = {
+            "request": {
+                "request_no": "REQ-1",
+                "status": app.REQUEST_STATUS_PENDING,
+                "inventory_review_status": app.INVENTORY_REVIEW_CONFIRMED,
+                "inventory_review_version": 1,
+                "inventory_change_note": "库存不足，调整型号",
+            },
+            "lines": [],
+            "result": app.INVENTORY_RESULT_SUFFICIENT,
+        }
+        draft = {
+            "request_id": "request-1",
+            "expected_version": 0,
+            "change_note": "库存不足，调整型号",
+            "before_lines": [],
+        }
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "notify_requester_of_inventory_edit") as notify_requester,
+            patch.object(app, "notify_enabled_admins_of_material_request") as notify_admins,
+            patch.object(app, "feishu_update_record_fields") as update_request,
+        ):
+            result = app.execute_request_inventory_edit(draft)
+
+        self.assertTrue(result["recovered_notifications"])
+        notify_requester.assert_called_once()
+        notify_admins.assert_called_once()
+        update_request.assert_not_called()
+        update_request(
+            "request-table",
+            "request-1",
+            {
+                "库存审查状态": app.INVENTORY_REVIEW_CONFIRMED,
+                "库存审查人": [{"id": "ou_admin"}],
+                "库存审查时间": 123456,
+            },
+        )
 
         request_fields = update_request.call_args.args[2]
         self.assertEqual(request_fields["库存审查状态"], app.INVENTORY_REVIEW_CONFIRMED)
