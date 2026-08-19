@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-18 18:26:32",
+  "generated_at": "2026-08-19 10:32:44",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -2315,16 +2315,6 @@
       ]
     },
     {
-      "open_id": "ou_e6c11b7364b6c8776c5c0d941147fe6a",
-      "name": "俞越",
-      "department_ids": [
-        "od-9ad23d5284430da79278f14ad7fbadd6"
-      ],
-      "department_paths": [
-        "CRPBU算法组"
-      ]
-    },
-    {
       "open_id": "ou_5a6309d844e18bdcbb2733d9c7c1b249",
       "name": "倪强",
       "department_ids": [
@@ -3492,6 +3482,16 @@
       ],
       "department_paths": [
         "CRPBU硬件组"
+      ]
+    },
+    {
+      "open_id": "ou_58ac9ec4f2e5c177521cdcee03ffdd9a",
+      "name": "刘畅",
+      "department_ids": [
+        "od-ba14556394b828e39a9b98f599ad21a2"
+      ],
+      "department_paths": [
+        "解决方案中台组"
       ]
     },
     {
@@ -8125,16 +8125,6 @@
       ]
     },
     {
-      "open_id": "ou_16b4b2bcab897d5879bf268f87b0498d",
-      "name": "戚坤",
-      "department_ids": [
-        "od-be83c4809822eaf7aa5bba4c4e8f3eba"
-      ],
-      "department_paths": [
-        "桐乡仓储物流组"
-      ]
-    },
-    {
       "open_id": "ou_5eeebcdb0d629f3efe59c7f6579eb158",
       "name": "戴小妹",
       "department_ids": [
@@ -10771,6 +10761,16 @@
       ]
     },
     {
+      "open_id": "ou_067e71de6d0646b33a8c7696454d7966",
+      "name": "杨杰",
+      "department_ids": [
+        "od-4460d5aedeb32b282f1fd1cf0fc5c8eb"
+      ],
+      "department_paths": [
+        "GRPBU软件组"
+      ]
+    },
+    {
       "open_id": "ou_d396a8e0ab282b6150feede83281e6c8",
       "name": "杨梦姣",
       "department_ids": [
@@ -12191,6 +12191,16 @@
       ]
     },
     {
+      "open_id": "ou_49ed359ff51866f4c8db5d475c96bb24",
+      "name": "沈文",
+      "department_ids": [
+        "od-c85ebe41cdf07b2290fc9e0cb0f334e8"
+      ],
+      "department_paths": [
+        "GRPBU机械组"
+      ]
+    },
+    {
       "open_id": "ou_4d9b1b9d441954914a87771a9161b319",
       "name": "沈昆",
       "department_ids": [
@@ -12362,6 +12372,16 @@
       "department_paths": [
         "设计部",
         "项目成员挂靠"
+      ]
+    },
+    {
+      "open_id": "ou_1fa3ad434fa860dc6978b847e877a942",
+      "name": "温强",
+      "department_ids": [
+        "od-d90d38def427cf71640b80459d6b5118"
+      ],
+      "department_paths": [
+        "M LAB"
       ]
     },
     {
@@ -13164,6 +13184,16 @@
       ],
       "department_paths": [
         "M LAB"
+      ]
+    },
+    {
+      "open_id": "ou_9eec541416872ab1be9f6d8d29a69787",
+      "name": "王志涛",
+      "department_ids": [
+        "od-453212ea54f9683ed36e03bd1f0891bf"
+      ],
+      "department_paths": [
+        "GR项目管理组"
       ]
     },
     {
@@ -18733,6 +18763,16 @@
       ]
     },
     {
+      "open_id": "ou_8fa87450bfb03656f200e97aafc57416",
+      "name": "陈新羽",
+      "department_ids": [
+        "od-bb30508003376665ccf103b15439c5cf"
+      ],
+      "department_paths": [
+        "渠道管理组"
+      ]
+    },
+    {
       "open_id": "ou_abba198b4d2c9c2adf47075e0b7dd1b8",
       "name": "陈新龙",
       "department_ids": [
@@ -20017,6 +20057,16 @@
       ]
     },
     {
+      "open_id": "ou_b6b1a733041b6b6d1a7fc3c0fd6e099a",
+      "name": "魏义明",
+      "department_ids": [
+        "od-754da632f053f98253ef6a21d157a69f"
+      ],
+      "department_paths": [
+        "端到端导航组"
+      ]
+    },
+    {
       "open_id": "ou_021233bd2c0b02bcef58adbe13cd2cd0",
       "name": "魏佳男",
       "department_ids": [
@@ -20963,5 +21013,5 @@
       ]
     }
   ],
-  "user_count": 1936
+  "user_count": 1941
 }
