@@ -65,7 +65,12 @@ try {
         New-Item -ItemType File -Path $LogPath -Force | Out-Null
     }
 
-    $HasMutex = $Mutex.WaitOne(0)
+    try {
+        $HasMutex = $Mutex.WaitOne(0)
+    } catch [Threading.AbandonedMutexException] {
+        $HasMutex = $true
+        Write-RunnerLog "Recovered an abandoned bootstrap mutex." "WARN"
+    }
     if (-not $HasMutex) {
         Write-RunnerLog "Another submission worker bootstrap is already active; exiting." "WARN"
         exit 0
