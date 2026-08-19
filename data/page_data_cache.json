@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-19 16:31:16",
+  "generated_at": "2026-08-19 16:43:45",
   "tables": {
     "物料品类": [
       {
@@ -60893,7 +60893,7 @@
           "物料品类": "冰箱贴( Fridge Magnet)",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
