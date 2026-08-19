@@ -15,6 +15,9 @@ class FakeQueueClient:
         self.records: dict[str, list[dict]] = {}
         self.updates: list[tuple[str, str, dict]] = []
         self.list_tables_count = 0
+        self.list_records_count = 0
+        self.search_records_count = 0
+        self.get_record_count = 0
 
     def list_tables(self) -> list[dict]:
         self.list_tables_count += 1
@@ -45,9 +48,35 @@ class FakeQueueClient:
         return field
 
     def list_records(self, table_id: str, page_size: int = 500) -> list[dict]:
+        self.list_records_count += 1
         return [
             {"record_id": record["record_id"], "fields": dict(record["fields"])}
             for record in self.records.get(table_id, [])
+        ]
+
+    def get_record(self, table_id: str, record_id: str) -> dict:
+        self.get_record_count += 1
+        record = next(
+            record
+            for record in self.records.get(table_id, [])
+            if record["record_id"] == record_id
+        )
+        return {"record_id": record["record_id"], "fields": dict(record["fields"])}
+
+    def search_records(
+        self,
+        table_id: str,
+        field_name: str,
+        value: str,
+        *,
+        page_size: int = 100,
+    ) -> list[dict]:
+        del page_size
+        self.search_records_count += 1
+        return [
+            {"record_id": record["record_id"], "fields": dict(record["fields"])}
+            for record in self.records.get(table_id, [])
+            if str(record["fields"].get(field_name) or "") == value
         ]
 
     def batch_create_records(self, table_id: str, records: list[dict]) -> list[dict]:
@@ -79,18 +108,17 @@ class FakeQueueClient:
 class SubmissionQueueTests(unittest.TestCase):
     def test_enqueue_retries_when_feishu_data_is_not_ready(self) -> None:
         client = FakeQueueClient()
-        original_list_records = client.list_records
-        queue_reads = 0
+        original_get_record = client.get_record
+        record_reads = 0
 
-        def list_records(table_id: str, page_size: int = 500) -> list[dict]:
-            nonlocal queue_reads
-            if table_id == "tbl-queue" and client.records.get(table_id):
-                queue_reads += 1
-                if queue_reads == 1:
-                    raise RuntimeError("Feishu HTTP 400: code=1254607 Data not ready, please try again later")
-            return original_list_records(table_id, page_size)
+        def get_record(table_id: str, record_id: str) -> dict:
+            nonlocal record_reads
+            record_reads += 1
+            if record_reads == 1:
+                raise RuntimeError("Feishu HTTP 400: code=1254607 Data not ready, please try again later")
+            return original_get_record(table_id, record_id)
 
-        client.list_records = list_records  # type: ignore[method-assign]
+        client.get_record = get_record  # type: ignore[method-assign]
         with patch.object(queue.time, "sleep") as sleep:
             task, created = queue.enqueue_submission_task(
                 client,
@@ -133,6 +161,22 @@ class SubmissionQueueTests(unittest.TestCase):
         self.assertGreater(len(client.records["tbl-payload"]), 1)
         persisted = queue.list_submission_tasks(client)[0]
         self.assertEqual(persisted.payload, payload)
+
+    def test_enqueue_fast_path_avoids_full_table_reads(self) -> None:
+        client = FakeQueueClient()
+
+        task, created = queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+            "fast-token",
+            {"version": 1},
+        )
+
+        self.assertTrue(created)
+        self.assertEqual(task.payload, {"version": 1})
+        self.assertEqual(client.list_records_count, 0)
+        self.assertEqual(client.get_record_count, 1)
+        self.assertEqual(client.search_records_count, 2)
 
     def test_payload_verification_uses_json_normalized_collections(self) -> None:
         client = FakeQueueClient()

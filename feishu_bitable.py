@@ -268,6 +268,46 @@ class FeishuBitableClient:
             page_size=page_size,
         )
 
+    def get_record(self, table_id: str, record_id: str) -> dict[str, Any]:
+        response = self._request(
+            "GET",
+            (
+                f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}"
+                f"/records/{parse.quote(record_id)}"
+            ),
+        )
+        return dict(response.get("data", {}).get("record", {}))
+
+    def search_records(
+        self,
+        table_id: str,
+        field_name: str,
+        value: str,
+        *,
+        page_size: int = 100,
+    ) -> list[dict[str, Any]]:
+        response = self._request(
+            "POST",
+            (
+                f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}"
+                "/records/search"
+            ),
+            params={"page_size": max(1, min(500, int(page_size)))},
+            payload={
+                "filter": {
+                    "conjunction": "and",
+                    "conditions": [
+                        {
+                            "field_name": field_name,
+                            "operator": "is",
+                            "value": [str(value)],
+                        }
+                    ],
+                }
+            },
+        )
+        return list(response.get("data", {}).get("items", []))
+
     def list_contact_departments(self) -> list[dict[str, Any]]:
         return self._paged_get(
             "/contact/v3/departments",

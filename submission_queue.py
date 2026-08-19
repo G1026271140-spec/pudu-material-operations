@@ -227,6 +227,70 @@ def _load_chunked_payloads(client: FeishuBitableClient, task_ids: set[str]) -> d
     return resolved
 
 
+def _records_matching_field(
+    client: FeishuBitableClient,
+    table_id: str,
+    field_name: str,
+    value: str,
+) -> list[dict[str, Any]]:
+    search_records = getattr(client, "search_records", None)
+    if callable(search_records):
+        return list(search_records(table_id, field_name, value))
+    return [
+        record
+        for record in client.list_records(table_id)
+        if _text(dict(record.get("fields") or {}).get(field_name)) == value
+    ]
+
+
+def _load_task_payload(
+    client: FeishuBitableClient,
+    task: SubmissionTask,
+) -> SubmissionTask:
+    if task.payload.get("storage") != "chunks":
+        return task
+    records = _records_matching_field(
+        client,
+        ensure_submission_payload_table(client),
+        QUEUE_PAYLOAD_FIELD_TASK_ID,
+        task.task_id,
+    )
+    chunks = sorted(
+        (
+            _integer(dict(record.get("fields") or {}).get(QUEUE_PAYLOAD_FIELD_INDEX)),
+            _text(dict(record.get("fields") or {}).get(QUEUE_PAYLOAD_FIELD_CONTENT)),
+        )
+        for record in records
+    )
+    expected_chunks = _integer(task.payload.get("chunks"))
+    raw = "".join(content for _, content in chunks)
+    expected_hash = _text(task.payload.get("sha256"))
+    if len(chunks) != expected_chunks or hashlib.sha256(raw.encode("utf-8")).hexdigest() != expected_hash:
+        raise RuntimeError("后台任务载荷分片校验失败。")
+    return SubmissionTask(**{**task.__dict__, "payload": _json_object(raw)})
+
+
+def _tasks_matching_idempotency_key(
+    client: FeishuBitableClient,
+    table_id: str,
+    idempotency_key: str,
+) -> list[SubmissionTask]:
+    tasks: list[SubmissionTask] = []
+    for record in _records_matching_field(
+        client,
+        table_id,
+        QUEUE_FIELD_IDEMPOTENCY_KEY,
+        idempotency_key,
+    ):
+        try:
+            task = _load_task_payload(client, task_from_record(record))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if task.record_id and task.task_id and task.status != QUEUE_STATUS_CANCELLED:
+            tasks.append(task)
+    return tasks
+
+
 def list_submission_tasks(
     client: FeishuBitableClient,
     table_id: str | None = None,
@@ -275,6 +339,32 @@ def _list_submission_tasks_with_readiness_retry(
     return []
 
 
+def _get_submission_task_with_readiness_retry(
+    client: FeishuBitableClient,
+    table_id: str,
+    record_id: str,
+    *,
+    attempts: int = 6,
+) -> SubmissionTask:
+    get_record = getattr(client, "get_record", None)
+    for attempt in range(attempts):
+        try:
+            if callable(get_record):
+                record = dict(get_record(table_id, record_id))
+            else:
+                record = next(
+                    item
+                    for item in client.list_records(table_id)
+                    if str(item.get("record_id") or "") == record_id
+                )
+            return _load_task_payload(client, task_from_record(record))
+        except Exception as exc:
+            if not _is_feishu_data_not_ready_error(exc) or attempt >= attempts - 1:
+                raise
+            time.sleep(0.5 * (attempt + 1))
+    raise RuntimeError("后台任务写入后无法读取。")
+
+
 def find_task_by_idempotency_key(
     client: FeishuBitableClient,
     idempotency_key: str,
@@ -283,12 +373,12 @@ def find_task_by_idempotency_key(
     normalized_key = idempotency_key.strip()
     if not normalized_key:
         return None
-    matches = [
-        task
-        for task in _list_submission_tasks_with_readiness_retry(client, table_id)
-        if task.idempotency_key == normalized_key
-        and task.status != QUEUE_STATUS_CANCELLED
-    ]
+    resolved_table_id = table_id or ensure_submission_queue_table(client)
+    matches = _tasks_matching_idempotency_key(
+        client,
+        resolved_table_id,
+        normalized_key,
+    )
     return min(matches, key=lambda task: (task.submitted_at, task.task_id)) if matches else None
 
 
@@ -373,15 +463,12 @@ def enqueue_submission_task(
     created_record["fields"] = dict(created_record.get("fields") or fields)
     created_task = task_from_record(created_record)
     expected_payload = _json_object(serialized_payload)
-    verified = next(
-        (
-            item
-            for item in _list_submission_tasks_with_readiness_retry(client, table_id)
-            if item.task_id == task_id
-        ),
-        None,
+    verified = _get_submission_task_with_readiness_retry(
+        client,
+        table_id,
+        created_task.record_id,
     )
-    if verified is None or verified.payload != expected_payload:
+    if verified.task_id != task_id or verified.payload != expected_payload:
         raise RuntimeError("后台任务载荷写入后校验失败，任务未可靠入队。")
     created_task = verified
 
