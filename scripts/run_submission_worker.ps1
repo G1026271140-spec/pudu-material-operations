@@ -158,6 +158,9 @@ try {
             } elseif ($ExitCode -eq 76 -and -not $SetupOnly) {
                 Write-RunnerLog "Another worker still owns the instance lock; waiting to take over."
                 Start-Sleep -Seconds 2
+            } elseif ($ExitCode -eq 76 -and $SetupOnly) {
+                Write-RunnerLog "An active worker already owns the queue; setup verification was skipped."
+                $ExitCode = 0
             }
         } while (($ExitCode -eq 75 -or $ExitCode -eq 76) -and -not $SetupOnly)
     } finally {
