@@ -6729,6 +6729,19 @@ def notify_requester_of_inventory_edit(
         raise RuntimeError("飞书未配置，无法发送申请变更通知。")
 
     english = requester_prefers_english(request)
+    admin_open_ids = enabled_admin_open_ids()
+    admin_mentions = " ".join(
+        f"<at id={open_id}></at>" for open_id in admin_open_ids
+    )
+    contact_text = (
+        "If you have any questions or other requests, please contact "
+        if english
+        else "如有疑问或其他需求，请联系"
+    )
+    if admin_mentions:
+        contact_text += admin_mentions
+    else:
+        contact_text += "the material administrator." if english else "物料管理员。"
 
     def line_elements(lines: list[dict[str, object]]) -> list[dict[str, object]]:
         elements: list[dict[str, object]] = []
@@ -6795,8 +6808,13 @@ def notify_requester_of_inventory_edit(
                     "Change explanation" if english else "申请物料更改信息说明",
                     [_feishu_card_text_element(change_note, lines=6)],
                     color="orange",
-                    last=True,
                 ),
+                {
+                    "tag": "markdown",
+                    "content": contact_text,
+                    "text_size": "notation",
+                    "text_color": "grey-500",
+                },
             ],
         },
     }

@@ -140,7 +140,14 @@ class RequestInventoryReviewTests(unittest.TestCase):
                 "current_stock": 0,
             }
         ]
-        with patch.object(app, "feishu_client", return_value=client):
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(
+                app,
+                "enabled_admin_open_ids",
+                return_value=["ou_admin_1", "ou_admin_2"],
+            ),
+        ):
             app.notify_requester_of_inventory_edit(request, before, after, "原型号库存不足")
 
         client.send_interactive_message.assert_called_once()
@@ -153,6 +160,9 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertNotIn("库存不足，需要制作", serialized)
         self.assertIn("原型号库存不足", serialized)
         self.assertIn(app.INVENTORY_REVIEW_CONFIRMED, serialized)
+        self.assertIn("如有疑问或其他需求，请联系", serialized)
+        self.assertIn("<at id=ou_admin_1></at>", serialized)
+        self.assertIn("<at id=ou_admin_2></at>", serialized)
         client.send_text_message.assert_not_called()
 
     def test_card_edit_form_keeps_category_and_only_offers_its_dimensions(self) -> None:
