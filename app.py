@@ -1387,6 +1387,28 @@ def inject_global_styles() -> None:
             font-size: 0.76rem;
             line-height: 1.35;
         }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stExpander"] {
+            width: 100%;
+            margin-top: 0.25rem;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stExpander"] details > summary {
+            min-height: 2.45rem;
+            padding: 0.48rem 0.7rem;
+            border: 1px solid #B8C7D9;
+            border-radius: 0.55rem;
+            background: #F3F7FB;
+            color: #243B53;
+            font-weight: 650;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stExpander"] details[open] > summary {
+            border-color: #9FB5CC;
+            background: #EAF2FA;
+        }
+        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stExpander"] details > div {
+            max-height: 560px;
+            overflow-y: auto;
+            padding: 0.55rem 0.1rem 0.15rem;
+        }
         .pudu-required-star {
             color: var(--pudu-red);
             font-weight: 700;
