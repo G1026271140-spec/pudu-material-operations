@@ -6308,6 +6308,19 @@ def material_request_notification_card(
     ]
     request_id = str(review_request.get("record_id") or "")
     if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
+        base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
+        edit_args = {
+            "allocation": "request",
+            "request_id": request_id,
+        }
+        if operator_open_id:
+            edit_args.update(
+                {
+                    "operator": operator_open_id,
+                    "review_token": request_review_access_token(request_id, operator_open_id),
+                }
+            )
+        edit_url = f"{base_url}?{url_parse.urlencode(edit_args)}"
         elements.append(
             {
                 "tag": "column_set",
@@ -6323,10 +6336,15 @@ def material_request_notification_card(
                                 "tag": "button",
                                 "text": {"tag": "plain_text", "content": "调整配货方案"},
                                 "type": "default",
-                                "value": {
-                                    "action": "edit_request_inventory",
-                                    "request_id": request_id,
-                                },
+                                "behaviors": [
+                                    {
+                                        "type": "open_url",
+                                        "default_url": edit_url,
+                                        "pc_url": edit_url,
+                                        "ios_url": edit_url,
+                                        "android_url": edit_url,
+                                    }
+                                ],
                             }
                         ],
                     },
@@ -16189,6 +16207,17 @@ def restore_default_sidebar_on_page_load() -> None:
 
 
 def render_request_inventory_review_page() -> None:
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"],
+        [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+        [data-testid="stMainBlockContainer"] { max-width: 1180px !important; }
+        </style>
+        <span class="pudu-allocation-workbench-marker" aria-hidden="true"></span>
+        """,
+        unsafe_allow_html=True,
+    )
     request_id = str(st.query_params.get("request_id", "")).strip()
     operator_open_id = str(st.query_params.get("operator", "")).strip()
     review_token = str(st.query_params.get("review_token", "")).strip()
@@ -16349,13 +16378,18 @@ def main() -> None:
         initial_sidebar_state="expanded",
     )
     inject_global_styles()
-    restore_default_sidebar_on_page_load()
+    allocation_view = str(st.query_params.get("allocation", "")) == "request"
+    if not allocation_view:
+        restore_default_sidebar_on_page_load()
     stop_on_invalid_feishu_config()
-    render_sidebar_link()
+    if not allocation_view:
+        render_sidebar_link()
 
     view = str(st.query_params.get("view", ""))
     try:
-        if view == "inventory":
+        if allocation_view:
+            render_request_inventory_review_page()
+        elif view == "inventory":
             render_inventory_view()
         elif view == "warehouse":
             render_warehouse_location_view()
