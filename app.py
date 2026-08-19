@@ -11515,11 +11515,10 @@ def render_request_material_builder(
                         """,
                         unsafe_allow_html=True,
                     )
-                    with st.popover(
+                    with st.expander(
                         "选择规格",
-                        key=f"request_catalog_select_{index}_{normalize_option_label(catalog_product)}",
+                        expanded=False,
                         icon=":material/shopping_cart:",
-                        width="stretch",
                     ):
                         st.markdown(
                             f"#### {escape(request_category_display_label(catalog_product))}",
