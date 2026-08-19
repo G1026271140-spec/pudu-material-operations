@@ -8110,7 +8110,9 @@ def load_request_inventory_page_rows(
     app_secret: str,
     app_token: str,
 ) -> tuple[dict, list[dict]]:
-    client = get_feishu_bitable_client(app_id, app_secret, app_token)
+    client = FeishuBitableClient(
+        FeishuBitableConfig(app_id, app_secret, app_token)
+    )
     request_row = client.get_record(request_table_id, request_id)
     line_ids = feishu_link_ids_any(
         feishu_fields(request_row), ["申请明细", "关联申请明细"]
@@ -16348,7 +16350,7 @@ def render_request_inventory_review_page() -> None:
         st.info("该页面仅供已授权管理员查看和编辑。")
         return
 
-    with st.spinner("正在读取当前申请......"):
+    with fullscreen_data_sync("正在抓取申请单数据，请稍候..."):
         context = request_inventory_review_page_context(request_id)
     request = dict(context["request"])
     lines = [dict(line) for line in list(context["lines"])]

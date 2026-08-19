@@ -17,7 +17,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
             {"record_id": "line-1", "fields": {}},
         ]
 
-        with patch.object(app, "get_feishu_bitable_client", return_value=client):
+        with patch.object(app, "FeishuBitableClient", return_value=client) as client_class:
             request_row, lines = app.load_request_inventory_page_rows.__wrapped__(
                 "request-1",
                 "tbl-requests",
@@ -27,6 +27,8 @@ class RequestInventoryReviewTests(unittest.TestCase):
                 "app-secret",
                 "app-token",
             )
+
+        client_class.assert_called_once()
 
         self.assertEqual(request_row["record_id"], "request-1")
         self.assertEqual([row["record_id"] for row in lines], ["line-1"])
@@ -53,7 +55,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
             },
         ]
 
-        with patch.object(app, "get_feishu_bitable_client", return_value=client):
+        with patch.object(app, "FeishuBitableClient", return_value=client):
             _, lines = app.load_request_inventory_page_rows.__wrapped__(
                 "request-1",
                 "tbl-requests",
@@ -68,6 +70,12 @@ class RequestInventoryReviewTests(unittest.TestCase):
         client.list_records.assert_called_once_with(
             "tbl-lines",
             field_names=["所属申请单", "物料编码", "申请数量"],
+        )
+
+    def test_review_page_uses_fullscreen_application_loading_overlay(self) -> None:
+        self.assertIn(
+            "正在抓取申请单数据，请稍候...",
+            app.render_request_inventory_review_page.__code__.co_consts,
         )
 
     def test_cached_allocation_catalog_uses_cache_and_keeps_current_disabled_item(self) -> None:
