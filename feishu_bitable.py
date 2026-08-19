@@ -261,11 +261,23 @@ class FeishuBitableClient:
             raise FeishuBitableError("Feishu returned an empty attachment.")
         return content
 
-    def list_records(self, table_id: str, page_size: int = 500) -> list[dict[str, Any]]:
+    def list_records(
+        self,
+        table_id: str,
+        page_size: int = 500,
+        *,
+        field_names: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        params = (
+            {"field_names": json.dumps(field_names, ensure_ascii=False)}
+            if field_names
+            else None
+        )
         return self._paged_get(
             f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records",
             "items",
             page_size=page_size,
+            params=params,
         )
 
     def get_record(self, table_id: str, record_id: str) -> dict[str, Any]:

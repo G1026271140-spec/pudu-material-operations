@@ -1,12 +1,75 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_page_loader_reads_one_request_and_only_needed_line_fields(self) -> None:
+        client = Mock()
+        client.get_record.side_effect = [
+            {
+                "record_id": "request-1",
+                "fields": {"申请明细": [{"record_ids": ["line-1"]}]},
+            },
+            {"record_id": "line-1", "fields": {}},
+        ]
+
+        with patch.object(app, "get_feishu_bitable_client", return_value=client):
+            request_row, lines = app.load_request_inventory_page_rows.__wrapped__(
+                "request-1",
+                "tbl-requests",
+                "tbl-lines",
+                ("所属申请单", "物料编码", "申请数量"),
+                "app-id",
+                "app-secret",
+                "app-token",
+            )
+
+        self.assertEqual(request_row["record_id"], "request-1")
+        self.assertEqual([row["record_id"] for row in lines], ["line-1"])
+        self.assertEqual(
+            client.get_record.call_args_list,
+            [
+                call("tbl-requests", "request-1"),
+                call("tbl-lines", "line-1"),
+            ],
+        )
+        client.list_records.assert_not_called()
+
+    def test_page_loader_uses_limited_field_fallback_for_legacy_request(self) -> None:
+        client = Mock()
+        client.get_record.return_value = {"record_id": "request-1", "fields": {}}
+        client.list_records.return_value = [
+            {
+                "record_id": "line-1",
+                "fields": {"所属申请单": [{"record_ids": ["request-1"]}]},
+            },
+            {
+                "record_id": "line-2",
+                "fields": {"所属申请单": [{"record_ids": ["request-2"]}]},
+            },
+        ]
+
+        with patch.object(app, "get_feishu_bitable_client", return_value=client):
+            _, lines = app.load_request_inventory_page_rows.__wrapped__(
+                "request-1",
+                "tbl-requests",
+                "tbl-lines",
+                ("所属申请单", "物料编码", "申请数量"),
+                "app-id",
+                "app-secret",
+                "app-token",
+            )
+
+        self.assertEqual([row["record_id"] for row in lines], ["line-1"])
+        client.list_records.assert_called_once_with(
+            "tbl-lines",
+            field_names=["所属申请单", "物料编码", "申请数量"],
+        )
+
     def test_cached_allocation_catalog_uses_cache_and_keeps_current_disabled_item(self) -> None:
         cache = {"inventory_rows": [{"material_code": "MAT-1"}]}
         material_rows = [

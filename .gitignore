@@ -1,9 +1,6 @@
 .venv/
 __pycache__/
 work/
-allocation-pwa/
-allocation-pwa-init-backup/
-allocation-pwa-init-failed-2/
 .streamlit/secrets.toml
 *.pyc
 data/~$*

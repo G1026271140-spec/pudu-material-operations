@@ -124,7 +124,6 @@ INVENTORY_RESULT_INSUFFICIENT = "全部库存不足"
 DEFAULT_STREAMLIT_APP_URL = (
     "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
 )
-DEFAULT_ALLOCATION_PWA_URL = "https://gquhtm3ghb2.feishuapp.com/app/app_17cdwe1a3vm"
 FREIGHT_PAYER_OPTIONS = [
     "申请部门承担",
     "市场部承担",
@@ -5997,6 +5996,16 @@ def enabled_admin_open_ids() -> list[str]:
     return enabled_role_open_ids("管理员")
 
 
+@st.cache_data(show_spinner=False, ttl=120)
+def cached_enabled_admin_open_ids(
+    app_id: str,
+    app_secret: str,
+    app_token: str,
+) -> list[str]:
+    del app_id, app_secret, app_token
+    return enabled_admin_open_ids()
+
+
 def enabled_sales_open_ids() -> list[str]:
     return enabled_role_open_ids("销售")
 
@@ -6310,8 +6319,8 @@ def material_request_notification_card(
     request_id = str(review_request.get("record_id") or "")
     if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
         base_url = get_secret_value(
-            "ALLOCATION_PWA_URL",
-            DEFAULT_ALLOCATION_PWA_URL,
+            "STREAMLIT_APP_URL",
+            DEFAULT_STREAMLIT_APP_URL,
         ).rstrip("/") + "/"
         edit_args = {
             "allocation": "request",
@@ -8070,6 +8079,109 @@ def valid_request_review_access_token(
         request_review_access_token(request_id, operator_open_id),
         token,
     )
+
+
+REQUEST_INVENTORY_PAGE_LINE_FIELDS = [
+    "所属申请单",
+    "申请单",
+    "申请单号",
+    "物料",
+    "物料编码",
+    "品类名称",
+    "物料品类",
+    "品类",
+    "产品型号名称",
+    "产品型号",
+    "语种名称",
+    "语种",
+    "申请数量",
+    "物料数量",
+    "备注",
+]
+
+
+@st.cache_data(show_spinner=False, ttl=120)
+def load_request_inventory_page_rows(
+    request_id: str,
+    request_table_id: str,
+    request_line_table_id: str,
+    request_line_field_names: tuple[str, ...],
+    app_id: str,
+    app_secret: str,
+    app_token: str,
+) -> tuple[dict, list[dict]]:
+    client = get_feishu_bitable_client(app_id, app_secret, app_token)
+    request_row = client.get_record(request_table_id, request_id)
+    line_ids = feishu_link_ids_any(
+        feishu_fields(request_row), ["申请明细", "关联申请明细"]
+    )
+    if line_ids:
+        related_lines = [
+            client.get_record(request_line_table_id, line_id) for line_id in line_ids
+        ]
+    else:
+        line_rows = client.list_records(
+            request_line_table_id,
+            field_names=list(request_line_field_names),
+        )
+        related_lines = [
+            row
+            for row in line_rows
+            if request_id
+            in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
+        ]
+    return request_row, related_lines
+
+
+def request_inventory_review_page_context(request_id: str) -> dict[str, object]:
+    if not request_id:
+        raise RuntimeError("缺少申请单标识。")
+    request_row, line_rows = load_request_inventory_page_rows(
+        request_id,
+        feishu_table_id(REQUEST_TABLE_NAME),
+        feishu_table_id(REQUEST_LINE_TABLE_NAME),
+        tuple(
+            field_name
+            for field_name in REQUEST_INVENTORY_PAGE_LINE_FIELDS
+            if feishu_has_field(REQUEST_LINE_TABLE_NAME, field_name)
+        ),
+        *feishu_config_args(),
+    )
+    if not request_row:
+        raise RuntimeError("申请单不存在或已被删除。")
+    request = load_feishu_request_records([request_row])[0]
+    request_fields = feishu_fields(request_row)
+    request.update(
+        {
+            "inventory_review_status": feishu_text(request_fields, "库存审查状态")
+            or INVENTORY_REVIEW_PENDING,
+            "inventory_review_result": feishu_text(request_fields, "库存审查结论"),
+            "inventory_change_note": feishu_text(
+                request_fields, "申请物料更改信息说明"
+            ),
+            "inventory_review_version": int(
+                feishu_text(request_fields, "申请变更次数") or 0
+            ),
+        }
+    )
+    material_rows = feishu_rows(MATERIAL_TABLE_NAME)
+    lines = load_feishu_request_line_records(line_rows, material_rows)
+    for line in lines:
+        stock = int(line.get("current_stock") or 0)
+        quantity = int(line.get("quantity") or 0)
+        line["inventory_status"] = (
+            INVENTORY_RESULT_SUFFICIENT
+            if stock > 0 and stock >= quantity
+            else "库存不足，需要制作"
+        )
+    return {
+        "request": request,
+        "request_row": request_row,
+        "lines": lines,
+        "result": request_inventory_review_result(lines),
+        "snapshot_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "material_rows": material_rows,
+    }
 
 
 def request_inventory_review_context(
@@ -16230,14 +16342,14 @@ def render_request_inventory_review_page() -> None:
         return
     signed_admin = (
         valid_request_review_access_token(request_id, operator_open_id, review_token)
-        and operator_open_id in enabled_admin_open_ids()
+        and operator_open_id in cached_enabled_admin_open_ids(*feishu_config_args())
     )
     if not signed_admin and not admin_auth_gate():
         st.info("该页面仅供已授权管理员查看和编辑。")
         return
 
-    with st.spinner("正在读取当前申请和实时库存......"):
-        context = request_inventory_review_context(request_id=request_id)
+    with st.spinner("正在读取当前申请......"):
+        context = request_inventory_review_page_context(request_id)
     request = dict(context["request"])
     lines = [dict(line) for line in list(context["lines"])]
     render_page_header(
@@ -16267,49 +16379,145 @@ def render_request_inventory_review_page() -> None:
         list(context.get("material_rows") or []),
         current_material_ids=current_material_ids,
     )
-    label_by_id = {
-        str(item["record_id"]): (
-            f"{item['material_code']}｜{item['category']} / {item['model']} / "
-            f"{item['language']}｜库存 {int(item['quantity'])}"
-        )
+    if not material_records:
+        st.error("页面物料目录缓存为空，请先在主应用刷新申请页缓存。")
+        return
+    material_by_dimensions = {
+        (
+            str(item.get("category") or ""),
+            str(item.get("model") or NO_MODEL_TEXT),
+            str(item.get("language") or NO_LANGUAGE_TEXT),
+        ): str(item.get("record_id") or "")
         for item in material_records
         if str(item.get("record_id") or "")
     }
-    id_by_label = {label: record_id for record_id, label in label_by_id.items()}
-    edit_df = pd.DataFrame(
-        [
+    categories = unique_preserve(
+        [str(item.get("category") or "") for item in material_records]
+    )
+    draft_key = (
+        f"request_inventory_draft_{request_id}_"
+        f"{int(request.get('inventory_review_version') or 0)}"
+    )
+    if draft_key not in st.session_state:
+        st.session_state[draft_key] = [
             {
-                "配货物料": label_by_id.get(str(line.get("material_record_id") or ""), ""),
-                "配货数量": int(line.get("quantity") or 0),
-                "备注": str(line.get("remark") or ""),
+                "uid": str(line.get("record_id") or uuid.uuid4().hex),
+                "category": str(line.get("product") or ""),
+                "model": str(line.get("model") or NO_MODEL_TEXT),
+                "language": str(line.get("language") or NO_LANGUAGE_TEXT),
+                "quantity": max(1, int(line.get("quantity") or 1)),
+                "remark": str(line.get("remark") or ""),
             }
             for line in lines
         ]
-    )
+    draft_rows = list(st.session_state[draft_key])
     st.markdown("#### 配货明细")
     st.caption(
-        f"物料目录来自现有本地缓存（{cache_data.get('generated_at') or '未知时间'}）；"
-        "库存为本次打开页面时读取的实时数据。可增删明细或更换品类、型号、语种。"
+        f"品类、型号和语种来自页面缓存（{cache_data.get('generated_at') or '未知时间'}）。"
+        "页面内调整不会写入后台，点击提交后才会一次性进入任务队列。"
     )
-    edited_df = st.data_editor(
-        edit_df,
-        width="stretch",
-        hide_index=True,
-        num_rows="dynamic",
-        column_config={
-            "配货物料": st.column_config.SelectboxColumn(
-                "品类 / 型号 / 语种",
-                options=list(id_by_label),
-                required=True,
-                width="large",
-            ),
-            "配货数量": st.column_config.NumberColumn(
-                "配货数量", min_value=1, step=1, required=True
-            ),
-            "备注": st.column_config.TextColumn("备注"),
-        },
-        key=f"request_inventory_editor_{request_id}_{request.get('inventory_review_version', 0)}",
-    )
+    remove_uid = ""
+    for row in draft_rows:
+        uid = str(row.get("uid") or uuid.uuid4().hex)
+        row["uid"] = uid
+        widget_prefix = f"request_inventory_line_{request_id}_{uid}"
+        with st.container(border=True):
+            category_col, model_col, language_col, quantity_col, action_col = st.columns(
+                [2.2, 1.6, 1.6, 0.8, 0.55]
+            )
+            category_key = f"{widget_prefix}_category"
+            if st.session_state.get(category_key) not in categories:
+                st.session_state[category_key] = (
+                    str(row.get("category") or "")
+                    if str(row.get("category") or "") in categories
+                    else (categories[0] if categories else "")
+                )
+            category = category_col.selectbox(
+                "品类",
+                categories,
+                key=category_key,
+            )
+            models = unique_preserve(
+                [
+                    str(item.get("model") or NO_MODEL_TEXT)
+                    for item in material_records
+                    if str(item.get("category") or "") == category
+                ]
+            )
+            model_key = f"{widget_prefix}_model"
+            if st.session_state.get(model_key) not in models:
+                st.session_state[model_key] = (
+                    str(row.get("model") or NO_MODEL_TEXT)
+                    if str(row.get("model") or NO_MODEL_TEXT) in models
+                    else (models[0] if models else NO_MODEL_TEXT)
+                )
+            model = model_col.selectbox("型号", models, key=model_key)
+            languages = unique_preserve(
+                [
+                    str(item.get("language") or NO_LANGUAGE_TEXT)
+                    for item in material_records
+                    if str(item.get("category") or "") == category
+                    and str(item.get("model") or NO_MODEL_TEXT) == model
+                ]
+            )
+            language_key = f"{widget_prefix}_language"
+            if st.session_state.get(language_key) not in languages:
+                st.session_state[language_key] = (
+                    str(row.get("language") or NO_LANGUAGE_TEXT)
+                    if str(row.get("language") or NO_LANGUAGE_TEXT) in languages
+                    else (languages[0] if languages else NO_LANGUAGE_TEXT)
+                )
+            language = language_col.selectbox("语种", languages, key=language_key)
+            quantity = int(
+                quantity_col.number_input(
+                    "数量",
+                    min_value=1,
+                    step=1,
+                    value=max(1, int(row.get("quantity") or 1)),
+                    key=f"{widget_prefix}_quantity",
+                )
+            )
+            action_col.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+            if action_col.button(
+                "删除",
+                key=f"{widget_prefix}_remove",
+                disabled=len(draft_rows) <= 1,
+            ):
+                remove_uid = uid
+            remark = st.text_input(
+                "备注",
+                value=str(row.get("remark") or ""),
+                key=f"{widget_prefix}_remark",
+            )
+        row.update(
+            {
+                "category": category,
+                "model": model,
+                "language": language,
+                "quantity": quantity,
+                "remark": remark,
+            }
+        )
+    st.session_state[draft_key] = draft_rows
+    if remove_uid:
+        st.session_state[draft_key] = [
+            row for row in draft_rows if str(row.get("uid") or "") != remove_uid
+        ]
+        st.rerun()
+    if st.button("新增明细", icon=":material/add:"):
+        first = material_records[0] if material_records else {}
+        draft_rows.append(
+            {
+                "uid": uuid.uuid4().hex,
+                "category": str(first.get("category") or ""),
+                "model": str(first.get("model") or NO_MODEL_TEXT),
+                "language": str(first.get("language") or NO_LANGUAGE_TEXT),
+                "quantity": 1,
+                "remark": "",
+            }
+        )
+        st.session_state[draft_key] = draft_rows
+        st.rerun()
     change_note = st.text_area(
         "配货调整说明 *",
         placeholder="请说明替换、增加、删除物料或调整数量的原因；该说明会发送给申请人。",
@@ -16328,16 +16536,21 @@ def render_request_inventory_review_page() -> None:
     ):
         return
 
-    rows = [dict(row) for row in edited_df.to_dict("records")]
-    invalid_labels = [
-        str(row.get("配货物料") or "")
-        for row in rows
-        if str(row.get("配货物料") or "") not in id_by_label
-    ]
+    rows = [dict(row) for row in list(st.session_state.get(draft_key) or [])]
     if not rows:
         st.error("配货方案必须至少保留一条物料明细。")
         return
-    if invalid_labels:
+    invalid_rows = [
+        row
+        for row in rows
+        if (
+            str(row.get("category") or ""),
+            str(row.get("model") or NO_MODEL_TEXT),
+            str(row.get("language") or NO_LANGUAGE_TEXT),
+        )
+        not in material_by_dimensions
+    ]
+    if invalid_rows:
         st.error("配货方案中存在无效物料，请重新选择。")
         return
     if not change_note.strip():
@@ -16345,12 +16558,21 @@ def render_request_inventory_review_page() -> None:
         return
     payload_lines = [
         {
-            "material_record_id": id_by_label[str(row["配货物料"])],
-            "quantity": int(row.get("配货数量") or 0),
-            "remark": str(row.get("备注") or ""),
+            "material_record_id": material_by_dimensions[
+                (
+                    str(row.get("category") or ""),
+                    str(row.get("model") or NO_MODEL_TEXT),
+                    str(row.get("language") or NO_LANGUAGE_TEXT),
+                )
+            ],
+            "quantity": int(row.get("quantity") or 0),
+            "remark": str(row.get("remark") or ""),
         }
         for row in rows
     ]
+    if len({line["material_record_id"] for line in payload_lines}) != len(payload_lines):
+        st.error("同一物料不能重复添加，请合并数量后再提交。")
+        return
     with fullscreen_data_sync("正在提交配货方案，请稍后......"):
         task, _ = enqueue_feishu_background_write(
             QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import unittest
 from unittest.mock import patch
 
@@ -43,6 +44,23 @@ class FeishuBitableClientTests(unittest.TestCase):
             records = client.list_records("tbl-empty")
 
         self.assertEqual(records, [])
+
+    def test_list_records_can_limit_returned_fields(self) -> None:
+        client = FeishuBitableClient(
+            FeishuBitableConfig("app-id", "app-secret", "app-token")
+        )
+
+        with patch.object(client, "_paged_get", return_value=[]) as paged_get:
+            client.list_records(
+                "tbl-lines",
+                field_names=["所属申请单", "物料编码", "申请数量"],
+            )
+
+        params = paged_get.call_args.kwargs["params"]
+        self.assertEqual(
+            json.loads(params["field_names"]),
+            ["所属申请单", "物料编码", "申请数量"],
+        )
 
 
 if __name__ == "__main__":

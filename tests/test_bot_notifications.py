@@ -513,7 +513,9 @@ class BotNotificationTests(unittest.TestCase):
             "snapshot_at": "2026-08-18 10:00:00",
         }
         with (
-            patch.object(app, "get_secret_value", return_value="https://example.test/"),
+            patch.object(
+                app, "get_secret_value", return_value="https://example.test/"
+            ) as get_secret_value,
             patch.object(app, "request_review_access_token", return_value="signed-token"),
         ):
             card = app.material_request_notification_card(
@@ -548,6 +550,9 @@ class BotNotificationTests(unittest.TestCase):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)
         self.assertIn("allocation=request", serialized)
+        get_secret_value.assert_called_with(
+            "STREAMLIT_APP_URL", app.DEFAULT_STREAMLIT_APP_URL
+        )
         self.assertIn("signed-token", serialized)
         self.assertIn('"type": "open_url"', serialized)
         self.assertIn('"action": "confirm_request_inventory"', serialized)
