@@ -1,7 +1,7 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "source": "static_snapshot",
-  "generated_at": "2026-08-20 17:01:07",
+  "generated_at": "2026-08-20 18:37:44",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -54,58 +54,174 @@
     "D7",
     "D9",
     "ET1",
-    "Flash Arm",
     "FlashBot",
     "FlashBot Arm",
     "FlashBot Lite",
     "FlashBot Max",
+    "FlashBot Pro",
+    "FlashBot Ultra",
     "Hulk",
     "KettyBot Pro",
-    "MP2000",
     "MT1",
     "MT1 Max",
     "MT1 Vac",
     "PuduBot 2",
     "SH1",
-    "Pudu SwiftBot",
     "SwiftBot",
     "SwiftBot Neo",
+    "T150",
     "T300",
-    "T300 Conveyor",
     "T600",
     "猛犸MP2000"
   ],
   "model_product_lines": {
     "BG1": "CR",
-    "BellaBot": "SR",
-    "Bellabot pro": "SR",
-    "CC1 PRO": "CR",
-    "D5": "GR",
-    "D7": "GR",
-    "D9": "GR",
     "ET1": "CR",
-    "FlashBot": "CR",
-    "KettyBot Pro": "SR",
+    "SH1": "CR",
     "MT1": "CR",
     "MT1 Max": "CR",
     "MT1 Vac": "CR",
     "PUDU CC1": "CR",
+    "CC1 PRO": "CR",
+    "BellaBot": "SR",
+    "Bellabot pro": "SR",
+    "KettyBot Pro": "SR",
     "PuduBot 2": "SR",
-    "SH1": "CR",
-    "Pudu SwiftBot": "SR",
+    "FlashBot": "SR",
+    "FlashBot Lite": "SR",
+    "FlashBot Pro": "SR",
+    "FlashBot Max": "SR",
+    "FlashBot Ultra": "SR",
+    "SwiftBot": "SR",
+    "SwiftBot Neo": "SR",
+    "D5": "GR",
+    "D7": "GR",
+    "D9": "GR",
+    "FlashBot Arm": "GR",
+    "T150": "IR",
     "T300": "IR",
     "T600": "IR",
-    "无需型号": "新项目",
-    "FlashBot Arm": "GR",
-    "FlashBot Lite": "SR",
-    "FlashBot Max": "SR",
-    "SwiftBot Neo": "SR",
-    "T300 Conveyor": "IR",
-    "MP2000": "IR",
+    "猛犸MP2000": "IR",
     "Hulk": "新项目",
-    "Flash Arm": "GR",
-    "SwiftBot": "SR",
-    "猛犸MP2000": "IR"
+    "无需型号": "新项目"
+  },
+  "model_display_names": {
+    "BG1": {
+      "zh": "BG1",
+      "en": "BG1"
+    },
+    "ET1": {
+      "zh": "ET1",
+      "en": "ET1"
+    },
+    "SH1": {
+      "zh": "SH1",
+      "en": "SH1"
+    },
+    "MT1": {
+      "zh": "MT1",
+      "en": "MT1"
+    },
+    "MT1 Max": {
+      "zh": "MT1 Max",
+      "en": "MT1 Max"
+    },
+    "MT1 Vac": {
+      "zh": "MT1 Vac",
+      "en": "MT1 Vac"
+    },
+    "PUDU CC1": {
+      "zh": "出尘CC1",
+      "en": "PUDU CC1"
+    },
+    "CC1 PRO": {
+      "zh": "出尘Pro CC1 PRO",
+      "en": "CC1 PRO"
+    },
+    "BellaBot": {
+      "zh": "贝拉Bella",
+      "en": "BellaBot"
+    },
+    "Bellabot pro": {
+      "zh": "贝拉Pro Bellabot pro",
+      "en": "Bellabot pro"
+    },
+    "KettyBot Pro": {
+      "zh": "葫芦pro KettyBotPro",
+      "en": "KettyBot Pro"
+    },
+    "PuduBot 2": {
+      "zh": "欢乐送2 PuduBot 2",
+      "en": "PuduBot 2"
+    },
+    "FlashBot": {
+      "zh": "闪电匣FlashBot",
+      "en": "FlashBot"
+    },
+    "FlashBot Lite": {
+      "zh": "闪电匣Lite",
+      "en": "FlashBot Lite"
+    },
+    "FlashBot Pro": {
+      "zh": "闪电匣Pro FlashBot Pro",
+      "en": "FlashBot Pro"
+    },
+    "FlashBot Max": {
+      "zh": "闪电匣Max",
+      "en": "FlashBot Max"
+    },
+    "FlashBot Ultra": {
+      "zh": "闪电匣Ultra FlashBot Ultra",
+      "en": "FlashBot Ultra"
+    },
+    "SwiftBot": {
+      "zh": "巧乐送SwiftBot",
+      "en": "SwiftBot"
+    },
+    "SwiftBot Neo": {
+      "zh": "巧乐送Neo SwiftBot Neo",
+      "en": "SwiftBot Neo"
+    },
+    "D5": {
+      "zh": "D5",
+      "en": "D5"
+    },
+    "D7": {
+      "zh": "D7",
+      "en": "D7"
+    },
+    "D9": {
+      "zh": "D9",
+      "en": "D9"
+    },
+    "FlashBot Arm": {
+      "zh": "闪电匣Arm FlashBot Arm",
+      "en": "FlashBot Arm"
+    },
+    "T150": {
+      "zh": "T150",
+      "en": "T150"
+    },
+    "T300": {
+      "zh": "T300",
+      "en": "T300"
+    },
+    "T600": {
+      "zh": "T600",
+      "en": "T600"
+    },
+    "猛犸MP2000": {
+      "zh": "猛犸MP2000",
+      "en": "MP2000"
+    },
+    "Hulk": {
+      "zh": "Hulk",
+      "en": "Hulk"
+    },
+    "无需型号": {
+      "zh": "无需型号",
+      "en": "No model required"
+    }
   },
   "languages": [
     "无需语种",
@@ -292,8 +408,7 @@
             "葡语(Portuguese)",
             "西语(Spanish)",
             "韩语(Korean)"
-          ],
-          "product_line": "GR"
+          ]
         },
         {
           "model": "FlashBot",
@@ -310,7 +425,7 @@
             "意大利语(Italian)",
             "韩语(Korean)"
           ],
-          "product_line": "CR"
+          "product_line": "SR"
         },
         {
           "model": "FlashBot Lite",
@@ -342,6 +457,23 @@
             "繁中(Traditional Chinese)",
             "葡语(Portuguese)",
             "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "SR"
+        },
+        {
+          "model": "FlashBot Pro",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(apanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
             "韩语(Korean)"
           ],
           "product_line": "SR"
@@ -500,6 +632,23 @@
           "product_line": "SR"
         },
         {
+          "model": "T150",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(apanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
+          ],
+          "product_line": "IR"
+        },
+        {
           "model": "T300",
           "languages": [
             "英语(English)",
@@ -530,8 +679,7 @@
             "葡语(Portuguese)",
             "西语(Spanish)",
             "韩语(Korean)"
-          ],
-          "product_line": "IR"
+          ]
         },
         {
           "model": "T600",
@@ -792,8 +940,7 @@
             "繁中(Traditional Chinese)",
             "葡语(Portuguese)",
             "西语(Spanish)"
-          ],
-          "product_line": "GR"
+          ]
         },
         {
           "model": "FlashBot",
@@ -809,7 +956,7 @@
             "繁中(Traditional Chinese)",
             "意大利语(Italian)"
           ],
-          "product_line": "CR"
+          "product_line": "SR"
         },
         {
           "model": "FlashBot Arm",
@@ -860,6 +1007,22 @@
           "product_line": "SR"
         },
         {
+          "model": "FlashBot Pro",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(apanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)"
+          ],
+          "product_line": "SR"
+        },
+        {
           "model": "Hulk",
           "languages": [
             "英语(English)",
@@ -904,8 +1067,7 @@
             "繁中(Traditional Chinese)",
             "葡语(Portuguese)",
             "西语(Spanish)"
-          ],
-          "product_line": "IR"
+          ]
         },
         {
           "model": "MT1",
@@ -1000,8 +1162,7 @@
             "繁中(Traditional Chinese)",
             "葡语(Portuguese)",
             "西语(Spanish)"
-          ],
-          "product_line": "SR"
+          ]
         },
         {
           "model": "SwiftBot",
@@ -1036,6 +1197,22 @@
           "product_line": "SR"
         },
         {
+          "model": "T150",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(apanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)"
+          ],
+          "product_line": "IR"
+        },
+        {
           "model": "T300",
           "languages": [
             "英语(English)",
@@ -1064,8 +1241,7 @@
             "繁中(Traditional Chinese)",
             "葡语(Portuguese)",
             "西语(Spanish)"
-          ],
-          "product_line": "IR"
+          ]
         },
         {
           "model": "T600",
@@ -1157,11 +1333,11 @@
           "product_line": "GR"
         },
         {
-          "model": "FlashBot",
+          "model": "FlashBot Ultra",
           "languages": [
             "无需语种"
           ],
-          "product_line": "CR"
+          "product_line": "SR"
         },
         {
           "model": "KettyBot Pro",
@@ -1169,6 +1345,12 @@
             "无需语种"
           ],
           "product_line": "SR"
+        },
+        {
+          "model": "MP2000",
+          "languages": [
+            "无需语种"
+          ]
         },
         {
           "model": "MT1",
@@ -1193,13 +1375,6 @@
         },
         {
           "model": "T300",
-          "languages": [
-            "无需语种"
-          ],
-          "product_line": "IR"
-        },
-        {
-          "model": "猛犸MP2000",
           "languages": [
             "无需语种"
           ],
@@ -1258,7 +1433,7 @@
       ]
     }
   ],
-  "combination_count": 618,
+  "combination_count": 660,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -3755,7 +3930,7 @@
     {
       "material_code": "MAT-0791",
       "product": "冰箱贴( Fridge Magnet)",
-      "model": "FlashBot",
+      "model": "FlashBot Ultra",
       "language": "无需语种",
       "quantity": 0
     },
@@ -4756,7 +4931,7 @@
     {
       "material_code": "MAT-1140",
       "product": "冰箱贴( Fridge Magnet)",
-      "model": "猛犸MP2000",
+      "model": "MP2000",
       "language": "无需语种",
       "quantity": 200
     },
@@ -5599,8 +5774,302 @@
       "model": "T300 Conveyor",
       "language": "西语(Spanish)",
       "quantity": 0
+    },
+    {
+      "material_code": "MAT-1270",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1271",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1272",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1273",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1274",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1275",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1276",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1277",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1278",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1279",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1280",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Pro",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1281",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1282",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1283",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1284",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1285",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1286",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1287",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1288",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1289",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1290",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "FlashBot Pro",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1291",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1292",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1293",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1294",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1295",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1296",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1297",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1298",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1299",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1300",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1301",
+      "product": "产品单页(Product Flyer )",
+      "model": "T150",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1302",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1303",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1304",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1305",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1306",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1307",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1308",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1309",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1310",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1311",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "T150",
+      "language": "意大利语(Italian)",
+      "quantity": 0
     }
   ],
-  "row_count": 620,
-  "built_from": "live_feishu"
+  "row_count": 662,
+  "built_from": "page_data_static_snapshot"
 }
