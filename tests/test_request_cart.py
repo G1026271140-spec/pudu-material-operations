@@ -11,44 +11,23 @@ class RequestCartTests(unittest.TestCase):
                 "fields": {
                     "物料品类": "产品单页(Product Flyer)",
                     app.REQUEST_CATEGORY_IMAGE_FIELD: [
-                        {"cached_path": "assets/request_categories/product-flyer.webp"}
+                        {"file_token": "request-image-token"}
                     ],
                 }
             }
         ]
-        with patch.object(app, "safe_feishu_rows", return_value=rows):
+        with (
+            patch.object(app, "safe_feishu_rows", return_value=rows),
+            patch.object(app.Path, "is_file", return_value=True),
+        ):
             chinese_path = app.request_category_image_path("产品单页(Product Flyer)")
 
         self.assertIsNotNone(chinese_path)
-        self.assertEqual(chinese_path.name, "product-flyer.webp")
-        self.assertTrue(chinese_path.exists())
+        self.assertEqual(chinese_path.name, "a4b4218f2fc4da2656b1.webp")
 
     def test_category_without_image_uses_placeholder_path(self) -> None:
         with patch.object(app, "safe_feishu_rows", return_value=[]):
             self.assertIsNone(app.request_category_image_path("定制LOGO书包(Customized PUDU bag)"))
-
-    def test_all_uploaded_category_images_match_current_category_names(self) -> None:
-        expected_images = {
-            "产品单页(Product Flyer )": "product-flyer.webp",
-            "品牌手册(Product Brochure (All Banner)）": "brand-brochure.webp",
-            "工业产品线手册IR(Industrial Product Line Brochure）": "industrial-brochure.webp",
-            "清洁产品线手册CR(Cleaning Product Line Brochure）": "cleaning-brochure.webp",
-            "配送线产品手册DR(Delivery Robot Product Brochure)": "delivery-brochure.webp",
-            "具身线产品手册ER(Embodied AI Robot Product Brochure)": "embodied-brochure.webp",
-            "产品易拉宝(Product Roll-Up)": "product-roll-up.webp",
-            "公仔(Plush Toy)": "plush-toy.webp",
-            "冰箱贴( Fridge Magnet)": "fridge-magnet.webp",
-            "笔记本礼盒(Notebook Gift Box)": "notebook-gift-box.webp",
-            "普渡logo无纺布手提袋(PUDU logo bag)": "pudu-logo-bag.webp",
-            "扇子": "fan.webp",
-        }
-
-        for product, expected_name in expected_images.items():
-            with self.subTest(product=product):
-                image_path = app.legacy_request_category_image_path(product)
-                self.assertIsNotNone(image_path)
-                self.assertEqual(image_path.name, expected_name)
-                self.assertTrue(image_path.exists())
 
     def test_chinese_category_label_hides_bilingual_suffix(self) -> None:
         with patch.object(app.st, "session_state", {app.UI_LANGUAGE_SESSION_KEY: app.LANGUAGE_ZH}):

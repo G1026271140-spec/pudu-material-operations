@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.6"
+APP_VERSION = "V1.0.7"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -481,26 +481,6 @@ CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
 APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
 REQUEST_CATEGORY_IMAGE_DIR = (
     Path(__file__).resolve().parent / "assets" / "request_categories"
-)
-REQUEST_CATEGORY_IMAGE_RULES = (
-    (("产品单页", "product flyer"), "product-flyer.webp"),
-    (("品牌手册", "product brochure (all banner"), "brand-brochure.webp"),
-    (
-        ("工业产品线手册", "工业线产品手册", "industrial product line brochure", "industrial delivery robot"),
-        "industrial-brochure.webp",
-    ),
-    (
-        ("清洁产品线手册", "清洁线产品手册", "cleaning product line brochure", "cleaning robot product brochure"),
-        "cleaning-brochure.webp",
-    ),
-    (("配送线产品手册", "delivery robot product brochure"), "delivery-brochure.webp"),
-    (("具身线产品手册", "embodied ai robot product brochure"), "embodied-brochure.webp"),
-    (("产品易拉宝", "易拉宝", "product roll-up"), "product-roll-up.webp"),
-    (("公仔", "plush toy"), "plush-toy.webp"),
-    (("冰箱贴", "fridge magnet"), "fridge-magnet.webp"),
-    (("笔记本礼盒", "notebook gift box"), "notebook-gift-box.webp"),
-    (("普渡logo无纺布手提袋", "pudu logo bag"), "pudu-logo-bag.webp"),
-    (("扇子", "fan"), "fan.webp"),
 )
 REQUEST_FORM_CACHE_LOCK = threading.Lock()
 REQUEST_FORM_CACHE_STATE: dict[str, object] = {
@@ -3087,16 +3067,6 @@ def request_category_image_path(product: object) -> Path | None:
             if root == candidate or root in candidate.parents:
                 return candidate if candidate.is_file() else None
         return None
-    return None
-
-
-def legacy_request_category_image_path(product: object) -> Path | None:
-    """Resolve pre-attachment images for one-time migration and tests only."""
-    normalized_product = normalize_option_label(product).casefold()
-    for aliases, filename in REQUEST_CATEGORY_IMAGE_RULES:
-        if any(alias.casefold() in normalized_product for alias in aliases):
-            path = REQUEST_CATEGORY_IMAGE_DIR / filename
-            return path if path.exists() else None
     return None
 
 
