@@ -7,6 +7,41 @@ import app
 
 
 class DimensionManagementTests(unittest.TestCase):
+    def test_model_association_plan_lists_create_update_and_delete(self) -> None:
+        categories = [
+            {"record_id": "cat-a", "category": "品类A"},
+            {"record_id": "cat-b", "category": "品类B"},
+        ]
+        materials = [
+            {"record_id": "mat-1", "material_code": "MAT-0001", "category": "品类A", "model": "P1", "language": "英语", "quantity": 3, "status": "启用", "request_visible": "显示"},
+            {"record_id": "mat-2", "material_code": "MAT-0002", "category": "品类A", "model": "P1", "language": "中文", "quantity": 2, "status": "启用", "request_visible": "显示"},
+        ]
+
+        changes = app.dimension_association_plan(
+            "model", "edit", "P1", "P1 Pro",
+            [["品类A", "英语"], ["品类B", "英语"]],
+            materials, categories,
+        )
+
+        self.assertCountEqual([item["action"] for item in changes], ["update", "delete", "create"])
+        updated = next(item for item in changes if item["action"] == "update")
+        created = next(item for item in changes if item["action"] == "create")
+        self.assertEqual(updated["model"], "P1 Pro")
+        self.assertEqual(created["category_record_id"], "cat-b")
+
+    def test_delete_language_plan_contains_every_referenced_material(self) -> None:
+        materials = [
+            {"record_id": "a", "category": "A", "model": "M1", "language": "英语", "quantity": 1},
+            {"record_id": "b", "category": "A", "model": "M2", "language": "英语", "quantity": 0},
+            {"record_id": "c", "category": "A", "model": "M2", "language": "中文", "quantity": 0},
+        ]
+        changes = app.dimension_association_plan(
+            "language", "delete", "英语", "英语", [], materials,
+            [{"record_id": "cat", "category": "A"}],
+        )
+        self.assertEqual([item["record_id"] for item in changes], ["a", "b"])
+        self.assertTrue(all(item["action"] == "delete" for item in changes))
+
     def test_material_model_name_is_resolved_from_linked_model_record(self) -> None:
         models = [
             {"record_id": "model-1", "fields": {"产品型号": "Pudu SwiftBot"}}

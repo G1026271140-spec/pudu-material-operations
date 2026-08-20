@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.0"
+APP_VERSION = "V1.1.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2890,6 +2890,101 @@ def dimension_material_references(kind: str, record_id: str, name: str) -> list[
     return unique_preserve([value for value in referenced_ids if value])
 
 
+def dimension_association_plan(
+    kind: str,
+    operation: str,
+    current_name: str,
+    target_name: str,
+    selected_keys: list[list[str]] | list[tuple[str, str]],
+    material_records: list[dict],
+    category_records: list[dict],
+) -> list[dict[str, object]]:
+    """Build the exact material-row changes shown in review and executed by Worker."""
+    selected = {
+        (str(key[0]).strip(), str(key[1]).strip())
+        for key in selected_keys
+        if len(key) >= 2 and str(key[0]).strip() and str(key[1]).strip()
+    }
+    category_ids = {
+        str(item.get("category") or ""): str(item.get("record_id") or "")
+        for item in category_records
+    }
+    existing_by_key = {
+        (
+            str(row.get("category") or ""),
+            str(row.get("language") if kind == "model" else row.get("model") or ""),
+        ): row
+        for row in material_records
+        if normalize_option_label(
+            str(row.get("model") if kind == "model" else row.get("language") or "")
+        ).casefold()
+        == normalize_option_label(current_name).casefold()
+    }
+    changes: list[dict[str, object]] = []
+    if operation == "delete":
+        selected = set(existing_by_key)
+    for key in sorted(set(existing_by_key) | selected):
+        existing = existing_by_key.get(key)
+        if operation == "delete":
+            if existing is not None:
+                changes.append({
+                    "action": "delete", "record_id": str(existing.get("record_id") or ""),
+                    "material_code": str(existing.get("material_code") or ""), "category": key[0],
+                    "model": str(existing.get("model") or NO_MODEL_TEXT),
+                    "language": str(existing.get("language") or NO_LANGUAGE_TEXT),
+                    "quantity": int(existing.get("quantity") or 0),
+                    "status": normalize_enabled_status(existing.get("status")),
+                    "request_visible": normalize_request_page_visibility(existing.get("request_visible")),
+                })
+        elif key in selected:
+            if existing is None:
+                changes.append({
+                    "action": "create", "category": key[0], "category_record_id": category_ids.get(key[0], ""),
+                    "model": target_name if kind == "model" else key[1],
+                    "language": key[1] if kind == "model" else target_name,
+                    "quantity": 0, "unit_price": 0.0, "customs_code": "", "status": STATUS_ACTIVE,
+                    "request_visible": REQUEST_PAGE_VISIBLE_VALUE,
+                })
+            elif operation == "edit" and target_name != current_name:
+                changes.append({
+                    "action": "update", "record_id": str(existing.get("record_id") or ""),
+                    "material_code": str(existing.get("material_code") or ""),
+                    "category": key[0], "category_record_id": category_ids.get(key[0], ""),
+                    "model": target_name if kind == "model" else str(existing.get("model") or NO_MODEL_TEXT),
+                    "language": str(existing.get("language") or NO_LANGUAGE_TEXT) if kind == "model" else target_name,
+                    "quantity": int(existing.get("quantity") or 0),
+                    "unit_price": float(existing.get("unit_price") or 0),
+                    "customs_code": str(existing.get("customs_code") or ""),
+                    "status": normalize_enabled_status(existing.get("status")),
+                    "request_visible": normalize_request_page_visibility(existing.get("request_visible")),
+                })
+        elif existing is not None:
+            changes.append({
+                "action": "delete", "record_id": str(existing.get("record_id") or ""),
+                "material_code": str(existing.get("material_code") or ""), "category": key[0],
+                "model": str(existing.get("model") or NO_MODEL_TEXT),
+                "language": str(existing.get("language") or NO_LANGUAGE_TEXT),
+                "quantity": int(existing.get("quantity") or 0),
+                "status": normalize_enabled_status(existing.get("status")),
+                "request_visible": normalize_request_page_visibility(existing.get("request_visible")),
+            })
+    return changes
+
+
+def dimension_change_dataframe(changes: list[dict[str, object]]) -> pd.DataFrame:
+    labels = {"create": "新增", "update": "修改", "delete": "删除"}
+    return pd.DataFrame([{
+        "操作": labels.get(str(item.get("action") or ""), ""),
+        "物料编码": str(item.get("material_code") or "待生成"),
+        "物料品类": str(item.get("category") or ""),
+        "产品型号": str(item.get("model") or NO_MODEL_TEXT),
+        "语种": str(item.get("language") or NO_LANGUAGE_TEXT),
+        "库存数量": int(item.get("quantity") or 0),
+        "启用状态": normalize_enabled_status(item.get("status")),
+        "申领页显示": normalize_request_page_visibility(item.get("request_visible")),
+    } for item in changes])
+
+
 def material_model_name_updates(
     material_rows: list[dict],
     model_rows: list[dict],
@@ -2974,6 +3069,7 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
     record_id = str(draft.get("record_id") or "")
     name = str(draft.get("name") or "").strip()
     status = normalize_enabled_status(draft.get("status"))
+    dimension_created_count = 0
     if operation == "create":
         if not name:
             raise ValueError(f"请填写{label}名称。")
@@ -2984,10 +3080,13 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
             numeric_codes = [int(item["code"]) for item in records if item["code"].isdigit()]
             fields[code_field] = str(max(numeric_codes, default=0) + 1)
         created = feishu_batch_create_records(table_name, [fields])
-        return {"operation": operation, "created_count": len(created)}
-    if record_id not in by_id:
+        record_id = feishu_record_id(created[0] if created else {})
+        if not record_id:
+            raise RuntimeError(f"新增{label}后未返回记录 ID。")
+        dimension_created_count = len(created)
+    if operation != "create" and record_id not in by_id:
         raise ValueError(f"所选{label}不存在，请刷新页面后重试。")
-    current = by_id[record_id]
+    current = by_id.get(record_id, {"name": name})
     if operation == "edit":
         if not name:
             raise ValueError(f"请填写{label}名称。")
@@ -2995,22 +3094,93 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
         if duplicate and duplicate["record_id"] != record_id:
             raise ValueError(f"该{label}名称已经存在。")
         feishu_update_record_fields(table_name, record_id, {name_field: name, "启用状态": status})
-        material_updates = [
-            {"record_id": material_id, "fields": {str(config["material_name_field"]): name}}
-            for material_id in dimension_material_references(kind, record_id, current["name"])
-        ]
-        updated_material_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, material_updates)
-        return {"operation": operation, "updated_count": 1, "updated_material_count": updated_material_count}
-    if operation == "delete":
-        references = dimension_material_references(kind, record_id, current["name"])
+    elif operation not in {"create", "delete"}:
+        raise ValueError("不支持的基础维度管理操作。")
+
+    changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
+    if "changes" not in draft:
+        if operation == "create":
+            return {"operation": operation, "created_count": dimension_created_count}
+        if operation == "edit":
+            material_updates = [
+                {"record_id": material_id, "fields": {str(config["material_name_field"]): name}}
+                for material_id in dimension_material_references(kind, record_id, str(current["name"]))
+            ]
+            updated_material_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, material_updates)
+            return {"operation": operation, "updated_count": 1, "updated_material_count": updated_material_count}
+        references = dimension_material_references(kind, record_id, str(current["name"]))
         deleted_material_count = feishu_batch_delete_record_ids(MATERIAL_TABLE_NAME, references)
         deleted_count = feishu_batch_delete_record_ids(table_name, [record_id])
-        return {
-            "operation": operation,
-            "deleted_count": deleted_count,
-            "deleted_material_count": deleted_material_count,
+        return {"operation": operation, "deleted_count": deleted_count, "deleted_material_count": deleted_material_count}
+    all_inventory = [
+        parsed for row in fresh_feishu_rows(MATERIAL_TABLE_NAME)
+        if (parsed := parse_feishu_inventory_record(row)) is not None
+    ]
+    current_by_id = {str(item.get("record_id") or ""): item for item in all_inventory}
+    delete_ids: list[str] = []
+    update_rows: list[dict[str, object]] = []
+    create_changes: list[dict[str, object]] = []
+    model_link_field, model_ids = ensure_feishu_model_records(
+        unique_preserve([str(item.get("model") or NO_MODEL_TEXT) for item in changes])
+    )
+    language_link_field, language_ids = ensure_feishu_language_records(
+        unique_preserve([str(item.get("language") or NO_LANGUAGE_TEXT) for item in changes])
+    )
+    for item in changes:
+        action = str(item.get("action") or "")
+        item_id = str(item.get("record_id") or "")
+        if action in {"update", "delete"} and item_id not in current_by_id:
+            raise RuntimeError("预览后关联物料已变化，请返回刷新后重新提交。")
+        if action == "delete":
+            delete_ids.append(item_id)
+        elif action == "create":
+            create_changes.append(item)
+        elif action == "update":
+            fields: dict[str, object] = {
+                "产品型号": item.get("model"), "语种": item.get("language"),
+                "启用状态": normalize_enabled_status(item.get("status")),
+                REQUEST_PAGE_VISIBILITY_FIELD: normalize_request_page_visibility(item.get("request_visible")),
+            }
+            add_material_model_link(fields, str(item.get("model") or NO_MODEL_TEXT), model_link_field, model_ids)
+            add_material_language_link(fields, str(item.get("language") or NO_LANGUAGE_TEXT), language_link_field, language_ids)
+            update_rows.append({"record_id": item_id, "fields": fields})
+    new_codes = next_material_codes_from_records(all_inventory, len(create_changes))
+    create_rows: list[dict[str, object]] = []
+    for item, material_code in zip(create_changes, new_codes):
+        fields = {
+            "物料编码": material_code, "物料品类": item.get("category"),
+            "产品型号": item.get("model"), "语种": item.get("language"),
+            "当前库存": 0, "备注": "", "启用状态": normalize_enabled_status(item.get("status")),
+            REQUEST_PAGE_VISIBILITY_FIELD: normalize_request_page_visibility(item.get("request_visible")),
+            "品类关联": [str(item.get("category_record_id") or "")],
         }
-    raise ValueError("不支持的基础维度管理操作。")
+        set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, float(item.get("unit_price") or 0))
+        set_feishu_customs_code(MATERIAL_TABLE_NAME, fields, str(item.get("customs_code") or ""))
+        add_material_model_link(fields, str(item.get("model") or NO_MODEL_TEXT), model_link_field, model_ids)
+        add_material_language_link(fields, str(item.get("language") or NO_LANGUAGE_TEXT), language_link_field, language_ids)
+        create_rows.append(fields)
+    created_materials = feishu_batch_create_records(MATERIAL_TABLE_NAME, create_rows) if create_rows else []
+    updated_material_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, update_rows)
+    deleted_material_count = feishu_batch_delete_record_ids(MATERIAL_TABLE_NAME, delete_ids)
+    deleted_count = feishu_batch_delete_record_ids(table_name, [record_id]) if operation == "delete" else 0
+    affected_categories = unique_preserve([str(item.get("category") or "") for item in changes])
+    if affected_categories:
+        refreshed_inventory = [
+            parsed for row in fresh_feishu_rows(MATERIAL_TABLE_NAME)
+            if (parsed := parse_feishu_inventory_record(row)) is not None
+        ]
+        for category in feishu_category_records_from_rows(fresh_feishu_rows(CATEGORY_TABLE_NAME)):
+            category_name = str(category.get("category") or "")
+            if category_name in affected_categories:
+                update_category_inventory_counts(
+                    category,
+                    [item for item in refreshed_inventory if str(item.get("category") or "") == category_name],
+                )
+    return {
+        "operation": operation, "created_count": dimension_created_count,
+        "created_material_count": len(created_materials), "updated_material_count": updated_material_count,
+        "deleted_material_count": deleted_material_count, "deleted_count": deleted_count,
+    }
 
 
 def storage_mode_label() -> str:
@@ -9759,6 +9929,7 @@ def category_inventory_preview_dataframe(targets: list[dict]) -> pd.DataFrame:
     return pd.DataFrame(
         [
             {
+                "操作": "新增",
                 "序号": index,
                 "产品型号": str(target.get("model") or NO_MODEL_TEXT),
                 "语种": str(target.get("language") or NO_LANGUAGE_TEXT),
@@ -9773,6 +9944,7 @@ def category_inventory_preview_dataframe(targets: list[dict]) -> pd.DataFrame:
             for index, target in enumerate(targets, start=1)
         ],
         columns=[
+            "操作",
             "序号",
             "产品型号",
             "语种",
@@ -12613,6 +12785,7 @@ def render_category_edit_review() -> None:
     metric_b.metric("目标组合", f"{len(list(draft.get('targets') or [])):,}")
     metric_c.metric("库存差额", f"{int(draft.get('quantity_difference') or 0):+,}")
     with st.container(border=True):
+        st.markdown("**品类基础信息变更清单**")
         info_cols = st.columns(6)
         render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
         render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
@@ -12628,6 +12801,7 @@ def render_category_edit_review() -> None:
         render_request_review_field(
             info_cols[5], "装箱单产品类型", draft.get("packing_list_product_type")
         )
+        st.markdown("**物料主数据变更清单**")
         if changed_rows:
             st.dataframe(
                 pd.DataFrame(changed_rows),
@@ -12729,7 +12903,7 @@ def render_new_category_review() -> None:
             "新增库存行预览",
             "逐行填写初始库存数量；确认创建前不会写入飞书",
         )
-        disabled_columns = ["序号", "产品型号", "语种"]
+        disabled_columns = ["操作", "序号", "产品型号", "语种"]
         if category_status == STATUS_INACTIVE:
             disabled_columns.append("启用状态")
         edited_df = st.data_editor(
@@ -12883,6 +13057,7 @@ def category_delete_preview_dataframe(records: list[dict]) -> pd.DataFrame:
     return pd.DataFrame(
         [
             {
+                "操作": "删除",
                 "物料编码": str(record.get("material_code") or "-"),
                 "物料品类": str(record.get("category") or ""),
                 "产品型号": str(record.get("model") or NO_MODEL_TEXT),
@@ -12897,6 +13072,7 @@ def category_delete_preview_dataframe(records: list[dict]) -> pd.DataFrame:
             for record in records
         ],
         columns=[
+            "操作",
             "物料编码",
             "物料品类",
             "产品型号",
@@ -13272,6 +13448,16 @@ def render_dimension_management_page(kind: str) -> None:
             render_request_review_field(preview_cols[2], "启用状态", draft.get("status"))
             if operation == "delete":
                 st.warning(f"删除{label}时，会同时删除所有引用该{label}的物料主数据。此操作不可撤销。")
+            changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
+            st.markdown("**物料主数据变更清单**")
+            if changes:
+                st.dataframe(
+                    dimension_change_dataframe(changes),
+                    width="stretch", hide_index=True,
+                    height=min(720, max(180, 38 * (len(changes) + 1))),
+                )
+            else:
+                st.info("关联物料组合没有变化，本次只保存基础信息。")
         back_col, _, confirm_col = st.columns([1.1, 2.2, 1.45])
         if back_col.button("返回修改", key=f"{state_prefix}_back", icon=":material/arrow_back:", width="stretch"):
             st.session_state.pop(draft_key, None)
@@ -13300,6 +13486,14 @@ def render_dimension_management_page(kind: str) -> None:
 
     with st.spinner(f"{label}数据加载中，请稍后......"):
         records = dimension_management_records(kind, safe_feishu_rows(table_name))
+        counterpart_kind = "language" if kind == "model" else "model"
+        counterpart_config = dimension_management_config(counterpart_kind)
+        counterpart_records = dimension_management_records(
+            counterpart_kind,
+            safe_feishu_rows(str(counterpart_config["table"])),
+        )
+        categories = load_feishu_category_records()
+        inventory_records = load_feishu_inventory_records()
     render_section_header("01", f"{label}管理", f"新增、编辑或删除{label}，提交前需核对变更。")
     mode = st.segmented_control(
         "操作类型",
@@ -13344,6 +13538,49 @@ def render_dimension_management_page(kind: str) -> None:
             index=list(MATERIAL_STATUS_OPTIONS).index(default_status),
             key=f"{state_prefix}_{operation}_status_{(selected or {}).get('record_id', 'new')}",
         )
+    current_name = default_name if operation != "create" else str(name or "").strip()
+    if operation == "delete":
+        selected_keys = [
+            [str(row.get("category") or ""), str(row.get("language") if kind == "model" else row.get("model") or "")]
+            for row in inventory_records
+            if normalize_option_label(str(row.get("model") if kind == "model" else row.get("language") or "")).casefold()
+            == normalize_option_label(current_name).casefold()
+        ]
+    else:
+        category_names = [str(item.get("category") or "") for item in categories if str(item.get("category") or "")]
+        counterpart_names = unique_preserve(
+            [str(item.get("name") or "") for item in counterpart_records]
+            + [
+            str(row.get("language") if kind == "model" else row.get("model") or "")
+            for row in inventory_records
+            if str(row.get("language") if kind == "model" else row.get("model") or "").strip()
+            ]
+        )
+        existing_keys = {
+            (str(row.get("category") or ""), str(row.get("language") if kind == "model" else row.get("model") or ""))
+            for row in inventory_records
+            if normalize_option_label(str(row.get("model") if kind == "model" else row.get("language") or "")).casefold()
+            == normalize_option_label(default_name).casefold()
+        }
+        association_df = pd.DataFrame([
+            {"关联": (category, counterpart) in existing_keys, "物料品类": category,
+             ("语种" if kind == "model" else "产品型号"): counterpart}
+            for category in category_names for counterpart in counterpart_names
+        ])
+        with st.container(border=True):
+            st.markdown(f"**选择该{label}需要关联的物料组合**")
+            st.caption("勾选后会新增缺失的物料主数据行；取消勾选会在确认后删除已有关联行。")
+            edited_associations = st.data_editor(
+                association_df, width="stretch", hide_index=True, num_rows="fixed",
+                disabled=["物料品类", "语种" if kind == "model" else "产品型号"],
+                height=min(720, max(180, 35 * (len(association_df) + 1))),
+                key=f"{state_prefix}_{operation}_associations_{(selected or {}).get('record_id', 'new')}",
+            )
+        counterpart_column = "语种" if kind == "model" else "产品型号"
+        selected_keys = [
+            [str(row["物料品类"]), str(row[counterpart_column])]
+            for row in edited_associations.to_dict("records") if bool(row.get("关联"))
+        ]
     _, preview_col = st.columns([3, 1.25])
     if preview_col.button(
         f"预览{ {'create': '新增', 'edit': '修改', 'delete': '删除'}[operation] }",
@@ -13374,6 +13611,11 @@ def render_dimension_management_page(kind: str) -> None:
             "record_id": str((selected or {}).get("record_id") or ""),
             "name": normalized_name,
             "status": status,
+            "selected_keys": selected_keys,
+            "changes": dimension_association_plan(
+                kind, operation, default_name or normalized_name, normalized_name,
+                selected_keys, inventory_records, categories,
+            ),
         }
         st.rerun()
 
