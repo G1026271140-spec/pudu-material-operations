@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-19 18:42:58",
+  "generated_at": "2026-08-20 10:31:21",
   "tables": {
     "物料品类": [
       {
@@ -49792,7 +49792,7 @@
           ],
           "单价（人民币）": 74.47,
           "单价（美元）": "11",
-          "启用状态": "停用",
+          "启用状态": "启用",
           "品类关联": [
             {
               "record_ids": [
@@ -49820,17 +49820,21 @@
             }
           ],
           "备注": null,
-          "库存归零时间": "2026-07-21 17:16:19",
+          "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsND5cPSCPt"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "1",
           "文本 6": null,
           "是否在申领页显示": "是",
           "海关编码": "7616999000",
@@ -53924,7 +53928,7 @@
           ],
           "单价（人民币）": 74.47,
           "单价（美元）": "11",
-          "启用状态": "停用",
+          "启用状态": "启用",
           "品类关联": [
             {
               "record_ids": [
@@ -53952,17 +53956,21 @@
             }
           ],
           "备注": null,
-          "库存归零时间": "2026-07-21 17:16:19",
+          "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsND5cPw3Q5"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "1",
           "文本 6": null,
           "是否在申领页显示": "是",
           "海关编码": "7616999000",
@@ -57018,7 +57026,7 @@
           ],
           "单价（人民币）": 74.47,
           "单价（美元）": "11",
-          "启用状态": "停用",
+          "启用状态": "启用",
           "品类关联": [
             {
               "record_ids": [
@@ -57046,17 +57054,21 @@
             }
           ],
           "备注": null,
-          "库存归零时间": "2026-07-21 17:16:19",
+          "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvsND5cPe4pU"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "1",
           "文本 6": null,
           "是否在申领页显示": "是",
           "海关编码": "7616999000",
@@ -99332,6 +99344,165 @@
         },
         "id": "recvsJh2bf6sXg",
         "record_id": "recvsJh2bf6sXg"
+      },
+      {
+        "fields": {
+          "产品型号": "Bellabot pro",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1787192373998,
+          "变更前数量": "0",
+          "变更后数量": "1",
+          "备注": "补库单 RST-20260820-00E04D；补库人：高鸿源",
+          "幂等键": "restock:00e04decf4314d89adb7bd369532d663:1",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "1",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品易拉宝(Product Roll-Up)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgbwY"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0472",
+              "text_arr": [
+                "MAT-0472"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "德语(German)"
+        },
+        "id": "recvsND5cPSCPt",
+        "record_id": "recvsND5cPSCPt"
+      },
+      {
+        "fields": {
+          "产品型号": "CC1 PRO",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1787192373998,
+          "变更前数量": "0",
+          "变更后数量": "1",
+          "备注": "补库单 RST-20260820-00E04D；补库人：高鸿源",
+          "幂等键": "restock:00e04decf4314d89adb7bd369532d663:2",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "1",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品易拉宝(Product Roll-Up)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kghXD"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0522",
+              "text_arr": [
+                "MAT-0522"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "德语(German)"
+        },
+        "id": "recvsND5cPw3Q5",
+        "record_id": "recvsND5cPw3Q5"
+      },
+      {
+        "fields": {
+          "产品型号": "MT1 Max",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原流水ID": null,
+          "发生时间": 1787192373998,
+          "变更前数量": "0",
+          "变更后数量": "1",
+          "备注": "补库单 RST-20260820-00E04D；补库人：高鸿源",
+          "幂等键": "restock:00e04decf4314d89adb7bd369532d663:3",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "1",
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "产品易拉宝(Product Roll-Up)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgm5h"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0552",
+              "text_arr": [
+                "MAT-0552"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "德语(German)"
+        },
+        "id": "recvsND5cPe4pU",
+        "record_id": "recvsND5cPe4pU"
       }
     ],
     "物料申请单": [
@@ -114780,7 +114951,7 @@
     "产品型号": 32,
     "物料语种": 12,
     "物料主数据": 831,
-    "库存流水": 104,
+    "库存流水": 107,
     "物料申请单": 12,
     "申请明细": 109,
     "项目周边礼品物料筹备详情list": 12

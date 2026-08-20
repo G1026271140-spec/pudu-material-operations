@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-19 18:43:16",
+  "generated_at": "2026-08-20 10:31:45",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -3085,7 +3085,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "Bellabot pro",
       "language": "德语(German)",
-      "quantity": 0
+      "quantity": 1
     },
     {
       "material_code": "MAT-0473",
@@ -3365,7 +3365,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "CC1 PRO",
       "language": "德语(German)",
-      "quantity": 0
+      "quantity": 1
     },
     {
       "material_code": "MAT-0523",
@@ -3575,7 +3575,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "MT1 Max",
       "language": "德语(German)",
-      "quantity": 0
+      "quantity": 1
     },
     {
       "material_code": "MAT-0553",

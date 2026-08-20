@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-19 18:43:30",
+  "generated_at": "2026-08-20 10:32:04",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1210,16 +1210,6 @@
       ],
       "department_paths": [
         "美澳英战区"
-      ]
-    },
-    {
-      "open_id": "ou_13273abc5d45d0ab837bb03486652bed",
-      "name": "Keith Garratt",
-      "department_ids": [
-        "od-e4a3f704e1d3d36f8c8028bcd18f1003"
-      ],
-      "department_paths": [
-        "美国战队"
       ]
     },
     {
@@ -6323,16 +6313,6 @@
     {
       "open_id": "ou_1357c6a9f422946700097b85c0e79c59",
       "name": "常明明",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
-      "open_id": "ou_823450005ab6485292fa9c1d65400da1",
-      "name": "常珉",
       "department_ids": [
         "od-7c4c394d59fe1b9f14e3629e853dea7c"
       ],
@@ -14391,6 +14371,16 @@
       ]
     },
     {
+      "open_id": "ou_86e4ff2a4ee15db7a977bceeeca69497",
+      "name": "程熠城",
+      "department_ids": [
+        "od-b923d4dec22c875151839fc86bc30809"
+      ],
+      "department_paths": [
+        "九江生产组"
+      ]
+    },
+    {
       "open_id": "ou_b86e01ff21f37d15ff7eb05a8cc04d4a",
       "name": "程玉梅",
       "department_ids": [
@@ -21043,5 +21033,5 @@
       ]
     }
   ],
-  "user_count": 1944
+  "user_count": 1943
 }
