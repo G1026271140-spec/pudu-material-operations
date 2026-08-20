@@ -1,4 +1,5 @@
 import re
+import inspect
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -7,6 +8,13 @@ import app
 
 
 class FullscreenSyncTests(unittest.TestCase):
+    def test_request_form_edits_read_static_cache_without_loading_overlay(self) -> None:
+        source = inspect.getsource(app.render_change_form)
+
+        self.assertIn("get_request_form_selection_context()", source)
+        self.assertNotIn("st.spinner", source)
+        self.assertNotIn("fullscreen_data_sync", source)
+
     def test_success_closes_window_without_rendering_overlay(self) -> None:
         with patch.object(app.st, "html") as html:
             app.close_application_window()

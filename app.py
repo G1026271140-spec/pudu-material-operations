@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.3"
+APP_VERSION = "V1.0.4"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -11833,8 +11833,10 @@ def render_change_form(show_title: bool = True) -> None:
         render_request_review()
         return
 
-    with st.spinner("物料数据加载中，请稍后......"):
-        selection_context = get_request_form_selection_context()
+    # The request catalog is already backed by the deployed static snapshot.
+    # Reading it on every Streamlit rerun is local and must not trigger the
+    # fullscreen loading layer while users edit fields or material selections.
+    selection_context = get_request_form_selection_context()
     products = list(selection_context["products"])
 
     if show_title:
