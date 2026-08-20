@@ -28,7 +28,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
 
         self.assertEqual(
             detail,
-            "01. 公仔(Plush Toy) / BellaBot / 无需语种 × 2\n"
+            f"01. 公仔(Plush Toy) / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 无需语种 × 2\n"
             "02. 产品单页(Product Flyer) / D7 / 英语(English) × 10",
         )
 
@@ -403,7 +403,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(request_fields["申请物料最后修改时间"], 123456)
         self.assertEqual(
             request_fields["物料明细文字信息"],
-            "01. 公仔 / BellaBot / 无需语种 × 2",
+            f"01. 公仔 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 无需语种 × 2",
         )
         notify.assert_called_once()
         self.assertTrue(result["confirmed"])

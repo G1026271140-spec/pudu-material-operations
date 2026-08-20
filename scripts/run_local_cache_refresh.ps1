@@ -200,8 +200,6 @@ try {
             default {
                 Write-RunnerLog "Synchronizing newly added request-page product models."
                 Invoke-CheckedCommand $venvPython @("scripts/sync_new_request_models.py") | Out-Null
-                Write-RunnerLog "Maintaining inventory row status before refreshing material cache."
-                Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
                 @("scripts/generate_page_data_cache.py", "scripts/generate_request_form_cache.py")
             }
         }

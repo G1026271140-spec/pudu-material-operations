@@ -93,15 +93,11 @@ def process_inventory_message(
         inventory_records = inventory_app.feishu_inventory_records_from_rows(
             material_rows,
             category_rows,
-            active_only=True,
+            active_only=False,
         )
         category_names = [
             inventory_app.feishu_text(inventory_app.feishu_fields(row), "物料品类")
             for row in category_rows
-            if inventory_app.normalize_enabled_status(
-                inventory_app.feishu_text(inventory_app.feishu_fields(row), "启用状态")
-            )
-            == inventory_app.STATUS_ACTIVE
         ]
         queries = inventory_query_bot.parse_inventory_queries(
             recognized_text,

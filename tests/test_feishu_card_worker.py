@@ -249,7 +249,7 @@ class FeishuCardWorkerTests(unittest.TestCase):
         records_from_rows.assert_called_once_with(
             material_rows,
             category_rows,
-            active_only=True,
+            active_only=False,
         )
         client.reply_interactive_message.assert_called_once_with(
             "om-live",

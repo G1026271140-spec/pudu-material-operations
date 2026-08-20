@@ -212,7 +212,7 @@ class RestockTests(unittest.TestCase):
             "管理员甲",
             "PO-1001",
             "展会备货",
-            "产品折页 / BellaBot / 英语",
+            f"产品折页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语",
             "补库 8，库存 12 → 20",
             "第一批",
         ):

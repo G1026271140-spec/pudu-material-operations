@@ -100,7 +100,7 @@ class MaterialActivationTests(unittest.TestCase):
 
         self.assertEqual(fields, {"海关编码": "HS-1"})
 
-    def test_inventory_dataframe_excludes_inactive_and_keeps_legacy_blank_rows(self) -> None:
+    def test_inventory_dataframe_ignores_enabled_status(self) -> None:
         df = app.feishu_inventory_dataframe_from_rows(
             [
                 material_row("1", "启用品类", app.STATUS_ACTIVE),
@@ -109,7 +109,7 @@ class MaterialActivationTests(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(df["物料编码"].tolist(), ["MAT-1", "MAT-3"])
+        self.assertEqual(df["物料编码"].tolist(), ["MAT-1", "MAT-2", "MAT-3"])
 
     def test_inventory_dataframe_prefers_current_usd_unit_price_field(self) -> None:
         row = material_row("1", "启用品类", app.STATUS_ACTIVE)
@@ -119,7 +119,7 @@ class MaterialActivationTests(unittest.TestCase):
 
         self.assertEqual(float(df.iloc[0][app.PRICE_COL]), 3.5)
 
-    def test_request_options_require_active_category_and_active_inventory(self) -> None:
+    def test_request_options_ignore_category_enabled_status(self) -> None:
         categories = [
             {"record_id": "c1", "fields": {"物料品类": "启用品类", "启用状态": app.STATUS_ACTIVE}},
             {"record_id": "c2", "fields": {"物料品类": "停用品类", "启用状态": app.STATUS_INACTIVE}},
@@ -135,11 +135,10 @@ class MaterialActivationTests(unittest.TestCase):
 
         options = app.feishu_options_from_rows(categories, inventory_df)
 
-        self.assertEqual(options["products"], ["启用品类"])
-        self.assertNotIn("停用品类", options["products"])
+        self.assertEqual(options["products"], ["启用品类", "停用品类"])
         self.assertNotIn("未配置品类", options["products"])
 
-    def test_request_models_come_from_active_model_dimension_and_sort_by_family(self) -> None:
+    def test_request_models_ignore_enabled_status_and_sort_by_family(self) -> None:
         categories = [
             {"record_id": "c1", "fields": {"物料品类": "启用品类", "启用状态": app.STATUS_ACTIVE}},
         ]
@@ -158,9 +157,9 @@ class MaterialActivationTests(unittest.TestCase):
 
         options = app.feishu_options_from_rows(categories, inventory_df, model_rows)
 
-        self.assertEqual(options["models"], ["MT1", "MT1 Max", "MT1 Vac"])
+        self.assertEqual(options["models"], ["MT1", "MT1 Max", "MT1 Vac", "Retired"])
 
-    def test_request_languages_come_from_active_language_dimension(self) -> None:
+    def test_request_languages_ignore_enabled_status(self) -> None:
         categories = [
             {"record_id": "c1", "fields": {"物料品类": "启用品类", "启用状态": app.STATUS_ACTIVE}},
         ]
@@ -178,11 +177,10 @@ class MaterialActivationTests(unittest.TestCase):
 
         options = app.feishu_options_from_rows(categories, inventory_df, language_rows=language_rows)
 
-        self.assertEqual(options["languages"], ["英语(English)", "韩语(Korean)"])
+        self.assertEqual(options["languages"], ["英语(English)", "韩语(Korean)", "停用语种"])
         self.assertNotIn("库存旧语种", options["languages"])
-        self.assertNotIn("停用语种", options["languages"])
 
-    def test_dashboard_excludes_inactive_inventory_records(self) -> None:
+    def test_dashboard_ignores_enabled_status(self) -> None:
         records = [
             {
                 "record_id": "1",
@@ -210,10 +208,10 @@ class MaterialActivationTests(unittest.TestCase):
 
         dashboard_df = app.material_dashboard_dataframe(records)
 
-        self.assertEqual(dashboard_df["记录ID"].tolist(), ["1"])
-        self.assertEqual(int(dashboard_df["库存数量"].sum()), 10)
+        self.assertEqual(dashboard_df["记录ID"].tolist(), ["1", "2"])
+        self.assertEqual(int(dashboard_df["库存数量"].sum()), -90)
 
-    def test_active_inventory_loader_also_excludes_inactive_categories(self) -> None:
+    def test_inventory_loader_ignores_enabled_status_even_when_active_only_requested(self) -> None:
         material_rows = [
             material_row("1", "启用品类", app.STATUS_ACTIVE),
             material_row("2", "停用品类", app.STATUS_ACTIVE),
@@ -230,7 +228,7 @@ class MaterialActivationTests(unittest.TestCase):
         ):
             records = app.load_feishu_inventory_records(active_only=True)
 
-        self.assertEqual([record["record_id"] for record in records], ["1"])
+        self.assertCountEqual([record["record_id"] for record in records], ["1", "2", "3"])
 
     def test_request_cache_does_not_reintroduce_rows_from_inactive_categories(self) -> None:
         inventory_df = pd.DataFrame(

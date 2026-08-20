@@ -476,7 +476,10 @@ class BotNotificationTests(unittest.TestCase):
 
         self.assertIn("REQ-1", text)
         self.assertIn("销售甲", text)
-        self.assertIn("产品折页 / BellaBot / 英语 × 3", text)
+        self.assertIn(
+            f"产品折页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语 × 3",
+            text,
+        )
         self.assertIn("来自海外销售部的销售甲的营销物料即将进入审批流程", text)
         self.assertNotIn("申请合计", text)
         self.assertNotIn("审批与发放页面", text)
@@ -542,7 +545,7 @@ class BotNotificationTests(unittest.TestCase):
             "销售甲，12345，示例地址",
             "普渡付款(PUDU)",
             "柏林展会",
-            "产品折页 / BellaBot / 英语",
+            f"产品折页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语",
             "申请 3｜实时库存 2｜库存不足，需要制作",
             "调整配货方案",
             "按原申请确认",
@@ -690,7 +693,10 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn("物料明细", json.dumps(body_elements[0], ensure_ascii=False))
         self.assertIn("申请信息", json.dumps(body_elements[1], ensure_ascii=False))
         self.assertLess(serialized.index("物料明细"), serialized.index("申请信息"))
-        self.assertIn("产品单页 / BellaBot / 英语 × 1", serialized)
+        self.assertIn(
+            f"产品单页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语 × 1",
+            serialized,
+        )
         self.assertNotIn("申请合计", serialized)
         self.assertNotIn("修改或撤回本条申请", serialized)
         self.assertNotIn("open_request_editor", serialized)

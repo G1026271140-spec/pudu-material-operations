@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.4"
+APP_VERSION = "V1.1.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -3159,7 +3159,6 @@ def sync_new_request_model_material_rows() -> dict[str, object]:
     new_models = [
         row for row in model_rows
         if feishu_record_id(row) not in linked_model_ids
-        and normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
         and feishu_text(feishu_fields(row), "产品型号").strip() not in {"", NO_MODEL_TEXT}
     ]
     if not new_models:
@@ -3455,9 +3454,6 @@ def material_record_is_active(record: dict) -> bool:
 
 
 def enforce_category_inventory_status(plan: dict, category_status: object) -> dict:
-    if normalize_enabled_status(category_status) == STATUS_INACTIVE:
-        for target in list(plan.get("targets") or []):
-            target["status"] = STATUS_INACTIVE
     return plan
 
 
@@ -4281,7 +4277,6 @@ def material_dashboard_dataframe(records: list[dict]) -> pd.DataFrame:
                 "总价值": float(row.get("total_value") or 0),
             }
             for row in records
-            if material_record_is_active(row)
         ],
         columns=["记录ID", "物料编码", "物料品类", "产品型号", "语种", "库存数量", "单价", "总价值"],
     )
@@ -5321,16 +5316,12 @@ def plan_inventory_status_maintenance(
             continue
         fields = feishu_fields(row)
         quantity = feishu_int(fields, "当前库存")
-        status = normalize_enabled_status(feishu_text(fields, "启用状态"))
         zero_since_raw = feishu_text(fields, INVENTORY_ZERO_SINCE_FIELD).strip()
         zero_since = inventory_maintenance_datetime(zero_since_raw)
         latest_change = latest_changes.get(record_id)
         update_fields: dict[str, object] = {}
 
         if quantity != 0:
-            if status != STATUS_ACTIVE:
-                update_fields["启用状态"] = STATUS_ACTIVE
-                enabled_rows.append(inventory_status_row_summary(row))
             if zero_since_raw:
                 update_fields[INVENTORY_ZERO_SINCE_FIELD] = ""
         else:
@@ -5342,10 +5333,6 @@ def plan_inventory_status_maintenance(
                 anchor = checked_at
                 update_fields[INVENTORY_ZERO_SINCE_FIELD] = inventory_maintenance_datetime_text(anchor)
                 initialized_zero_rows += 1
-
-            if status == STATUS_ACTIVE and anchor < cutoff:
-                update_fields["启用状态"] = STATUS_INACTIVE
-                disabled_rows.append(inventory_status_row_summary(row, zero_since=anchor))
 
         if update_fields:
             updates.append({"record_id": record_id, "fields": update_fields})
@@ -5476,8 +5463,6 @@ def feishu_inventory_dataframe_from_rows(
         if request_visible_only:
             if not feishu_request_page_visible(fields):
                 continue
-        elif normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
-            continue
         quantity = feishu_int(fields, "当前库存")
         unit_price = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
         data.append(
@@ -5544,8 +5529,6 @@ def feishu_options_from_rows(
         if request_visible_only:
             if not feishu_request_page_visible(fields):
                 continue
-        elif normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
-            continue
         if product:
             category_products.append(product)
         if feishu_text(fields, "是否无需型号") == "是":
@@ -5580,13 +5563,7 @@ def feishu_options_from_rows(
         if not inventory_df.empty
         else []
     )
-    request_model_rows = [
-        row
-        for row in list(model_rows or [])
-        if request_visible_only
-        or normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态"))
-        == STATUS_ACTIVE
-    ]
+    request_model_rows = list(model_rows or [])
     dimension_models = [
         feishu_text(feishu_fields(row), "产品型号")
         for row in request_model_rows
@@ -5638,7 +5615,6 @@ def feishu_options_from_rows(
     dimension_languages = [
         feishu_language_name(feishu_fields(row))
         for row in list(language_rows or [])
-        if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
     ]
     languages = sort_languages(dimension_languages or inventory_languages)
     if not inventory_df.empty:
@@ -6816,8 +6792,6 @@ def request_inventory_card_edit_form(
     active_materials: list[dict[str, str]] = []
     for row in material_rows:
         fields = feishu_fields(row)
-        if normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE:
-            continue
         active_materials.append(
             {
                 "record_id": feishu_record_id(row),
@@ -6975,8 +6949,7 @@ def request_inventory_card_edit_draft(
             (
                 row
                 for row in material_rows
-                if normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
-                and feishu_text(feishu_fields(row), "物料品类") == product
+                if feishu_text(feishu_fields(row), "物料品类") == product
                 and (
                     (material_id and feishu_record_id(row) == material_id)
                     or (
@@ -8661,11 +8634,6 @@ def cached_allocation_material_records(
         material_code = feishu_text(fields, "物料编码")
         if material_code not in cached_codes and record_id not in current_ids:
             continue
-        if (
-            record_id not in current_ids
-            and normalize_enabled_status(feishu_text(fields, "启用状态")) != STATUS_ACTIVE
-        ):
-            continue
         records.append(
             {
                 "record_id": record_id,
@@ -9139,18 +9107,6 @@ def feishu_inventory_records_from_rows(
         )
         if parsed is not None:
             records.append(parsed)
-    if active_only:
-        category_status_by_name = {
-            str(category.get("category") or ""): str(category.get("status") or "")
-            for category in category_records
-            if str(category.get("category") or "")
-        }
-        records = [
-            record
-            for record in records
-            if material_record_is_active(record)
-            and category_status_by_name.get(str(record["category"]), STATUS_ACTIVE) == STATUS_ACTIVE
-        ]
     records.sort(key=lambda item: (item["category"], item["model"], item["language"], item["material_code"]))
     return records
 

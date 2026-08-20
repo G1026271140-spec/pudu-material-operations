@@ -421,7 +421,7 @@ class CategoryInventoryPlanTests(unittest.TestCase):
         self.assertEqual(original_plan["targets"][0]["status"], app.STATUS_INACTIVE)
         self.assertEqual(enabled_plan["targets"][0]["status"], app.STATUS_ACTIVE)
 
-    def test_inactive_category_forces_all_inventory_targets_inactive(self) -> None:
+    def test_category_enabled_status_does_not_override_inventory_targets(self) -> None:
         records = [inventory_record("1", "M1", "英语", 100, status=app.STATUS_ACTIVE)]
         plan = app.build_category_inventory_plan(records, "旧品类", ["M1", "M2"], ["英语"])
 
@@ -429,7 +429,7 @@ class CategoryInventoryPlanTests(unittest.TestCase):
 
         self.assertEqual(
             {target["status"] for target in enforced["targets"]},
-            {app.STATUS_INACTIVE},
+            {app.STATUS_ACTIVE},
         )
 
     def test_relation_updates_repoint_deleted_material_ids(self) -> None:

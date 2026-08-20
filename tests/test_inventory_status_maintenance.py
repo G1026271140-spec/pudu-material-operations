@@ -52,7 +52,7 @@ class InventoryStatusMaintenanceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.now = datetime(2026, 7, 21, 10, 30, 0)
 
-    def test_plan_enables_nonzero_and_disables_only_expired_zero_rows(self) -> None:
+    def test_plan_tracks_zero_time_without_changing_enabled_status(self) -> None:
         materials = [
             material_row("nonzero", 5, app.STATUS_INACTIVE, "2026-06-01 00:00:00"),
             material_row("expired", 0),
@@ -68,9 +68,7 @@ class InventoryStatusMaintenanceTests(unittest.TestCase):
         plan = app.plan_inventory_status_maintenance(materials, ledgers, now=self.now)
         updates = {item["record_id"]: item["fields"] for item in plan["updates"]}
 
-        self.assertEqual(updates["nonzero"]["启用状态"], app.STATUS_ACTIVE)
         self.assertEqual(updates["nonzero"][app.INVENTORY_ZERO_SINCE_FIELD], "")
-        self.assertEqual(updates["expired"]["启用状态"], app.STATUS_INACTIVE)
         self.assertEqual(updates["expired"][app.INVENTORY_ZERO_SINCE_FIELD], "2026-07-06 10:30:00")
         self.assertNotIn("recent", updates)
         self.assertEqual(
@@ -78,8 +76,8 @@ class InventoryStatusMaintenanceTests(unittest.TestCase):
             "2026-07-21 10:30:00",
         )
         self.assertNotIn("already-inactive", updates)
-        self.assertEqual([row["record_id"] for row in plan["enabled_rows"]], ["nonzero"])
-        self.assertEqual([row["record_id"] for row in plan["disabled_rows"]], ["expired"])
+        self.assertEqual(plan["enabled_rows"], [])
+        self.assertEqual(plan["disabled_rows"], [])
         self.assertEqual(plan["initialized_zero_rows"], 1)
 
     def test_latest_valid_quantity_change_restarts_zero_timer(self) -> None:
