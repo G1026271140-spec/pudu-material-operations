@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.9"
+APP_VERSION = "V1.1.0"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -4129,11 +4129,28 @@ def page_data_cache_rows(table_name: str) -> list[dict]:
         runtime_tables = dict(runtime_cache.get("tables") or {})
         runtime_updated_at = str(dict(runtime_cache.get("updated_at") or {}).get(table_name) or "")
         if table_name in runtime_tables and runtime_updated_at >= static_generated_at:
-            return list(runtime_tables[table_name])
+            rows = list(runtime_tables[table_name])
+            if table_name == MATERIAL_TABLE_NAME:
+                model_rows = list(
+                    runtime_tables.get(MODEL_TABLE_NAME)
+                    or static_tables.get(MODEL_TABLE_NAME)
+                    or []
+                )
+                return material_rows_with_dimension_model_names(rows, model_rows)
+            return rows
     table_data = static_tables.get(table_name, [])
     if isinstance(table_data, dict):
         table_data = table_data.get("rows", [])
-    return list(table_data) if isinstance(table_data, list) else []
+    rows = list(table_data) if isinstance(table_data, list) else []
+    if table_name == MATERIAL_TABLE_NAME:
+        model_data = static_tables.get(MODEL_TABLE_NAME, [])
+        if isinstance(model_data, dict):
+            model_data = model_data.get("rows", [])
+        return material_rows_with_dimension_model_names(
+            rows,
+            list(model_data) if isinstance(model_data, list) else [],
+        )
+    return rows
 
 
 def feishu_rows(table_name: str) -> list[dict]:
