@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-20 17:00:33",
+  "generated_at": "2026-08-20 17:27:33",
   "tables": {
     "物料品类": [
       {
@@ -361,6 +361,7 @@
           ],
           "物料品类": "产品折页(Single Product Brochure)",
           "物料品类编码": "001",
+          "申领页图片": null,
           "装箱单产品类型": "Brochures",
           "语种数量": "10"
         },
@@ -976,6 +977,16 @@
           ],
           "物料品类": "产品单页(Product Flyer )",
           "物料品类编码": "002",
+          "申领页图片": [
+            {
+              "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
+              "name": "product-flyer.webp",
+              "size": 35808,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Flyers",
           "语种数量": "11"
         },
@@ -1039,6 +1050,16 @@
           ],
           "物料品类": "品牌手册(Product Brochure (All\nBanner)）",
           "物料品类编码": "003",
+          "申领页图片": [
+            {
+              "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
+              "name": "brand-brochure.webp",
+              "size": 29400,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Brochures",
           "语种数量": "10"
         },
@@ -1106,6 +1127,16 @@
           ],
           "物料品类": "工业产品线手册IR(Industrial Product Line Brochure）",
           "物料品类编码": "004",
+          "申领页图片": [
+            {
+              "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
+              "name": "industrial-brochure.webp",
+              "size": 16100,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Brochures",
           "语种数量": "2"
         },
@@ -1169,6 +1200,16 @@
           ],
           "物料品类": "清洁产品线手册CR(Cleaning Product Line Brochure）",
           "物料品类编码": "005",
+          "申领页图片": [
+            {
+              "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
+              "name": "cleaning-brochure.webp",
+              "size": 19568,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Brochures",
           "语种数量": "10"
         },
@@ -1214,6 +1255,16 @@
           ],
           "物料品类": "配送线产品手册SR(Delivery Robot Product Brochure)",
           "物料品类编码": "006",
+          "申领页图片": [
+            {
+              "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
+              "name": "delivery-brochure.webp",
+              "size": 16016,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Brochures",
           "语种数量": "1"
         },
@@ -1261,6 +1312,16 @@
           ],
           "物料品类": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
           "物料品类编码": "007",
+          "申领页图片": [
+            {
+              "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
+              "name": "embodied-brochure.webp",
+              "size": 22140,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Brochures",
           "语种数量": "1"
         },
@@ -1302,6 +1363,7 @@
           ],
           "物料品类": "公司手册",
           "物料品类编码": "008",
+          "申领页图片": null,
           "装箱单产品类型": "Brochures",
           "语种数量": "0"
         },
@@ -1905,6 +1967,16 @@
           ],
           "物料品类": "产品易拉宝(Product Roll-Up)",
           "物料品类编码": "009",
+          "申领页图片": [
+            {
+              "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
+              "name": "product-roll-up.webp",
+              "size": 25712,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Banners",
           "语种数量": "10"
         },
@@ -1980,6 +2052,16 @@
           ],
           "物料品类": "公仔(Plush Toy)",
           "物料品类编码": "010",
+          "申领页图片": [
+            {
+              "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
+              "name": "plush-toy.webp",
+              "size": 34864,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2061,6 +2143,16 @@
           ],
           "物料品类": "冰箱贴( Fridge Magnet)",
           "物料品类编码": "011",
+          "申领页图片": [
+            {
+              "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
+              "name": "fridge-magnet.webp",
+              "size": 30544,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2106,6 +2198,16 @@
           ],
           "物料品类": "笔记本礼盒(Notebook Gift Box)",
           "物料品类编码": "012",
+          "申领页图片": [
+            {
+              "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
+              "name": "notebook-gift-box.webp",
+              "size": 18904,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2169,6 +2271,16 @@
           ],
           "物料品类": "普渡logo无纺布手提袋(PUDU logo bag)",
           "物料品类编码": "013",
+          "申领页图片": [
+            {
+              "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
+              "name": "pudu-logo-bag.webp",
+              "size": 38258,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Give aways",
           "语种数量": "10"
         },
@@ -2214,6 +2326,7 @@
           ],
           "物料品类": "定制LOGO书包(Customized PUDU bag)",
           "物料品类编码": "014",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2277,6 +2390,7 @@
           ],
           "物料品类": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
           "物料品类编码": "015",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "10"
         },
@@ -2322,6 +2436,7 @@
           ],
           "物料品类": "展会服装（Clothes）",
           "物料品类编码": "016",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2367,6 +2482,16 @@
           ],
           "物料品类": "定制扇子",
           "物料品类编码": "017",
+          "申领页图片": [
+            {
+              "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
+              "name": "fan.webp",
+              "size": 12450,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2412,6 +2537,7 @@
           ],
           "物料品类": "伴手礼礼包盒（纸袋）",
           "物料品类编码": "018",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2457,6 +2583,7 @@
           ],
           "物料品类": "定制帽子",
           "物料品类编码": "020",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2502,6 +2629,16 @@
           ],
           "物料品类": "全套产品冰箱贴",
           "物料品类编码": "021",
+          "申领页图片": [
+            {
+              "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
+              "name": "fridge-magnet.webp",
+              "size": 30544,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A755%7D%7D"
+            }
+          ],
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2547,6 +2684,7 @@
           ],
           "物料品类": "定制高尔夫球",
           "物料品类编码": "022",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2592,6 +2730,7 @@
           ],
           "物料品类": "手持充电电风扇（充电）",
           "物料品类编码": "023",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2637,6 +2776,7 @@
           ],
           "物料品类": "嘉宾胸牌/臂贴",
           "物料品类编码": "024",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2682,6 +2822,7 @@
           ],
           "物料品类": "工作证",
           "物料品类编码": "025",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2727,6 +2868,7 @@
           ],
           "物料品类": "代理商颁奖牌",
           "物料品类编码": "026",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2772,6 +2914,7 @@
           ],
           "物料品类": "PUDU定制眼镜",
           "物料品类编码": "033",
+          "申领页图片": null,
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
