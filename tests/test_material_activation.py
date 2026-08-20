@@ -23,6 +23,29 @@ def material_row(record_id: str, product: str, status: str | None) -> dict:
 
 
 class MaterialActivationTests(unittest.TestCase):
+    def test_request_cache_carries_localized_model_page_names(self) -> None:
+        inventory = pd.DataFrame(
+            [["MAT-1", "Flyer", "P1", "英语", 0, 0, 0, ""]],
+            columns=app.INVENTORY_HEADERS,
+        )
+        options = {
+            "products": ["Flyer"], "models": ["P1"], "languages": ["英语"],
+            "no_model_products": [], "no_language_products": [],
+            "configured_language_products": [], "model_product_lines": {"P1": "SR"},
+            "model_display_names": {
+                "P1": {app.LANGUAGE_ZH: "送餐机器人 P1", app.LANGUAGE_EN: "P1 Delivery Robot"}
+            },
+        }
+        cache = app.request_form_cache_from_inventory(options, inventory, source="test")
+        context = app.request_form_cache_to_selection_context(cache)
+        self.assertEqual(
+            context["model_display_names"]["P1"],
+            {app.LANGUAGE_ZH: "送餐机器人 P1", app.LANGUAGE_EN: "P1 Delivery Robot"},
+        )
+        self.assertEqual(
+            app.request_model_display_label("P1", context["model_display_names"], app.LANGUAGE_ZH),
+            "送餐机器人 P1",
+        )
     def test_unit_price_writer_uses_current_usd_field_name(self) -> None:
         fields: dict[str, object] = {}
         with patch.object(

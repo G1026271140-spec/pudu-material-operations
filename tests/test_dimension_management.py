@@ -87,9 +87,78 @@ class DimensionManagementTests(unittest.TestCase):
 
         create.assert_called_once_with(
             app.MODEL_TABLE_NAME,
-            [{"产品型号": "P2", "启用状态": "启用", "产品型号编码": "8"}],
+            [{
+                "产品型号": "P2", "启用状态": "启用",
+                "中文页面名称": "P2", "英文页面名称": "P2",
+                "产品型号编码": "8",
+            }],
         )
         self.assertEqual(result["created_count"], 1)
+
+    def test_new_request_models_link_existing_rows_without_creating_duplicates(self) -> None:
+        model_rows = [
+            {"record_id": "model-flash", "fields": {"产品型号": "FlashBot", "启用状态": "启用"}},
+            {"record_id": "model-t150", "fields": {"产品型号": "T150", "启用状态": "启用"}},
+        ]
+        category_rows = [
+            {"record_id": "cat-flyer", "fields": {"物料品类": app.AUTO_REQUEST_MODEL_CATEGORIES[0]}},
+        ]
+        material_rows = [
+            {
+                "record_id": "material-flash-en",
+                "fields": {"型号关联": []},
+            },
+        ]
+        language_rows = [
+            {"record_id": "language-en", "fields": {"语言种类": "英语(English)"}},
+        ]
+
+        def rows(table_name: str) -> list[dict]:
+            return {
+                app.MODEL_TABLE_NAME: model_rows,
+                app.CATEGORY_TABLE_NAME: category_rows,
+                app.MATERIAL_TABLE_NAME: material_rows,
+                app.LANGUAGE_TABLE_NAME: language_rows,
+            }[table_name]
+
+        parsed = {
+            "record_id": "material-flash-en",
+            "material_code": "MAT-0001",
+            "category": app.AUTO_REQUEST_MODEL_CATEGORIES[0],
+            "model": "FlashBot",
+            "language": "英语(English)",
+        }
+        with (
+            patch.object(app, "fresh_feishu_rows", side_effect=rows),
+            patch.object(app, "parse_feishu_inventory_record", return_value=parsed),
+            patch.object(app, "next_material_codes_from_records", return_value=["MAT-0002", "MAT-0003"]),
+            patch.object(app, "material_language_link_field_name", return_value="语种关联"),
+            patch.object(app, "set_feishu_unit_price"),
+            patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update,
+            patch.object(app, "feishu_batch_create_records", return_value=[{"record_id": "material-t150-en"}]) as create,
+        ):
+            result = app.sync_new_request_model_material_rows()
+
+        update.assert_called_once_with(
+            app.MATERIAL_TABLE_NAME,
+            [{
+                "record_id": "material-flash-en",
+                "fields": {
+                    "型号关联": ["model-flash"],
+                    "启用状态": app.STATUS_ACTIVE,
+                    app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
+                },
+            }],
+        )
+        created_fields = create.call_args.args[1]
+        self.assertEqual(len(created_fields), 1)
+        self.assertEqual(created_fields[0]["产品型号"], "T150")
+        self.assertEqual(result, {
+            "model_count": 2,
+            "created_count": 1,
+            "linked_count": 1,
+            "models": ["FlashBot", "T150"],
+        })
 
     def test_edit_language_updates_dimension_and_referenced_material_text(self) -> None:
         language_rows = [

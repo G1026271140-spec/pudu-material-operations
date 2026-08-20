@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.2"
+APP_VERSION = "V1.1.3"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -86,6 +86,10 @@ USER_PERMISSION_TABLE_NAME = "用户权限表"
 GIFT_PROJECT_TABLE_NAME = "项目周边礼品物料筹备详情list"
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
+AUTO_REQUEST_MODEL_CATEGORIES = (
+    "产品单页(Product Flyer )",
+    "产品易拉宝(Product Roll-Up)",
+)
 UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 UNIT_PRICE_RMB_FIELD = "单价（人民币）"
 GIFT_PROJECT_CATEGORY_LINK_FIELD = "物料品类关联"
@@ -463,7 +467,7 @@ MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存"
 DEFAULT_LOW_STOCK_THRESHOLD = 100
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
-REQUEST_FORM_CACHE_SCHEMA_VERSION = 3
+REQUEST_FORM_CACHE_SCHEMA_VERSION = 4
 REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
 REQUEST_CATEGORY_IMAGE_FIELD = "申领页图片"
 REQUEST_PAGE_VISIBLE_VALUE = "是"
@@ -549,6 +553,34 @@ def request_option_display_label(value: object) -> str:
     if english_parts:
         return english_parts[-1].strip()
     return str(translate_ui_text(text, LANGUAGE_EN))
+
+
+def normalize_model_display_names(value: object) -> dict[str, dict[str, str]]:
+    normalized: dict[str, dict[str, str]] = {}
+    for model, labels in dict(value or {}).items():
+        canonical = str(model or "").strip()
+        if not canonical or not isinstance(labels, dict):
+            continue
+        normalized[canonical] = {
+            LANGUAGE_ZH: str(labels.get(LANGUAGE_ZH) or labels.get("zh") or canonical).strip(),
+            LANGUAGE_EN: str(labels.get(LANGUAGE_EN) or labels.get("en") or canonical).strip(),
+        }
+    return normalized
+
+
+def request_model_display_label(
+    value: object,
+    model_display_names: object | None = None,
+    language: str | None = None,
+) -> str:
+    canonical = str(value or "").strip() or NO_MODEL_TEXT
+    labels = normalize_model_display_names(
+        model_display_names
+        if model_display_names is not None
+        else load_static_request_form_cache().get("model_display_names", {})
+    ).get(canonical, {})
+    target_language = normalize_ui_language(language or get_ui_language())
+    return str(labels.get(target_language) or canonical)
 
 
 def request_category_display_label(value: object) -> str:
@@ -1421,6 +1453,7 @@ def inject_global_styles() -> None:
         .pudu-gift-card-marker,
         .pudu-cart-marker,
         .pudu-full-cart-popover-marker,
+        .pudu-specification-popover-marker,
         .pudu-gift-detail-drawer-marker {
             display: none;
         }
@@ -1472,6 +1505,24 @@ def inject_global_styles() -> None:
         }
         [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) > div {
             width: 100% !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) {
+            width: min(1180px, calc(100vw - 1.5rem)) !important;
+            max-width: min(1180px, calc(100vw - 1.5rem)) !important;
+            max-height: calc(100vh - 1.5rem) !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) > div {
+            width: 100% !important;
+            gap: 0.28rem !important;
+            padding: 0.65rem !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) p,
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) label,
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) button {
+            font-size: 0.78rem !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) [data-testid="stVerticalBlock"] {
+            gap: 0.28rem !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
             min-height: 286px;
@@ -2898,6 +2949,14 @@ def dimension_management_records(kind: str, rows: list[dict] | None = None) -> l
                     "name": name,
                     "code": feishu_text(fields, code_field).strip() if code_field else "",
                     "status": normalize_enabled_status(feishu_text(fields, "启用状态")),
+                    "zh_page_name": (
+                        feishu_text(fields, "中文页面名称").strip() or name
+                        if kind == "model" else name
+                    ),
+                    "en_page_name": (
+                        feishu_text(fields, "英文页面名称").strip() or name
+                        if kind == "model" else name
+                    ),
                 }
             )
     records.sort(key=lambda item: item["name"].casefold())
@@ -3082,6 +3141,101 @@ def sync_material_model_names_from_dimension(
     return feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, updates) if updates else 0
 
 
+def sync_new_request_model_material_rows() -> dict[str, object]:
+    """Attach newly added models and create their flyer/roll-up request rows once."""
+    model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    language_rows = fresh_feishu_rows(LANGUAGE_TABLE_NAME)
+    parsed_materials = [
+        parsed for row in material_rows
+        if (parsed := parse_feishu_inventory_record(row)) is not None
+    ]
+    linked_model_ids = {
+        model_id
+        for row in material_rows
+        for model_id in feishu_link_ids_any(feishu_fields(row), list(MODEL_LINK_FIELD_CANDIDATES))
+    }
+    new_models = [
+        row for row in model_rows
+        if feishu_record_id(row) not in linked_model_ids
+        and normalize_enabled_status(feishu_text(feishu_fields(row), "启用状态")) == STATUS_ACTIVE
+        and feishu_text(feishu_fields(row), "产品型号").strip() not in {"", NO_MODEL_TEXT}
+    ]
+    if not new_models:
+        return {"model_count": 0, "created_count": 0, "linked_count": 0}
+    category_ids = {
+        feishu_text(feishu_fields(row), "物料品类"): feishu_record_id(row)
+        for row in category_rows
+    }
+    language_ids = {
+        feishu_language_name(feishu_fields(row)): feishu_record_id(row)
+        for row in language_rows
+        if feishu_language_name(feishu_fields(row)) and feishu_record_id(row)
+    }
+    material_by_key = {
+        (str(item.get("category") or ""), str(item.get("model") or NO_MODEL_TEXT), str(item.get("language") or NO_LANGUAGE_TEXT)): item
+        for item in parsed_materials
+    }
+    category_languages = {
+        category: sort_languages(unique_preserve([
+            str(item.get("language") or NO_LANGUAGE_TEXT)
+            for item in parsed_materials if str(item.get("category") or "") == category
+        ]))
+        for category in AUTO_REQUEST_MODEL_CATEGORIES
+    }
+    next_codes = iter(next_material_codes_from_records(
+        parsed_materials,
+        len(new_models) * sum(len(values) for values in category_languages.values()),
+    ))
+    updates: list[dict[str, object]] = []
+    creates: list[dict[str, object]] = []
+    for model_row in new_models:
+        model_id = feishu_record_id(model_row)
+        model = feishu_text(feishu_fields(model_row), "产品型号").strip()
+        for category in AUTO_REQUEST_MODEL_CATEGORIES:
+            category_id = category_ids.get(category, "")
+            if not category_id:
+                continue
+            for language in category_languages.get(category, []):
+                existing = material_by_key.get((category, model, language))
+                if existing:
+                    updates.append({
+                        "record_id": str(existing.get("record_id") or ""),
+                        "fields": {
+                            "型号关联": [model_id],
+                            "启用状态": STATUS_ACTIVE,
+                            REQUEST_PAGE_VISIBILITY_FIELD: REQUEST_PAGE_VISIBLE_VALUE,
+                        },
+                    })
+                    continue
+                fields: dict[str, object] = {
+                    "物料编码": next(next_codes),
+                    "物料品类": category,
+                    "产品型号": model,
+                    "语种": language,
+                    "当前库存": 0,
+                    "备注": "",
+                    "启用状态": STATUS_ACTIVE,
+                    REQUEST_PAGE_VISIBILITY_FIELD: REQUEST_PAGE_VISIBLE_VALUE,
+                    "品类关联": [category_id],
+                    "型号关联": [model_id],
+                }
+                language_id = language_ids.get(language, "")
+                if language_id:
+                    fields[material_language_link_field_name() or "语种关联"] = [language_id]
+                set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, 0.0)
+                creates.append(fields)
+    updated_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, updates)
+    created_rows = feishu_batch_create_records(MATERIAL_TABLE_NAME, creates) if creates else []
+    return {
+        "model_count": len(new_models),
+        "created_count": len(created_rows),
+        "linked_count": updated_count,
+        "models": [feishu_text(feishu_fields(row), "产品型号") for row in new_models],
+    }
+
+
 def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
     kind = str(draft.get("kind") or "")
     operation = str(draft.get("operation") or "")
@@ -3097,6 +3251,8 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
     }
     record_id = str(draft.get("record_id") or "")
     name = str(draft.get("name") or "").strip()
+    zh_page_name = str(draft.get("zh_page_name") or name).strip()
+    en_page_name = str(draft.get("en_page_name") or name).strip()
     status = normalize_enabled_status(draft.get("status"))
     dimension_created_count = 0
     if operation == "create":
@@ -3105,6 +3261,8 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
         if normalize_option_label(name).casefold() in normalized_names:
             raise ValueError(f"该{label}已经存在。")
         fields: dict[str, object] = {name_field: name, "启用状态": status}
+        if kind == "model":
+            fields.update({"中文页面名称": zh_page_name, "英文页面名称": en_page_name})
         if code_field:
             numeric_codes = [int(item["code"]) for item in records if item["code"].isdigit()]
             fields[code_field] = str(max(numeric_codes, default=0) + 1)
@@ -3122,7 +3280,10 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
         duplicate = normalized_names.get(normalize_option_label(name).casefold())
         if duplicate and duplicate["record_id"] != record_id:
             raise ValueError(f"该{label}名称已经存在。")
-        feishu_update_record_fields(table_name, record_id, {name_field: name, "启用状态": status})
+        dimension_fields: dict[str, object] = {name_field: name, "启用状态": status}
+        if kind == "model":
+            dimension_fields.update({"中文页面名称": zh_page_name, "英文页面名称": en_page_name})
+        feishu_update_record_fields(table_name, record_id, dimension_fields)
     elif operation not in {"create", "delete"}:
         raise ValueError("不支持的基础维度管理操作。")
 
@@ -3705,6 +3866,7 @@ def request_form_cache_from_inventory(
         for model, product_line in dict(options.get("model_product_lines") or {}).items()
         if str(model).strip() and str(product_line).strip()
     }
+    model_display_names = normalize_model_display_names(options.get("model_display_names", {}))
     active_combinations = request_form_active_combinations(rows, model_product_lines)
     active_product_keys = {
         normalize_option_label(str(item.get("product") or ""))
@@ -3727,6 +3889,7 @@ def request_form_cache_from_inventory(
         ),
         "models": sort_models(list(options.get("models") or [])),
         "model_product_lines": model_product_lines,
+        "model_display_names": model_display_names,
         "languages": sort_languages(list(options.get("languages") or [])),
         "active_combinations": active_combinations,
         "combination_count": request_form_combination_count(active_combinations),
@@ -3903,6 +4066,9 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
             ).items()
             if str(model).strip() and str(product_line).strip()
         },
+        "model_display_names": normalize_model_display_names(
+            cache_data.get("model_display_names", {})
+        ),
         "languages": languages,
         "no_model_product_keys": {
             normalize_option_label(product) for product in list(cache_data.get("no_model_products") or [])
@@ -5430,6 +5596,16 @@ def feishu_options_from_rows(
         for row in request_model_rows
         if feishu_text(feishu_fields(row), "产品型号").strip()
     }
+    model_display_names = {
+        feishu_text(feishu_fields(row), "产品型号").strip(): {
+            LANGUAGE_ZH: feishu_text(feishu_fields(row), "中文页面名称").strip()
+            or feishu_text(feishu_fields(row), "产品型号").strip(),
+            LANGUAGE_EN: feishu_text(feishu_fields(row), "英文页面名称").strip()
+            or feishu_text(feishu_fields(row), "产品型号").strip(),
+        }
+        for row in request_model_rows
+        if feishu_text(feishu_fields(row), "产品型号").strip()
+    }
     product_line_by_model_id = {
         feishu_record_id(row): feishu_text(feishu_fields(row), "产品线").strip()
         for row in request_model_rows
@@ -5476,6 +5652,7 @@ def feishu_options_from_rows(
         "configured_language_products": unique_preserve(configured_language_products),
         "models": models,
         "model_product_lines": model_product_lines,
+        "model_display_names": model_display_names,
         "languages": languages,
         "no_model_text": NO_MODEL_TEXT,
         "no_language_text": NO_LANGUAGE_TEXT,
@@ -6267,7 +6444,7 @@ def material_request_notification_text(
     details = [
         (
             f"{index}. {str(line.get('product') or '-')} / "
-            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{request_model_display_label(line.get('model'), language=LANGUAGE_ZH)} / "
             f"{str(line.get('language') or NO_LANGUAGE_TEXT)} × {int(line.get('quantity') or 0)}"
         )
         for index, line in enumerate(valid_lines, start=1)
@@ -6414,7 +6591,7 @@ def _feishu_material_detail_elements(
         label = english_material_notification_label if english else lambda value: str(value or "-")
         detail = (
             f"{index:02d}. {label(line.get('product'))} / "
-            f"{label(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{label(request_model_display_label(line.get('model'), language=LANGUAGE_EN if english else LANGUAGE_ZH))} / "
             f"{label(line.get('language') or NO_LANGUAGE_TEXT)} "
             f"× {int(line.get('quantity') or 0)}"
         )
@@ -6473,7 +6650,7 @@ def material_request_notification_card(
         )
         inventory_elements.append(
             _feishu_card_text_element(
-                f"{index:02d}. {line.get('product') or '-'} / {line.get('model') or NO_MODEL_TEXT} / "
+                f"{index:02d}. {line.get('product') or '-'} / {request_model_display_label(line.get('model'), language=LANGUAGE_ZH)} / "
                 f"{line.get('language') or NO_LANGUAGE_TEXT}\n"
                 f"申请 {requested}｜实时库存 {current_stock}｜{status}",
                 lines=4,
@@ -6935,7 +7112,7 @@ def notify_requester_of_inventory_edit(
         for index, item in enumerate(lines, start=1):
             content = (
                 f"{index:02d}. {item.get('product') or '-'} / "
-                f"{item.get('model') or NO_MODEL_TEXT} / "
+                f"{request_model_display_label(item.get('model'), language=LANGUAGE_ZH)} / "
                 f"{item.get('language') or NO_LANGUAGE_TEXT} "
                 f"× {int(item.get('quantity') or 0)}"
             )
@@ -7114,7 +7291,7 @@ def material_restock_notification_card(
     for index, line in enumerate(lines, start=1):
         detail = (
             f"{index:02d}. {_feishu_card_plain_text(line.get('product'), max_length=300)} / "
-            f"{_feishu_card_plain_text(line.get('model') or NO_MODEL_TEXT, max_length=200)} / "
+            f"{_feishu_card_plain_text(request_model_display_label(line.get('model'), language=LANGUAGE_ZH), max_length=200)} / "
             f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)}\n"
             f"补库 {int(line.get('quantity') or 0)}，库存 "
             f"{int(line.get('before_quantity') or 0)} → {int(line.get('after_quantity') or 0)}"
@@ -7644,7 +7821,7 @@ def sales_request_received_notification_text(
         (
             f"{index:02d}. "
             f"{english_material_notification_label(line.get('product'))} / "
-            f"{english_material_notification_label(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{request_model_display_label(line.get('model'), language=LANGUAGE_EN)} / "
             f"{english_material_notification_label(line.get('language') or NO_LANGUAGE_TEXT)} "
             f"× {int(line.get('quantity') or 0)}"
         )
@@ -7666,7 +7843,7 @@ def sales_request_received_notification_text(
     details = [
         (
             f"{index:02d}. {str(line.get('product') or '-')} / "
-            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{request_model_display_label(line.get('model'), language=LANGUAGE_ZH)} / "
             f"{str(line.get('language') or NO_LANGUAGE_TEXT)} "
             f"× {int(line.get('quantity') or 0)}"
         )
@@ -8545,7 +8722,7 @@ def request_material_detail_text(lines: list[dict[str, object]]) -> str:
     return "\n".join(
         (
             f"{index:02d}. {str(line.get('product') or '-')} / "
-            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{request_model_display_label(line.get('model'), language=LANGUAGE_ZH)} / "
             f"{str(line.get('language') or NO_LANGUAGE_TEXT)} "
             f"× {int(line.get('quantity') or 0)}"
         )
@@ -11356,6 +11533,10 @@ def render_request_model_selector(
     multiple: bool,
     state_key: str,
 ) -> list[str]:
+    model_display_names = selection_context.get("model_display_names", {})
+    display_model = lambda value: request_model_display_label(
+        value, model_display_names
+    )
     use_product_line_layout, groups = product_model_line_groups(
         product,
         selection_context,
@@ -11367,7 +11548,7 @@ def render_request_model_selector(
             model_options,
             selection_mode="multi" if multiple else "single",
             required=not multiple,
-            format_func=request_option_display_label,
+            format_func=display_model,
             key=state_key,
             on_change=mark_request_form_dirty,
             width="stretch",
@@ -11395,18 +11576,18 @@ def render_request_model_selector(
         )
 
     st.markdown('<span class="pudu-model-line-grid-marker"></span>', unsafe_allow_html=True)
-    for start in range(0, len(primary_groups), 2):
-        columns = st.columns(2, gap="small")
-        for column, (name, options) in zip(columns, primary_groups[start : start + 2]):
+    for start in range(0, len(primary_groups), 3):
+        columns = st.columns(3, gap="small")
+        for column, (name, options) in zip(columns, primary_groups[start : start + 3]):
             group_key = f"{state_key}_{name}"
-            with column.container(border=True, height=156):
+            with column.container(border=True):
                 st.caption(name)
                 if options:
                     st.pills(
                         f"{name} 产品型号",
                         options,
                         selection_mode="multi" if multiple else "single",
-                        format_func=request_option_display_label,
+                        format_func=display_model,
                         key=group_key,
                         on_change=sync_request_model_line_selection,
                         args=(state_key, group_keys, group_key, multiple),
@@ -11415,21 +11596,23 @@ def render_request_model_selector(
                     )
                 else:
                     st.caption("暂无型号")
-    for name, options in other_groups:
-        group_key = f"{state_key}_{name}"
-        with st.container(border=True):
-            st.caption(name)
-            st.pills(
-                "其他产品线型号",
-                options,
-                selection_mode="multi" if multiple else "single",
-                format_func=request_option_display_label,
-                key=group_key,
-                on_change=sync_request_model_line_selection,
-                args=(state_key, group_keys, group_key, multiple),
-                label_visibility="collapsed",
-                width="stretch",
-            )
+    for start in range(0, len(other_groups), 3):
+        columns = st.columns(3, gap="small")
+        for column, (name, options) in zip(columns, other_groups[start : start + 3]):
+            group_key = f"{state_key}_{name}"
+            with column.container(border=True):
+                st.caption(name)
+                st.pills(
+                    "其他产品线型号",
+                    options,
+                    selection_mode="multi" if multiple else "single",
+                    format_func=display_model,
+                    key=group_key,
+                    on_change=sync_request_model_line_selection,
+                    args=(state_key, group_keys, group_key, multiple),
+                    label_visibility="collapsed",
+                    width="stretch",
+                )
     current = st.session_state.get(state_key)
     return list(current or []) if multiple else [current] if current else []
 
@@ -11471,7 +11654,7 @@ def request_material_table_dataframe(lines: list[dict[str, object]]) -> pd.DataF
                 "选择": False,
                 "序号": index + 1,
                 "物料品类": request_category_display_label(line["product"]),
-                "产品型号": line["model"],
+                "产品型号": request_model_display_label(line["model"]),
                 "语种": line["language"],
                 "数量": int(line["quantity"]),
                 "备注": line.get("remark", ""),
@@ -11663,7 +11846,7 @@ def render_request_review() -> None:
                 {
                     "序号": index + 1,
                     "物料品类": line.get("product", ""),
-                    "产品型号": line.get("model", ""),
+                    "产品型号": request_model_display_label(line.get("model", "")),
                     "语种": line.get("language", ""),
                     "申请数量": int(line.get("quantity") or 0),
                     "备注": line.get("remark", ""),
@@ -11671,13 +11854,30 @@ def render_request_review() -> None:
                 for index, line in enumerate(lines)
             ]
         )
-        st.dataframe(
+        edited_review_df = st.data_editor(
             review_df,
             width="stretch",
             hide_index=True,
             height=min(820, max(150, 38 * (len(review_df) + 1) + 18)),
             row_height=34,
+            num_rows="fixed",
+            disabled=["序号", "物料品类", "产品型号", "语种", "备注"],
+            column_config={
+                "申请数量": st.column_config.NumberColumn(
+                    "申请数量", min_value=1, max_value=1_000_000, step=1, format="%d"
+                )
+            },
+            key="request_review_quantity_editor",
         )
+        edited_quantities = [
+            max(1, int(row.get("申请数量") or 1))
+            for row in edited_review_df.to_dict("records")
+        ]
+        if edited_quantities != [int(line.get("quantity") or 0) for line in lines]:
+            for line, quantity in zip(lines, edited_quantities):
+                line["quantity"] = quantity
+            draft["lines"] = [dict(line) for line in lines]
+            st.session_state["request_draft_payload"] = draft
 
     back_col, _, confirm_col = st.columns([1.1, 2.2, 1.4])
     if back_col.button(
@@ -11870,30 +12070,19 @@ def render_request_material_builder(
                         width="stretch",
                     ):
                         st.markdown(
+                            '<span class="pudu-specification-popover-marker"></span>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(
                             f"#### {escape(request_category_display_label(catalog_product))}",
                             unsafe_allow_html=True,
                         )
                         model_multi_key = f"request_cart_model_multi_{product_state_key}"
                         language_multi_key = f"request_cart_language_multi_{product_state_key}"
-                        if len(model_options) <= 1:
-                            st.session_state[model_multi_key] = False
-                        multi_cols = st.columns(2, gap="small")
-                        model_multi = multi_cols[0].toggle(
-                            "型号多选",
-                            key=model_multi_key,
-                            disabled=len(model_options) <= 1,
-                            on_change=enforce_request_cart_exclusive_multi_select,
-                            args=(model_multi_key, language_multi_key),
-                        )
-                        language_multi = multi_cols[1].toggle(
-                            "语种多选",
-                            key=language_multi_key,
-                            on_change=enforce_request_cart_exclusive_multi_select,
-                            args=(language_multi_key, model_multi_key),
-                        )
-                        st.caption(
-                            "型号多选与语种多选不可同时开启；多选时填写的数量将应用到全部所选规格。"
-                        )
+                        st.session_state[model_multi_key] = True
+                        st.session_state[language_multi_key] = False
+                        model_multi = True
+                        language_multi = False
 
                         model_widget_key = (
                             f"request_cart_models_v2_{'multi' if model_multi else 'single'}_"
@@ -13470,6 +13659,10 @@ def render_dimension_management_page(kind: str) -> None:
             render_request_review_field(preview_cols[0], "操作", operation_labels.get(operation, operation))
             render_request_review_field(preview_cols[1], f"{label}名称", draft.get("name"))
             render_request_review_field(preview_cols[2], "启用状态", draft.get("status"))
+            if kind == "model" and operation != "delete":
+                page_name_cols = st.columns(2)
+                render_request_review_field(page_name_cols[0], "中文页面名称", draft.get("zh_page_name"))
+                render_request_review_field(page_name_cols[1], "英文页面名称", draft.get("en_page_name"))
             if operation == "delete":
                 st.warning(f"删除{label}时，会同时删除所有引用该{label}的物料主数据。此操作不可撤销。")
             changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
@@ -13545,10 +13738,14 @@ def render_dimension_management_page(kind: str) -> None:
         selected = next(item for item in records if item["record_id"] == selected_id)
     default_name = str((selected or {}).get("name") or "")
     default_status = str((selected or {}).get("status") or STATUS_ACTIVE)
+    default_zh_page_name = str((selected or {}).get("zh_page_name") or default_name)
+    default_en_page_name = str((selected or {}).get("en_page_name") or default_name)
     if operation == "delete":
         st.error(f"删除该{label}会同时删除引用它的物料主数据，请在预览后仔细确认。")
         name = default_name
         status = default_status
+        zh_page_name = default_zh_page_name
+        en_page_name = default_en_page_name
     else:
         form_cols = st.columns([2.2, 1])
         name = form_cols[0].text_input(
@@ -13562,6 +13759,21 @@ def render_dimension_management_page(kind: str) -> None:
             index=list(MATERIAL_STATUS_OPTIONS).index(default_status),
             key=f"{state_prefix}_{operation}_status_{(selected or {}).get('record_id', 'new')}",
         )
+        if kind == "model":
+            page_name_cols = st.columns(2)
+            zh_page_name = page_name_cols[0].text_input(
+                "中文页面名称",
+                value=default_zh_page_name,
+                key=f"{state_prefix}_{operation}_zh_page_name_{(selected or {}).get('record_id', 'new')}",
+            )
+            en_page_name = page_name_cols[1].text_input(
+                "英文页面名称",
+                value=default_en_page_name,
+                key=f"{state_prefix}_{operation}_en_page_name_{(selected or {}).get('record_id', 'new')}",
+            )
+        else:
+            zh_page_name = name
+            en_page_name = name
     current_name = default_name if operation != "create" else str(name or "").strip()
     if operation == "delete":
         selected_keys = [
@@ -13635,6 +13847,8 @@ def render_dimension_management_page(kind: str) -> None:
             "record_id": str((selected or {}).get("record_id") or ""),
             "name": normalized_name,
             "status": status,
+            "zh_page_name": str(zh_page_name or normalized_name).strip(),
+            "en_page_name": str(en_page_name or normalized_name).strip(),
             "selected_keys": selected_keys,
             "changes": dimension_association_plan(
                 kind, operation, default_name or normalized_name, normalized_name,
