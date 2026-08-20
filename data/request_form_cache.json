@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "source": "static_snapshot",
-  "generated_at": "2026-08-20 13:50:09",
+  "generated_at": "2026-08-20 16:32:02",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -1321,7 +1321,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BellaBot",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0
+      "quantity": -10
     },
     {
       "material_code": "MAT-0190",
@@ -1860,7 +1860,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "SH1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1100
+      "quantity": 1090
     },
     {
       "material_code": "MAT-0270",
@@ -2070,7 +2070,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": 470
+      "quantity": 460
     },
     {
       "material_code": "MAT-0310",
@@ -2210,7 +2210,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Vac",
       "language": "简中(Simplified Chinese)",
-      "quantity": 280
+      "quantity": 270
     },
     {
       "material_code": "MAT-0330",
@@ -2280,7 +2280,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1220
+      "quantity": 1210
     },
     {
       "material_code": "MAT-0340",
@@ -2308,7 +2308,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1820
+      "quantity": 1810
     },
     {
       "material_code": "MAT-0351",
@@ -3862,7 +3862,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "简中(Simplified Chinese)",
-      "quantity": 2300
+      "quantity": 2290
     },
     {
       "material_code": "MAT-0999",
