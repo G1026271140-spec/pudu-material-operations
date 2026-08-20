@@ -7,6 +7,37 @@ import app
 
 
 class DimensionManagementTests(unittest.TestCase):
+    def test_material_model_name_is_resolved_from_linked_model_record(self) -> None:
+        models = [
+            {"record_id": "model-1", "fields": {"产品型号": "Pudu SwiftBot"}}
+        ]
+        materials = [
+            {
+                "record_id": "material-1",
+                "fields": {
+                    "产品型号": "SwiftBot",
+                    "型号关联": [{"record_ids": ["model-1"]}],
+                },
+            }
+        ]
+
+        updates = app.material_model_name_updates(materials, models)
+        normalized = app.material_rows_with_dimension_model_names(materials, models)
+
+        self.assertEqual(
+            updates,
+            [
+                {
+                    "record_id": "material-1",
+                    "fields": {"产品型号": "Pudu SwiftBot"},
+                }
+            ],
+        )
+        self.assertEqual(
+            normalized[0]["fields"]["产品型号"],
+            "Pudu SwiftBot",
+        )
+
     def test_create_model_assigns_next_numeric_code(self) -> None:
         model_rows = [
             {"record_id": "m1", "fields": {"产品型号编码": "7", "产品型号": "P1", "启用状态": "启用"}}

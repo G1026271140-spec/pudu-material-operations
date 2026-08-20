@@ -126,7 +126,7 @@ class InventoryStatusMaintenanceTests(unittest.TestCase):
         }
         with (
             patch.object(app, "ensure_inventory_zero_since_field", return_value=False),
-            patch.object(app, "fresh_feishu_rows", side_effect=[[material_row("expired", 0)], []]),
+            patch.object(app, "fresh_feishu_rows", side_effect=[[material_row("expired", 0)], [], []]),
             patch.object(app, "plan_inventory_status_maintenance", return_value=plan),
             patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update,
             patch.object(
@@ -156,7 +156,7 @@ class InventoryStatusMaintenanceTests(unittest.TestCase):
         update = Mock(side_effect=[1, 1])
         with (
             patch.object(app, "ensure_inventory_zero_since_field", return_value=False),
-            patch.object(app, "fresh_feishu_rows", side_effect=[[material_row("expired", 0)], []]),
+            patch.object(app, "fresh_feishu_rows", side_effect=[[material_row("expired", 0)], [], []]),
             patch.object(app, "plan_inventory_status_maintenance", return_value=plan),
             patch.object(app, "feishu_batch_update_record_fields", update),
             patch.object(

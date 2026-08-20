@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.8"
+APP_VERSION = "V1.0.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2890,6 +2890,74 @@ def dimension_material_references(kind: str, record_id: str, name: str) -> list[
     return unique_preserve([value for value in referenced_ids if value])
 
 
+def material_model_name_updates(
+    material_rows: list[dict],
+    model_rows: list[dict],
+) -> list[dict[str, object]]:
+    model_name_by_id = {
+        feishu_record_id(row): feishu_text(feishu_fields(row), "产品型号").strip()
+        for row in model_rows
+        if feishu_record_id(row)
+        and feishu_text(feishu_fields(row), "产品型号").strip()
+    }
+    updates: list[dict[str, object]] = []
+    for row in material_rows:
+        fields = feishu_fields(row)
+        linked_name = next(
+            (
+                model_name_by_id.get(model_id, "")
+                for model_id in feishu_link_ids_any(
+                    fields,
+                    list(MODEL_LINK_FIELD_CANDIDATES),
+                )
+                if model_name_by_id.get(model_id, "")
+            ),
+            "",
+        )
+        if not linked_name or feishu_text(fields, "产品型号").strip() == linked_name:
+            continue
+        record_id = feishu_record_id(row)
+        if record_id:
+            updates.append(
+                {"record_id": record_id, "fields": {"产品型号": linked_name}}
+            )
+    return updates
+
+
+def material_rows_with_dimension_model_names(
+    material_rows: list[dict],
+    model_rows: list[dict],
+) -> list[dict]:
+    updates_by_id = {
+        str(update["record_id"]): str(dict(update["fields"])["产品型号"])
+        for update in material_model_name_updates(material_rows, model_rows)
+    }
+    normalized_rows: list[dict] = []
+    for row in material_rows:
+        normalized = dict(row)
+        record_id = feishu_record_id(row)
+        if record_id in updates_by_id:
+            fields = feishu_fields(row)
+            fields["产品型号"] = updates_by_id[record_id]
+            normalized["fields"] = fields
+        normalized_rows.append(normalized)
+    return normalized_rows
+
+
+def sync_material_model_names_from_dimension(
+    material_rows: list[dict] | None = None,
+    model_rows: list[dict] | None = None,
+) -> int:
+    resolved_material_rows = list(
+        material_rows if material_rows is not None else fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    )
+    resolved_model_rows = list(
+        model_rows if model_rows is not None else fresh_feishu_rows(MODEL_TABLE_NAME)
+    )
+    updates = material_model_name_updates(resolved_material_rows, resolved_model_rows)
+    return feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, updates) if updates else 0
+
+
 def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
     kind = str(draft.get("kind") or "")
     operation = str(draft.get("operation") or "")
@@ -4158,6 +4226,12 @@ def mark_page_snapshot_seen(
 def refresh_page_cache_tables(table_names: list[str] | tuple[str, ...]) -> dict[str, object]:
     normalized_names = unique_preserve([str(table_name) for table_name in table_names])
     refreshed_tables = {table_name: safe_fresh_feishu_rows(table_name) for table_name in normalized_names}
+    if MATERIAL_TABLE_NAME in refreshed_tables:
+        model_rows = refreshed_tables.get(MODEL_TABLE_NAME) or page_data_cache_rows(MODEL_TABLE_NAME)
+        refreshed_tables[MATERIAL_TABLE_NAME] = material_rows_with_dimension_model_names(
+            refreshed_tables[MATERIAL_TABLE_NAME],
+            list(model_rows),
+        )
     refreshed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     runtime_cache = page_data_runtime_cache()
     runtime_lock = runtime_cache["lock"]
@@ -4197,6 +4271,10 @@ def page_cache_status(table_names: list[str] | tuple[str, ...]) -> tuple[str, st
 
 def build_page_data_static_snapshot() -> dict[str, object]:
     tables = {table_name: safe_fresh_feishu_rows(table_name) for table_name in ALL_PAGE_CACHE_TABLES}
+    tables[MATERIAL_TABLE_NAME] = material_rows_with_dimension_model_names(
+        tables[MATERIAL_TABLE_NAME],
+        tables[MODEL_TABLE_NAME],
+    )
     return {
         "schema_version": 1,
         "source": "live_feishu",
@@ -7260,6 +7338,12 @@ def maintain_inventory_status(
     material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
     if not material_rows:
         raise RuntimeError("物料主数据没有返回任何记录，已停止库存状态维护。")
+    model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
+    model_name_updated_count = sync_material_model_names_from_dimension(
+        material_rows,
+        model_rows,
+    )
+    material_rows = material_rows_with_dimension_model_names(material_rows, model_rows)
     ledger_rows = fresh_feishu_rows(LEDGER_TABLE_NAME)
     plan = plan_inventory_status_maintenance(
         material_rows,
@@ -7308,6 +7392,7 @@ def maintain_inventory_status(
     return {
         "checked_at": plan["checked_at"],
         "field_created": field_created,
+        "model_name_updated_count": model_name_updated_count,
         "material_count": plan["material_count"],
         "ledger_count": plan["ledger_count"],
         "updated_count": updated_count,
