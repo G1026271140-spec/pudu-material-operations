@@ -11,21 +11,24 @@ param(
 
     [string]$BootstrapPython = "",
 
+    [ValidateSet("Material", "Contacts", "Warehouse")]
+    [string]$CacheScope = "Material",
+
     [switch]$Interactive
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$CacheFiles = @(
-    "data/page_data_cache.json",
-    "data/request_form_cache.json",
-    "data/contact_departments_cache.json",
-    "data/warehouse_location_cache.json"
-)
-$CacheDirectories = @(
-    "assets/gift_projects",
-    "assets/warehouse_locations"
-)
+$CacheFiles = switch ($CacheScope) {
+    "Contacts" { @("data/contact_departments_cache.json") }
+    "Warehouse" { @("data/warehouse_location_cache.json") }
+    default { @("data/page_data_cache.json", "data/request_form_cache.json") }
+}
+$CacheDirectories = switch ($CacheScope) {
+    "Warehouse" { @("assets/warehouse_locations", "assets/request_categories") }
+    "Contacts" { @() }
+    default { @("assets/gift_projects") }
+}
 $CachePaths = $CacheFiles + $CacheDirectories
 $MutexName = "Local\PuduMaterialCacheRefresh"
 $Mutex = [Threading.Mutex]::new($false, $MutexName)
@@ -111,7 +114,7 @@ try {
         return
     }
 
-    Write-RunnerLog "Starting local static cache refresh."
+    Write-RunnerLog "Starting local static cache refresh. Scope: $CacheScope."
     $RepoPath = [IO.Path]::GetFullPath($RepoPath)
     $SecretsPath = [IO.Path]::GetFullPath($SecretsPath)
     if (-not (Test-Path -LiteralPath (Join-Path $RepoPath ".git"))) {
@@ -186,23 +189,32 @@ try {
             Set-Content -LiteralPath $requirementsStamp -Value $requirementsHash -Encoding ASCII
         }
 
-        Write-RunnerLog "Maintaining inventory row status before refreshing static cache."
-        Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
-
-        Write-RunnerLog "Refreshing page data, request options, contact directory, and warehouse location image cache."
-        foreach ($generator in @(
-            "scripts/generate_page_data_cache.py",
-            "scripts/generate_request_form_cache.py",
-            "scripts/generate_contact_departments_cache.py",
-            "scripts/generate_warehouse_location_cache.py"
-        )) {
+        $generators = switch ($CacheScope) {
+            "Contacts" { @("scripts/generate_contact_departments_cache.py") }
+            "Warehouse" {
+                @(
+                    "scripts/generate_warehouse_location_cache.py",
+                    "scripts/generate_request_category_image_cache.py"
+                )
+            }
+            default {
+                Write-RunnerLog "Maintaining inventory row status before refreshing material cache."
+                Invoke-CheckedCommand $venvPython @("scripts/maintain_inventory_status.py") | Out-Null
+                @("scripts/generate_page_data_cache.py", "scripts/generate_request_form_cache.py")
+            }
+        }
+        Write-RunnerLog "Running $CacheScope cache generators."
+        foreach ($generator in $generators) {
             Invoke-CheckedCommand $venvPython @($generator) | Out-Null
         }
-        Write-RunnerLog "Validating page cache, gift project catalog, and warehouse location cache."
-        Invoke-CheckedCommand $venvPython @("scripts/validate_page_data_cache.py") | Out-Null
-        Write-RunnerLog "Validating active material combinations in the request cache."
-        Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
-        Invoke-CheckedCommand $venvPython @("scripts/validate_warehouse_location_cache.py") | Out-Null
+        Invoke-CheckedCommand $venvPython (@("scripts/preserve_unchanged_cache_files.py") + $CacheFiles) | Out-Null
+        if ($CacheScope -eq "Material") {
+            Write-RunnerLog "Validating page and request caches."
+            Invoke-CheckedCommand $venvPython @("scripts/validate_page_data_cache.py") | Out-Null
+            Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
+        } elseif ($CacheScope -eq "Warehouse") {
+            Invoke-CheckedCommand $venvPython @("scripts/validate_warehouse_location_cache.py") | Out-Null
+        }
 
         Invoke-CheckedCommand $git (@("add", "--") + $CachePaths) | Out-Null
         & $git diff --cached --quiet -- @CachePaths

@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.4"
+APP_VERSION = "V1.0.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -442,9 +442,16 @@ MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 FULLSCREEN_SYNC_IN_PROGRESS_KEY = "_fullscreen_sync_in_progress"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
-MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "发货模板填写", "周边礼品项目")
+MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "项目礼品管理")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
-MATERIAL_MANAGEMENT_SECTIONS = ("采购补库", "品类管理", "型号管理", "语种管理")
+MATERIAL_MANAGEMENT_SECTIONS = (
+    "采购补库",
+    "品类管理",
+    "型号管理",
+    "语种管理",
+    "仓库位置",
+    "发货模板",
+)
 MATERIAL_DASHBOARD_MODULES = (
     "概览指标",
     "品类库存数量",
@@ -458,6 +465,7 @@ UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
 REQUEST_FORM_CACHE_SCHEMA_VERSION = 3
 REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
+REQUEST_CATEGORY_IMAGE_FIELD = "申领页图片"
 REQUEST_PAGE_VISIBLE_VALUE = "是"
 REQUEST_PAGE_HIDDEN_VALUE = "否"
 REQUEST_PAGE_VISIBILITY_OPTIONS = (REQUEST_PAGE_VISIBLE_VALUE, REQUEST_PAGE_HIDDEN_VALUE)
@@ -529,9 +537,6 @@ PAGE_CACHE_TABLES = {
     "shipping": (CATEGORY_TABLE_NAME,),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
-PAGE_DATA_POLL_INTERVAL_SECONDS = 60
-
-
 def page_update_session_key(page_key: str, suffix: str) -> str:
     return f"page_update_{page_key}_{suffix}"
 
@@ -3058,6 +3063,35 @@ def normalize_category_match_key(value: object) -> str:
 
 
 def request_category_image_path(product: object) -> Path | None:
+    product_key = normalize_category_match_key(product)
+    for row in safe_feishu_rows(CATEGORY_TABLE_NAME):
+        fields = feishu_fields(row)
+        if normalize_category_match_key(feishu_text(fields, "物料品类")) != product_key:
+            continue
+        attachments = fields.get(REQUEST_CATEGORY_IMAGE_FIELD)
+        if not isinstance(attachments, list):
+            return None
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+            cached_path = str(attachment.get("cached_path") or "").strip()
+            if not cached_path:
+                file_token = str(attachment.get("file_token") or "").strip()
+                if file_token:
+                    digest = hashlib.sha256(file_token.encode("utf-8")).hexdigest()[:20]
+                    cached_path = f"assets/request_categories/{digest}.webp"
+            if not cached_path:
+                continue
+            candidate = (Path(__file__).resolve().parent / cached_path).resolve()
+            root = Path(__file__).resolve().parent
+            if root == candidate or root in candidate.parents:
+                return candidate if candidate.is_file() else None
+        return None
+    return None
+
+
+def legacy_request_category_image_path(product: object) -> Path | None:
+    """Resolve pre-attachment images for one-time migration and tests only."""
     normalized_product = normalize_option_label(product).casefold()
     for aliases, filename in REQUEST_CATEGORY_IMAGE_RULES:
         if any(alias.casefold() in normalized_product for alias in aliases):
@@ -3961,7 +3995,7 @@ def navigate_to_management_section(key: str, section: str, label: str, icon: str
     )
     if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
         set_management_section(section)
-        if section in {"物料管理", "周边礼品项目"}:
+        if section in {"物料管理", "项目礼品管理"}:
             st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = section
         st.query_params.clear()
         st.rerun()
@@ -4136,21 +4170,6 @@ def page_data_signature(page_key: str, table_rows: dict[str, list[dict]]) -> str
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-@st.cache_data(
-    show_spinner=False,
-    ttl=PAGE_DATA_POLL_INTERVAL_SECONDS - 5,
-)
-def live_page_poll_snapshot(page_key: str) -> dict[str, object]:
-    table_rows = {
-        table_name: safe_fresh_feishu_rows(table_name)
-        for table_name in PAGE_CACHE_TABLES[page_key]
-    }
-    return {
-        "signature": page_data_signature(page_key, table_rows),
-        "checked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    }
-
-
 def mark_page_snapshot_seen(
     page_key: str,
     table_rows: dict[str, list[dict]] | None = None,
@@ -4164,76 +4183,6 @@ def mark_page_snapshot_seen(
     st.session_state[page_update_session_key(page_key, "latest_signature")] = signature
     st.session_state[page_update_session_key(page_key, "update_available")] = False
     return signature
-
-
-def page_update_state(
-    page_key: str,
-    current_signature: str,
-    live_signature: str,
-    checked_at: str = "",
-) -> bool:
-    seen_key = page_update_session_key(page_key, "seen_signature")
-    latest_key = page_update_session_key(page_key, "latest_signature")
-    checked_key = page_update_session_key(page_key, "checked_at")
-    available_key = page_update_session_key(page_key, "update_available")
-    seen_signature = str(
-        st.session_state.get(seen_key) or current_signature
-    )
-    st.session_state.setdefault(seen_key, seen_signature)
-    st.session_state[latest_key] = live_signature
-    st.session_state[checked_key] = checked_at
-    update_available = bool(live_signature and live_signature != seen_signature)
-    st.session_state[available_key] = update_available
-    return update_available
-
-
-def render_page_update_ticker() -> None:
-    message = "检测到本页数据有更新。当前操作不会被打断，如您需要查看新数据，请点击上方“刷新本页数据”。"
-    st.markdown(
-        f"""
-        <div class="pudu-update-ticker" role="status" aria-live="polite">
-            <div class="pudu-update-ticker__track">{escape(message)}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-@st.fragment(run_every=PAGE_DATA_POLL_INTERVAL_SECONDS)
-def render_page_update_monitor(page_key: str, current_signature: str) -> None:
-    next_poll_key = page_update_session_key(page_key, "next_poll_at")
-    available_key = page_update_session_key(page_key, "update_available")
-    now = time.monotonic()
-    next_poll_at = float(
-        st.session_state.get(next_poll_key) or 0
-    )
-    if not next_poll_at:
-        st.session_state[next_poll_key] = (
-            now + PAGE_DATA_POLL_INTERVAL_SECONDS
-        )
-        if st.session_state.get(available_key):
-            render_page_update_ticker()
-        return
-    if now < next_poll_at:
-        if st.session_state.get(available_key):
-            render_page_update_ticker()
-        return
-    if fullscreen_sync_in_progress():
-        return
-    st.session_state[next_poll_key] = (
-        now + PAGE_DATA_POLL_INTERVAL_SECONDS
-    )
-    try:
-        snapshot = live_page_poll_snapshot(page_key)
-    except Exception:
-        return
-    if page_update_state(
-        page_key,
-        current_signature,
-        str(snapshot.get("signature") or ""),
-        str(snapshot.get("checked_at") or ""),
-    ):
-        render_page_update_ticker()
 
 
 def refresh_page_cache_tables(table_names: list[str] | tuple[str, ...]) -> dict[str, object]:
@@ -4568,17 +4517,6 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
 
 
 def render_page_cache_toolbar(page_key: str) -> None:
-    table_names = PAGE_CACHE_TABLES[page_key]
-    current_rows = {
-        table_name: page_data_cache_rows(table_name)
-        for table_name in table_names
-    }
-    current_signature = page_data_signature(page_key, current_rows)
-    st.session_state.setdefault(
-        page_update_session_key(page_key, "seen_signature"),
-        current_signature,
-    )
-    render_page_update_monitor(page_key, current_signature)
     message_key = f"page_cache_message_{page_key}"
     message = st.session_state.pop(message_key, "")
     if message:
@@ -4603,7 +4541,6 @@ def render_page_cache_refresh_button(page_key: str, container: object = st) -> N
                 result = refresh_page_cache_tables(table_names)
                 if page_key == "request":
                     refresh_request_form_cache_from_page_data()
-                    refresh_contact_departments_from_feishu()
                 mark_page_snapshot_seen(page_key)
             except Exception as exc:
                 st.error("本页数据刷新失败，请检查飞书连接和数据表权限。")
@@ -10675,7 +10612,7 @@ def request_material_management_navigation_loading() -> None:
 
 def management_navigation_uses_loading_overlay(section: object) -> bool:
     normalized = str(section or "")
-    return normalized in {"物料管理", "周边礼品项目"} or normalized in MATERIAL_MANAGEMENT_SECTIONS
+    return normalized in {"物料管理", "项目礼品管理"} or normalized in MATERIAL_MANAGEMENT_SECTIONS
 
 
 def admin_auth_gate() -> bool:
@@ -10787,20 +10724,10 @@ def render_sidebar_link() -> None:
             ":material/edit_note:",
         )
         navigate_to_management_section(
-            "sidebar_open_shipping_template",
-            "发货模板填写",
-            "发货模板填写",
-            ":material/description:",
-        )
-        navigate_to_management_section(
             "sidebar_open_gift_projects",
-            "周边礼品项目",
-            "周边礼品项目",
+            "项目礼品管理",
+            "项目礼品管理",
             ":material/redeem:",
-        )
-        navigate_to_warehouse_locations(
-            "sidebar_open_warehouse_locations",
-            "物料仓库位置查询",
         )
         render_inventory_query_link()
         navigate_to_management_section(
@@ -10823,17 +10750,16 @@ def render_sidebar_link() -> None:
                     sidebar_admin_auth_gate("data_system_tools")
             else:
                 if st.button(
-                    "更新全部数据缓存",
+                    "更新物料数据缓存",
                     key="sidebar_refresh_data",
                     icon=":material/refresh:",
                     width="stretch",
                 ):
-                    with fullscreen_data_sync("正在更新全部页面数据缓存"):
+                    with fullscreen_data_sync("正在更新物料页面数据缓存"):
                         try:
                             maintenance = maintain_inventory_status()
                             result = refresh_page_cache_tables(ALL_PAGE_CACHE_TABLES)
                             refresh_request_form_cache_from_page_data()
-                            refresh_contact_departments_from_feishu()
                         except Exception as exc:
                             st.error("数据库同步失败。")
                             st.exception(exc)
@@ -15589,13 +15515,14 @@ def render_cached_warehouse_images(images: list[dict], caption: str) -> None:
         )
 
 
-def render_warehouse_location_view() -> None:
+def render_warehouse_location_view(*, show_header: bool = True) -> None:
     english = get_ui_language() == LANGUAGE_EN
-    render_page_header(
-        "物料仓库位置查询",
-        "仓库位置图集",
-        "按物料、型号、语种、货架编号或位置说明查询存放位置。",
-    )
+    if show_header:
+        render_page_header(
+            "物料仓库位置查询",
+            "仓库位置图集",
+            "按物料、型号、语种、货架编号或位置说明查询存放位置。",
+        )
     cache = load_warehouse_location_cache()
     shelves = [dict(item) for item in list(cache.get("shelves") or []) if isinstance(item, dict)]
     st.info("本页面仅用于查询物料存放位置。如需拿取物料，请先提交物料申请。")
@@ -15977,7 +15904,7 @@ def render_gift_projects_page() -> None:
         }
     )
     page_mode = st.radio(
-        "周边礼品项目功能",
+        "项目礼品管理功能",
         ["项目进度", "新增项目物料"],
         horizontal=True,
         index=0,
@@ -16145,7 +16072,7 @@ def render_gift_projects_page() -> None:
         return
 
     if not project_names:
-        st.info("当前还没有可选择的周边礼品项目。")
+        st.info("当前还没有可选择的项目礼品。")
         selected_project = ""
         selected_records = []
     else:
@@ -16222,6 +16149,11 @@ def render_gift_projects_page() -> None:
 
 def render_management_page() -> None:
     current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
+    if current_section == "周边礼品项目":
+        current_section = "项目礼品管理"
+    elif current_section == "发货模板填写":
+        st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = "发货模板"
+        current_section = "物料管理"
     if current_section == "新增物料品类":
         st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = "品类管理"
         current_section = "物料管理"
@@ -16230,8 +16162,7 @@ def render_management_page() -> None:
         current_section = "物料管理"
     if current_section not in {
         "库存登记",
-        "发货模板填写",
-        "周边礼品项目",
+        "项目礼品管理",
         "物料管理",
     }:
         current_section = "库存登记"
@@ -16252,20 +16183,20 @@ def render_management_page() -> None:
         return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
-        "发货模板填写": ("发货模板填写", "商业发票与装箱单", "按箱填写装箱单，并自动汇总生成 INV 与 PL Excel。"),
-        "周边礼品项目": ("周边礼品项目", "项目物料进度管理", "按项目跟踪周边礼品的状态、单价、备注和图片。"),
+        "项目礼品管理": ("项目礼品管理", "项目物料进度管理", "按项目跟踪礼品的状态、单价、备注和图片。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库与物料品类统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     page_cache_key = {
         "库存登记": "request",
-        "发货模板填写": "shipping",
-        "周边礼品项目": "gift_projects",
+        "项目礼品管理": "gift_projects",
         "物料管理": (
             {
                 "品类管理": "category",
                 "型号管理": "model_management",
                 "语种管理": "language_management",
+                "发货模板": "shipping",
+                "仓库位置": "",
             }.get(
                 str(st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) or ""),
                 "restock",
@@ -16280,13 +16211,9 @@ def render_management_page() -> None:
     )
     if management_section_requires_admin(current_section) and not admin_auth_gate():
         return
-    if current_section == "周边礼品项目":
+    if current_section == "项目礼品管理":
         render_page_cache_toolbar("gift_projects")
         render_gift_projects_page()
-        return
-    if current_section == "发货模板填写":
-        render_page_cache_toolbar("shipping")
-        render_shipping_template_page(load_feishu_category_records())
         return
     if current_section == "物料管理":
         if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) not in MATERIAL_MANAGEMENT_SECTIONS:
@@ -16299,22 +16226,28 @@ def render_management_page() -> None:
             key=MATERIAL_MANAGEMENT_CONTROL_KEY,
             on_change=request_material_management_navigation_loading,
         )
-        render_page_cache_toolbar(
-            {
-                "采购补库": "restock",
-                "品类管理": "category",
-                "型号管理": "model_management",
-                "语种管理": "language_management",
-            }[material_section]
-        )
+        cache_key = {
+            "采购补库": "restock",
+            "品类管理": "category",
+            "型号管理": "model_management",
+            "语种管理": "language_management",
+            "发货模板": "shipping",
+        }.get(material_section)
+        if cache_key:
+            render_page_cache_toolbar(cache_key)
         if material_section == "采购补库":
             render_restock_form()
         elif material_section == "品类管理":
             render_add_category_form()
         elif material_section == "型号管理":
             render_dimension_management_page("model")
-        else:
+        elif material_section == "语种管理":
             render_dimension_management_page("language")
+        elif material_section == "仓库位置":
+            st.caption("仓库位置图片和申领页品类图片由本机“更新 PUDU 图片缓存”程序手动发布。")
+            render_warehouse_location_view(show_header=False)
+        else:
+            render_shipping_template_page(load_feishu_category_records())
         return
     render_page_cache_toolbar("request")
     render_change_form(show_title=False)

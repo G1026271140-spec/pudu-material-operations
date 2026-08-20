@@ -14,6 +14,8 @@ from scripts.validate_page_data_cache import validate_page_data_cache  # noqa: E
 
 GIFT_IMAGE_CACHE_RELATIVE_DIR = Path("assets") / "gift_projects"
 GIFT_IMAGE_CACHE_DIR = ROOT / GIFT_IMAGE_CACHE_RELATIVE_DIR
+REQUEST_IMAGE_CACHE_RELATIVE_DIR = Path("assets") / "request_categories"
+REQUEST_IMAGE_CACHE_DIR = ROOT / REQUEST_IMAGE_CACHE_RELATIVE_DIR
 GIFT_IMAGE_MAX_DIMENSION = 1600
 
 
@@ -39,6 +41,24 @@ def gift_image_attachments(cache: dict) -> list[dict]:
     for row in list(tables.get(app.GIFT_PROJECT_TABLE_NAME) or []):
         fields = app.feishu_fields(row)
         values = fields.get("物料图片")
+        if not isinstance(values, list):
+            continue
+        attachments.extend(
+            attachment
+            for attachment in values
+            if isinstance(attachment, dict)
+            and str(attachment.get("file_token") or "").strip()
+            and is_image_attachment(attachment)
+        )
+    return attachments
+
+
+def request_category_image_attachments(cache: dict) -> list[dict]:
+    tables = dict(cache.get("tables") or {})
+    attachments: list[dict] = []
+    for row in list(tables.get(app.CATEGORY_TABLE_NAME) or []):
+        fields = app.feishu_fields(row)
+        values = fields.get(app.REQUEST_CATEGORY_IMAGE_FIELD)
         if not isinstance(values, list):
             continue
         attachments.extend(
@@ -106,6 +126,48 @@ def sync_gift_image_cache(
 
     cache["gift_image_cache"] = {
         "directory": GIFT_IMAGE_CACHE_RELATIVE_DIR.as_posix(),
+        "image_count": len(expected_files),
+    }
+    return {
+        "image_count": len(expected_files),
+        "downloaded_count": downloaded_count,
+        "deleted_count": deleted_count,
+    }
+
+
+def sync_request_category_image_cache(
+    cache: dict,
+    *,
+    image_dir: Path = REQUEST_IMAGE_CACHE_DIR,
+    cache_root: Path = ROOT,
+) -> dict[str, int]:
+    resolved_root = cache_root.resolve()
+    resolved_image_dir = image_dir.resolve()
+    if resolved_root != resolved_image_dir and resolved_root not in resolved_image_dir.parents:
+        raise ValueError("申领页图片缓存目录必须位于项目目录内。")
+    resolved_image_dir.mkdir(parents=True, exist_ok=True)
+    expected_files: set[Path] = set()
+    downloaded_count = 0
+    for attachment in request_category_image_attachments(cache):
+        file_token = str(attachment.get("file_token") or "").strip()
+        digest = hashlib.sha256(file_token.encode("utf-8")).hexdigest()[:20]
+        target = resolved_image_dir / f"{digest}.webp"
+        expected_files.add(target)
+        if not target.is_file() or target.stat().st_size <= 0:
+            content = app.load_feishu_attachment(
+                file_token,
+                str(attachment.get("tmp_url") or attachment.get("url") or ""),
+            )
+            write_cached_gift_image(content, target)
+            downloaded_count += 1
+        attachment["cached_path"] = target.relative_to(resolved_root).as_posix()
+    deleted_count = 0
+    for path in resolved_image_dir.iterdir():
+        if path.is_file() and path not in expected_files:
+            path.unlink()
+            deleted_count += 1
+    cache["request_category_image_cache"] = {
+        "directory": REQUEST_IMAGE_CACHE_RELATIVE_DIR.as_posix(),
         "image_count": len(expected_files),
     }
     return {

@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V1.0.4")
+        self.assertEqual(app.APP_VERSION, "V1.0.5")
 
     def test_submission_success_message_is_bilingual(self) -> None:
         with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
@@ -92,7 +92,7 @@ class AdminAccessTests(unittest.TestCase):
     def test_material_database_page_is_not_exposed(self) -> None:
         self.assertEqual(
             app.MATERIAL_MANAGEMENT_SECTIONS,
-            ("采购补库", "品类管理", "型号管理", "语种管理"),
+            ("采购补库", "品类管理", "型号管理", "语种管理", "仓库位置", "发货模板"),
         )
         self.assertNotIn("material_database", app.PAGE_CACHE_TABLES)
         self.assertFalse(hasattr(app, "render_material_database_page"))
@@ -119,7 +119,7 @@ class AdminAccessTests(unittest.TestCase):
         for section in app.MATERIAL_MANAGEMENT_SECTIONS:
             self.assertTrue(app.management_navigation_uses_loading_overlay(section))
         self.assertFalse(app.management_navigation_uses_loading_overlay("库存登记"))
-        self.assertTrue(app.management_navigation_uses_loading_overlay("周边礼品项目"))
+        self.assertTrue(app.management_navigation_uses_loading_overlay("项目礼品管理"))
 
     def test_request_edit_and_withdraw_page_is_not_exposed(self) -> None:
         self.assertNotIn("修改与撤回", app.MANAGEMENT_WORKBENCH_SECTIONS)

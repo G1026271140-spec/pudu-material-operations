@@ -146,44 +146,7 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
             app.stable_feishu_rows_signature(live),
         )
 
-    def test_update_state_only_marks_notice_and_keeps_editor_values(self) -> None:
-        session_state: dict[str, object] = {
-            "gift_batch_project_name": "项目 A",
-            "gift_batch_selected_ids": ["gift-1"],
-            "gift_batch_new_line": {"name": "奖牌", "quantity": 20},
-        }
-        original_editor_values = {
-            key: value for key, value in session_state.items()
-        }
-        with patch.object(app.st, "session_state", session_state):
-            changed = app.page_update_state(
-                "gift_projects",
-                "cached-signature",
-                "live-signature",
-                "2026-08-14 09:30:00",
-            )
-
-        self.assertTrue(changed)
-        for key, value in original_editor_values.items():
-            self.assertEqual(session_state[key], value)
-        self.assertTrue(
-            session_state[
-                app.page_update_session_key("gift_projects", "update_available")
-            ]
-        )
-
-    def test_same_signature_does_not_mark_an_update(self) -> None:
-        session_state: dict[str, object] = {}
-        with patch.object(app.st, "session_state", session_state):
-            changed = app.page_update_state("request", "same", "same")
-
-        self.assertFalse(changed)
-        self.assertFalse(
-            session_state[app.page_update_session_key("request", "update_available")]
-        )
-
-    def test_page_polling_covers_every_cached_page(self) -> None:
-        self.assertEqual(app.PAGE_DATA_POLL_INTERVAL_SECONDS, 60)
+    def test_cached_pages_remain_available_without_background_polling(self) -> None:
         self.assertEqual(
             set(app.PAGE_CACHE_TABLES),
             {
@@ -192,21 +155,9 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
                 "gift_projects", "shipping",
             },
         )
-
-    def test_first_monitor_render_defers_live_poll_for_sixty_seconds(self) -> None:
-        session_state: dict[str, object] = {}
-        with (
-            patch.object(app.st, "session_state", session_state),
-            patch.object(app.time, "monotonic", return_value=100.0),
-            patch.object(app, "live_page_poll_snapshot") as live_poll,
-        ):
-            app.render_page_update_monitor.__wrapped__("category", "cached-signature")
-
-        live_poll.assert_not_called()
-        self.assertEqual(
-            session_state[app.page_update_session_key("category", "next_poll_at")],
-            160.0,
-        )
+        source = inspect.getsource(app.render_page_cache_toolbar)
+        self.assertNotIn("render_page_update_monitor", source)
+        self.assertFalse(hasattr(app, "live_page_poll_snapshot"))
 
 
 if __name__ == "__main__":

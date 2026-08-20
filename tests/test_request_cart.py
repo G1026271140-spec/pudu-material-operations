@@ -5,21 +5,27 @@ import app
 
 
 class RequestCartTests(unittest.TestCase):
-    def test_category_images_match_chinese_and_english_names(self) -> None:
-        chinese_path = app.request_category_image_path("产品单页(Product Flyer)")
-        english_path = app.request_category_image_path("Delivery Robot Product Brochure")
+    def test_category_image_uses_cached_attachment_field(self) -> None:
+        rows = [
+            {
+                "fields": {
+                    "物料品类": "产品单页(Product Flyer)",
+                    app.REQUEST_CATEGORY_IMAGE_FIELD: [
+                        {"cached_path": "assets/request_categories/product-flyer.webp"}
+                    ],
+                }
+            }
+        ]
+        with patch.object(app, "safe_feishu_rows", return_value=rows):
+            chinese_path = app.request_category_image_path("产品单页(Product Flyer)")
 
         self.assertIsNotNone(chinese_path)
         self.assertEqual(chinese_path.name, "product-flyer.webp")
         self.assertTrue(chinese_path.exists())
-        self.assertIsNotNone(english_path)
-        self.assertEqual(english_path.name, "delivery-brochure.webp")
-        fridge_path = app.request_category_image_path("冰箱贴(Fridge Magnet)")
-        self.assertIsNotNone(fridge_path)
-        self.assertEqual(fridge_path.name, "fridge-magnet.webp")
 
     def test_category_without_image_uses_placeholder_path(self) -> None:
-        self.assertIsNone(app.request_category_image_path("定制LOGO书包(Customized PUDU bag)"))
+        with patch.object(app, "safe_feishu_rows", return_value=[]):
+            self.assertIsNone(app.request_category_image_path("定制LOGO书包(Customized PUDU bag)"))
 
     def test_all_uploaded_category_images_match_current_category_names(self) -> None:
         expected_images = {
@@ -39,7 +45,7 @@ class RequestCartTests(unittest.TestCase):
 
         for product, expected_name in expected_images.items():
             with self.subTest(product=product):
-                image_path = app.request_category_image_path(product)
+                image_path = app.legacy_request_category_image_path(product)
                 self.assertIsNotNone(image_path)
                 self.assertEqual(image_path.name, expected_name)
                 self.assertTrue(image_path.exists())

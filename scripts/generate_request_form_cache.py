@@ -9,7 +9,13 @@ import app  # noqa: E402
 
 
 def main() -> int:
-    cache = app.build_live_request_form_cache()
+    # The page snapshot was generated immediately before this script. Reuse it
+    # instead of downloading category/model/language/material tables twice.
+    cache = app.request_form_cache_from_inventory(
+        app.load_feishu_options(),
+        app.load_feishu_request_inventory(),
+        source="page_data_static_snapshot",
+    )
     try:
         stats = app.validate_request_form_cache(cache, require_data=True)
     except ValueError as exc:
@@ -19,7 +25,7 @@ def main() -> int:
         )
         return 1
     cache["source"] = "static_snapshot"
-    cache["built_from"] = "live_feishu"
+    cache["built_from"] = "page_data_static_snapshot"
     app.REQUEST_FORM_STATIC_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
     app.REQUEST_FORM_STATIC_CACHE_PATH.write_text(
         json.dumps(cache, ensure_ascii=False, indent=2),

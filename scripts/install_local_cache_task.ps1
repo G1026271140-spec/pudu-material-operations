@@ -4,6 +4,7 @@ param(
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduMaterialCacheRunner"),
     [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
     [string]$TaskName = "PUDU Material Cache Refresh",
+    [string]$ContactTaskName = "PUDU Contact Cache Refresh",
     [switch]$SkipInitialRun
 )
 
@@ -73,7 +74,8 @@ $taskArguments = @(
     "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
     "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
     "-LogDirectory", ('"{0}"' -f $LogDirectory),
-    "-BootstrapPython", ('"{0}"' -f $bootstrapPython)
+    "-BootstrapPython", ('"{0}"' -f $bootstrapPython),
+    "-CacheScope", "Material"
 ) -join " "
 
 $action = New-ScheduledTaskAction -Execute $powershellPath -Argument $taskArguments -WorkingDirectory $RunnerRoot
@@ -95,6 +97,25 @@ $principal = New-ScheduledTaskPrincipal `
 $task = New-ScheduledTask -Action $action -Trigger $triggers -Settings $settings -Principal $principal
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
+$contactLogDirectory = Join-Path $LogDirectory "contacts"
+New-Item -ItemType Directory -Path $contactLogDirectory -Force | Out-Null
+$contactArguments = @(
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy", "Bypass",
+    "-WindowStyle", "Hidden",
+    "-File", ('"{0}"' -f $InstalledRunnerScript),
+    "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
+    "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
+    "-LogDirectory", ('"{0}"' -f $contactLogDirectory),
+    "-BootstrapPython", ('"{0}"' -f $bootstrapPython),
+    "-CacheScope", "Contacts"
+) -join " "
+$contactAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $contactArguments -WorkingDirectory $RunnerRoot
+$contactTrigger = New-ScheduledTaskTrigger -Weekly -WeeksInterval 1 -DaysOfWeek Monday,Wednesday,Friday -At "11:00"
+$contactTask = New-ScheduledTask -Action $contactAction -Trigger $contactTrigger -Settings $settings -Principal $principal
+Register-ScheduledTask -TaskName $ContactTaskName -InputObject $contactTask -Force | Out-Null
+
 $desktop = [Environment]::GetFolderPath("Desktop")
 $shortcutPath = Join-Path $desktop "Update PUDU Static Cache.lnk"
 $shortcutArguments = @(
@@ -105,6 +126,7 @@ $shortcutArguments = @(
     "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
     "-LogDirectory", ('"{0}"' -f $LogDirectory),
     "-BootstrapPython", ('"{0}"' -f $bootstrapPython),
+    "-CacheScope", "Material",
     "-Interactive"
 ) -join " "
 $shell = New-Object -ComObject WScript.Shell
@@ -116,10 +138,34 @@ $shortcut.Description = "Refresh PUDU material cache from Feishu and push it to 
 $shortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,238"
 $shortcut.Save()
 
+$warehouseLogDirectory = Join-Path $LogDirectory "warehouse"
+New-Item -ItemType Directory -Path $warehouseLogDirectory -Force | Out-Null
+$warehouseShortcutPath = Join-Path $desktop "Update PUDU Image Cache.lnk"
+$warehouseArguments = @(
+    "-NoProfile",
+    "-ExecutionPolicy", "Bypass",
+    "-File", ('"{0}"' -f $InstalledRunnerScript),
+    "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
+    "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
+    "-LogDirectory", ('"{0}"' -f $warehouseLogDirectory),
+    "-BootstrapPython", ('"{0}"' -f $bootstrapPython),
+    "-CacheScope", "Warehouse",
+    "-Interactive"
+) -join " "
+$warehouseShortcut = $shell.CreateShortcut($warehouseShortcutPath)
+$warehouseShortcut.TargetPath = $powershellPath
+$warehouseShortcut.Arguments = $warehouseArguments
+$warehouseShortcut.WorkingDirectory = $RunnerRoot
+$warehouseShortcut.Description = "Refresh PUDU warehouse location, warehouse images, and request category images"
+$warehouseShortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,238"
+$warehouseShortcut.Save()
+
 Write-Host "Local cache runner installed." -ForegroundColor Green
 Write-Host "Task: $TaskName (daily at 10:30 and 16:30)"
+Write-Host "Contact task: $ContactTaskName (Monday, Wednesday, Friday at 11:00)"
 Write-Host "Runner: $RunnerRoot"
 Write-Host "Manual shortcut: $shortcutPath"
+Write-Host "Warehouse shortcut: $warehouseShortcutPath"
 Write-Host "Logs: $LogDirectory"
 
 if (-not $SkipInitialRun) {
@@ -128,7 +174,8 @@ if (-not $SkipInitialRun) {
         -RepoPath $RunnerRepoPath `
         -SecretsPath $RunnerSecretsPath `
         -LogDirectory $LogDirectory `
-        -BootstrapPython $bootstrapPython
+        -BootstrapPython $bootstrapPython `
+        -CacheScope Material
     if ($LASTEXITCODE -ne 0) {
         throw "Initial cache refresh failed. Check $LogDirectory\latest.log"
     }

@@ -44,11 +44,17 @@ EN_DISPLAY_TEXT = {
     "查询库存": "Check Inventory",
     "采购补库": "Purchase Restock",
     "品类管理": "Category Management",
+    "型号管理": "Model Management",
+    "语种管理": "Language Management",
+    "仓库位置": "Warehouse Locations",
+    "发货模板": "Shipping Templates",
+    "项目礼品管理": "Project Gift Management",
     "修改与撤回": "Edit & Revoke",
     "数据同步": "Data Sync",
     "数据与系统": "Data & System",
     "数据与系统工具": "Data & System Tools",
     "更新全部数据缓存": "Refresh All Data",
+    "更新物料数据缓存": "Refresh Material Data",
     "发布 GitHub 静态缓存": "Publish GitHub Static Cache",
     "手动发布静态缓存": "Publish Static Cache Manually",
     "系统连接": "System Connection",
@@ -150,6 +156,9 @@ EN_DISPLAY_TEXT = {
     "未分组": "Unassigned",
     "新项目": "New Project",
     "仓库位置图集": "Warehouse Location Gallery",
+    "仓库位置图片和申领页品类图片由本机“更新 PUDU 图片缓存”程序手动发布。": (
+        "Warehouse and request-category images are published manually by the local PUDU image cache updater."
+    ),
     "按物料、型号、语种、货架编号或位置说明查询存放位置。": (
         "Search storage locations by material, model, language, shelf, or location description."
     ),
