@@ -19,16 +19,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$CacheFiles = switch ($CacheScope) {
+$CacheFiles = @(switch ($CacheScope) {
     "Contacts" { @("data/contact_departments_cache.json") }
     "Warehouse" { @("data/warehouse_location_cache.json") }
     default { @("data/page_data_cache.json", "data/request_form_cache.json") }
-}
-$CacheDirectories = switch ($CacheScope) {
+})
+$CacheDirectories = @(switch ($CacheScope) {
     "Warehouse" { @("assets/warehouse_locations", "assets/request_categories") }
     "Contacts" { @() }
     default { @("assets/gift_projects") }
-}
+})
 $CachePaths = $CacheFiles + $CacheDirectories
 $MutexName = "Local\PuduMaterialCacheRefresh"
 $Mutex = [Threading.Mutex]::new($false, $MutexName)
