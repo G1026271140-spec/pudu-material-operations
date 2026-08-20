@@ -83,6 +83,16 @@ class FullscreenSyncTests(unittest.TestCase):
 
 
 class GiftProjectUpdateMonitorTests(unittest.TestCase):
+    def test_post_write_does_not_reload_page_or_request_cache(self) -> None:
+        with (
+            patch.object(app, "refresh_page_cache_tables") as refresh_tables,
+            patch.object(app, "refresh_request_form_cache_from_page_data") as refresh_request,
+        ):
+            app.refresh_page_cache_after_write("category", update_request_form=True)
+
+        refresh_tables.assert_not_called()
+        refresh_request.assert_not_called()
+
     def test_signatures_are_stable_when_row_order_changes(self) -> None:
         first = [
             {"record_id": "2", "fields": {"项目名称": "B"}},

@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.7"
+APP_VERSION = "V1.0.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -4523,15 +4523,11 @@ def render_page_cache_refresh_button(page_key: str, container: object = st) -> N
 
 
 def refresh_page_cache_after_write(page_key: str, *, update_request_form: bool = False) -> None:
-    try:
-        refresh_page_cache_tables(PAGE_CACHE_TABLES[page_key])
-        if update_request_form:
-            refresh_request_form_cache_from_page_data()
-        mark_page_snapshot_seen(page_key)
-    except Exception as exc:
-        st.session_state["post_write_cache_warning"] = (
-            f"业务数据已保存，但页面缓存刷新失败：{exc}。请点击“刷新本页数据”重试。"
-        )
+    # Writes are handled by Feishu or the background queue. Do not immediately
+    # download the related tables again after every create/edit/delete action.
+    # The deployed snapshot changes only through manual refresh or the local
+    # scheduled material-cache task.
+    del page_key, update_request_form
 
 
 def feishu_record_id(row: dict) -> str:
