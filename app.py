@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.1"
+APP_VERSION = "V1.0.2"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2276,19 +2276,15 @@ def fullscreen_sync_in_progress() -> bool:
 
 @contextmanager
 def fullscreen_data_sync(message: str = "正在同步数据，请稍候..."):
-    placeholder = st.empty()
     st.session_state[FULLSCREEN_SYNC_IN_PROGRESS_KEY] = True
-    placeholder.markdown(
-        fullscreen_sync_overlay_html(message),
-        unsafe_allow_html=True,
-    )
-    # Give the frontend a chance to paint before a blocking network request starts.
-    time.sleep(0.08)
     try:
-        yield
+        # Streamlit flushes its native status element before a blocking request.
+        # Global styles promote that status element to the full viewport, so the
+        # allocation workbench opened from a Feishu card is covered immediately.
+        with st.spinner(message, show_time=False):
+            yield
     finally:
         st.session_state[FULLSCREEN_SYNC_IN_PROGRESS_KEY] = False
-        placeholder.empty()
 
 
 def render_section_header(index: str, title: str, description: str = "") -> None:

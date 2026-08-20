@@ -32,33 +32,32 @@ class FullscreenSyncTests(unittest.TestCase):
 
     def test_overlay_clears_busy_state_after_success(self) -> None:
         session_state: dict[str, object] = {}
-        placeholder = MagicMock()
+        spinner = MagicMock()
         with (
             patch.object(app.st, "session_state", session_state),
-            patch.object(app.st, "empty", return_value=placeholder),
-            patch.object(app.time, "sleep"),
+            patch.object(app.st, "spinner", return_value=spinner) as render_spinner,
         ):
             with app.fullscreen_data_sync("正在保存"):
                 self.assertTrue(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
 
         self.assertFalse(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
-        placeholder.markdown.assert_called_once()
-        placeholder.empty.assert_called_once_with()
+        render_spinner.assert_called_once_with("正在保存", show_time=False)
+        spinner.__enter__.assert_called_once_with()
+        spinner.__exit__.assert_called_once()
 
     def test_overlay_clears_busy_state_after_failure(self) -> None:
         session_state: dict[str, object] = {}
-        placeholder = MagicMock()
+        spinner = MagicMock()
         with (
             patch.object(app.st, "session_state", session_state),
-            patch.object(app.st, "empty", return_value=placeholder),
-            patch.object(app.time, "sleep"),
+            patch.object(app.st, "spinner", return_value=spinner),
         ):
             with self.assertRaisesRegex(RuntimeError, "write failed"):
                 with app.fullscreen_data_sync():
                     raise RuntimeError("write failed")
 
         self.assertFalse(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
-        placeholder.empty.assert_called_once_with()
+        spinner.__exit__.assert_called_once()
 
     def test_submission_waits_do_not_use_inline_spinners(self) -> None:
         source = Path(app.__file__).read_text(encoding="utf-8")
