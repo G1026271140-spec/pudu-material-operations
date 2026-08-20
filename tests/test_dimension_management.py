@@ -133,6 +133,7 @@ class DimensionManagementTests(unittest.TestCase):
             patch.object(app, "parse_feishu_inventory_record", return_value=parsed),
             patch.object(app, "next_material_codes_from_records", return_value=["MAT-0002", "MAT-0003"]),
             patch.object(app, "material_language_link_field_name", return_value="语种关联"),
+            patch.object(app, "feishu_datetime_value", return_value=123456),
             patch.object(app, "set_feishu_unit_price"),
             patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update,
             patch.object(app, "feishu_batch_create_records", return_value=[{"record_id": "material-t150-en"}]) as create,
@@ -147,6 +148,7 @@ class DimensionManagementTests(unittest.TestCase):
                     "型号关联": ["model-flash"],
                     "启用状态": app.STATUS_ACTIVE,
                     app.REQUEST_PAGE_VISIBILITY_FIELD: app.REQUEST_PAGE_VISIBLE_VALUE,
+                    app.INVENTORY_ZERO_SINCE_FIELD: 123456,
                 },
             }],
         )

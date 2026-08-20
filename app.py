@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.3"
+APP_VERSION = "V1.1.4"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -3190,6 +3190,7 @@ def sync_new_request_model_material_rows() -> dict[str, object]:
     ))
     updates: list[dict[str, object]] = []
     creates: list[dict[str, object]] = []
+    linked_at = feishu_datetime_value()
     for model_row in new_models:
         model_id = feishu_record_id(model_row)
         model = feishu_text(feishu_fields(model_row), "产品型号").strip()
@@ -3206,6 +3207,7 @@ def sync_new_request_model_material_rows() -> dict[str, object]:
                             "型号关联": [model_id],
                             "启用状态": STATUS_ACTIVE,
                             REQUEST_PAGE_VISIBILITY_FIELD: REQUEST_PAGE_VISIBLE_VALUE,
+                            INVENTORY_ZERO_SINCE_FIELD: linked_at,
                         },
                     })
                     continue
