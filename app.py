@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.0.2"
+APP_VERSION = "V1.0.3"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -8338,6 +8338,19 @@ def _request_review_line_summary(lines: list[dict[str, object]]) -> list[dict[st
     ]
 
 
+def request_material_detail_text(lines: list[dict[str, object]]) -> str:
+    valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
+    return "\n".join(
+        (
+            f"{index:02d}. {str(line.get('product') or '-')} / "
+            f"{str(line.get('model') or NO_MODEL_TEXT)} / "
+            f"{str(line.get('language') or NO_LANGUAGE_TEXT)} "
+            f"× {int(line.get('quantity') or 0)}"
+        )
+        for index, line in enumerate(valid_lines, start=1)
+    )
+
+
 def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object]:
     request_id = str(draft.get("request_id") or "")
     expected_version = int(draft.get("expected_version") or 0)
@@ -8475,6 +8488,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     request_updates: dict[str, object] = {
         "库存审查状态": INVENTORY_REVIEW_CONFIRMED,
         "库存审查结论": result,
+        "物料明细文字信息": request_material_detail_text(prepared),
         "申请物料更改信息说明": change_note,
         "申请物料最后修改时间": feishu_datetime_value(REQUEST_TABLE_NAME, "申请物料最后修改时间", now),
         "申请变更次数": str(new_version),
@@ -8542,6 +8556,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     request_updates: dict[str, object] = {
         "库存审查状态": INVENTORY_REVIEW_CONFIRMED,
         "库存审查结论": str(context["result"]),
+        "物料明细文字信息": request_material_detail_text(list(context["lines"])),
         "库存审查时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存审查时间", now),
         "申请物料最后修改时间": feishu_datetime_value(
             REQUEST_TABLE_NAME,

@@ -7,6 +7,31 @@ import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_final_material_detail_text_lists_verified_lines(self) -> None:
+        detail = app.request_material_detail_text(
+            [
+                {
+                    "product": "公仔(Plush Toy)",
+                    "model": "BellaBot",
+                    "language": "无需语种",
+                    "quantity": 2,
+                },
+                {
+                    "product": "产品单页(Product Flyer)",
+                    "model": "D7",
+                    "language": "英语(English)",
+                    "quantity": 10,
+                },
+                {"product": "忽略", "quantity": 0},
+            ]
+        )
+
+        self.assertEqual(
+            detail,
+            "01. 公仔(Plush Toy) / BellaBot / 无需语种 × 2\n"
+            "02. 产品单页(Product Flyer) / D7 / 英语(English) × 10",
+        )
+
     def test_page_loader_reads_one_request_and_only_needed_line_fields(self) -> None:
         client = Mock()
         client.get_record.side_effect = [
@@ -332,6 +357,10 @@ class RequestInventoryReviewTests(unittest.TestCase):
             "lines": [
                 {
                     "record_id": "line-1",
+                    "product": "公仔",
+                    "model": "BellaBot",
+                    "language": "无需语种",
+                    "quantity": 2,
                     "current_stock": 0,
                     "inventory_status": "库存不足，需要制作",
                 }
@@ -372,6 +401,10 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(request_fields["库存审查人"], [{"id": "ou_admin"}])
         self.assertEqual(request_fields["申请物料最后修改人"], [{"id": "ou_admin"}])
         self.assertEqual(request_fields["申请物料最后修改时间"], 123456)
+        self.assertEqual(
+            request_fields["物料明细文字信息"],
+            "01. 公仔 / BellaBot / 无需语种 × 2",
+        )
         notify.assert_called_once()
         self.assertTrue(result["confirmed"])
 
@@ -429,6 +462,12 @@ class RequestInventoryReviewTests(unittest.TestCase):
                     ],
                 }
             )
+
+        request_fields = update_request.call_args.args[2]
+        self.assertEqual(
+            request_fields["物料明细文字信息"],
+            "01. 产品单页 / D7 / 英语 × 2",
+        )
 
     def test_retry_after_persisted_edit_recovers_both_notifications(self) -> None:
         context = {
