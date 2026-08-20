@@ -40,32 +40,56 @@ class FullscreenSyncTests(unittest.TestCase):
 
     def test_overlay_clears_busy_state_after_success(self) -> None:
         session_state: dict[str, object] = {}
-        spinner = MagicMock()
+        overlay = MagicMock()
         with (
             patch.object(app.st, "session_state", session_state),
-            patch.object(app.st, "spinner", return_value=spinner) as render_spinner,
+            patch.object(app.st, "empty", return_value=overlay) as render_overlay,
         ):
             with app.fullscreen_data_sync("正在保存"):
                 self.assertTrue(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
 
         self.assertFalse(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
-        render_spinner.assert_called_once_with("正在保存", show_time=False)
-        spinner.__enter__.assert_called_once_with()
-        spinner.__exit__.assert_called_once()
+        render_overlay.assert_called_once_with()
+        overlay.markdown.assert_called_once_with(
+            app.fullscreen_sync_overlay_html("正在保存"), unsafe_allow_html=True
+        )
+        overlay.empty.assert_called_once_with()
 
     def test_overlay_clears_busy_state_after_failure(self) -> None:
         session_state: dict[str, object] = {}
-        spinner = MagicMock()
+        overlay = MagicMock()
         with (
             patch.object(app.st, "session_state", session_state),
-            patch.object(app.st, "spinner", return_value=spinner),
+            patch.object(app.st, "empty", return_value=overlay),
         ):
             with self.assertRaisesRegex(RuntimeError, "write failed"):
                 with app.fullscreen_data_sync():
                     raise RuntimeError("write failed")
 
         self.assertFalse(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
-        spinner.__exit__.assert_called_once()
+        overlay.empty.assert_called_once_with()
+
+    def test_native_loading_spinner_is_not_a_fullscreen_mask(self) -> None:
+        source = Path(app.__file__).read_text(encoding="utf-8")
+        spinner_css = source.split('[data-testid="stSpinner"] {', 1)[1].split("}", 1)[0]
+        self.assertIn("position: static", spinner_css)
+        self.assertNotIn("position: fixed", spinner_css)
+        self.assertNotIn("backdrop-filter: blur", spinner_css)
+
+    def test_navigation_does_not_add_artificial_wait_or_overlay(self) -> None:
+        source = inspect.getsource(app.render_management_page_with_navigation_loading)
+        self.assertNotIn("st.spinner", source)
+        self.assertNotIn("time.sleep", source)
+
+    def test_button_click_guard_uses_short_repeat_click_window(self) -> None:
+        with patch.object(app.st.components.v1, "html") as html:
+            app.install_button_click_guard()
+
+        script = html.call_args.args[0]
+        self.assertIn("puduClickGuard", script)
+        self.assertIn("now + 700", script)
+        self.assertIn("stopImmediatePropagation", script)
+        html.assert_called_once_with(script, height=0, width=0)
 
     def test_submission_waits_do_not_use_inline_spinners(self) -> None:
         source = Path(app.__file__).read_text(encoding="utf-8")

@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V1.1.1")
+        self.assertEqual(app.APP_VERSION, "V1.1.2")
 
     def test_submission_success_message_is_bilingual(self) -> None:
         with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
@@ -37,7 +37,7 @@ class AdminAccessTests(unittest.TestCase):
         self.assertFalse(app.management_section_requires_admin("周边礼品项目"))
         self.assertFalse(app.management_section_requires_admin(""))
 
-    def test_material_management_navigation_requests_fullscreen_loading(self) -> None:
+    def test_material_management_navigation_does_not_request_fullscreen_loading(self) -> None:
         session_state: dict[str, object] = {}
         query_params = MagicMock()
         with (
@@ -53,10 +53,7 @@ class AdminAccessTests(unittest.TestCase):
                 ":material/inventory_2:",
             )
 
-        self.assertEqual(
-            session_state[app.MANAGEMENT_NAVIGATION_LOADING_KEY],
-            "物料管理",
-        )
+        self.assertNotIn(app.MANAGEMENT_NAVIGATION_LOADING_KEY, session_state)
         query_params.clear.assert_called_once_with()
         rerun.assert_called_once_with()
 
@@ -77,17 +74,14 @@ class AdminAccessTests(unittest.TestCase):
 
         self.assertNotIn(app.MANAGEMENT_NAVIGATION_LOADING_KEY, session_state)
 
-    def test_internal_material_navigation_requests_fullscreen_loading(self) -> None:
+    def test_internal_material_navigation_clears_loading_overlay(self) -> None:
         session_state: dict[str, object] = {
             app.MATERIAL_MANAGEMENT_CONTROL_KEY: "品类管理",
         }
         with patch.object(app.st, "session_state", session_state):
             app.request_material_management_navigation_loading()
 
-        self.assertEqual(
-            session_state[app.MANAGEMENT_NAVIGATION_LOADING_KEY],
-            "品类管理",
-        )
+        self.assertNotIn(app.MANAGEMENT_NAVIGATION_LOADING_KEY, session_state)
 
     def test_material_database_page_is_not_exposed(self) -> None:
         self.assertEqual(
@@ -114,12 +108,12 @@ class AdminAccessTests(unittest.TestCase):
             width="stretch",
         )
 
-    def test_all_material_management_pages_use_loading_overlay(self) -> None:
-        self.assertTrue(app.management_navigation_uses_loading_overlay("物料管理"))
+    def test_all_management_pages_avoid_loading_overlay(self) -> None:
+        self.assertFalse(app.management_navigation_uses_loading_overlay("物料管理"))
         for section in app.MATERIAL_MANAGEMENT_SECTIONS:
-            self.assertTrue(app.management_navigation_uses_loading_overlay(section))
+            self.assertFalse(app.management_navigation_uses_loading_overlay(section))
         self.assertFalse(app.management_navigation_uses_loading_overlay("库存登记"))
-        self.assertTrue(app.management_navigation_uses_loading_overlay("项目礼品管理"))
+        self.assertFalse(app.management_navigation_uses_loading_overlay("项目礼品管理"))
 
     def test_request_edit_and_withdraw_page_is_not_exposed(self) -> None:
         self.assertNotIn("修改与撤回", app.MANAGEMENT_WORKBENCH_SECTIONS)

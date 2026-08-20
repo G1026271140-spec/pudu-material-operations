@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.1"
+APP_VERSION = "V1.1.2"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -604,6 +604,11 @@ def inject_global_styles() -> None:
         }
         [data-testid="stAppViewContainer"] {
             background: var(--pudu-canvas);
+        }
+        [data-testid="stAppViewContainer"] [data-stale="true"],
+        [data-testid="stAppViewContainer"] .stale {
+            opacity: 1 !important;
+            filter: none !important;
         }
         [data-testid="stHeader"] {
             height: 0;
@@ -1164,26 +1169,20 @@ def inject_global_styles() -> None:
             box-shadow: none;
         }
         [data-testid="stSpinner"] {
-            position: fixed;
-            inset: 0;
-            z-index: 999999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            background: rgba(245, 246, 248, 0.82);
-            backdrop-filter: blur(1.5px);
+            position: static;
+            display: block;
+            padding: 0.35rem 0;
+            background: transparent;
+            backdrop-filter: none;
         }
         [data-testid="stSpinner"] > div {
-            width: min(360px, calc(100vw - 2rem)) !important;
+            width: fit-content !important;
             min-width: 0;
-            max-width: calc(100vw - 2rem);
-            flex: 0 0 auto;
-            padding: 1rem 1.15rem;
-            border: 1px solid var(--pudu-line);
-            border-radius: 8px;
-            background: #FFFFFF;
-            box-shadow: 0 8px 24px rgba(31, 35, 41, 0.12);
+            max-width: 100%;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
         }
         [data-testid="stSpinner"] p {
             color: var(--pudu-ink);
@@ -2255,6 +2254,35 @@ def close_application_window() -> None:
     )
 
 
+def install_button_click_guard(delay_ms: int = 700) -> None:
+    """Ignore accidental rapid repeat clicks without delaying widget edits."""
+    st.components.v1.html(
+        f"""
+        <script>
+        (() => {{
+          const doc = window.parent.document;
+          if (doc.body.dataset.puduClickGuard === "true") return;
+          doc.body.dataset.puduClickGuard = "true";
+          doc.addEventListener("click", (event) => {{
+            const button = event.target.closest("button");
+            if (!button || button.closest('[data-testid="stSidebarCollapseButton"]')) return;
+            const lockedUntil = Number(button.dataset.puduLockedUntil || 0);
+            const now = Date.now();
+            if (lockedUntil > now) {{
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              return;
+            }}
+            button.dataset.puduLockedUntil = String(now + {int(delay_ms)});
+          }}, true);
+        }})();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
 def fullscreen_sync_in_progress() -> bool:
     return bool(st.session_state.get(FULLSCREEN_SYNC_IN_PROGRESS_KEY))
 
@@ -2262,13 +2290,12 @@ def fullscreen_sync_in_progress() -> bool:
 @contextmanager
 def fullscreen_data_sync(message: str = "正在同步数据，请稍候..."):
     st.session_state[FULLSCREEN_SYNC_IN_PROGRESS_KEY] = True
+    overlay = st.empty()
+    overlay.markdown(fullscreen_sync_overlay_html(message), unsafe_allow_html=True)
     try:
-        # Streamlit flushes its native status element before a blocking request.
-        # Global styles promote that status element to the full viewport, so the
-        # allocation workbench opened from a Feishu card is covered immediately.
-        with st.spinner(message, show_time=False):
-            yield
+        yield
     finally:
+        overlay.empty()
         st.session_state[FULLSCREEN_SYNC_IN_PROGRESS_KEY] = False
 
 
@@ -3046,6 +3073,8 @@ def sync_material_model_names_from_dimension(
     resolved_material_rows = list(
         material_rows if material_rows is not None else fresh_feishu_rows(MATERIAL_TABLE_NAME)
     )
+
+
     resolved_model_rows = list(
         model_rows if model_rows is not None else fresh_feishu_rows(MODEL_TABLE_NAME)
     )
@@ -4203,8 +4232,6 @@ def navigate_to_management_section(key: str, section: str, label: str, icon: str
     )
     if st.button(label, key=key, icon=icon, disabled=active, width="stretch"):
         set_management_section(section)
-        if section in {"物料管理", "项目礼品管理"}:
-            st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = section
         st.query_params.clear()
         st.rerun()
 
@@ -10845,14 +10872,11 @@ def sync_management_section_from_workbench_control() -> None:
 
 
 def request_material_management_navigation_loading() -> None:
-    selected = str(st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY, ""))
-    if selected in MATERIAL_MANAGEMENT_SECTIONS:
-        st.session_state[MANAGEMENT_NAVIGATION_LOADING_KEY] = selected
+    st.session_state.pop(MANAGEMENT_NAVIGATION_LOADING_KEY, None)
 
 
 def management_navigation_uses_loading_overlay(section: object) -> bool:
-    normalized = str(section or "")
-    return normalized in {"物料管理", "项目礼品管理"} or normalized in MATERIAL_MANAGEMENT_SECTIONS
+    return False
 
 
 def admin_auth_gate() -> bool:
@@ -16564,19 +16588,8 @@ def render_management_page() -> None:
 
 
 def render_management_page_with_navigation_loading() -> None:
-    loading_section = str(st.session_state.pop(MANAGEMENT_NAVIGATION_LOADING_KEY, ""))
-    if not management_navigation_uses_loading_overlay(loading_section):
-        render_management_page()
-        return
-
-    started_at = time.monotonic()
-    with st.spinner("物料数据加载中，请稍后......"):
-        render_management_page()
-        # Streamlit delays short-lived spinners to prevent flicker. Keep this
-        # navigation overlay alive long enough to provide visible feedback.
-        remaining = 0.75 - (time.monotonic() - started_at)
-        if remaining > 0:
-            time.sleep(remaining)
+    st.session_state.pop(MANAGEMENT_NAVIGATION_LOADING_KEY, None)
+    render_management_page()
 
 
 def restore_default_sidebar_on_page_load() -> None:
@@ -16893,6 +16906,7 @@ def main() -> None:
         initial_sidebar_state="expanded",
     )
     inject_global_styles()
+    install_button_click_guard()
     allocation_view = str(st.query_params.get("allocation", "")) == "request"
     if not allocation_view:
         restore_default_sidebar_on_page_load()
