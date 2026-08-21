@@ -79,6 +79,14 @@ class FeishuBitableClient:
         )
         return dict(response.get("data", {}))
 
+    def update_table_name(self, table_id: str, table_name: str) -> dict[str, Any]:
+        response = self._request(
+            "PATCH",
+            f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}",
+            payload={"name": table_name},
+        )
+        return dict(response.get("data", {}).get("table", {}))
+
     def create_field(
         self,
         table_id: str,
