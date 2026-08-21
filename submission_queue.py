@@ -280,7 +280,7 @@ def update_worker_heartbeat(
         None,
     )
     if own_record is None:
-        client.create_record(table_id, fields)
+        client.batch_create_records(table_id, [fields])
     else:
         client.update_record(table_id, str(own_record.get("record_id") or ""), fields)
     refreshed = client.list_records(table_id)
