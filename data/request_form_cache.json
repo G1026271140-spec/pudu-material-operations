@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-21 09:59:04",
+  "generated_at": "2026-08-21 10:31:37",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -525,23 +525,6 @@
           "product_line": "SR"
         },
         {
-          "model": "Hulk",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ],
-          "product_line": "新项目"
-        },
-        {
           "model": "KettyBot Pro",
           "languages": [
             "英语(English)",
@@ -1038,22 +1021,6 @@
           "product_line": "SR"
         },
         {
-          "model": "Hulk",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)"
-          ],
-          "product_line": "新项目"
-        },
-        {
           "model": "KettyBot Pro",
           "languages": [
             "英语(English)",
@@ -1433,7 +1400,7 @@
       ]
     }
   ],
-  "combination_count": 628,
+  "combination_count": 607,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -2196,7 +2163,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "德语(German)",
-      "quantity": 0
+      "quantity": 30
     },
     {
       "material_code": "MAT-0303",
@@ -4684,83 +4651,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1127",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1128",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1129",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1130",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1131",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1132",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1133",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1134",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1135",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1136",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1137",
-      "product": "产品单页(Product Flyer )",
-      "model": "Hulk",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1138",
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
@@ -5198,76 +5088,6 @@
       "material_code": "MAT-1218",
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "FlashBot Max",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1219",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1220",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1221",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1222",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1223",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1224",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1225",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1226",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1227",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1228",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Hulk",
       "language": "西语(Spanish)",
       "quantity": 0
     },
@@ -5846,6 +5666,6 @@
       "quantity": 0
     }
   ],
-  "row_count": 630,
+  "row_count": 609,
   "built_from": "page_data_static_snapshot"
 }
