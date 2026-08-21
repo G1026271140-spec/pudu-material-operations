@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-21 10:31:37",
+  "generated_at": "2026-08-21 10:53:47",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -225,48 +225,48 @@
   },
   "category_display_names": {
     "产品单页(Product Flyer )": {
-      "zh": "产品单页(Product Flyer )",
-      "en": "产品单页(Product Flyer )"
+      "zh": "",
+      "en": ""
     },
     "品牌手册(Product Brochure (All\nBanner)）": {
-      "zh": "品牌手册(Product Brochure (All\nBanner)）",
-      "en": "品牌手册(Product Brochure (All\nBanner)）"
+      "zh": "",
+      "en": ""
     },
     "工业产品线手册IR(Industrial Product Line Brochure）": {
-      "zh": "工业产品线手册IR(Industrial Product Line Brochure）",
-      "en": "工业产品线手册IR(Industrial Product Line Brochure）"
+      "zh": "",
+      "en": ""
     },
     "清洁产品线手册CR(Cleaning Product Line Brochure）": {
-      "zh": "清洁产品线手册CR(Cleaning Product Line Brochure）",
-      "en": "清洁产品线手册CR(Cleaning Product Line Brochure）"
+      "zh": "",
+      "en": ""
     },
     "配送线产品手册SR(Delivery Robot Product Brochure)": {
-      "zh": "配送线产品手册SR(Delivery Robot Product Brochure)",
-      "en": "配送线产品手册SR(Delivery Robot Product Brochure)"
+      "zh": "",
+      "en": ""
     },
     "具身线产品手册GR(Embodied AI Robot Product Brochure)": {
-      "zh": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
-      "en": "具身线产品手册GR(Embodied AI Robot Product Brochure)"
+      "zh": "",
+      "en": ""
     },
     "产品易拉宝(Product Roll-Up)": {
-      "zh": "产品易拉宝(Product Roll-Up)",
-      "en": "产品易拉宝(Product Roll-Up)"
+      "zh": "",
+      "en": ""
     },
     "公仔(Plush Toy)": {
-      "zh": "公仔(Plush Toy)",
-      "en": "公仔(Plush Toy)"
+      "zh": "",
+      "en": ""
     },
     "冰箱贴( Fridge Magnet)": {
-      "zh": "冰箱贴( Fridge Magnet)",
-      "en": "冰箱贴( Fridge Magnet)"
+      "zh": "",
+      "en": ""
     },
     "笔记本礼盒(Notebook Gift Box)": {
-      "zh": "笔记本礼盒(Notebook Gift Box)",
-      "en": "笔记本礼盒(Notebook Gift Box)"
+      "zh": "",
+      "en": ""
     },
     "普渡logo无纺布手提袋(PUDU logo bag)": {
-      "zh": "普渡logo无纺布手提袋(PUDU logo bag)",
-      "en": "普渡logo无纺布手提袋(PUDU logo bag)"
+      "zh": "",
+      "en": ""
     }
   },
   "languages": [
