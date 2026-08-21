@@ -46,8 +46,16 @@ class FakeQueueClient:
     def list_fields(self, table_id: str) -> list[dict]:
         return list(self.fields.get(table_id, []))
 
-    def create_field(self, table_id: str, field_name: str, field_type: int) -> dict:
+    def create_field(
+        self,
+        table_id: str,
+        field_name: str,
+        field_type: int,
+        property: dict | None = None,
+    ) -> dict:
         field = {"field_name": field_name, "type": field_type}
+        if property is not None:
+            field["property"] = property
         self.fields.setdefault(table_id, []).append(field)
         return field
 
@@ -149,6 +157,11 @@ class SubmissionQueueTests(unittest.TestCase):
         self.assertEqual(field_names, {name for name, _ in queue.QUEUE_FIELDS})
         self.assertEqual(client.tables[1]["name"], queue.QUEUE_PAYLOAD_TABLE_NAME)
         self.assertEqual(client.tables[2]["name"], queue.WORKER_REGISTRY_TABLE_NAME)
+        worker_fields = {
+            field["field_name"]: field for field in client.fields["tbl-workers"]
+        }
+        self.assertEqual(worker_fields[queue.WORKER_FIELD_STATUS]["type"], 3)
+        self.assertEqual(worker_fields[queue.WORKER_FIELD_ENABLED]["type"], 3)
 
         self.assertEqual(queue.ensure_submission_queue_table(client), table_id)
         self.assertEqual(client.list_tables_count, 3)

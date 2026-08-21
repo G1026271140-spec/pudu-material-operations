@@ -34,6 +34,7 @@ from submission_queue import (
     checkpoint_submission_task,
     claim_next_submission_task,
     complete_submission_task,
+    current_worker_leader,
     ensure_submission_queue_table,
     fail_submission_task,
     retry_failed_submission_tasks,
@@ -47,12 +48,14 @@ MAX_RETRIES = 10
 RELOAD_EXIT_CODE = 75
 ALREADY_RUNNING_EXIT_CODE = 76
 DEFAULT_WORKER_PRIORITY = 100
-WORKER_HEARTBEAT_INTERVAL_SECONDS = 15
-WORKER_HEARTBEAT_TIMEOUT_SECONDS = 90
+WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS = 60
+WORKER_HEARTBEAT_INTERVAL_SECONDS = 21_600
+WORKER_HEARTBEAT_TIMEOUT_SECONDS = 28_800
 _LEADERSHIP_STATE: dict[str, object] = {
     "checked_at": 0.0,
     "is_leader": False,
     "leader_id": "",
+    "heartbeat_at": 0.0,
 }
 
 
@@ -77,17 +80,29 @@ def worker_node_id() -> str:
 
 def worker_has_leadership(client: object, priority: int) -> bool:
     now = time.monotonic()
-    if now - float(_LEADERSHIP_STATE.get("checked_at") or 0) < WORKER_HEARTBEAT_INTERVAL_SECONDS:
+    if now - float(_LEADERSHIP_STATE.get("checked_at") or 0) < WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS:
         return bool(_LEADERSHIP_STATE.get("is_leader"))
     node_id = worker_node_id()
-    is_leader, leader_id = update_worker_heartbeat(
-        client,
-        node_id,
-        socket.gethostname(),
-        priority,
-        inventory_app.APP_VERSION,
-        heartbeat_timeout_seconds=WORKER_HEARTBEAT_TIMEOUT_SECONDS,
+    heartbeat_due = (
+        now - float(_LEADERSHIP_STATE.get("heartbeat_at") or 0)
+        >= WORKER_HEARTBEAT_INTERVAL_SECONDS
     )
+    if heartbeat_due:
+        is_leader, leader_id = update_worker_heartbeat(
+            client,
+            node_id,
+            socket.gethostname(),
+            priority,
+            inventory_app.APP_VERSION,
+            heartbeat_timeout_seconds=WORKER_HEARTBEAT_TIMEOUT_SECONDS,
+        )
+        _LEADERSHIP_STATE["heartbeat_at"] = now
+    else:
+        leader_id = current_worker_leader(
+            client,
+            heartbeat_timeout_seconds=WORKER_HEARTBEAT_TIMEOUT_SECONDS,
+        ) or node_id
+        is_leader = leader_id == node_id
     previous_leader = str(_LEADERSHIP_STATE.get("leader_id") or "")
     _LEADERSHIP_STATE.update(
         {"checked_at": now, "is_leader": is_leader, "leader_id": leader_id}

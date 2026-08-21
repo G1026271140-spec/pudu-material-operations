@@ -32,9 +32,17 @@ WORKER_REGISTRY_FIELDS: tuple[tuple[str, int], ...] = (
     (WORKER_FIELD_PRIORITY, 2),
     (WORKER_FIELD_HEARTBEAT, 5),
     (WORKER_FIELD_VERSION, 1),
-    (WORKER_FIELD_STATUS, 1),
-    (WORKER_FIELD_ENABLED, 1),
+    (WORKER_FIELD_STATUS, 3),
+    (WORKER_FIELD_ENABLED, 3),
 )
+WORKER_SELECT_PROPERTIES: dict[str, dict[str, object]] = {
+    WORKER_FIELD_STATUS: {
+        "options": [{"name": "在线"}, {"name": "离线"}],
+    },
+    WORKER_FIELD_ENABLED: {
+        "options": [{"name": "是"}, {"name": "否"}],
+    },
+}
 QUEUE_TASK_TYPE_MATERIAL_REQUEST = "营销物料申请"
 QUEUE_TASK_TYPE_RESTOCK = "采购补库"
 QUEUE_TASK_TYPE_CATEGORY_SYNC = "物料品类同步"
@@ -248,7 +256,17 @@ def ensure_worker_registry_table(client: FeishuBitableClient) -> str:
     else:
         created = client.create_table(
             WORKER_REGISTRY_TABLE_NAME,
-            [{"field_name": name, "type": field_type} for name, field_type in WORKER_REGISTRY_FIELDS],
+            [
+                {
+                    "field_name": name,
+                    "type": field_type,
+                    **(
+                        {"property": WORKER_SELECT_PROPERTIES[name]}
+                        if name in WORKER_SELECT_PROPERTIES else {}
+                    ),
+                }
+                for name, field_type in WORKER_REGISTRY_FIELDS
+            ],
             default_view_name="节点列表",
         )
         table_id = str(created.get("table_id") or "").strip()
@@ -260,7 +278,12 @@ def ensure_worker_registry_table(client: FeishuBitableClient) -> str:
     }
     for field_name, field_type in WORKER_REGISTRY_FIELDS:
         if field_name not in existing_fields:
-            client.create_field(table_id, field_name, field_type)
+            client.create_field(
+                table_id,
+                field_name,
+                field_type,
+                WORKER_SELECT_PROPERTIES.get(field_name),
+            )
     setattr(client, "_worker_registry_table_id", table_id)
     return table_id
 
@@ -314,17 +337,44 @@ def update_worker_heartbeat(
             heartbeat_fields,
         )
     refreshed = client.list_records(table_id)
+    leader_id = select_worker_leader(
+        refreshed,
+        now_ms=now,
+        heartbeat_timeout_seconds=heartbeat_timeout_seconds,
+    ) or node_id
+    return leader_id == node_id, leader_id
+
+
+def select_worker_leader(
+    records: list[dict[str, Any]],
+    *,
+    now_ms: int | None = None,
+    heartbeat_timeout_seconds: int = 28_800,
+) -> str:
+    now = timestamp_ms() if now_ms is None else int(now_ms)
     cutoff = now - max(30, int(heartbeat_timeout_seconds)) * 1000
     active: list[tuple[int, str]] = []
-    for record in refreshed:
+    for record in records:
         record_fields = dict(record.get("fields") or {})
         candidate_id = _text(record_fields.get(WORKER_FIELD_NODE_ID))
         heartbeat = _integer(record_fields.get(WORKER_FIELD_HEARTBEAT))
         enabled = _text(record_fields.get(WORKER_FIELD_ENABLED)) or "是"
         if candidate_id and enabled == "是" and heartbeat >= cutoff:
             active.append((max(1, _integer(record_fields.get(WORKER_FIELD_PRIORITY)) or 100), candidate_id))
-    leader_id = min(active)[1] if active else node_id
-    return leader_id == node_id, leader_id
+    return min(active)[1] if active else ""
+
+
+def current_worker_leader(
+    client: FeishuBitableClient,
+    *,
+    now_ms: int | None = None,
+    heartbeat_timeout_seconds: int = 28_800,
+) -> str:
+    return select_worker_leader(
+        client.list_records(ensure_worker_registry_table(client)),
+        now_ms=now_ms,
+        heartbeat_timeout_seconds=heartbeat_timeout_seconds,
+    )
 
 
 def _load_chunked_payloads(client: FeishuBitableClient, task_ids: set[str]) -> dict[str, dict[str, Any]]:
