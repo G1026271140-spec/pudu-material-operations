@@ -303,6 +303,11 @@ def update_worker_heartbeat(
     if own_record is None:
         client.batch_create_records(table_id, [create_fields])
     else:
+        own_fields = dict(own_record.get("fields") or {})
+        if not _text(own_fields.get(WORKER_FIELD_ENABLED)):
+            heartbeat_fields[WORKER_FIELD_ENABLED] = "是"
+        if _integer(own_fields.get(WORKER_FIELD_PRIORITY)) <= 0:
+            heartbeat_fields[WORKER_FIELD_PRIORITY] = max(1, int(priority))
         client.update_record(
             table_id,
             str(own_record.get("record_id") or ""),
