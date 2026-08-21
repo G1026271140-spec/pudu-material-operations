@@ -362,6 +362,8 @@ class CategoryInventoryPlanTests(unittest.TestCase):
         session_state: dict[str, object] = {"target_revision": 2}
         form_state = {
             "category_name_new": "新品类",
+            "category_zh_page_name_new": "新品类中文",
+            "category_en_page_name_new": "New Category",
             "category_status_new": app.STATUS_ACTIVE,
             "category_unit_price_new": "1.25",
             "category_customs_code_new": "HS-1",
@@ -393,6 +395,8 @@ class CategoryInventoryPlanTests(unittest.TestCase):
             )
 
         self.assertEqual(session_state["category_name_new"], "新品类")
+        self.assertEqual(session_state["category_zh_page_name_new"], "新品类中文")
+        self.assertEqual(session_state["category_en_page_name_new"], "New Category")
         self.assertTrue(session_state["category_no_model_new"])
         self.assertTrue(session_state["category_no_language_new"])
         self.assertEqual(session_state["target_values"], target_values)

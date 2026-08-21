@@ -263,6 +263,42 @@ class MaterialActivationTests(unittest.TestCase):
             ],
         )
 
+    def test_request_cache_preserves_bilingual_category_display_names(self) -> None:
+        inventory_df = pd.DataFrame(
+            [["MAT-1", "产品单页(Product Flyer)", "M1", "英语", 10, 0, 0, ""]],
+            columns=app.INVENTORY_HEADERS,
+        )
+        options = {
+            "products": ["产品单页(Product Flyer)"],
+            "no_model_products": [],
+            "no_language_products": [],
+            "configured_language_products": [],
+            "models": ["M1"],
+            "languages": ["英语"],
+            "category_display_names": {
+                "产品单页(Product Flyer)": {
+                    app.LANGUAGE_ZH: "产品单页",
+                    app.LANGUAGE_EN: "Product Flyer",
+                }
+            },
+        }
+
+        cache = app.request_form_cache_from_inventory(options, inventory_df, source="test")
+        context = app.request_form_cache_to_selection_context(cache)
+
+        self.assertEqual(
+            context["category_display_names"]["产品单页(Product Flyer)"],
+            {app.LANGUAGE_ZH: "产品单页", app.LANGUAGE_EN: "Product Flyer"},
+        )
+        self.assertEqual(
+            app.request_category_display_label(
+                "产品单页(Product Flyer)",
+                context["category_display_names"],
+                app.LANGUAGE_EN,
+            ),
+            "Product Flyer",
+        )
+
     def test_request_cache_validation_rejects_tampered_combination_config(self) -> None:
         inventory_df = pd.DataFrame(
             [["MAT-1", "品类A", "M1", "英语", 10, 0, 0, ""]],

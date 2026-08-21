@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.7"
+APP_VERSION = "V1.1.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -467,7 +467,7 @@ MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存"
 DEFAULT_LOW_STOCK_THRESHOLD = 100
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
-REQUEST_FORM_CACHE_SCHEMA_VERSION = 4
+REQUEST_FORM_CACHE_SCHEMA_VERSION = 5
 REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
 REQUEST_CATEGORY_IMAGE_FIELD = "申领页图片"
 REQUEST_PAGE_VISIBLE_VALUE = "是"
@@ -583,12 +583,38 @@ def request_model_display_label(
     return str(labels.get(target_language) or canonical)
 
 
-def request_category_display_label(value: object) -> str:
-    text = str(value or "").strip()
-    if get_ui_language() == LANGUAGE_EN:
-        return request_option_display_label(text)
-    chinese_label = re.split(r"[（(]", text, maxsplit=1)[0].strip()
-    return chinese_label or text
+def normalize_category_display_names(value: object) -> dict[str, dict[str, str]]:
+    normalized: dict[str, dict[str, str]] = {}
+    for category, labels in dict(value or {}).items():
+        canonical = str(category or "").strip()
+        if not canonical or not isinstance(labels, dict):
+            continue
+        normalized[canonical] = {
+            LANGUAGE_ZH: str(labels.get(LANGUAGE_ZH) or labels.get("zh") or canonical).strip(),
+            LANGUAGE_EN: str(labels.get(LANGUAGE_EN) or labels.get("en") or canonical).strip(),
+        }
+    return normalized
+
+
+def request_category_display_label(
+    value: object,
+    category_display_names: object | None = None,
+    language: str | None = None,
+) -> str:
+    canonical = str(value or "").strip()
+    target_language = normalize_ui_language(language or get_ui_language())
+    labels = normalize_category_display_names(
+        category_display_names
+        if category_display_names is not None
+        else load_static_request_form_cache().get("category_display_names", {})
+    ).get(canonical, {})
+    configured_label = str(labels.get(target_language) or "").strip()
+    if configured_label:
+        return configured_label
+    if target_language == LANGUAGE_EN:
+        return request_option_display_label(canonical)
+    chinese_label = re.split(r"[（(]", canonical, maxsplit=1)[0].strip()
+    return chinese_label or canonical
 
 
 def inject_global_styles() -> None:
@@ -3870,6 +3896,9 @@ def request_form_cache_from_inventory(
         if str(model).strip() and str(product_line).strip()
     }
     model_display_names = normalize_model_display_names(options.get("model_display_names", {}))
+    category_display_names = normalize_category_display_names(
+        options.get("category_display_names", {})
+    )
     active_combinations = request_form_active_combinations(rows, model_product_lines)
     active_product_keys = {
         normalize_option_label(str(item.get("product") or ""))
@@ -3893,6 +3922,7 @@ def request_form_cache_from_inventory(
         "models": sort_models(list(options.get("models") or [])),
         "model_product_lines": model_product_lines,
         "model_display_names": model_display_names,
+        "category_display_names": category_display_names,
         "languages": sort_languages(list(options.get("languages") or [])),
         "active_combinations": active_combinations,
         "combination_count": request_form_combination_count(active_combinations),
@@ -3938,6 +3968,8 @@ def load_static_request_form_cache() -> dict[str, object]:
             "configured_language_products": [],
             "models": [],
             "model_product_lines": {},
+            "model_display_names": {},
+            "category_display_names": {},
             "languages": [],
             "active_combinations": [],
             "combination_count": 0,
@@ -4062,6 +4094,9 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
     return {
         "products": products,
         "models": models,
+        "category_display_names": normalize_category_display_names(
+            cache_data.get("category_display_names", {})
+        ),
         "model_product_lines": {
             str(model).strip(): str(product_line).strip()
             for model, product_line in dict(
@@ -5525,6 +5560,7 @@ def feishu_options_from_rows(
     request_visible_only: bool = False,
 ) -> dict:
     category_products: list[str] = []
+    category_display_names: dict[str, dict[str, str]] = {}
     no_model_products: list[str] = []
     no_language_products: list[str] = []
     configured_language_products: list[str] = []
@@ -5536,6 +5572,10 @@ def feishu_options_from_rows(
                 continue
         if product:
             category_products.append(product)
+            category_display_names[product] = {
+                LANGUAGE_ZH: feishu_text(fields, "中文页面名称").strip() or product,
+                LANGUAGE_EN: feishu_text(fields, "英文页面名称").strip() or product,
+            }
         if feishu_text(fields, "是否无需型号") == "是":
             no_model_products.append(product)
         no_language_value = feishu_text(fields, "是否无需语种")
@@ -5636,6 +5676,7 @@ def feishu_options_from_rows(
         "models": models,
         "model_product_lines": model_product_lines,
         "model_display_names": model_display_names,
+        "category_display_names": category_display_names,
         "languages": languages,
         "no_model_text": NO_MODEL_TEXT,
         "no_language_text": NO_LANGUAGE_TEXT,
@@ -9136,6 +9177,8 @@ def feishu_category_records_from_rows(rows: list[dict]) -> list[dict]:
             {
                 "record_id": feishu_record_id(row),
                 "category": product,
+                "zh_page_name": feishu_text(fields, "中文页面名称").strip() or product,
+                "en_page_name": feishu_text(fields, "英文页面名称").strip() or product,
                 "category_definition": feishu_text(fields, "品类定义"),
                 "commercial_invoice_name": feishu_text(
                     fields, COMMERCIAL_INVOICE_NAME_FIELD
@@ -10239,13 +10282,20 @@ def get_or_create_feishu_category_record(
     no_model: bool,
     no_language: bool = False,
     category_definition: str = "",
+    category_zh_page_name: str = "",
+    category_en_page_name: str = "",
 ) -> dict:
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书客户端未初始化。")
     existing = find_feishu_category_record(product)
+    category_zh_page_name = category_zh_page_name.strip() or product
+    category_en_page_name = category_en_page_name.strip() or product
     if existing is not None:
-        updates: dict[str, object] = {}
+        updates: dict[str, object] = {
+            "中文页面名称": category_zh_page_name,
+            "英文页面名称": category_en_page_name,
+        }
         if no_model:
             updates["是否无需型号"] = "是"
         if no_language:
@@ -10261,6 +10311,8 @@ def get_or_create_feishu_category_record(
         return existing
     category_fields: dict[str, object] = {
         "物料品类": product,
+        "中文页面名称": category_zh_page_name,
+        "英文页面名称": category_en_page_name,
         "是否无需型号": "是" if no_model else "否",
         "是否无需语种": "是" if no_language else "否",
         "启用状态": "启用",
@@ -10537,6 +10589,8 @@ def sync_feishu_category_inventory(
     target_models: list[str],
     target_languages: list[str],
     category_definition: str = "",
+    category_zh_page_name: str = "",
+    category_en_page_name: str = "",
     category_status: str = STATUS_ACTIVE,
     category_request_visible: str = REQUEST_PAGE_VISIBLE_VALUE,
     category_unit_price: float | None = None,
@@ -10568,6 +10622,8 @@ def sync_feishu_category_inventory(
     if not commercial_invoice_name:
         raise ValueError("商业发票产品名称不能为空。")
     category_definition = category_definition.strip()
+    category_zh_page_name = category_zh_page_name.strip() or new_product
+    category_en_page_name = category_en_page_name.strip() or new_product
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
 
@@ -10637,6 +10693,8 @@ def sync_feishu_category_inventory(
     if not category_record_id:
         category_fields: dict[str, object] = {
             "物料品类": new_product,
+            "中文页面名称": category_zh_page_name,
+            "英文页面名称": category_en_page_name,
             "是否无需型号": "是" if no_model else "否",
             "是否无需语种": "是" if no_language else "否",
             "启用状态": category_status,
@@ -10734,6 +10792,8 @@ def sync_feishu_category_inventory(
     deleted_count = feishu_batch_delete_record_ids("物料主数据", plan["delete_ids"])
     category_update_fields: dict[str, object] = {
         "物料品类": new_product,
+        "中文页面名称": category_zh_page_name,
+        "英文页面名称": category_en_page_name,
         "是否无需型号": "是" if no_model else "否",
         "是否无需语种": "是" if no_language else "否",
         "启用状态": category_status,
@@ -10762,6 +10822,8 @@ def sync_feishu_category_inventory(
         "deleted_count": deleted_count,
         "relation_update_count": relation_update_count,
         "category_definition": category_definition,
+        "category_zh_page_name": category_zh_page_name,
+        "category_en_page_name": category_en_page_name,
         "category_request_visible": category_request_visible,
         "commercial_invoice_name": commercial_invoice_name,
         "packing_list_product_type": packing_list_product_type,
@@ -12886,6 +12948,8 @@ def render_restock_form() -> None:
 def clear_new_category_creation_state() -> None:
     prefixes = (
         "category_name_new",
+        "category_zh_page_name_new",
+        "category_en_page_name_new",
         "category_status_new",
         "category_request_visible_new",
         "category_definition_new",
@@ -12924,6 +12988,8 @@ def restore_new_category_creation_state(
 ) -> None:
     allowed_form_keys = {
         "category_name_new",
+        "category_zh_page_name_new",
+        "category_en_page_name_new",
         "category_status_new",
         "category_request_visible_new",
         "category_definition_new",
@@ -12968,20 +13034,23 @@ def render_category_edit_review() -> None:
     metric_c.metric("库存差额", f"{int(draft.get('quantity_difference') or 0):+,}")
     with st.container(border=True):
         st.markdown("**品类基础信息变更清单**")
-        info_cols = st.columns(6)
+        info_cols = st.columns(4)
         render_request_review_field(info_cols[0], "原品类名称", draft.get("old_product"))
         render_request_review_field(info_cols[1], "修改后名称", draft.get("product"))
-        render_request_review_field(info_cols[2], "品类定义", draft.get("category_definition"))
+        render_request_review_field(info_cols[2], "中文页面名称", draft.get("category_zh_page_name"))
+        render_request_review_field(info_cols[3], "英文页面名称", draft.get("category_en_page_name"))
+        secondary_cols = st.columns(4)
+        render_request_review_field(secondary_cols[0], "品类定义", draft.get("category_definition"))
         render_request_review_field(
-            info_cols[3],
+            secondary_cols[1],
             "品类状态 / 申领页显示",
             f"{draft.get('category_status')} / {draft.get('category_request_visible')}",
         )
         render_request_review_field(
-            info_cols[4], "商业发票产品名称", draft.get("commercial_invoice_name")
+            secondary_cols[2], "商业发票产品名称", draft.get("commercial_invoice_name")
         )
         render_request_review_field(
-            info_cols[5], "装箱单产品类型", draft.get("packing_list_product_type")
+            secondary_cols[3], "装箱单产品类型", draft.get("packing_list_product_type")
         )
         st.markdown("**物料主数据变更清单**")
         if changed_rows:
@@ -13051,32 +13120,35 @@ def render_new_category_review() -> None:
 
     with st.container(border=True):
         render_section_header("01", "品类信息确认", "确认基础信息后编辑每一条新增库存行")
-        info_cols = st.columns(8)
+        info_cols = st.columns(5)
         render_request_review_field(info_cols[0], "物料品类", product)
-        render_request_review_field(info_cols[1], "品类定义", draft.get("category_definition"))
-        render_request_review_field(info_cols[2], "品类启用状态", category_status)
+        render_request_review_field(info_cols[1], "中文页面名称", draft.get("category_zh_page_name"))
+        render_request_review_field(info_cols[2], "英文页面名称", draft.get("category_en_page_name"))
+        render_request_review_field(info_cols[3], "品类定义", draft.get("category_definition"))
+        render_request_review_field(info_cols[4], "品类启用状态", category_status)
+        detail_cols = st.columns(5)
         render_request_review_field(
-            info_cols[3],
+            detail_cols[0],
             "品类在申领页显示",
             draft.get("category_request_visible"),
         )
         render_request_review_field(
-            info_cols[4],
+            detail_cols[1],
             "产品型号规则",
             NO_MODEL_TEXT if draft.get("no_model") else f"{len(list(draft.get('models') or []))} 个型号",
         )
         render_request_review_field(
-            info_cols[5],
+            detail_cols[2],
             "语种规则",
             NO_LANGUAGE_TEXT
             if draft.get("no_language")
             else f"{len(list(draft.get('languages') or []))} 个语种",
         )
         render_request_review_field(
-            info_cols[6], "商业发票产品名称", draft.get("commercial_invoice_name")
+            detail_cols[3], "商业发票产品名称", draft.get("commercial_invoice_name")
         )
         render_request_review_field(
-            info_cols[7], "装箱单产品类型", draft.get("packing_list_product_type")
+            detail_cols[4], "装箱单产品类型", draft.get("packing_list_product_type")
         )
 
     with st.container(border=True):
@@ -13178,6 +13250,8 @@ def render_new_category_review() -> None:
                         target_models=list(draft.get("models") or []),
                         target_languages=list(draft.get("languages") or []),
                         category_definition=str(draft.get("category_definition") or ""),
+                        category_zh_page_name=str(draft.get("category_zh_page_name") or product),
+                        category_en_page_name=str(draft.get("category_en_page_name") or product),
                         category_status=category_status,
                         category_request_visible=normalize_request_page_visibility(
                             draft.get("category_request_visible")
@@ -13917,6 +13991,12 @@ def render_add_category_form() -> None:
         (selected_category or {}).get("category_definition")
         or CATEGORY_DEFINITION_PRINT
     )
+    current_category_zh_page_name = str(
+        (selected_category or {}).get("zh_page_name") or old_product
+    )
+    current_category_en_page_name = str(
+        (selected_category or {}).get("en_page_name") or old_product
+    )
     current_category_unit_price = (selected_category or {}).get("unit_price")
     current_category_customs_code = str((selected_category or {}).get("customs_code") or "")
     current_commercial_invoice_name = str(
@@ -13937,6 +14017,29 @@ def render_add_category_form() -> None:
             placeholder="例如：新版宣传册(New Brochure)",
             key=product_key,
             **({} if product_key in st.session_state else {"value": old_product}),
+        ).strip()
+        page_name_zh_col, page_name_en_col = st.columns(2)
+        category_zh_page_name_key = f"category_zh_page_name_{editor_key}"
+        category_zh_page_name = page_name_zh_col.text_input(
+            "中文页面名称 *",
+            placeholder="例如：产品单页",
+            key=category_zh_page_name_key,
+            **(
+                {}
+                if category_zh_page_name_key in st.session_state
+                else {"value": current_category_zh_page_name}
+            ),
+        ).strip()
+        category_en_page_name_key = f"category_en_page_name_{editor_key}"
+        category_en_page_name = page_name_en_col.text_input(
+            "英文页面名称 *",
+            placeholder="例如：Product Flyer",
+            key=category_en_page_name_key,
+            **(
+                {}
+                if category_en_page_name_key in st.session_state
+                else {"value": current_category_en_page_name}
+            ),
         ).strip()
         metadata_definition_col, metadata_status_col, metadata_visibility_col = st.columns(
             3,
@@ -14718,6 +14821,10 @@ def render_add_category_form() -> None:
         existing_names = {str(item["category"]) for item in categories if item["record_id"] != category_id}
         if not product:
             st.error("请填写物料品类名称。")
+        elif not category_zh_page_name:
+            st.error("请填写中文页面名称。")
+        elif not category_en_page_name:
+            st.error("请填写英文页面名称。")
         elif product != old_product and product in existing_names:
             st.error("该物料品类名称已经存在。")
         elif not commercial_invoice_name:
@@ -14737,6 +14844,8 @@ def render_add_category_form() -> None:
         elif not is_edit:
             st.session_state[CATEGORY_CREATE_DRAFT_KEY] = {
                 "product": product,
+                "category_zh_page_name": category_zh_page_name,
+                "category_en_page_name": category_en_page_name,
                 "no_model": no_model,
                 "no_language": no_language,
                 "models": list(models),
@@ -14753,6 +14862,8 @@ def render_add_category_form() -> None:
                 "revision_key": revision_key,
                 "form_state": {
                     "category_name_new": product,
+                    "category_zh_page_name_new": category_zh_page_name,
+                    "category_en_page_name_new": category_en_page_name,
                     "category_status_new": category_status,
                     "category_request_visible_new": category_request_visible,
                     "category_definition_new": category_definition,
@@ -14774,6 +14885,8 @@ def render_add_category_form() -> None:
         else:
             sync_args = {
                 "old_product": old_product, "new_product": product, "no_model": no_model,
+                "category_zh_page_name": category_zh_page_name,
+                "category_en_page_name": category_en_page_name,
                 "no_language": no_language, "target_models": list(models),
                 "target_languages": list(languages), "category_status": category_status,
                 "category_request_visible": category_request_visible,
@@ -14788,6 +14901,8 @@ def render_add_category_form() -> None:
             }
             st.session_state[CATEGORY_EDIT_DRAFT_KEY] = {
                 "old_product": old_product, "product": product, "category_status": category_status,
+                "category_zh_page_name": category_zh_page_name,
+                "category_en_page_name": category_en_page_name,
                 "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
                 "commercial_invoice_name": commercial_invoice_name,
