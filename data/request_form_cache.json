@@ -1,7 +1,7 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-21 09:23:37",
+  "generated_at": "2026-08-21 09:59:04",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -223,6 +223,52 @@
       "en": "No model required"
     }
   },
+  "category_display_names": {
+    "产品单页(Product Flyer )": {
+      "zh": "产品单页(Product Flyer )",
+      "en": "产品单页(Product Flyer )"
+    },
+    "品牌手册(Product Brochure (All\nBanner)）": {
+      "zh": "品牌手册(Product Brochure (All\nBanner)）",
+      "en": "品牌手册(Product Brochure (All\nBanner)）"
+    },
+    "工业产品线手册IR(Industrial Product Line Brochure）": {
+      "zh": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "en": "工业产品线手册IR(Industrial Product Line Brochure）"
+    },
+    "清洁产品线手册CR(Cleaning Product Line Brochure）": {
+      "zh": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "en": "清洁产品线手册CR(Cleaning Product Line Brochure）"
+    },
+    "配送线产品手册SR(Delivery Robot Product Brochure)": {
+      "zh": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "en": "配送线产品手册SR(Delivery Robot Product Brochure)"
+    },
+    "具身线产品手册GR(Embodied AI Robot Product Brochure)": {
+      "zh": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "en": "具身线产品手册GR(Embodied AI Robot Product Brochure)"
+    },
+    "产品易拉宝(Product Roll-Up)": {
+      "zh": "产品易拉宝(Product Roll-Up)",
+      "en": "产品易拉宝(Product Roll-Up)"
+    },
+    "公仔(Plush Toy)": {
+      "zh": "公仔(Plush Toy)",
+      "en": "公仔(Plush Toy)"
+    },
+    "冰箱贴( Fridge Magnet)": {
+      "zh": "冰箱贴( Fridge Magnet)",
+      "en": "冰箱贴( Fridge Magnet)"
+    },
+    "笔记本礼盒(Notebook Gift Box)": {
+      "zh": "笔记本礼盒(Notebook Gift Box)",
+      "en": "笔记本礼盒(Notebook Gift Box)"
+    },
+    "普渡logo无纺布手提袋(PUDU logo bag)": {
+      "zh": "普渡logo无纺布手提袋(PUDU logo bag)",
+      "en": "普渡logo无纺布手提袋(PUDU logo bag)"
+    }
+  },
   "languages": [
     "无需语种",
     "英语(English)",
@@ -410,6 +456,22 @@
             "韩语(Korean)"
           ],
           "product_line": "SR"
+        },
+        {
+          "model": "FlashBot Arm",
+          "languages": [
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "GR"
         },
         {
           "model": "FlashBot Lite",
@@ -1371,7 +1433,7 @@
       ]
     }
   ],
-  "combination_count": 618,
+  "combination_count": 628,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -5712,8 +5774,78 @@
       "model": "T150",
       "language": "意大利语(Italian)",
       "quantity": 0
+    },
+    {
+      "material_code": "MAT-1312",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1313",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1314",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1315",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1316",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1317",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1318",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1319",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1320",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1321",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "韩语(Korean)",
+      "quantity": 0
     }
   ],
-  "row_count": 620,
+  "row_count": 630,
   "built_from": "page_data_static_snapshot"
 }
