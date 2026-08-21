@@ -30,7 +30,11 @@ class FakeQueueClient:
         *,
         default_view_name: str,
     ) -> dict:
-        table_id = "tbl-queue" if table_name == queue.QUEUE_TABLE_NAME else "tbl-payload"
+        table_id = {
+            queue.QUEUE_TABLE_NAME: "tbl-queue",
+            queue.QUEUE_PAYLOAD_TABLE_NAME: "tbl-payload",
+            queue.WORKER_REGISTRY_TABLE_NAME: "tbl-workers",
+        }[table_name]
         self.tables.append({"table_id": table_id, "name": table_name})
         self.fields[table_id] = [
             {"field_name": field["field_name"], "type": field["type"]}
@@ -90,6 +94,9 @@ class FakeQueueClient:
             created.append({"record_id": record["record_id"]})
         return created
 
+    def create_record(self, table_id: str, fields: dict) -> dict:
+        return self.batch_create_records(table_id, [fields])[0]
+
     def update_record(self, table_id: str, record_id: str, fields: dict) -> dict:
         self.updates.append((table_id, record_id, dict(fields)))
         record = next(
@@ -141,9 +148,45 @@ class SubmissionQueueTests(unittest.TestCase):
         field_names = {field["field_name"] for field in client.fields[table_id]}
         self.assertEqual(field_names, {name for name, _ in queue.QUEUE_FIELDS})
         self.assertEqual(client.tables[1]["name"], queue.QUEUE_PAYLOAD_TABLE_NAME)
+        self.assertEqual(client.tables[2]["name"], queue.WORKER_REGISTRY_TABLE_NAME)
 
         self.assertEqual(queue.ensure_submission_queue_table(client), table_id)
-        self.assertEqual(client.list_tables_count, 2)
+        self.assertEqual(client.list_tables_count, 3)
+
+    def test_worker_registry_selects_lowest_priority_healthy_node(self) -> None:
+        client = FakeQueueClient()
+        queue.ensure_submission_queue_table(client)
+
+        first_is_leader, _ = queue.update_worker_heartbeat(
+            client, "primary", "PC-1", 1, "V1.2.0", now_ms=100_000
+        )
+        second_is_leader, leader_id = queue.update_worker_heartbeat(
+            client, "standby", "PC-2", 100, "V1.2.0", now_ms=100_100
+        )
+
+        self.assertTrue(first_is_leader)
+        self.assertFalse(second_is_leader)
+        self.assertEqual(leader_id, "primary")
+
+    def test_worker_registry_fails_over_after_primary_heartbeat_expires(self) -> None:
+        client = FakeQueueClient()
+        queue.ensure_submission_queue_table(client)
+        queue.update_worker_heartbeat(
+            client, "primary", "PC-1", 1, "V1.2.0", now_ms=100_000
+        )
+
+        is_leader, leader_id = queue.update_worker_heartbeat(
+            client,
+            "standby",
+            "PC-2",
+            100,
+            "V1.2.0",
+            now_ms=200_000,
+            heartbeat_timeout_seconds=90,
+        )
+
+        self.assertTrue(is_leader)
+        self.assertEqual(leader_id, "standby")
 
     def test_large_payload_is_chunked_and_read_back_exactly(self) -> None:
         client = FakeQueueClient()

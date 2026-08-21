@@ -3,7 +3,9 @@ param(
     [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduSubmissionWorker"),
     [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
-    [string]$TaskName = "PUDU Submission Worker"
+    [string]$TaskName = "PUDU Submission Worker",
+    [ValidateRange(1, 10000)]
+    [int]$WorkerPriority = 100
 )
 
 $ErrorActionPreference = "Stop"
@@ -73,6 +75,7 @@ if (-not (Test-Path -LiteralPath $bootstrapPython)) {
     -SecretsPath $RunnerSecretsPath `
     -LogDirectory $LogDirectory `
     -BootstrapPython $bootstrapPython `
+    -WorkerPriority $WorkerPriority `
     -SetupOnly
 if ($LASTEXITCODE -ne 0) {
     throw "Submission queue setup failed. Check $LogDirectory\bootstrap.log"
@@ -88,7 +91,8 @@ $taskArguments = @(
     "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
     "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
     "-LogDirectory", ('"{0}"' -f $LogDirectory),
-    "-BootstrapPython", ('"{0}"' -f $bootstrapPython)
+    "-BootstrapPython", ('"{0}"' -f $bootstrapPython),
+    "-WorkerPriority", $WorkerPriority
 ) -join " "
 
 $action = New-ScheduledTaskAction `
@@ -134,3 +138,4 @@ Write-Host "Installed and started scheduled task: $TaskName" -ForegroundColor Gr
 Write-Host "Runner: $RunnerRoot"
 Write-Host "Queue and worker log: $LogDirectory\worker.log"
 Write-Host "Bootstrap log: $LogDirectory\bootstrap.log"
+Write-Host "Worker priority: $WorkerPriority (lower number runs first)"

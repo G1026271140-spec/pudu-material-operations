@@ -17,6 +17,21 @@ QUEUE_PAYLOAD_CHUNK_SIZE = 12_000
 QUEUE_PAYLOAD_FIELD_TASK_ID = "任务ID"
 QUEUE_PAYLOAD_FIELD_INDEX = "分片序号"
 QUEUE_PAYLOAD_FIELD_CONTENT = "分片内容"
+WORKER_REGISTRY_TABLE_NAME = "后台Worker节点"
+WORKER_FIELD_NODE_ID = "节点标识"
+WORKER_FIELD_HOSTNAME = "电脑名称"
+WORKER_FIELD_PRIORITY = "优先级"
+WORKER_FIELD_HEARTBEAT = "最后心跳时间"
+WORKER_FIELD_VERSION = "应用版本"
+WORKER_FIELD_STATUS = "节点状态"
+WORKER_REGISTRY_FIELDS: tuple[tuple[str, int], ...] = (
+    (WORKER_FIELD_NODE_ID, 1),
+    (WORKER_FIELD_HOSTNAME, 1),
+    (WORKER_FIELD_PRIORITY, 2),
+    (WORKER_FIELD_HEARTBEAT, 5),
+    (WORKER_FIELD_VERSION, 1),
+    (WORKER_FIELD_STATUS, 1),
+)
 QUEUE_TASK_TYPE_MATERIAL_REQUEST = "营销物料申请"
 QUEUE_TASK_TYPE_RESTOCK = "采购补库"
 QUEUE_TASK_TYPE_CATEGORY_SYNC = "物料品类同步"
@@ -178,6 +193,7 @@ def ensure_submission_queue_table(client: FeishuBitableClient) -> str:
             client.create_field(table_id, field_name, field_type)
     setattr(client, "_submission_queue_table_id", table_id)
     ensure_submission_payload_table(client)
+    ensure_worker_registry_table(client)
     return table_id
 
 
@@ -203,6 +219,81 @@ def ensure_submission_payload_table(client: FeishuBitableClient) -> str:
         raise RuntimeError("后台任务载荷表创建成功但未返回 table_id。")
     setattr(client, "_submission_payload_table_id", table_id)
     return table_id
+
+
+def ensure_worker_registry_table(client: FeishuBitableClient) -> str:
+    cached = str(getattr(client, "_worker_registry_table_id", "") or "").strip()
+    if cached:
+        return cached
+    matching = [
+        table for table in client.list_tables()
+        if str(table.get("name") or "").strip() == WORKER_REGISTRY_TABLE_NAME
+    ]
+    if matching:
+        table_id = str(matching[0].get("table_id") or "").strip()
+    else:
+        created = client.create_table(
+            WORKER_REGISTRY_TABLE_NAME,
+            [{"field_name": name, "type": field_type} for name, field_type in WORKER_REGISTRY_FIELDS],
+            default_view_name="节点列表",
+        )
+        table_id = str(created.get("table_id") or "").strip()
+    if not table_id:
+        raise RuntimeError("后台 Worker 节点表创建成功但未返回 table_id。")
+    existing_fields = {
+        str(field.get("field_name") or "").strip()
+        for field in client.list_fields(table_id)
+    }
+    for field_name, field_type in WORKER_REGISTRY_FIELDS:
+        if field_name not in existing_fields:
+            client.create_field(table_id, field_name, field_type)
+    setattr(client, "_worker_registry_table_id", table_id)
+    return table_id
+
+
+def update_worker_heartbeat(
+    client: FeishuBitableClient,
+    node_id: str,
+    hostname: str,
+    priority: int,
+    version: str,
+    *,
+    now_ms: int | None = None,
+    heartbeat_timeout_seconds: int = 90,
+) -> tuple[bool, str]:
+    now = timestamp_ms() if now_ms is None else int(now_ms)
+    table_id = ensure_worker_registry_table(client)
+    records = client.list_records(table_id)
+    fields = {
+        WORKER_FIELD_NODE_ID: node_id,
+        WORKER_FIELD_HOSTNAME: hostname,
+        WORKER_FIELD_PRIORITY: max(1, int(priority)),
+        WORKER_FIELD_HEARTBEAT: now,
+        WORKER_FIELD_VERSION: version,
+        WORKER_FIELD_STATUS: "在线",
+    }
+    own_record = next(
+        (
+            record for record in records
+            if _text(dict(record.get("fields") or {}).get(WORKER_FIELD_NODE_ID)) == node_id
+        ),
+        None,
+    )
+    if own_record is None:
+        client.create_record(table_id, fields)
+    else:
+        client.update_record(table_id, str(own_record.get("record_id") or ""), fields)
+    refreshed = client.list_records(table_id)
+    cutoff = now - max(30, int(heartbeat_timeout_seconds)) * 1000
+    active: list[tuple[int, str]] = []
+    for record in refreshed:
+        record_fields = dict(record.get("fields") or {})
+        candidate_id = _text(record_fields.get(WORKER_FIELD_NODE_ID))
+        heartbeat = _integer(record_fields.get(WORKER_FIELD_HEARTBEAT))
+        if candidate_id and heartbeat >= cutoff:
+            active.append((max(1, _integer(record_fields.get(WORKER_FIELD_PRIORITY)) or 100), candidate_id))
+    leader_id = min(active)[1] if active else node_id
+    return leader_id == node_id, leader_id
 
 
 def _load_chunked_payloads(client: FeishuBitableClient, task_ids: set[str]) -> dict[str, dict[str, Any]]:

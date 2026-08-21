@@ -11,6 +11,9 @@ param(
 
     [string]$BootstrapPython = "",
 
+    [ValidateRange(1, 10000)]
+    [int]$WorkerPriority = 100,
+
     [switch]$SetupOnly
 )
 
@@ -142,7 +145,7 @@ try {
     if (-not (Test-Path -LiteralPath $workerScriptPath)) {
         throw "Submission worker script was not found: $workerScriptPath"
     }
-    $workerArguments = @($workerScriptPath)
+    $workerArguments = @($workerScriptPath, "--worker-priority", [string]$WorkerPriority)
     if ($SetupOnly) {
         $workerArguments += "--setup"
         Write-RunnerLog "Creating or repairing the Feishu submission queue table."

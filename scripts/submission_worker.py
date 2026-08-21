@@ -37,6 +37,7 @@ from submission_queue import (
     ensure_submission_queue_table,
     fail_submission_task,
     retry_failed_submission_tasks,
+    update_worker_heartbeat,
 )
 
 
@@ -45,6 +46,14 @@ DEFAULT_LEASE_SECONDS = 600
 MAX_RETRIES = 10
 RELOAD_EXIT_CODE = 75
 ALREADY_RUNNING_EXIT_CODE = 76
+DEFAULT_WORKER_PRIORITY = 100
+WORKER_HEARTBEAT_INTERVAL_SECONDS = 15
+WORKER_HEARTBEAT_TIMEOUT_SECONDS = 90
+_LEADERSHIP_STATE: dict[str, object] = {
+    "checked_at": 0.0,
+    "is_leader": False,
+    "leader_id": "",
+}
 
 
 def repository_revision() -> str:
@@ -60,6 +69,37 @@ def repository_revision() -> str:
 
 def worker_id() -> str:
     return f"{socket.gethostname()}:{os.getpid()}"
+
+
+def worker_node_id() -> str:
+    return socket.gethostname().strip().casefold()
+
+
+def worker_has_leadership(client: object, priority: int) -> bool:
+    now = time.monotonic()
+    if now - float(_LEADERSHIP_STATE.get("checked_at") or 0) < WORKER_HEARTBEAT_INTERVAL_SECONDS:
+        return bool(_LEADERSHIP_STATE.get("is_leader"))
+    node_id = worker_node_id()
+    is_leader, leader_id = update_worker_heartbeat(
+        client,
+        node_id,
+        socket.gethostname(),
+        priority,
+        inventory_app.APP_VERSION,
+        heartbeat_timeout_seconds=WORKER_HEARTBEAT_TIMEOUT_SECONDS,
+    )
+    previous_leader = str(_LEADERSHIP_STATE.get("leader_id") or "")
+    _LEADERSHIP_STATE.update(
+        {"checked_at": now, "is_leader": is_leader, "leader_id": leader_id}
+    )
+    if leader_id != previous_leader:
+        logging.info(
+            "Queue leader is %s; current node=%s priority=%s",
+            leader_id,
+            node_id,
+            priority,
+        )
+    return is_leader
 
 
 def configure_logging() -> Path:
@@ -185,8 +225,20 @@ def process_task(
         return process_material_request(task, checkpoint)
     payload = dict(task.payload)
     if task.task_type == QUEUE_TASK_TYPE_RESTOCK:
-        lines = inventory_app.submit_inventory_restock(dict(payload["draft"]))
-        notified = inventory_app.notify_enabled_admins_of_restock(dict(payload["draft"]), lines)
+        progress = dict(task.result)
+        if not progress.get("write_done"):
+            lines = inventory_app.submit_inventory_restock(dict(payload["draft"]))
+            progress.update({"write_done": True, "lines": lines})
+            if checkpoint is not None:
+                checkpoint(progress)
+        else:
+            lines = [dict(item) for item in list(progress.get("lines") or []) if isinstance(item, dict)]
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            notified = inventory_app.notify_enabled_admins_of_restock(dict(payload["draft"]), lines)
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
         return {"line_count": len(lines), "notification_count": notified}
     if task.task_type == QUEUE_TASK_TYPE_CATEGORY_SYNC:
         progress = dict(task.result)
@@ -255,7 +307,22 @@ def process_task(
             "notification_count": notified,
         }
     if task.task_type == QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT:
-        return inventory_app.execute_dimension_management(dict(payload["draft"]))
+        progress = dict(task.result)
+        draft = dict(payload["draft"])
+        if not progress.get("write_done"):
+            result = inventory_app.execute_dimension_management(draft)
+            progress.update({"write_done": True, "write_result": dict(result)})
+            if checkpoint is not None:
+                checkpoint(progress)
+        else:
+            result = dict(progress.get("write_result") or {})
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            notified = inventory_app.notify_enabled_admins_of_dimension_management(draft, result)
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
+        return {**result, "notification_count": notified}
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT:
         return inventory_app.execute_request_inventory_edit(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
@@ -311,10 +378,15 @@ def notify_terminal_failure(task: SubmissionTask, error: Exception) -> None:
             logging.exception("Sending terminal task failure notification failed: %s", recipient)
 
 
-def process_one(worker_name: str) -> bool:
+def process_one(
+    worker_name: str,
+    worker_priority: int = DEFAULT_WORKER_PRIORITY,
+) -> bool:
     client = inventory_app.feishu_client()
     if client is None:
         raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
+    if not worker_has_leadership(client, worker_priority):
+        return False
     task = claim_next_submission_task(
         client,
         worker_name,
@@ -347,7 +419,7 @@ def process_one(worker_name: str) -> bool:
     return True
 
 
-def run_forever(poll_seconds: float) -> bool:
+def run_forever(poll_seconds: float, worker_priority: int) -> bool:
     name = worker_id()
     started_revision = repository_revision()
     logging.info(
@@ -358,7 +430,7 @@ def run_forever(poll_seconds: float) -> bool:
     )
     while True:
         try:
-            processed = process_one(name)
+            processed = process_one(name, worker_priority)
         except Exception:
             logging.exception("Submission worker polling failed")
             processed = False
@@ -412,6 +484,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--setup", action="store_true", help="Create or repair the queue table and exit")
     parser.add_argument("--retry-failed", action="store_true", help="Move failed tasks back to pending")
     parser.add_argument("--poll-seconds", type=float, default=DEFAULT_POLL_SECONDS)
+    parser.add_argument("--worker-priority", type=int, default=DEFAULT_WORKER_PRIORITY)
     args = parser.parse_args(argv)
 
     log_path = configure_logging()
@@ -432,10 +505,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.once:
             name = worker_id()
-            while process_one(name):
+            while process_one(name, args.worker_priority):
                 pass
             return 0
-        return RELOAD_EXIT_CODE if run_forever(args.poll_seconds) else 0
+        return RELOAD_EXIT_CODE if run_forever(args.poll_seconds, args.worker_priority) else 0
     finally:
         release_single_instance_mutex(mutex_handle)
 

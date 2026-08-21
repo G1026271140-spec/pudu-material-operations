@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.9"
+APP_VERSION = "V1.2.0"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -7330,7 +7330,7 @@ def material_restock_notification_card(
         "config": {"wide_screen_mode": True},
         "header": {
             "template": "green",
-            "title": {"tag": "plain_text", "content": "采购补库已完成"},
+            "title": {"tag": "plain_text", "content": "物料编辑通知｜采购补库已完成"},
         },
         "elements": elements,
     }
@@ -7348,6 +7348,70 @@ def notify_enabled_admins_of_restock(
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = material_restock_notification_card(draft, lines)
     return send_category_notification_to_available_admins(client, recipients, card)
+
+
+def dimension_management_notification_card(
+    draft: dict[str, object],
+    result: dict[str, object],
+) -> dict[str, object]:
+    kind = str(draft.get("kind") or "")
+    label = "型号" if kind == "model" else "语种"
+    operation = str(draft.get("operation") or "")
+    operation_label = {"create": "新增", "edit": "编辑", "delete": "删除"}.get(operation, operation)
+    changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
+    elements: list[dict[str, object]] = [{
+        "tag": "markdown",
+        "content": (
+            f"**操作：** {operation_label}{label}\n"
+            f"**{label}名称：** {_feishu_card_plain_text(draft.get('old_name')) or '-'}"
+            f" → {_feishu_card_plain_text(draft.get('name'))}\n"
+            f"**启用状态：** {_feishu_card_plain_text(draft.get('old_status')) or '-'}"
+            f" → {_feishu_card_plain_text(draft.get('status'))}\n"
+            f"**执行结果：** 新增物料 {int(result.get('created_material_count') or 0)} 条，"
+            f"修改物料 {int(result.get('updated_material_count') or 0)} 条，"
+            f"删除物料 {int(result.get('deleted_material_count') or 0)} 条"
+        ),
+    }]
+    if kind == "model" and operation != "delete":
+        elements.append({"tag": "markdown", "content": (
+            f"**中文页面名称：** {_feishu_card_plain_text(draft.get('old_zh_page_name')) or '-'}"
+            f" → {_feishu_card_plain_text(draft.get('zh_page_name'))}\n"
+            f"**英文页面名称：** {_feishu_card_plain_text(draft.get('old_en_page_name')) or '-'}"
+            f" → {_feishu_card_plain_text(draft.get('en_page_name'))}"
+        )})
+    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**关联物料变更明细**"}])
+    rows = dimension_change_dataframe(changes).to_dict("records") if changes else []
+    for index, row in enumerate(rows[:40], start=1):
+        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
+            f"{index:02d}. [{row.get('操作')}] {row.get('物料编码')} | "
+            f"{row.get('物料品类')} / {row.get('产品型号')} / {row.get('语种')}\n"
+            f"库存：{row.get('库存数量')}；状态：{row.get('启用状态')}；申领页显示：{row.get('申领页显示')}"
+        )}})
+    if not rows:
+        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "关联物料主数据没有变化。"}})
+    if len(rows) > 40:
+        elements.append({"tag": "markdown", "content": f"另有 **{len(rows) - 40}** 条变更，请在物料管理中查看。"})
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {"template": "blue", "title": {"tag": "plain_text", "content": f"物料编辑通知｜{label}管理已完成"}},
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_dimension_management(
+    draft: dict[str, object], result: dict[str, object]
+) -> int:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送型号或语种管理通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    return send_category_notification_to_available_admins(
+        client,
+        recipients,
+        dimension_management_notification_card(draft, result),
+    )
 
 
 def category_edit_change_rows(draft: dict[str, object]) -> list[dict[str, object]]:
@@ -13923,6 +13987,10 @@ def render_dimension_management_page(kind: str) -> None:
             "kind": kind,
             "operation": operation,
             "record_id": str((selected or {}).get("record_id") or ""),
+            "old_name": default_name,
+            "old_status": default_status,
+            "old_zh_page_name": default_zh_page_name,
+            "old_en_page_name": default_en_page_name,
             "name": normalized_name,
             "status": status,
             "zh_page_name": str(zh_page_name or normalized_name).strip(),
