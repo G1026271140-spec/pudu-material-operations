@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.6"
+APP_VERSION = "V1.1.7"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -706,6 +706,11 @@ def inject_global_styles() -> None:
             background: #F6F9FA;
             border-right: 1px solid var(--pudu-line);
         }
+        [data-testid="stSidebar"][aria-expanded="true"] {
+            width: 260px !important;
+            min-width: 260px !important;
+            max-width: 260px !important;
+        }
         [data-testid="stSidebar"] * {
             color: var(--pudu-ink);
         }
@@ -716,7 +721,7 @@ def inject_global_styles() -> None:
             padding-top: 0;
         }
         [data-testid="stSidebarUserContent"] {
-            padding-top: 1rem !important;
+            padding-top: 0.25rem !important;
         }
         [data-testid="stSidebar"] hr {
             margin: 1rem 0;
@@ -725,8 +730,9 @@ def inject_global_styles() -> None:
         [data-testid="stSidebar"] .stButton > button,
         [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
             justify-content: flex-start;
-            min-height: 40px;
-            padding: 0 0.75rem;
+            min-height: 36px;
+            padding: 0 0.6rem;
+            font-size: 0.78rem;
             background: #FFFFFF;
             border: 1px solid var(--pudu-line);
             color: var(--pudu-ink);
@@ -777,8 +783,8 @@ def inject_global_styles() -> None:
             opacity: 1;
         }
         .st-key-sidebar_brand {
-            margin-bottom: 1rem;
-            padding: 0.25rem 0 1rem;
+            margin-bottom: 0.65rem;
+            padding: 0 0 0.65rem;
             border-bottom: 1px solid var(--pudu-line);
         }
         .st-key-sidebar_brand [data-testid="stImage"] {
@@ -796,18 +802,18 @@ def inject_global_styles() -> None:
         }
         .pudu-brand-name {
             color: var(--pudu-ink) !important;
-            font-size: 1rem;
+            font-size: 0.86rem;
             font-weight: 680;
             line-height: 1.35;
         }
         .pudu-brand-subtitle {
             color: var(--pudu-muted) !important;
-            font-size: 0.75rem;
+            font-size: 0.66rem;
             margin-top: 0.1rem;
         }
         .pudu-sidebar-label {
             color: var(--pudu-subtle) !important;
-            font-size: 0.72rem;
+            font-size: 0.66rem;
             font-weight: 650;
             margin: 0.15rem 0 0.5rem;
             text-transform: uppercase;
@@ -1240,14 +1246,6 @@ def inject_global_styles() -> None:
         .stApp:has(.pudu-request-page-marker) [data-testid="stMainBlockContainer"] {
             padding-top: 0.3rem;
         }
-        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebarUserContent"] {
-            padding-top: 0.25rem !important;
-        }
-        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"][aria-expanded="true"] {
-            width: 260px !important;
-            min-width: 260px !important;
-            max-width: 260px !important;
-        }
         [data-testid="stSidebar"][aria-expanded="false"] {
             position: fixed !important;
             top: 0 !important;
@@ -1286,24 +1284,6 @@ def inject_global_styles() -> None:
         [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarNav"],
         [data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarResizeHandle"] {
             display: none !important;
-        }
-        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] .stButton > button,
-        .stApp:has(.pudu-request-page-marker) [data-testid="stSidebar"] [data-testid="stLinkButton"] > a {
-            min-height: 36px;
-            padding: 0 0.6rem;
-            font-size: 0.78rem;
-        }
-        .stApp:has(.pudu-request-page-marker) .pudu-brand-name {
-            font-size: 0.86rem;
-        }
-        .stApp:has(.pudu-request-page-marker) .pudu-brand-subtitle,
-        .stApp:has(.pudu-request-page-marker) .pudu-sidebar-label {
-            font-size: 0.66rem;
-        }
-        .stApp:has(.pudu-request-page-marker) .st-key-sidebar_brand {
-            margin-bottom: 0.65rem;
-            padding-top: 0;
-            padding-bottom: 0.65rem;
         }
         .stApp:has(.pudu-request-page-marker) .pudu-page-header {
             margin-bottom: 0.7rem;
