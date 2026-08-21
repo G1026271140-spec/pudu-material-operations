@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-20 18:37:42",
+  "generated_at": "2026-08-21 09:23:36",
   "tables": {
     "物料品类": [
       {
@@ -589,8 +589,6 @@
                 "recvpUi8WJfsud",
                 "recvpUi8WJp8te",
                 "recvpUi8WJDQvA",
-                "recvpUi8WJMTgE",
-                "recvpUi8WJUMXR",
                 "recvrRmemAulor",
                 "recvrRmemAdKB0",
                 "recvrRmemAQWgC",
@@ -599,16 +597,6 @@
                 "recvrRmemAoCPN",
                 "recvrRmemAbrm8",
                 "recvrRmemAcfd3",
-                "recvrRmemA4xUn",
-                "recvrRmemAkQKi",
-                "recvrRmemATkCM",
-                "recvrRmemAZLK9",
-                "recvrRmemAMXCb",
-                "recvrRmemAqPnl",
-                "recvrRmemA0sZJ",
-                "recvrRmemAOGkG",
-                "recvrRmemAJNMF",
-                "recvrRmemA45zr",
                 "recvrRmemAKTOr",
                 "recvrRmemAxzKL",
                 "recvrRmemAf0mv",
@@ -648,16 +636,6 @@
                 "recvrRmemA7dRy",
                 "recvrRmemAW1j5",
                 "recvrRmemAfSUI",
-                "recvrRmemAAO8J",
-                "recvrRmemAIU8H",
-                "recvrRmemAuixa",
-                "recvrRmemA9QeL",
-                "recvrRmemAWJVJ",
-                "recvrRmemA1rE1",
-                "recvrRmemA8F9X",
-                "recvrRmemACdMI",
-                "recvrRmemAnGk7",
-                "recvrRmemARvCZ",
                 "recvrRmemA9rR0",
                 "recvrRmemAyhTS",
                 "recvrRmemAli0f",
@@ -705,7 +683,7 @@
                 "recvsPDL1VNJR0"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0181,MAT-0182,MAT-0183,MAT-0184,MAT-0185,MAT-0186,MAT-0187,MAT-0188,MAT-0189,MAT-0190,MAT-0191,MAT-0192,MAT-0193,MAT-0194,MAT-0195,MAT-0196,MAT-0197,MAT-0198,MAT-0199,MAT-0200,MAT-0201,MAT-0202,MAT-0203,MAT-0204,MAT-0205,MAT-0206,MAT-0207,MAT-0208,MAT-0209,MAT-0210,MAT-0211,MAT-0212,MAT-0213,MAT-0214,MAT-0215,MAT-0216,MAT-0217,MAT-0218,MAT-0219,MAT-0220,MAT-0221,MAT-0222,MAT-0223,MAT-0224,MAT-0225,MAT-0226,MAT-0227,MAT-0228,MAT-0229,MAT-0230,MAT-0233,MAT-0234,MAT-0235,MAT-0236,MAT-0237,MAT-0238,MAT-0240,MAT-0241,MAT-0242,MAT-0243,MAT-0244,MAT-0245,MAT-0246,MAT-0247,MAT-0248,MAT-0249,MAT-0250,MAT-0251,MAT-0252,MAT-0253,MAT-0254,MAT-0255,MAT-0256,MAT-0257,MAT-0258,MAT-0259,MAT-0260,MAT-0261,MAT-0262,MAT-0263,MAT-0264,MAT-0265,MAT-0266,MAT-0267,MAT-0268,MAT-0269,MAT-0270,MAT-0271,MAT-0272,MAT-0273,MAT-0274,MAT-0275,MAT-0276,MAT-0277,MAT-0278,MAT-0279,MAT-0280,MAT-0281,MAT-0282,MAT-0283,MAT-0284,MAT-0285,MAT-0286,MAT-0287,MAT-0288,MAT-0289,MAT-0290,MAT-0301,MAT-0302,MAT-0303,MAT-0304,MAT-0305,MAT-0306,MAT-0307,MAT-0308,MAT-0309,MAT-0310,MAT-0311,MAT-0312,MAT-0313,MAT-0314,MAT-0315,MAT-0316,MAT-0317,MAT-0318,MAT-0319,MAT-0320,MAT-0321,MAT-0322,MAT-0323,MAT-0324,MAT-0325,MAT-0326,MAT-0327,MAT-0328,MAT-0329,MAT-0330,MAT-0331,MAT-0332,MAT-0333,MAT-0334,MAT-0335,MAT-0336,MAT-0337,MAT-0338,MAT-0339,MAT-0340,MAT-0341,MAT-0342,MAT-0349,MAT-0351,MAT-0352,MAT-0353,MAT-0354,MAT-0355,MAT-0356,MAT-0357,MAT-0358,MAT-0359,MAT-0360,MAT-0993,MAT-0994,MAT-0995,MAT-0996,MAT-0997,MAT-0998,MAT-0999,MAT-1000,MAT-1001,MAT-1002,MAT-1003,MAT-1004,MAT-1005,MAT-1006,MAT-1007,MAT-1008,MAT-1009,MAT-1010,MAT-1011,MAT-1012,MAT-1013,MAT-1014,MAT-1015,MAT-1016,MAT-1017,MAT-1018,MAT-1019,MAT-1020,MAT-1021,MAT-1022,MAT-1023,MAT-1026,MAT-1027,MAT-1028,MAT-1029,MAT-1030,MAT-1036,MAT-1037,MAT-1038,MAT-1039,MAT-1040,MAT-1041,MAT-1042,MAT-1043,MAT-1044,MAT-1045,MAT-1046,MAT-1047,MAT-1048,MAT-1049,MAT-1050,MAT-1051,MAT-1052,MAT-1053,MAT-1054,MAT-1055,MAT-1056,MAT-1057,MAT-1058,MAT-1059,MAT-1060,MAT-1061,MAT-1062,MAT-1063,MAT-1064,MAT-1065,MAT-1066,MAT-1067,MAT-1068,MAT-1069,MAT-1070,MAT-1071,MAT-1072,MAT-1073,MAT-1074,MAT-1085,MAT-1086,MAT-1087,MAT-1088,MAT-1090,MAT-1091,MAT-1092,MAT-1093,MAT-1094,MAT-1095,MAT-1096,MAT-1097,MAT-1098,MAT-1099,MAT-1100,MAT-1101,MAT-1102,MAT-1103,MAT-1104,MAT-1105,MAT-1106,MAT-1107,MAT-1108,MAT-1109,MAT-1110,MAT-1111,MAT-1112,MAT-1113,MAT-1114,MAT-1116,MAT-1117,MAT-1118,MAT-1119,MAT-1120,MAT-1121,MAT-1122,MAT-1123,MAT-1124,MAT-1125,MAT-1126,MAT-1127,MAT-1128,MAT-1129,MAT-1130,MAT-1131,MAT-1132,MAT-1133,MAT-1134,MAT-1135,MAT-1136,MAT-1137,MAT-1270,MAT-1271,MAT-1272,MAT-1273,MAT-1274,MAT-1275,MAT-1276,MAT-1277,MAT-1278,MAT-1279,MAT-1280,MAT-1291,MAT-1292,MAT-1293,MAT-1294,MAT-1295,MAT-1296,MAT-1297,MAT-1298,MAT-1299,MAT-1300,MAT-1301",
+              "text": "MAT-0181,MAT-0182,MAT-0183,MAT-0184,MAT-0185,MAT-0186,MAT-0187,MAT-0188,MAT-0189,MAT-0190,MAT-0191,MAT-0192,MAT-0193,MAT-0194,MAT-0195,MAT-0196,MAT-0197,MAT-0198,MAT-0199,MAT-0200,MAT-0201,MAT-0202,MAT-0203,MAT-0204,MAT-0205,MAT-0206,MAT-0207,MAT-0208,MAT-0209,MAT-0210,MAT-0211,MAT-0212,MAT-0213,MAT-0214,MAT-0215,MAT-0216,MAT-0217,MAT-0218,MAT-0219,MAT-0220,MAT-0221,MAT-0222,MAT-0223,MAT-0224,MAT-0225,MAT-0226,MAT-0227,MAT-0228,MAT-0229,MAT-0230,MAT-0233,MAT-0234,MAT-0235,MAT-0236,MAT-0237,MAT-0238,MAT-0240,MAT-0241,MAT-0242,MAT-0243,MAT-0244,MAT-0245,MAT-0246,MAT-0247,MAT-0248,MAT-0249,MAT-0250,MAT-0251,MAT-0252,MAT-0253,MAT-0254,MAT-0255,MAT-0256,MAT-0257,MAT-0258,MAT-0259,MAT-0260,MAT-0261,MAT-0262,MAT-0263,MAT-0264,MAT-0265,MAT-0266,MAT-0267,MAT-0268,MAT-0269,MAT-0270,MAT-0271,MAT-0272,MAT-0273,MAT-0274,MAT-0275,MAT-0276,MAT-0277,MAT-0278,MAT-0279,MAT-0280,MAT-0281,MAT-0282,MAT-0283,MAT-0284,MAT-0285,MAT-0286,MAT-0287,MAT-0288,MAT-0289,MAT-0290,MAT-0301,MAT-0302,MAT-0303,MAT-0304,MAT-0305,MAT-0306,MAT-0307,MAT-0308,MAT-0309,MAT-0310,MAT-0311,MAT-0312,MAT-0313,MAT-0314,MAT-0315,MAT-0316,MAT-0317,MAT-0318,MAT-0319,MAT-0320,MAT-0321,MAT-0322,MAT-0323,MAT-0324,MAT-0325,MAT-0326,MAT-0327,MAT-0328,MAT-0329,MAT-0330,MAT-0331,MAT-0332,MAT-0333,MAT-0334,MAT-0335,MAT-0336,MAT-0337,MAT-0338,MAT-0339,MAT-0340,MAT-0341,MAT-0342,MAT-0349,MAT-0351,MAT-0352,MAT-0353,MAT-0354,MAT-0355,MAT-0356,MAT-0357,MAT-0358,MAT-0359,MAT-0360,MAT-0993,MAT-0994,MAT-0995,MAT-0996,MAT-0997,MAT-0998,MAT-0999,MAT-1000,MAT-1001,MAT-1002,MAT-1003,MAT-1004,MAT-1005,MAT-1006,MAT-1007,MAT-1008,MAT-1009,MAT-1010,MAT-1011,MAT-1012,MAT-1013,MAT-1014,MAT-1015,MAT-1016,MAT-1017,MAT-1018,MAT-1019,MAT-1020,MAT-1021,MAT-1022,MAT-1023,MAT-1026,MAT-1027,MAT-1028,MAT-1036,MAT-1037,MAT-1038,MAT-1039,MAT-1040,MAT-1041,MAT-1042,MAT-1043,MAT-1054,MAT-1055,MAT-1056,MAT-1057,MAT-1058,MAT-1059,MAT-1060,MAT-1061,MAT-1062,MAT-1063,MAT-1064,MAT-1065,MAT-1066,MAT-1067,MAT-1068,MAT-1069,MAT-1070,MAT-1071,MAT-1072,MAT-1073,MAT-1074,MAT-1085,MAT-1086,MAT-1087,MAT-1088,MAT-1090,MAT-1091,MAT-1092,MAT-1093,MAT-1094,MAT-1095,MAT-1096,MAT-1097,MAT-1098,MAT-1099,MAT-1100,MAT-1101,MAT-1102,MAT-1103,MAT-1114,MAT-1116,MAT-1117,MAT-1118,MAT-1119,MAT-1120,MAT-1121,MAT-1122,MAT-1123,MAT-1124,MAT-1125,MAT-1126,MAT-1127,MAT-1128,MAT-1129,MAT-1130,MAT-1131,MAT-1132,MAT-1133,MAT-1134,MAT-1135,MAT-1136,MAT-1137,MAT-1270,MAT-1271,MAT-1272,MAT-1273,MAT-1274,MAT-1275,MAT-1276,MAT-1277,MAT-1278,MAT-1279,MAT-1280,MAT-1291,MAT-1292,MAT-1293,MAT-1294,MAT-1295,MAT-1296,MAT-1297,MAT-1298,MAT-1299,MAT-1300,MAT-1301",
               "text_arr": [
                 "MAT-0181",
                 "MAT-0182",
@@ -901,8 +879,6 @@
                 "MAT-1026",
                 "MAT-1027",
                 "MAT-1028",
-                "MAT-1029",
-                "MAT-1030",
                 "MAT-1036",
                 "MAT-1037",
                 "MAT-1038",
@@ -911,16 +887,6 @@
                 "MAT-1041",
                 "MAT-1042",
                 "MAT-1043",
-                "MAT-1044",
-                "MAT-1045",
-                "MAT-1046",
-                "MAT-1047",
-                "MAT-1048",
-                "MAT-1049",
-                "MAT-1050",
-                "MAT-1051",
-                "MAT-1052",
-                "MAT-1053",
                 "MAT-1054",
                 "MAT-1055",
                 "MAT-1056",
@@ -960,16 +926,6 @@
                 "MAT-1101",
                 "MAT-1102",
                 "MAT-1103",
-                "MAT-1104",
-                "MAT-1105",
-                "MAT-1106",
-                "MAT-1107",
-                "MAT-1108",
-                "MAT-1109",
-                "MAT-1110",
-                "MAT-1111",
-                "MAT-1112",
-                "MAT-1113",
                 "MAT-1114",
                 "MAT-1116",
                 "MAT-1117",
@@ -1026,9 +982,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Flyers",
@@ -1099,9 +1055,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Brochures",
@@ -1176,9 +1132,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Brochures",
@@ -1249,9 +1205,9 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Brochures",
@@ -1304,9 +1260,9 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Brochures",
@@ -1361,9 +1317,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Brochures",
@@ -1631,16 +1587,6 @@
                 "recvswf3qYscZN",
                 "recvswf3qYTGsS",
                 "recvswf3qYQjDv",
-                "recvswf3qYblwU",
-                "recvswf3qYuVdA",
-                "recvswf3qY6mIy",
-                "recvswf3qYclHa",
-                "recvswf3qYlG0x",
-                "recvswf3qYLidZ",
-                "recvswf3qY8Tz3",
-                "recvswf3qYyHe8",
-                "recvswf3qYFKUh",
-                "recvswf3qYsUPk",
                 "recvswf3qYqTdH",
                 "recvswf3qY8ruD",
                 "recvswf3qYNaZV",
@@ -1711,16 +1657,6 @@
                 "recvswf3qYDTZC",
                 "recvswf3qYXf7m",
                 "recvswf3qYCQAv",
-                "recvswf3qYN5KO",
-                "recvswf3qYMI6E",
-                "recvswf3qYHT4t",
-                "recvswf3qYlAZ6",
-                "recvswf3qYqleg",
-                "recvswf3qYt56O",
-                "recvswf3qYZhHO",
-                "recvswf3qYM4oc",
-                "recvswf3qY7mhv",
-                "recvswf3qYGPxz",
                 "recvsPDL1VWtez",
                 "recvsPDL1VfNtW",
                 "recvsPDL1VROqO",
@@ -1743,7 +1679,7 @@
                 "recvsPDL1VLyyv"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0401,MAT-0402,MAT-0403,MAT-0404,MAT-0405,MAT-0406,MAT-0407,MAT-0408,MAT-0409,MAT-0410,MAT-0411,MAT-0412,MAT-0413,MAT-0414,MAT-0415,MAT-0416,MAT-0417,MAT-0418,MAT-0419,MAT-0420,MAT-0421,MAT-0422,MAT-0423,MAT-0424,MAT-0425,MAT-0426,MAT-0427,MAT-0428,MAT-0429,MAT-0430,MAT-0431,MAT-0432,MAT-0433,MAT-0434,MAT-0435,MAT-0436,MAT-0437,MAT-0438,MAT-0439,MAT-0440,MAT-0441,MAT-0442,MAT-0443,MAT-0444,MAT-0445,MAT-0446,MAT-0447,MAT-0448,MAT-0449,MAT-0450,MAT-0452,MAT-0453,MAT-0454,MAT-0455,MAT-0456,MAT-0457,MAT-0458,MAT-0459,MAT-0460,MAT-0461,MAT-0462,MAT-0463,MAT-0464,MAT-0465,MAT-0466,MAT-0467,MAT-0468,MAT-0469,MAT-0470,MAT-0471,MAT-0472,MAT-0473,MAT-0474,MAT-0475,MAT-0476,MAT-0477,MAT-0478,MAT-0479,MAT-0480,MAT-0481,MAT-0482,MAT-0483,MAT-0484,MAT-0485,MAT-0486,MAT-0487,MAT-0488,MAT-0489,MAT-0490,MAT-0491,MAT-0492,MAT-0493,MAT-0494,MAT-0495,MAT-0496,MAT-0497,MAT-0498,MAT-0499,MAT-0500,MAT-0501,MAT-0502,MAT-0503,MAT-0504,MAT-0505,MAT-0506,MAT-0507,MAT-0508,MAT-0509,MAT-0510,MAT-0521,MAT-0522,MAT-0523,MAT-0524,MAT-0525,MAT-0526,MAT-0527,MAT-0528,MAT-0529,MAT-0530,MAT-0531,MAT-0532,MAT-0533,MAT-0534,MAT-0535,MAT-0536,MAT-0537,MAT-0538,MAT-0539,MAT-0540,MAT-0541,MAT-0542,MAT-0543,MAT-0544,MAT-0545,MAT-0546,MAT-0547,MAT-0548,MAT-0549,MAT-0550,MAT-0551,MAT-0552,MAT-0553,MAT-0554,MAT-0555,MAT-0556,MAT-0557,MAT-0558,MAT-0559,MAT-0560,MAT-0561,MAT-0571,MAT-0572,MAT-0573,MAT-0574,MAT-0575,MAT-0576,MAT-0577,MAT-0578,MAT-0579,MAT-0580,MAT-1149,MAT-1150,MAT-1151,MAT-1152,MAT-1153,MAT-1154,MAT-1155,MAT-1156,MAT-1157,MAT-1158,MAT-1159,MAT-1160,MAT-1161,MAT-1162,MAT-1163,MAT-1164,MAT-1165,MAT-1166,MAT-1167,MAT-1168,MAT-1169,MAT-1170,MAT-1171,MAT-1172,MAT-1173,MAT-1174,MAT-1175,MAT-1176,MAT-1177,MAT-1178,MAT-1179,MAT-1180,MAT-1181,MAT-1182,MAT-1183,MAT-1184,MAT-1185,MAT-1186,MAT-1187,MAT-1188,MAT-1189,MAT-1190,MAT-1191,MAT-1192,MAT-1193,MAT-1194,MAT-1195,MAT-1196,MAT-1197,MAT-1198,MAT-1199,MAT-1200,MAT-1201,MAT-1202,MAT-1203,MAT-1204,MAT-1205,MAT-1206,MAT-1207,MAT-1208,MAT-1209,MAT-1210,MAT-1211,MAT-1212,MAT-1213,MAT-1214,MAT-1215,MAT-1216,MAT-1217,MAT-1218,MAT-1219,MAT-1220,MAT-1221,MAT-1222,MAT-1223,MAT-1224,MAT-1225,MAT-1226,MAT-1227,MAT-1228,MAT-1229,MAT-1230,MAT-1231,MAT-1232,MAT-1233,MAT-1234,MAT-1235,MAT-1236,MAT-1237,MAT-1238,MAT-1239,MAT-1240,MAT-1241,MAT-1242,MAT-1243,MAT-1244,MAT-1245,MAT-1246,MAT-1247,MAT-1248,MAT-1249,MAT-1250,MAT-1251,MAT-1252,MAT-1253,MAT-1254,MAT-1255,MAT-1256,MAT-1257,MAT-1258,MAT-1259,MAT-1260,MAT-1261,MAT-1262,MAT-1263,MAT-1264,MAT-1265,MAT-1266,MAT-1267,MAT-1268,MAT-1281,MAT-1282,MAT-1283,MAT-1284,MAT-1285,MAT-1286,MAT-1287,MAT-1288,MAT-1289,MAT-1290,MAT-1302,MAT-1303,MAT-1304,MAT-1305,MAT-1306,MAT-1307,MAT-1308,MAT-1309,MAT-1310,MAT-1311",
+              "text": "MAT-0401,MAT-0402,MAT-0403,MAT-0404,MAT-0405,MAT-0406,MAT-0407,MAT-0408,MAT-0409,MAT-0410,MAT-0411,MAT-0412,MAT-0413,MAT-0414,MAT-0415,MAT-0416,MAT-0417,MAT-0418,MAT-0419,MAT-0420,MAT-0421,MAT-0422,MAT-0423,MAT-0424,MAT-0425,MAT-0426,MAT-0427,MAT-0428,MAT-0429,MAT-0430,MAT-0431,MAT-0432,MAT-0433,MAT-0434,MAT-0435,MAT-0436,MAT-0437,MAT-0438,MAT-0439,MAT-0440,MAT-0441,MAT-0442,MAT-0443,MAT-0444,MAT-0445,MAT-0446,MAT-0447,MAT-0448,MAT-0449,MAT-0450,MAT-0452,MAT-0453,MAT-0454,MAT-0455,MAT-0456,MAT-0457,MAT-0458,MAT-0459,MAT-0460,MAT-0461,MAT-0462,MAT-0463,MAT-0464,MAT-0465,MAT-0466,MAT-0467,MAT-0468,MAT-0469,MAT-0470,MAT-0471,MAT-0472,MAT-0473,MAT-0474,MAT-0475,MAT-0476,MAT-0477,MAT-0478,MAT-0479,MAT-0480,MAT-0481,MAT-0482,MAT-0483,MAT-0484,MAT-0485,MAT-0486,MAT-0487,MAT-0488,MAT-0489,MAT-0490,MAT-0491,MAT-0492,MAT-0493,MAT-0494,MAT-0495,MAT-0496,MAT-0497,MAT-0498,MAT-0499,MAT-0500,MAT-0501,MAT-0502,MAT-0503,MAT-0504,MAT-0505,MAT-0506,MAT-0507,MAT-0508,MAT-0509,MAT-0510,MAT-0521,MAT-0522,MAT-0523,MAT-0524,MAT-0525,MAT-0526,MAT-0527,MAT-0528,MAT-0529,MAT-0530,MAT-0531,MAT-0532,MAT-0533,MAT-0534,MAT-0535,MAT-0536,MAT-0537,MAT-0538,MAT-0539,MAT-0540,MAT-0541,MAT-0542,MAT-0543,MAT-0544,MAT-0545,MAT-0546,MAT-0547,MAT-0548,MAT-0549,MAT-0550,MAT-0551,MAT-0552,MAT-0553,MAT-0554,MAT-0555,MAT-0556,MAT-0557,MAT-0558,MAT-0559,MAT-0560,MAT-0561,MAT-0571,MAT-0572,MAT-0573,MAT-0574,MAT-0575,MAT-0576,MAT-0577,MAT-0578,MAT-0579,MAT-0580,MAT-1149,MAT-1150,MAT-1151,MAT-1152,MAT-1153,MAT-1154,MAT-1155,MAT-1156,MAT-1157,MAT-1158,MAT-1159,MAT-1160,MAT-1161,MAT-1162,MAT-1163,MAT-1164,MAT-1165,MAT-1166,MAT-1167,MAT-1168,MAT-1169,MAT-1170,MAT-1171,MAT-1172,MAT-1173,MAT-1174,MAT-1175,MAT-1176,MAT-1177,MAT-1178,MAT-1189,MAT-1190,MAT-1191,MAT-1192,MAT-1193,MAT-1194,MAT-1195,MAT-1196,MAT-1197,MAT-1198,MAT-1199,MAT-1200,MAT-1201,MAT-1202,MAT-1203,MAT-1204,MAT-1205,MAT-1206,MAT-1207,MAT-1208,MAT-1209,MAT-1210,MAT-1211,MAT-1212,MAT-1213,MAT-1214,MAT-1215,MAT-1216,MAT-1217,MAT-1218,MAT-1219,MAT-1220,MAT-1221,MAT-1222,MAT-1223,MAT-1224,MAT-1225,MAT-1226,MAT-1227,MAT-1228,MAT-1229,MAT-1230,MAT-1231,MAT-1232,MAT-1233,MAT-1234,MAT-1235,MAT-1236,MAT-1237,MAT-1238,MAT-1239,MAT-1240,MAT-1241,MAT-1242,MAT-1243,MAT-1244,MAT-1245,MAT-1246,MAT-1247,MAT-1248,MAT-1249,MAT-1250,MAT-1251,MAT-1252,MAT-1253,MAT-1254,MAT-1255,MAT-1256,MAT-1257,MAT-1258,MAT-1281,MAT-1282,MAT-1283,MAT-1284,MAT-1285,MAT-1286,MAT-1287,MAT-1288,MAT-1289,MAT-1290,MAT-1302,MAT-1303,MAT-1304,MAT-1305,MAT-1306,MAT-1307,MAT-1308,MAT-1309,MAT-1310,MAT-1311",
               "text_arr": [
                 "MAT-0401",
                 "MAT-0402",
@@ -1935,16 +1871,6 @@
                 "MAT-1176",
                 "MAT-1177",
                 "MAT-1178",
-                "MAT-1179",
-                "MAT-1180",
-                "MAT-1181",
-                "MAT-1182",
-                "MAT-1183",
-                "MAT-1184",
-                "MAT-1185",
-                "MAT-1186",
-                "MAT-1187",
-                "MAT-1188",
                 "MAT-1189",
                 "MAT-1190",
                 "MAT-1191",
@@ -2015,16 +1941,6 @@
                 "MAT-1256",
                 "MAT-1257",
                 "MAT-1258",
-                "MAT-1259",
-                "MAT-1260",
-                "MAT-1261",
-                "MAT-1262",
-                "MAT-1263",
-                "MAT-1264",
-                "MAT-1265",
-                "MAT-1266",
-                "MAT-1267",
-                "MAT-1268",
                 "MAT-1281",
                 "MAT-1282",
                 "MAT-1283",
@@ -2056,9 +1972,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Banners",
@@ -2141,9 +2057,9 @@
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Give aways",
@@ -2232,9 +2148,9 @@
               "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Give aways",
@@ -2287,9 +2203,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Give aways",
@@ -2360,9 +2276,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Give aways",
@@ -2571,9 +2487,9 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Give aways",
@@ -2718,9 +2634,9 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A763%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A764%7D%7D"
             }
           ],
           "装箱单产品类型": "Give aways",
@@ -3793,7 +3709,7 @@
       },
       {
         "fields": {
-          "中文页面名称": "贝拉Bella",
+          "中文页面名称": "贝拉 Bella",
           "产品型号": "BellaBot",
           "产品型号编码": "X002",
           "产品线": "SR",
@@ -4185,7 +4101,7 @@
       },
       {
         "fields": {
-          "中文页面名称": "闪电匣FlashBot",
+          "中文页面名称": "闪电匣 FlashBot",
           "产品型号": "FlashBot",
           "产品型号编码": "X031",
           "产品线": "SR",
@@ -4259,7 +4175,7 @@
       },
       {
         "fields": {
-          "中文页面名称": "闪电匣Lite",
+          "中文页面名称": "闪电匣Lite FlashBot Lite",
           "产品型号": "FlashBot Lite",
           "产品型号编码": "X021",
           "产品线": "SR",
@@ -4407,7 +4323,7 @@
       },
       {
         "fields": {
-          "中文页面名称": "闪电匣Max",
+          "中文页面名称": "闪电匣Max FlashBot Max",
           "产品型号": "FlashBot Max",
           "产品型号编码": "X022",
           "产品线": "SR",
@@ -4537,7 +4453,7 @@
       },
       {
         "fields": {
-          "中文页面名称": "巧乐送SwiftBot",
+          "中文页面名称": "巧乐送 SwiftBot",
           "产品型号": "SwiftBot",
           "产品型号编码": "X026",
           "产品线": "SR",
@@ -5599,17 +5515,14 @@
                 "recvpUi8WJCXyy",
                 "recvpUi8WJhrMj",
                 "recvpUi8WJ0MXQ",
-                "recvrRmemA0sZJ",
                 "recvrRmemAMB58",
                 "recvrRmemAomSq",
-                "recvrRmemA8F9X",
                 "recvrRmemA4MqO",
                 "recvrRmemAvJmK",
                 "recvrRn6RSqJHl",
                 "recvswf3qYAw2j",
                 "recvswf3qY74P8",
                 "recvswf3qYscZN",
-                "recvswf3qYyHe8",
                 "recvswf3qYCUVN",
                 "recvswf3qYisos",
                 "recvswf3qY4P1c",
@@ -5617,14 +5530,13 @@
                 "recvswf3qYuo3k",
                 "recvswf3qY3woJ",
                 "recvswf3qYDTZC",
-                "recvswf3qYM4oc",
                 "recvsPDL1VenOk",
                 "recvsPDL1VWtez",
                 "recvsPDL1VGdOA",
                 "recvsPDL1Vv9rA"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0011,MAT-0021,MAT-0031,MAT-0041,MAT-0061,MAT-0071,MAT-0081,MAT-0091,MAT-0101,MAT-0121,MAT-0131,MAT-0141,MAT-0151,MAT-0161,MAT-0171,MAT-0181,MAT-0191,MAT-0201,MAT-0211,MAT-0221,MAT-0241,MAT-0251,MAT-0261,MAT-0271,MAT-0281,MAT-0301,MAT-0311,MAT-0321,MAT-0331,MAT-0341,MAT-0351,MAT-0361,MAT-0371,MAT-0381,MAT-0401,MAT-0411,MAT-0421,MAT-0431,MAT-0441,MAT-0461,MAT-0471,MAT-0481,MAT-0491,MAT-0501,MAT-0521,MAT-0531,MAT-0541,MAT-0551,MAT-0561,MAT-0571,MAT-0951,MAT-0971,MAT-0001,MAT-0991,MAT-1000,MAT-1010,MAT-1020,MAT-1023,MAT-1024,MAT-1025,MAT-1050,MAT-1061,MAT-1099,MAT-1110,MAT-1123,MAT-1134,MAT-1138,MAT-1156,MAT-1166,MAT-1176,MAT-1186,MAT-1196,MAT-1206,MAT-1216,MAT-1226,MAT-1236,MAT-1246,MAT-1256,MAT-1266,MAT-1270,MAT-1281,MAT-1291,MAT-1302",
+              "text": "MAT-0011,MAT-0021,MAT-0031,MAT-0041,MAT-0061,MAT-0071,MAT-0081,MAT-0091,MAT-0101,MAT-0121,MAT-0131,MAT-0141,MAT-0151,MAT-0161,MAT-0171,MAT-0181,MAT-0191,MAT-0201,MAT-0211,MAT-0221,MAT-0241,MAT-0251,MAT-0261,MAT-0271,MAT-0281,MAT-0301,MAT-0311,MAT-0321,MAT-0331,MAT-0341,MAT-0351,MAT-0361,MAT-0371,MAT-0381,MAT-0401,MAT-0411,MAT-0421,MAT-0431,MAT-0441,MAT-0461,MAT-0471,MAT-0481,MAT-0491,MAT-0501,MAT-0521,MAT-0531,MAT-0541,MAT-0551,MAT-0561,MAT-0571,MAT-0951,MAT-0971,MAT-0001,MAT-0991,MAT-1000,MAT-1010,MAT-1020,MAT-1023,MAT-1024,MAT-1025,MAT-1061,MAT-1099,MAT-1123,MAT-1134,MAT-1138,MAT-1156,MAT-1166,MAT-1176,MAT-1196,MAT-1206,MAT-1216,MAT-1226,MAT-1236,MAT-1246,MAT-1256,MAT-1270,MAT-1281,MAT-1291,MAT-1302",
               "text_arr": [
                 "MAT-0011",
                 "MAT-0021",
@@ -5686,17 +5598,14 @@
                 "MAT-1023",
                 "MAT-1024",
                 "MAT-1025",
-                "MAT-1050",
                 "MAT-1061",
                 "MAT-1099",
-                "MAT-1110",
                 "MAT-1123",
                 "MAT-1134",
                 "MAT-1138",
                 "MAT-1156",
                 "MAT-1166",
                 "MAT-1176",
-                "MAT-1186",
                 "MAT-1196",
                 "MAT-1206",
                 "MAT-1216",
@@ -5704,7 +5613,6 @@
                 "MAT-1236",
                 "MAT-1246",
                 "MAT-1256",
-                "MAT-1266",
                 "MAT-1270",
                 "MAT-1281",
                 "MAT-1291",
@@ -5781,17 +5689,14 @@
                 "recvpTIQtFiPuD",
                 "recvpTIQtFGm7Q",
                 "recvpTIQtFWrD1",
-                "recvrRmemAkQKi",
                 "recvrRmemAf0mv",
                 "recvrRmemAzo7H",
                 "recvrRmemAb9Hf",
-                "recvrRmemAIU8H",
                 "recvrRmemAli0f",
                 "recvrRmemAssD2",
                 "recvswf3qYXELn",
                 "recvswf3qY14pB",
                 "recvswf3qYdCu1",
-                "recvswf3qYuVdA",
                 "recvswf3qY8ruD",
                 "recvswf3qYs5Ii",
                 "recvswf3qYH1Cm",
@@ -5799,14 +5704,13 @@
                 "recvswf3qYT57O",
                 "recvswf3qY5a9b",
                 "recvswf3qYil5P",
-                "recvswf3qYMI6E",
                 "recvsPDL1VN3gL",
                 "recvsPDL1VROqO",
                 "recvsPDL1Ve0yg",
                 "recvsPDL1VJWdh"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0012,MAT-0022,MAT-0032,MAT-0042,MAT-0062,MAT-0072,MAT-0082,MAT-0092,MAT-0102,MAT-0122,MAT-0132,MAT-0142,MAT-0152,MAT-0162,MAT-0172,MAT-0182,MAT-0192,MAT-0202,MAT-0212,MAT-0222,MAT-0242,MAT-0252,MAT-0262,MAT-0272,MAT-0282,MAT-0302,MAT-0312,MAT-0322,MAT-0332,MAT-0342,MAT-0352,MAT-0362,MAT-0372,MAT-0382,MAT-0402,MAT-0412,MAT-0422,MAT-0432,MAT-0442,MAT-0452,MAT-0462,MAT-0472,MAT-0482,MAT-0492,MAT-0502,MAT-0522,MAT-0532,MAT-0542,MAT-0552,MAT-0572,MAT-0952,MAT-0972,MAT-0002,MAT-0994,MAT-1004,MAT-1014,MAT-1045,MAT-1056,MAT-1066,MAT-1094,MAT-1105,MAT-1117,MAT-1128,MAT-1150,MAT-1160,MAT-1170,MAT-1180,MAT-1190,MAT-1200,MAT-1210,MAT-1220,MAT-1230,MAT-1240,MAT-1250,MAT-1260,MAT-1272,MAT-1283,MAT-1293,MAT-1304",
+              "text": "MAT-0012,MAT-0022,MAT-0032,MAT-0042,MAT-0062,MAT-0072,MAT-0082,MAT-0092,MAT-0102,MAT-0122,MAT-0132,MAT-0142,MAT-0152,MAT-0162,MAT-0172,MAT-0182,MAT-0192,MAT-0202,MAT-0212,MAT-0222,MAT-0242,MAT-0252,MAT-0262,MAT-0272,MAT-0282,MAT-0302,MAT-0312,MAT-0322,MAT-0332,MAT-0342,MAT-0352,MAT-0362,MAT-0372,MAT-0382,MAT-0402,MAT-0412,MAT-0422,MAT-0432,MAT-0442,MAT-0452,MAT-0462,MAT-0472,MAT-0482,MAT-0492,MAT-0502,MAT-0522,MAT-0532,MAT-0542,MAT-0552,MAT-0572,MAT-0952,MAT-0972,MAT-0002,MAT-0994,MAT-1004,MAT-1014,MAT-1056,MAT-1066,MAT-1094,MAT-1117,MAT-1128,MAT-1150,MAT-1160,MAT-1170,MAT-1190,MAT-1200,MAT-1210,MAT-1220,MAT-1230,MAT-1240,MAT-1250,MAT-1272,MAT-1283,MAT-1293,MAT-1304",
               "text_arr": [
                 "MAT-0012",
                 "MAT-0022",
@@ -5864,17 +5768,14 @@
                 "MAT-0994",
                 "MAT-1004",
                 "MAT-1014",
-                "MAT-1045",
                 "MAT-1056",
                 "MAT-1066",
                 "MAT-1094",
-                "MAT-1105",
                 "MAT-1117",
                 "MAT-1128",
                 "MAT-1150",
                 "MAT-1160",
                 "MAT-1170",
-                "MAT-1180",
                 "MAT-1190",
                 "MAT-1200",
                 "MAT-1210",
@@ -5882,7 +5783,6 @@
                 "MAT-1230",
                 "MAT-1240",
                 "MAT-1250",
-                "MAT-1260",
                 "MAT-1272",
                 "MAT-1283",
                 "MAT-1293",
@@ -5960,17 +5860,14 @@
                 "recvpTIQtFyGvq",
                 "recvpTIQtFblx3",
                 "recvpTIQtF78JH",
-                "recvrRmemAZLK9",
                 "recvrRmemAuX7x",
                 "recvrRmemAhxOh",
                 "recvrRmemAjwbB",
-                "recvrRmemA9QeL",
                 "recvrRmemAVvmK",
                 "recvrRmemAS6IU",
                 "recvswf3qYbPaB",
                 "recvswf3qYHkeB",
                 "recvswf3qYRYat",
-                "recvswf3qYclHa",
                 "recvswf3qYT5iN",
                 "recvswf3qYGYYF",
                 "recvswf3qYJwIX",
@@ -5978,14 +5875,13 @@
                 "recvswf3qYqi7t",
                 "recvswf3qYggi1",
                 "recvswf3qYnV52",
-                "recvswf3qYlAZ6",
                 "recvsPDL1Vmeav",
                 "recvsPDL1V7kQk",
                 "recvsPDL1VePqy",
                 "recvsPDL1VTuvC"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0013,MAT-0023,MAT-0033,MAT-0043,MAT-0063,MAT-0073,MAT-0083,MAT-0093,MAT-0103,MAT-0123,MAT-0133,MAT-0143,MAT-0153,MAT-0163,MAT-0173,MAT-0183,MAT-0193,MAT-0203,MAT-0213,MAT-0223,MAT-0233,MAT-0243,MAT-0253,MAT-0263,MAT-0273,MAT-0283,MAT-0303,MAT-0313,MAT-0323,MAT-0333,MAT-0353,MAT-0363,MAT-0373,MAT-0383,MAT-0403,MAT-0413,MAT-0423,MAT-0433,MAT-0443,MAT-0453,MAT-0463,MAT-0473,MAT-0483,MAT-0493,MAT-0503,MAT-0523,MAT-0533,MAT-0543,MAT-0553,MAT-0573,MAT-0953,MAT-0973,MAT-0003,MAT-0992,MAT-0996,MAT-1006,MAT-1016,MAT-1047,MAT-1058,MAT-1068,MAT-1096,MAT-1107,MAT-1119,MAT-1130,MAT-1152,MAT-1162,MAT-1172,MAT-1182,MAT-1192,MAT-1202,MAT-1212,MAT-1222,MAT-1232,MAT-1242,MAT-1252,MAT-1262,MAT-1273,MAT-1284,MAT-1294,MAT-1305",
+              "text": "MAT-0013,MAT-0023,MAT-0033,MAT-0043,MAT-0063,MAT-0073,MAT-0083,MAT-0093,MAT-0103,MAT-0123,MAT-0133,MAT-0143,MAT-0153,MAT-0163,MAT-0173,MAT-0183,MAT-0193,MAT-0203,MAT-0213,MAT-0223,MAT-0233,MAT-0243,MAT-0253,MAT-0263,MAT-0273,MAT-0283,MAT-0303,MAT-0313,MAT-0323,MAT-0333,MAT-0353,MAT-0363,MAT-0373,MAT-0383,MAT-0403,MAT-0413,MAT-0423,MAT-0433,MAT-0443,MAT-0453,MAT-0463,MAT-0473,MAT-0483,MAT-0493,MAT-0503,MAT-0523,MAT-0533,MAT-0543,MAT-0553,MAT-0573,MAT-0953,MAT-0973,MAT-0003,MAT-0992,MAT-0996,MAT-1006,MAT-1016,MAT-1058,MAT-1068,MAT-1096,MAT-1119,MAT-1130,MAT-1152,MAT-1162,MAT-1172,MAT-1192,MAT-1202,MAT-1212,MAT-1222,MAT-1232,MAT-1242,MAT-1252,MAT-1273,MAT-1284,MAT-1294,MAT-1305",
               "text_arr": [
                 "MAT-0013",
                 "MAT-0023",
@@ -6044,17 +5940,14 @@
                 "MAT-0996",
                 "MAT-1006",
                 "MAT-1016",
-                "MAT-1047",
                 "MAT-1058",
                 "MAT-1068",
                 "MAT-1096",
-                "MAT-1107",
                 "MAT-1119",
                 "MAT-1130",
                 "MAT-1152",
                 "MAT-1162",
                 "MAT-1172",
-                "MAT-1182",
                 "MAT-1192",
                 "MAT-1202",
                 "MAT-1212",
@@ -6062,7 +5955,6 @@
                 "MAT-1232",
                 "MAT-1242",
                 "MAT-1252",
-                "MAT-1262",
                 "MAT-1273",
                 "MAT-1284",
                 "MAT-1294",
@@ -6139,17 +6031,14 @@
                 "recvpTIQtFY4oA",
                 "recvpTIQtF6ZfO",
                 "recvpTIQtFmmwS",
-                "recvrRmemAMXCb",
                 "recvrRmemAFU18",
                 "recvrRmemAOjx4",
                 "recvrRmemAoKne",
-                "recvrRmemAWJVJ",
                 "recvrRmemAkvDT",
                 "recvrRmemAYalc",
                 "recvswf3qYZkCb",
                 "recvswf3qY2lfO",
                 "recvswf3qYdARv",
-                "recvswf3qYlG0x",
                 "recvswf3qYMPz2",
                 "recvswf3qYMZlu",
                 "recvswf3qYPEvu",
@@ -6157,14 +6046,13 @@
                 "recvswf3qYbRV8",
                 "recvswf3qYWe4D",
                 "recvswf3qYjABD",
-                "recvswf3qYqleg",
                 "recvsPDL1VrVuV",
                 "recvsPDL1Vxwro",
                 "recvsPDL1V6yxZ",
                 "recvsPDL1VlMn1"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0014,MAT-0024,MAT-0034,MAT-0044,MAT-0064,MAT-0074,MAT-0084,MAT-0094,MAT-0104,MAT-0124,MAT-0134,MAT-0144,MAT-0154,MAT-0164,MAT-0174,MAT-0184,MAT-0194,MAT-0204,MAT-0214,MAT-0224,MAT-0234,MAT-0244,MAT-0254,MAT-0264,MAT-0274,MAT-0284,MAT-0304,MAT-0314,MAT-0324,MAT-0334,MAT-0354,MAT-0364,MAT-0374,MAT-0384,MAT-0404,MAT-0414,MAT-0424,MAT-0434,MAT-0444,MAT-0454,MAT-0464,MAT-0474,MAT-0484,MAT-0494,MAT-0504,MAT-0524,MAT-0534,MAT-0544,MAT-0554,MAT-0574,MAT-0954,MAT-0974,MAT-0004,MAT-0997,MAT-1007,MAT-1017,MAT-1048,MAT-1059,MAT-1069,MAT-1097,MAT-1108,MAT-1120,MAT-1131,MAT-1153,MAT-1163,MAT-1173,MAT-1183,MAT-1193,MAT-1203,MAT-1213,MAT-1223,MAT-1233,MAT-1243,MAT-1253,MAT-1263,MAT-1274,MAT-1285,MAT-1295,MAT-1306",
+              "text": "MAT-0014,MAT-0024,MAT-0034,MAT-0044,MAT-0064,MAT-0074,MAT-0084,MAT-0094,MAT-0104,MAT-0124,MAT-0134,MAT-0144,MAT-0154,MAT-0164,MAT-0174,MAT-0184,MAT-0194,MAT-0204,MAT-0214,MAT-0224,MAT-0234,MAT-0244,MAT-0254,MAT-0264,MAT-0274,MAT-0284,MAT-0304,MAT-0314,MAT-0324,MAT-0334,MAT-0354,MAT-0364,MAT-0374,MAT-0384,MAT-0404,MAT-0414,MAT-0424,MAT-0434,MAT-0444,MAT-0454,MAT-0464,MAT-0474,MAT-0484,MAT-0494,MAT-0504,MAT-0524,MAT-0534,MAT-0544,MAT-0554,MAT-0574,MAT-0954,MAT-0974,MAT-0004,MAT-0997,MAT-1007,MAT-1017,MAT-1059,MAT-1069,MAT-1097,MAT-1120,MAT-1131,MAT-1153,MAT-1163,MAT-1173,MAT-1193,MAT-1203,MAT-1213,MAT-1223,MAT-1233,MAT-1243,MAT-1253,MAT-1274,MAT-1285,MAT-1295,MAT-1306",
               "text_arr": [
                 "MAT-0014",
                 "MAT-0024",
@@ -6222,17 +6110,14 @@
                 "MAT-0997",
                 "MAT-1007",
                 "MAT-1017",
-                "MAT-1048",
                 "MAT-1059",
                 "MAT-1069",
                 "MAT-1097",
-                "MAT-1108",
                 "MAT-1120",
                 "MAT-1131",
                 "MAT-1153",
                 "MAT-1163",
                 "MAT-1173",
-                "MAT-1183",
                 "MAT-1193",
                 "MAT-1203",
                 "MAT-1213",
@@ -6240,7 +6125,6 @@
                 "MAT-1233",
                 "MAT-1243",
                 "MAT-1253",
-                "MAT-1263",
                 "MAT-1274",
                 "MAT-1285",
                 "MAT-1295",
@@ -6317,17 +6201,14 @@
                 "recvpTIQtFvGq8",
                 "recvpTIQtFR2Os",
                 "recvpTIQtFoNda",
-                "recvrRmemAJNMF",
                 "recvrRmemAhK7G",
                 "recvrRmemACDJI",
                 "recvrRmemA7dRy",
-                "recvrRmemAnGk7",
                 "recvrRmemAKa9G",
                 "recvrRmemApJGx",
                 "recvswf3qYVIUn",
                 "recvswf3qYmJ7z",
                 "recvswf3qYQjDv",
-                "recvswf3qYsUPk",
                 "recvswf3qYQYLi",
                 "recvswf3qYs9XF",
                 "recvswf3qYODO2",
@@ -6335,14 +6216,13 @@
                 "recvswf3qY0lAI",
                 "recvswf3qY3zox",
                 "recvswf3qYCQAv",
-                "recvswf3qYGPxz",
                 "recvsPDL1VPdoC",
                 "recvsPDL1V8e6D",
                 "recvsPDL1VrbEY",
                 "recvsPDL1VRP61"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0015,MAT-0025,MAT-0035,MAT-0045,MAT-0065,MAT-0075,MAT-0085,MAT-0095,MAT-0105,MAT-0125,MAT-0135,MAT-0145,MAT-0155,MAT-0165,MAT-0175,MAT-0185,MAT-0195,MAT-0205,MAT-0215,MAT-0225,MAT-0235,MAT-0245,MAT-0255,MAT-0265,MAT-0275,MAT-0285,MAT-0305,MAT-0315,MAT-0325,MAT-0335,MAT-0355,MAT-0365,MAT-0375,MAT-0385,MAT-0405,MAT-0415,MAT-0425,MAT-0435,MAT-0445,MAT-0455,MAT-0465,MAT-0475,MAT-0485,MAT-0495,MAT-0505,MAT-0525,MAT-0535,MAT-0545,MAT-0555,MAT-0575,MAT-0955,MAT-0975,MAT-0005,MAT-1002,MAT-1012,MAT-1022,MAT-1052,MAT-1063,MAT-1073,MAT-1101,MAT-1112,MAT-1125,MAT-1136,MAT-1158,MAT-1168,MAT-1178,MAT-1188,MAT-1198,MAT-1208,MAT-1218,MAT-1228,MAT-1238,MAT-1248,MAT-1258,MAT-1268,MAT-1275,MAT-1286,MAT-1296,MAT-1307",
+              "text": "MAT-0015,MAT-0025,MAT-0035,MAT-0045,MAT-0065,MAT-0075,MAT-0085,MAT-0095,MAT-0105,MAT-0125,MAT-0135,MAT-0145,MAT-0155,MAT-0165,MAT-0175,MAT-0185,MAT-0195,MAT-0205,MAT-0215,MAT-0225,MAT-0235,MAT-0245,MAT-0255,MAT-0265,MAT-0275,MAT-0285,MAT-0305,MAT-0315,MAT-0325,MAT-0335,MAT-0355,MAT-0365,MAT-0375,MAT-0385,MAT-0405,MAT-0415,MAT-0425,MAT-0435,MAT-0445,MAT-0455,MAT-0465,MAT-0475,MAT-0485,MAT-0495,MAT-0505,MAT-0525,MAT-0535,MAT-0545,MAT-0555,MAT-0575,MAT-0955,MAT-0975,MAT-0005,MAT-1002,MAT-1012,MAT-1022,MAT-1063,MAT-1073,MAT-1101,MAT-1125,MAT-1136,MAT-1158,MAT-1168,MAT-1178,MAT-1198,MAT-1208,MAT-1218,MAT-1228,MAT-1238,MAT-1248,MAT-1258,MAT-1275,MAT-1286,MAT-1296,MAT-1307",
               "text_arr": [
                 "MAT-0015",
                 "MAT-0025",
@@ -6400,17 +6280,14 @@
                 "MAT-1002",
                 "MAT-1012",
                 "MAT-1022",
-                "MAT-1052",
                 "MAT-1063",
                 "MAT-1073",
                 "MAT-1101",
-                "MAT-1112",
                 "MAT-1125",
                 "MAT-1136",
                 "MAT-1158",
                 "MAT-1168",
                 "MAT-1178",
-                "MAT-1188",
                 "MAT-1198",
                 "MAT-1208",
                 "MAT-1218",
@@ -6418,7 +6295,6 @@
                 "MAT-1238",
                 "MAT-1248",
                 "MAT-1258",
-                "MAT-1268",
                 "MAT-1275",
                 "MAT-1286",
                 "MAT-1296",
@@ -6495,17 +6371,14 @@
                 "recvpTIQtFP2Ip",
                 "recvpTIQtFmESn",
                 "recvpTIQtFRDLN",
-                "recvrRmemAOGkG",
                 "recvrRmemAKQwG",
                 "recvrRmemA9ewf",
                 "recvrRmemAsbxa",
-                "recvrRmemACdMI",
                 "recvrRmemAJT9U",
                 "recvrRmemAXflR",
                 "recvswf3qY2vhw",
                 "recvswf3qYSjY1",
                 "recvswf3qYTGsS",
-                "recvswf3qYFKUh",
                 "recvswf3qY7QNl",
                 "recvswf3qYeFXT",
                 "recvswf3qYGHBR",
@@ -6513,14 +6386,13 @@
                 "recvswf3qYMK4d",
                 "recvswf3qYJQ1j",
                 "recvswf3qYXf7m",
-                "recvswf3qY7mhv",
                 "recvsPDL1VI5Ff",
                 "recvsPDL1VJwvm",
                 "recvsPDL1VIGUF",
                 "recvsPDL1VXK6x"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0016,MAT-0026,MAT-0036,MAT-0046,MAT-0066,MAT-0076,MAT-0086,MAT-0096,MAT-0106,MAT-0126,MAT-0136,MAT-0146,MAT-0156,MAT-0166,MAT-0176,MAT-0186,MAT-0196,MAT-0206,MAT-0216,MAT-0226,MAT-0236,MAT-0246,MAT-0256,MAT-0266,MAT-0276,MAT-0286,MAT-0306,MAT-0316,MAT-0326,MAT-0336,MAT-0356,MAT-0366,MAT-0376,MAT-0386,MAT-0406,MAT-0416,MAT-0426,MAT-0436,MAT-0446,MAT-0456,MAT-0466,MAT-0476,MAT-0486,MAT-0496,MAT-0506,MAT-0526,MAT-0536,MAT-0546,MAT-0556,MAT-0576,MAT-0956,MAT-0976,MAT-0006,MAT-1001,MAT-1011,MAT-1021,MAT-1051,MAT-1062,MAT-1072,MAT-1100,MAT-1111,MAT-1124,MAT-1135,MAT-1157,MAT-1167,MAT-1177,MAT-1187,MAT-1197,MAT-1207,MAT-1217,MAT-1227,MAT-1237,MAT-1247,MAT-1257,MAT-1267,MAT-1276,MAT-1287,MAT-1297,MAT-1308",
+              "text": "MAT-0016,MAT-0026,MAT-0036,MAT-0046,MAT-0066,MAT-0076,MAT-0086,MAT-0096,MAT-0106,MAT-0126,MAT-0136,MAT-0146,MAT-0156,MAT-0166,MAT-0176,MAT-0186,MAT-0196,MAT-0206,MAT-0216,MAT-0226,MAT-0236,MAT-0246,MAT-0256,MAT-0266,MAT-0276,MAT-0286,MAT-0306,MAT-0316,MAT-0326,MAT-0336,MAT-0356,MAT-0366,MAT-0376,MAT-0386,MAT-0406,MAT-0416,MAT-0426,MAT-0436,MAT-0446,MAT-0456,MAT-0466,MAT-0476,MAT-0486,MAT-0496,MAT-0506,MAT-0526,MAT-0536,MAT-0546,MAT-0556,MAT-0576,MAT-0956,MAT-0976,MAT-0006,MAT-1001,MAT-1011,MAT-1021,MAT-1062,MAT-1072,MAT-1100,MAT-1124,MAT-1135,MAT-1157,MAT-1167,MAT-1177,MAT-1197,MAT-1207,MAT-1217,MAT-1227,MAT-1237,MAT-1247,MAT-1257,MAT-1276,MAT-1287,MAT-1297,MAT-1308",
               "text_arr": [
                 "MAT-0016",
                 "MAT-0026",
@@ -6578,17 +6450,14 @@
                 "MAT-1001",
                 "MAT-1011",
                 "MAT-1021",
-                "MAT-1051",
                 "MAT-1062",
                 "MAT-1072",
                 "MAT-1100",
-                "MAT-1111",
                 "MAT-1124",
                 "MAT-1135",
                 "MAT-1157",
                 "MAT-1167",
                 "MAT-1177",
-                "MAT-1187",
                 "MAT-1197",
                 "MAT-1207",
                 "MAT-1217",
@@ -6596,7 +6465,6 @@
                 "MAT-1237",
                 "MAT-1247",
                 "MAT-1257",
-                "MAT-1267",
                 "MAT-1276",
                 "MAT-1287",
                 "MAT-1297",
@@ -6673,17 +6541,14 @@
                 "recvpTIQtF3oar",
                 "recvpTIQtFwDEr",
                 "recvpTIQtFdT8W",
-                "recvrRmemA4xUn",
                 "recvrRmemAxzKL",
                 "recvrRmemAei0c",
                 "recvrRmemAAjuz",
-                "recvrRmemAAO8J",
                 "recvrRmemAyhTS",
                 "recvrRmemAGKJN",
                 "recvswf3qYAALM",
                 "recvswf3qYtt7N",
                 "recvswf3qYye1v",
-                "recvswf3qYblwU",
                 "recvswf3qYqTdH",
                 "recvswf3qYqqqz",
                 "recvswf3qYfcNx",
@@ -6691,14 +6556,13 @@
                 "recvswf3qY6boJ",
                 "recvswf3qYd9zN",
                 "recvswf3qY93NG",
-                "recvswf3qYN5KO",
                 "recvsPDL1VWg2d",
                 "recvsPDL1VigDu",
                 "recvsPDL1VXk5v",
                 "recvsPDL1VkNbg"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0017,MAT-0027,MAT-0037,MAT-0047,MAT-0067,MAT-0077,MAT-0087,MAT-0097,MAT-0107,MAT-0127,MAT-0137,MAT-0147,MAT-0157,MAT-0167,MAT-0177,MAT-0187,MAT-0197,MAT-0207,MAT-0217,MAT-0227,MAT-0237,MAT-0247,MAT-0257,MAT-0267,MAT-0277,MAT-0287,MAT-0307,MAT-0317,MAT-0327,MAT-0337,MAT-0357,MAT-0367,MAT-0377,MAT-0387,MAT-0407,MAT-0417,MAT-0427,MAT-0437,MAT-0447,MAT-0457,MAT-0467,MAT-0477,MAT-0487,MAT-0497,MAT-0507,MAT-0527,MAT-0537,MAT-0547,MAT-0557,MAT-0577,MAT-0957,MAT-0977,MAT-0007,MAT-0993,MAT-1003,MAT-1013,MAT-1044,MAT-1055,MAT-1065,MAT-1093,MAT-1104,MAT-1116,MAT-1127,MAT-1149,MAT-1159,MAT-1169,MAT-1179,MAT-1189,MAT-1199,MAT-1209,MAT-1219,MAT-1229,MAT-1239,MAT-1249,MAT-1259,MAT-1277,MAT-1288,MAT-1298,MAT-1309",
+              "text": "MAT-0017,MAT-0027,MAT-0037,MAT-0047,MAT-0067,MAT-0077,MAT-0087,MAT-0097,MAT-0107,MAT-0127,MAT-0137,MAT-0147,MAT-0157,MAT-0167,MAT-0177,MAT-0187,MAT-0197,MAT-0207,MAT-0217,MAT-0227,MAT-0237,MAT-0247,MAT-0257,MAT-0267,MAT-0277,MAT-0287,MAT-0307,MAT-0317,MAT-0327,MAT-0337,MAT-0357,MAT-0367,MAT-0377,MAT-0387,MAT-0407,MAT-0417,MAT-0427,MAT-0437,MAT-0447,MAT-0457,MAT-0467,MAT-0477,MAT-0487,MAT-0497,MAT-0507,MAT-0527,MAT-0537,MAT-0547,MAT-0557,MAT-0577,MAT-0957,MAT-0977,MAT-0007,MAT-0993,MAT-1003,MAT-1013,MAT-1055,MAT-1065,MAT-1093,MAT-1116,MAT-1127,MAT-1149,MAT-1159,MAT-1169,MAT-1189,MAT-1199,MAT-1209,MAT-1219,MAT-1229,MAT-1239,MAT-1249,MAT-1277,MAT-1288,MAT-1298,MAT-1309",
               "text_arr": [
                 "MAT-0017",
                 "MAT-0027",
@@ -6756,17 +6620,14 @@
                 "MAT-0993",
                 "MAT-1003",
                 "MAT-1013",
-                "MAT-1044",
                 "MAT-1055",
                 "MAT-1065",
                 "MAT-1093",
-                "MAT-1104",
                 "MAT-1116",
                 "MAT-1127",
                 "MAT-1149",
                 "MAT-1159",
                 "MAT-1169",
-                "MAT-1179",
                 "MAT-1189",
                 "MAT-1199",
                 "MAT-1209",
@@ -6774,7 +6635,6 @@
                 "MAT-1229",
                 "MAT-1239",
                 "MAT-1249",
-                "MAT-1259",
                 "MAT-1277",
                 "MAT-1288",
                 "MAT-1298",
@@ -6851,17 +6711,14 @@
                 "recvpTIQtFRmoN",
                 "recvpTIQtFhray",
                 "recvpTIQtFfESi",
-                "recvrRmemAqPnl",
                 "recvrRmemAX9VN",
                 "recvrRmemAfERC",
                 "recvrRmemA3sDu",
-                "recvrRmemA1rE1",
                 "recvrRmemAG4EX",
                 "recvrRmemAgX9q",
                 "recvswf3qYGUdg",
                 "recvswf3qYNEo3",
                 "recvswf3qYWUmi",
-                "recvswf3qY8Tz3",
                 "recvswf3qYFcFq",
                 "recvswf3qYB37O",
                 "recvswf3qYexbW",
@@ -6869,14 +6726,13 @@
                 "recvswf3qYz9Ps",
                 "recvswf3qYCFGV",
                 "recvswf3qYmtmg",
-                "recvswf3qYZhHO",
                 "recvsPDL1V2Pg2",
                 "recvsPDL1Vv47b",
                 "recvsPDL1VyBDo",
                 "recvsPDL1VqgmR"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0018,MAT-0028,MAT-0038,MAT-0048,MAT-0068,MAT-0078,MAT-0088,MAT-0098,MAT-0108,MAT-0128,MAT-0138,MAT-0148,MAT-0158,MAT-0168,MAT-0178,MAT-0188,MAT-0198,MAT-0208,MAT-0218,MAT-0228,MAT-0238,MAT-0248,MAT-0258,MAT-0268,MAT-0278,MAT-0288,MAT-0308,MAT-0318,MAT-0328,MAT-0338,MAT-0358,MAT-0368,MAT-0378,MAT-0388,MAT-0408,MAT-0418,MAT-0428,MAT-0438,MAT-0448,MAT-0458,MAT-0468,MAT-0478,MAT-0488,MAT-0498,MAT-0508,MAT-0528,MAT-0538,MAT-0548,MAT-0558,MAT-0578,MAT-0958,MAT-0978,MAT-0008,MAT-0999,MAT-1009,MAT-1019,MAT-1049,MAT-1060,MAT-1071,MAT-1098,MAT-1109,MAT-1122,MAT-1133,MAT-1155,MAT-1165,MAT-1175,MAT-1185,MAT-1195,MAT-1205,MAT-1215,MAT-1225,MAT-1235,MAT-1245,MAT-1255,MAT-1265,MAT-1278,MAT-1289,MAT-1299,MAT-1310",
+              "text": "MAT-0018,MAT-0028,MAT-0038,MAT-0048,MAT-0068,MAT-0078,MAT-0088,MAT-0098,MAT-0108,MAT-0128,MAT-0138,MAT-0148,MAT-0158,MAT-0168,MAT-0178,MAT-0188,MAT-0198,MAT-0208,MAT-0218,MAT-0228,MAT-0238,MAT-0248,MAT-0258,MAT-0268,MAT-0278,MAT-0288,MAT-0308,MAT-0318,MAT-0328,MAT-0338,MAT-0358,MAT-0368,MAT-0378,MAT-0388,MAT-0408,MAT-0418,MAT-0428,MAT-0438,MAT-0448,MAT-0458,MAT-0468,MAT-0478,MAT-0488,MAT-0498,MAT-0508,MAT-0528,MAT-0538,MAT-0548,MAT-0558,MAT-0578,MAT-0958,MAT-0978,MAT-0008,MAT-0999,MAT-1009,MAT-1019,MAT-1060,MAT-1071,MAT-1098,MAT-1122,MAT-1133,MAT-1155,MAT-1165,MAT-1175,MAT-1195,MAT-1205,MAT-1215,MAT-1225,MAT-1235,MAT-1245,MAT-1255,MAT-1278,MAT-1289,MAT-1299,MAT-1310",
               "text_arr": [
                 "MAT-0018",
                 "MAT-0028",
@@ -6934,17 +6790,14 @@
                 "MAT-0999",
                 "MAT-1009",
                 "MAT-1019",
-                "MAT-1049",
                 "MAT-1060",
                 "MAT-1071",
                 "MAT-1098",
-                "MAT-1109",
                 "MAT-1122",
                 "MAT-1133",
                 "MAT-1155",
                 "MAT-1165",
                 "MAT-1175",
-                "MAT-1185",
                 "MAT-1195",
                 "MAT-1205",
                 "MAT-1215",
@@ -6952,7 +6805,6 @@
                 "MAT-1235",
                 "MAT-1245",
                 "MAT-1255",
-                "MAT-1265",
                 "MAT-1278",
                 "MAT-1289",
                 "MAT-1299",
@@ -7031,8 +6883,6 @@
                 "recvpTIQtFnwO9",
                 "recvpUi8WJp8te",
                 "recvpUi8WJDQvA",
-                "recvpUi8WJMTgE",
-                "recvpUi8WJUMXR",
                 "recvqz1mRGnDlf",
                 "recvrRmemAxNsW",
                 "recvrRmemAMKl7",
@@ -7041,7 +6891,6 @@
                 "recvswf3qYFOOt",
                 "recvswf3qY5Bm3",
                 "recvswf3qYu2vU",
-                "recvswf3qYLidZ",
                 "recvswf3qYFWo2",
                 "recvswf3qY1EZj",
                 "recvswf3qY4qQG",
@@ -7049,14 +6898,13 @@
                 "recvswf3qYUDpl",
                 "recvswf3qYIN7A",
                 "recvswf3qYYMtv",
-                "recvswf3qYt56O",
                 "recvsPDL1VXzpA",
                 "recvsPDL1VfNtW",
                 "recvsPDL1VeGRo",
                 "recvsPDL1VsxIv"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0019,MAT-0029,MAT-0039,MAT-0049,MAT-0069,MAT-0079,MAT-0089,MAT-0099,MAT-0109,MAT-0129,MAT-0139,MAT-0149,MAT-0159,MAT-0169,MAT-0179,MAT-0189,MAT-0199,MAT-0209,MAT-0219,MAT-0229,MAT-0249,MAT-0259,MAT-0269,MAT-0279,MAT-0289,MAT-0309,MAT-0319,MAT-0329,MAT-0339,MAT-0349,MAT-0359,MAT-0369,MAT-0379,MAT-0389,MAT-0409,MAT-0419,MAT-0429,MAT-0439,MAT-0449,MAT-0459,MAT-0469,MAT-0479,MAT-0489,MAT-0499,MAT-0509,MAT-0529,MAT-0539,MAT-0549,MAT-0559,MAT-0579,MAT-0959,MAT-0979,MAT-0009,MAT-0998,MAT-1008,MAT-1018,MAT-1027,MAT-1028,MAT-1029,MAT-1030,MAT-1034,MAT-1070,MAT-1121,MAT-1132,MAT-1139,MAT-1154,MAT-1164,MAT-1174,MAT-1184,MAT-1194,MAT-1204,MAT-1214,MAT-1224,MAT-1234,MAT-1244,MAT-1254,MAT-1264,MAT-1271,MAT-1282,MAT-1292,MAT-1303",
+              "text": "MAT-0019,MAT-0029,MAT-0039,MAT-0049,MAT-0069,MAT-0079,MAT-0089,MAT-0099,MAT-0109,MAT-0129,MAT-0139,MAT-0149,MAT-0159,MAT-0169,MAT-0179,MAT-0189,MAT-0199,MAT-0209,MAT-0219,MAT-0229,MAT-0249,MAT-0259,MAT-0269,MAT-0279,MAT-0289,MAT-0309,MAT-0319,MAT-0329,MAT-0339,MAT-0349,MAT-0359,MAT-0369,MAT-0379,MAT-0389,MAT-0409,MAT-0419,MAT-0429,MAT-0439,MAT-0449,MAT-0459,MAT-0469,MAT-0479,MAT-0489,MAT-0499,MAT-0509,MAT-0529,MAT-0539,MAT-0549,MAT-0559,MAT-0579,MAT-0959,MAT-0979,MAT-0009,MAT-0998,MAT-1008,MAT-1018,MAT-1027,MAT-1028,MAT-1034,MAT-1070,MAT-1121,MAT-1132,MAT-1139,MAT-1154,MAT-1164,MAT-1174,MAT-1194,MAT-1204,MAT-1214,MAT-1224,MAT-1234,MAT-1244,MAT-1254,MAT-1271,MAT-1282,MAT-1292,MAT-1303",
               "text_arr": [
                 "MAT-0019",
                 "MAT-0029",
@@ -7116,8 +6964,6 @@
                 "MAT-1018",
                 "MAT-1027",
                 "MAT-1028",
-                "MAT-1029",
-                "MAT-1030",
                 "MAT-1034",
                 "MAT-1070",
                 "MAT-1121",
@@ -7126,7 +6972,6 @@
                 "MAT-1154",
                 "MAT-1164",
                 "MAT-1174",
-                "MAT-1184",
                 "MAT-1194",
                 "MAT-1204",
                 "MAT-1214",
@@ -7134,7 +6979,6 @@
                 "MAT-1234",
                 "MAT-1244",
                 "MAT-1254",
-                "MAT-1264",
                 "MAT-1271",
                 "MAT-1282",
                 "MAT-1292",
@@ -7211,17 +7055,14 @@
                 "recvpTIQtFznsY",
                 "recvpTIQtFYFMv",
                 "recvpTIQtFut8M",
-                "recvrRmemATkCM",
                 "recvrRmemAbTdV",
                 "recvrRmemAB6vp",
                 "recvrRmemAVjsR",
-                "recvrRmemAuixa",
                 "recvrRmemAjRX1",
                 "recvrRmemAawlL",
                 "recvswf3qYR7zc",
                 "recvswf3qYBZQK",
                 "recvswf3qYjqwU",
-                "recvswf3qY6mIy",
                 "recvswf3qYNaZV",
                 "recvswf3qY8hmM",
                 "recvswf3qY3g1b",
@@ -7229,14 +7070,13 @@
                 "recvswf3qYzdoG",
                 "recvswf3qYNcbn",
                 "recvswf3qYqxUY",
-                "recvswf3qYHT4t",
                 "recvsPDL1VT4dj",
                 "recvsPDL1VV7a4",
                 "recvsPDL1VLUdG",
                 "recvsPDL1VLyyv"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0020,MAT-0030,MAT-0040,MAT-0050,MAT-0070,MAT-0080,MAT-0090,MAT-0100,MAT-0110,MAT-0130,MAT-0140,MAT-0150,MAT-0160,MAT-0170,MAT-0180,MAT-0190,MAT-0200,MAT-0210,MAT-0220,MAT-0230,MAT-0240,MAT-0250,MAT-0260,MAT-0270,MAT-0280,MAT-0290,MAT-0310,MAT-0320,MAT-0330,MAT-0340,MAT-0360,MAT-0370,MAT-0380,MAT-0390,MAT-0410,MAT-0420,MAT-0430,MAT-0440,MAT-0450,MAT-0460,MAT-0470,MAT-0480,MAT-0490,MAT-0500,MAT-0510,MAT-0530,MAT-0540,MAT-0550,MAT-0560,MAT-0580,MAT-0960,MAT-0980,MAT-0010,MAT-0995,MAT-1005,MAT-1015,MAT-1046,MAT-1057,MAT-1067,MAT-1095,MAT-1106,MAT-1118,MAT-1129,MAT-1151,MAT-1161,MAT-1171,MAT-1181,MAT-1191,MAT-1201,MAT-1211,MAT-1221,MAT-1231,MAT-1241,MAT-1251,MAT-1261,MAT-1279,MAT-1290,MAT-1300,MAT-1311",
+              "text": "MAT-0020,MAT-0030,MAT-0040,MAT-0050,MAT-0070,MAT-0080,MAT-0090,MAT-0100,MAT-0110,MAT-0130,MAT-0140,MAT-0150,MAT-0160,MAT-0170,MAT-0180,MAT-0190,MAT-0200,MAT-0210,MAT-0220,MAT-0230,MAT-0240,MAT-0250,MAT-0260,MAT-0270,MAT-0280,MAT-0290,MAT-0310,MAT-0320,MAT-0330,MAT-0340,MAT-0360,MAT-0370,MAT-0380,MAT-0390,MAT-0410,MAT-0420,MAT-0430,MAT-0440,MAT-0450,MAT-0460,MAT-0470,MAT-0480,MAT-0490,MAT-0500,MAT-0510,MAT-0530,MAT-0540,MAT-0550,MAT-0560,MAT-0580,MAT-0960,MAT-0980,MAT-0010,MAT-0995,MAT-1005,MAT-1015,MAT-1057,MAT-1067,MAT-1095,MAT-1118,MAT-1129,MAT-1151,MAT-1161,MAT-1171,MAT-1191,MAT-1201,MAT-1211,MAT-1221,MAT-1231,MAT-1241,MAT-1251,MAT-1279,MAT-1290,MAT-1300,MAT-1311",
               "text_arr": [
                 "MAT-0020",
                 "MAT-0030",
@@ -7294,17 +7134,14 @@
                 "MAT-0995",
                 "MAT-1005",
                 "MAT-1015",
-                "MAT-1046",
                 "MAT-1057",
                 "MAT-1067",
                 "MAT-1095",
-                "MAT-1106",
                 "MAT-1118",
                 "MAT-1129",
                 "MAT-1151",
                 "MAT-1161",
                 "MAT-1171",
-                "MAT-1181",
                 "MAT-1191",
                 "MAT-1201",
                 "MAT-1211",
@@ -7312,7 +7149,6 @@
                 "MAT-1231",
                 "MAT-1241",
                 "MAT-1251",
-                "MAT-1261",
                 "MAT-1279",
                 "MAT-1290",
                 "MAT-1300",
@@ -7342,7 +7178,6 @@
                 "recvrRmemAoCPN",
                 "recvrRmemAbrm8",
                 "recvrRmemAcfd3",
-                "recvrRmemA45zr",
                 "recvrRmemAKTOr",
                 "recvrRmemAFG1a",
                 "recvrRmemAJ5aw",
@@ -7355,7 +7190,6 @@
                 "recvrRmemACrJR",
                 "recvrRmemAW1j5",
                 "recvrRmemAfSUI",
-                "recvrRmemARvCZ",
                 "recvrRmemA9rR0",
                 "recvrRmemAq5ty",
                 "recvrRmemA2IXK",
@@ -7363,7 +7197,7 @@
                 "recvsPDL1VNJR0"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-1026,MAT-1036,MAT-1037,MAT-1038,MAT-1039,MAT-1040,MAT-1041,MAT-1042,MAT-1043,MAT-1053,MAT-1054,MAT-1064,MAT-1074,MAT-1085,MAT-1086,MAT-1087,MAT-1088,MAT-1090,MAT-1091,MAT-1092,MAT-1102,MAT-1103,MAT-1113,MAT-1114,MAT-1126,MAT-1137,MAT-1280,MAT-1301",
+              "text": "MAT-1026,MAT-1036,MAT-1037,MAT-1038,MAT-1039,MAT-1040,MAT-1041,MAT-1042,MAT-1043,MAT-1054,MAT-1064,MAT-1074,MAT-1085,MAT-1086,MAT-1087,MAT-1088,MAT-1090,MAT-1091,MAT-1092,MAT-1102,MAT-1103,MAT-1114,MAT-1126,MAT-1137,MAT-1280,MAT-1301",
               "text_arr": [
                 "MAT-1026",
                 "MAT-1036",
@@ -7374,7 +7208,6 @@
                 "MAT-1041",
                 "MAT-1042",
                 "MAT-1043",
-                "MAT-1053",
                 "MAT-1054",
                 "MAT-1064",
                 "MAT-1074",
@@ -7387,7 +7220,6 @@
                 "MAT-1092",
                 "MAT-1102",
                 "MAT-1103",
-                "MAT-1113",
                 "MAT-1114",
                 "MAT-1126",
                 "MAT-1137",
@@ -69989,212 +69821,6 @@
       },
       {
         "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": [
-                "recvq4mfQZd070"
-              ],
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": "W-02",
-              "text_arr": [
-                "W-02"
-              ],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": null,
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "250",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1029",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "简中(Simplified Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSqM9E"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y09",
-              "text_arr": [
-                "Y09"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvpUi8WJMTgE",
-        "record_id": "recvpUi8WJMTgE"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": [
-                "recvq4mfQZd070",
-                "recvq4mfQZBYH2"
-              ],
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": "W-02,W-03",
-              "text_arr": [
-                "W-02",
-                "W-03"
-              ],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": null,
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "1000",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1030",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "简中(Simplified Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSqM9E"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y09",
-              "text_arr": [
-                "Y09"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvpUi8WJUMXR",
-        "record_id": "recvpUi8WJUMXR"
-      },
-      {
-        "fields": {
           "产品型号": "D5",
           "仓库物料位置": [
             {
@@ -71436,986 +71062,6 @@
         },
         "id": "recvrRmemAcfd3",
         "record_id": "recvrRmemAcfd3"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1044",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "俄语(Russian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS145R"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y07",
-              "text_arr": [
-                "Y07"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemA4xUn",
-        "record_id": "recvrRmemA4xUn"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1045",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "德语(German)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvV1Zr"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y02",
-              "text_arr": [
-                "Y02"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAkQKi",
-        "record_id": "recvrRmemAkQKi"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1046",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "意大利语(Italian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSdGu6"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y10",
-              "text_arr": [
-                "Y10"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemATkCM",
-        "record_id": "recvrRmemATkCM"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1047",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "日语(apanese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvPugd"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y03",
-              "text_arr": [
-                "Y03"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAZLK9",
-        "record_id": "recvrRmemAZLK9"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1048",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "法语(French)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvKoXZ"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y04",
-              "text_arr": [
-                "Y04"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAMXCb",
-        "record_id": "recvrRmemAMXCb"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1049",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "繁中(Traditional Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS4DXq"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y08",
-              "text_arr": [
-                "Y08"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAqPnl",
-        "record_id": "recvrRmemAqPnl"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1050",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "英语(English)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3Zbqvfu6T"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y01",
-              "text_arr": [
-                "Y01"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemA0sZJ",
-        "record_id": "recvrRmemA0sZJ"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1051",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "葡语(Portuguese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSEP5D"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y06",
-              "text_arr": [
-                "Y06"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAOGkG",
-        "record_id": "recvrRmemAOGkG"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1052",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "西语(Spanish)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvTMZD"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y05",
-              "text_arr": [
-                "Y05"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAJNMF",
-        "record_id": "recvrRmemAJNMF"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1053",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "韩语(Korean)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZyQ2OZRU"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y11",
-              "text_arr": [
-                "Y11"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemA45zr",
-        "record_id": "recvrRmemA45zr"
       },
       {
         "fields": {
@@ -76402,986 +75048,6 @@
         },
         "id": "recvrRmemAfSUI",
         "record_id": "recvrRmemAfSUI"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1104",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "俄语(Russian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS145R"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y07",
-              "text_arr": [
-                "Y07"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAAO8J",
-        "record_id": "recvrRmemAAO8J"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1105",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "德语(German)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvV1Zr"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y02",
-              "text_arr": [
-                "Y02"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAIU8H",
-        "record_id": "recvrRmemAIU8H"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1106",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "意大利语(Italian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSdGu6"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y10",
-              "text_arr": [
-                "Y10"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAuixa",
-        "record_id": "recvrRmemAuixa"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1107",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "日语(apanese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvPugd"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y03",
-              "text_arr": [
-                "Y03"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemA9QeL",
-        "record_id": "recvrRmemA9QeL"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1108",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "法语(French)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvKoXZ"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y04",
-              "text_arr": [
-                "Y04"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAWJVJ",
-        "record_id": "recvrRmemAWJVJ"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1109",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "繁中(Traditional Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS4DXq"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y08",
-              "text_arr": [
-                "Y08"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemA1rE1",
-        "record_id": "recvrRmemA1rE1"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1110",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "英语(English)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3Zbqvfu6T"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y01",
-              "text_arr": [
-                "Y01"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemA8F9X",
-        "record_id": "recvrRmemA8F9X"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1111",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "葡语(Portuguese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSEP5D"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y06",
-              "text_arr": [
-                "Y06"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemACdMI",
-        "record_id": "recvrRmemACdMI"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1112",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "西语(Spanish)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvTMZD"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y05",
-              "text_arr": [
-                "Y05"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemAnGk7",
-        "record_id": "recvrRmemAnGk7"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 0,
-          "单价（美元）": "0",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj6Dr"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "002",
-              "text_arr": [
-                "002"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-10 16:30:34",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "4911101000",
-          "物料品类": "产品单页(Product Flyer )",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1113",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "韩语(Korean)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZyQ2OZRU"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y11",
-              "text_arr": [
-                "Y11"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvrRmemARvCZ",
-        "record_id": "recvrRmemARvCZ"
       },
       {
         "fields": {
@@ -83946,986 +81612,6 @@
         },
         "id": "recvswf3qYQjDv",
         "record_id": "recvswf3qYQjDv"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1179",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "俄语(Russian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS145R"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y07",
-              "text_arr": [
-                "Y07"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYblwU",
-        "record_id": "recvswf3qYblwU"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1180",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "德语(German)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvV1Zr"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y02",
-              "text_arr": [
-                "Y02"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYuVdA",
-        "record_id": "recvswf3qYuVdA"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1181",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "意大利语(Italian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSdGu6"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y10",
-              "text_arr": [
-                "Y10"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qY6mIy",
-        "record_id": "recvswf3qY6mIy"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1182",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "日语(apanese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvPugd"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y03",
-              "text_arr": [
-                "Y03"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYclHa",
-        "record_id": "recvswf3qYclHa"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1183",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "法语(French)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvKoXZ"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y04",
-              "text_arr": [
-                "Y04"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYlG0x",
-        "record_id": "recvswf3qYlG0x"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1184",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "简中(Simplified Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSqM9E"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y09",
-              "text_arr": [
-                "Y09"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYLidZ",
-        "record_id": "recvswf3qYLidZ"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1185",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "繁中(Traditional Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS4DXq"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y08",
-              "text_arr": [
-                "Y08"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qY8Tz3",
-        "record_id": "recvswf3qY8Tz3"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1186",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "英语(English)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3Zbqvfu6T"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y01",
-              "text_arr": [
-                "Y01"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYyHe8",
-        "record_id": "recvswf3qYyHe8"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1187",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "葡语(Portuguese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSEP5D"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y06",
-              "text_arr": [
-                "Y06"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYFKUh",
-        "record_id": "recvswf3qYFKUh"
-      },
-      {
-        "fields": {
-          "产品型号": "Flash Arm",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1188",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "西语(Spanish)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvTMZD"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y05",
-              "text_arr": [
-                "Y05"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYsUPk",
-        "record_id": "recvswf3qYsUPk"
       },
       {
         "fields": {
@@ -91986,986 +88672,6 @@
         },
         "id": "recvswf3qYCQAv",
         "record_id": "recvswf3qYCQAv"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1259",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "俄语(Russian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS145R"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y07",
-              "text_arr": [
-                "Y07"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYN5KO",
-        "record_id": "recvswf3qYN5KO"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1260",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "德语(German)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvV1Zr"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y02",
-              "text_arr": [
-                "Y02"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYMI6E",
-        "record_id": "recvswf3qYMI6E"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1261",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "意大利语(Italian)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSdGu6"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y10",
-              "text_arr": [
-                "Y10"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYHT4t",
-        "record_id": "recvswf3qYHT4t"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1262",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "日语(apanese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvPugd"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y03",
-              "text_arr": [
-                "Y03"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYlAZ6",
-        "record_id": "recvswf3qYlAZ6"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1263",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "法语(French)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvKoXZ"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y04",
-              "text_arr": [
-                "Y04"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYqleg",
-        "record_id": "recvswf3qYqleg"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1264",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "简中(Simplified Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSqM9E"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y09",
-              "text_arr": [
-                "Y09"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYt56O",
-        "record_id": "recvswf3qYt56O"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1265",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "繁中(Traditional Chinese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfS4DXq"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y08",
-              "text_arr": [
-                "Y08"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYZhHO",
-        "record_id": "recvswf3qYZhHO"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1266",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "英语(English)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3Zbqvfu6T"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y01",
-              "text_arr": [
-                "Y01"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYM4oc",
-        "record_id": "recvswf3qYM4oc"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1267",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "葡语(Portuguese)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZxfSEP5D"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y06",
-              "text_arr": [
-                "Y06"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qY7mhv",
-        "record_id": "recvswf3qY7mhv"
-      },
-      {
-        "fields": {
-          "产品型号": "T300 Conveyor",
-          "仓库物料位置": [
-            {
-              "record_ids": null,
-              "table_id": "tbldA8qhSeIfJp3k",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": 74.47,
-          "单价（美元）": "11",
-          "启用状态": "启用",
-          "品类关联": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7eV"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "009",
-              "text_arr": [
-                "009"
-              ],
-              "type": "text"
-            }
-          ],
-          "型号关联": [
-            {
-              "record_ids": [],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "备注": null,
-          "库存归零时间": "2026-08-17 11:01:04",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": "0",
-          "是否在申领页显示": "是",
-          "海关编码": "7616999000",
-          "物料品类": "产品易拉宝(Product Roll-Up)",
-          "物料申请单": [
-            {
-              "record_ids": null,
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "物料编码": "MAT-1268",
-          "物料货架": [
-            {
-              "record_ids": null,
-              "table_id": "tblqz8xmpgtv4Q9C",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "语种": "西语(Spanish)",
-          "语种关联": [
-            {
-              "record_ids": [
-                "recvq3ZbqvTMZD"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y05",
-              "text_arr": [
-                "Y05"
-              ],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvswf3qYGPxz",
-        "record_id": "recvswf3qYGPxz"
       },
       {
         "fields": {
@@ -104327,7 +100033,7 @@
           "市场负责人": null,
           "库存审查人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -104415,7 +100121,7 @@
           "申请物料更改信息说明": null,
           "申请物料最后修改人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -119689,7 +115395,7 @@
     "物料品类": 26,
     "产品型号": 29,
     "物料语种": 12,
-    "物料主数据": 873,
+    "物料主数据": 831,
     "库存流水": 105,
     "物料申请单": 13,
     "申请明细": 116,

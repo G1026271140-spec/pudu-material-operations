@@ -1,7 +1,7 @@
 {
   "schema_version": 4,
   "source": "static_snapshot",
-  "generated_at": "2026-08-20 18:37:44",
+  "generated_at": "2026-08-21 09:23:37",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -139,7 +139,7 @@
       "en": "CC1 PRO"
     },
     "BellaBot": {
-      "zh": "贝拉Bella",
+      "zh": "贝拉 Bella",
       "en": "BellaBot"
     },
     "Bellabot pro": {
@@ -155,11 +155,11 @@
       "en": "PuduBot 2"
     },
     "FlashBot": {
-      "zh": "闪电匣FlashBot",
+      "zh": "闪电匣 FlashBot",
       "en": "FlashBot"
     },
     "FlashBot Lite": {
-      "zh": "闪电匣Lite",
+      "zh": "闪电匣Lite FlashBot Lite",
       "en": "FlashBot Lite"
     },
     "FlashBot Pro": {
@@ -167,7 +167,7 @@
       "en": "FlashBot Pro"
     },
     "FlashBot Max": {
-      "zh": "闪电匣Max",
+      "zh": "闪电匣Max FlashBot Max",
       "en": "FlashBot Max"
     },
     "FlashBot Ultra": {
@@ -175,7 +175,7 @@
       "en": "FlashBot Ultra"
     },
     "SwiftBot": {
-      "zh": "巧乐送SwiftBot",
+      "zh": "巧乐送 SwiftBot",
       "en": "SwiftBot"
     },
     "SwiftBot Neo": {
@@ -393,22 +393,6 @@
             "韩语(Korean)"
           ],
           "product_line": "CR"
-        },
-        {
-          "model": "Flash Arm",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
         },
         {
           "model": "FlashBot",
@@ -666,22 +650,6 @@
           "product_line": "IR"
         },
         {
-          "model": "T300 Conveyor",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)",
-            "韩语(Korean)"
-          ]
-        },
-        {
           "model": "T600",
           "languages": [
             "英语(English)",
@@ -926,21 +894,6 @@
             "意大利语(Italian)"
           ],
           "product_line": "CR"
-        },
-        {
-          "model": "Flash Arm",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)"
-          ]
         },
         {
           "model": "FlashBot",
@@ -1229,21 +1182,6 @@
           "product_line": "IR"
         },
         {
-          "model": "T300 Conveyor",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)"
-          ]
-        },
-        {
           "model": "T600",
           "languages": [
             "英语(English)",
@@ -1433,7 +1371,7 @@
       ]
     }
   ],
-  "combination_count": 660,
+  "combination_count": 618,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -4250,20 +4188,6 @@
       "quantity": 1300
     },
     {
-      "material_code": "MAT-1029",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 250
-    },
-    {
-      "material_code": "MAT-1030",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 1000
-    },
-    {
       "material_code": "MAT-1032",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
@@ -4337,76 +4261,6 @@
       "material_code": "MAT-1043",
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1044",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1045",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1046",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1047",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1048",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1049",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1050",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1051",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1052",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1053",
-      "product": "产品单页(Product Flyer )",
-      "model": "Flash Arm",
       "language": "韩语(Korean)",
       "quantity": 0
     },
@@ -4680,76 +4534,6 @@
       "material_code": "MAT-1103",
       "product": "产品单页(Product Flyer )",
       "model": "T300",
-      "language": "韩语(Korean)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1104",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1105",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1106",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1107",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1108",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1109",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1110",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1111",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1112",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1113",
-      "product": "产品单页(Product Flyer )",
-      "model": "T300 Conveyor",
       "language": "韩语(Korean)",
       "quantity": 0
     },
@@ -5142,76 +4926,6 @@
       "material_code": "MAT-1178",
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "D9",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1179",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1180",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1181",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1182",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1183",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1184",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1185",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1186",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1187",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1188",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Flash Arm",
       "language": "西语(Spanish)",
       "quantity": 0
     },
@@ -5706,76 +5420,6 @@
       "quantity": 0
     },
     {
-      "material_code": "MAT-1259",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "俄语(Russian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1260",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "德语(German)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1261",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "意大利语(Italian)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1262",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "日语(apanese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1263",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "法语(French)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1264",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1265",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1266",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "英语(English)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1267",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "葡语(Portuguese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-1268",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "T300 Conveyor",
-      "language": "西语(Spanish)",
-      "quantity": 0
-    },
-    {
       "material_code": "MAT-1270",
       "product": "产品单页(Product Flyer )",
       "model": "FlashBot Pro",
@@ -6070,6 +5714,6 @@
       "quantity": 0
     }
   ],
-  "row_count": 662,
+  "row_count": 620,
   "built_from": "page_data_static_snapshot"
 }
