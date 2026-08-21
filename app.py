@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.2.4"
+APP_VERSION = "V1.2.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -92,6 +92,9 @@ AUTO_REQUEST_MODEL_CATEGORIES = (
 )
 UNIT_PRICE_FIELD_CANDIDATES = ("单价（美元）", "单价")
 UNIT_PRICE_RMB_FIELD = "单价（人民币）"
+REQUEST_PRICE_SNAPSHOT_FIELD = "申请时单价（人民币）"
+REQUEST_LINE_SUBTOTAL_FIELD = "费用小计（人民币）"
+REQUEST_TOTAL_RMB_FIELD = "费用合计（人民币）"
 GIFT_PROJECT_CATEGORY_LINK_FIELD = "物料品类关联"
 COMMERCIAL_INVOICE_NAME_FIELD = "商业发票产品名称"
 PACKING_LIST_PRODUCT_TYPE_FIELD = "装箱单产品类型"
@@ -2604,7 +2607,8 @@ def normalize_feishu_field_value(table_name: str, field_name: str, value: object
         return str(value)
     if field_type == 2:
         try:
-            return float(value) if isinstance(value, str) and "." in value else int(value)  # type: ignore[arg-type]
+            numeric = float(value)  # type: ignore[arg-type]
+            return int(numeric) if numeric.is_integer() else numeric
         except (TypeError, ValueError):
             return value
     if field_type == 5:
@@ -2685,6 +2689,56 @@ def set_feishu_unit_price(
     value: object,
 ) -> None:
     set_first_plain_field(table_name, fields, list(UNIT_PRICE_FIELD_CANDIDATES), value)
+
+
+def request_material_unit_price_rmb(
+    material_fields: dict[str, object],
+    category_price_rmb: float = 0.0,
+) -> float:
+    """Return the current RMB category price used to freeze a request line."""
+    price = feishu_float(material_fields, UNIT_PRICE_RMB_FIELD)
+    return round(price if price else float(category_price_rmb or 0), 4)
+
+
+def request_line_subtotal_rmb(unit_price_rmb: object, quantity: object) -> float:
+    return round(float(unit_price_rmb or 0) * int(quantity or 0), 2)
+
+
+def material_price_sync_updates(
+    material_rows: list[dict], category_rows: list[dict]
+) -> list[dict[str, object]]:
+    """Build USD source-price updates so material RMB formulas mirror categories."""
+    category_price_by_id = {
+        feishu_record_id(row): feishu_float_any(
+            feishu_fields(row), list(UNIT_PRICE_FIELD_CANDIDATES)
+        )
+        for row in category_rows
+        if feishu_record_id(row)
+    }
+    updates: list[dict[str, object]] = []
+    for row in material_rows:
+        fields = feishu_fields(row)
+        category_ids = feishu_link_ids(fields, "品类关联")
+        if not category_ids or category_ids[0] not in category_price_by_id:
+            continue
+        expected = float(category_price_by_id[category_ids[0]])
+        current = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
+        if abs(current - expected) < 0.000001:
+            continue
+        update_fields: dict[str, object] = {}
+        set_feishu_unit_price(MATERIAL_TABLE_NAME, update_fields, expected)
+        if update_fields:
+            updates.append(
+                {"record_id": feishu_record_id(row), "fields": update_fields}
+            )
+    return updates
+
+
+def sync_material_unit_prices_from_categories() -> int:
+    updates = material_price_sync_updates(
+        fresh_feishu_rows(MATERIAL_TABLE_NAME), fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    )
+    return feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, updates)
 
 
 def set_feishu_customs_code(
@@ -3256,7 +3310,17 @@ def sync_new_request_model_material_rows() -> dict[str, object]:
                 language_id = language_ids.get(language, "")
                 if language_id:
                     fields[material_language_link_field_name() or "语种关联"] = [language_id]
-                set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, 0.0)
+                category_row = next(
+                    (row for row in category_rows if feishu_record_id(row) == category_id),
+                    {},
+                )
+                set_feishu_unit_price(
+                    MATERIAL_TABLE_NAME,
+                    fields,
+                    feishu_float_any(
+                        feishu_fields(category_row), list(UNIT_PRICE_FIELD_CANDIDATES)
+                    ),
+                )
                 creates.append(fields)
     updated_count = feishu_batch_update_record_fields(MATERIAL_TABLE_NAME, updates)
     created_rows = feishu_batch_create_records(MATERIAL_TABLE_NAME, creates) if creates else []
@@ -8107,10 +8171,17 @@ def submit_feishu_material_request(
     # cache, which can legitimately lag behind the preceding background write.
     material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     material_index = build_request_material_index(
         material_rows,
-        fresh_feishu_rows(CATEGORY_TABLE_NAME),
+        category_rows,
     )
+    category_price_rmb = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")): feishu_float(
+            feishu_fields(row), UNIT_PRICE_RMB_FIELD
+        )
+        for row in category_rows
+    }
     seen_keys: set[tuple[str, str, str]] = set()
     prepared_lines: list[dict[str, object]] = []
     for item in valid_lines:
@@ -8129,6 +8200,10 @@ def submit_feishu_material_request(
         if material_row is None:
             raise RuntimeError(f"未找到物料组合：{product} / {model} / {language}")
         material_fields = feishu_fields(material_row)
+        unit_price_rmb = request_material_unit_price_rmb(
+            material_fields,
+            category_price_rmb.get(normalize_category_match_key(product), 0.0),
+        )
         prepared_lines.append(
             {
                 "product": product,
@@ -8139,6 +8214,8 @@ def submit_feishu_material_request(
                 "material_record_id": feishu_record_id(material_row),
                 "material_code": feishu_text(material_fields, "物料编码"),
                 "stock_snapshot": feishu_int(material_fields, "当前库存"),
+                "unit_price_rmb": unit_price_rmb,
+                "subtotal_rmb": request_line_subtotal_rmb(unit_price_rmb, quantity),
             }
         )
 
@@ -8174,6 +8251,9 @@ def submit_feishu_material_request(
         "申请变更次数": "0",
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
         "管理员通知状态": "待发送",
+        REQUEST_TOTAL_RMB_FIELD: round(
+            sum(float(item["subtotal_rmb"]) for item in prepared_lines), 2
+        ),
         "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
         "备注": request_note_text(request_payload),
     }
@@ -8221,6 +8301,8 @@ def submit_feishu_material_request(
             "实际发放数量": 0,
             "明细状态": REQUEST_LINE_STATUS_PENDING,
             "备注": item["remark"],
+            REQUEST_PRICE_SNAPSHOT_FIELD: float(item["unit_price_rmb"]),
+            REQUEST_LINE_SUBTOTAL_FIELD: float(item["subtotal_rmb"]),
         }
         set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["申请单号"], request_no)
         set_request_line_material_fields(
@@ -8548,6 +8630,8 @@ def load_feishu_request_line_records(
                 "usage": feishu_text(fields, "物料用途"),
                 "remark": feishu_text(fields, "备注"),
                 "stock_snapshot": feishu_int(fields, "提交时库存快照"),
+                "unit_price_rmb": feishu_float(fields, REQUEST_PRICE_SNAPSHOT_FIELD),
+                "subtotal_rmb": feishu_float(fields, REQUEST_LINE_SUBTOTAL_FIELD),
                 "current_stock": feishu_int(material_fields, "当前库存"),
                 "approved_qty": approved_qty,
                 "actual_issue_qty": actual_qty,
@@ -8612,6 +8696,8 @@ REQUEST_INVENTORY_PAGE_LINE_FIELDS = [
     "申请数量",
     "物料数量",
     "备注",
+    REQUEST_PRICE_SNAPSHOT_FIELD,
+    REQUEST_LINE_SUBTOTAL_FIELD,
 ]
 
 
@@ -8894,6 +8980,19 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             raise RuntimeError("申请明细包含无效物料或数量。")
         seen.add(material_id)
         material_fields = feishu_fields(material_by_id[material_id])
+        existing_line = next(
+            (
+                line
+                for line in list(context["lines"])
+                if str(line.get("material_record_id") or "") == material_id
+            ),
+            None,
+        )
+        unit_price_rmb = (
+            float(existing_line.get("unit_price_rmb") or 0)
+            if existing_line
+            else request_material_unit_price_rmb(material_fields)
+        )
         prepared.append(
             {
                 "material_record_id": material_id,
@@ -8903,6 +9002,8 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
                 "quantity": quantity,
                 "remark": str(item.get("remark") or "").strip(),
                 "current_stock": feishu_int(material_fields, "当前库存"),
+                "unit_price_rmb": unit_price_rmb,
+                "subtotal_rmb": request_line_subtotal_rmb(unit_price_rmb, quantity),
             }
         )
 
@@ -8929,6 +9030,8 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             ),
             "明细变更说明": change_note,
             "备注": item["remark"],
+            REQUEST_PRICE_SNAPSHOT_FIELD: float(item["unit_price_rmb"]),
+            REQUEST_LINE_SUBTOTAL_FIELD: float(item["subtotal_rmb"]),
         }
         if existing:
             line_id = str(existing.get("record_id") or "")
@@ -8979,6 +9082,9 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         "申请物料更改信息说明": change_note,
         "申请物料最后修改时间": feishu_datetime_value(REQUEST_TABLE_NAME, "申请物料最后修改时间", now),
         "申请变更次数": str(new_version),
+        REQUEST_TOTAL_RMB_FIELD: round(
+            sum(float(item["subtotal_rmb"]) for item in prepared), 2
+        ),
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
     }
     person_value = _request_review_person_value(operator_open_id)
