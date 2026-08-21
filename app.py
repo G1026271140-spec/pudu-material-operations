@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.8"
+APP_VERSION = "V1.1.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -590,8 +590,8 @@ def normalize_category_display_names(value: object) -> dict[str, dict[str, str]]
         if not canonical or not isinstance(labels, dict):
             continue
         normalized[canonical] = {
-            LANGUAGE_ZH: str(labels.get(LANGUAGE_ZH) or labels.get("zh") or canonical).strip(),
-            LANGUAGE_EN: str(labels.get(LANGUAGE_EN) or labels.get("en") or canonical).strip(),
+            LANGUAGE_ZH: str(labels.get(LANGUAGE_ZH) or labels.get("zh") or "").strip(),
+            LANGUAGE_EN: str(labels.get(LANGUAGE_EN) or labels.get("en") or "").strip(),
         }
     return normalized
 
@@ -609,7 +609,7 @@ def request_category_display_label(
         else load_static_request_form_cache().get("category_display_names", {})
     ).get(canonical, {})
     configured_label = str(labels.get(target_language) or "").strip()
-    if configured_label:
+    if configured_label and configured_label != canonical:
         return configured_label
     if target_language == LANGUAGE_EN:
         return request_option_display_label(canonical)
@@ -5573,8 +5573,8 @@ def feishu_options_from_rows(
         if product:
             category_products.append(product)
             category_display_names[product] = {
-                LANGUAGE_ZH: feishu_text(fields, "中文页面名称").strip() or product,
-                LANGUAGE_EN: feishu_text(fields, "英文页面名称").strip() or product,
+                LANGUAGE_ZH: feishu_text(fields, "中文页面名称").strip(),
+                LANGUAGE_EN: feishu_text(fields, "英文页面名称").strip(),
             }
         if feishu_text(fields, "是否无需型号") == "是":
             no_model_products.append(product)
@@ -7440,6 +7440,23 @@ def category_edit_notification_card(
 ) -> dict[str, object]:
     rows = category_edit_change_rows(draft)
     changed_rows = [row for row in rows if row["操作"] != "保留"]
+    base_changes = [
+        ("物料品类名称", draft.get("old_product"), draft.get("product")),
+        ("中文页面名称", draft.get("old_category_zh_page_name"), draft.get("category_zh_page_name")),
+        ("英文页面名称", draft.get("old_category_en_page_name"), draft.get("category_en_page_name")),
+        ("品类定义", draft.get("old_category_definition"), draft.get("category_definition")),
+        ("品类启用状态", draft.get("old_category_status"), draft.get("category_status")),
+        ("品类在申领页显示", draft.get("old_category_request_visible"), draft.get("category_request_visible")),
+        ("商业发票产品名称", draft.get("old_commercial_invoice_name"), draft.get("commercial_invoice_name")),
+        ("装箱单产品类型", draft.get("old_packing_list_product_type"), draft.get("packing_list_product_type")),
+        ("单价（美元）", draft.get("old_category_unit_price"), draft.get("category_unit_price")),
+        ("海关编码", draft.get("old_category_customs_code"), draft.get("category_customs_code")),
+    ]
+    changed_base_fields = [
+        (label, before, after)
+        for label, before, after in base_changes
+        if str(before or "").strip() != str(after or "").strip()
+    ]
     elements: list[dict[str, object]] = [{
         "tag": "markdown",
         "content": (
@@ -7454,7 +7471,15 @@ def category_edit_notification_card(
             f"新增 {int(result.get('created_count') or 0)} 条，移除 {int(result.get('deleted_count') or 0)} 条，"
             f"库存差额 {int(result.get('quantity_difference') or 0):+,}"
         ),
-    }, {"tag": "hr"}, {"tag": "markdown", "content": "**编辑修改明细**"}]
+    }, {"tag": "hr"}, {"tag": "markdown", "content": "**品类基础信息变更**"}]
+    for label, before, after in changed_base_fields:
+        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
+            f"{label}：{_feishu_card_plain_text(before) or '-'} → "
+            f"{_feishu_card_plain_text(after) or '-'}"
+        )}})
+    if not changed_base_fields:
+        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "品类基础信息无变化。"}})
+    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**物料主数据变更明细**"}])
     for index, row in enumerate(changed_rows[:40], start=1):
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
             f"{index:02d}. [{row['操作']}] {row['产品型号']} / {row['语种']}\n"
@@ -7467,7 +7492,7 @@ def category_edit_notification_card(
         elements.append({"tag": "markdown", "content": f"另有 **{len(changed_rows) - 40}** 条修改，请在品类管理中查看。"})
     return {
         "config": {"wide_screen_mode": True},
-        "header": {"template": "blue", "title": {"tag": "plain_text", "content": "物料品类编辑已完成"}},
+        "header": {"template": "blue", "title": {"tag": "plain_text", "content": "物料编辑通知｜品类修改已完成"}},
         "elements": elements,
     }
 
@@ -7516,7 +7541,7 @@ def category_create_notification_card(
 ) -> dict[str, object]:
     targets = [
         target
-        for target in list(result.get("targets") or [])
+        for target in list(result.get("targets") or draft.get("targets") or [])
         if isinstance(target, dict)
     ]
     elements: list[dict[str, object]] = [
@@ -7524,6 +7549,9 @@ def category_create_notification_card(
             "tag": "markdown",
             "content": (
                 f"**物料品类：** {_feishu_card_plain_text(draft.get('product'))}\n"
+                f"**中文页面名称：** {_feishu_card_plain_text(draft.get('category_zh_page_name'))}\n"
+                f"**英文页面名称：** {_feishu_card_plain_text(draft.get('category_en_page_name'))}\n"
+                f"**品类定义：** {_feishu_card_plain_text(draft.get('category_definition'))}\n"
                 f"**创建时间：** {_feishu_card_plain_text(draft.get('created_at'))}\n"
                 f"**品类状态：** {_feishu_card_plain_text(draft.get('category_status'))}\n"
                 f"**品类在申领页显示：** {_feishu_card_plain_text(draft.get('category_request_visible'))}\n"
@@ -7563,7 +7591,7 @@ def category_create_notification_card(
         "config": {"wide_screen_mode": True},
         "header": {
             "template": "green",
-            "title": {"tag": "plain_text", "content": "新物料品类已创建"},
+            "title": {"tag": "plain_text", "content": "物料编辑通知｜新物料品类已创建"},
         },
         "elements": elements,
     }
@@ -7637,7 +7665,7 @@ def category_delete_notification_card(draft: dict[str, object]) -> dict[str, obj
         "config": {"wide_screen_mode": True},
         "header": {
             "template": "red",
-            "title": {"tag": "plain_text", "content": "物料管理删除已完成"},
+            "title": {"tag": "plain_text", "content": "物料编辑通知｜物料删除已完成"},
         },
         "elements": elements,
     }
@@ -13441,7 +13469,11 @@ def clear_category_delete_state() -> None:
             st.session_state.pop(key, None)
 
 
-def execute_category_delete(draft: dict[str, object]) -> dict[str, int]:
+def execute_category_delete(
+    draft: dict[str, object],
+    *,
+    notify_admins: bool = True,
+) -> dict[str, int]:
     delete_kind = str(draft.get("delete_kind") or "")
     category_names = [str(value) for value in list(draft.get("category_names") or [])]
     preview_records = [dict(row) for row in list(draft.get("records") or []) if isinstance(row, dict)]
@@ -13476,11 +13508,14 @@ def execute_category_delete(draft: dict[str, object]) -> dict[str, int]:
             category = category_by_name.get(name)
             if category:
                 update_category_inventory_counts(category, [row for row in inventory_records if str(row.get("category") or "") == name and str(row.get("record_id") or "") not in deleted_ids])
-    notice = {**draft, "records": current_records, "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-    try:
+    notified = 0
+    if notify_admins:
+        notice = {
+            **draft,
+            "records": current_records,
+            "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
         notified = notify_enabled_admins_of_category_delete(notice)
-    except Exception:
-        notified = 0
     return {"deleted_count": len(current_records), "notification_count": notified}
 
 
@@ -14903,8 +14938,19 @@ def render_add_category_form() -> None:
                 "old_product": old_product, "product": product, "category_status": category_status,
                 "category_zh_page_name": category_zh_page_name,
                 "category_en_page_name": category_en_page_name,
+                "old_category_zh_page_name": current_category_zh_page_name,
+                "old_category_en_page_name": current_category_en_page_name,
+                "old_category_definition": current_category_definition,
+                "old_category_status": current_category_status,
+                "old_category_request_visible": current_category_request_visible,
+                "old_commercial_invoice_name": current_commercial_invoice_name,
+                "old_packing_list_product_type": current_packing_list_product_type,
+                "old_category_unit_price": current_category_unit_price,
+                "old_category_customs_code": current_category_customs_code,
                 "category_request_visible": category_request_visible,
                 "category_definition": category_definition,
+                "category_unit_price": category_unit_price,
+                "category_customs_code": category_customs_code,
                 "commercial_invoice_name": commercial_invoice_name,
                 "packing_list_product_type": packing_list_product_type,
                 "edited_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

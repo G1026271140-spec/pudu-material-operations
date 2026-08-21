@@ -7,6 +7,7 @@ import socket
 import subprocess
 import sys
 import time
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Callable
@@ -188,16 +189,37 @@ def process_task(
         notified = inventory_app.notify_enabled_admins_of_restock(dict(payload["draft"]), lines)
         return {"line_count": len(lines), "notification_count": notified}
     if task.task_type == QUEUE_TASK_TYPE_CATEGORY_SYNC:
-        result = inventory_app.sync_feishu_category_inventory(
-            **inventory_app.deserialize_category_sync_args(dict(payload["sync_args"]))
-        )
+        progress = dict(task.result)
+        if not progress.get("write_done"):
+            sync_result = inventory_app.sync_feishu_category_inventory(
+                **inventory_app.deserialize_category_sync_args(dict(payload["sync_args"]))
+            )
+            result = {
+                "target_count": int(sync_result.get("target_count") or 0),
+                "created_count": int(sync_result.get("created_count") or 0),
+                "updated_count": int(sync_result.get("updated_count") or 0),
+                "deleted_count": int(sync_result.get("deleted_count") or 0),
+                "quantity_difference": int(sync_result.get("quantity_difference") or 0),
+                "target_quantity": int(sync_result.get("target_quantity") or 0),
+                "models": list(sync_result.get("models") or []),
+                "languages": list(sync_result.get("languages") or []),
+            }
+            progress.update({"write_done": True, "write_result": result})
+            if checkpoint is not None:
+                checkpoint(progress)
+        else:
+            result = dict(progress.get("write_result") or {})
         draft = dict(payload.get("draft") or {})
         notice_kind = str(payload.get("notification_kind") or "")
-        notified = 0
-        if notice_kind == "create":
-            notified = inventory_app.notify_enabled_admins_of_category_create(draft, result)
-        elif notice_kind == "edit":
-            notified = inventory_app.notify_enabled_admins_of_category_edit(draft, result)
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            if notice_kind == "create":
+                notified = inventory_app.notify_enabled_admins_of_category_create(draft, result)
+            elif notice_kind == "edit":
+                notified = inventory_app.notify_enabled_admins_of_category_edit(draft, result)
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
         return {
             "target_count": int(result.get("target_count") or 0),
             "created_count": int(result.get("created_count") or 0),
@@ -206,7 +228,32 @@ def process_task(
             "notification_count": notified,
         }
     if task.task_type == QUEUE_TASK_TYPE_CATEGORY_DELETE:
-        return inventory_app.execute_category_delete(dict(payload["draft"]))
+        progress = dict(task.result)
+        draft = dict(payload["draft"])
+        if not progress.get("write_done"):
+            delete_result = inventory_app.execute_category_delete(
+                draft,
+                notify_admins=False,
+            )
+            progress.update({
+                "write_done": True,
+                "deleted_count": int(delete_result.get("deleted_count") or 0),
+            })
+            if checkpoint is not None:
+                checkpoint(progress)
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            notified = inventory_app.notify_enabled_admins_of_category_delete({
+                **draft,
+                "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            })
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
+        return {
+            "deleted_count": int(progress.get("deleted_count") or 0),
+            "notification_count": notified,
+        }
     if task.task_type == QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT:
         return inventory_app.execute_dimension_management(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT:

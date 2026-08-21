@@ -16,6 +16,10 @@ class BotNotificationTests(unittest.TestCase):
             "edited_at": "2026-07-22 10:00:00",
             "category_status": app.STATUS_ACTIVE,
             "category_request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
+            "old_category_zh_page_name": "旧中文名",
+            "category_zh_page_name": "新中文名",
+            "old_category_en_page_name": "Old English Name",
+            "category_en_page_name": "New English Name",
             "current_records": [{
                 "model": "BellaBot", "language": "英语", "quantity": 10,
                 "unit_price": 1.5, "customs_code": "A1", "status": app.STATUS_ACTIVE,
@@ -44,6 +48,8 @@ class BotNotificationTests(unittest.TestCase):
             "10 → 15",
             "1.5 → 2",
             "申领页显示：否 → 是",
+            "中文页面名称：旧中文名 → 新中文名",
+            "英文页面名称：Old English Name → New English Name",
         ):
             self.assertIn(expected, serialized)
 
@@ -123,6 +129,9 @@ class BotNotificationTests(unittest.TestCase):
             "category_status": app.STATUS_ACTIVE,
             "category_request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
             "created_at": "2026-07-27 18:00:00",
+            "category_zh_page_name": "新品类中文",
+            "category_en_page_name": "New Category",
+            "category_definition": app.CATEGORY_DEFINITION_PRINT,
         }
         result = {
             "target_count": 2,
@@ -149,12 +158,13 @@ class BotNotificationTests(unittest.TestCase):
 
         self.assertTrue(card["config"]["wide_screen_mode"])
         self.assertEqual(card["header"]["template"], "green")
-        self.assertEqual(card["header"]["title"]["content"], "新物料品类已创建")
+        self.assertEqual(card["header"]["title"]["content"], "物料编辑通知｜新物料品类已创建")
         for expected in (
             "新品类", "2026-07-27 18:00:00", "库存组合 2 条",
             "初始库存 25 件", "M1 / 英语", "库存：20", "单价：1.5",
             "海关编码：4911101000", "M1 / 日语", "状态：停用",
             "品类在申领页显示", "申领页显示：否",
+            "新品类中文", "New Category",
         ):
             self.assertIn(expected, serialized)
 
