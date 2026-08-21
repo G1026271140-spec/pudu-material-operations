@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.1.5"
+APP_VERSION = "V1.1.6"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -1507,9 +1507,17 @@ def inject_global_styles() -> None:
             width: 100% !important;
         }
         [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) {
-            width: min(1180px, calc(100vw - 1.5rem)) !important;
             max-width: min(1180px, calc(100vw - 1.5rem)) !important;
             max-height: calc(100vh - 1.5rem) !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact) {
+            width: min(680px, calc(100vw - 1.5rem)) !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-medium) {
+            width: min(900px, calc(100vw - 1.5rem)) !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-wide) {
+            width: min(1180px, calc(100vw - 1.5rem)) !important;
         }
         [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) > div {
             width: 100% !important;
@@ -1523,6 +1531,23 @@ def inject_global_styles() -> None:
         }
         [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) [data-testid="stVerticalBlock"] {
             gap: 0.28rem !important;
+        }
+        [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] > div:last-child {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 0.3rem !important;
+            width: 100% !important;
+        }
+        [class*="st-key-request_language_pills_"]:has(.pudu-language-columns-2) [data-testid="stButtonGroup"] > div:last-child {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+        [class*="st-key-request_language_pills_"]:has(.pudu-language-columns-3) [data-testid="stButtonGroup"] > div:last-child {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+        [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] button {
+            width: 100% !important;
+            min-width: 0 !important;
+            justify-content: center !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
             min-height: 286px;
@@ -11534,34 +11559,23 @@ def render_request_model_selector(
         )
 
     st.markdown('<span class="pudu-model-line-grid-marker"></span>', unsafe_allow_html=True)
-    for start in range(0, len(primary_groups), 3):
-        columns = st.columns(3, gap="small")
-        for column, (name, options) in zip(columns, primary_groups[start : start + 3]):
-            group_key = f"{state_key}_{name}"
-            with column.container(border=True):
-                st.caption(name)
-                if options:
-                    st.pills(
-                        f"{name} 产品型号",
-                        options,
-                        selection_mode="multi" if multiple else "single",
-                        format_func=display_model,
-                        key=group_key,
-                        on_change=sync_request_model_line_selection,
-                        args=(state_key, group_keys, group_key, multiple),
-                        label_visibility="collapsed",
-                        width="stretch",
-                    )
-                else:
-                    st.caption("暂无型号")
-    for start in range(0, len(other_groups), 3):
-        columns = st.columns(3, gap="small")
-        for column, (name, options) in zip(columns, other_groups[start : start + 3]):
+    visible_groups = [item for item in primary_groups + other_groups if item[1]]
+    column_groups: list[list[tuple[str, list[str]]]] = [[], [], []]
+    column_weights = [0, 0, 0]
+    for group_index, group in enumerate(visible_groups):
+        column_index = group_index if group_index < 3 else min(
+            range(3), key=lambda index: column_weights[index]
+        )
+        column_groups[column_index].append(group)
+        column_weights[column_index] += max(2, len(group[1]))
+    columns = st.columns(min(3, max(1, len(visible_groups))), gap="small")
+    for column, groups_in_column in zip(columns, column_groups):
+        for name, options in groups_in_column:
             group_key = f"{state_key}_{name}"
             with column.container(border=True):
                 st.caption(name)
                 st.pills(
-                    "其他产品线型号",
+                    f"{name} 产品型号",
                     options,
                     selection_mode="multi" if multiple else "single",
                     format_func=display_model,
@@ -12027,8 +12041,20 @@ def render_request_material_builder(
                         icon=":material/shopping_cart:",
                         width="stretch",
                     ):
+                        all_language_options = request_language_options_for_models(
+                            selection_context,
+                            catalog_product,
+                            model_options,
+                        )
+                        option_complexity = max(len(model_options), len(all_language_options))
+                        popover_size = (
+                            "compact" if option_complexity <= 4
+                            else "medium" if option_complexity <= 8
+                            else "wide"
+                        )
                         st.markdown(
-                            '<span class="pudu-specification-popover-marker"></span>',
+                            f'<span class="pudu-specification-popover-marker '
+                            f'pudu-specification-popover-{popover_size}"></span>',
                             unsafe_allow_html=True,
                         )
                         st.markdown(
@@ -12068,20 +12094,25 @@ def render_request_material_builder(
                             language_options,
                             multiple=language_multi,
                         )
-                        selected_language_values = (
-                            st.pills(
-                                "语种",
-                                language_options,
-                                selection_mode="multi" if language_multi else "single",
-                                required=not language_multi,
-                                format_func=request_option_display_label,
-                                key=language_widget_key,
-                                on_change=mark_request_form_dirty,
-                                width="stretch",
-                            )
-                            if language_options
-                            else []
-                        )
+                        selected_language_values: object = []
+                        if language_options:
+                            language_columns = min(4, max(2, len(language_options)))
+                            with st.container(key=f"request_language_pills_{product_state_key}"):
+                                st.markdown(
+                                    f'<span class="pudu-language-pills-marker '
+                                    f'pudu-language-columns-{language_columns}"></span>',
+                                    unsafe_allow_html=True,
+                                )
+                                selected_language_values = st.pills(
+                                    "语种",
+                                    language_options,
+                                    selection_mode="multi" if language_multi else "single",
+                                    required=not language_multi,
+                                    format_func=request_option_display_label,
+                                    key=language_widget_key,
+                                    on_change=mark_request_form_dirty,
+                                    width="stretch",
+                                )
                         selected_languages = (
                             list(selected_language_values or [])
                             if language_multi
