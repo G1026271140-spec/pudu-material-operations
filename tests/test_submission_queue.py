@@ -37,7 +37,7 @@ class FakeQueueClient:
         }[table_name]
         self.tables.append({"table_id": table_id, "name": table_name})
         self.fields[table_id] = [
-            {"field_name": field["field_name"], "type": field["type"]}
+            dict(field)
             for field in fields
         ]
         self.records[table_id] = []
@@ -119,6 +119,12 @@ class FakeQueueClient:
                 record["fields"][key] = value
         return {"record_id": record_id, "fields": dict(record["fields"])}
 
+    def batch_update_records(self, table_id: str, records: list[dict]) -> list[dict]:
+        return [
+            self.update_record(table_id, str(record["record_id"]), dict(record["fields"]))
+            for record in records
+        ]
+
 
 class SubmissionQueueTests(unittest.TestCase):
     def test_enqueue_retries_when_feishu_data_is_not_ready(self) -> None:
@@ -157,6 +163,16 @@ class SubmissionQueueTests(unittest.TestCase):
         self.assertEqual(field_names, {name for name, _ in queue.QUEUE_FIELDS})
         self.assertEqual(client.tables[1]["name"], queue.QUEUE_PAYLOAD_TABLE_NAME)
         self.assertEqual(client.tables[2]["name"], queue.WORKER_REGISTRY_TABLE_NAME)
+        completion_field = next(
+            field
+            for field in client.fields[table_id]
+            if field["field_name"] == queue.QUEUE_FIELD_COMPLETION_STATUS
+        )
+        self.assertEqual(completion_field["type"], 3)
+        self.assertEqual(
+            [item["name"] for item in completion_field["property"]["options"]],
+            [queue.QUEUE_COMPLETION_UNFINISHED, queue.QUEUE_COMPLETION_COMPLETED],
+        )
         worker_fields = {
             field["field_name"]: field for field in client.fields["tbl-workers"]
         }
@@ -287,6 +303,10 @@ class SubmissionQueueTests(unittest.TestCase):
         self.assertIsNotNone(claimed)
         assert claimed is not None
         self.assertEqual(claimed.status, queue.QUEUE_STATUS_PROCESSING)
+        self.assertEqual(
+            claimed.completion_status,
+            queue.QUEUE_COMPLETION_UNFINISHED,
+        )
         self.assertEqual(claimed.lease_expires_at, 1_060_000)
 
         status = queue.fail_submission_task(
@@ -314,7 +334,62 @@ class SubmissionQueueTests(unittest.TestCase):
         )
         completed = queue.list_submission_tasks(client)[0]
         self.assertEqual(completed.status, queue.QUEUE_STATUS_COMPLETED)
+        self.assertEqual(
+            completed.completion_status,
+            queue.QUEUE_COMPLETION_COMPLETED,
+        )
         self.assertEqual(completed.result["request_no"], "REQ-1")
+
+    def test_completed_marker_prevents_reclaim_even_if_technical_status_is_pending(self) -> None:
+        client = FakeQueueClient()
+        task, _ = queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+            "marker-token",
+            {"version": 1},
+        )
+        client.update_record(
+            "tbl-queue",
+            task.record_id,
+            {
+                queue.QUEUE_FIELD_STATUS: queue.QUEUE_STATUS_PENDING,
+                queue.QUEUE_FIELD_COMPLETION_STATUS: queue.QUEUE_COMPLETION_COMPLETED,
+            },
+        )
+
+        self.assertIsNone(queue.claim_next_submission_task(client, "worker-a"))
+
+    def test_legacy_queue_rows_receive_completion_marker(self) -> None:
+        client = FakeQueueClient()
+        queue.ensure_submission_queue_table(client)
+        client.records["tbl-queue"] = [
+            {
+                "record_id": "rec-done",
+                "fields": {
+                    queue.QUEUE_FIELD_TASK_ID: "done",
+                    queue.QUEUE_FIELD_STATUS: queue.QUEUE_STATUS_COMPLETED,
+                    queue.QUEUE_FIELD_PAYLOAD: "{}",
+                },
+            },
+            {
+                "record_id": "rec-pending",
+                "fields": {
+                    queue.QUEUE_FIELD_TASK_ID: "pending",
+                    queue.QUEUE_FIELD_STATUS: queue.QUEUE_STATUS_PENDING,
+                    queue.QUEUE_FIELD_PAYLOAD: "{}",
+                },
+            },
+        ]
+
+        count = queue.backfill_submission_completion_status(client)
+
+        self.assertEqual(count, 2)
+        values = {
+            row["record_id"]: row["fields"][queue.QUEUE_FIELD_COMPLETION_STATUS]
+            for row in client.records["tbl-queue"]
+        }
+        self.assertEqual(values["rec-done"], queue.QUEUE_COMPLETION_COMPLETED)
+        self.assertEqual(values["rec-pending"], queue.QUEUE_COMPLETION_UNFINISHED)
 
     def test_checkpoint_persists_recovery_progress(self) -> None:
         client = FakeQueueClient()

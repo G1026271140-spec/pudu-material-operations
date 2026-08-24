@@ -33,6 +33,7 @@ from submission_queue import (
     SubmissionTask,
     checkpoint_submission_task,
     claim_next_submission_task,
+    backfill_submission_completion_status,
     complete_submission_task,
     current_worker_leader,
     ensure_submission_queue_table,
@@ -513,11 +514,18 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
         table_id = ensure_submission_queue_table(client)
         logging.info("Submission queue ready: %s; log=%s", table_id, log_path)
-        if args.retry_failed:
-            count = retry_failed_submission_tasks(client)
-            logging.info("Requeued %s failed tasks", count)
+        backfilled = backfill_submission_completion_status(client)
+        if backfilled:
+            logging.info("Backfilled completion state for %s queue tasks", backfilled)
         if args.setup:
             return 0
+        recover_unfinished = args.retry_failed or worker_has_leadership(
+            client,
+            args.worker_priority,
+        )
+        if recover_unfinished:
+            count = retry_failed_submission_tasks(client)
+            logging.info("Recovered %s unfinished failed tasks", count)
         if args.once:
             name = worker_id()
             while process_one(name, args.worker_priority):

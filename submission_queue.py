@@ -75,6 +75,18 @@ QUEUE_FIELD_NEXT_RETRY_AT = "下次重试时间"
 QUEUE_FIELD_WORKER_ID = "Worker标识"
 QUEUE_FIELD_RESULT = "结果JSON"
 QUEUE_FIELD_ERROR = "错误信息"
+QUEUE_FIELD_COMPLETION_STATUS = "完成状态"
+QUEUE_COMPLETION_UNFINISHED = "未完成"
+QUEUE_COMPLETION_COMPLETED = "已完成"
+
+QUEUE_SELECT_PROPERTIES: dict[str, dict[str, object]] = {
+    QUEUE_FIELD_COMPLETION_STATUS: {
+        "options": [
+            {"name": QUEUE_COMPLETION_UNFINISHED},
+            {"name": QUEUE_COMPLETION_COMPLETED},
+        ],
+    },
+}
 
 QUEUE_FIELDS: tuple[tuple[str, int], ...] = (
     (QUEUE_FIELD_TASK_ID, 1),
@@ -91,6 +103,7 @@ QUEUE_FIELDS: tuple[tuple[str, int], ...] = (
     (QUEUE_FIELD_WORKER_ID, 1),
     (QUEUE_FIELD_RESULT, 1),
     (QUEUE_FIELD_ERROR, 1),
+    (QUEUE_FIELD_COMPLETION_STATUS, 3),
 )
 
 ACTIVE_QUEUE_STATUSES = {
@@ -117,6 +130,7 @@ class SubmissionTask:
     worker_id: str
     result: dict[str, Any]
     error: str
+    completion_status: str = QUEUE_COMPLETION_UNFINISHED
 
 
 def timestamp_ms() -> int:
@@ -166,6 +180,15 @@ def task_from_record(record: dict[str, Any]) -> SubmissionTask:
         worker_id=_text(fields.get(QUEUE_FIELD_WORKER_ID)),
         result=_json_object(fields.get(QUEUE_FIELD_RESULT)),
         error=_text(fields.get(QUEUE_FIELD_ERROR)),
+        completion_status=(
+            _text(fields.get(QUEUE_FIELD_COMPLETION_STATUS))
+            or (
+                QUEUE_COMPLETION_COMPLETED
+                if _text(fields.get(QUEUE_FIELD_STATUS))
+                in {QUEUE_STATUS_COMPLETED, QUEUE_STATUS_CANCELLED}
+                else QUEUE_COMPLETION_UNFINISHED
+            )
+        ),
     )
 
 
@@ -186,7 +209,15 @@ def ensure_submission_queue_table(client: FeishuBitableClient) -> str:
         created = client.create_table(
             QUEUE_TABLE_NAME,
             [
-                {"field_name": field_name, "type": field_type}
+                {
+                    "field_name": field_name,
+                    "type": field_type,
+                    **(
+                        {"property": QUEUE_SELECT_PROPERTIES[field_name]}
+                        if field_name in QUEUE_SELECT_PROPERTIES
+                        else {}
+                    ),
+                }
                 for field_name, field_type in QUEUE_FIELDS
             ],
             default_view_name="任务列表",
@@ -201,7 +232,12 @@ def ensure_submission_queue_table(client: FeishuBitableClient) -> str:
     }
     for field_name, field_type in QUEUE_FIELDS:
         if field_name not in existing_fields:
-            client.create_field(table_id, field_name, field_type)
+            client.create_field(
+                table_id,
+                field_name,
+                field_type,
+                QUEUE_SELECT_PROPERTIES.get(field_name),
+            )
     setattr(client, "_submission_queue_table_id", table_id)
     ensure_submission_payload_table(client)
     ensure_worker_registry_table(client)
@@ -574,6 +610,7 @@ def enqueue_submission_task(
                     QUEUE_FIELD_LEASE_EXPIRES_AT: None,
                     QUEUE_FIELD_WORKER_ID: "",
                     QUEUE_FIELD_ERROR: "",
+                    QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
                 },
             )
             return task_from_record(
@@ -587,6 +624,7 @@ def enqueue_submission_task(
                         QUEUE_FIELD_PAYLOAD: json.dumps(existing.payload, ensure_ascii=False),
                         QUEUE_FIELD_SUBMITTED_AT: existing.submitted_at,
                         QUEUE_FIELD_RETRY_COUNT: 0,
+                        QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
                     },
                 }
             ), False
@@ -624,6 +662,7 @@ def enqueue_submission_task(
         QUEUE_FIELD_PAYLOAD: stored_payload,
         QUEUE_FIELD_SUBMITTED_AT: now,
         QUEUE_FIELD_RETRY_COUNT: 0,
+        QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
     }
     created_rows = client.batch_create_records(table_id, [fields])
     if not created_rows:
@@ -652,6 +691,7 @@ def enqueue_submission_task(
             {
                 QUEUE_FIELD_STATUS: QUEUE_STATUS_CANCELLED,
                 QUEUE_FIELD_ERROR: f"重复任务，使用 {canonical.task_id}",
+                QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_COMPLETED,
             },
         )
         return canonical, False
@@ -671,6 +711,8 @@ def claim_next_submission_task(
         task
         for task in list_submission_tasks(client, table_id)
         if (
+            task.completion_status != QUEUE_COMPLETION_COMPLETED
+            and (
             task.status == QUEUE_STATUS_PENDING
             or (
                 task.status == QUEUE_STATUS_RETRY
@@ -679,6 +721,7 @@ def claim_next_submission_task(
             or (
                 task.status == QUEUE_STATUS_PROCESSING
                 and task.lease_expires_at <= now
+            )
             )
         )
     ]
@@ -696,6 +739,7 @@ def claim_next_submission_task(
             QUEUE_FIELD_LEASE_EXPIRES_AT: lease_expires_at,
             QUEUE_FIELD_WORKER_ID: worker_id,
             QUEUE_FIELD_ERROR: "",
+            QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
         },
     )
     return SubmissionTask(
@@ -728,6 +772,7 @@ def complete_submission_task(
             QUEUE_FIELD_NEXT_RETRY_AT: None,
             QUEUE_FIELD_RESULT: json.dumps(result, ensure_ascii=False, separators=(",", ":")),
             QUEUE_FIELD_ERROR: "",
+            QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_COMPLETED,
         },
     )
 
@@ -780,6 +825,7 @@ def fail_submission_task(
             QUEUE_FIELD_NEXT_RETRY_AT: next_retry_at,
             QUEUE_FIELD_LEASE_EXPIRES_AT: None,
             QUEUE_FIELD_ERROR: str(error)[:5000],
+            QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
         },
     )
     return status
@@ -791,6 +837,7 @@ def retry_failed_submission_tasks(client: FeishuBitableClient) -> int:
         task
         for task in list_submission_tasks(client, table_id)
         if task.status == QUEUE_STATUS_FAILED
+        and task.completion_status != QUEUE_COMPLETION_COMPLETED
     ]
     for task in failed:
         client.update_record(
@@ -803,6 +850,32 @@ def retry_failed_submission_tasks(client: FeishuBitableClient) -> int:
                 QUEUE_FIELD_LEASE_EXPIRES_AT: None,
                 QUEUE_FIELD_WORKER_ID: "",
                 QUEUE_FIELD_ERROR: "",
+                QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
             },
         )
     return len(failed)
+
+
+def backfill_submission_completion_status(client: FeishuBitableClient) -> int:
+    """Populate the business completion marker for legacy queue records once."""
+    table_id = ensure_submission_queue_table(client)
+    updates: list[dict[str, object]] = []
+    for record in client.list_records(table_id):
+        fields = dict(record.get("fields") or {})
+        if _text(fields.get(QUEUE_FIELD_COMPLETION_STATUS)):
+            continue
+        completion_status = (
+            QUEUE_COMPLETION_COMPLETED
+            if _text(fields.get(QUEUE_FIELD_STATUS))
+            in {QUEUE_STATUS_COMPLETED, QUEUE_STATUS_CANCELLED}
+            else QUEUE_COMPLETION_UNFINISHED
+        )
+        updates.append(
+            {
+                "record_id": str(record.get("record_id") or ""),
+                "fields": {QUEUE_FIELD_COMPLETION_STATUS: completion_status},
+            }
+        )
+    if updates:
+        client.batch_update_records(table_id, updates)
+    return len(updates)
