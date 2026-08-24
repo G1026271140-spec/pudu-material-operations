@@ -437,17 +437,26 @@ class RequestInventoryReviewTests(unittest.TestCase):
                         "语种": "英语",
                         "当前库存": 5,
                     },
-                }
+                },
+                {
+                    "record_id": "mat-2",
+                    "fields": {
+                        "物料品类": "产品单页",
+                        "产品型号": "T300",
+                        "语种": "英语",
+                        "当前库存": 8,
+                    },
+                },
             ],
         }
         with (
             patch.object(app, "request_inventory_review_context", return_value=context),
             patch.object(app, "feishu_has_field", return_value=True),
             patch.object(app, "feishu_datetime_value", return_value=123456),
-            patch.object(app, "feishu_batch_update_record_fields"),
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
             patch.object(app, "feishu_update_record_fields") as update_request,
             patch.object(app, "ensure_request_change_record_fields"),
-            patch.object(app, "feishu_batch_create_records"),
+            patch.object(app, "feishu_batch_create_records") as create_lines,
             patch.object(app, "notify_requester_of_inventory_edit"),
             patch.object(app, "notify_enabled_admins_of_material_request"),
         ):
@@ -458,15 +467,28 @@ class RequestInventoryReviewTests(unittest.TestCase):
                     "operator_open_id": "ou_admin",
                     "change_note": "调整型号语种",
                     "lines": [
-                        {"material_record_id": "mat-1", "quantity": 2, "remark": ""}
+                        {"material_record_id": "mat-1", "quantity": 3, "remark": ""},
+                        {"material_record_id": "mat-2", "quantity": 4, "remark": ""},
                     ],
                 }
             )
 
+        updated_line_fields = update_lines.call_args.args[1][0]["fields"]
+        created_line_fields = next(
+            call.args[1][0]
+            for call in create_lines.call_args_list
+            if call.args[0] == app.REQUEST_LINE_TABLE_NAME
+            and call.args[1]
+            and "申请数量" in call.args[1][0]
+        )
+        self.assertEqual(updated_line_fields["申请数量"], 3)
+        self.assertEqual(updated_line_fields["实际发放数量"], 3)
+        self.assertEqual(created_line_fields["申请数量"], 4)
+        self.assertEqual(created_line_fields["实际发放数量"], 4)
         request_fields = update_request.call_args.args[2]
         self.assertEqual(
             request_fields["物料明细文字信息"],
-            "01. 产品单页 / D7 / 英语 × 2",
+            "01. 产品单页 / D7 / 英语 × 3\n02. 产品单页 / T300 / 英语 × 4",
         )
 
     def test_retry_after_persisted_edit_recovers_both_notifications(self) -> None:

@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.1"
+APP_VERSION = "V1.3.2"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -9140,6 +9140,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         fields: dict[str, object] = {
             "申请数量": int(item["quantity"]),
             "审批通过数量": int(item["quantity"]),
+            "实际发放数量": int(item["quantity"]),
             "库存审查时库存": str(int(item["current_stock"])),
             "库存满足状态": (
                 INVENTORY_RESULT_SUFFICIENT
@@ -9163,7 +9164,6 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
                     "明细编号": f"{request_no}-{index:02d}",
                     "原申请数量": str(int(item["quantity"])),
                     "提交时库存快照": int(item["current_stock"]),
-                    "实际发放数量": 0,
                     "明细状态": REQUEST_LINE_STATUS_PENDING,
                     "所属申请单": [request_id],
                 }
