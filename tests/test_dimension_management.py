@@ -4,10 +4,47 @@ import inspect
 import unittest
 from unittest.mock import patch
 
+import pandas as pd
+
 import app
 
 
 class DimensionManagementTests(unittest.TestCase):
+    def test_association_search_matches_category_model_or_language_text(self) -> None:
+        associations = pd.DataFrame([
+            {"关联": False, "物料品类": "产品单页(Product Flyer)", "语种": "英语(English)"},
+            {"关联": True, "物料品类": "手持充电电风扇", "语种": "德语(German)"},
+        ])
+
+        by_category = app.filter_dimension_association_dataframe(
+            associations, "电风扇", "语种"
+        )
+        by_language = app.filter_dimension_association_dataframe(
+            associations, "english", "语种"
+        )
+
+        self.assertEqual(by_category["物料品类"].tolist(), ["手持充电电风扇"])
+        self.assertEqual(by_language["语种"].tolist(), ["英语(English)"])
+
+    def test_association_edits_persist_across_search_filters(self) -> None:
+        session_state = {
+            "selection": [["品类A", "英语"]],
+            "editor": {
+                "edited_rows": {
+                    0: {"关联": False},
+                    1: {"关联": True},
+                }
+            },
+        }
+        with patch.object(app.st, "session_state", session_state):
+            app.persist_dimension_association_edits(
+                "selection",
+                "editor",
+                [["品类A", "英语"], ["品类B", "德语"]],
+            )
+
+        self.assertEqual(session_state["selection"], [["品类B", "德语"]])
+
     def test_model_association_plan_lists_create_update_and_delete(self) -> None:
         categories = [
             {"record_id": "cat-a", "category": "品类A"},

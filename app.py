@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.2.9"
+APP_VERSION = "V1.3.0"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -3093,6 +3093,47 @@ def dimension_management_records(kind: str, rows: list[dict] | None = None) -> l
             )
     records.sort(key=lambda item: item["name"].casefold())
     return records
+
+
+def filter_dimension_association_dataframe(
+    association_df: pd.DataFrame,
+    query: object,
+    counterpart_column: str,
+) -> pd.DataFrame:
+    keyword = str(query or "").strip().casefold()
+    if not keyword or association_df.empty:
+        return association_df.copy()
+    searchable = (
+        association_df["物料品类"].fillna("").astype(str)
+        + " "
+        + association_df[counterpart_column].fillna("").astype(str)
+    ).str.casefold()
+    return association_df[searchable.str.contains(keyword, regex=False)].reset_index(drop=True)
+
+
+def persist_dimension_association_edits(
+    selection_state_key: str,
+    editor_state_key: str,
+    row_keys: list[list[str]],
+) -> None:
+    selected = {
+        (str(item[0]), str(item[1]))
+        for item in list(st.session_state.get(selection_state_key) or [])
+        if isinstance(item, (list, tuple)) and len(item) >= 2
+    }
+    editor_state = st.session_state.get(editor_state_key) or {}
+    edited_rows = dict(editor_state.get("edited_rows") or {}) if isinstance(editor_state, dict) else {}
+    for row_index, changes in edited_rows.items():
+        try:
+            category, counterpart = row_keys[int(row_index)]
+        except (IndexError, TypeError, ValueError):
+            continue
+        key = (str(category), str(counterpart))
+        if bool(dict(changes).get("关联")):
+            selected.add(key)
+        elif "关联" in dict(changes):
+            selected.discard(key)
+    st.session_state[selection_state_key] = [list(item) for item in sorted(selected)]
 
 
 def dimension_material_references(kind: str, record_id: str, name: str) -> list[str]:
@@ -14004,6 +14045,9 @@ def render_dimension_management_page(kind: str) -> None:
                     st.exception(exc)
                     return
             st.session_state.pop(draft_key, None)
+            for key in list(st.session_state):
+                if str(key).startswith(f"{state_prefix}_{operation}_association"):
+                    st.session_state.pop(key, None)
             st.session_state[message_key] = data_submission_success_message()
             st.rerun()
         return
@@ -14114,25 +14158,60 @@ def render_dimension_management_page(kind: str) -> None:
             if normalize_option_label(str(row.get("model") if kind == "model" else row.get("language") or "")).casefold()
             == normalize_option_label(default_name).casefold()
         }
+        counterpart_column = "语种" if kind == "model" else "产品型号"
+        selection_state_key = (
+            f"{state_prefix}_{operation}_association_selection_"
+            f"{(selected or {}).get('record_id', 'new')}"
+        )
+        if selection_state_key not in st.session_state:
+            st.session_state[selection_state_key] = [list(item) for item in sorted(existing_keys)]
+        selected_association_keys = {
+            (str(item[0]), str(item[1]))
+            for item in list(st.session_state.get(selection_state_key) or [])
+            if isinstance(item, (list, tuple)) and len(item) >= 2
+        }
         association_df = pd.DataFrame([
-            {"关联": (category, counterpart) in existing_keys, "物料品类": category,
-             ("语种" if kind == "model" else "产品型号"): counterpart}
+            {"关联": (category, counterpart) in selected_association_keys, "物料品类": category,
+             counterpart_column: counterpart}
             for category in category_names for counterpart in counterpart_names
         ])
         with st.container(border=True):
             st.markdown(f"**选择该{label}需要关联的物料组合**")
             st.caption("勾选后会新增缺失的物料主数据行；取消勾选会在确认后删除已有关联行。")
-            edited_associations = st.data_editor(
-                association_df, width="stretch", hide_index=True, num_rows="fixed",
-                disabled=["物料品类", "语种" if kind == "model" else "产品型号"],
-                height=min(720, max(180, 35 * (len(association_df) + 1))),
-                key=f"{state_prefix}_{operation}_associations_{(selected or {}).get('record_id', 'new')}",
+            association_query = st.text_input(
+                "搜索关联物料组合",
+                placeholder=f"输入物料品类或{counterpart_column}名称",
+                key=f"{state_prefix}_{operation}_association_search_{(selected or {}).get('record_id', 'new')}",
             )
-        counterpart_column = "语种" if kind == "model" else "产品型号"
-        selected_keys = [
-            [str(row["物料品类"]), str(row[counterpart_column])]
-            for row in edited_associations.to_dict("records") if bool(row.get("关联"))
-        ]
+            filtered_association_df = filter_dimension_association_dataframe(
+                association_df,
+                association_query,
+                counterpart_column,
+            )
+            st.caption(f"当前显示 {len(filtered_association_df)} / {len(association_df)} 条组合；搜索不会清除已勾选内容。")
+            if filtered_association_df.empty:
+                st.info("没有找到匹配的物料组合，请更换关键词。")
+            else:
+                query_token = hashlib.sha256(
+                    str(association_query or "").strip().casefold().encode("utf-8")
+                ).hexdigest()[:12]
+                editor_state_key = (
+                    f"{state_prefix}_{operation}_associations_"
+                    f"{(selected or {}).get('record_id', 'new')}_{query_token}"
+                )
+                row_keys = [
+                    [str(row["物料品类"]), str(row[counterpart_column])]
+                    for row in filtered_association_df.to_dict("records")
+                ]
+                st.data_editor(
+                    filtered_association_df, width="stretch", hide_index=True, num_rows="fixed",
+                    disabled=["物料品类", counterpart_column],
+                    height=min(720, max(180, 35 * (len(filtered_association_df) + 1))),
+                    key=editor_state_key,
+                    on_change=persist_dimension_association_edits,
+                    args=(selection_state_key, editor_state_key, row_keys),
+                )
+        selected_keys = [list(item) for item in sorted(selected_association_keys)]
     _, preview_col = st.columns([3, 1.25])
     if preview_col.button(
         f"预览{ {'create': '新增', 'edit': '修改', 'delete': '删除'}[operation] }",
