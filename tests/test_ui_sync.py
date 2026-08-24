@@ -15,15 +15,36 @@ class FullscreenSyncTests(unittest.TestCase):
         self.assertNotIn("st.spinner", source)
         self.assertNotIn("fullscreen_data_sync", source)
 
-    def test_success_closes_window_without_rendering_overlay(self) -> None:
-        with patch.object(app.st, "html") as html:
-            app.close_application_window()
+    def test_request_success_renders_persistent_fullscreen_overlay(self) -> None:
+        with (
+            patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH),
+            patch.object(app.st, "markdown") as markdown,
+        ):
+            app.render_request_submission_success()
 
-        rendered = html.call_args.args[0]
-        self.assertIn("window.close()", rendered)
-        self.assertNotIn("pudu-sync-overlay", rendered)
-        self.assertNotIn("即将自动关闭应用", rendered)
-        html.assert_called_once_with(rendered, unsafe_allow_javascript=True)
+        rendered = markdown.call_args.args[0]
+        self.assertIn("pudu-sync-overlay--success", rendered)
+        self.assertIn("申请已提交，您可以关闭此页面。", rendered)
+        self.assertNotIn("pudu-sync-overlay__spinner", rendered)
+        markdown.assert_called_once_with(rendered, unsafe_allow_html=True)
+
+    def test_request_success_uses_english_message_on_english_page(self) -> None:
+        with (
+            patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN),
+            patch.object(app.st, "markdown") as markdown,
+        ):
+            app.render_request_submission_success()
+
+        self.assertIn(
+            "Request submitted. You may close this page.",
+            markdown.call_args.args[0],
+        )
+
+    def test_request_review_shows_success_overlay_instead_of_closing_window(self) -> None:
+        source = inspect.getsource(app.render_request_review)
+
+        self.assertIn("render_request_submission_success()", source)
+        self.assertNotIn("close_application_window()", source)
 
     def test_overlay_contains_required_message_and_escapes_detail(self) -> None:
         html = app.fullscreen_sync_overlay_html("提交 <测试>")

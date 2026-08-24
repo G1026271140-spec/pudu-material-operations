@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.2.6"
+APP_VERSION = "V1.2.7"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2142,6 +2142,19 @@ def inject_global_styles() -> None:
             cursor: wait;
             pointer-events: all;
         }
+        .pudu-sync-overlay--success {
+            cursor: default;
+            background: rgba(238, 247, 244, 0.94);
+        }
+        .pudu-sync-overlay--success .pudu-sync-overlay__panel {
+            justify-content: center;
+            border-color: #8FC8B5;
+            text-align: center;
+        }
+        .pudu-sync-overlay--success .pudu-sync-overlay__copy strong {
+            color: #126B55;
+            font-size: 1.08rem;
+        }
         .pudu-sync-overlay__panel {
             display: flex;
             align-items: center;
@@ -2326,6 +2339,27 @@ def fullscreen_sync_overlay_html(message: str) -> str:
             </div>
         </div>
     """
+
+
+def fullscreen_submission_success_html(message: str) -> str:
+    return f"""
+        <div class="pudu-sync-overlay pudu-sync-overlay--success" role="alertdialog" aria-live="assertive">
+            <div class="pudu-sync-overlay__panel">
+                <div class="pudu-sync-overlay__copy">
+                    <strong>{escape(message)}</strong>
+                </div>
+            </div>
+        </div>
+    """
+
+
+def render_request_submission_success() -> None:
+    message = (
+        "Request submitted. You may close this page."
+        if get_ui_language() == LANGUAGE_EN
+        else "申请已提交，您可以关闭此页面。"
+    )
+    st.markdown(fullscreen_submission_success_html(message), unsafe_allow_html=True)
 
 
 def close_application_window() -> None:
@@ -12124,7 +12158,7 @@ def render_request_review() -> None:
                     st.exception(exc)
                     return
         clear_request_application_state()
-        close_application_window()
+        render_request_submission_success()
         st.stop()
 
 
