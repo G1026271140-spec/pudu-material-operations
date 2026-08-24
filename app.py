@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.0"
+APP_VERSION = "V1.3.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -3109,6 +3109,25 @@ def filter_dimension_association_dataframe(
         + association_df[counterpart_column].fillna("").astype(str)
     ).str.casefold()
     return association_df[searchable.str.contains(keyword, regex=False)].reset_index(drop=True)
+
+
+def dimension_association_category_names(
+    kind: str,
+    categories: list[dict],
+    dimension_name: object,
+) -> list[str]:
+    normalized_dimension = normalize_option_label(dimension_name).casefold()
+    no_dimension_value = NO_MODEL_TEXT if kind == "model" else NO_LANGUAGE_TEXT
+    editing_no_dimension = normalized_dimension == normalize_option_label(no_dimension_value).casefold()
+    return [
+        str(item.get("category") or "")
+        for item in categories
+        if str(item.get("category") or "")
+        and (
+            bool(item.get("no_model" if kind == "model" else "no_language"))
+            == editing_no_dimension
+        )
+    ]
 
 
 def persist_dimension_association_edits(
@@ -14143,7 +14162,7 @@ def render_dimension_management_page(kind: str) -> None:
             == normalize_option_label(current_name).casefold()
         ]
     else:
-        category_names = [str(item.get("category") or "") for item in categories if str(item.get("category") or "")]
+        category_names = dimension_association_category_names(kind, categories, current_name)
         counterpart_names = unique_preserve(
             [str(item.get("name") or "") for item in counterpart_records]
             + [

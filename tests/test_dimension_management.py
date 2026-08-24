@@ -45,6 +45,30 @@ class DimensionManagementTests(unittest.TestCase):
 
         self.assertEqual(session_state["selection"], [["品类B", "德语"]])
 
+    def test_association_pool_only_pairs_no_dimension_categories_with_no_dimension_value(self) -> None:
+        categories = [
+            {"category": "无需型号品类", "no_model": True, "no_language": False},
+            {"category": "无需语种品类", "no_model": False, "no_language": True},
+            {"category": "完整品类", "no_model": False, "no_language": False},
+        ]
+
+        self.assertEqual(
+            app.dimension_association_category_names("model", categories, "P1"),
+            ["无需语种品类", "完整品类"],
+        )
+        self.assertEqual(
+            app.dimension_association_category_names("model", categories, app.NO_MODEL_TEXT),
+            ["无需型号品类"],
+        )
+        self.assertEqual(
+            app.dimension_association_category_names("language", categories, "英语"),
+            ["无需型号品类", "完整品类"],
+        )
+        self.assertEqual(
+            app.dimension_association_category_names("language", categories, app.NO_LANGUAGE_TEXT),
+            ["无需语种品类"],
+        )
+
     def test_model_association_plan_lists_create_update_and_delete(self) -> None:
         categories = [
             {"record_id": "cat-a", "category": "品类A"},
