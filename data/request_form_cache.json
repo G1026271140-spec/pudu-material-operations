@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-21 10:53:47",
+  "generated_at": "2026-08-24 16:32:06",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -72,6 +72,7 @@
     "T150",
     "T300",
     "T600",
+    "公司介绍",
     "猛犸MP2000"
   ],
   "model_product_lines": {
@@ -103,7 +104,8 @@
     "T600": "IR",
     "猛犸MP2000": "IR",
     "Hulk": "新项目",
-    "无需型号": "新项目"
+    "无需型号": "新项目",
+    "公司介绍": "新项目"
   },
   "model_display_names": {
     "BG1": {
@@ -221,6 +223,10 @@
     "无需型号": {
       "zh": "无需型号",
       "en": "No model required"
+    },
+    "公司介绍": {
+      "zh": "PUDU公司介绍",
+      "en": "PUDU Company Introduction"
     }
   },
   "category_display_names": {
@@ -1225,6 +1231,22 @@
             "意大利语(Italian)"
           ],
           "product_line": "IR"
+        },
+        {
+          "model": "公司介绍",
+          "languages": [
+            "英语(English)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "新项目"
         }
       ]
     },
@@ -1400,7 +1422,7 @@
       ]
     }
   ],
-  "combination_count": 607,
+  "combination_count": 617,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -5664,8 +5686,78 @@
       "model": "FlashBot Arm",
       "language": "韩语(Korean)",
       "quantity": 0
+    },
+    {
+      "material_code": "MAT-1322",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1323",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1324",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1325",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1326",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1327",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1328",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1329",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1330",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1331",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "公司介绍",
+      "language": "韩语(Korean)",
+      "quantity": 0
     }
   ],
-  "row_count": 609,
+  "row_count": 619,
   "built_from": "page_data_static_snapshot"
 }
