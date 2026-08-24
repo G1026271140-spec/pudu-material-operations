@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.2.8"
+APP_VERSION = "V1.2.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -3085,6 +3085,10 @@ def dimension_management_records(kind: str, rows: list[dict] | None = None) -> l
                         feishu_text(fields, "英文页面名称").strip() or name
                         if kind == "model" else name
                     ),
+                    "product_line": (
+                        feishu_text(fields, "产品线").strip()
+                        if kind == "model" else ""
+                    ),
                 }
             )
     records.sort(key=lambda item: item["name"].casefold())
@@ -3392,6 +3396,7 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
     name = str(draft.get("name") or "").strip()
     zh_page_name = str(draft.get("zh_page_name") or name).strip()
     en_page_name = str(draft.get("en_page_name") or name).strip()
+    product_line = str(draft.get("product_line") or "").strip()
     status = normalize_enabled_status(draft.get("status"))
     dimension_created_count = 0
     if operation == "create":
@@ -3401,7 +3406,11 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
             raise ValueError(f"该{label}已经存在。")
         fields: dict[str, object] = {name_field: name, "启用状态": status}
         if kind == "model":
-            fields.update({"中文页面名称": zh_page_name, "英文页面名称": en_page_name})
+            fields.update({
+                "中文页面名称": zh_page_name,
+                "英文页面名称": en_page_name,
+                "产品线": product_line,
+            })
         if code_field:
             numeric_codes = [int(item["code"]) for item in records if item["code"].isdigit()]
             fields[code_field] = str(max(numeric_codes, default=0) + 1)
@@ -3421,7 +3430,11 @@ def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
             raise ValueError(f"该{label}名称已经存在。")
         dimension_fields: dict[str, object] = {name_field: name, "启用状态": status}
         if kind == "model":
-            dimension_fields.update({"中文页面名称": zh_page_name, "英文页面名称": en_page_name})
+            dimension_fields.update({
+                "中文页面名称": zh_page_name,
+                "英文页面名称": en_page_name,
+                "产品线": product_line,
+            })
         feishu_update_record_fields(table_name, record_id, dimension_fields)
     elif operation not in {"create", "delete"}:
         raise ValueError("不支持的基础维度管理操作。")
@@ -7481,6 +7494,8 @@ def dimension_management_notification_card(
     }]
     if kind == "model" and operation != "delete":
         elements.append({"tag": "markdown", "content": (
+            f"**产品线：** {_feishu_card_plain_text(draft.get('old_product_line')) or '-'}"
+            f" → {_feishu_card_plain_text(draft.get('product_line')) or '-'}\n"
             f"**中文页面名称：** {_feishu_card_plain_text(draft.get('old_zh_page_name')) or '-'}"
             f" → {_feishu_card_plain_text(draft.get('zh_page_name'))}\n"
             f"**英文页面名称：** {_feishu_card_plain_text(draft.get('old_en_page_name')) or '-'}"
@@ -13951,9 +13966,10 @@ def render_dimension_management_page(kind: str) -> None:
             render_request_review_field(preview_cols[1], f"{label}名称", draft.get("name"))
             render_request_review_field(preview_cols[2], "启用状态", draft.get("status"))
             if kind == "model" and operation != "delete":
-                page_name_cols = st.columns(2)
-                render_request_review_field(page_name_cols[0], "中文页面名称", draft.get("zh_page_name"))
-                render_request_review_field(page_name_cols[1], "英文页面名称", draft.get("en_page_name"))
+                model_detail_cols = st.columns(3)
+                render_request_review_field(model_detail_cols[0], "产品线", draft.get("product_line") or "-")
+                render_request_review_field(model_detail_cols[1], "中文页面名称", draft.get("zh_page_name"))
+                render_request_review_field(model_detail_cols[2], "英文页面名称", draft.get("en_page_name"))
             if operation == "delete":
                 st.warning(f"删除{label}时，会同时删除所有引用该{label}的物料主数据。此操作不可撤销。")
             changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
@@ -14031,12 +14047,14 @@ def render_dimension_management_page(kind: str) -> None:
     default_status = str((selected or {}).get("status") or STATUS_ACTIVE)
     default_zh_page_name = str((selected or {}).get("zh_page_name") or default_name)
     default_en_page_name = str((selected or {}).get("en_page_name") or default_name)
+    default_product_line = str((selected or {}).get("product_line") or "")
     if operation == "delete":
         st.error(f"删除该{label}会同时删除引用它的物料主数据，请在预览后仔细确认。")
         name = default_name
         status = default_status
         zh_page_name = default_zh_page_name
         en_page_name = default_en_page_name
+        product_line = default_product_line
     else:
         form_cols = st.columns([2.2, 1])
         name = form_cols[0].text_input(
@@ -14051,13 +14069,19 @@ def render_dimension_management_page(kind: str) -> None:
             key=f"{state_prefix}_{operation}_status_{(selected or {}).get('record_id', 'new')}",
         )
         if kind == "model":
-            page_name_cols = st.columns(2)
-            zh_page_name = page_name_cols[0].text_input(
+            model_detail_cols = st.columns(3)
+            product_line = model_detail_cols[0].text_input(
+                "产品线",
+                value=default_product_line,
+                placeholder="例如：IR、CR、SR、GR",
+                key=f"{state_prefix}_{operation}_product_line_{(selected or {}).get('record_id', 'new')}",
+            )
+            zh_page_name = model_detail_cols[1].text_input(
                 "中文页面名称",
                 value=default_zh_page_name,
                 key=f"{state_prefix}_{operation}_zh_page_name_{(selected or {}).get('record_id', 'new')}",
             )
-            en_page_name = page_name_cols[1].text_input(
+            en_page_name = model_detail_cols[2].text_input(
                 "英文页面名称",
                 value=default_en_page_name,
                 key=f"{state_prefix}_{operation}_en_page_name_{(selected or {}).get('record_id', 'new')}",
@@ -14065,6 +14089,7 @@ def render_dimension_management_page(kind: str) -> None:
         else:
             zh_page_name = name
             en_page_name = name
+            product_line = ""
     current_name = default_name if operation != "create" else str(name or "").strip()
     if operation == "delete":
         selected_keys = [
@@ -14140,10 +14165,12 @@ def render_dimension_management_page(kind: str) -> None:
             "old_status": default_status,
             "old_zh_page_name": default_zh_page_name,
             "old_en_page_name": default_en_page_name,
+            "old_product_line": default_product_line,
             "name": normalized_name,
             "status": status,
             "zh_page_name": str(zh_page_name or normalized_name).strip(),
             "en_page_name": str(en_page_name or normalized_name).strip(),
+            "product_line": str(product_line or "").strip(),
             "selected_keys": selected_keys,
             "changes": dimension_association_plan(
                 kind, operation, default_name or normalized_name, normalized_name,

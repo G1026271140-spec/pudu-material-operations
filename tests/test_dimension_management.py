@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import unittest
 from unittest.mock import patch
 
@@ -82,7 +83,10 @@ class DimensionManagementTests(unittest.TestCase):
             patch.object(app, "feishu_batch_create_records", return_value=[{"record_id": "m2"}]) as create,
         ):
             result = app.execute_dimension_management(
-                {"kind": "model", "operation": "create", "name": "P2", "status": "启用"}
+                {
+                    "kind": "model", "operation": "create", "name": "P2",
+                    "status": "启用", "product_line": "CR",
+                }
             )
 
         create.assert_called_once_with(
@@ -90,10 +94,47 @@ class DimensionManagementTests(unittest.TestCase):
             [{
                 "产品型号": "P2", "启用状态": "启用",
                 "中文页面名称": "P2", "英文页面名称": "P2",
+                "产品线": "CR",
                 "产品型号编码": "8",
             }],
         )
         self.assertEqual(result["created_count"], 1)
+
+    def test_edit_model_updates_product_line_and_page_names(self) -> None:
+        model_rows = [{
+            "record_id": "m1",
+            "fields": {
+                "产品型号编码": "1", "产品型号": "P1", "启用状态": "启用",
+                "产品线": "IR", "中文页面名称": "旧中文", "英文页面名称": "Old English",
+            },
+        }]
+        with (
+            patch.object(app, "fresh_feishu_rows", return_value=model_rows),
+            patch.object(app, "feishu_update_record_fields") as update,
+            patch.object(app, "feishu_batch_update_record_fields", return_value=0),
+        ):
+            app.execute_dimension_management({
+                "kind": "model", "operation": "edit", "record_id": "m1",
+                "name": "P1", "status": "启用", "product_line": "CR",
+                "zh_page_name": "新中文", "en_page_name": "New English",
+            })
+
+        update.assert_called_once_with(
+            app.MODEL_TABLE_NAME,
+            "m1",
+            {
+                "产品型号": "P1", "启用状态": "启用",
+                "中文页面名称": "新中文", "英文页面名称": "New English",
+                "产品线": "CR",
+            },
+        )
+
+    def test_model_management_page_includes_product_line_in_draft_and_preview(self) -> None:
+        source = inspect.getsource(app.render_dimension_management_page)
+
+        self.assertIn('"产品线"', source)
+        self.assertIn('"old_product_line": default_product_line', source)
+        self.assertIn('"product_line": str(product_line or "").strip()', source)
 
     def test_new_request_models_link_existing_rows_without_creating_duplicates(self) -> None:
         model_rows = [
