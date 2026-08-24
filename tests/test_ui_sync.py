@@ -46,6 +46,35 @@ class FullscreenSyncTests(unittest.TestCase):
         self.assertIn("render_request_submission_success()", source)
         self.assertNotIn("close_application_window()", source)
 
+    def test_inventory_plan_success_renders_bilingual_fullscreen_overlay(self) -> None:
+        with (
+            patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH),
+            patch.object(app.st, "markdown") as markdown,
+        ):
+            app.render_inventory_plan_submission_success()
+
+        rendered = markdown.call_args.args[0]
+        self.assertIn("pudu-sync-overlay--success", rendered)
+        self.assertIn("该申请单已提交配货方案，您可以关闭当前页面。", rendered)
+        self.assertNotIn("pudu-sync-overlay__spinner", rendered)
+
+        with (
+            patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN),
+            patch.object(app.st, "markdown") as english_markdown,
+        ):
+            app.render_inventory_plan_submission_success()
+
+        self.assertIn(
+            "The fulfillment plan for this request has been submitted. You may close this page.",
+            english_markdown.call_args.args[0],
+        )
+
+    def test_inventory_plan_submission_shows_overlay_instead_of_closing_window(self) -> None:
+        source = inspect.getsource(app.render_request_inventory_review_page)
+
+        self.assertIn("render_inventory_plan_submission_success()", source)
+        self.assertNotIn("close_application_window()", source)
+
     def test_overlay_contains_required_message_and_escapes_detail(self) -> None:
         html = app.fullscreen_sync_overlay_html("提交 <测试>")
 

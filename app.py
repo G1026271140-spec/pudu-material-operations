@@ -59,7 +59,7 @@ from ui_i18n import (
 
 DEFAULT_PASSWORD = "376493"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.2.7"
+APP_VERSION = "V1.2.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2358,6 +2358,15 @@ def render_request_submission_success() -> None:
         "Request submitted. You may close this page."
         if get_ui_language() == LANGUAGE_EN
         else "申请已提交，您可以关闭此页面。"
+    )
+    st.markdown(fullscreen_submission_success_html(message), unsafe_allow_html=True)
+
+
+def render_inventory_plan_submission_success() -> None:
+    message = (
+        "The fulfillment plan for this request has been submitted. You may close this page."
+        if get_ui_language() == LANGUAGE_EN
+        else "该申请单已提交配货方案，您可以关闭当前页面。"
     )
     st.markdown(fullscreen_submission_success_html(message), unsafe_allow_html=True)
 
@@ -17445,7 +17454,7 @@ def render_request_inventory_review_page() -> None:
                 f"{hashlib.sha256(json.dumps(payload_lines, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()}"
             ),
         )
-    close_application_window()
+    render_inventory_plan_submission_success()
     st.stop()
 
 
