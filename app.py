@@ -58,8 +58,9 @@ from ui_i18n import (
 
 
 DEFAULT_PASSWORD = "376493"
+DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.2"
+APP_VERSION = "V1.3.3"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2462,9 +2463,9 @@ def get_inventory_password() -> str:
 
 def get_approval_password() -> str:
     try:
-        return str(st.secrets.get("APPROVAL_VIEW_PASSWORD", get_inventory_password()))
+        return str(st.secrets.get("APPROVAL_VIEW_PASSWORD", DEFAULT_APPROVAL_PASSWORD))
     except (FileNotFoundError, KeyError, AttributeError):
-        return get_inventory_password()
+        return DEFAULT_APPROVAL_PASSWORD
 
 
 def get_secret_value(name: str, default: str = "") -> str:

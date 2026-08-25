@@ -6,7 +6,12 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V1.3.2")
+        self.assertEqual(app.APP_VERSION, "V1.3.3")
+
+    def test_admin_password_is_independent_from_inventory_password(self) -> None:
+        with patch.object(app.st, "secrets", {}):
+            self.assertEqual(app.get_approval_password(), "pd123456")
+            self.assertEqual(app.get_inventory_password(), "376493")
 
     def test_submission_success_message_is_bilingual(self) -> None:
         with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_ZH):
