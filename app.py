@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.1"
+APP_VERSION = "V1.4.2"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -2271,9 +2271,34 @@ def inject_global_styles() -> None:
             background: rgba(238, 247, 244, 0.94);
         }
         .pudu-sync-overlay--success .pudu-sync-overlay__panel {
+            position: relative;
             justify-content: center;
             border-color: #8FC8B5;
             text-align: center;
+        }
+        .pudu-sync-overlay__close {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            color: #126B55;
+            font-size: 1.45rem;
+            font-weight: 600;
+            line-height: 1;
+            text-decoration: none;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+        .pudu-sync-overlay__close:hover,
+        .pudu-sync-overlay__close:focus-visible {
+            background: #E0F2EC;
+            color: #0B5845;
+            transform: scale(1.08);
+            outline: none;
         }
         .pudu-sync-overlay--success .pudu-sync-overlay__copy strong {
             color: #126B55;
@@ -2461,10 +2486,12 @@ def fullscreen_sync_overlay_html(message: str) -> str:
     """
 
 
-def fullscreen_submission_success_html(message: str) -> str:
+def fullscreen_submission_success_html(message: str, close_label: str = "返回申请页面") -> str:
     return f"""
         <div class="pudu-sync-overlay pudu-sync-overlay--success" role="alertdialog" aria-live="assertive">
             <div class="pudu-sync-overlay__panel">
+                <a class="pudu-sync-overlay__close" href="./" target="_self"
+                   aria-label="{escape(close_label)}" title="{escape(close_label)}">&times;</a>
                 <div class="pudu-sync-overlay__copy">
                     <strong>{escape(message)}</strong>
                 </div>
@@ -2474,21 +2501,21 @@ def fullscreen_submission_success_html(message: str) -> str:
 
 
 def render_request_submission_success() -> None:
-    message = (
-        "Request submitted. You may close this page."
-        if get_ui_language() == LANGUAGE_EN
-        else "申请已提交，您可以关闭此页面。"
-    )
-    st.markdown(fullscreen_submission_success_html(message), unsafe_allow_html=True)
+    is_english = get_ui_language() == LANGUAGE_EN
+    message = "Request submitted. You may close this page." if is_english else "申请已提交，您可以关闭此页面。"
+    close_label = "Return to request page" if is_english else "返回申请页面"
+    st.markdown(fullscreen_submission_success_html(message, close_label), unsafe_allow_html=True)
 
 
 def render_inventory_plan_submission_success() -> None:
+    is_english = get_ui_language() == LANGUAGE_EN
     message = (
         "The fulfillment plan for this request has been submitted. You may close this page."
-        if get_ui_language() == LANGUAGE_EN
+        if is_english
         else "该申请单已提交配货方案，您可以关闭当前页面。"
     )
-    st.markdown(fullscreen_submission_success_html(message), unsafe_allow_html=True)
+    close_label = "Return to request page" if is_english else "返回申请页面"
+    st.markdown(fullscreen_submission_success_html(message, close_label), unsafe_allow_html=True)
 
 
 def close_application_window() -> None:
@@ -12283,6 +12310,12 @@ def validate_request_draft(draft: dict[str, object]) -> list[str]:
     return errors
 
 
+def show_request_validation_toast(errors: list[str]) -> None:
+    """Display request validation failures prominently without moving page content."""
+    if errors:
+        st.toast("；".join(errors), icon="⚠️", duration="long")
+
+
 def restore_request_form_from_draft(draft: dict[str, object]) -> None:
     field_map = {
         "request_department": "department",
@@ -12456,7 +12489,7 @@ def render_request_review() -> None:
     ):
         errors = validate_request_draft(draft)
         if errors:
-            st.warning("；".join(errors))
+            show_request_validation_toast(errors)
             return
         with fullscreen_data_sync("正在提交数据，请稍后......"):
             with DATA_LOCK:
@@ -12945,7 +12978,7 @@ def render_change_form(show_title: bool = True) -> None:
         }
         errors = validate_request_draft(draft)
         if errors:
-            st.warning("；".join(errors))
+            show_request_validation_toast(errors)
             return
         st.session_state["request_draft_payload"] = draft
         st.session_state["request_form_stage"] = "review"

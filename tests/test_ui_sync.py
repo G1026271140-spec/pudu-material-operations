@@ -25,6 +25,9 @@ class FullscreenSyncTests(unittest.TestCase):
         rendered = markdown.call_args.args[0]
         self.assertIn("pudu-sync-overlay--success", rendered)
         self.assertIn("申请已提交，您可以关闭此页面。", rendered)
+        self.assertIn('class="pudu-sync-overlay__close"', rendered)
+        self.assertIn('title="返回申请页面"', rendered)
+        self.assertIn('href="./"', rendered)
         self.assertNotIn("pudu-sync-overlay__spinner", rendered)
         markdown.assert_called_once_with(rendered, unsafe_allow_html=True)
 
