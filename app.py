@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.8"
+APP_VERSION = "V1.3.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -1397,12 +1397,12 @@ def inject_global_styles() -> None:
         .stApp:has(.pudu-request-page-marker) .pudu-generated-title strong {
             font-size: 0.8rem;
         }
-        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
+        .stApp:has(.pudu-request-page-marker) [class*="st-key-request_product_card_"] > [data-testid="stVerticalBlock"] {
             min-height: 235px;
             padding: 0.48rem !important;
         }
-        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stImage"] img,
-        .stApp:has(.pudu-request-page-marker) [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) .pudu-product-image-placeholder {
+        .stApp:has(.pudu-request-page-marker) [class*="st-key-request_product_card_"] [data-testid="stImage"] img,
+        .stApp:has(.pudu-request-page-marker) [class*="st-key-request_product_card_"] .pudu-product-image-placeholder {
             height: 96px;
         }
         .stApp:has(.pudu-request-page-marker) .pudu-product-card-kicker {
@@ -1602,7 +1602,7 @@ def inject_global_styles() -> None:
             padding-right: 1.35rem !important;
             flex: 0 0 auto !important;
         }
-        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
+        [class*="st-key-request_product_card_"] > [data-testid="stVerticalBlock"] {
             min-height: 286px;
             gap: 0.35rem;
             padding: 0.7rem !important;
@@ -1612,7 +1612,7 @@ def inject_global_styles() -> None:
             transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
             transform-origin: center center;
         }
-        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker):hover > [data-testid="stVerticalBlock"] {
+        [class*="st-key-request_product_card_"]:hover > [data-testid="stVerticalBlock"] {
             z-index: 3;
             transform: translateY(-3px) scale(1.015);
             border-color: #8FB1C9 !important;
@@ -1639,7 +1639,7 @@ def inject_global_styles() -> None:
         [data-testid="stCheckbox"] label,
         [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
         .stButton > button,
-        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stPopover"] > button {
+        [class*="st-key-request_product_card_"] [data-testid="stPopover"] > button {
             transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease !important;
             transform-origin: center center;
         }
@@ -1647,11 +1647,11 @@ def inject_global_styles() -> None:
         [data-testid="stCheckbox"] label:hover,
         [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
         .stButton > button:hover,
-        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stPopover"] > button:hover {
+        [class*="st-key-request_product_card_"] [data-testid="stPopover"] > button:hover {
             transform: translateY(-1px) scale(1.018);
             box-shadow: 0 5px 12px rgba(38, 114, 185, 0.14) !important;
         }
-        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stImage"] img {
+        [class*="st-key-request_product_card_"] [data-testid="stImage"] img {
             width: 100%;
             height: 142px;
             border: 1px solid #E2E8ED;
@@ -1685,6 +1685,17 @@ def inject_global_styles() -> None:
             font-weight: 700;
             line-height: 1.45;
             overflow-wrap: anywhere;
+        }
+        .st-key-request_compact_cart button,
+        .st-key-request_preview button {
+            transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease !important;
+            transform-origin: center center;
+        }
+        .st-key-request_compact_cart button:hover,
+        .st-key-request_preview button:hover {
+            z-index: 3;
+            transform: translateY(-2px) scale(1.025);
+            box-shadow: 0 7px 16px rgba(24, 66, 92, 0.2) !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-gift-card-marker) > [data-testid="stVerticalBlock"] {
             min-height: 390px;
@@ -12533,7 +12544,7 @@ def render_request_material_builder(
         )
         lines = render_compact_request_cart(cart_col, lines)
         preview_clicked = preview_col.button(
-            "查看购物车并提交申请",
+            "提交物料申请",
             key="request_preview",
             type="primary",
             icon=":material/preview:",
@@ -12553,7 +12564,10 @@ def render_request_material_builder(
                 model_options = unique_preserve(scoped_models)
                 if not model_options:
                     continue
-                with card_columns[index % 6].container(border=True):
+                with card_columns[index % 6].container(
+                    border=True,
+                    key=f"request_product_card_{index}",
+                ):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
                     category_image_path = request_category_image_path(catalog_product)
                     if category_image_path:
