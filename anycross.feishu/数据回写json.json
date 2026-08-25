@@ -1,0 +1,2294 @@
+{
+  "name": "数据回写v2.0",
+  "version": "2.0",
+  "sourceType": "self",
+  "flowID": 7672678797304417572,
+  "structure": [
+    {
+      "id": "approval-1",
+      "type": "trigger",
+      "subSteps": null
+    },
+    {
+      "id": "variable-1",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "script-1",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "approval-2",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "json_helper-1",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "bitable-tables",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "script-prepare",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "bitable-query-notify-task",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "script-check-notify-task",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "branch-notify-task",
+      "type": "branch_exclusive_parent",
+      "subSteps": [
+        {
+          "id": "branch-notify-task.child-1",
+          "type": "branch_exclusive_child",
+          "subSteps": [
+            {
+              "id": "script-notify-task-fields",
+              "type": "normal",
+              "subSteps": null
+            },
+            {
+              "id": "bitable-add-notify-task",
+              "type": "normal",
+              "subSteps": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loop-detail",
+      "type": "loop_serial_parent",
+      "subSteps": [
+        {
+          "id": "loop-detail.default",
+          "type": "loop_serial_child",
+          "subSteps": [
+            {
+              "id": "bitable-query-ledger",
+              "type": "normal",
+              "subSteps": null
+            },
+            {
+              "id": "script-check-duplicate",
+              "type": "normal",
+              "subSteps": null
+            },
+            {
+              "id": "branch-new",
+              "type": "branch_exclusive_parent",
+              "subSteps": [
+                {
+                  "id": "branch-new.child-1",
+                  "type": "branch_exclusive_child",
+                  "subSteps": [
+                    {
+                      "id": "bitable-query-detail",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "script-detail-reference",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "bitable-get-material",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "script-calculate",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "bitable-update-material",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "script-ledger-fields",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "bitable-add-ledger",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "script-detail-fields",
+                      "type": "normal",
+                      "subSteps": null
+                    },
+                    {
+                      "id": "bitable-update-detail",
+                      "type": "normal",
+                      "subSteps": null
+                    }
+                  ]
+                },
+                {
+                  "id": "branch-new.default",
+                  "type": "branch_exclusive_child",
+                  "subSteps": null
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bitable-query-main",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "script-main-record",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "script-main-fields",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "bitable-update-main",
+      "type": "normal",
+      "subSteps": null
+    }
+  ],
+  "steps": [
+    {
+      "id": "approval-1",
+      "type": "trigger",
+      "operation": {
+        "connectorId": "7446602802463768578",
+        "operationId": "7446602802615353372",
+        "connectorName": "approval",
+        "connectorVersion": "2.9"
+      },
+      "name": "审批实例状态变更",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "Zr943jXr78ZZQ"
+        }
+      },
+      "hook": {
+        "hookKey": {
+          "type": "string",
+          "value": ""
+        }
+      },
+      "parameters": {
+        "accept_instance_status": {
+          "type": "string",
+          "value": "APPROVED"
+        },
+        "approval_code": {
+          "type": "string",
+          "value": "5FD7D9F1-B15B-4150-BDDB-D21674FDDFA7"
+        },
+        "webhook": {
+          "type": "string",
+          "value": "https://open.feishu.cn/anycross/trigger/feishu/callback/YTdjZDgxN2E4MzBhNmEwM2Q2YzJmZTM2YTAzNGM0MTMw"
+        }
+      },
+      "dynamicSchema": "{\"optionMap\":{\"accept_instance_status\":{\"APPROVED\":\"APPROVED\"}}}"
+    },
+    {
+      "id": "variable-1",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7302054834608275459",
+        "operationId": "7302054834634375171",
+        "connectorName": "variable",
+        "connectorVersion": "1.2"
+      },
+      "name": "设置多维表格信息",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": ""
+        }
+      },
+      "parameters": {
+        "variables": {
+          "type": "array",
+          "value": [
+            {
+              "type": "object",
+              "value": {
+                "value": {
+                  "type": "string",
+                  "value": "https://pudutech.feishu.cn/base/TCPyb78Ooaea7gsJT98cwYMfnid?table=tbl3eyt8lkl3uQa1"
+                },
+                "value_type": {
+                  "value": "string",
+                  "type": "string"
+                },
+                "key": {
+                  "value": "base_url",
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "variable-1.error_handler.default",
+          "name": ""
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "script-1",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "解析多维表格参数",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "base_url": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "t": "flow_variable",
+                  "path": "base_url"
+                },
+                "expression": "_(\"$.variable.base_url\")"
+              }
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const url = String(input.base_url || '').trim();\n  const tokenMatch = url.match(/\\/base\\/([A-Za-z0-9]+)/);\n  const tableMatch = url.match(/[?&]table=([^&#]+)/);\n  if (!tokenMatch) throw new Error('请在“设置多维表格信息”节点填写多维表格 URL');\n  return { app_token: tokenMatch[1], main_table_id: tableMatch ? decodeURIComponent(tableMatch[1]) : '' };\n}"
+        }
+      },
+      "errorHandler": {
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "script-1.error_handler.default",
+          "name": ""
+        }
+      }
+    },
+    {
+      "id": "approval-2",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7446602802463768578",
+        "operationId": "7446602802570215452",
+        "connectorName": "approval",
+        "connectorVersion": "2.9"
+      },
+      "name": "获取审批实例详情",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "locale": {
+          "type": "string",
+          "value": "zh-CN"
+        },
+        "user_id": {
+          "type": "string",
+          "value": ""
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "instance_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.approval-1.event.instance_code\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.approval-1.event.instance_code"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "strategies": [],
+        "method": 2,
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "configs": [],
+        "defaultStrategy": {
+          "name": "",
+          "action": "terminate",
+          "id": "approval-2.error_handler.default"
+        }
+      }
+    },
+    {
+      "id": "json_helper-1",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7197296918699524098",
+        "operationId": "7197296921294454812",
+        "connectorName": "json_helper",
+        "connectorVersion": "1.3"
+      },
+      "name": "反序列化审批表单定义",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "json_string": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.approval-2.data.form\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.approval-2.data.form"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "json_helper-1.error_handler.default",
+          "name": ""
+        }
+      }
+    },
+    {
+      "id": "bitable-tables",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050102525953",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "列出数据表",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-1.result.app_token\")"
+          }
+        }
+      },
+      "errorHandler": {
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [],
+          "type": "failure"
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "terminate",
+          "id": "bitable-tables.error_handler.default"
+        }
+      }
+    },
+    {
+      "id": "script-prepare",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "解析申请单与发放明细",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const form = Array.isArray(input.form) ? input.form : [];\n  const tables = Array.isArray(input.tables) ? input.tables : [];\n  const tableId = name => (tables.find(t => t.name === name) || {}).table_id || '';\n  const valueOf = item => {\n    if (!item) return '';\n    const v = item.value;\n    if (Array.isArray(v)) return v.map(x => x && typeof x === 'object' ? (x.text ?? x.name ?? x.value ?? x.id ?? '') : x).join('');\n    if (v && typeof v === 'object') return v.text ?? v.name ?? v.value ?? v.id ?? '';\n    return v ?? '';\n  };\n  const scalar = {};\n  let detailRows = [];\n  for (const item of form) {\n    if (item.type === 'fieldList') {\n      detailRows = (item.value || []).map(row => {\n        const fields = {};\n        for (const child of row || []) fields[child.name] = valueOf(child);\n        return {\n          line_no: String(fields['明细编号'] || '').trim(),\n          material_category: String(fields['品类名称'] || '').trim(),\n          product_model: String(fields['产品型号名称'] || '').trim(),\n          language: String(fields['语种名称'] || '').trim(),\n          issue_quantity: Number(fields['实际发放数量'] ?? fields['审批通过数量'] ?? fields['申请数量'])\n        };\n      });\n    } else {\n      scalar[item.name] = valueOf(item);\n    }\n  }\n  const requestNo = String(scalar['申请单号'] || scalar['物料申请单号'] || scalar['申请编号'] || '').trim();\n  const instanceCode = String(input.instance_code || '').trim();\n  if (!requestNo) throw new Error('审批表单中未找到“申请单号”');\n  if (!detailRows.length) throw new Error('审批表单中未找到明细控件');\n  const lineCounts = detailRows.reduce((counts, row) => {\n    counts[row.line_no] = (counts[row.line_no] || 0) + 1;\n    return counts;\n  }, {});\n  detailRows = detailRows.map((d, i) => {\n    if (!d.line_no) throw new Error(`第 ${i + 1} 条审批明细缺少“明细编号”`);\n    if (!d.line_no.startsWith(`${requestNo}-`)) throw new Error(`第 ${i + 1} 条明细编号 ${d.line_no} 与申请单号不一致`);\n    if (!Number.isFinite(d.issue_quantity) || d.issue_quantity < 0) throw new Error(`第 ${i + 1} 条实际发放数量不能小于 0`);\n    const signature = [d.material_category, d.product_model, d.language].join('|');\n    const idempotencyKey = lineCounts[d.line_no] > 1\n      ? `issue:${instanceCode}:${d.line_no}:${signature}`\n      : `issue:${instanceCode}:${d.line_no}`;\n    return {\n      ...d,\n      request_no: requestNo,\n      instance_code: instanceCode,\n      idempotency_key: idempotencyKey,\n      ledger_filter: makeFilter('幂等键', idempotencyKey),\n      detail_filter: makeFilter('明细编号', d.line_no)\n    };\n  });\n  const ids = {\n    main: input.main_table_id || tableId('物料申请单'),\n    detail: tableId('申请明细'),\n    material: tableId('物料主数据'),\n    ledger: tableId('库存流水'),\n    queue: tableId('后台任务队列')\n  };\n  for (const [name, id] of Object.entries(ids)) if (!id) throw new Error(`未找到数据表：${name}`);\n  return {\n    ...ids,\n    request_no: requestNo,\n    request_filter: makeFilter('申请单号', requestNo),\n    details: detailRows,\n    approved_at: Number(input.end_time || Date.now()),\n    notify_task_id: `writeback-notify:${instanceCode}`,\n    notify_filter: makeFilter('幂等键', `writeback-notify:${instanceCode}`)\n  };\n}\nfunction makeFilter(fieldName, value) {\n  return {\n    conjunction: 'and',\n    conditions: [{ field_name: fieldName, operator: 'is', value: [String(value)] }]\n  };\n}"
+        },
+        "input": {
+          "type": "object",
+          "value": {
+            "end_time": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.approval-2.data.end_time"
+                },
+                "expression": "_(\"$.approval-2.data.end_time\")"
+              }
+            },
+            "form": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "path": "$.json_helper-1.json_map",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.json_helper-1.json_map\")"
+              }
+            },
+            "tables": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.bitable-tables.data.items\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.bitable-tables.data.items"
+                }
+              }
+            },
+            "main_table_id": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-1.result.main_table_id"
+                },
+                "expression": "_(\"$.script-1.result.main_table_id\")"
+              }
+            },
+            "instance_code": {
+              "value": {
+                "node_tree": {
+                  "path": "$.approval-1.event.instance_code",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.approval-1.event.instance_code\")"
+              },
+              "type": "spel"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "terminate",
+          "id": "script-prepare.error_handler.default"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "loop-detail",
+      "type": "loop_serial_parent",
+      "operation": {
+        "connectorId": "loop",
+        "operationId": "loop_serial",
+        "connectorName": "loop",
+        "connectorVersion": "0.0.1",
+        "operationName": "串行循环  "
+      },
+      "name": "逐条扣减库存并回写",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "items": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-prepare.result.details"
+            },
+            "expression": "_(\"$.script-prepare.result.details\")"
+          }
+        }
+      }
+    },
+    {
+      "id": "loop-detail.default",
+      "type": "loop_serial_child",
+      "operation": {},
+      "name": "",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": null
+    },
+    {
+      "id": "bitable-query-ledger",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050249392130",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "按幂等键查询库存流水",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            }
+          }
+        },
+        "page_size": {
+          "type": "number",
+          "value": 1
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-prepare.result.ledger"
+            },
+            "expression": "_(\"$.script-prepare.result.ledger\")"
+          }
+        },
+        "filter": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.loop-detail.item.ledger_filter\")",
+            "node_tree": {
+              "path": "$.loop-detail.item.ledger_filter",
+              "t": "json_path"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "method": 2,
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-query-ledger.error_handler.default"
+        },
+        "strategies": [],
+        "configs": []
+      }
+    },
+    {
+      "id": "script-check-duplicate",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "判断是否已经发放",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "data": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.bitable-query-ledger\")",
+                "node_tree": {
+                  "path": "$.bitable-query-ledger",
+                  "t": "json_path"
+                }
+              }
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const payload =\n    input && input.data\n      ? input.data\n      : {};\n\n  const items =\n    payload.data &&\n    Array.isArray(\n      payload.data.items\n    )\n      ? payload.data.items\n      : Array.isArray(\n          payload.items\n        )\n      ? payload.items\n      : [];\n\n  return {\n    should_process:\n      items.length === 0,\n  };\n}\n"
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "terminate",
+          "id": "script-check-duplicate.error_handler.default"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "branch-new",
+      "type": "branch_exclusive_parent",
+      "operation": {
+        "connectorId": "branch",
+        "operationId": "branch_exclusive",
+        "connectorName": "branch",
+        "connectorVersion": "0.0.1",
+        "operationName": "互斥分支  "
+      },
+      "name": "仅处理未发放明细",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "maxSize": {
+          "type": "number",
+          "value": 1
+        },
+        "branches": {
+          "type": "object",
+          "value": {
+            "branch-new.child-1": {
+              "value": {
+                "conditions": {
+                  "value": [
+                    {
+                      "operator": {
+                        "value": "equals",
+                        "type": "string"
+                      },
+                      "comparison": {
+                        "value": {
+                          "left": {
+                            "value": {
+                              "node_tree": {
+                                "t": "json_path",
+                                "path": "$.script-check-duplicate.result.should_process"
+                              },
+                              "expression": "_(\"$.script-check-duplicate.result.should_process\")"
+                            },
+                            "type": "spel"
+                          },
+                          "right": {
+                            "type": "boolean",
+                            "value": true
+                          }
+                        },
+                        "type": "object"
+                      }
+                    }
+                  ],
+                  "type": "array"
+                },
+                "operator": {
+                  "type": "string",
+                  "value": "and"
+                },
+                "label": {
+                  "value": "未处理",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "branch-new.child-1",
+      "type": "branch_exclusive_child",
+      "operation": {},
+      "name": "",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": null
+    },
+    {
+      "id": "bitable-query-detail",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050249392130",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "按明细编号查询申请明细",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            }
+          }
+        },
+        "page_size": {
+          "type": "number",
+          "value": 20
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-prepare.result.detail"
+            },
+            "expression": "_(\"$.script-prepare.result.detail\")"
+          }
+        },
+        "filter": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.loop-detail.item.detail_filter"
+            },
+            "expression": "_(\"$.loop-detail.item.detail_filter\")"
+          }
+        }
+      },
+      "errorHandler": {
+        "defaultStrategy": {
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-query-detail.error_handler.default",
+          "name": ""
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [
+            3,
+            3,
+            3
+          ],
+          "type": "retry"
+        }
+      }
+    },
+    {
+      "id": "script-detail-reference",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "读取明细关联的物料记录",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "detail": {
+              "value": {
+                "expression": "_(\"$.bitable-query-detail\")",
+                "node_tree": {
+                  "path": "$.bitable-query-detail",
+                  "t": "json_path"
+                }
+              },
+              "type": "spel"
+            },
+            "line_no": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "path": "$.loop-detail.item.line_no",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.loop-detail.item.line_no\")"
+              }
+            },
+            "expected": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.loop-detail.item\")",
+                "node_tree": {
+                  "path": "$.loop-detail.item",
+                  "t": "json_path"
+                }
+              }
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const items = input.detail && input.detail.data && Array.isArray(input.detail.data.items)\n    ? input.detail.data.items\n    : [];\n  const expected = input.expected || {};\n  const normalized = value => String(value == null ? '' : value).replace(/\\s+/g, '').toLowerCase();\n  const fieldText = (fields, name) => {\n    const value = fields && fields[name];\n    if (Array.isArray(value)) return value.map(item => {\n      if (item && typeof item === 'object') return item.text ?? item.name ?? item.value ?? '';\n      return item ?? '';\n    }).filter(Boolean).join('');\n    if (value && typeof value === 'object') return value.text ?? value.name ?? value.value ?? '';\n    return value == null ? '' : String(value);\n  };\n  const matches = items.filter(detail => {\n    const fields = detail.fields || {};\n    return normalized(fieldText(fields, '物料品类')) === normalized(expected.material_category)\n      && normalized(fieldText(fields, '产品型号')) === normalized(expected.product_model)\n      && normalized(fieldText(fields, '语种')) === normalized(expected.language);\n  });\n  const candidates = items.length === 1 ? items : matches;\n  if (candidates.length !== 1) {\n    throw new Error(`明细编号 ${input.line_no} 结合品类/型号/语种后应唯一命中 1 条，实际 ${candidates.length} 条`);\n  }\n  const detail = candidates[0];\n  const linked = detail.fields && detail.fields['物料编码'];\n  let materialRecordId = '';\n  if (linked && Array.isArray(linked.link_record_ids)) materialRecordId = linked.link_record_ids[0] || '';\n  else if (Array.isArray(linked)) {\n    const first = linked[0];\n    materialRecordId = typeof first === 'string' ? first : (first && (first.record_id || first.link_record_id || first.id || (first.record_ids || [])[0])) || '';\n  } else if (typeof linked === 'string') materialRecordId = linked;\n  if (!materialRecordId) throw new Error(`明细编号 ${input.line_no} 未关联物料编码记录`);\n  return {\n    detail_record_id: detail.record_id,\n    material_record_id: materialRecordId,\n    material_record_ids: [materialRecordId]\n  };\n}"
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "config": [],
+          "type": "failure"
+        },
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "script-detail-reference.error_handler.default",
+          "name": ""
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "bitable-get-material",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050253455362",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "按记录 ID 获取物料主数据",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.material\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-prepare.result.material"
+            }
+          }
+        },
+        "record_ids": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-detail-reference.result.material_record_ids",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-detail-reference.result.material_record_ids\")"
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-1.result.app_token\")"
+          }
+        }
+      },
+      "errorHandler": {
+        "method": 2,
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-get-material.error_handler.default",
+          "name": ""
+        },
+        "strategies": [],
+        "configs": []
+      }
+    },
+    {
+      "id": "script-calculate",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "校验并计算扣减后库存",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "line": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.loop-detail.item\")",
+                "node_tree": {
+                  "path": "$.loop-detail.item",
+                  "t": "json_path"
+                }
+              }
+            },
+            "material": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.bitable-get-material\")",
+                "node_tree": {
+                  "path": "$.bitable-get-material",
+                  "t": "json_path"
+                }
+              }
+            },
+            "detail_reference": {
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-detail-reference.result"
+                },
+                "expression": "_(\"$.script-detail-reference.result\")"
+              },
+              "type": "spel"
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const data = input.material && input.material.data || {};\n  const materialItems = Array.isArray(data.records) ? data.records : (Array.isArray(data.items) ? data.items : []);\n  if (materialItems.length !== 1) throw new Error(`明细编号 ${input.line.line_no} 的物料应命中 1 条，实际 ${materialItems.length} 条`);\n  const materialFields = materialItems[0].fields || {};\n  const before = Number(materialFields['当前库存']);\n  const issue = Number(input.line.issue_quantity);\n  if (!Number.isFinite(before)) throw new Error('当前库存不是有效数字');\n  if (!Number.isFinite(issue) || issue < 0) throw new Error('实际发放数量不能小于 0');\n  const after = before - issue;\n  return {\n    valid: true,\n    material_record_id: materialItems[0].record_id,\n    detail_record_id: input.detail_reference.detail_record_id,\n    material_category: fieldText(materialFields, '物料品类'),\n    product_model: fieldText(materialFields, '产品型号'),\n    language: fieldText(materialFields, '语种'),\n    before_quantity: before,\n    issue_quantity: issue,\n    after_quantity: after,\n    quantity_delta: -issue,\n    now: Date.now()\n  };\n}\nfunction fieldText(fields, name) {\n  const value = fields && fields[name];\n  if (Array.isArray(value)) {\n    return value.map(item => {\n      if (item && typeof item === 'object') return item.text ?? item.name ?? item.value ?? '';\n      return item ?? '';\n    }).filter(Boolean).join('');\n  }\n  if (value && typeof value === 'object') return value.text ?? value.name ?? value.value ?? '';\n  return value == null ? '' : String(value);\n}"
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "terminate",
+          "id": "script-calculate.error_handler.default"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "bitable-update-material",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050247098396",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "更新物料当前库存",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "record_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-calculate.result.material_record_id\")",
+            "node_tree": {
+              "path": "$.script-calculate.result.material_record_id",
+              "t": "json_path"
+            }
+          }
+        },
+        "fields": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "t": "inline_map",
+              "pairs": [
+                {
+                  "v": {
+                    "t": "json_path",
+                    "path": "$.script-calculate.result.after_quantity"
+                  },
+                  "k": {
+                    "vt": "string",
+                    "v": "\"当前库存\"",
+                    "t": "literal"
+                  }
+                }
+              ]
+            },
+            "expression": "{\"当前库存\":_(\"$.script-calculate.result.after_quantity\")}"
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "ignore_consistency_check": {
+          "type": "boolean",
+          "value": false
+        },
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-1.result.app_token"
+            }
+          }
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.material\")",
+            "node_tree": {
+              "path": "$.script-prepare.result.material",
+              "t": "json_path"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-update-material.error_handler.default"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [
+            3,
+            3,
+            3
+          ],
+          "type": "retry"
+        }
+      }
+    },
+    {
+      "id": "script-ledger-fields",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "生成库存流水字段",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  return {\n    '原Supabase ID': input.idempotency_key,\n    '发生时间': input.now,\n    '流水类型': '销售领用出库',\n    '物料编码': [input.material_record_id],\n    '物料品类': input.material_category,\n    '产品型号': input.product_model,\n    '语种': input.language,\n    '数量': input.issue_quantity,\n    '变更前数量': input.before_quantity,\n    '变更后数量': input.after_quantity,\n    '库存变化': input.quantity_delta,\n    '幂等键': input.idempotency_key,\n    '操作状态': '有效',\n    '备注': input.instance_code,\n    '关联明细': [input.detail_record_id]\n  };\n}"
+        },
+        "input": {
+          "type": "object",
+          "value": {
+            "language": {
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.language"
+                },
+                "expression": "_(\"$.script-calculate.result.language\")"
+              },
+              "type": "spel"
+            },
+            "product_model": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.script-calculate.result.product_model\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.product_model"
+                }
+              }
+            },
+            "now": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "path": "$.script-calculate.result.now",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.script-calculate.result.now\")"
+              }
+            },
+            "issue_quantity": {
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.issue_quantity"
+                },
+                "expression": "_(\"$.script-calculate.result.issue_quantity\")"
+              },
+              "type": "spel"
+            },
+            "after_quantity": {
+              "value": {
+                "expression": "_(\"$.script-calculate.result.after_quantity\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.after_quantity"
+                }
+              },
+              "type": "spel"
+            },
+            "idempotency_key": {
+              "value": {
+                "node_tree": {
+                  "path": "$.loop-detail.item.idempotency_key",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.loop-detail.item.idempotency_key\")"
+              },
+              "type": "spel"
+            },
+            "material_category": {
+              "value": {
+                "expression": "_(\"$.script-calculate.result.material_category\")",
+                "node_tree": {
+                  "path": "$.script-calculate.result.material_category",
+                  "t": "json_path"
+                }
+              },
+              "type": "spel"
+            },
+            "before_quantity": {
+              "value": {
+                "expression": "_(\"$.script-calculate.result.before_quantity\")",
+                "node_tree": {
+                  "path": "$.script-calculate.result.before_quantity",
+                  "t": "json_path"
+                }
+              },
+              "type": "spel"
+            },
+            "instance_code": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.loop-detail.item.instance_code\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.loop-detail.item.instance_code"
+                }
+              }
+            },
+            "material_record_id": {
+              "value": {
+                "expression": "_(\"$.script-calculate.result.material_record_id\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.material_record_id"
+                }
+              },
+              "type": "spel"
+            },
+            "quantity_delta": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.script-calculate.result.quantity_delta\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.quantity_delta"
+                }
+              }
+            },
+            "detail_record_id": {
+              "value": {
+                "expression": "_(\"$.script-calculate.result.detail_record_id\")",
+                "node_tree": {
+                  "path": "$.script-calculate.result.detail_record_id",
+                  "t": "json_path"
+                }
+              },
+              "type": "spel"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "defaultStrategy": {
+          "id": "script-ledger-fields.error_handler.default",
+          "name": "",
+          "action": "terminate"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [],
+          "type": "failure"
+        }
+      }
+    },
+    {
+      "id": "bitable-add-ledger",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050216280066",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "创建库存出库流水",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-1.result.app_token"
+            }
+          }
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-prepare.result.ledger",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-prepare.result.ledger\")"
+          }
+        },
+        "fields": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-ledger-fields.result",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-ledger-fields.result\")"
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "ignore_consistency_check": {
+          "type": "boolean",
+          "value": false
+        },
+        "client_token": {
+          "type": "string",
+          "value": ""
+        }
+      },
+      "errorHandler": {
+        "configs": [],
+        "method": 2,
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-add-ledger.error_handler.default"
+        },
+        "strategies": []
+      }
+    },
+    {
+      "id": "script-detail-fields",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "生成申请明细回写字段",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  return {\n    '审批通过数量': input.issue_quantity,\n    '实际发放数量': input.issue_quantity,\n    '明细状态': '已发放',\n    '发放时间': String(input.now),\n    '库存流水': [input.ledger_record_id],\n    '出库流水编号': input.idempotency_key\n  };\n}"
+        },
+        "input": {
+          "type": "object",
+          "value": {
+            "now": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.now"
+                },
+                "expression": "_(\"$.script-calculate.result.now\")"
+              }
+            },
+            "ledger_record_id": {
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.bitable-add-ledger.data.record.record_id"
+                },
+                "expression": "_(\"$.bitable-add-ledger.data.record.record_id\")"
+              },
+              "type": "spel"
+            },
+            "idempotency_key": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "path": "$.loop-detail.item.idempotency_key",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.loop-detail.item.idempotency_key\")"
+              }
+            },
+            "issue_quantity": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.script-calculate.result.issue_quantity\")",
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.script-calculate.result.issue_quantity"
+                }
+              }
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "method": 2,
+        "default": {
+          "type": "failure",
+          "config": []
+        },
+        "defaultStrategy": {
+          "id": "script-detail-fields.error_handler.default",
+          "name": "",
+          "action": "terminate"
+        },
+        "strategies": [],
+        "configs": []
+      }
+    },
+    {
+      "id": "bitable-update-detail",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050247098396",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "更新申请明细为已发放",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.detail\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-prepare.result.detail"
+            }
+          }
+        },
+        "record_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-calculate.result.detail_record_id\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-calculate.result.detail_record_id"
+            }
+          }
+        },
+        "fields": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-detail-fields.result"
+            },
+            "expression": "_(\"$.script-detail-fields.result\")"
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "ignore_consistency_check": {
+          "type": "boolean",
+          "value": false
+        },
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [
+            3,
+            3,
+            3
+          ],
+          "type": "retry"
+        },
+        "defaultStrategy": {
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-update-detail.error_handler.default",
+          "name": ""
+        }
+      }
+    },
+    {
+      "id": "branch-new.default",
+      "type": "branch_exclusive_child",
+      "operation": {},
+      "name": "",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": null
+    },
+    {
+      "id": "bitable-query-main",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050249392130",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "按申请单号查询主申请",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-1.result.app_token\")"
+          }
+        },
+        "page_size": {
+          "type": "number",
+          "value": 1
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.main\")",
+            "node_tree": {
+              "path": "$.script-prepare.result.main",
+              "t": "json_path"
+            }
+          }
+        },
+        "filter": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.request_filter\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-prepare.result.request_filter"
+            }
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-query-main.error_handler.default"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "script-main-record",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "取得主申请记录 ID",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "data": {
+              "type": "spel",
+              "value": {
+                "node_tree": {
+                  "t": "json_path",
+                  "path": "$.bitable-query-main"
+                },
+                "expression": "_(\"$.bitable-query-main\")"
+              }
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const payload =\n    input && input.data\n      ? input.data\n      : {};\n\n  const items =\n    payload.data &&\n    Array.isArray(\n      payload.data.items\n    )\n      ? payload.data.items\n      : Array.isArray(\n          payload.items\n        )\n      ? payload.items\n      : [];\n\n  if (items.length !== 1) {\n    throw new Error(\n      `申请单号应唯一命中 1 条，实际 ${items.length} 条`\n    );\n  }\n\n  return {\n    record_id:\n      items[0].record_id,\n    now: Date.now(),\n  };\n}\n"
+        }
+      },
+      "errorHandler": {
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "script-main-record.error_handler.default",
+          "name": ""
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [],
+          "type": "failure"
+        }
+      }
+    },
+    {
+      "id": "script-main-fields",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "生成主申请回写字段",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  return {\n    '审批状态': '已发放',\n    '审批时间': input.approved_at\n  };\n}"
+        },
+        "input": {
+          "type": "object",
+          "value": {
+            "approved_at": {
+              "value": {
+                "node_tree": {
+                  "path": "$.script-prepare.result.approved_at",
+                  "t": "json_path"
+                },
+                "expression": "_(\"$.script-prepare.result.approved_at\")"
+              },
+              "type": "spel"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [],
+          "type": "failure"
+        },
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "script-main-fields.error_handler.default",
+          "name": ""
+        },
+        "strategies": []
+      }
+    },
+    {
+      "id": "bitable-update-main",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050247098396",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "更新主申请为已发放",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "record_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-main-record.result.record_id\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-main-record.result.record_id"
+            }
+          }
+        },
+        "fields": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-main-fields.result\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-main-fields.result"
+            }
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "ignore_consistency_check": {
+          "type": "boolean",
+          "value": false
+        },
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            }
+          }
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.main\")",
+            "node_tree": {
+              "path": "$.script-prepare.result.main",
+              "t": "json_path"
+            }
+          }
+        }
+      },
+      "errorHandler": {
+        "method": 2,
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-update-main.error_handler.default"
+        },
+        "strategies": [],
+        "configs": []
+      }
+    },
+    {
+      "id": "bitable-query-notify-task",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050249392130",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "检查回写通知任务是否已入队",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "node_tree": {
+              "path": "$.script-1.result.app_token",
+              "t": "json_path"
+            },
+            "expression": "_(\"$.script-1.result.app_token\")"
+          }
+        },
+        "page_size": {
+          "type": "number",
+          "value": 1
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.queue\")",
+            "node_tree": {
+              "path": "$.script-prepare.result.queue",
+              "t": "json_path"
+            }
+          }
+        },
+        "filter": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.notify_filter\")",
+            "node_tree": {
+              "path": "$.script-prepare.result.notify_filter",
+              "t": "json_path"
+            }
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        }
+      },
+      "errorHandler": {
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-query-main.error_handler.default"
+        },
+        "strategies": [],
+        "configs": [],
+        "method": 2
+      }
+    },
+    {
+      "id": "script-check-notify-task",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "判断是否需要创建回写通知任务",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "query": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.bitable-query-notify-task\")",
+                "node_tree": {
+                  "path": "$.bitable-query-notify-task",
+                  "t": "json_path"
+                }
+              }
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const data = input.query && input.query.data || {};\n  const items = Array.isArray(data.items) ? data.items : [];\n  return { should_create: items.length === 0 };\n}"
+        }
+      },
+      "errorHandler": {
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [],
+          "type": "failure"
+        },
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "script-main-fields.error_handler.default",
+          "name": ""
+        },
+        "strategies": []
+      }
+    },
+    {
+      "id": "branch-notify-task",
+      "type": "branch_exclusive_parent",
+      "operation": {
+        "connectorId": "branch",
+        "operationId": "branch_exclusive",
+        "connectorName": "branch",
+        "connectorVersion": "0.0.1",
+        "operationName": "互斥分支  "
+      },
+      "name": "仅创建尚未入队的回写通知",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "maxSize": {
+          "type": "number",
+          "value": 1
+        },
+        "branches": {
+          "type": "object",
+          "value": {
+            "branch-notify-task.child-1": {
+              "type": "object",
+              "value": {
+                "conditions": {
+                  "type": "array",
+                  "value": [
+                    {
+                      "operator": {
+                        "type": "string",
+                        "value": "equals"
+                      },
+                      "comparison": {
+                        "type": "object",
+                        "value": {
+                          "left": {
+                            "type": "spel",
+                            "value": {
+                              "expression": "_(\"$.script-check-notify-task.result.should_create\")",
+                              "node_tree": {
+                                "path": "$.script-check-notify-task.result.should_create",
+                                "t": "json_path"
+                              }
+                            }
+                          },
+                          "right": {
+                            "type": "boolean",
+                            "value": true
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "operator": {
+                  "type": "string",
+                  "value": "and"
+                },
+                "label": {
+                  "type": "string",
+                  "value": "未入队"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "branch-notify-task.child-1",
+      "type": "branch_exclusive_child",
+      "operation": {},
+      "name": "",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": null
+    },
+    {
+      "id": "script-notify-task-fields",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7296758672007626754",
+        "operationId": "7296758672038887452",
+        "connectorName": "script",
+        "connectorVersion": "2.0"
+      },
+      "name": "生成审批回写结果审查任务",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": null
+      },
+      "parameters": {
+        "input": {
+          "type": "object",
+          "value": {
+            "request_no": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.script-prepare.result.request_no\")",
+                "node_tree": {
+                  "path": "$.script-prepare.result.request_no",
+                  "t": "json_path"
+                }
+              }
+            },
+            "instance_code": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.approval-1.event.instance_code\")",
+                "node_tree": {
+                  "path": "$.approval-1.event.instance_code",
+                  "t": "json_path"
+                }
+              }
+            },
+            "task_id": {
+              "type": "spel",
+              "value": {
+                "expression": "_(\"$.script-prepare.result.notify_task_id\")",
+                "node_tree": {
+                  "path": "$.script-prepare.result.notify_task_id",
+                  "t": "json_path"
+                }
+              }
+            }
+          }
+        },
+        "js_code": {
+          "type": "string",
+          "value": "function handler(input) {\n  const payload = JSON.stringify({ request_no: input.request_no, instance_code: input.instance_code });\n  return {\n    '任务ID': input.task_id,\n    '任务类型': '审批回写管理员通知',\n    '幂等键': input.task_id,\n    '状态': '待处理',\n    '载荷JSON': payload,\n    '提交时间': Date.now(),\n    '重试次数': 0,\n    '下次重试时间': Date.now() + 10 * 60 * 1000,\n    '完成状态': '未完成'\n  };\n}"
+        }
+      },
+      "errorHandler": {
+        "configs": [],
+        "method": 2,
+        "default": {
+          "config": [],
+          "type": "failure"
+        },
+        "defaultStrategy": {
+          "action": "terminate",
+          "id": "script-main-fields.error_handler.default",
+          "name": ""
+        },
+        "strategies": []
+      }
+    },
+    {
+      "id": "bitable-add-notify-task",
+      "type": "normal",
+      "operation": {
+        "connectorId": "7455234050052145154",
+        "operationId": "7455234050216280066",
+        "connectorName": "bitable",
+        "connectorVersion": "2.11"
+      },
+      "name": "写入审批回写结果审查任务",
+      "description": "",
+      "auth": {
+        "key": "",
+        "parameters": null,
+        "credentials": {
+          "type": "cred",
+          "value": "PMw8JPDadz4pn"
+        }
+      },
+      "parameters": {
+        "app_token": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-1.result.app_token\")",
+            "node_tree": {
+              "t": "json_path",
+              "path": "$.script-1.result.app_token"
+            }
+          }
+        },
+        "table_id": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-prepare.result.queue\")",
+            "node_tree": {
+              "path": "$.script-prepare.result.queue",
+              "t": "json_path"
+            }
+          }
+        },
+        "fields": {
+          "type": "spel",
+          "value": {
+            "expression": "_(\"$.script-notify-task-fields.result\")",
+            "node_tree": {
+              "path": "$.script-notify-task-fields.result",
+              "t": "json_path"
+            }
+          }
+        },
+        "user_id_type": {
+          "type": "string",
+          "value": "open_id"
+        },
+        "ignore_consistency_check": {
+          "type": "boolean",
+          "value": false
+        },
+        "client_token": {
+          "type": "string",
+          "value": ""
+        }
+      },
+      "errorHandler": {
+        "configs": [],
+        "method": 2,
+        "default": {
+          "type": "retry",
+          "config": [
+            3,
+            3,
+            3
+          ]
+        },
+        "defaultStrategy": {
+          "name": "",
+          "action": "retry",
+          "retryFallbackAction": "terminate",
+          "id": "bitable-add-ledger.error_handler.default"
+        },
+        "strategies": []
+      }
+    }
+  ]
+}

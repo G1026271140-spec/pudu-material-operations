@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.2"
+APP_VERSION = "V1.4.3"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -7352,6 +7352,7 @@ def request_inventory_card_edit_draft(
             raise RuntimeError(f"{product} 不存在“{selected_label}”这一可用物料组合，请重新选择。")
         desired.append(
             {
+                "line_record_id": str(line.get("record_id") or ""),
                 "material_record_id": feishu_record_id(matched),
                 "quantity": int(line.get("quantity") or 0),
                 "remark": str(line.get("remark") or ""),
@@ -7688,6 +7689,116 @@ def notify_enabled_admins_of_restock(
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     card = material_restock_notification_card(draft, lines)
     return send_category_notification_to_available_admins(client, recipients, card)
+
+
+def approval_writeback_notification_card(
+    request_no: str,
+    instance_code: str,
+    lines: list[dict[str, object]],
+    *,
+    succeeded: bool,
+) -> dict[str, object]:
+    issued_lines = [
+        line for line in lines if str(line.get("status") or "") == "已发放"
+    ]
+    pending_lines = [line for line in lines if line not in issued_lines]
+    total_quantity = sum(int(line.get("actual_issue_qty") or 0) for line in issued_lines)
+    outcome_text = "已完成" if succeeded else "发生异常，需要检查"
+    elements: list[dict[str, object]] = [
+        {
+            "tag": "markdown",
+            "content": (
+                f"**申请单号：** {request_no}\n"
+                f"**审批回写：** {outcome_text}\n"
+                f"**库存变更：** 已完成 {len(issued_lines)} 条、待处理 {len(pending_lines)} 条；"
+                f"当前已发放 {total_quantity} 件"
+            ),
+        },
+        {"tag": "hr"},
+        {"tag": "markdown", "content": "**物料及库存变更结果**"},
+    ]
+    displayed_lines = issued_lines if succeeded else lines
+    for index, line in enumerate(displayed_lines[:40], start=1):
+        elements.append(
+            {
+                "tag": "div",
+                "text": {
+                    "tag": "plain_text",
+                    "content": (
+                        f"{index:02d}. {line.get('actual_product') or line.get('product') or '-'} / "
+                        f"{line.get('actual_model') or line.get('model') or NO_MODEL_TEXT} / "
+                        f"{line.get('actual_language') or line.get('language') or NO_LANGUAGE_TEXT} "
+                        f"× {int(line.get('actual_issue_qty') or 0)}；"
+                        f"状态 {line.get('status') or '-'}；当前库存 {int(line.get('current_stock') or 0)}"
+                    ),
+                },
+            }
+        )
+    if len(displayed_lines) > 40:
+        elements.append(
+            {"tag": "markdown", "content": f"另有 **{len(displayed_lines) - 40}** 条，请在物料系统中查看。"}
+        )
+    if not succeeded:
+        elements.append(
+            {
+                "tag": "markdown",
+                "content": "**请勿直接整单重跑。** 部分库存可能已经扣减，请先核对库存流水和未发放明细。",
+            }
+        )
+    elements.append(
+        {"tag": "div", "text": {"tag": "plain_text", "content": f"审批实例：{instance_code}"}}
+    )
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "green" if succeeded else "red",
+            "title": {
+                "tag": "plain_text",
+                "content": "营销物料申请回写完成" if succeeded else "营销物料申请回写异常",
+            },
+        },
+        "elements": elements,
+    }
+
+
+def notify_enabled_admins_of_approval_writeback(
+    request_no: str,
+    instance_code: str,
+    *,
+    succeeded: bool,
+) -> int:
+    if not request_no or not instance_code:
+        raise RuntimeError("审批回写通知缺少申请单号或审批实例编号。")
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送审批回写通知。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    context = request_inventory_review_context(request_no=request_no)
+    request = dict(context["request"])
+    lines = [dict(line) for line in list(context["lines"])]
+    is_complete = str(request.get("status") or "") == "已发放" and bool(lines) and all(
+        str(line.get("status") or "") == "已发放" for line in lines
+    )
+    if succeeded != is_complete:
+        raise RuntimeError(f"申请单 {request_no} 的回写完成状态已变化，请重新检查后发送通知。")
+    card = approval_writeback_notification_card(
+        request_no,
+        instance_code,
+        lines,
+        succeeded=succeeded,
+    )
+    return send_category_notification_to_available_admins(client, recipients, card)
+
+
+def approval_writeback_is_complete(request_no: str) -> bool:
+    context = request_inventory_review_context(request_no=request_no)
+    request = dict(context["request"])
+    lines = [dict(line) for line in list(context["lines"])]
+    return str(request.get("status") or "") == "已发放" and bool(lines) and all(
+        str(line.get("status") or "") == "已发放" for line in lines
+    )
 
 
 def dimension_management_notification_card(
@@ -8949,6 +9060,7 @@ def load_feishu_request_line_records(
         records.append(
             {
                 "record_id": feishu_record_id(row),
+                "line_no": feishu_text(fields, "明细编号"),
                 "request_ids": request_ids,
                 "request_no": feishu_text_any(fields, ["申请单号", "所属申请单", "申请单"]),
                 "material_record_id": material_ids[0] if material_ids else "",
@@ -9303,15 +9415,28 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         feishu_record_id(row): row for row in list(context.get("material_rows") or [])
     }
     seen: set[str] = set()
+    seen_line_ids: set[str] = set()
+    valid_line_ids = {
+        str(line.get("record_id") or "")
+        for line in list(context["lines"])
+        if str(line.get("record_id") or "")
+    }
     prepared: list[dict[str, object]] = []
     for item in desired:
         material_id = str(item.get("material_record_id") or "")
+        line_record_id = str(item.get("line_record_id") or "")
         quantity = int(item.get("quantity") or 0)
         if material_id in seen:
             raise RuntimeError("同一物料不能在申请中重复出现。")
         if material_id not in material_by_id or quantity <= 0:
             raise RuntimeError("申请明细包含无效物料或数量。")
+        if line_record_id and (
+            line_record_id not in valid_line_ids or line_record_id in seen_line_ids
+        ):
+            raise RuntimeError("申请明细包含无效或重复的原始记录标识。")
         seen.add(material_id)
+        if line_record_id:
+            seen_line_ids.add(line_record_id)
         material_fields = feishu_fields(material_by_id[material_id])
         existing_line = next(
             (
@@ -9328,6 +9453,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         )
         prepared.append(
             {
+                "line_record_id": line_record_id,
                 "material_record_id": material_id,
                 "product": feishu_text(material_fields, "物料品类"),
                 "model": feishu_text(material_fields, "产品型号") or NO_MODEL_TEXT,
@@ -9346,12 +9472,36 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     current_by_material = {
         str(line.get("material_record_id") or ""): line for line in list(context["lines"])
     }
+    current_by_record_id = {
+        str(line.get("record_id") or ""): line
+        for line in list(context["lines"])
+        if str(line.get("record_id") or "")
+    }
     request_no = str(request.get("request_no") or "")
+    used_line_numbers = {
+        str(line.get("line_no") or "").strip()
+        for line in list(context["lines"])
+        if str(line.get("line_no") or "").strip()
+    }
+    suffix_pattern = re.compile(rf"^{re.escape(request_no)}-(\d+)$")
+    next_line_suffix = max(
+        (
+            int(match.group(1))
+            for line_no in used_line_numbers
+            if (match := suffix_pattern.fullmatch(line_no))
+        ),
+        default=0,
+    )
     line_updates: list[dict[str, object]] = []
     line_creates: list[dict[str, object]] = []
     kept_line_ids: set[str] = set()
     for index, item in enumerate(prepared, start=1):
-        existing = current_by_material.get(str(item["material_record_id"]))
+        source_line_id = str(item.get("line_record_id") or "")
+        existing = (
+            current_by_record_id.get(source_line_id)
+            if source_line_id
+            else current_by_material.get(str(item["material_record_id"]))
+        )
         fields: dict[str, object] = {
             "申请数量": int(item["quantity"]),
             "审批通过数量": int(item["quantity"]),
@@ -9370,13 +9520,29 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         if existing:
             line_id = str(existing.get("record_id") or "")
             kept_line_ids.add(line_id)
+            set_request_line_material_fields(
+                fields,
+                material_by_id[str(item["material_record_id"])],
+                str(item["product"]),
+                str(item["model"]),
+                str(item["language"]),
+            )
             if feishu_has_field(REQUEST_LINE_TABLE_NAME, "原申请数量"):
                 fields["原申请数量"] = str(int(existing.get("quantity") or item["quantity"]))
             line_updates.append({"record_id": line_id, "fields": fields})
         else:
+            next_line_suffix += 1
+            next_line_no = f"{request_no}-{next_line_suffix:02d}"
+            while next_line_no in used_line_numbers:
+                next_line_suffix += 1
+                next_line_no = f"{request_no}-{next_line_suffix:02d}"
+            used_line_numbers.add(next_line_no)
             fields.update(
                 {
-                    "明细编号": f"{request_no}-{index:02d}",
+                    # A request line number is a stable identity, not its current
+                    # display position. Allocation edits may delete or reorder
+                    # rows, so newly created lines must never reuse a suffix.
+                    "明细编号": next_line_no,
                     "原申请数量": str(int(item["quantity"])),
                     "提交时库存快照": int(item["current_stock"]),
                     "明细状态": REQUEST_LINE_STATUS_PENDING,

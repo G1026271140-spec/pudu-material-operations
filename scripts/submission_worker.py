@@ -27,6 +27,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
     QUEUE_TASK_TYPE_TRANSACTION_REVERT,
@@ -343,6 +344,31 @@ def process_task(
         return inventory_app.execute_request_inventory_edit(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
         return inventory_app.execute_request_inventory_confirm(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY:
+        request_no = str(payload.get("request_no") or "")
+        instance_code = str(payload.get("instance_code") or "")
+        progress = dict(task.result)
+        if inventory_app.approval_writeback_is_complete(request_no):
+            if not progress.get("success_notified"):
+                progress["success_notification_count"] = (
+                    inventory_app.notify_enabled_admins_of_approval_writeback(
+                        request_no, instance_code, succeeded=True
+                    )
+                )
+                progress["success_notified"] = True
+                if checkpoint is not None:
+                    checkpoint(progress)
+            return progress
+        if not progress.get("failure_notified"):
+            progress["failure_notification_count"] = (
+                inventory_app.notify_enabled_admins_of_approval_writeback(
+                    request_no, instance_code, succeeded=False
+                )
+            )
+            progress["failure_notified"] = True
+            if checkpoint is not None:
+                checkpoint(progress)
+        raise RuntimeError(f"申请单 {request_no} 的审批回写尚未完整完成，等待修复后重试。")
     if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REVERT:
         ids = [str(value) for value in list(payload.get("transaction_ids") or [])]
         for transaction_id in ids:

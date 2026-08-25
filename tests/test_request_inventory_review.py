@@ -286,6 +286,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
             )
 
         self.assertEqual(draft["lines"][0]["material_record_id"], "mat-2")
+        self.assertEqual(draft["lines"][0]["line_record_id"], "line-1")
 
     def test_card_edit_draft_resolves_selected_model_language_combination(self) -> None:
         context = {
@@ -322,6 +323,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
             )
 
         self.assertEqual(draft["lines"][0]["material_record_id"], "mat-2")
+        self.assertEqual(draft["lines"][0]["line_record_id"], "line-1")
         self.assertEqual(draft["lines"][0]["quantity"], 5)
         self.assertEqual(draft["lines"][0]["remark"], "保留备注")
         self.assertEqual(draft["change_note"], "改为英文版本")
@@ -420,6 +422,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
             "lines": [
                 {
                     "record_id": "line-1",
+                    "line_no": "REQ-1-03",
                     "material_record_id": "mat-1",
                     "product": "产品单页",
                     "model": "D7",
@@ -485,6 +488,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(updated_line_fields["实际发放数量"], 3)
         self.assertEqual(created_line_fields["申请数量"], 4)
         self.assertEqual(created_line_fields["实际发放数量"], 4)
+        self.assertEqual(created_line_fields["明细编号"], "REQ-1-04")
         request_fields = update_request.call_args.args[2]
         self.assertEqual(
             request_fields["物料明细文字信息"],
@@ -535,6 +539,62 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(request_fields["库存审查状态"], app.INVENTORY_REVIEW_CONFIRMED)
         self.assertEqual(request_fields["库存审查人"], [{"id": "ou_admin"}])
         self.assertEqual(request_fields["库存审查时间"], 123456)
+
+    def test_allocation_replacement_updates_the_same_detail_record(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "status": app.REQUEST_STATUS_PENDING,
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_review_version": 0,
+            },
+            "lines": [{
+                "record_id": "line-1",
+                "line_no": "REQ-1-03",
+                "material_record_id": "mat-old",
+                "product": "产品单页",
+                "model": "D7",
+                "language": "英语",
+                "quantity": 2,
+                "remark": "",
+            }],
+            "material_rows": [
+                {"record_id": "mat-old", "fields": {"物料品类": "产品单页", "产品型号": "D7", "语种": "英语", "当前库存": 5}},
+                {"record_id": "mat-new", "fields": {"物料品类": "产品单页", "产品型号": "T300", "语种": "西语", "当前库存": 8}},
+            ],
+        }
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_has_field", return_value=True),
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
+            patch.object(app, "feishu_batch_create_records") as create_lines,
+            patch.object(app, "feishu_batch_delete_record_ids") as delete_lines,
+            patch.object(app, "feishu_update_record_fields"),
+            patch.object(app, "ensure_request_change_record_fields"),
+            patch.object(app, "notify_requester_of_inventory_edit"),
+            patch.object(app, "notify_enabled_admins_of_material_request"),
+        ):
+            app.execute_request_inventory_edit({
+                "request_id": "request-1",
+                "expected_version": 0,
+                "operator_open_id": "ou_admin",
+                "change_note": "调整配货",
+                "lines": [{
+                    "line_record_id": "line-1",
+                    "material_record_id": "mat-new",
+                    "quantity": 4,
+                    "remark": "替换",
+                }],
+            })
+
+        updated = update_lines.call_args.args[1][0]
+        self.assertEqual(updated["record_id"], "line-1")
+        self.assertEqual(updated["fields"]["申请数量"], 4)
+        self.assertEqual(updated["fields"]["物料编码"], ["mat-new"])
+        create_lines.assert_called_once()  # Only the immutable change-audit record is created.
+        delete_lines.assert_not_called()
 
 
 if __name__ == "__main__":

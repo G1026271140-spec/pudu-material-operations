@@ -9,6 +9,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
     SubmissionTask,
 )
 
@@ -72,6 +73,46 @@ def category_task(
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_approval_writeback_success_notifies_and_completes(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
+            {"request_no": "REQ-1", "instance_code": "instance-1"},
+        )
+        checkpoints: list[dict] = []
+        with (
+            patch.object(worker.inventory_app, "approval_writeback_is_complete", return_value=True),
+            patch.object(
+                worker.inventory_app,
+                "notify_enabled_admins_of_approval_writeback",
+                return_value=2,
+            ) as notify,
+        ):
+            result = worker.process_task(task, checkpoints.append)
+
+        notify.assert_called_once_with("REQ-1", "instance-1", succeeded=True)
+        self.assertTrue(result["success_notified"])
+        self.assertEqual(result["success_notification_count"], 2)
+
+    def test_approval_writeback_failure_notifies_once_and_keeps_retrying(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
+            {"request_no": "REQ-1", "instance_code": "instance-1"},
+        )
+        checkpoints: list[dict] = []
+        with (
+            patch.object(worker.inventory_app, "approval_writeback_is_complete", return_value=False),
+            patch.object(
+                worker.inventory_app,
+                "notify_enabled_admins_of_approval_writeback",
+                return_value=2,
+            ) as notify,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "等待修复后重试"):
+                worker.process_task(task, checkpoints.append)
+
+        notify.assert_called_once_with("REQ-1", "instance-1", succeeded=False)
+        self.assertTrue(checkpoints[-1]["failure_notified"])
+
     def test_category_sync_retry_does_not_repeat_data_write(self) -> None:
         task = category_task(
             QUEUE_TASK_TYPE_CATEGORY_SYNC,
