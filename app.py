@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.9"
+APP_VERSION = "V1.4.0"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -487,6 +487,7 @@ CONTACT_DEPARTMENT_STATIC_CACHE_PATH = (
     Path(__file__).resolve().parent / "data" / "contact_departments_cache.json"
 )
 APP_ICON_PATH = Path(__file__).resolve().parent / "assets" / "app-icon.png"
+PUDU_BLUE_LOGO_PATH = Path(__file__).resolve().parent / "assets" / "pudu-logo-blue.png"
 REQUEST_CATEGORY_IMAGE_DIR = (
     Path(__file__).resolve().parent / "assets" / "request_categories"
 )
@@ -816,6 +817,24 @@ def inject_global_styles() -> None:
             margin-bottom: 0.65rem;
             padding: 0 0 0.65rem;
             border-bottom: 1px solid var(--pudu-line);
+        }
+        .st-key-sidebar_corporate_logo {
+            height: 62px;
+            margin: 0 0 0.15rem;
+            overflow: hidden;
+        }
+        .st-key-sidebar_corporate_logo [data-testid="stImage"] {
+            width: 220px;
+            max-width: 100%;
+            margin: 0 auto;
+            overflow: visible;
+        }
+        .st-key-sidebar_corporate_logo [data-testid="stImage"] img {
+            width: 220px !important;
+            max-width: 100% !important;
+            height: auto !important;
+            transform: translateY(-25px);
+            object-fit: contain;
         }
         .st-key-sidebar_brand [data-testid="stImage"] {
             width: 64px;
@@ -2403,15 +2422,11 @@ def render_page_header(
     page_key: str = "",
 ) -> None:
     title = ui_text(title)
-    kicker = ui_text(kicker)
-    subtitle = ui_text(subtitle)
     header_html = (
         f"""
         <div class="pudu-page-header">
             <div>
-                <div class="pudu-page-kicker">{escape(kicker)}</div>
                 <div class="pudu-page-title">{escape(title)}</div>
-                <div class="pudu-page-subtitle">{escape(subtitle)}</div>
             </div>
         </div>
         """
@@ -11632,6 +11647,9 @@ def render_github_cache_publish() -> None:
 def render_sidebar_link() -> None:
     with st.sidebar:
         current_view = str(st.query_params.get("view", ""))
+        if PUDU_BLUE_LOGO_PATH.exists():
+            with st.container(key="sidebar_corporate_logo"):
+                st.image(str(PUDU_BLUE_LOGO_PATH), width="stretch")
         with st.container(key="sidebar_brand"):
             brand_icon_col, brand_text_col = st.columns(
                 [0.3, 0.7],
