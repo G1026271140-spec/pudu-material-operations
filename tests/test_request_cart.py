@@ -206,6 +206,17 @@ class RequestCartTests(unittest.TestCase):
         self.assertEqual(state["models"], ["M1"])
         self.assertEqual(state["language"], "英语")
 
+    def test_language_defaults_to_first_available_option(self) -> None:
+        state = {"language": None}
+        with patch.object(app.st, "session_state", state):
+            selected = app.ensure_request_language_default(
+                "language",
+                ["英语", "简中"],
+            )
+
+        self.assertEqual(selected, "英语")
+        self.assertEqual(state["language"], "英语")
+
     def test_enabling_one_multi_select_turns_the_other_off(self) -> None:
         state = {
             "model_multi": True,

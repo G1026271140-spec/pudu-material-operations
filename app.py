@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.6"
+APP_VERSION = "V1.3.7"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -1579,6 +1579,13 @@ def inject_global_styles() -> None:
             width: 100% !important;
             min-width: 0 !important;
             justify-content: center !important;
+        }
+        [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] button[aria-pressed="true"] {
+            border: 2px solid #0B57D0 !important;
+            background: #0B57D0 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.22), 0 4px 10px rgba(11, 87, 208, 0.22) !important;
+            font-weight: 800 !important;
         }
         [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
         [data-testid="stButtonGroup"] > div:last-child:has(> button:only-child) {
@@ -11978,6 +11985,13 @@ def normalize_request_option_state(
         st.session_state[state_key] = options[0] if options else None
 
 
+def ensure_request_language_default(state_key: str, options: list[str]) -> str | None:
+    """Keep one valid language selected whenever language options are available."""
+    normalize_request_option_state(state_key, options, multiple=False)
+    selected = st.session_state.get(state_key)
+    return str(selected) if isinstance(selected, str) and selected in options else None
+
+
 def sync_request_model_line_selection(
     state_key: str,
     group_keys: list[str],
@@ -12618,11 +12632,7 @@ def render_request_material_builder(
                                 catalog_product,
                                 selected_models,
                             )
-                            normalize_request_option_state(
-                                language_widget_key,
-                                language_options,
-                                multiple=language_multi,
-                            )
+                            ensure_request_language_default(language_widget_key, language_options)
                             selected_language_values: object = []
                             if language_options:
                                 language_columns = min(4, max(2, len(language_options)))
