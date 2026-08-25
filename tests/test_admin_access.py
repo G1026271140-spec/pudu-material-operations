@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V1.3.7")
+        self.assertEqual(app.APP_VERSION, "V1.3.8")
 
     def test_admin_password_is_independent_from_inventory_password(self) -> None:
         with patch.object(app.st, "secrets", {}):

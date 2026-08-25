@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.7"
+APP_VERSION = "V1.3.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -1609,6 +1609,47 @@ def inject_global_styles() -> None:
             border-color: #D8E1E8 !important;
             border-radius: 10px !important;
             background: linear-gradient(145deg, #FFFFFF 0%, #F6FAFC 100%);
+            transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+            transform-origin: center center;
+        }
+        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker):hover > [data-testid="stVerticalBlock"] {
+            z-index: 3;
+            transform: translateY(-3px) scale(1.015);
+            border-color: #8FB1C9 !important;
+            box-shadow: 0 9px 22px rgba(22, 58, 79, 0.14);
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stButtonGroup"] button {
+            transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease !important;
+            transform-origin: center center;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stButtonGroup"] button:hover {
+            z-index: 2;
+            transform: translateY(-1px) scale(1.025);
+            border-color: #2672B9 !important;
+            box-shadow: 0 5px 12px rgba(38, 114, 185, 0.17) !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stButtonGroup"] button[aria-pressed="true"] {
+            z-index: 2;
+            transform: translateY(-1px) scale(1.025);
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stCheckbox"] label,
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        .stButton > button,
+        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stPopover"] > button {
+            transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease !important;
+            transform-origin: center center;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stCheckbox"] label:hover,
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        .stButton > button:hover,
+        [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stPopover"] > button:hover {
+            transform: translateY(-1px) scale(1.018);
+            box-shadow: 0 5px 12px rgba(38, 114, 185, 0.14) !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) [data-testid="stImage"] img {
             width: 100%;
