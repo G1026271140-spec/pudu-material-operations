@@ -391,6 +391,8 @@ class RequestInventoryReviewTests(unittest.TestCase):
                 {
                     "record_id": "line-1",
                     "fields": {
+                        "审批通过数量": 2,
+                        "实际发放数量": 2,
                         "库存审查时库存": "0",
                         "库存满足状态": "库存不足，需要制作",
                     },

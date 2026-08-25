@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.7"
+APP_VERSION = "V1.4.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -9651,6 +9651,8 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         {
             "record_id": str(line.get("record_id") or ""),
             "fields": {
+                "审批通过数量": int(line.get("quantity") or 0),
+                "实际发放数量": int(line.get("quantity") or 0),
                 "库存审查时库存": str(int(line.get("current_stock") or 0)),
                 "库存满足状态": str(line.get("inventory_status") or ""),
             },
