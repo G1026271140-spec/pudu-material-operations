@@ -82,6 +82,9 @@ class RequestLineDimensionLinkTests(unittest.TestCase):
             "实际发放物料品类": {"type": 1},
             "实际发放产品型号": {"type": 1},
             "实际发放语种": {"type": 1},
+            "品类名称": {"type": 1},
+            "产品型号名称": {"type": 1},
+            "语种名称": {"type": 1},
         }
         fields: dict[str, object] = {}
 
@@ -97,6 +100,9 @@ class RequestLineDimensionLinkTests(unittest.TestCase):
         self.assertEqual(
             fields,
             {
+                "品类名称": "新品",
+                "产品型号名称": "新品",
+                "语种名称": "新品",
                 "实际发放物料品类": "新品",
                 "实际发放产品型号": "新品",
                 "实际发放语种": "新品",

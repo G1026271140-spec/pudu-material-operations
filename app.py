@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.5"
+APP_VERSION = "V1.4.6"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -8963,6 +8963,9 @@ def set_request_line_material_fields(
     # materials intentionally do not create category/model/language dimension
     # rows, so approval integrations can fall back to these display values.
     for snapshot_field, display_value in (
+        ("品类名称", product),
+        ("产品型号名称", model or NO_MODEL_TEXT),
+        ("语种名称", language),
         ("实际发放物料品类", product),
         ("实际发放产品型号", model or NO_MODEL_TEXT),
         ("实际发放语种", language),

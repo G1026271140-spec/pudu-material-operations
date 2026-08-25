@@ -104,6 +104,24 @@ class FeishuBitableClient:
         )
         return dict(response.get("data", {}).get("field", {}))
 
+    def update_field(
+        self,
+        table_id: str,
+        field_id: str,
+        field_name: str,
+        field_type: int,
+        property: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"field_name": field_name, "type": field_type}
+        if property is not None:
+            payload["property"] = property
+        response = self._request(
+            "PUT",
+            f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/fields/{parse.quote(field_id)}",
+            payload=payload,
+        )
+        return dict(response.get("data", {}).get("field", {}))
+
     def upload_media(
         self,
         file_name: str,
