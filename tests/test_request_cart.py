@@ -124,6 +124,50 @@ class RequestCartTests(unittest.TestCase):
         self.assertTrue(all(line["quantity"] == 3 for line in lines))
         self.assertTrue(all(line["remark"] == "展会" for line in lines))
 
+    def test_custom_material_uses_one_free_text_value_for_all_dimensions(self) -> None:
+        line = app.build_custom_request_material_line("新款宣传册 20份", 20, "急用")
+
+        self.assertEqual(line["product"], "新款宣传册 20份")
+        self.assertEqual(line["model"], "新款宣传册 20份")
+        self.assertEqual(line["language"], "新款宣传册 20份")
+        self.assertEqual(line["quantity"], 20)
+        self.assertEqual(line["remark"], "急用")
+        self.assertTrue(line["is_custom_material"])
+
+        payload = app.queued_material_request_payload(
+            {"submission_token": "submit-1"},
+            [line],
+        )
+        self.assertTrue(payload["lines"][0]["is_custom_material"])
+
+    def test_custom_material_master_row_is_zero_priced_and_idempotent(self) -> None:
+        item = app.build_custom_request_material_line("新款宣传册 20份", 20, "")
+        created = {
+            "record_id": "material-custom-1",
+            "fields": {
+                "物料品类": "新款宣传册 20份",
+                "产品型号": "新款宣传册 20份",
+                "语种": "新款宣传册 20份",
+            },
+        }
+        rows = []
+        with (
+            patch.object(app, "parse_feishu_inventory_record", return_value=None),
+            patch.object(app, "next_material_codes_from_records", return_value=["MAT-9999"]),
+            patch.object(app, "set_yes_no_field") as set_yes_no,
+            patch.object(app, "set_feishu_unit_price") as set_price,
+            patch.object(app, "feishu_create_record", return_value=created) as create_record,
+        ):
+            result = app.ensure_custom_request_material(rows, item, "submit-1")
+
+        self.assertEqual(result, created)
+        self.assertEqual(rows, [created])
+        set_yes_no.assert_called_once_with(app.MATERIAL_TABLE_NAME, unittest.mock.ANY, "是否临时物料", True)
+        set_price.assert_called_once_with(app.MATERIAL_TABLE_NAME, unittest.mock.ANY, 0)
+        fields = create_record.call_args.args[1]
+        self.assertEqual(fields["当前库存"], 0)
+        self.assertEqual(fields[app.REQUEST_PAGE_VISIBILITY_FIELD], app.REQUEST_PAGE_HIDDEN_VALUE)
+
     def test_model_multi_select_only_offers_languages_shared_by_every_model(self) -> None:
         context = {
             "product_model_languages": {
@@ -190,7 +234,7 @@ class RequestCartTests(unittest.TestCase):
             app.render_request_cart_added_toast()
             app.render_request_cart_added_toast()
 
-        toast.assert_called_once_with("已加入购物车", icon="🛒", duration="short")
+        toast.assert_called_once_with("已加入购物车", icon="🛒", duration="long")
         self.assertNotIn("request_cart_added_toast", state)
 
 

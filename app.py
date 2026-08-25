@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.3"
+APP_VERSION = "V1.3.4"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -1480,6 +1480,9 @@ def inject_global_styles() -> None:
             color: #FFFFFF !important;
         }
         [data-testid="stToast"] {
+            min-width: min(430px, calc(100vw - 2rem)) !important;
+            min-height: 82px !important;
+            padding: 1rem 1.15rem !important;
             border: 1px solid #B83A24 !important;
             border-radius: 12px !important;
             background: linear-gradient(135deg, #F26B4F 0%, #C9472D 100%) !important;
@@ -1494,6 +1497,24 @@ def inject_global_styles() -> None:
             color: #FFFFFF !important;
             fill: #FFFFFF !important;
             font-weight: 750 !important;
+            font-size: 1rem !important;
+        }
+        [data-testid="stPopoverBody"] [data-testid="stButtonGroup"] button[aria-pressed="true"] {
+            border: 2px solid #0B57D0 !important;
+            background: #0B57D0 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.18) !important;
+            font-weight: 800 !important;
+        }
+        [data-testid="stPopoverBody"] [data-testid="stButtonGroup"] button[aria-pressed="true"] p,
+        [data-testid="stPopoverBody"] [data-testid="stButtonGroup"] button[aria-pressed="true"] span,
+        [data-testid="stPopoverBody"] [data-testid="stButtonGroup"] button[aria-pressed="true"] svg {
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+        }
+        [class*="st-key-request_custom_material_"] [data-testid="stCheckbox"] label p {
+            color: #D92D20 !important;
+            font-weight: 800 !important;
         }
         @keyframes pudu-toast-slide-in {
             0% {
@@ -2725,6 +2746,19 @@ def set_first_plain_field(
         if feishu_has_field(table_name, field_name) and feishu_accepts_plain_value(table_name, field_name):
             fields[field_name] = value
             return
+
+
+def set_yes_no_field(
+    table_name: str,
+    fields: dict[str, object],
+    field_name: str,
+    enabled: bool,
+) -> None:
+    if not feishu_has_field(table_name, field_name):
+        return
+    fields[field_name] = bool(enabled) if feishu_field_type(table_name, field_name) == 7 else (
+        "是" if enabled else "否"
+    )
 
 
 def set_feishu_unit_price(
@@ -8269,6 +8303,47 @@ def build_request_material_index(
     }
 
 
+def ensure_custom_request_material(
+    material_rows: list[dict],
+    item: dict[str, object],
+    submission_token: str,
+) -> dict:
+    """Create or recover the request-scoped master row for one custom material."""
+    product = str(item.get("product") or "").strip()
+    model = str(item.get("model") or product).strip()
+    language = str(item.get("language") or product).strip()
+    marker_seed = "|".join(request_material_key(item))
+    marker_hash = hashlib.sha256(marker_seed.encode("utf-8")).hexdigest()[:12]
+    marker = f"自定义物料申请:{submission_token}:{marker_hash}"
+    for row in material_rows:
+        if feishu_text(feishu_fields(row), "备注") == marker:
+            return row
+
+    parsed_inventory = [
+        parsed for row in material_rows
+        if (parsed := parse_feishu_inventory_record(row)) is not None
+    ]
+    fields: dict[str, object] = {
+        "物料编码": next_material_codes_from_records(parsed_inventory, 1)[0],
+        "物料品类": product,
+        "产品型号": model,
+        "语种": language,
+        "当前库存": 0,
+        "备注": marker,
+        "启用状态": STATUS_INACTIVE,
+        REQUEST_PAGE_VISIBILITY_FIELD: REQUEST_PAGE_HIDDEN_VALUE,
+    }
+    set_yes_no_field(MATERIAL_TABLE_NAME, fields, "是否临时物料", True)
+    set_feishu_unit_price(MATERIAL_TABLE_NAME, fields, 0)
+    created = feishu_create_record(MATERIAL_TABLE_NAME, fields)
+    if not feishu_record_id(created):
+        raise RuntimeError(f"自定义物料主数据创建成功但未返回记录 ID：{product}")
+    if not feishu_fields(created):
+        created = {**created, "fields": dict(fields)}
+    material_rows.append(created)
+    return created
+
+
 def submit_feishu_material_request(
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
@@ -8315,13 +8390,18 @@ def submit_feishu_material_request(
         if key in seen_keys:
             raise RuntimeError(f"同一申请单内物料重复，请合并数量：{product} / {model} / {language}")
         seen_keys.add(key)
-        material_row = material_index.get(key)
+        is_custom_material = bool(item.get("is_custom_material"))
+        material_row = (
+            ensure_custom_request_material(material_rows, item, submission_token)
+            if is_custom_material
+            else material_index.get(key)
+        )
         if material_row is None:
             raise RuntimeError(f"未找到物料组合：{product} / {model} / {language}")
+        raw_material_by_id[feishu_record_id(material_row)] = material_row
         material_fields = feishu_fields(material_row)
-        unit_price_rmb = request_material_unit_price_rmb(
-            material_fields,
-            category_price_rmb.get(normalize_category_match_key(product), 0.0),
+        unit_price_rmb = 0.0 if is_custom_material else request_material_unit_price_rmb(
+            material_fields, category_price_rmb.get(normalize_category_match_key(product), 0.0)
         )
         prepared_lines.append(
             {
@@ -8335,6 +8415,7 @@ def submit_feishu_material_request(
                 "stock_snapshot": feishu_int(material_fields, "当前库存"),
                 "unit_price_rmb": unit_price_rmb,
                 "subtotal_rmb": request_line_subtotal_rmb(unit_price_rmb, quantity),
+                "is_custom_material": is_custom_material,
             }
         )
 
@@ -8376,6 +8457,13 @@ def submit_feishu_material_request(
         "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
         "备注": request_note_text(request_payload),
     }
+    if any(bool(item.get("is_custom_material")) for item in prepared_lines):
+        set_first_plain_field(
+            REQUEST_TABLE_NAME,
+            request_fields,
+            ["临时物料清理状态"],
+            "待清理",
+        )
     set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["提交幂等键"], submission_token)
     set_first_person_or_plain_field(
         REQUEST_TABLE_NAME,
@@ -8496,6 +8584,7 @@ def queued_material_request_payload(
             "remark": str(line.get("remark") or ""),
             "current_stock": int(line.get("current_stock") or 0),
             "inventory_status": str(line.get("inventory_status") or ""),
+            "is_custom_material": bool(line.get("is_custom_material")),
         }
         for line in lines
         if isinstance(line, dict)
@@ -11806,6 +11895,36 @@ def build_request_cart_selection_lines(
     ]
 
 
+def build_custom_request_material_line(
+    description: object,
+    quantity: int,
+    remark: object,
+) -> dict[str, object]:
+    """Build one free-text material line without expanding dimensions."""
+    custom_text = str(description or "").strip()
+    return {
+        "product": custom_text,
+        "model": custom_text,
+        "language": custom_text,
+        "quantity": max(1, int(quantity)),
+        "remark": str(remark or "").strip(),
+        "is_custom_material": True,
+    }
+
+
+def clear_request_normal_dimension_state(
+    model_widget_key: str,
+    language_widget_key: str,
+) -> None:
+    """Make normal dimensions mutually exclusive with custom-material mode."""
+    st.session_state[model_widget_key] = []
+    st.session_state[language_widget_key] = None
+    for key in list(st.session_state):
+        if str(key).startswith(f"{model_widget_key}_"):
+            st.session_state[key] = []
+    mark_request_form_dirty()
+
+
 def request_language_options_for_models(
     selection_context: dict[str, object],
     product: str,
@@ -12112,7 +12231,7 @@ def render_request_cart_added_toast() -> None:
         if get_ui_language() == LANGUAGE_EN
         else "已加入购物车"
     )
-    st.toast(message, icon="🛒", duration="short")
+    st.toast(message, icon="🛒", duration="long")
 
 
 def render_request_review_field(container: object, label: str, value: object) -> None:
@@ -12431,52 +12550,88 @@ def render_request_material_builder(
                             f"request_cart_models_v2_{'multi' if model_multi else 'single'}_"
                             f"{get_ui_language()}_{product_state_key}"
                         )
-                        selected_models = render_request_model_selector(
-                            catalog_product,
-                            selection_context,
-                            model_options,
-                            multiple=model_multi,
-                            state_key=model_widget_key,
-                        )
-
-                        language_options = request_language_options_for_models(
-                            selection_context,
-                            catalog_product,
-                            selected_models,
-                        )
                         language_widget_key = (
                             f"request_cart_languages_v2_{'multi' if language_multi else 'single'}_"
                             f"{get_ui_language()}_{product_state_key}"
                         )
-                        normalize_request_option_state(
-                            language_widget_key,
-                            language_options,
-                            multiple=language_multi,
+                        custom_mode = st.checkbox(
+                            (
+                                "Can't find the material you need? Check the box on the right"
+                                if get_ui_language() == LANGUAGE_EN
+                                else "没找到想要的物料？请点击右边方框"
+                            ),
+                            key=f"request_custom_material_{product_state_key}",
+                            on_change=clear_request_normal_dimension_state,
+                            args=(model_widget_key, language_widget_key),
                         )
-                        selected_language_values: object = []
-                        if language_options:
-                            language_columns = min(4, max(2, len(language_options)))
-                            with st.container(key=f"request_language_pills_{product_state_key}"):
+                        st.markdown('<span class="pudu-custom-material-hint"></span>', unsafe_allow_html=True)
+                        selected_models: list[str] = []
+                        selected_languages: list[str] = []
+                        custom_description = ""
+                        if custom_mode:
+                            with st.container(border=True, key=f"request_custom_material_panel_{product_state_key}"):
                                 st.markdown(
-                                    f'<span class="pudu-language-pills-marker '
-                                    f'pudu-language-columns-{language_columns}"></span>',
-                                    unsafe_allow_html=True,
+                                    "**Custom material**"
+                                    if get_ui_language() == LANGUAGE_EN
+                                    else "**自定义物料**"
                                 )
-                                selected_language_values = st.pills(
-                                    "语种",
-                                    language_options,
-                                    selection_mode="multi" if language_multi else "single",
-                                    required=not language_multi,
-                                    format_func=request_option_display_label,
-                                    key=language_widget_key,
+                                custom_description = st.text_area(
+                                    (
+                                        "Please enter the required material and quantity."
+                                        if get_ui_language() == LANGUAGE_EN
+                                        else "请填写需要的物料和数量。"
+                                    ),
+                                    key=f"request_custom_material_description_{product_state_key}",
+                                    placeholder=(
+                                        "Please enter the required material and quantity."
+                                        if get_ui_language() == LANGUAGE_EN
+                                        else "请填写需要的物料和数量。"
+                                    ),
+                                    height=80,
                                     on_change=mark_request_form_dirty,
-                                    width="stretch",
                                 )
-                        selected_languages = (
-                            list(selected_language_values or [])
-                            if language_multi
-                            else [selected_language_values] if selected_language_values else []
-                        )
+                        else:
+                            selected_models = render_request_model_selector(
+                                catalog_product,
+                                selection_context,
+                                model_options,
+                                multiple=model_multi,
+                                state_key=model_widget_key,
+                            )
+                            language_options = request_language_options_for_models(
+                                selection_context,
+                                catalog_product,
+                                selected_models,
+                            )
+                            normalize_request_option_state(
+                                language_widget_key,
+                                language_options,
+                                multiple=language_multi,
+                            )
+                            selected_language_values: object = []
+                            if language_options:
+                                language_columns = min(4, max(2, len(language_options)))
+                                with st.container(key=f"request_language_pills_{product_state_key}"):
+                                    st.markdown(
+                                        f'<span class="pudu-language-pills-marker '
+                                        f'pudu-language-columns-{language_columns}"></span>',
+                                        unsafe_allow_html=True,
+                                    )
+                                    selected_language_values = st.pills(
+                                        "语种",
+                                        language_options,
+                                        selection_mode="multi" if language_multi else "single",
+                                        required=not language_multi,
+                                        format_func=request_option_display_label,
+                                        key=language_widget_key,
+                                        on_change=mark_request_form_dirty,
+                                        width="stretch",
+                                    )
+                            selected_languages = (
+                                list(selected_language_values or [])
+                                if language_multi
+                                else [selected_language_values] if selected_language_values else []
+                            )
 
                         option_cols = st.columns([0.8, 1.6], gap="small")
                         quantity = option_cols[0].number_input(
@@ -12499,17 +12654,23 @@ def render_request_material_builder(
                             key=f"request_add_to_cart_{product_state_key}",
                             type="primary",
                             icon=":material/add_shopping_cart:",
-                            disabled=not selected_models or not selected_languages,
+                            disabled=(not str(custom_description).strip()) if custom_mode else (
+                                not selected_models or not selected_languages
+                            ),
                             width="stretch",
                         )
                         if action_clicked:
-                            selected_lines = build_request_cart_selection_lines(
-                                selection_context,
-                                catalog_product,
-                                selected_models,
-                                selected_languages,
-                                int(quantity),
-                                str(remark or ""),
+                            selected_lines = (
+                                [build_custom_request_material_line(custom_description, int(quantity), remark)]
+                                if custom_mode
+                                else build_request_cart_selection_lines(
+                                    selection_context,
+                                    catalog_product,
+                                    selected_models,
+                                    selected_languages,
+                                    int(quantity),
+                                    str(remark or ""),
+                                )
                             )
                             if not selected_lines:
                                 st.warning("所选型号和语种之间没有有效的物料组合。")
