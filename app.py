@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.4"
+APP_VERSION = "V1.3.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -12558,7 +12558,7 @@ def render_request_material_builder(
                             (
                                 "Can't find the material you need? Check the box on the right"
                                 if get_ui_language() == LANGUAGE_EN
-                                else "没找到想要的物料？请点击右边方框"
+                                else "没找到想要的物料？请点击有右边方框"
                             ),
                             key=f"request_custom_material_{product_state_key}",
                             on_change=clear_request_normal_dimension_state,
