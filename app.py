@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.4"
+APP_VERSION = "V1.4.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -8959,6 +8959,19 @@ def set_request_line_material_fields(
     material_record_id = feishu_record_id(material_row)
     material_fields = feishu_fields(material_row)
     material_code = feishu_text(material_fields, "物料编码")
+    # Keep immutable text snapshots alongside relation/lookup fields. Custom
+    # materials intentionally do not create category/model/language dimension
+    # rows, so approval integrations can fall back to these display values.
+    for snapshot_field, display_value in (
+        ("实际发放物料品类", product),
+        ("实际发放产品型号", model or NO_MODEL_TEXT),
+        ("实际发放语种", language),
+    ):
+        if (
+            feishu_has_field(REQUEST_LINE_TABLE_NAME, snapshot_field)
+            and feishu_accepts_plain_value(REQUEST_LINE_TABLE_NAME, snapshot_field)
+        ):
+            fields[snapshot_field] = display_value
     dimension_fields = (
         (["品类", "物料品类"], ["品类关联"], product),
         (["产品型号"], list(MODEL_LINK_FIELD_CANDIDATES), model or NO_MODEL_TEXT),

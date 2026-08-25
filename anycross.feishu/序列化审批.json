@@ -1,0 +1,3690 @@
+{
+    "name": "序列化审批",
+    "version": "2.0",
+    "sourceType": "self",
+    "flowID": 7668263701786414268,
+    "structure": [
+        {
+            "id": "webhook-trigger-1",
+            "type": "trigger",
+            "subSteps": null
+        },
+        {
+            "id": "variable-1",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "bitable-4",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "bitable-1",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "bitable-2",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "approval-1",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "json_helper-1",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "loop-1",
+            "type": "loop_serial_parent",
+            "subSteps": [
+                {
+                    "id": "loop-1.default",
+                    "type": "loop_serial_child",
+                    "subSteps": [
+                        {
+                            "id": "object_helper-1",
+                            "type": "normal",
+                            "subSteps": null
+                        },
+                        {
+                            "id": "branch-2",
+                            "type": "branch_exclusive_parent",
+                            "subSteps": [
+                                {
+                                    "id": "branch-2.child-2",
+                                    "type": "branch_exclusive_child",
+                                    "subSteps": [
+                                        {
+                                            "id": "branch-1",
+                                            "type": "branch_exclusive_parent",
+                                            "subSteps": [
+                                                {
+                                                    "id": "branch-1.child-2",
+                                                    "type": "branch_exclusive_child",
+                                                    "subSteps": [
+                                                        {
+                                                            "id": "variable-13",
+                                                            "type": "normal",
+                                                            "subSteps": null
+                                                        },
+                                                        {
+                                                            "id": "loop-4",
+                                                            "type": "loop_serial_parent",
+                                                            "subSteps": [
+                                                                {
+                                                                    "id": "loop-4.default",
+                                                                    "type": "loop_serial_child",
+                                                                    "subSteps": [
+                                                                        {
+                                                                            "id": "script-1",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "drive-1",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "approval-2",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "variable-2",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "id": "variable-12",
+                                                            "type": "normal",
+                                                            "subSteps": null
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "branch-1.child-3",
+                                                    "type": "branch_exclusive_child",
+                                                    "subSteps": [
+                                                        {
+                                                            "id": "branch-4",
+                                                            "type": "branch_exclusive_parent",
+                                                            "subSteps": [
+                                                                {
+                                                                    "id": "branch-4.child-2",
+                                                                    "type": "branch_exclusive_child",
+                                                                    "subSteps": [
+                                                                        {
+                                                                            "id": "script-6",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "bitable-8",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "bitable-9",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "bitable-10",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "variable-18",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        },
+                                                                        {
+                                                                            "id": "loop-6",
+                                                                            "type": "loop_serial_parent",
+                                                                            "subSteps": [
+                                                                                {
+                                                                                    "id": "loop-6.default",
+                                                                                    "type": "loop_serial_child",
+                                                                                    "subSteps": [
+                                                                                        {
+                                                                                            "id": "variable-19",
+                                                                                            "type": "normal",
+                                                                                            "subSteps": null
+                                                                                        },
+                                                                                        {
+                                                                                            "id": "loop-7",
+                                                                                            "type": "loop_serial_parent",
+                                                                                            "subSteps": [
+                                                                                                {
+                                                                                                    "id": "loop-7.default",
+                                                                                                    "type": "loop_serial_child",
+                                                                                                    "subSteps": [
+                                                                                                        {
+                                                                                                            "id": "object_helper-3",
+                                                                                                            "type": "normal",
+                                                                                                            "subSteps": null
+                                                                                                        },
+                                                                                                        {
+                                                                                                            "id": "branch-6",
+                                                                                                            "type": "branch_exclusive_parent",
+                                                                                                            "subSteps": [
+                                                                                                                {
+                                                                                                                    "id": "branch-6.child-2",
+                                                                                                                    "type": "branch_exclusive_child",
+                                                                                                                    "subSteps": [
+                                                                                                                        {
+                                                                                                                            "id": "branch-5",
+                                                                                                                            "type": "branch_exclusive_parent",
+                                                                                                                            "subSteps": [
+                                                                                                                                {
+                                                                                                                                    "id": "branch-5.child-2",
+                                                                                                                                    "type": "branch_exclusive_child",
+                                                                                                                                    "subSteps": [
+                                                                                                                                        {
+                                                                                                                                            "id": "variable-20",
+                                                                                                                                            "type": "normal",
+                                                                                                                                            "subSteps": null
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "id": "loop-8",
+                                                                                                                                            "type": "loop_serial_parent",
+                                                                                                                                            "subSteps": [
+                                                                                                                                                {
+                                                                                                                                                    "id": "loop-8.default",
+                                                                                                                                                    "type": "loop_serial_child",
+                                                                                                                                                    "subSteps": [
+                                                                                                                                                        {
+                                                                                                                                                            "id": "script-7",
+                                                                                                                                                            "type": "normal",
+                                                                                                                                                            "subSteps": null
+                                                                                                                                                        },
+                                                                                                                                                        {
+                                                                                                                                                            "id": "drive-3",
+                                                                                                                                                            "type": "normal",
+                                                                                                                                                            "subSteps": null
+                                                                                                                                                        },
+                                                                                                                                                        {
+                                                                                                                                                            "id": "approval-5",
+                                                                                                                                                            "type": "normal",
+                                                                                                                                                            "subSteps": null
+                                                                                                                                                        },
+                                                                                                                                                        {
+                                                                                                                                                            "id": "variable-21",
+                                                                                                                                                            "type": "normal",
+                                                                                                                                                            "subSteps": null
+                                                                                                                                                        }
+                                                                                                                                                    ]
+                                                                                                                                                }
+                                                                                                                                            ]
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "id": "variable-22",
+                                                                                                                                            "type": "normal",
+                                                                                                                                            "subSteps": null
+                                                                                                                                        }
+                                                                                                                                    ]
+                                                                                                                                },
+                                                                                                                                {
+                                                                                                                                    "id": "branch-5.default",
+                                                                                                                                    "type": "branch_exclusive_child",
+                                                                                                                                    "subSteps": [
+                                                                                                                                        {
+                                                                                                                                            "id": "script-8",
+                                                                                                                                            "type": "normal",
+                                                                                                                                            "subSteps": null
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "id": "variable-23",
+                                                                                                                                            "type": "normal",
+                                                                                                                                            "subSteps": null
+                                                                                                                                        }
+                                                                                                                                    ]
+                                                                                                                                }
+                                                                                                                            ]
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "id": "branch-6.default",
+                                                                                                                    "type": "branch_exclusive_child",
+                                                                                                                    "subSteps": null
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "id": "variable-24",
+                                                                                            "type": "normal",
+                                                                                            "subSteps": null
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "id": "variable-25",
+                                                                            "type": "normal",
+                                                                            "subSteps": null
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "id": "branch-4.default",
+                                                                    "type": "branch_exclusive_child",
+                                                                    "subSteps": null
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "branch-1.default",
+                                                    "type": "branch_exclusive_child",
+                                                    "subSteps": [
+                                                        {
+                                                            "id": "script-2",
+                                                            "type": "normal",
+                                                            "subSteps": null
+                                                        },
+                                                        {
+                                                            "id": "variable-3",
+                                                            "type": "normal",
+                                                            "subSteps": null
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "branch-2.default",
+                                    "type": "branch_exclusive_child",
+                                    "subSteps": null
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "variable-9",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "json_helper-2",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "approval-4",
+            "type": "normal",
+            "subSteps": null
+        },
+        {
+            "id": "bitable-7",
+            "type": "normal",
+            "subSteps": null
+        }
+    ],
+    "steps": [
+        {
+            "id": "webhook-trigger-1",
+            "type": "trigger",
+            "operation": {
+                "connectorId": "7270409483281399811",
+                "operationId": "7270409483311218691",
+                "connectorName": "webhook-trigger",
+                "connectorVersion": "1.5"
+            },
+            "name": "网址触发器",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "hook": {
+                "hookKey": {
+                    "type": "string",
+                    "value": ""
+                }
+            },
+            "parameters": {
+                "authorization_config": {
+                    "type": "object",
+                    "value": {
+                        "authorization_method": {
+                            "value": 0,
+                            "type": "number"
+                        }
+                    }
+                },
+                "webhook": {
+                    "type": "string",
+                    "value": "https://open.feishu.cn/anycross/trigger/callback/YmIyMDMyOGE1ZDIxNTljZmMyZTkxODE0OTNiNmY0Zjkw"
+                },
+                "body_type": {
+                    "type": "string",
+                    "value": "json"
+                }
+            }
+        },
+        {
+            "id": "variable-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834634375171",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "设置变量",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "variables": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "object",
+                            "value": {
+                                "value": {
+                                    "value": "TCPyb78Ooaea7gsJT98cwYMfnid",
+                                    "type": "string"
+                                },
+                                "value_type": {
+                                    "value": "string",
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "type": "string",
+                                    "value": "app_token"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "value": {
+                                "value": {
+                                    "value": "tbl3eyt8lkl3uQa1",
+                                    "type": "string"
+                                },
+                                "value_type": {
+                                    "value": "string",
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "value": "table_id",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "value": {
+                                "value_type": {
+                                    "value": "string",
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "value": "definitionCode",
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "value": "5FD7D9F1-B15B-4150-BDDB-D21674FDDFA7"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "value": {
+                                "concurrency": {
+                                    "type": "boolean",
+                                    "value": false
+                                },
+                                "value": {
+                                    "type": "spel",
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "inline_list"
+                                        },
+                                        "expression": "{}"
+                                    }
+                                },
+                                "value_type": {
+                                    "type": "string",
+                                    "value": "array"
+                                },
+                                "key": {
+                                    "type": "string",
+                                    "value": "approval_form"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "value": {
+                                "value_type": {
+                                    "type": "string",
+                                    "value": "array"
+                                },
+                                "key": {
+                                    "value": "detail_list",
+                                    "type": "string"
+                                },
+                                "concurrency": {
+                                    "type": "boolean",
+                                    "value": false
+                                },
+                                "value": {
+                                    "value": {
+                                        "expression": "{}",
+                                        "node_tree": {
+                                            "t": "inline_list"
+                                        }
+                                    },
+                                    "type": "spel"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "variable-1.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "bitable-4",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050228682753",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "飞书多维表格-列出字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "page_size": {
+                    "type": "number",
+                    "value": 100
+                },
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.app_token\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "app_token"
+                        }
+                    }
+                },
+                "table_id": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.table_id\")",
+                        "node_tree": {
+                            "path": "table_id",
+                            "t": "flow_variable"
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "bitable-4.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "bitable-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050253455362",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "飞书多维表格-批量获取记录",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "table_id": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.table_id\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "table_id"
+                        }
+                    }
+                },
+                "record_ids": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.webhook-trigger-1.query.record_id"
+                                },
+                                "expression": "_(\"$.webhook-trigger-1.query.record_id\")"
+                            }
+                        }
+                    ]
+                },
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "app_token"
+                        },
+                        "expression": "_(\"$.variable.app_token\")"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "bitable-1.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "bitable-2",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050102525953",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "飞书多维表格-列出数据表",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.app_token\")",
+                        "node_tree": {
+                            "path": "app_token",
+                            "t": "flow_variable"
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "bitable-2.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "approval-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7446602802463768578",
+                "operationId": "7446602802589679618",
+                "connectorName": "approval",
+                "connectorVersion": "2.9"
+            },
+            "name": "查看指定审批定义",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "user_id_type": {
+                    "type": "string",
+                    "value": "open_id"
+                },
+                "approval_code": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.definitionCode\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "definitionCode"
+                        }
+                    }
+                }
+            },
+            "dynamicSchema": "{\"optionMap\":{\"locale\":{\"zh-CN\":\"zh-CN\"}}}",
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "approval-1.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "json_helper-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7197296918699524098",
+                "operationId": "7197296921294454812",
+                "connectorName": "json_helper",
+                "connectorVersion": "1.3"
+            },
+            "name": "反序列化审批表单定义",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "json_string": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.approval-1.data.form\")",
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.approval-1.data.form"
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "json_helper-1.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "loop-1",
+            "type": "loop_serial_parent",
+            "operation": {
+                "connectorId": "loop",
+                "operationId": "loop_serial",
+                "connectorName": "loop",
+                "connectorVersion": "0.0.1",
+                "operationName": "串行循环  "
+            },
+            "name": "循环",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "items": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.json_helper-1.json_map",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.json_helper-1.json_map\")"
+                    }
+                }
+            }
+        },
+        {
+            "id": "loop-1.default",
+            "type": "loop_serial_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "object_helper-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7195834579410878492",
+                "operationId": "7195834580036026370",
+                "connectorName": "object_helper",
+                "connectorVersion": "1.1"
+            },
+            "name": "多维表格中对应值",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "object": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.bitable-1.data.records[0].fields",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.bitable-1.data.records[0].fields\")"
+                    }
+                },
+                "key": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.loop-1.item.name",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.loop-1.item.name\")"
+                    }
+                },
+                "defaultValue": {
+                    "type": "boolean",
+                    "value": false
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "object_helper-1.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "branch-2",
+            "type": "branch_exclusive_parent",
+            "operation": {
+                "connectorId": "branch",
+                "operationId": "branch_exclusive",
+                "connectorName": "branch",
+                "connectorVersion": "0.0.1",
+                "operationName": "互斥分支  "
+            },
+            "name": "多维表格中是否存在对应值",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "branches": {
+                    "type": "object",
+                    "value": {
+                        "branch-2.child-2": {
+                            "type": "object",
+                            "value": {
+                                "conditions": {
+                                    "type": "array",
+                                    "value": [
+                                        {
+                                            "operator": {
+                                                "type": "string",
+                                                "value": "notEqual"
+                                            },
+                                            "comparison": {
+                                                "value": {
+                                                    "right": {
+                                                        "type": "null",
+                                                        "value": "null"
+                                                    },
+                                                    "left": {
+                                                        "value": {
+                                                            "expression": "_(\"$.object_helper-1.result\")",
+                                                            "node_tree": {
+                                                                "path": "$.object_helper-1.result",
+                                                                "t": "json_path"
+                                                            }
+                                                        },
+                                                        "type": "spel"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        {
+                                            "comparison": {
+                                                "type": "object",
+                                                "value": {
+                                                    "right": {
+                                                        "value": false,
+                                                        "type": "boolean"
+                                                    },
+                                                    "left": {
+                                                        "type": "spel",
+                                                        "value": {
+                                                            "node_tree": {
+                                                                "t": "json_path",
+                                                                "path": "$.object_helper-1.result"
+                                                            },
+                                                            "expression": "_(\"$.object_helper-1.result\")"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "operator": {
+                                                "value": "notEqual",
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "label": {
+                                    "value": "是",
+                                    "type": "string"
+                                },
+                                "operator": {
+                                    "value": "and",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "maxSize": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        },
+        {
+            "id": "branch-2.child-2",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "branch-1",
+            "type": "branch_exclusive_parent",
+            "operation": {
+                "connectorId": "branch",
+                "operationId": "branch_exclusive",
+                "connectorName": "branch",
+                "connectorVersion": "0.0.1",
+                "operationName": "互斥分支  "
+            },
+            "name": "判断图片&附件、明细、其它字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "maxSize": {
+                    "type": "number",
+                    "value": 1
+                },
+                "branches": {
+                    "type": "object",
+                    "value": {
+                        "branch-1.child-2": {
+                            "type": "object",
+                            "value": {
+                                "label": {
+                                    "type": "string",
+                                    "value": "图片&附件"
+                                },
+                                "operator": {
+                                    "value": "or",
+                                    "type": "string"
+                                },
+                                "conditions": {
+                                    "value": [
+                                        {
+                                            "operator": {
+                                                "value": "equals",
+                                                "type": "string"
+                                            },
+                                            "comparison": {
+                                                "value": {
+                                                    "left": {
+                                                        "type": "spel",
+                                                        "value": {
+                                                            "node_tree": {
+                                                                "path": "$.loop-1.item.type",
+                                                                "t": "json_path"
+                                                            },
+                                                            "expression": "_(\"$.loop-1.item.type\")"
+                                                        }
+                                                    },
+                                                    "right": {
+                                                        "type": "string",
+                                                        "value": "image"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        {
+                                            "operator": {
+                                                "type": "string",
+                                                "value": "equals"
+                                            },
+                                            "comparison": {
+                                                "type": "object",
+                                                "value": {
+                                                    "right": {
+                                                        "type": "string",
+                                                        "value": "attachmentV2"
+                                                    },
+                                                    "left": {
+                                                        "value": {
+                                                            "node_tree": {
+                                                                "t": "json_path",
+                                                                "path": "$.loop-1.item.type"
+                                                            },
+                                                            "expression": "_(\"$.loop-1.item.type\")"
+                                                        },
+                                                        "type": "spel"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "branch-1.child-3": {
+                            "type": "object",
+                            "value": {
+                                "label": {
+                                    "type": "string",
+                                    "value": "明细"
+                                },
+                                "operator": {
+                                    "type": "string",
+                                    "value": "and"
+                                },
+                                "conditions": {
+                                    "type": "array",
+                                    "value": [
+                                        {
+                                            "operator": {
+                                                "type": "string",
+                                                "value": "equals"
+                                            },
+                                            "comparison": {
+                                                "value": {
+                                                    "left": {
+                                                        "value": {
+                                                            "node_tree": {
+                                                                "path": "$.loop-1.item.type",
+                                                                "t": "json_path"
+                                                            },
+                                                            "expression": "_(\"$.loop-1.item.type\")"
+                                                        },
+                                                        "type": "spel"
+                                                    },
+                                                    "right": {
+                                                        "type": "string",
+                                                        "value": "fieldList"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": "branch-1.child-2",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "variable-13",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834634375171",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "设置变量",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "variables": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "key": {
+                                    "type": "string",
+                                    "value": "img_or_attach"
+                                },
+                                "concurrency": {
+                                    "value": false,
+                                    "type": "boolean"
+                                },
+                                "value": {
+                                    "type": "spel",
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "inline_list"
+                                        },
+                                        "expression": "{}"
+                                    }
+                                },
+                                "value_type": {
+                                    "type": "string",
+                                    "value": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "variable-13.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "loop-4",
+            "type": "loop_serial_parent",
+            "operation": {
+                "connectorId": "loop",
+                "operationId": "loop_serial",
+                "connectorName": "loop",
+                "connectorVersion": "0.0.1",
+                "operationName": "串行循环  "
+            },
+            "name": "循环",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "items": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.object_helper-1.result"
+                        },
+                        "expression": "_(\"$.object_helper-1.result\")"
+                    }
+                }
+            }
+        },
+        {
+            "id": "loop-4.default",
+            "type": "loop_serial_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "script-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7296758672007626754",
+                "operationId": "7296758672038887452",
+                "connectorName": "script",
+                "connectorVersion": "2.0"
+            },
+            "name": "构造extra",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "js_code": {
+                    "type": "string",
+                    "value": "function handler(input) {\n  const {\n    fileToken,\n    recordID,\n    tableID,\n    field_list,\n    field_name,\n  } = input;\n  let field_id;\n  field_list.forEach(\n    (item) => {\n      if (\n        item.field_name ===\n        field_name\n      ) {\n        field_id =\n          item.field_id;\n      }\n    }\n  );\n  let records = {};\n  records[recordID] = [\n    fileToken,\n  ];\n  let attachments = {};\n  attachments[field_id] =\n    records;\n  return {\n    bitablePerm: {\n      tableId: tableID,\n      attachments:\n        attachments,\n    },\n  };\n}\n"
+                },
+                "input": {
+                    "type": "object",
+                    "value": {
+                        "recordID": {
+                            "value": {
+                                "node_tree": {
+                                    "method": "get",
+                                    "params": [
+                                        {
+                                            "t": "json_path",
+                                            "path": "$.webhook-trigger-1.query"
+                                        },
+                                        {
+                                            "v": "\"record_id\"",
+                                            "t": "literal",
+                                            "vt": "string"
+                                        }
+                                    ],
+                                    "t": "engine_method"
+                                },
+                                "expression": "_(\"$.webhook-trigger-1.query\").get('record_id')"
+                            },
+                            "type": "spel"
+                        },
+                        "tableID": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "t": "engine_method",
+                                    "method": "get",
+                                    "params": [
+                                        {
+                                            "t": "json_path",
+                                            "path": "$.webhook-trigger-1.query"
+                                        },
+                                        {
+                                            "vt": "string",
+                                            "v": "\"table_id\"",
+                                            "t": "literal"
+                                        }
+                                    ]
+                                },
+                                "expression": "_(\"$.webhook-trigger-1.query\").get('table_id')"
+                            }
+                        },
+                        "field_list": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.bitable-4.data.items"
+                                },
+                                "expression": "_(\"$.bitable-4.data.items\")"
+                            }
+                        },
+                        "field_name": {
+                            "value": {
+                                "node_tree": {
+                                    "t": "engine_method",
+                                    "method": "get",
+                                    "params": [
+                                        {
+                                            "path": "$.loop-1.item",
+                                            "t": "json_path"
+                                        },
+                                        {
+                                            "v": "\"name\"",
+                                            "t": "literal",
+                                            "vt": "string"
+                                        }
+                                    ]
+                                },
+                                "expression": "_(\"$.loop-1.item\").get('name')"
+                            },
+                            "type": "spel"
+                        },
+                        "fileToken": {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.loop-4.item\").get('file_token')",
+                                "node_tree": {
+                                    "method": "get",
+                                    "params": [
+                                        {
+                                            "path": "$.loop-4.item",
+                                            "t": "json_path"
+                                        },
+                                        {
+                                            "v": "\"file_token\"",
+                                            "t": "literal",
+                                            "vt": "string"
+                                        }
+                                    ],
+                                    "t": "engine_method"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "retry",
+                    "retryFallbackAction": "terminate",
+                    "id": "script-1.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "drive-1",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7456713923489955859",
+                "operationId": "7456713923530555396",
+                "connectorName": "drive",
+                "connectorVersion": "1.13"
+            },
+            "name": "读取图片/附件",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "extra": {
+                    "type": "object",
+                    "value": {
+                        "bitablePerm": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "path": "$.script-1.result.bitablePerm",
+                                    "t": "json_path"
+                                },
+                                "expression": "_(\"$.script-1.result.bitablePerm\")"
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "value": "base"
+                        }
+                    }
+                },
+                "file_token": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "engine_method",
+                            "method": "get",
+                            "params": [
+                                {
+                                    "t": "json_path",
+                                    "path": "$.loop-4.item"
+                                },
+                                {
+                                    "t": "literal",
+                                    "vt": "string",
+                                    "v": "\"file_token\""
+                                }
+                            ]
+                        },
+                        "expression": "_(\"$.loop-4.item\").get('file_token')"
+                    }
+                }
+            },
+            "dynamicSchema": "{\"optionMap\":{\"extra.type\":{\"base\":\"多维表格\"}}}",
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "drive-1.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "approval-2",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7446602802463768578",
+                "operationId": "7446602802572836892",
+                "connectorName": "approval",
+                "connectorVersion": "2.9"
+            },
+            "name": "飞书审批上传图片/附件",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "type": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "ternary",
+                            "condition": {
+                                "t": "binary",
+                                "op": "==",
+                                "left": {
+                                    "params": [
+                                        {
+                                            "path": "$.loop-1.item",
+                                            "t": "json_path"
+                                        },
+                                        {
+                                            "vt": "string",
+                                            "v": "\"type\"",
+                                            "t": "literal"
+                                        }
+                                    ],
+                                    "t": "engine_method",
+                                    "method": "get"
+                                },
+                                "right": {
+                                    "vt": "string",
+                                    "v": "\"image\"",
+                                    "t": "literal"
+                                }
+                            },
+                            "accept": {
+                                "v": "\"image\"",
+                                "t": "literal",
+                                "vt": "string"
+                            },
+                            "reject": {
+                                "v": "\"attachment\"",
+                                "t": "literal",
+                                "vt": "string"
+                            }
+                        },
+                        "expression": "_(\"$.loop-1.item\").get('type') == \"image\" ? \"image\" : \"attachment\""
+                    }
+                },
+                "content": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.drive-1.file",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.drive-1.file\")"
+                    }
+                },
+                "name": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "engine_method",
+                            "method": "get",
+                            "params": [
+                                {
+                                    "t": "json_path",
+                                    "path": "$.loop-4.item"
+                                },
+                                {
+                                    "vt": "string",
+                                    "v": "\"name\"",
+                                    "t": "literal"
+                                }
+                            ]
+                        },
+                        "expression": "_(\"$.loop-4.item\").get('name')"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "approval-2.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "variable-2",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "将多张图片/附件存放在一起",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "path": "$.approval-2.data.code",
+                                    "t": "json_path"
+                                },
+                                "expression": "_(\"$.approval-2.data.code\")"
+                            }
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                },
+                "key": {
+                    "type": "string",
+                    "value": "img_or_attach"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "variable-2.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "variable-12",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "追加图片/附件",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "key": {
+                    "type": "string",
+                    "value": "approval_form"
+                },
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "value": {
+                                    "type": "spel",
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "flow_variable",
+                                            "path": "img_or_attach"
+                                        },
+                                        "expression": "_(\"$.variable.img_or_attach\")"
+                                    }
+                                },
+                                "id": {
+                                    "type": "spel",
+                                    "value": {
+                                        "expression": "_(\"$.loop-1.item\").get('id')",
+                                        "node_tree": {
+                                            "method": "get",
+                                            "params": [
+                                                {
+                                                    "t": "json_path",
+                                                    "path": "$.loop-1.item"
+                                                },
+                                                {
+                                                    "t": "literal",
+                                                    "vt": "string",
+                                                    "v": "\"id\""
+                                                }
+                                            ],
+                                            "t": "engine_method"
+                                        }
+                                    }
+                                },
+                                "type": {
+                                    "type": "spel",
+                                    "value": {
+                                        "node_tree": {
+                                            "params": [
+                                                {
+                                                    "path": "$.loop-1.item",
+                                                    "t": "json_path"
+                                                },
+                                                {
+                                                    "t": "literal",
+                                                    "vt": "string",
+                                                    "v": "\"type\""
+                                                }
+                                            ],
+                                            "t": "engine_method",
+                                            "method": "get"
+                                        },
+                                        "expression": "_(\"$.loop-1.item\").get('type')"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "variable-12.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "branch-1.child-3",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "branch-4",
+            "type": "branch_exclusive_parent",
+            "operation": {
+                "connectorId": "branch",
+                "operationId": "branch_exclusive",
+                "connectorName": "branch",
+                "connectorVersion": "0.0.1",
+                "operationName": "互斥分支  "
+            },
+            "name": "明细是否有值",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "branches": {
+                    "type": "object",
+                    "value": {
+                        "branch-4.child-2": {
+                            "type": "object",
+                            "value": {
+                                "conditions": {
+                                    "type": "array",
+                                    "value": [
+                                        {
+                                            "operator": {
+                                                "type": "string",
+                                                "value": "notEqual"
+                                            },
+                                            "comparison": {
+                                                "type": "object",
+                                                "value": {
+                                                    "right": {
+                                                        "type": "null",
+                                                        "value": "null"
+                                                    },
+                                                    "left": {
+                                                        "type": "spel",
+                                                        "value": {
+                                                            "node_tree": {
+                                                                "path": "$.object_helper-1.result.link_record_ids",
+                                                                "t": "json_path"
+                                                            },
+                                                            "expression": "_(\"$.object_helper-1.result.link_record_ids\")"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "label": {
+                                    "type": "string",
+                                    "value": "是"
+                                },
+                                "operator": {
+                                    "type": "string",
+                                    "value": "and"
+                                }
+                            }
+                        }
+                    }
+                },
+                "maxSize": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        },
+        {
+            "id": "branch-4.child-2",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "script-6",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7296758672007626754",
+                "operationId": "7296758672038887452",
+                "connectorName": "script",
+                "connectorVersion": "2.0"
+            },
+            "name": "明细对应数据表",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "input": {
+                    "type": "object",
+                    "value": {
+                        "field_name": {
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.loop-1.item.name"
+                                },
+                                "expression": "_(\"$.loop-1.item.name\")"
+                            },
+                            "type": "spel"
+                        },
+                        "table_list": {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.bitable-2.data.items\")",
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.bitable-2.data.items"
+                                }
+                            }
+                        },
+                        "base_item": {
+                            "value": {
+                                "expression": "_(\"$.object_helper-1.result\")",
+                                "node_tree": {
+                                    "path": "$.object_helper-1.result",
+                                    "t": "json_path"
+                                }
+                            },
+                            "type": "spel"
+                        }
+                    }
+                },
+                "js_code": {
+                    "type": "string",
+                    "value": "function handler(input) {\n  const {\n    field_name,\n    table_list,\n  } = input;\n  let table_id;\n  table_list.forEach(\n    (item) => {\n      if (\n        field_name ===\n        item.name\n      ) {\n        table_id =\n          item.table_id;\n      }\n    }\n  );\n  return table_id;\n}\n"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "script-6.error_handler.default",
+                    "name": "",
+                    "action": "retry",
+                    "retryFallbackAction": "terminate"
+                }
+            }
+        },
+        {
+            "id": "bitable-8",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050232467457",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "飞书多维表格-列出视图",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "user_id_type": {
+                    "type": "string",
+                    "value": "open_id"
+                },
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.app_token\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "app_token"
+                        }
+                    }
+                },
+                "table_id": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.script-6.result"
+                        },
+                        "expression": "_(\"$.script-6.result\")"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "bitable-8.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "bitable-9",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050228682753",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "飞书多维表格-列出字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "page_size": {
+                    "type": "number",
+                    "value": 100
+                },
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.app_token\")",
+                        "node_tree": {
+                            "path": "app_token",
+                            "t": "flow_variable"
+                        }
+                    }
+                },
+                "table_id": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.script-6.result",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.script-6.result\")"
+                    }
+                },
+                "view_id": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.bitable-8.data.items[0].view_id"
+                        },
+                        "expression": "_(\"$.bitable-8.data.items[0].view_id\")"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "bitable-9.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "bitable-10",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050253455362",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "飞书多维表格-批量获取记录",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "record_ids": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.object_helper-1.result\").get('link_record_ids')",
+                        "node_tree": {
+                            "params": [
+                                {
+                                    "path": "$.object_helper-1.result",
+                                    "t": "json_path"
+                                },
+                                {
+                                    "vt": "string",
+                                    "v": "\"link_record_ids\"",
+                                    "t": "literal"
+                                }
+                            ],
+                            "t": "engine_method",
+                            "method": "get"
+                        }
+                    }
+                },
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "app_token",
+                            "t": "flow_variable"
+                        },
+                        "expression": "_(\"$.variable.app_token\")"
+                    }
+                },
+                "table_id": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.script-6.result\")",
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.script-6.result"
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "bitable-10.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "variable-18",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834634375171",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "设置变量",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "variables": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "object",
+                            "value": {
+                                "value_type": {
+                                    "value": "array",
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "value": "all_detail_lists",
+                                    "type": "string"
+                                },
+                                "concurrency": {
+                                    "value": false,
+                                    "type": "boolean"
+                                },
+                                "value": {
+                                    "type": "spel",
+                                    "value": {
+                                        "expression": "{}",
+                                        "node_tree": {
+                                            "t": "inline_list"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "variable-18.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "loop-6",
+            "type": "loop_serial_parent",
+            "operation": {
+                "connectorId": "loop",
+                "operationId": "loop_serial",
+                "connectorName": "loop",
+                "connectorVersion": "0.0.1",
+                "operationName": "串行循环  "
+            },
+            "name": "循环",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "items": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.bitable-10.data.records\")",
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.bitable-10.data.records"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": "loop-6.default",
+            "type": "loop_serial_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "variable-19",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834634375171",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "设置变量",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "variables": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "value_type": {
+                                    "value": "array",
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "value": "detail_list",
+                                    "type": "string"
+                                },
+                                "concurrency": {
+                                    "value": false,
+                                    "type": "boolean"
+                                },
+                                "value": {
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "inline_list"
+                                        },
+                                        "expression": "{}"
+                                    },
+                                    "type": "spel"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "variable-19.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "loop-7",
+            "type": "loop_serial_parent",
+            "operation": {
+                "connectorId": "loop",
+                "operationId": "loop_serial",
+                "connectorName": "loop",
+                "connectorVersion": "0.0.1",
+                "operationName": "串行循环  "
+            },
+            "name": "循环",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "items": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.loop-1.item.children\")",
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.loop-1.item.children"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": "loop-7.default",
+            "type": "loop_serial_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "object_helper-3",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7195834579410878492",
+                "operationId": "7195834580036026370",
+                "connectorName": "object_helper",
+                "connectorVersion": "1.1"
+            },
+            "name": "多维表格中对应值",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "defaultValue": {
+                    "type": "boolean",
+                    "value": false
+                },
+                "object": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.loop-6.item.fields"
+                        },
+                        "expression": "_(\"$.loop-6.item.fields\")"
+                    }
+                },
+                "key": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.loop-7.item.name"
+                        },
+                        "expression": "_(\"$.loop-7.item.name\")"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "object_helper-3.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "branch-6",
+            "type": "branch_exclusive_parent",
+            "operation": {
+                "connectorId": "branch",
+                "operationId": "branch_exclusive",
+                "connectorName": "branch",
+                "connectorVersion": "0.0.1",
+                "operationName": "互斥分支  "
+            },
+            "name": "多维表格中是否存在对应值",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "branches": {
+                    "type": "object",
+                    "value": {
+                        "branch-6.child-2": {
+                            "type": "object",
+                            "value": {
+                                "conditions": {
+                                    "type": "array",
+                                    "value": [
+                                        {
+                                            "operator": {
+                                                "value": "notEqual",
+                                                "type": "string"
+                                            },
+                                            "comparison": {
+                                                "type": "object",
+                                                "value": {
+                                                    "left": {
+                                                        "type": "spel",
+                                                        "value": {
+                                                            "expression": "_(\"$.object_helper-3.result\")",
+                                                            "node_tree": {
+                                                                "t": "json_path",
+                                                                "path": "$.object_helper-3.result"
+                                                            }
+                                                        }
+                                                    },
+                                                    "right": {
+                                                        "type": "null",
+                                                        "value": "null"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "operator": {
+                                                "type": "string",
+                                                "value": "notEqual"
+                                            },
+                                            "comparison": {
+                                                "type": "object",
+                                                "value": {
+                                                    "right": {
+                                                        "type": "boolean",
+                                                        "value": false
+                                                    },
+                                                    "left": {
+                                                        "value": {
+                                                            "expression": "_(\"$.object_helper-3.result\")",
+                                                            "node_tree": {
+                                                                "path": "$.object_helper-3.result",
+                                                                "t": "json_path"
+                                                            }
+                                                        },
+                                                        "type": "spel"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "label": {
+                                    "value": "是",
+                                    "type": "string"
+                                },
+                                "operator": {
+                                    "value": "and",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "maxSize": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        },
+        {
+            "id": "branch-6.child-2",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "branch-5",
+            "type": "branch_exclusive_parent",
+            "operation": {
+                "connectorId": "branch",
+                "operationId": "branch_exclusive",
+                "connectorName": "branch",
+                "connectorVersion": "0.0.1",
+                "operationName": "互斥分支  "
+            },
+            "name": "判断图片&附件、其它字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "branches": {
+                    "type": "object",
+                    "value": {
+                        "branch-5.child-2": {
+                            "value": {
+                                "operator": {
+                                    "type": "string",
+                                    "value": "or"
+                                },
+                                "conditions": {
+                                    "value": [
+                                        {
+                                            "operator": {
+                                                "type": "string",
+                                                "value": "equals"
+                                            },
+                                            "comparison": {
+                                                "value": {
+                                                    "left": {
+                                                        "value": {
+                                                            "node_tree": {
+                                                                "t": "json_path",
+                                                                "path": "$.loop-7.item.type"
+                                                            },
+                                                            "expression": "_(\"$.loop-7.item.type\")"
+                                                        },
+                                                        "type": "spel"
+                                                    },
+                                                    "right": {
+                                                        "type": "string",
+                                                        "value": "image"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        {
+                                            "comparison": {
+                                                "value": {
+                                                    "left": {
+                                                        "type": "spel",
+                                                        "value": {
+                                                            "expression": "_(\"$.loop-7.item.type\")",
+                                                            "node_tree": {
+                                                                "t": "json_path",
+                                                                "path": "$.loop-7.item.type"
+                                                            }
+                                                        }
+                                                    },
+                                                    "right": {
+                                                        "type": "string",
+                                                        "value": "attachmentV2"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "operator": {
+                                                "value": "equals",
+                                                "type": "string"
+                                            }
+                                        }
+                                    ],
+                                    "type": "array"
+                                },
+                                "label": {
+                                    "value": "图片&附件",
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "maxSize": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        },
+        {
+            "id": "branch-5.child-2",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "variable-20",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834634375171",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "设置变量",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "variables": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "key": {
+                                    "type": "string",
+                                    "value": "detail_img_or_attach"
+                                },
+                                "concurrency": {
+                                    "type": "boolean",
+                                    "value": false
+                                },
+                                "value": {
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "inline_list"
+                                        },
+                                        "expression": "{}"
+                                    },
+                                    "type": "spel"
+                                },
+                                "value_type": {
+                                    "value": "array",
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "variable-20.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "loop-8",
+            "type": "loop_serial_parent",
+            "operation": {
+                "connectorId": "loop",
+                "operationId": "loop_serial",
+                "connectorName": "loop",
+                "connectorVersion": "0.0.1",
+                "operationName": "串行循环  "
+            },
+            "name": "循环",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "items": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.object_helper-3.result\")",
+                        "node_tree": {
+                            "path": "$.object_helper-3.result",
+                            "t": "json_path"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": "loop-8.default",
+            "type": "loop_serial_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "script-7",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7296758672007626754",
+                "operationId": "7296758672038887452",
+                "connectorName": "script",
+                "connectorVersion": "2.0"
+            },
+            "name": "构造extra",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "js_code": {
+                    "type": "string",
+                    "value": "function handler(input) {\n  const {\n    recordID,\n    fileToken,\n    field_name,\n    field_list,\n    tableID,\n  } = input;\n  let records = {},\n    field_id = '';\n  field_list.forEach(\n    (item) => {\n      if (\n        item.field_name ===\n        field_name\n      ) {\n        field_id =\n          item.field_id;\n      }\n    }\n  );\n  records[recordID] = [\n    fileToken,\n  ];\n  let attachments = {};\n  attachments[field_id] =\n    records;\n  return {\n    bitablePerm: {\n      tableId: tableID,\n      attachments:\n        attachments,\n    },\n  };\n}\n"
+                },
+                "input": {
+                    "type": "object",
+                    "value": {
+                        "field_list": {
+                            "value": {
+                                "expression": "_(\"$.bitable-9.data.items\")",
+                                "node_tree": {
+                                    "path": "$.bitable-9.data.items",
+                                    "t": "json_path"
+                                }
+                            },
+                            "type": "spel"
+                        },
+                        "field_name": {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.loop-7.item\").get('name')",
+                                "node_tree": {
+                                    "params": [
+                                        {
+                                            "t": "json_path",
+                                            "path": "$.loop-7.item"
+                                        },
+                                        {
+                                            "vt": "string",
+                                            "v": "\"name\"",
+                                            "t": "literal"
+                                        }
+                                    ],
+                                    "t": "engine_method",
+                                    "method": "get"
+                                }
+                            }
+                        },
+                        "fileToken": {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.loop-8.item\").get('file_token')",
+                                "node_tree": {
+                                    "params": [
+                                        {
+                                            "t": "json_path",
+                                            "path": "$.loop-8.item"
+                                        },
+                                        {
+                                            "vt": "string",
+                                            "v": "\"file_token\"",
+                                            "t": "literal"
+                                        }
+                                    ],
+                                    "t": "engine_method",
+                                    "method": "get"
+                                }
+                            }
+                        },
+                        "recordID": {
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.loop-6.item.record_id"
+                                },
+                                "expression": "_(\"$.loop-6.item.record_id\")"
+                            },
+                            "type": "spel"
+                        },
+                        "tableID": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.script-6.result"
+                                },
+                                "expression": "_(\"$.script-6.result\")"
+                            }
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "retry",
+                    "retryFallbackAction": "terminate",
+                    "id": "script-7.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "drive-3",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7456713923489955859",
+                "operationId": "7456713923530555396",
+                "connectorName": "drive",
+                "connectorVersion": "1.13"
+            },
+            "name": "读取图片/附件",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "extra": {
+                    "type": "object",
+                    "value": {
+                        "bitablePerm": {
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.script-7.result.bitablePerm"
+                                },
+                                "expression": "_(\"$.script-7.result.bitablePerm\")"
+                            },
+                            "type": "spel"
+                        },
+                        "type": {
+                            "value": "base",
+                            "type": "string"
+                        }
+                    }
+                },
+                "file_token": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "engine_method",
+                            "method": "get",
+                            "params": [
+                                {
+                                    "path": "$.loop-8.item",
+                                    "t": "json_path"
+                                },
+                                {
+                                    "t": "literal",
+                                    "vt": "string",
+                                    "v": "\"file_token\""
+                                }
+                            ]
+                        },
+                        "expression": "_(\"$.loop-8.item\").get('file_token')"
+                    }
+                }
+            },
+            "dynamicSchema": "{\"optionMap\":{\"extra.type\":{\"base\":\"多维表格\"}}}",
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "drive-3.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "approval-5",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7446602802463768578",
+                "operationId": "7446602802572836892",
+                "connectorName": "approval",
+                "connectorVersion": "2.9"
+            },
+            "name": "飞书审批上传图片/附件",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "name": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "method": "get",
+                            "params": [
+                                {
+                                    "t": "json_path",
+                                    "path": "$.loop-8.item"
+                                },
+                                {
+                                    "v": "\"name\"",
+                                    "t": "literal",
+                                    "vt": "string"
+                                }
+                            ],
+                            "t": "engine_method"
+                        },
+                        "expression": "_(\"$.loop-8.item\").get('name')"
+                    }
+                },
+                "type": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "ternary",
+                            "condition": {
+                                "t": "binary",
+                                "op": "==",
+                                "left": {
+                                    "t": "engine_method",
+                                    "method": "get",
+                                    "params": [
+                                        {
+                                            "t": "json_path",
+                                            "path": "$.loop-7.item"
+                                        },
+                                        {
+                                            "v": "\"type\"",
+                                            "t": "literal",
+                                            "vt": "string"
+                                        }
+                                    ]
+                                },
+                                "right": {
+                                    "v": "\"image\"",
+                                    "t": "literal",
+                                    "vt": "string"
+                                }
+                            },
+                            "accept": {
+                                "t": "literal",
+                                "vt": "string",
+                                "v": "\"image\""
+                            },
+                            "reject": {
+                                "vt": "string",
+                                "v": "\"attachment\"",
+                                "t": "literal"
+                            }
+                        },
+                        "expression": "_(\"$.loop-7.item\").get('type') == \"image\" ? \"image\" : \"attachment\""
+                    }
+                },
+                "content": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.drive-3.file",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.drive-3.file\")"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "approval-5.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "variable-21",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "将多张图片/附件存放在一起",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "expression": "_(\"$.approval-5.data.code\")",
+                                "node_tree": {
+                                    "path": "$.approval-5.data.code",
+                                    "t": "json_path"
+                                }
+                            },
+                            "type": "spel"
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                },
+                "key": {
+                    "type": "string",
+                    "value": "detail_img_or_attach"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "variable-21.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "variable-22",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "追加图片/附件",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "id": {
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "engine_method",
+                                            "method": "get",
+                                            "params": [
+                                                {
+                                                    "path": "$.loop-7.item",
+                                                    "t": "json_path"
+                                                },
+                                                {
+                                                    "t": "literal",
+                                                    "vt": "string",
+                                                    "v": "\"id\""
+                                                }
+                                            ]
+                                        },
+                                        "expression": "_(\"$.loop-7.item\").get('id')"
+                                    },
+                                    "type": "spel"
+                                },
+                                "type": {
+                                    "value": {
+                                        "node_tree": {
+                                            "method": "get",
+                                            "params": [
+                                                {
+                                                    "path": "$.loop-7.item",
+                                                    "t": "json_path"
+                                                },
+                                                {
+                                                    "t": "literal",
+                                                    "vt": "string",
+                                                    "v": "\"type\""
+                                                }
+                                            ],
+                                            "t": "engine_method"
+                                        },
+                                        "expression": "_(\"$.loop-7.item\").get('type')"
+                                    },
+                                    "type": "spel"
+                                },
+                                "value": {
+                                    "value": {
+                                        "expression": "_(\"$.variable.detail_img_or_attach\")",
+                                        "node_tree": {
+                                            "t": "flow_variable",
+                                            "path": "detail_img_or_attach"
+                                        }
+                                    },
+                                    "type": "spel"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                },
+                "key": {
+                    "type": "string",
+                    "value": "detail_list"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "variable-22.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "branch-5.default",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "script-8",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7296758672007626754",
+                "operationId": "7296758672038887452",
+                "connectorName": "script",
+                "connectorVersion": "2.0"
+            },
+            "name": "处理其他字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "js_code": {
+                    "type": "string",
+                    "value": "function handler(input) {\n  const { approve_item } = input;\n  const fallbackFields = {\n    '品类名称': '实际发放物料品类',\n    '产品型号名称': '实际发放产品型号',\n    '语种名称': '实际发放语种',\n  };\n  let base_item = input.base_item;\n  const fallbackField = fallbackFields[approve_item.name];\n  const baseItemMissing =\n    base_item === undefined ||\n    base_item === null ||\n    base_item === '' ||\n    (Array.isArray(base_item) && base_item.length === 0);\n  if (baseItemMissing && fallbackField) {\n    base_item = input.valueMap?.[fallbackField];\n  }\n  const new_item = {\n    id: approve_item.id,\n    type: approve_item.type,\n    value: null,\n  };\n\n  function parseTextValue(\n    value\n  ) {\n    if (\n      value === undefined ||\n      value === null\n    ) {\n      return '';\n    }\n\n    if (\n      typeof value ===\n        'string' ||\n      typeof value ===\n        'number' ||\n      typeof value ===\n        'boolean'\n    ) {\n      return String(value);\n    }\n\n    if (\n      Array.isArray(value)\n    ) {\n      return value\n        .map((item) => {\n          if (\n            item ===\n              undefined ||\n            item === null\n          ) {\n            return '';\n          }\n          if (\n            typeof item !==\n            'object'\n          ) {\n            return String(\n              item\n            );\n          }\n          return parseTextValue(\n            item.text ??\n              item.name ??\n              item.value ??\n              ''\n          );\n        })\n        .join('');\n    }\n\n    if (\n      typeof value ===\n      'object'\n    ) {\n      return parseTextValue(\n        value.text ??\n          value.name ??\n          value.value ??\n          value.link ??\n          ''\n      );\n    }\n\n    return String(value);\n  }\n\n  function parseDocument(\n    value\n  ) {\n    if (\n      !value ||\n      !value.link\n    ) {\n      return null;\n    }\n    const match = String(\n      value.link\n    ).match(\n      /\\/docx\\/([^?]+)/\n    );\n    return match\n      ? {\n          token: match[1],\n          type: 'docx',\n        }\n      : null;\n  }\n\n  function parseDateValue(\n    value\n  ) {\n    const timestamp =\n      Number(value);\n    if (\n      !Number.isFinite(\n        timestamp\n      )\n    ) {\n      return null;\n    }\n    return (\n      new Date(\n        timestamp +\n          8 * 3600000\n      )\n        .toISOString()\n        .substring(0, 19) +\n      '+08:00'\n    );\n  }\n\n  function parseDateIntervalValue(\n    startTime,\n    endTime\n  ) {\n    if (\n      startTime ===\n        undefined ||\n      startTime === null ||\n      endTime === undefined ||\n      endTime === null\n    ) {\n      return null;\n    }\n\n    return {\n      start: parseDateValue(\n        startTime\n      ),\n      end: parseDateValue(\n        endTime\n      ),\n      interval: Math.floor(\n        (Number(endTime) -\n          Number(startTime)) /\n          (24 * 3600 * 1000)\n      ),\n    };\n  }\n\n  function parseUser(value) {\n    const users =\n      Array.isArray(value)\n        ? value\n        : [value];\n    return users\n      .map((item) => {\n        if (\n          typeof item ===\n          'string'\n        ) {\n          return item;\n        }\n        return (\n          item?.open_id ??\n          item?.id ??\n          ''\n        );\n      })\n      .filter(Boolean);\n  }\n\n  function parseOptionValue(\n    value,\n    options\n  ) {\n    const optionText =\n      parseTextValue(value);\n    const matchedOption = (\n      options || []\n    ).find(\n      (item) =>\n        String(item.text) ===\n        optionText\n    );\n    return matchedOption\n      ? matchedOption.value\n      : optionText;\n  }\n\n  function parseDepartment(\n    value\n  ) {\n    const departments =\n      Array.isArray(value)\n        ? value\n        : [value];\n    return departments\n      .map((item) => {\n        if (\n          typeof item ===\n            'string' &&\n          item.startsWith(\n            'od-'\n          )\n        ) {\n          return item;\n        }\n        if (\n          item &&\n          typeof item ===\n            'object'\n        ) {\n          return (\n            item.open_department_id ??\n            item.open_id ??\n            item.id ??\n            ''\n          );\n        }\n        return '';\n      })\n      .filter(Boolean)\n      .map(\n        (\n          openDepartmentId\n        ) => ({\n          open_id:\n            openDepartmentId,\n        })\n      );\n  }\n\n  switch (approve_item.type) {\n    case 'input':\n    case 'textarea':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        new_item.value =\n          parseTextValue(\n            base_item\n          );\n      }\n      break;\n\n    case 'document': {\n      const documentValue =\n        parseDocument(\n          base_item\n        );\n      if (documentValue) {\n        new_item.value =\n          documentValue;\n      }\n      break;\n    }\n\n    case 'text':\n      break;\n\n    case 'number':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        const numberValue =\n          Number(\n            typeof base_item ===\n              'object'\n              ? base_item.value\n              : base_item\n          );\n        if (\n          Number.isFinite(\n            numberValue\n          )\n        ) {\n          new_item.value =\n            numberValue;\n        }\n      }\n      break;\n\n    case 'amount':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        const amountValue =\n          Number(\n            typeof base_item ===\n              'object'\n              ? base_item.value\n              : base_item\n          );\n        if (\n          Number.isFinite(\n            amountValue\n          )\n        ) {\n          new_item.value =\n            amountValue;\n        }\n      }\n      break;\n\n    case 'date': {\n      const dateValue =\n        parseDateValue(\n          base_item\n        );\n      if (dateValue) {\n        new_item.value =\n          dateValue;\n      }\n      break;\n    }\n\n    case 'department': {\n      const departmentValue =\n        parseDepartment(\n          base_item\n        );\n      if (\n        departmentValue.length ===\n        0\n      ) {\n        throw new Error(\n          '部门字段需要传入 open_department_id，当前值：' +\n            parseTextValue(\n              base_item\n            )\n        );\n      }\n      new_item.value =\n        departmentValue;\n      break;\n    }\n\n    case 'contact':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        new_item.open_ids =\n          parseUser(\n            base_item\n          );\n      }\n      break;\n\n    case 'telephone':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        new_item.value = {\n          countryCode: '+86',\n          nationalNumber:\n            parseTextValue(\n              base_item\n            ),\n        };\n      }\n      break;\n\n    case 'radio':\n    case 'radioV2':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        new_item.value =\n          parseOptionValue(\n            base_item,\n            approve_item.option\n          );\n      }\n      break;\n\n    case 'checkbox':\n    case 'checkboxV2':\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        const selectedValues =\n          Array.isArray(\n            base_item\n          )\n            ? base_item\n            : [base_item];\n        new_item.value =\n          selectedValues.map(\n            (item) =>\n              parseOptionValue(\n                item,\n                approve_item.option\n              )\n          );\n      }\n      break;\n\n    case 'dateInterval':\n      new_item.value =\n        parseDateIntervalValue(\n          input.valueMap?.[\n            approve_item\n              .begin_date\n          ],\n          input.valueMap?.[\n            approve_item\n              .end_date\n          ]\n        );\n      break;\n\n    default:\n      if (\n        base_item !==\n          undefined &&\n        base_item !== null\n      ) {\n        new_item.value =\n          parseTextValue(\n            base_item\n          );\n      }\n      break;\n  }\n\n  return new_item;\n}\n"
+                },
+                "input": {
+                    "type": "object",
+                    "value": {
+                        "base_item": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "path": "$.object_helper-3.result",
+                                    "t": "json_path"
+                                },
+                                "expression": "_(\"$.object_helper-3.result\")"
+                            }
+                        },
+                        "approve_item": {
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.loop-7.item"
+                                },
+                                "expression": "_(\"$.loop-7.item\")"
+                            },
+                            "type": "spel"
+                        },
+                        "valueMap": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.loop-6.item.fields"
+                                },
+                                "expression": "_(\"$.loop-6.item.fields\")"
+                            }
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "retry",
+                    "retryFallbackAction": "terminate",
+                    "id": "script-8.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "variable-23",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "追加明细其他字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                },
+                "key": {
+                    "type": "string",
+                    "value": "detail_list"
+                },
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.script-8.result\")",
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.script-8.result"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "variable-23.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "branch-6.default",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "variable-24",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "多条明细汇总",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "key": {
+                    "type": "string",
+                    "value": "all_detail_lists"
+                },
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.variable.detail_list\")",
+                                "node_tree": {
+                                    "t": "flow_variable",
+                                    "path": "detail_list"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "variable-24.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "variable-25",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "追加明细",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "object",
+                            "value": {
+                                "id": {
+                                    "value": {
+                                        "node_tree": {
+                                            "params": [
+                                                {
+                                                    "t": "json_path",
+                                                    "path": "$.loop-1.item"
+                                                },
+                                                {
+                                                    "v": "\"id\"",
+                                                    "t": "literal",
+                                                    "vt": "string"
+                                                }
+                                            ],
+                                            "t": "engine_method",
+                                            "method": "get"
+                                        },
+                                        "expression": "_(\"$.loop-1.item\").get('id')"
+                                    },
+                                    "type": "spel"
+                                },
+                                "type": {
+                                    "type": "spel",
+                                    "value": {
+                                        "node_tree": {
+                                            "method": "get",
+                                            "params": [
+                                                {
+                                                    "t": "json_path",
+                                                    "path": "$.loop-1.item"
+                                                },
+                                                {
+                                                    "t": "literal",
+                                                    "vt": "string",
+                                                    "v": "\"type\""
+                                                }
+                                            ],
+                                            "t": "engine_method"
+                                        },
+                                        "expression": "_(\"$.loop-1.item\").get('type')"
+                                    }
+                                },
+                                "value": {
+                                    "value": {
+                                        "expression": "_(\"$.variable.all_detail_lists\")",
+                                        "node_tree": {
+                                            "t": "flow_variable",
+                                            "path": "all_detail_lists"
+                                        }
+                                    },
+                                    "type": "spel"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                },
+                "key": {
+                    "type": "string",
+                    "value": "approval_form"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "name": "",
+                    "action": "terminate",
+                    "id": "variable-25.error_handler.default"
+                }
+            }
+        },
+        {
+            "id": "branch-4.default",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "branch-1.default",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "script-2",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7296758672007626754",
+                "operationId": "7296758672038887452",
+                "connectorName": "script",
+                "connectorVersion": "2.0"
+            },
+            "name": "处理其他字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "js_code": {
+                    "type": "string",
+                    "value": "function handler(input) {\n  const {\n    approve_item,\n    base_item,\n  } = input;\n  const new_item = {\n    id: approve_item.id,\n    type: approve_item.type,\n    value: null,\n  };\n\n  // 解析文本类型value\n  function parseTextValue(\n    value\n  ) {\n    if (\n      value === undefined ||\n      value === null\n    ) {\n      return '';\n    }\n\n    if (\n      typeof value === 'string' ||\n      typeof value === 'number' ||\n      typeof value === 'boolean'\n    ) {\n      return String(value);\n    }\n\n    if (\n      value.link\n    ) {\n      return value.link;\n    }\n\n    if (\n      Array.isArray(value)\n    ) {\n      return value\n        .map((item) => {\n          if (\n            item === undefined ||\n            item === null\n          ) {\n            return '';\n          }\n          if (\n            typeof item === 'string' ||\n            typeof item === 'number' ||\n            typeof item === 'boolean'\n          ) {\n            return String(item);\n          }\n          return (\n            item.text ??\n            item.name ??\n            item.value ??\n            ''\n          );\n        })\n        .join('');\n    }\n\n    if (\n      typeof value === 'object'\n    ) {\n      return (\n        value.text ??\n        value.name ??\n        value.value ??\n        ''\n      );\n    }\n\n    return String(value);\n  }\n\n  function parseDocument(\n    value\n  ) {\n    const match_docx =\n      value.link.match(\n        /\\/docx\\/([^?]+)/\n      );\n    let result = {};\n    if (match_docx) {\n      result['token'] =\n        match_docx[1];\n      result['type'] = 'docx';\n    }\n    return result;\n  }\n\n  // 解析日期类型value\n  function parseDateValue(\n    value\n  ) {\n    let date = new Date(\n      value + 3600000 * 8\n    );\n    return (\n      date\n        .toISOString()\n        .substring(0, 19) +\n      '+08:00'\n    );\n  }\n\n  // 解析日期区间类型的value\n  function parseDateIntervalValue(\n    startTime,\n    endTime\n  ) {\n    if (\n      startTime ===\n        undefined ||\n      startTime === null ||\n      endTime === undefined ||\n      endTime === null\n    ) {\n      return null;\n    }\n    var dateIntervalValue = {\n      start: parseDateValue(\n        startTime\n      ),\n      end: parseDateValue(\n        endTime\n      ),\n      interval: Math.floor(\n        (endTime -\n          startTime) /\n          (24 * 3600 * 1000)\n      ),\n    };\n    return dateIntervalValue;\n  }\n\n  // 解析用户类型value\n  function parseUser(value) {\n    if (\n      Array.isArray(value)\n    ) {\n      return value.map(\n        function (\n          item,\n          index,\n          arr\n        ) {\n          return item.id;\n        }\n      );\n    }\n    return [value.id];\n  }\n\n  // 解析电话类型value\n  function parsePhone(value) {\n    let v = {\n      countryCode: '+86',\n      nationalNumber:\n        String(value),\n    };\n    return v;\n  }\n\n  // 解析选项类型value\n  function parseOptionsValue(\n    value,\n    options\n  ) {\n    let result =\n      'option not found by ' +\n      value;\n    options.some(function (\n      item\n    ) {\n      if (\n        item.text ==\n        String(value)\n      ) {\n        result = item.value;\n        return true;\n      }\n    });\n    return result;\n  }\n\n  switch (approve_item.type) {\n    case 'input':\n    case 'textarea':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      new_item.value =\n        parseTextValue(\n          base_item\n        );\n      break;\n    case 'document':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      if (\n        Object.keys(\n          parseDocument(\n            base_item\n          )\n        ).length > 0\n      ) {\n        new_item.value =\n          parseDocument(\n            base_item\n          );\n      }\n      break;\n    case 'text':\n      break;\n    case 'number':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      const value = Number(\n        base_item\n      );\n      new_item.value = !isNaN(\n        value\n      )\n        ? value\n        : Number(\n            base_item.value\n          );\n      break;\n    case 'amount':\n      // not support\n      break;\n    case 'date':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      new_item.value =\n        parseDateValue(\n          base_item\n        );\n      break;\n    case 'contact':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      new_item.open_ids =\n        parseUser(base_item);\n      break;\n    case 'telephone':\n      // not support\n      break;\n    case 'radio':\n    case 'radioV2':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      new_item.value =\n        parseOptionsValue(\n          base_item,\n          approve_item.option\n        );\n      break;\n    case 'checkbox':\n    case 'checkboxV2':\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      new_item.value =\n        base_item.map(\n          function (item) {\n            return parseOptionsValue(\n              item,\n              approve_item.option\n            );\n          }\n        );\n      break;\n    case 'dateInterval':\n      new_item.value =\n        parseDateIntervalValue(\n          input.valueMap[\n            approve_item\n              .begin_date\n          ],\n          input.valueMap[\n            approve_item\n              .end_date\n          ]\n        );\n      break;\n    default:\n      if (\n        base_item ==\n          undefined ||\n        base_item === null\n      ) {\n        break;\n      }\n      new_item.value =\n        parseTextValue(\n          base_item\n        );\n      break;\n  }\n\n  return new_item;\n}\n"
+                },
+                "input": {
+                    "type": "object",
+                    "value": {
+                        "approve_item": {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$.loop-1.item\")",
+                                "node_tree": {
+                                    "path": "$.loop-1.item",
+                                    "t": "json_path"
+                                }
+                            }
+                        },
+                        "base_item": {
+                            "type": "spel",
+                            "value": {
+                                "node_tree": {
+                                    "t": "json_path",
+                                    "path": "$.object_helper-1.result"
+                                },
+                                "expression": "_(\"$.object_helper-1.result\")"
+                            }
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "script-2.error_handler.default",
+                    "name": "",
+                    "action": "retry",
+                    "retryFallbackAction": "terminate"
+                }
+            }
+        },
+        {
+            "id": "variable-3",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834721538051",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "追加其他字段",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "list": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "type": "spel",
+                            "value": {
+                                "expression": "_(\"$$.script-2.result\")",
+                                "node_tree": {
+                                    "path": "$.script-2.result",
+                                    "t": "json_path"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "position": {
+                    "type": "string",
+                    "value": "end_of_list"
+                },
+                "key": {
+                    "type": "string",
+                    "value": "approval_form"
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "variable-3.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "branch-2.default",
+            "type": "branch_exclusive_child",
+            "operation": {},
+            "name": "",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": null
+        },
+        {
+            "id": "variable-9",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7302054834608275459",
+                "operationId": "7302054834634375171",
+                "connectorName": "variable",
+                "connectorVersion": "1.2"
+            },
+            "name": "生成审批表单",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "variables": {
+                    "type": "array",
+                    "value": [
+                        {
+                            "value": {
+                                "concurrency": {
+                                    "type": "boolean",
+                                    "value": false
+                                },
+                                "value": {
+                                    "type": "spel",
+                                    "value": {
+                                        "node_tree": {
+                                            "t": "flow_variable",
+                                            "path": "approval_form"
+                                        },
+                                        "expression": "_(\"$.variable.approval_form\")"
+                                    }
+                                },
+                                "value_type": {
+                                    "value": "array",
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "type": "string",
+                                    "value": "approval_form"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "variable-9.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "json_helper-2",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7197296918699524098",
+                "operationId": "7197296921256820737",
+                "connectorName": "json_helper",
+                "connectorVersion": "1.3"
+            },
+            "name": "序列化审批表单定义",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": null
+            },
+            "parameters": {
+                "json_map": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.approval_form\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "approval_form"
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "action": "terminate",
+                    "id": "json_helper-2.error_handler.default",
+                    "name": ""
+                }
+            }
+        },
+        {
+            "id": "approval-4",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7446602802463768578",
+                "operationId": "7446602802488442908",
+                "connectorName": "approval",
+                "connectorVersion": "2.9"
+            },
+            "name": "飞书审批-创建审批实例",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "user_id": {
+                    "type": "null",
+                    "value": "null"
+                },
+                "open_id": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.bitable-1.data.records[0].fields.申请人[0].id\")",
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.bitable-1.data.records[0].fields.申请人[0].id"
+                        }
+                    }
+                },
+                "department_id": {
+                    "type": "spel",
+                    "value": ""
+                },
+                "approval_code": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.definitionCode\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "definitionCode"
+                        }
+                    }
+                },
+                "form": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.json_helper-2.json_string\")",
+                        "node_tree": {
+                            "t": "json_path",
+                            "path": "$.json_helper-2.json_string"
+                        }
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "approval-4.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        },
+        {
+            "id": "bitable-7",
+            "type": "normal",
+            "operation": {
+                "connectorId": "7455234050052145154",
+                "operationId": "7455234050247098396",
+                "connectorName": "bitable",
+                "connectorVersion": "2.11"
+            },
+            "name": "更新审批 Code",
+            "description": "",
+            "auth": {
+                "key": "",
+                "parameters": null,
+                "credentials": {
+                    "type": "cred",
+                    "value": "zPvJW7QGK84xQ"
+                }
+            },
+            "parameters": {
+                "record_id": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "path": "$.webhook-trigger-1.query.record_id",
+                            "t": "json_path"
+                        },
+                        "expression": "_(\"$.webhook-trigger-1.query.record_id\")"
+                    }
+                },
+                "fields": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "{\"审批实例Code\":_(\"$.approval-4.data.instance_code\")}",
+                        "node_tree": {
+                            "t": "inline_map",
+                            "pairs": [
+                                {
+                                    "v": {
+                                        "t": "json_path",
+                                        "path": "$.approval-4.data.instance_code"
+                                    },
+                                    "k": {
+                                        "v": "\"审批实例Code\"",
+                                        "t": "literal",
+                                        "vt": "string"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "user_id_type": {
+                    "type": "string",
+                    "value": "open_id"
+                },
+                "ignore_consistency_check": {
+                    "type": "boolean",
+                    "value": false
+                },
+                "app_token": {
+                    "type": "spel",
+                    "value": {
+                        "expression": "_(\"$.variable.app_token\")",
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "app_token"
+                        }
+                    }
+                },
+                "table_id": {
+                    "type": "spel",
+                    "value": {
+                        "node_tree": {
+                            "t": "flow_variable",
+                            "path": "table_id"
+                        },
+                        "expression": "_(\"$.variable.table_id\")"
+                    }
+                }
+            },
+            "errorHandler": {
+                "defaultStrategy": {
+                    "id": "bitable-7.error_handler.default",
+                    "name": "",
+                    "action": "terminate"
+                }
+            }
+        }
+    ]
+}

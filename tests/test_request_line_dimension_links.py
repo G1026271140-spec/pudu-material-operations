@@ -73,6 +73,37 @@ class RequestLineDimensionLinkTests(unittest.TestCase):
             },
         )
 
+    def test_custom_material_keeps_approval_text_snapshots_without_dimension_links(self) -> None:
+        table_fields = {
+            "品类": {"type": 18},
+            "产品型号": {"type": 18},
+            "语种": {"type": 18},
+            "物料编码": {"type": 21},
+            "实际发放物料品类": {"type": 1},
+            "实际发放产品型号": {"type": 1},
+            "实际发放语种": {"type": 1},
+        }
+        fields: dict[str, object] = {}
+
+        with patch.object(app, "feishu_table_fields", return_value=table_fields):
+            app.set_request_line_material_fields(
+                fields,
+                {"record_id": "custom-material-1", "fields": {"物料编码": "MAT-999"}},
+                "新品",
+                "新品",
+                "新品",
+            )
+
+        self.assertEqual(
+            fields,
+            {
+                "实际发放物料品类": "新品",
+                "实际发放产品型号": "新品",
+                "实际发放语种": "新品",
+                "物料编码": ["custom-material-1"],
+            },
+        )
+
     def test_historical_repairs_support_raw_api_record_ids(self) -> None:
         materials = [
             {
