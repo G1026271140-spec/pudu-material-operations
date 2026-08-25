@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.0"
+APP_VERSION = "V1.4.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -819,22 +819,31 @@ def inject_global_styles() -> None:
             border-bottom: 1px solid var(--pudu-line);
         }
         .st-key-sidebar_corporate_logo {
-            height: 62px;
-            margin: 0 0 0.15rem;
+            position: fixed;
+            top: 10px;
+            left: 24px;
+            z-index: 1002;
+            width: 64px;
+            height: 42px;
+            margin: 0;
             overflow: hidden;
+            pointer-events: none;
         }
         .st-key-sidebar_corporate_logo [data-testid="stImage"] {
-            width: 220px;
-            max-width: 100%;
-            margin: 0 auto;
-            overflow: visible;
+            width: 64px;
+            height: 42px;
+            margin: 0;
+            overflow: hidden;
         }
         .st-key-sidebar_corporate_logo [data-testid="stImage"] img {
-            width: 220px !important;
-            max-width: 100% !important;
+            width: 98px !important;
+            max-width: none !important;
             height: auto !important;
-            transform: translateY(-25px);
+            transform: translateX(-17px);
             object-fit: contain;
+        }
+        [data-testid="stSidebar"][aria-expanded="false"] .st-key-sidebar_corporate_logo {
+            display: none !important;
         }
         .st-key-sidebar_brand [data-testid="stImage"] {
             width: 64px;
