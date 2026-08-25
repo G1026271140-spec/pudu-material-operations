@@ -140,6 +140,20 @@ class RequestCartTests(unittest.TestCase):
         )
         self.assertTrue(payload["lines"][0]["is_custom_material"])
 
+    def test_cart_state_normalization_preserves_custom_material_marker(self) -> None:
+        custom_line = app.build_custom_request_material_line("新品", 50, "")
+        session_state = {"request_material_lines": [custom_line]}
+
+        with patch.object(app.st, "session_state", session_state):
+            normalized = app.get_request_material_lines()
+            payload = app.queued_material_request_payload(
+                {"submission_token": "submit-custom"}, normalized
+            )
+
+        self.assertTrue(normalized[0]["is_custom_material"])
+        self.assertTrue(session_state["request_material_lines"][0]["is_custom_material"])
+        self.assertTrue(payload["lines"][0]["is_custom_material"])
+
     def test_custom_material_master_row_is_zero_priced_and_idempotent(self) -> None:
         item = app.build_custom_request_material_line("新款宣传册 20份", 20, "")
         created = {
