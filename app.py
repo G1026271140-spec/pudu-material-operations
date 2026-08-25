@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.3.5"
+APP_VERSION = "V1.3.6"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -1579,6 +1579,21 @@ def inject_global_styles() -> None:
             width: 100% !important;
             min-width: 0 !important;
             justify-content: center !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stButtonGroup"] > div:last-child:has(> button:only-child) {
+            display: flex !important;
+            width: 100% !important;
+            justify-content: flex-start !important;
+        }
+        [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+        [data-testid="stButtonGroup"] > div:last-child > button:only-child {
+            width: auto !important;
+            min-width: 7.5rem !important;
+            max-width: min(100%, 24rem) !important;
+            padding-left: 1.35rem !important;
+            padding-right: 1.35rem !important;
+            flex: 0 0 auto !important;
         }
         [data-testid="stLayoutWrapper"]:has(.pudu-product-card-marker) > [data-testid="stVerticalBlock"] {
             min-height: 286px;
@@ -12558,7 +12573,7 @@ def render_request_material_builder(
                             (
                                 "Can't find the material you need? Check the box on the right"
                                 if get_ui_language() == LANGUAGE_EN
-                                else "没找到想要的物料？请点击有右边方框"
+                                else "没找到想要的物料？请点击左侧方框"
                             ),
                             key=f"request_custom_material_{product_state_key}",
                             on_change=clear_request_normal_dimension_state,
