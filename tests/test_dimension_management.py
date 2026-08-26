@@ -156,6 +156,7 @@ class DimensionManagementTests(unittest.TestCase):
                 "产品型号": "P2", "启用状态": "启用",
                 "中文页面名称": "P2", "英文页面名称": "P2",
                 "产品线": "CR",
+                app.MODEL_TYPE_FIELD: app.MODEL_TYPE_REGULAR,
                 "产品型号编码": "8",
             }],
         )
@@ -187,6 +188,7 @@ class DimensionManagementTests(unittest.TestCase):
                 "产品型号": "P1", "启用状态": "启用",
                 "中文页面名称": "新中文", "英文页面名称": "New English",
                 "产品线": "CR",
+                app.MODEL_TYPE_FIELD: app.MODEL_TYPE_REGULAR,
             },
         )
 
@@ -199,8 +201,8 @@ class DimensionManagementTests(unittest.TestCase):
 
     def test_new_request_models_link_existing_rows_without_creating_duplicates(self) -> None:
         model_rows = [
-            {"record_id": "model-flash", "fields": {"产品型号": "FlashBot", "启用状态": "启用"}},
-            {"record_id": "model-t150", "fields": {"产品型号": "T150", "启用状态": "启用"}},
+            {"record_id": "model-flash", "fields": {"产品型号": "FlashBot", "启用状态": "启用", app.MODEL_TYPE_FIELD: app.MODEL_TYPE_REGULAR}},
+            {"record_id": "model-t150", "fields": {"产品型号": "T150", "启用状态": "启用", app.MODEL_TYPE_FIELD: app.MODEL_TYPE_REGULAR}},
         ]
         category_rows = [
             {"record_id": "cat-flyer", "fields": {"物料品类": app.AUTO_REQUEST_MODEL_CATEGORIES[0]}},
@@ -221,6 +223,7 @@ class DimensionManagementTests(unittest.TestCase):
                 app.CATEGORY_TABLE_NAME: category_rows,
                 app.MATERIAL_TABLE_NAME: material_rows,
                 app.LANGUAGE_TABLE_NAME: language_rows,
+                app.CULTURAL_MATERIAL_TABLE_NAME: [],
             }[table_name]
 
         parsed = {
@@ -263,6 +266,25 @@ class DimensionManagementTests(unittest.TestCase):
             "linked_count": 1,
             "models": ["FlashBot", "T150"],
         })
+
+    def test_cultural_models_do_not_create_regular_material_rows(self) -> None:
+        model_rows = [{
+            "record_id": "model-size",
+            "fields": {"产品型号": "XL", app.MODEL_TYPE_FIELD: app.MODEL_TYPE_CULTURAL},
+        }]
+        rows = {
+            app.MODEL_TABLE_NAME: model_rows,
+            app.CATEGORY_TABLE_NAME: [],
+            app.MATERIAL_TABLE_NAME: [],
+            app.LANGUAGE_TABLE_NAME: [],
+        }
+        with (
+            patch.object(app, "fresh_feishu_rows", side_effect=lambda name: rows[name]),
+            patch.object(app, "feishu_batch_create_records") as create,
+        ):
+            result = app.sync_new_request_model_material_rows()
+        create.assert_not_called()
+        self.assertEqual(result, {"model_count": 0, "created_count": 0, "linked_count": 0})
 
     def test_edit_language_updates_dimension_and_referenced_material_text(self) -> None:
         language_rows = [
