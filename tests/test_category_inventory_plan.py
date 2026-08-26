@@ -564,6 +564,12 @@ class CategoryInventoryPlanTests(unittest.TestCase):
                 "meta": "2 行",
                 "group": app.CATEGORY_DEFINITION_GIFT,
             },
+            {
+                "value": "品类C",
+                "label": "品类C",
+                "meta": "3 行",
+                "group": app.CATEGORY_DEFINITION_CULTURAL,
+            },
         ]
         with (
             patch.object(app.st, "session_state", session_state),

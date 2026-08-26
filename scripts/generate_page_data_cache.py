@@ -188,6 +188,7 @@ def main() -> int:
     required_counts = {
         app.CATEGORY_TABLE_NAME: int(counts.get(app.CATEGORY_TABLE_NAME) or 0),
         app.MATERIAL_TABLE_NAME: int(counts.get(app.MATERIAL_TABLE_NAME) or 0),
+        app.CULTURAL_MATERIAL_TABLE_NAME: int(counts.get(app.CULTURAL_MATERIAL_TABLE_NAME) or 0),
     }
     if any(row_count <= 0 for row_count in required_counts.values()):
         print(

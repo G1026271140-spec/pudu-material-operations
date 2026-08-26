@@ -22,6 +22,8 @@ from submission_queue import (
     QUEUE_STATUS_FAILED,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
@@ -234,12 +236,70 @@ def process_material_request(
     return progress
 
 
+def process_cultural_request(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    request_payload = dict(task.payload.get("request_payload") or {})
+    lines = [
+        dict(line) for line in list(task.payload.get("lines") or []) if isinstance(line, dict)
+    ]
+    token = str(request_payload.get("submission_token") or "").strip()
+    if not token or token != task.idempotency_key:
+        raise RuntimeError("后台任务的文化周边申请幂等键不一致。")
+    progress = dict(task.result)
+    warnings = [str(item) for item in list(progress.get("warnings") or []) if str(item).strip()]
+
+    def save_progress() -> None:
+        progress["warnings"] = list(dict.fromkeys(warnings))
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("write_done"):
+        request_no, line_count, created_new = inventory_app.submit_feishu_cultural_request(
+            request_payload, lines
+        )
+        progress.update(
+            {
+                "write_done": True,
+                "request_no": request_no,
+                "line_count": line_count,
+                "created_new_request": created_new,
+            }
+        )
+        save_progress()
+    if not progress.get("notification_done"):
+        try:
+            counts = inventory_app.notify_cultural_request(
+                str(progress.get("request_no") or ""), request_payload, lines
+            )
+            progress["notification_counts"] = counts
+            inventory_app.feishu_update_record_fields(
+                inventory_app.REQUEST_TABLE_NAME,
+                inventory_app.feishu_record_id(
+                    inventory_app.submission_token_rows(token)[0]
+                ),
+                {"文化周边通知状态": "已发送"},
+            )
+        except Exception as exc:
+            warnings.append(f"文化周边通知发送失败：{exc}")
+            progress["notification_counts"] = {"applicant": 0, "admins": 0}
+        progress["notification_done"] = True
+        save_progress()
+    return progress
+
+
 def process_task(
     task: SubmissionTask,
     checkpoint: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
     if task.task_type == QUEUE_TASK_TYPE_MATERIAL_REQUEST:
         return process_material_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST:
+        return process_cultural_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT:
+        result = inventory_app.execute_cultural_material_management(dict(task.payload.get("draft") or {}))
+        return dict(result)
     payload = dict(task.payload)
     if task.task_type == QUEUE_TASK_TYPE_RESTOCK:
         progress = dict(task.result)

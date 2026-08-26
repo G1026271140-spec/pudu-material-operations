@@ -34,6 +34,8 @@ from submission_queue import (
     QUEUE_STATUS_FAILED,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
@@ -60,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.0"
+APP_VERSION = "V1.5.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -85,6 +87,8 @@ LANGUAGE_TABLE_NAME = "物料语种"
 LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
 GIFT_PROJECT_TABLE_NAME = "项目周边礼品物料筹备详情list"
+CULTURAL_MATERIAL_TABLE_NAME = "文化周边管理"
+REGION_TABLE_NAME = "战区管理"
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
 AUTO_REQUEST_MODEL_CATEGORIES = (
@@ -105,7 +109,12 @@ STATUS_INACTIVE = "停用"
 MATERIAL_STATUS_OPTIONS = (STATUS_ACTIVE, STATUS_INACTIVE)
 CATEGORY_DEFINITION_PRINT = "印刷物料"
 CATEGORY_DEFINITION_GIFT = "周边礼品"
-CATEGORY_DEFINITION_OPTIONS = (CATEGORY_DEFINITION_PRINT, CATEGORY_DEFINITION_GIFT)
+CATEGORY_DEFINITION_CULTURAL = "文化周边"
+CATEGORY_DEFINITION_OPTIONS = (
+    CATEGORY_DEFINITION_PRINT,
+    CATEGORY_DEFINITION_GIFT,
+    CATEGORY_DEFINITION_CULTURAL,
+)
 UNDEFINED_CATEGORY_DEFINITION = "未定义"
 GIFT_PROJECT_STATUS_REQUESTED = "已提需"
 INVENTORY_ZERO_SINCE_FIELD = "库存归零时间"
@@ -454,6 +463,7 @@ MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "项目礼品管理")
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = (
     "采购补库",
+    "文化周边管理",
     "品类管理",
     "型号管理",
     "语种管理",
@@ -507,6 +517,8 @@ ALL_PAGE_CACHE_TABLES = (
     REQUEST_TABLE_NAME,
     REQUEST_LINE_TABLE_NAME,
     GIFT_PROJECT_TABLE_NAME,
+    CULTURAL_MATERIAL_TABLE_NAME,
+    REGION_TABLE_NAME,
 )
 REQUEST_FORM_CACHE_TABLES = (
     CATEGORY_TABLE_NAME,
@@ -523,6 +535,12 @@ PAGE_CACHE_TABLES = {
     "maintenance": ALL_PAGE_CACHE_TABLES,
     "inventory": (CATEGORY_TABLE_NAME, LANGUAGE_TABLE_NAME, MATERIAL_TABLE_NAME, LEDGER_TABLE_NAME),
     "gift_projects": (CATEGORY_TABLE_NAME, MATERIAL_TABLE_NAME, GIFT_PROJECT_TABLE_NAME),
+    "cultural_request": (
+        CATEGORY_TABLE_NAME,
+        MODEL_TABLE_NAME,
+        CULTURAL_MATERIAL_TABLE_NAME,
+        REGION_TABLE_NAME,
+    ),
     "shipping": (CATEGORY_TABLE_NAME,),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
@@ -11946,6 +11964,12 @@ def render_sidebar_link() -> None:
             ":material/edit_note:",
         )
         navigate_to_management_section(
+            "sidebar_open_cultural_request",
+            "文化周边申领",
+            "文化周边申领",
+            ":material/checkroom:",
+        )
+        navigate_to_management_section(
             "sidebar_open_gift_projects",
             "项目礼品管理",
             "项目礼品管理",
@@ -17692,6 +17716,598 @@ def render_gift_projects_page() -> None:
 
 
 
+def cultural_request_catalog(
+    cultural_rows: list[dict] | None = None,
+    category_rows: list[dict] | None = None,
+    model_rows: list[dict] | None = None,
+) -> dict[str, object]:
+    """Build the culture-only category/model/region catalog from page cache."""
+    culture = list(cultural_rows if cultural_rows is not None else feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
+    categories = list(category_rows if category_rows is not None else feishu_rows(CATEGORY_TABLE_NAME))
+    models = list(model_rows if model_rows is not None else feishu_rows(MODEL_TABLE_NAME))
+    category_labels: dict[str, dict[str, str]] = {}
+    category_ids: dict[str, str] = {}
+    for row in categories:
+        fields = feishu_fields(row)
+        if feishu_text(fields, "品类定义") != CATEGORY_DEFINITION_CULTURAL:
+            continue
+        name = feishu_text(fields, "物料品类").strip()
+        if not name:
+            continue
+        category_ids[name] = feishu_record_id(row)
+        category_labels[name] = {
+            LANGUAGE_ZH: feishu_text(fields, "中文页面名称") or name,
+            LANGUAGE_EN: feishu_text(fields, "英文页面名称") or name,
+        }
+    model_ids = {
+        feishu_text(feishu_fields(row), "产品型号").strip(): feishu_record_id(row)
+        for row in models
+        if feishu_text(feishu_fields(row), "产品型号").strip()
+    }
+    combinations: dict[tuple[str, str, str], dict[str, object]] = {}
+    for row in culture:
+        fields = feishu_fields(row)
+        product = feishu_text(fields, "物料品类").strip()
+        model = feishu_text(fields, "产品型号").strip()
+        region = feishu_text(fields, "战区管理").strip()
+        if not product or product not in category_ids or not model or not region:
+            continue
+        combinations[(product, model, region)] = {
+            "record_id": feishu_record_id(row),
+            "product": product,
+            "model": model,
+            "region": region,
+            "stock": feishu_int(fields, "当前库存"),
+            "unit_price_rmb": feishu_float(fields, "单价（人民币）"),
+        }
+    products = unique_preserve(key[0] for key in combinations)
+    return {
+        "products": products,
+        "category_labels": category_labels,
+        "category_ids": category_ids,
+        "model_ids": model_ids,
+        "combinations": combinations,
+    }
+
+
+def cultural_request_display_category(product: object, catalog: dict[str, object]) -> str:
+    labels = dict(dict(catalog.get("category_labels") or {}).get(str(product), {}) or {})
+    return str(labels.get(get_ui_language()) or product)
+
+
+def initialize_cultural_request_state() -> None:
+    defaults: dict[str, object] = {
+        "cultural_request_lines": [],
+        "cultural_request_stage": "edit",
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+    if "cultural_request_submission_token" not in st.session_state:
+        st.session_state["cultural_request_submission_token"] = uuid.uuid4().hex
+
+
+def clear_cultural_request_state() -> None:
+    for key in list(st.session_state):
+        if str(key).startswith("cultural_request_"):
+            st.session_state.pop(key, None)
+
+
+def queued_cultural_request_payload(
+    request_payload: dict[str, object], lines: list[dict[str, object]]
+) -> dict[str, object]:
+    return {
+        "version": 1,
+        "request_payload": {
+            key: request_payload.get(key)
+            for key in ("requester", "requester_open_id", "department", "department_id", "submission_token")
+        },
+        "lines": [
+            {
+                "product": str(line.get("product") or ""),
+                "model": str(line.get("model") or ""),
+                "region": str(line.get("region") or ""),
+                "quantity": int(line.get("quantity") or 0),
+                "remark": str(line.get("remark") or ""),
+            }
+            for line in lines
+            if isinstance(line, dict) and int(line.get("quantity") or 0) > 0
+        ],
+    }
+
+
+def enqueue_feishu_cultural_request(
+    request_payload: dict[str, object], lines: list[dict[str, object]]
+) -> tuple[SubmissionTask, bool]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建文化周边后台任务。")
+    token = str(request_payload.get("submission_token") or "").strip()
+    if not token:
+        raise RuntimeError("文化周边申请提交幂等键不能为空。")
+    table_id = ensure_submission_queue_table(client)
+    existing = find_task_by_idempotency_key(client, token, table_id)
+    if existing is not None and existing.status != QUEUE_STATUS_FAILED:
+        return existing, False
+    payload = queued_cultural_request_payload(request_payload, lines)
+    return enqueue_submission_task(client, QUEUE_TASK_TYPE_CULTURAL_REQUEST, token, payload)
+
+
+def _cultural_request_card(
+    request_no: str,
+    requester: str,
+    lines: list[dict[str, object]],
+    *,
+    applicant: bool,
+    admin_names: str = "管理员",
+) -> dict[str, object]:
+    details = "\n".join(
+        f"{index:02d}. {line['product']} / {line['model']} / {line['region']} × {int(line['quantity'])}"
+        for index, line in enumerate(lines, start=1)
+    )
+    title = "文化周边需求已提交" if applicant else "文化周边申领通知"
+    lead = (
+        f"您的（文化周边）需求已提交，请找 @{admin_names} 进行申领。"
+        if applicant
+        else f"{requester} 提交了文化周边申领，请安排发放。"
+    )
+    return {
+        "schema": "2.0",
+        "config": {"update_multi": True, "width_mode": "default", "summary": {"content": title}},
+        "header": {"template": "blue", "title": {"tag": "plain_text", "content": title}},
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 16px 12px",
+            "elements": [
+                {"tag": "markdown", "content": lead},
+                {"tag": "hr"},
+                {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请明细**\n{details}"},
+            ],
+        },
+    }
+
+
+def notify_cultural_request(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> dict[str, int]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送文化周边通知。")
+    admins = enabled_admin_open_ids()
+    requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
+    requester = str(request_payload.get("requester") or "申请人")
+    if requester_open_id:
+        send_feishu_interactive_message(
+            client,
+            requester_open_id,
+            _cultural_request_card(request_no, requester, lines, applicant=True),
+        )
+    for open_id in admins:
+        send_feishu_interactive_message(
+            client,
+            open_id,
+            _cultural_request_card(request_no, requester, lines, applicant=False),
+        )
+    return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
+
+
+def _cultural_dimension_record_id(table_name: str, field_name: str, value: str) -> str:
+    for row in fresh_feishu_rows(table_name):
+        if feishu_text(feishu_fields(row), field_name).strip() == value.strip():
+            return feishu_record_id(row)
+    return ""
+
+
+def execute_cultural_material_management(draft: dict[str, object]) -> dict[str, object]:
+    """Create, edit, or delete one culture inventory combination from the Worker."""
+    refresh_feishu_schema_cache()
+    action = str(draft.get("action") or "create").strip()
+    record_id = str(draft.get("record_id") or "").strip()
+    product = str(draft.get("product") or "").strip()
+    model = str(draft.get("model") or "").strip()
+    region = str(draft.get("region") or "").strip()
+    if action == "delete":
+        if not record_id:
+            raise RuntimeError("删除文化周边时缺少记录 ID。")
+        client = feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法删除文化周边。")
+        client.delete_record(feishu_table_id(CULTURAL_MATERIAL_TABLE_NAME), record_id)
+        result = {"action": action, "record_id": record_id, "deleted": True}
+    else:
+        if not product or not model or not region:
+            raise RuntimeError("文化周边的品类、型号和战区均不能为空。")
+        category_id = _cultural_dimension_record_id(CATEGORY_TABLE_NAME, "物料品类", product)
+        model_id = _cultural_dimension_record_id(MODEL_TABLE_NAME, "产品型号", model)
+        region_id = _cultural_dimension_record_id(REGION_TABLE_NAME, "战区名称", region)
+        if not category_id or not model_id or not region_id:
+            raise RuntimeError("文化周边关联的品类、型号或战区不存在。")
+        fields: dict[str, object] = {
+            "物料品类": product,
+            "产品型号": model,
+            "战区管理": region,
+            "当前库存": int(draft.get("stock") or 0),
+            "单价（人民币）": float(draft.get("unit_price_rmb") or 0),
+            "备注": str(draft.get("remark") or ""),
+            "物料品类关联": [category_id],
+            "产品型号关联": [model_id],
+            "战区关联": [region_id],
+        }
+        if action == "create":
+            duplicate = next(
+                (
+                    row for row in fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
+                    if (
+                        feishu_text(feishu_fields(row), "物料品类").strip(),
+                        feishu_text(feishu_fields(row), "产品型号").strip(),
+                        feishu_text(feishu_fields(row), "战区管理").strip(),
+                    ) == (product, model, region)
+                ),
+                None,
+            )
+            if duplicate:
+                raise RuntimeError("该品类、型号和战区组合已经存在。")
+            fields["文化周边编码"] = f"CUL-{uuid.uuid4().hex[:8].upper()}"
+            created = feishu_create_record(CULTURAL_MATERIAL_TABLE_NAME, fields)
+            record_id = feishu_record_id(created)
+            result = {"action": action, "record_id": record_id, "created": True}
+        elif action == "edit":
+            if not record_id:
+                raise RuntimeError("编辑文化周边时缺少记录 ID。")
+            feishu_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, record_id, fields)
+            result = {"action": action, "record_id": record_id, "updated": True}
+        else:
+            raise RuntimeError(f"不支持的文化周边管理操作：{action}")
+    client = feishu_client()
+    if client is not None:
+        detail = f"操作：{action}\n品类：{product or '-'}\n型号：{model or '-'}\n战区：{region or '-'}"
+        card = {
+            "schema": "2.0",
+            "header": {"template": "blue", "title": {"tag": "plain_text", "content": "文化周边数据变更通知"}},
+            "body": {"elements": [{"tag": "markdown", "content": detail}]},
+        }
+        for open_id in enabled_admin_open_ids():
+            send_feishu_interactive_message(client, open_id, card)
+    return result
+
+
+def render_cultural_material_management() -> None:
+    rows = feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
+    catalog = cultural_request_catalog(rows)
+    st.caption("新增、编辑和删除均通过后台任务队列执行；允许负库存。")
+    operation = st.segmented_control(
+        "操作",
+        ["新增", "编辑", "删除"],
+        default="新增",
+        key="cultural_management_operation",
+    ) or "新增"
+    selected_row: dict | None = None
+    if operation != "新增":
+        options = [feishu_record_id(row) for row in rows]
+        row_by_id = {feishu_record_id(row): row for row in rows}
+        selected_id = st.selectbox(
+            "选择文化周边记录",
+            options,
+            format_func=lambda value: " / ".join(
+                [
+                    feishu_text(feishu_fields(row_by_id[value]), "物料品类"),
+                    feishu_text(feishu_fields(row_by_id[value]), "产品型号"),
+                    feishu_text(feishu_fields(row_by_id[value]), "战区管理"),
+                ]
+            ),
+            key="cultural_management_record",
+        )
+        selected_row = row_by_id.get(selected_id)
+    selected_fields = feishu_fields(selected_row or {})
+    if operation == "删除":
+        st.warning("确认后将删除所选文化周边库存组合；已生成的申请明细和库存流水不会删除。")
+        if st.button("确认删除", type="primary", key="cultural_management_delete", width="stretch"):
+            enqueue_feishu_background_write(
+                QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
+                {"draft": {"action": "delete", "record_id": feishu_record_id(selected_row or {})}},
+            )
+            st.success("删除任务已进入后台队列。")
+        return
+    category_rows = [
+        row for row in feishu_rows(CATEGORY_TABLE_NAME)
+        if feishu_text(feishu_fields(row), "品类定义") == CATEGORY_DEFINITION_CULTURAL
+    ]
+    products = [feishu_text(feishu_fields(row), "物料品类") for row in category_rows]
+    models = [feishu_text(feishu_fields(row), "产品型号") for row in feishu_rows(MODEL_TABLE_NAME)]
+    regions = [feishu_text(feishu_fields(row), "战区名称") for row in feishu_rows(REGION_TABLE_NAME)]
+    cols = st.columns(3)
+    product = cols[0].selectbox("文化周边品类", products, index=products.index(feishu_text(selected_fields, "物料品类")) if feishu_text(selected_fields, "物料品类") in products else 0)
+    model = cols[1].selectbox("产品型号 / 尺码", models, index=models.index(feishu_text(selected_fields, "产品型号")) if feishu_text(selected_fields, "产品型号") in models else 0)
+    region = cols[2].selectbox("战区", regions, index=regions.index(feishu_text(selected_fields, "战区管理")) if feishu_text(selected_fields, "战区管理") in regions else 0)
+    value_cols = st.columns(2)
+    stock = value_cols[0].number_input("库存数量", value=feishu_int(selected_fields, "当前库存"), step=1)
+    price = value_cols[1].number_input("单价（人民币）", value=feishu_float(selected_fields, "单价（人民币）"), min_value=0.0, step=1.0)
+    remark = st.text_input("备注", value=feishu_text(selected_fields, "备注"))
+    action = "edit" if operation == "编辑" else "create"
+    if st.button("确认提交", type="primary", key="cultural_management_submit", width="stretch"):
+        draft = {
+            "action": action,
+            "record_id": feishu_record_id(selected_row or {}),
+            "product": product,
+            "model": model,
+            "region": region,
+            "stock": int(stock),
+            "unit_price_rmb": float(price),
+            "remark": remark,
+        }
+        enqueue_feishu_background_write(
+            QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
+            {"draft": draft},
+            idempotency_key=f"cultural-management:{hashlib.sha256(json.dumps(draft, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()}",
+        )
+        st.success("文化周边管理任务已进入后台队列。")
+
+
+def submit_feishu_cultural_request(
+    request_payload: dict[str, object], lines: list[dict[str, object]]
+) -> tuple[str, int, bool]:
+    """Persist a culture request and idempotently apply its stock movements."""
+    refresh_feishu_schema_cache()
+    token = str(request_payload.get("submission_token") or "").strip()
+    valid_lines = [dict(line) for line in lines if int(line.get("quantity") or 0) > 0]
+    if not valid_lines:
+        raise RuntimeError("请至少选择一条文化周边。")
+    if len(valid_lines) > MAX_REQUEST_LINE_COUNT:
+        raise RuntimeError(f"一次最多提交 {MAX_REQUEST_LINE_COUNT} 条文化周边明细。")
+    culture_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
+    catalog = cultural_request_catalog(culture_rows, category_rows, model_rows)
+    combinations = dict(catalog["combinations"])
+    prepared: list[dict[str, object]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for line in valid_lines:
+        key = (
+            str(line.get("product") or "").strip(),
+            str(line.get("model") or "").strip(),
+            str(line.get("region") or "").strip(),
+        )
+        if key in seen:
+            raise RuntimeError("同一文化周边组合不能重复提交，请合并数量。")
+        seen.add(key)
+        culture_item = combinations.get(key)
+        if not culture_item:
+            raise RuntimeError(f"未找到文化周边库存组合：{' / '.join(key)}")
+        quantity = int(line.get("quantity") or 0)
+        prepared.append({**culture_item, "quantity": quantity, "remark": str(line.get("remark") or "")})
+
+    existing_rows = submission_token_rows(token)
+    if existing_rows:
+        request_row = existing_rows[0]
+        request_record_id = feishu_record_id(request_row)
+        request_no = feishu_text(feishu_fields(request_row), "申请单号")
+        created_new = False
+    else:
+        request_no = next_request_no()
+        request_fields: dict[str, object] = {
+            "申请单号": request_no,
+            "标题": f"{request_payload.get('requester') or '申请人'}-文化周边申领",
+            "申请部门/区域": request_payload.get("department"),
+            "申请部门": request_payload.get("department"),
+            "业务类型": "文化周边申领",
+            "申请类型": "文化周边申请",
+            "审批状态": "无需审批",
+            "文化周边处理状态": "已发放",
+            "文化周边通知状态": "待发送",
+            "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", datetime.now()),
+            "提交幂等键": token,
+            REQUEST_TOTAL_RMB_FIELD: round(
+                sum(float(item["unit_price_rmb"]) * int(item["quantity"]) for item in prepared), 2
+            ),
+        }
+        set_first_person_or_plain_field(
+            REQUEST_TABLE_NAME,
+            request_fields,
+            ["申请人", "申请人姓名"],
+            request_payload.get("requester"),
+            request_payload.get("requester_open_id"),
+        )
+        set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人OpenID"], request_payload.get("requester_open_id"))
+        created_request = feishu_create_record(REQUEST_TABLE_NAME, request_fields)
+        request_record_id = feishu_record_id(created_request)
+        if not request_record_id:
+            raise RuntimeError("文化周边申请单创建成功但未返回记录 ID。")
+        created_new = True
+
+    all_line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+    lines_by_number = {
+        feishu_text(feishu_fields(row), "明细编号"): row for row in all_line_rows
+    }
+    ledger_rows = fresh_feishu_rows(LEDGER_TABLE_NAME)
+    ledger_keys = {feishu_text(feishu_fields(row), "幂等键") for row in ledger_rows}
+    category_ids = dict(catalog.get("category_ids") or {})
+    model_ids = dict(catalog.get("model_ids") or {})
+    for index, item in enumerate(prepared, start=1):
+        line_no = f"{request_no}-{index:02d}"
+        line_row = lines_by_number.get(line_no)
+        if line_row is None:
+            line_fields: dict[str, object] = {
+                "明细编号": line_no,
+                "申请单号": request_no,
+                "申请数量": int(item["quantity"]),
+                "审批通过数量": int(item["quantity"]),
+                "实际发放数量": int(item["quantity"]),
+                "物料数量": int(item["quantity"]),
+                "品类名称": item["product"],
+                "产品型号名称": item["model"],
+                "明细业务类型": "文化周边",
+                "文化周边战区": item["region"],
+                "明细状态": "已发放",
+                "备注": item["remark"],
+                REQUEST_PRICE_SNAPSHOT_FIELD: float(item["unit_price_rmb"]),
+                REQUEST_LINE_SUBTOTAL_FIELD: round(float(item["unit_price_rmb"]) * int(item["quantity"]), 2),
+                "所属申请单": [request_record_id],
+                "品类": [category_ids.get(str(item["product"]), "")],
+                "产品型号": [model_ids.get(str(item["model"]), "")],
+                "文化周边物料": [item["record_id"]],
+            }
+            line_row = feishu_create_record(REQUEST_LINE_TABLE_NAME, line_fields)
+        line_record_id = feishu_record_id(line_row)
+        ledger_key = f"cultural-request:{token}:{index}"
+        current_culture_row = next(
+            row for row in culture_rows if feishu_record_id(row) == item["record_id"]
+        )
+        current_stock = feishu_int(feishu_fields(current_culture_row), "当前库存")
+        after_stock = current_stock - int(item["quantity"])
+        if ledger_key in ledger_keys:
+            existing_ledger = next(
+                row for row in ledger_rows if feishu_text(feishu_fields(row), "幂等键") == ledger_key
+            )
+            after_stock = feishu_int(feishu_fields(existing_ledger), "变更后数量", after_stock)
+        else:
+            ledger_fields: dict[str, object] = {
+                "操作": ACTION_RECEIVE,
+                "数量": -int(item["quantity"]),
+                "库存变化": -int(item["quantity"]),
+                "变更前数量": current_stock,
+                "变更后数量": after_stock,
+                "幂等键": ledger_key,
+                "流水业务类型": "文化周边",
+                "文化周边战区快照": item["region"],
+                "文化周边物料": [item["record_id"]],
+                "关联明细": [line_record_id],
+                "备注": f"文化周边申领 {request_no}：{item['product']} / {item['model']} / {item['region']}",
+                "时间": feishu_datetime_value(LEDGER_TABLE_NAME, "时间", datetime.now()),
+            }
+            feishu_create_record(LEDGER_TABLE_NAME, ledger_fields)
+            ledger_keys.add(ledger_key)
+        feishu_update_record_fields(
+            CULTURAL_MATERIAL_TABLE_NAME,
+            str(item["record_id"]),
+            {"当前库存": after_stock},
+        )
+    feishu_update_record_fields(
+        REQUEST_TABLE_NAME,
+        request_record_id,
+        {"申请明细文字信息": "\n".join(
+            f"{index:02d}. {item['product']} / {item['model']} / {item['region']} × {int(item['quantity'])}"
+            for index, item in enumerate(prepared, start=1)
+        )},
+    )
+    return request_no, len(prepared), created_new
+
+
+def render_cultural_request_page() -> None:
+    initialize_cultural_request_state()
+    catalog = cultural_request_catalog()
+    products = list(catalog.get("products") or [])
+    lines = [dict(line) for line in list(st.session_state.get("cultural_request_lines") or [])]
+    if st.session_state.get("cultural_request_stage") == "review":
+        draft = dict(st.session_state.get("cultural_request_draft") or {})
+        review_lines = [dict(line) for line in list(draft.get("lines") or [])]
+        with st.container(border=True):
+            render_section_header("01", "文化周边申请确认", "提交后将直接登记发放并扣减库存")
+            st.markdown(f"**申请人：** {escape(str(draft.get('requester') or '-'))}")
+        with st.container(border=True):
+            render_section_header("02", "文化周边清单", f"共 {len(review_lines)} 种")
+            edited = st.data_editor(
+                pd.DataFrame(review_lines).rename(columns={"product": "物料品类", "model": "尺码", "region": "战区", "quantity": "申请数量", "remark": "备注"}),
+                hide_index=True,
+                width="stretch",
+                disabled=["物料品类", "尺码", "战区", "备注"],
+                column_config={"申请数量": st.column_config.NumberColumn(min_value=1, step=1, format="%d")},
+                key="cultural_request_review_editor",
+            )
+            review_lines = [
+                {"product": row["物料品类"], "model": row["尺码"], "region": row["战区"], "quantity": int(row["申请数量"]), "remark": row.get("备注", "")}
+                for row in edited.to_dict("records")
+            ]
+            draft["lines"] = review_lines
+            st.session_state["cultural_request_draft"] = draft
+        back_col, _, submit_col = st.columns([1, 2, 1.3])
+        if back_col.button("返回修改", key="cultural_request_back", width="stretch"):
+            st.session_state["cultural_request_stage"] = "edit"
+            st.rerun()
+        if submit_col.button("确认提交", key="cultural_request_confirm", type="primary", width="stretch"):
+            with fullscreen_data_sync("正在提交数据，请稍后......"):
+                enqueue_feishu_cultural_request(draft, review_lines)
+            clear_cultural_request_state()
+            render_request_submission_success()
+            st.stop()
+        return
+
+    with st.container(border=True):
+        render_section_header("01", "申请人信息", "选择本次文化周边的申请人")
+        requester_col, _ = st.columns([1.35, 1])
+        department, department_id, requester, requester_open_id = render_request_contact_fields(requester_col)
+    with st.container(border=True):
+        render_section_header("02", "选择文化周边", f"选择品类、尺码和战区并加入申领车，最多 {MAX_REQUEST_LINE_COUNT} 种。")
+        if not products:
+            st.error("当前没有文化周边库存数据，请先更新文化周边页面缓存。")
+            return
+        columns = st.columns(6, gap="small")
+        combinations = dict(catalog.get("combinations") or {})
+        for index, product in enumerate(products):
+            scoped = [value for key, value in combinations.items() if key[0] == product]
+            models = unique_preserve(str(item["model"]) for item in scoped)
+            regions = unique_preserve(str(item["region"]) for item in scoped)
+            with columns[index % 6].container(border=True, key=f"cultural_product_card_{index}"):
+                image_path = request_category_image_path(product)
+                if image_path:
+                    st.image(str(image_path), width="stretch")
+                st.markdown(f"**{escape(cultural_request_display_category(product, catalog))}**")
+                with st.popover("选择规格", key=f"cultural_select_{index}", icon=":material/checkroom:", width="stretch"):
+                    selected_model = st.pills("尺码", models, key=f"cultural_model_{index}", selection_mode="single", default=models[0] if models else None, width="stretch")
+                    valid_regions = unique_preserve(
+                        str(item["region"]) for item in scoped if item["model"] == selected_model
+                    )
+                    selected_region = st.pills("战区", valid_regions, key=f"cultural_region_{index}", selection_mode="single", default=valid_regions[0] if valid_regions else None, width="stretch")
+                    selected_item = combinations.get((product, selected_model, selected_region))
+                    if selected_item:
+                        st.caption(f"当前库存：{int(selected_item['stock'])}（允许负库存）")
+                    quantity = st.number_input("数量", min_value=1, step=1, value=1, key=f"cultural_quantity_{index}")
+                    remark = st.text_input("备注", key=f"cultural_remark_{index}")
+                    if st.button("加入申领车", key=f"cultural_add_{index}", type="primary", width="stretch"):
+                        if not selected_model or not selected_region:
+                            st.warning("请选择尺码和战区。")
+                        else:
+                            key = (product, str(selected_model), str(selected_region))
+                            existing = next((line for line in lines if (line["product"], line["model"], line["region"]) == key), None)
+                            if existing:
+                                existing["quantity"] = int(existing["quantity"]) + int(quantity)
+                            else:
+                                lines.append({"product": product, "model": selected_model, "region": selected_region, "quantity": int(quantity), "remark": remark})
+                            st.session_state["cultural_request_lines"] = lines
+                            st.toast("已加入文化周边申领车", icon="✅")
+                            st.rerun()
+        if lines:
+            st.markdown("#### 已选文化周边")
+            edited = st.data_editor(
+                pd.DataFrame(lines).rename(columns={"product": "物料品类", "model": "尺码", "region": "战区", "quantity": "数量", "remark": "备注"}),
+                hide_index=True,
+                width="stretch",
+                num_rows="dynamic",
+                disabled=["物料品类", "尺码", "战区"],
+                key="cultural_request_cart_editor",
+            )
+            lines = [
+                {"product": row["物料品类"], "model": row["尺码"], "region": row["战区"], "quantity": max(1, int(row.get("数量") or 1)), "remark": str(row.get("备注") or "")}
+                for row in edited.to_dict("records")
+            ]
+            st.session_state["cultural_request_lines"] = lines
+        if st.button("提交文化周边申请", key="cultural_request_preview", type="primary", width="stretch", disabled=not lines):
+            if not requester or not requester_open_id:
+                show_request_validation_toast(["请选择申请人。"])
+                return
+            st.session_state["cultural_request_draft"] = {
+                "requester": requester,
+                "requester_open_id": requester_open_id,
+                "department": department,
+                "department_id": department_id,
+                "submission_token": st.session_state["cultural_request_submission_token"],
+                "lines": lines,
+            }
+            st.session_state["cultural_request_stage"] = "review"
+            st.rerun()
+
+
 def render_management_page() -> None:
     current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
     if current_section == "周边礼品项目":
@@ -17707,6 +18323,7 @@ def render_management_page() -> None:
         current_section = "物料管理"
     if current_section not in {
         "库存登记",
+        "文化周边申领",
         "项目礼品管理",
         "物料管理",
     }:
@@ -17728,16 +18345,19 @@ def render_management_page() -> None:
         return
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
+        "文化周边申领": ("文化周边申领", "文化周边工作台", "选择文化周边、尺码和战区，提交后直接登记发放。"),
         "项目礼品管理": ("项目礼品管理", "项目物料进度管理", "按项目跟踪礼品的状态、单价、备注和图片。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库与物料品类统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     page_cache_key = {
         "库存登记": "request",
+        "文化周边申领": "cultural_request",
         "项目礼品管理": "gift_projects",
         "物料管理": (
             {
                 "品类管理": "category",
+                "文化周边管理": "cultural_request",
                 "型号管理": "model_management",
                 "语种管理": "language_management",
                 "发货模板": "shipping",
@@ -17760,6 +18380,10 @@ def render_management_page() -> None:
         render_page_cache_toolbar("gift_projects")
         render_gift_projects_page()
         return
+    if current_section == "文化周边申领":
+        render_page_cache_toolbar("cultural_request")
+        render_cultural_request_page()
+        return
     if current_section == "物料管理":
         if st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) not in MATERIAL_MANAGEMENT_SECTIONS:
             st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = MATERIAL_MANAGEMENT_SECTIONS[0]
@@ -17773,6 +18397,7 @@ def render_management_page() -> None:
         )
         cache_key = {
             "采购补库": "restock",
+            "文化周边管理": "cultural_request",
             "品类管理": "category",
             "型号管理": "model_management",
             "语种管理": "language_management",
@@ -17782,6 +18407,8 @@ def render_management_page() -> None:
             render_page_cache_toolbar(cache_key)
         if material_section == "采购补库":
             render_restock_form()
+        elif material_section == "文化周边管理":
+            render_cultural_material_management()
         elif material_section == "品类管理":
             render_add_category_form()
         elif material_section == "型号管理":
