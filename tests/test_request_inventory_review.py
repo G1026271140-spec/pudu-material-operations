@@ -412,6 +412,53 @@ class RequestInventoryReviewTests(unittest.TestCase):
         notify.assert_called_once()
         self.assertTrue(result["confirmed"])
 
+    def test_complete_writeback_deletes_only_request_custom_materials(self) -> None:
+        context = {
+            "request": {"request_no": "REQ-1", "status": "已发放"},
+            "request_row": {
+                "record_id": "request-1",
+                "fields": {"临时物料清理状态": "待清理"},
+            },
+            "lines": [
+                {"material_record_id": "mat-custom", "status": "已发放"},
+                {"material_record_id": "mat-normal", "status": "已发放"},
+            ],
+            "material_rows": [
+                {
+                    "record_id": "mat-custom",
+                    "fields": {
+                        "是否临时物料": True,
+                        "备注": "自定义物料申请:token:key",
+                    },
+                },
+                {
+                    "record_id": "mat-normal",
+                    "fields": {"是否临时物料": False, "备注": ""},
+                },
+                {
+                    "record_id": "mat-other",
+                    "fields": {
+                        "是否临时物料": True,
+                        "备注": "自定义物料申请:other:key",
+                    },
+                },
+            ],
+        }
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_batch_delete_record_ids", return_value=1) as delete,
+            patch.object(app, "feishu_update_record_fields") as update_request,
+        ):
+            deleted = app.cleanup_custom_materials_for_request("REQ-1")
+
+        self.assertEqual(deleted, 1)
+        delete.assert_called_once_with(app.MATERIAL_TABLE_NAME, ["mat-custom"])
+        update_request.assert_called_once_with(
+            app.REQUEST_TABLE_NAME,
+            "request-1",
+            {"临时物料清理状态": "已清理"},
+        )
+
     def test_editing_request_also_marks_inventory_as_confirmed(self) -> None:
         context = {
             "request": {

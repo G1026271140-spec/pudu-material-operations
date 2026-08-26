@@ -349,6 +349,13 @@ def process_task(
         instance_code = str(payload.get("instance_code") or "")
         progress = dict(task.result)
         if inventory_app.approval_writeback_is_complete(request_no):
+            if not progress.get("custom_material_cleanup_done"):
+                progress["custom_material_cleanup_count"] = (
+                    inventory_app.cleanup_custom_materials_for_request(request_no)
+                )
+                progress["custom_material_cleanup_done"] = True
+                if checkpoint is not None:
+                    checkpoint(progress)
             if not progress.get("success_notified"):
                 progress["success_notification_count"] = (
                     inventory_app.notify_enabled_admins_of_approval_writeback(

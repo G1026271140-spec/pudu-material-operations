@@ -83,6 +83,11 @@ class SubmissionWorkerTests(unittest.TestCase):
             patch.object(worker.inventory_app, "approval_writeback_is_complete", return_value=True),
             patch.object(
                 worker.inventory_app,
+                "cleanup_custom_materials_for_request",
+                return_value=2,
+            ) as cleanup,
+            patch.object(
+                worker.inventory_app,
                 "notify_enabled_admins_of_approval_writeback",
                 return_value=2,
             ) as notify,
@@ -90,6 +95,9 @@ class SubmissionWorkerTests(unittest.TestCase):
             result = worker.process_task(task, checkpoints.append)
 
         notify.assert_called_once_with("REQ-1", "instance-1", succeeded=True)
+        cleanup.assert_called_once_with("REQ-1")
+        self.assertTrue(result["custom_material_cleanup_done"])
+        self.assertEqual(result["custom_material_cleanup_count"], 2)
         self.assertTrue(result["success_notified"])
         self.assertEqual(result["success_notification_count"], 2)
 

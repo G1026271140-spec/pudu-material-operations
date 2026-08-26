@@ -60,7 +60,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.4.8"
+APP_VERSION = "V1.4.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 DEFAULT_NO_LANGUAGE_PRODUCTS = (
@@ -7799,6 +7799,44 @@ def approval_writeback_is_complete(request_no: str) -> bool:
     return str(request.get("status") or "") == "已发放" and bool(lines) and all(
         str(line.get("status") or "") == "已发放" for line in lines
     )
+
+
+def cleanup_custom_materials_for_request(request_no: str) -> int:
+    """Delete request-scoped custom master rows after a complete writeback."""
+    context = request_inventory_review_context(request_no=request_no)
+    request = dict(context["request"])
+    lines = [dict(line) for line in list(context["lines"])]
+    if str(request.get("status") or "") != "已发放" or not lines or any(
+        str(line.get("status") or "") != "已发放" for line in lines
+    ):
+        raise RuntimeError(f"申请单 {request_no} 尚未完整发放，不能清理自定义物料。")
+    request_row = dict(context["request_row"])
+    request_fields = feishu_fields(request_row)
+    if feishu_text(request_fields, "临时物料清理状态") == "已清理":
+        return 0
+    linked_material_ids = {
+        str(line.get("material_record_id") or "") for line in lines
+        if str(line.get("material_record_id") or "")
+    }
+    delete_ids: list[str] = []
+    for row in list(context["material_rows"]):
+        record_id = feishu_record_id(row)
+        if record_id not in linked_material_ids:
+            continue
+        fields = feishu_fields(row)
+        temporary_value = fields.get("是否临时物料")
+        is_temporary = temporary_value is True or str(temporary_value or "").strip().lower() in {
+            "true", "1", "是", "yes",
+        }
+        if is_temporary and feishu_text(fields, "备注").startswith("自定义物料申请:"):
+            delete_ids.append(record_id)
+    deleted = feishu_batch_delete_record_ids(MATERIAL_TABLE_NAME, delete_ids)
+    feishu_update_record_fields(
+        REQUEST_TABLE_NAME,
+        feishu_record_id(request_row),
+        {"临时物料清理状态": "已清理"},
+    )
+    return deleted
 
 
 def dimension_management_notification_card(
