@@ -52,6 +52,7 @@ def category_task(
     task_type: str,
     payload: dict,
     result: dict | None = None,
+    retry_count: int = 0,
 ) -> SubmissionTask:
     return SubmissionTask(
         record_id="rec-category",
@@ -64,7 +65,7 @@ def category_task(
         started_at=2,
         completed_at=0,
         lease_expires_at=3,
-        retry_count=0,
+        retry_count=retry_count,
         next_retry_at=0,
         worker_id="worker",
         result=dict(result or {}),
@@ -105,6 +106,7 @@ class SubmissionWorkerTests(unittest.TestCase):
         task = category_task(
             QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
             {"request_no": "REQ-1", "instance_code": "instance-1"},
+            retry_count=3,
         )
         checkpoints: list[dict] = []
         with (
@@ -120,6 +122,23 @@ class SubmissionWorkerTests(unittest.TestCase):
 
         notify.assert_called_once_with("REQ-1", "instance-1", succeeded=False)
         self.assertTrue(checkpoints[-1]["failure_notified"])
+
+    def test_approval_writeback_in_progress_retries_without_false_alarm(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
+            {"request_no": "REQ-1", "instance_code": "instance-1"},
+        )
+        with (
+            patch.object(worker.inventory_app, "approval_writeback_is_complete", return_value=False),
+            patch.object(
+                worker.inventory_app,
+                "notify_enabled_admins_of_approval_writeback",
+            ) as notify,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "等待修复后重试"):
+                worker.process_task(task)
+
+        notify.assert_not_called()
 
     def test_category_sync_retry_does_not_repeat_data_write(self) -> None:
         task = category_task(

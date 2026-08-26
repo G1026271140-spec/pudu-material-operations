@@ -366,7 +366,10 @@ def process_task(
                 if checkpoint is not None:
                     checkpoint(progress)
             return progress
-        if not progress.get("failure_notified"):
+        # A writeback loop can be in progress when an older workflow enqueues
+        # this task. Keep early retries silent; only repeated incompleteness is
+        # treated as a genuine anomaly.
+        if task.retry_count >= 3 and not progress.get("failure_notified"):
             progress["failure_notification_count"] = (
                 inventory_app.notify_enabled_admins_of_approval_writeback(
                     request_no, instance_code, succeeded=False

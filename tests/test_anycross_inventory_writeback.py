@@ -50,14 +50,14 @@ class AnyCrossInventoryWritebackTests(unittest.TestCase):
         self.assertIn("结合品类/型号/语种后应唯一命中 1 条", source)
         self.assertIn("first.record_ids", source)
 
-    def test_result_audit_task_is_enqueued_before_inventory_updates(self) -> None:
+    def test_result_audit_task_is_enqueued_after_inventory_and_request_updates(self) -> None:
         structure_ids = [item["id"] for item in self.workflow["structure"]]
         fields_source = self.steps["script-notify-task-fields"]["parameters"]["js_code"]["value"]
 
-        self.assertLess(structure_ids.index("branch-notify-task"), structure_ids.index("loop-detail"))
+        self.assertGreater(structure_ids.index("branch-notify-task"), structure_ids.index("bitable-update-main"))
         self.assertIn("审批回写管理员通知", fields_source)
         self.assertIn("下次重试时间", fields_source)
-        self.assertIn("10 * 60 * 1000", fields_source)
+        self.assertNotIn("10 * 60 * 1000", fields_source)
         self.assertIn("后台任务队列", self.steps["script-prepare"]["parameters"]["js_code"]["value"])
 
 

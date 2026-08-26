@@ -40,38 +40,6 @@
       "subSteps": null
     },
     {
-      "id": "bitable-query-notify-task",
-      "type": "normal",
-      "subSteps": null
-    },
-    {
-      "id": "script-check-notify-task",
-      "type": "normal",
-      "subSteps": null
-    },
-    {
-      "id": "branch-notify-task",
-      "type": "branch_exclusive_parent",
-      "subSteps": [
-        {
-          "id": "branch-notify-task.child-1",
-          "type": "branch_exclusive_child",
-          "subSteps": [
-            {
-              "id": "script-notify-task-fields",
-              "type": "normal",
-              "subSteps": null
-            },
-            {
-              "id": "bitable-add-notify-task",
-              "type": "normal",
-              "subSteps": null
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "loop-detail",
       "type": "loop_serial_parent",
       "subSteps": [
@@ -174,6 +142,38 @@
       "id": "bitable-update-main",
       "type": "normal",
       "subSteps": null
+    },
+    {
+      "id": "bitable-query-notify-task",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "script-check-notify-task",
+      "type": "normal",
+      "subSteps": null
+    },
+    {
+      "id": "branch-notify-task",
+      "type": "branch_exclusive_parent",
+      "subSteps": [
+        {
+          "id": "branch-notify-task.child-1",
+          "type": "branch_exclusive_child",
+          "subSteps": [
+            {
+              "id": "script-notify-task-fields",
+              "type": "normal",
+              "subSteps": null
+            },
+            {
+              "id": "bitable-add-notify-task",
+              "type": "normal",
+              "subSteps": null
+            }
+          ]
+        }
+      ]
     }
   ],
   "steps": [
@@ -2189,7 +2189,7 @@
         },
         "js_code": {
           "type": "string",
-          "value": "function handler(input) {\n  const payload = JSON.stringify({ request_no: input.request_no, instance_code: input.instance_code });\n  return {\n    '任务ID': input.task_id,\n    '任务类型': '审批回写管理员通知',\n    '幂等键': input.task_id,\n    '状态': '待处理',\n    '载荷JSON': payload,\n    '提交时间': Date.now(),\n    '重试次数': 0,\n    '下次重试时间': Date.now() + 10 * 60 * 1000,\n    '完成状态': '未完成'\n  };\n}"
+          "value": "function handler(input) {\n  const payload = JSON.stringify({ request_no: input.request_no, instance_code: input.instance_code, trigger_stage: 'writeback_completed' });\n  return {\n    '任务ID': input.task_id,\n    '任务类型': '审批回写管理员通知',\n    '幂等键': input.task_id,\n    '状态': '待处理',\n    '载荷JSON': payload,\n    '提交时间': Date.now(),\n    '重试次数': 0,\n    '下次重试时间': Date.now(),\n    '完成状态': '未完成'\n  };\n}"
         }
       },
       "errorHandler": {
