@@ -1,10 +1,26 @@
 import unittest
+from unittest.mock import MagicMock, patch
 
 import app
 import submission_queue as queue
 
 
 class CulturalRequestTests(unittest.TestCase):
+    def test_direct_route_opens_cultural_request_page(self) -> None:
+        query_params = {"section": "cultural_request"}
+        session_state: dict[str, object] = {}
+        with (
+            patch.object(app.st, "query_params", query_params),
+            patch.object(app.st, "session_state", session_state),
+        ):
+            selected = app.apply_management_section_from_query()
+
+        self.assertEqual(selected, "文化周边申领")
+        self.assertEqual(
+            session_state[app.MANAGEMENT_NAVIGATION_KEY],
+            "文化周边申领",
+        )
+
     def test_catalog_only_includes_cultural_categories(self) -> None:
         categories = [
             {"record_id": "cat1", "fields": {"物料品类": "文化POLO衫", "品类定义": "文化周边", "中文页面名称": "文化POLO衫", "英文页面名称": "Cultural Polo Shirt"}},

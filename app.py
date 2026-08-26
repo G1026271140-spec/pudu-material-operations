@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.6"
+APP_VERSION = "V1.5.7"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -11856,6 +11856,18 @@ def set_management_section(section: object, *, sync_workbench_control: bool = Tr
     return normalized
 
 
+def apply_management_section_from_query() -> str:
+    """Open a public workbench directly from a stable shareable URL."""
+    route = str(st.query_params.get("section", "")).strip().casefold()
+    section = {
+        "request": "库存登记",
+        "cultural_request": "文化周边申领",
+    }.get(route, "")
+    if section:
+        set_management_section(section)
+    return section
+
+
 def sync_management_section_from_workbench_control() -> None:
     selected = st.session_state.get(MANAGEMENT_WORKBENCH_CONTROL_KEY, "库存登记")
     if selected in MANAGEMENT_WORKBENCH_SECTIONS:
@@ -18802,6 +18814,7 @@ def main() -> None:
     )
     inject_global_styles()
     install_button_click_guard()
+    apply_management_section_from_query()
     allocation_view = str(st.query_params.get("allocation", "")) == "request"
     if not allocation_view:
         restore_default_sidebar_on_page_load()
