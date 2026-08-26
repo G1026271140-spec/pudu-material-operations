@@ -359,6 +359,61 @@ class SubmissionQueueTests(unittest.TestCase):
 
         self.assertIsNone(queue.claim_next_submission_task(client, "worker-a"))
 
+    def test_claim_refuses_task_when_another_worker_owns_verified_lease(self) -> None:
+        client = FakeQueueClient()
+        queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+            "parallel-token",
+            {"version": 1},
+        )
+        original_get_record = client.get_record
+
+        def get_record(table_id: str, record_id: str) -> dict:
+            record = original_get_record(table_id, record_id)
+            if record["fields"].get(queue.QUEUE_FIELD_STATUS) == queue.QUEUE_STATUS_PROCESSING:
+                record["fields"][queue.QUEUE_FIELD_WORKER_ID] = "worker-b"
+            return record
+
+        client.get_record = get_record  # type: ignore[method-assign]
+
+        self.assertIsNone(
+            queue.claim_next_submission_task(
+                client,
+                "worker-a",
+                lease_seconds=60,
+                now_ms=1_000_000,
+            )
+        )
+
+    def test_fifo_order_is_stable_for_simultaneous_submissions(self) -> None:
+        client = FakeQueueClient()
+        first, _ = queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+            "material-token",
+            {"version": 1},
+        )
+        second, _ = queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+            "culture-token",
+            {"version": 1},
+        )
+        for row in client.records["tbl-queue"]:
+            row["fields"][queue.QUEUE_FIELD_SUBMITTED_AT] = 1_000_000
+
+        expected = min((first, second), key=lambda item: item.task_id)
+        claimed = queue.claim_next_submission_task(
+            client,
+            "worker-a",
+            now_ms=1_000_001,
+        )
+
+        self.assertIsNotNone(claimed)
+        assert claimed is not None
+        self.assertEqual(claimed.task_id, expected.task_id)
+
     def test_legacy_queue_rows_receive_completion_marker(self) -> None:
         client = FakeQueueClient()
         queue.ensure_submission_queue_table(client)

@@ -54,6 +54,10 @@ class CulturalRequestTests(unittest.TestCase):
         details = card["body"]["elements"][2]["content"]
         self.assertIn("领取后剩余库存：-1", details)
 
+    def test_request_page_does_not_show_stock_caption(self) -> None:
+        source = open(app.__file__, encoding="utf-8").read()
+        self.assertNotIn("当前库存：{int(selected_item['stock'])}（允许负库存）", source)
+
     def test_cultural_request_writes_request_summary_and_single_select_region(self) -> None:
         source = open(app.__file__, encoding="utf-8").read()
         self.assertIn('"物料明细文字信息": detail_text', source)

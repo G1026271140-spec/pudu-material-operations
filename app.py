@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.5"
+APP_VERSION = "V1.5.6"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -18319,9 +18319,6 @@ def render_cultural_request_page() -> None:
                         str(item["region"]) for item in scoped if item["model"] == selected_model
                     )
                     selected_region = st.pills("战区", valid_regions, key=f"cultural_region_{index}", selection_mode="single", default=valid_regions[0] if valid_regions else None, width="stretch")
-                    selected_item = combinations.get((product, selected_model, selected_region))
-                    if selected_item:
-                        st.caption(f"当前库存：{int(selected_item['stock'])}（允许负库存）")
                     quantity = st.number_input("数量", min_value=1, step=1, value=1, key=f"cultural_quantity_{index}")
                     remark = st.text_input("备注", key=f"cultural_remark_{index}")
                     if st.button("加入申领车", key=f"cultural_add_{index}", type="primary", width="stretch"):

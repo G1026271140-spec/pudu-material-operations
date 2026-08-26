@@ -745,16 +745,23 @@ def claim_next_submission_task(
             QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
         },
     )
-    return SubmissionTask(
-        **{
-            **task.__dict__,
-            "status": QUEUE_STATUS_PROCESSING,
-            "started_at": started_at,
-            "lease_expires_at": lease_expires_at,
-            "worker_id": worker_id,
-            "error": "",
-        }
+    # Base does not expose compare-and-swap updates. Re-read the lease after
+    # writing it so a worker that lost a near-simultaneous claim never starts
+    # the business write. The node registry remains the primary single-leader
+    # guard; this ownership check protects failover and overlapping startups.
+    claimed = _get_submission_task_with_readiness_retry(
+        client,
+        table_id,
+        task.record_id,
     )
+    if (
+        claimed.status != QUEUE_STATUS_PROCESSING
+        or claimed.worker_id != worker_id
+        or claimed.completion_status == QUEUE_COMPLETION_COMPLETED
+        or claimed.lease_expires_at != lease_expires_at
+    ):
+        return None
+    return claimed
 
 
 def complete_submission_task(
