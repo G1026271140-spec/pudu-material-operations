@@ -28,6 +28,38 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertEqual(payload["lines"][0]["region"], "欧洲战区")
         self.assertEqual(payload["lines"][0]["quantity"], 2)
 
+    def test_applicant_card_mentions_enabled_admins(self) -> None:
+        card = app._cultural_request_card(
+            "REQ-1",
+            "申请人",
+            [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 2}],
+            applicant=True,
+            admin_open_ids=["ou_admin_1", "ou_admin_2"],
+        )
+        content = card["body"]["elements"][0]["content"]
+        self.assertIn("<at id=ou_admin_1></at>", content)
+        self.assertIn("<at id=ou_admin_2></at>", content)
+        self.assertNotIn("@管理员", content)
+
+    def test_admin_card_shows_stock_after_claim(self) -> None:
+        card = app._cultural_request_card(
+            "REQ-1",
+            "申请人",
+            [{
+                "product": "文化POLO衫", "model": "2XL", "region": "美洲战区",
+                "quantity": 1, "remaining_stock": -1,
+            }],
+            applicant=False,
+        )
+        details = card["body"]["elements"][2]["content"]
+        self.assertIn("领取后剩余库存：-1", details)
+
+    def test_cultural_request_writes_request_summary_and_single_select_region(self) -> None:
+        source = open(app.__file__, encoding="utf-8").read()
+        self.assertIn('"物料明细文字信息": detail_text', source)
+        self.assertIn('"所属战区": request_regions', source)
+        self.assertNotIn('"战区关联": [region_id]', source)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.3"
+APP_VERSION = "V1.5.4"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -17869,17 +17869,26 @@ def _cultural_request_card(
     lines: list[dict[str, object]],
     *,
     applicant: bool,
-    admin_names: str = "管理员",
+    admin_open_ids: list[str] | None = None,
 ) -> dict[str, object]:
     details = "\n".join(
-        f"{index:02d}. {line['product']} / {line['model']} / {line['region']} × {int(line['quantity'])}"
+        (
+            f"{index:02d}. {line['product']} / {line['model']} / {line['region']} "
+            f"× {int(line['quantity'])}"
+            + (
+                f"｜领取后剩余库存：{int(line['remaining_stock'])}"
+                if not applicant and line.get("remaining_stock") is not None else ""
+            )
+        )
         for index, line in enumerate(lines, start=1)
     )
     title = "文化周边需求已提交" if applicant else "文化周边申领通知"
+    admin_mentions = " ".join(
+        f"<at id={open_id}></at>" for open_id in list(admin_open_ids or []) if open_id
+    )
     lead = (
-        f"您的（文化周边）需求已提交，请找 @{admin_names} 进行申领。"
-        if applicant
-        else f"{requester} 提交了文化周边申领，请安排发放。"
+        f"您的（文化周边）需求已提交，请找{admin_mentions or '已启用的管理员'}进行申领。"
+        if applicant else f"{requester} 提交了文化周边申领，请安排发放。"
     )
     return {
         "schema": "2.0",
@@ -17912,13 +17921,28 @@ def notify_cultural_request(
         send_feishu_interactive_message(
             client,
             requester_open_id,
-            _cultural_request_card(request_no, requester, lines, applicant=True),
+            _cultural_request_card(
+                request_no, requester, lines, applicant=True, admin_open_ids=admins
+            ),
         )
+    catalog = cultural_request_catalog(fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
+    combinations = dict(catalog.get("combinations") or {})
+    admin_lines: list[dict[str, object]] = []
+    for line in lines:
+        normalized = dict(line)
+        item = combinations.get((
+            str(line.get("product") or "").strip(),
+            str(line.get("model") or "").strip(),
+            str(line.get("region") or "").strip(),
+        ))
+        if item:
+            normalized["remaining_stock"] = int(item.get("stock") or 0)
+        admin_lines.append(normalized)
     for open_id in admins:
         send_feishu_interactive_message(
             client,
             open_id,
-            _cultural_request_card(request_no, requester, lines, applicant=False),
+            _cultural_request_card(request_no, requester, admin_lines, applicant=False),
         )
     return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
 
@@ -17951,9 +17975,8 @@ def execute_cultural_material_management(draft: dict[str, object]) -> dict[str, 
             raise RuntimeError("文化周边的品类、型号和战区均不能为空。")
         category_id = _cultural_dimension_record_id(CATEGORY_TABLE_NAME, "物料品类", product)
         model_id = _cultural_dimension_record_id(MODEL_TABLE_NAME, "产品型号", model)
-        region_id = _cultural_dimension_record_id(REGION_TABLE_NAME, "战区名称", region)
-        if not category_id or not model_id or not region_id:
-            raise RuntimeError("文化周边关联的品类、型号或战区不存在。")
+        if not category_id or not model_id:
+            raise RuntimeError("文化周边关联的品类或型号不存在。")
         fields: dict[str, object] = {
             "物料品类": product,
             "产品型号": model,
@@ -17963,7 +17986,6 @@ def execute_cultural_material_management(draft: dict[str, object]) -> dict[str, 
             "备注": str(draft.get("remark") or ""),
             "物料品类关联": [category_id],
             "产品型号关联": [model_id],
-            "战区关联": [region_id],
         }
         if action == "create":
             duplicate = next(
@@ -18108,6 +18130,15 @@ def submit_feishu_cultural_request(
         quantity = int(line.get("quantity") or 0)
         prepared.append({**culture_item, "quantity": quantity, "remark": str(line.get("remark") or "")})
 
+    detail_text = "\n".join(
+        f"{index:02d}. {item['product']} / {item['model']} / {item['region']} × {int(item['quantity'])}"
+        for index, item in enumerate(prepared, start=1)
+    )
+    request_regions = "、".join(unique_preserve([
+        str(item.get("region") or "").strip() for item in prepared
+        if str(item.get("region") or "").strip()
+    ]))
+
     existing_rows = submission_token_rows(token)
     if existing_rows:
         request_row = existing_rows[0]
@@ -18126,6 +18157,8 @@ def submit_feishu_cultural_request(
             "审批状态": "无需审批",
             "文化周边处理状态": "已发放",
             "文化周边通知状态": "待发送",
+            "物料明细文字信息": detail_text,
+            "所属战区": request_regions,
             "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", datetime.now()),
             "提交幂等键": token,
             REQUEST_TOTAL_RMB_FIELD: round(
@@ -18216,10 +18249,7 @@ def submit_feishu_cultural_request(
     feishu_update_record_fields(
         REQUEST_TABLE_NAME,
         request_record_id,
-        {"申请明细文字信息": "\n".join(
-            f"{index:02d}. {item['product']} / {item['model']} / {item['region']} × {int(item['quantity'])}"
-            for index, item in enumerate(prepared, start=1)
-        )},
+        {"物料明细文字信息": detail_text, "所属战区": request_regions},
     )
     return request_no, len(prepared), created_new
 
