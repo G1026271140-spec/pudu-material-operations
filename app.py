@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.3"
+APP_VERSION = "V1.6.4"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -7579,8 +7579,10 @@ def notify_requester_of_inventory_edit(
             ],
         },
     }
-    send_feishu_interactive_message(client, requester_open_id, card)
-    return 1
+    recipients = unique_preserve([requester_open_id, *admin_open_ids])
+    for open_id in recipients:
+        send_feishu_interactive_message(client, open_id, card)
+    return len(recipients)
 
 
 def notify_enabled_admins_of_material_request(

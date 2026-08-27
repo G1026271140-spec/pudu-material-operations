@@ -175,8 +175,10 @@ class RequestInventoryReviewTests(unittest.TestCase):
         ):
             app.notify_requester_of_inventory_edit(request, before, after, "原型号库存不足")
 
-        client.send_interactive_message.assert_called_once()
-        card = client.send_interactive_message.call_args.args[1]
+        self.assertEqual(client.send_interactive_message.call_count, 3)
+        recipients = [call.args[0] for call in client.send_interactive_message.call_args_list]
+        self.assertEqual(recipients, ["ou-user", "ou_admin_1", "ou_admin_2"])
+        card = client.send_interactive_message.call_args_list[0].args[1]
         serialized = str(card)
         self.assertIn("营销物料申请已调整", serialized)
         self.assertIn("修改前", serialized)
@@ -191,6 +193,26 @@ class RequestInventoryReviewTests(unittest.TestCase):
         contact_element = card["body"]["elements"][-1]
         self.assertEqual(set(contact_element), {"tag", "content"})
         client.send_text_message.assert_not_called()
+
+    def test_inventory_edit_notification_does_not_duplicate_requester_admin(self) -> None:
+        client = Mock()
+        request = {"request_no": "REQ-1", "requester_open_id": "ou-both"}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-both", "ou-admin"]),
+        ):
+            count = app.notify_requester_of_inventory_edit(
+                request,
+                [{"product": "公仔", "model": "BellaBot", "language": "无需语种", "quantity": 1}],
+                [{"product": "公仔", "model": "KettyBot Pro", "language": "无需语种", "quantity": 1}],
+                "调整型号",
+            )
+
+        self.assertEqual(count, 2)
+        self.assertEqual(
+            [call.args[0] for call in client.send_interactive_message.call_args_list],
+            ["ou-both", "ou-admin"],
+        )
 
     def test_card_edit_form_keeps_category_and_only_offers_its_dimensions(self) -> None:
         context = {
