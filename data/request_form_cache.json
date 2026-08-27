@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-26 16:18:26",
+  "generated_at": "2026-08-27 16:33:21",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -30,7 +30,6 @@
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
     "文化POLO衫",
-    "文化夹克",
     "PUDU定制眼镜"
   ],
   "configured_language_products": [
@@ -45,8 +44,7 @@
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
-    "文化POLO衫",
-    "文化夹克"
+    "文化POLO衫"
   ],
   "models": [
     "2XL",
@@ -68,6 +66,9 @@
     "FlashBot Max",
     "FlashBot Pro",
     "FlashBot Ultra",
+    "GT3",
+    "GT5",
+    "GT7",
     "Hulk",
     "KettyBot Pro",
     "L",
@@ -125,7 +126,10 @@
     "2XL": "新项目",
     "3XL": "新项目",
     "4XL": "新项目",
-    "6XL": "新项目"
+    "6XL": "新项目",
+    "GT3": "CR",
+    "GT5": "CR",
+    "GT7": "CR"
   },
   "model_display_names": {
     "BG1": {
@@ -279,60 +283,68 @@
     "6XL": {
       "zh": "6XL",
       "en": "6XL"
+    },
+    "GT3": {
+      "zh": "GT3",
+      "en": "GT3"
+    },
+    "GT5": {
+      "zh": "GT5",
+      "en": "GT5"
+    },
+    "GT7": {
+      "zh": "GT7",
+      "en": "GT7"
     }
   },
   "category_display_names": {
     "产品单页(Product Flyer )": {
-      "zh": "",
-      "en": ""
+      "zh": "产品单页(Product Flyer )",
+      "en": "Product Flyer"
     },
     "品牌手册(Product Brochure (All\nBanner)）": {
       "zh": "",
-      "en": ""
+      "en": "Product Brochure (All\nBanner)"
     },
     "工业产品线手册IR(Industrial Product Line Brochure）": {
-      "zh": "",
-      "en": ""
+      "zh": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "en": "IR(Industrial Product Line Brochure）"
     },
     "清洁产品线手册CR(Cleaning Product Line Brochure）": {
-      "zh": "",
-      "en": ""
+      "zh": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "en": "清洁产品线手册CR(Cleaning Product Line Brochure）"
     },
     "配送线产品手册SR(Delivery Robot Product Brochure)": {
-      "zh": "",
-      "en": ""
+      "zh": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "en": "配送线产品手册SR(Delivery Robot Product Brochure)"
     },
     "具身线产品手册GR(Embodied AI Robot Product Brochure)": {
-      "zh": "",
-      "en": ""
+      "zh": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "en": "GR(Embodied AI Robot Product Brochure)"
     },
     "产品易拉宝(Product Roll-Up)": {
       "zh": "",
-      "en": ""
+      "en": "Product Roll-Up"
     },
     "公仔(Plush Toy)": {
       "zh": "",
-      "en": ""
+      "en": "Plush Toy"
     },
     "冰箱贴( Fridge Magnet)": {
       "zh": "",
-      "en": ""
+      "en": "Fridge Magnet"
     },
     "笔记本礼盒(Notebook Gift Box)": {
       "zh": "",
-      "en": ""
+      "en": "Notebook Gift Box"
     },
     "普渡logo无纺布手提袋(PUDU logo bag)": {
       "zh": "",
-      "en": ""
+      "en": "PUDU logo bag"
     },
     "文化POLO衫": {
       "zh": "文化POLO衫",
       "en": "Cultural Polo Shirt"
-    },
-    "文化夹克": {
-      "zh": "文化夹克",
-      "en": "Cultural Jacket"
     }
   },
   "languages": [
@@ -526,6 +538,7 @@
         {
           "model": "FlashBot Arm",
           "languages": [
+            "英语(English)",
             "简中(Simplified Chinese)",
             "俄语(Russian)",
             "德语(German)",
@@ -606,6 +619,57 @@
             "韩语(Korean)"
           ],
           "product_line": "SR"
+        },
+        {
+          "model": "GT3",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "CR"
+        },
+        {
+          "model": "GT5",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "CR"
+        },
+        {
+          "model": "GT7",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "俄语(Russian)",
+            "德语(German)",
+            "意大利语(Italian)",
+            "日语(apanese)",
+            "法语(French)",
+            "繁中(Traditional Chinese)",
+            "葡语(Portuguese)",
+            "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "CR"
         },
         {
           "model": "KettyBot Pro",
@@ -849,7 +913,8 @@
             "葡语(Portuguese)",
             "俄语(Russian)",
             "繁中(Traditional Chinese)",
-            "意大利语(Italian)"
+            "意大利语(Italian)",
+            "韩语(Korean)"
           ],
           "product_line": "新项目"
         }
@@ -870,7 +935,8 @@
             "葡语(Portuguese)",
             "俄语(Russian)",
             "繁中(Traditional Chinese)",
-            "意大利语(Italian)"
+            "意大利语(Italian)",
+            "韩语(Korean)"
           ],
           "product_line": "新项目"
         }
@@ -1474,7 +1540,17 @@
         {
           "model": "无需型号",
           "languages": [
-            "英语(English)"
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(apanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
           ],
           "product_line": "新项目"
         }
@@ -1487,14 +1563,23 @@
           "model": "无需型号",
           "languages": [
             "英语(English)",
-            "简中(Simplified Chinese)"
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(apanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
           ],
           "product_line": "新项目"
         }
       ]
     }
   ],
-  "combination_count": 627,
+  "combination_count": 682,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -2691,7 +2776,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 77
+      "quantity": 78
     },
     {
       "material_code": "MAT-0372",
@@ -2740,13 +2825,6 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "繁中(Traditional Chinese)",
-      "quantity": 0
-    },
-    {
-      "material_code": "MAT-0379",
-      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "简中(Simplified Chinese)",
       "quantity": 0
     },
     {
@@ -3965,7 +4043,7 @@
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 358
+      "quantity": 342
     },
     {
       "material_code": "MAT-0761",
@@ -4736,13 +4814,6 @@
       "model": "猛犸MP2000",
       "language": "韩语(Korean)",
       "quantity": 0
-    },
-    {
-      "material_code": "MAT-1138",
-      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
-      "model": "无需型号",
-      "language": "英语(English)",
-      "quantity": 1
     },
     {
       "material_code": "MAT-1139",
@@ -5898,8 +5969,393 @@
       "model": "FlashBot Ultra",
       "language": "韩语(Korean)",
       "quantity": 0
+    },
+    {
+      "material_code": "MAT-1343",
+      "product": "产品单页(Product Flyer )",
+      "model": "FlashBot Arm",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1344",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1345",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1346",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1347",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1348",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1349",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1350",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1351",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1352",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1353",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1354",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT3",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1355",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1356",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1357",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1358",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1359",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1360",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1361",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1362",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1363",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1364",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1365",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT5",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1366",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1367",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1368",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1369",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1370",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1371",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1372",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1373",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "英语(English)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1374",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1375",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1376",
+      "product": "产品单页(Product Flyer )",
+      "model": "GT7",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1377",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1378",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1379",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1380",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1381",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1382",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1383",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1384",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1385",
+      "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1386",
+      "product": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "model": "无需型号",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1387",
+      "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "model": "无需型号",
+      "language": "韩语(Korean)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1388",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1389",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "德语(German)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1390",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "日语(apanese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1391",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "法语(French)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1392",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "西语(Spanish)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1393",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "葡语(Portuguese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1394",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "俄语(Russian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1395",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1396",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "意大利语(Italian)",
+      "quantity": 0
+    },
+    {
+      "material_code": "MAT-1397",
+      "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "model": "无需型号",
+      "language": "韩语(Korean)",
+      "quantity": 0
     }
   ],
-  "row_count": 629,
+  "row_count": 682,
   "built_from": "page_data_static_snapshot"
 }
