@@ -130,6 +130,7 @@ class SubmissionWorkerTests(unittest.TestCase):
 
     def test_cultural_request_updates_quota_after_idempotent_business_write(self) -> None:
         task = cultural_request_task()
+        call_order: list[str] = []
         with (
             patch.object(
                 worker.inventory_app,
@@ -142,8 +143,8 @@ class SubmissionWorkerTests(unittest.TestCase):
                     "permission_record_id": "rec-permission",
                 },
             ),
-            patch.object(worker.inventory_app, "submit_feishu_cultural_request", return_value=("REQ-1", 1, True)) as submit,
-            patch.object(worker.inventory_app, "update_cultural_request_cumulative_quantity") as update_quota,
+            patch.object(worker.inventory_app, "submit_feishu_cultural_request", side_effect=lambda *args: (call_order.append("write") or ("REQ-1", 1, True))) as submit,
+            patch.object(worker.inventory_app, "update_cultural_request_cumulative_quantity", side_effect=lambda *args: call_order.append("reserve")) as update_quota,
             patch.object(worker.inventory_app, "notify_cultural_request", return_value={"applicant": 1, "admins": 1}),
             patch.object(worker.inventory_app, "submission_token_rows", return_value=[{"record_id": "rec-request"}]),
             patch.object(worker.inventory_app, "feishu_update_record_fields"),
@@ -152,6 +153,8 @@ class SubmissionWorkerTests(unittest.TestCase):
 
         submit.assert_called_once()
         update_quota.assert_called_once_with("rec-permission", 2)
+        self.assertEqual(call_order[:2], ["reserve", "write"])
+        self.assertTrue(result["quota_reserved"])
         self.assertTrue(result["quota_updated"])
 
     def test_approval_writeback_success_notifies_and_completes(self) -> None:

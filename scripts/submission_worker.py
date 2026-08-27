@@ -284,6 +284,15 @@ def process_cultural_request(
         save_progress()
         return progress
 
+    if not progress.get("quota_reserved") and not progress.get("quota_updated"):
+        inventory_app.update_cultural_request_cumulative_quantity(
+            str(progress.get("quota_permission_record_id") or ""),
+            int(progress.get("quota_target_quantity") or 0),
+        )
+        progress["quota_reserved"] = True
+        progress["quota_updated"] = True
+        save_progress()
+
     if not progress.get("write_done"):
         request_no, line_count, created_new = inventory_app.submit_feishu_cultural_request(
             request_payload, lines
@@ -296,13 +305,6 @@ def process_cultural_request(
                 "created_new_request": created_new,
             }
         )
-        save_progress()
-    if not progress.get("quota_updated"):
-        inventory_app.update_cultural_request_cumulative_quantity(
-            str(progress.get("quota_permission_record_id") or ""),
-            int(progress.get("quota_target_quantity") or 0),
-        )
-        progress["quota_updated"] = True
         save_progress()
     if not progress.get("notification_done"):
         try:
