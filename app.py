@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.4"
+APP_VERSION = "V1.6.5"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -467,7 +467,7 @@ MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记",)
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = (
     "采购补库",
-    "文化周边管理",
+    "战区管理",
     "品类管理",
     "型号管理",
     "语种管理",
@@ -3236,6 +3236,15 @@ def dimension_management_config(kind: str) -> dict[str, object]:
             "link_fields": LANGUAGE_LINK_FIELD_CANDIDATES,
             "label": "语种",
         }
+    if kind == "region":
+        return {
+            "table": REGION_TABLE_NAME,
+            "name_field": "战区名称",
+            "code_field": "",
+            "material_name_field": "战区管理",
+            "link_fields": (),
+            "label": "战区",
+        }
     raise ValueError("不支持的基础维度类型。")
 
 
@@ -3304,6 +3313,13 @@ def dimension_association_category_names(
     dimension_name: object,
 ) -> list[str]:
     normalized_dimension = normalize_option_label(dimension_name).casefold()
+    if kind == "region":
+        return [
+            str(item.get("category") or "")
+            for item in categories
+            if str(item.get("category") or "")
+            and str(item.get("category_definition") or "") == CATEGORY_DEFINITION_CULTURAL
+        ]
     no_dimension_value = NO_MODEL_TEXT if kind == "model" else NO_LANGUAGE_TEXT
     editing_no_dimension = normalized_dimension == normalize_option_label(no_dimension_value).casefold()
     return [
@@ -3346,7 +3362,8 @@ def dimension_material_references(kind: str, record_id: str, name: str) -> list[
     config = dimension_management_config(kind)
     target_name = normalize_option_label(name).casefold()
     referenced_ids: list[str] = []
-    for row in fresh_feishu_rows(MATERIAL_TABLE_NAME):
+    source_table = CULTURAL_MATERIAL_TABLE_NAME if kind == "region" else MATERIAL_TABLE_NAME
+    for row in fresh_feishu_rows(source_table):
         fields = feishu_fields(row)
         linked_ids = feishu_link_ids_any(fields, list(config["link_fields"]))  # type: ignore[arg-type]
         material_name = feishu_text(fields, str(config["material_name_field"]))
@@ -3374,7 +3391,15 @@ def dimension_association_plan(
         str(item.get("category") or ""): str(item.get("record_id") or "")
         for item in category_records
     }
-    existing_by_key = {
+    if kind == "region":
+        existing_by_key = {
+            (str(row.get("category") or ""), str(row.get("model") or "")): row
+            for row in material_records
+            if normalize_option_label(str(row.get("region") or "")).casefold()
+            == normalize_option_label(current_name).casefold()
+        }
+    else:
+        existing_by_key = {
         (
             str(row.get("category") or ""),
             str(row.get("language") if kind == "model" else row.get("model") or ""),
@@ -3384,7 +3409,7 @@ def dimension_association_plan(
             str(row.get("model") if kind == "model" else row.get("language") or "")
         ).casefold()
         == normalize_option_label(current_name).casefold()
-    }
+        }
     changes: list[dict[str, object]] = []
     if operation == "delete":
         selected = set(existing_by_key)
@@ -3397,6 +3422,7 @@ def dimension_association_plan(
                     "material_code": str(existing.get("material_code") or ""), "category": key[0],
                     "model": str(existing.get("model") or NO_MODEL_TEXT),
                     "language": str(existing.get("language") or NO_LANGUAGE_TEXT),
+                    "region": str(existing.get("region") or ""),
                     "quantity": int(existing.get("quantity") or 0),
                     "status": normalize_enabled_status(existing.get("status")),
                     "request_visible": normalize_request_page_visibility(existing.get("request_visible")),
@@ -3406,7 +3432,8 @@ def dimension_association_plan(
                 changes.append({
                     "action": "create", "category": key[0], "category_record_id": category_ids.get(key[0], ""),
                     "model": target_name if kind == "model" else key[1],
-                    "language": key[1] if kind == "model" else target_name,
+                    "language": key[1] if kind == "model" else (target_name if kind == "language" else ""),
+                    "region": target_name if kind == "region" else "",
                     "quantity": 0, "unit_price": 0.0, "customs_code": "", "status": STATUS_ACTIVE,
                     "request_visible": REQUEST_PAGE_VISIBLE_VALUE,
                 })
@@ -3416,7 +3443,8 @@ def dimension_association_plan(
                     "material_code": str(existing.get("material_code") or ""),
                     "category": key[0], "category_record_id": category_ids.get(key[0], ""),
                     "model": target_name if kind == "model" else str(existing.get("model") or NO_MODEL_TEXT),
-                    "language": str(existing.get("language") or NO_LANGUAGE_TEXT) if kind == "model" else target_name,
+                    "language": str(existing.get("language") or NO_LANGUAGE_TEXT) if kind in {"model", "region"} else target_name,
+                    "region": target_name if kind == "region" else str(existing.get("region") or ""),
                     "quantity": int(existing.get("quantity") or 0),
                     "unit_price": float(existing.get("unit_price") or 0),
                     "customs_code": str(existing.get("customs_code") or ""),
@@ -3429,6 +3457,7 @@ def dimension_association_plan(
                 "material_code": str(existing.get("material_code") or ""), "category": key[0],
                 "model": str(existing.get("model") or NO_MODEL_TEXT),
                 "language": str(existing.get("language") or NO_LANGUAGE_TEXT),
+                "region": str(existing.get("region") or ""),
                 "quantity": int(existing.get("quantity") or 0),
                 "status": normalize_enabled_status(existing.get("status")),
                 "request_visible": normalize_request_page_visibility(existing.get("request_visible")),
@@ -3444,6 +3473,7 @@ def dimension_change_dataframe(changes: list[dict[str, object]]) -> pd.DataFrame
         "物料品类": str(item.get("category") or ""),
         "产品型号": str(item.get("model") or NO_MODEL_TEXT),
         "语种": str(item.get("language") or NO_LANGUAGE_TEXT),
+        "战区": str(item.get("region") or ""),
         "库存数量": int(item.get("quantity") or 0),
         "启用状态": normalize_enabled_status(item.get("status")),
         "申领页显示": normalize_request_page_visibility(item.get("request_visible")),
@@ -3633,6 +3663,8 @@ def sync_new_request_model_material_rows() -> dict[str, object]:
 
 def execute_dimension_management(draft: dict[str, object]) -> dict[str, object]:
     kind = str(draft.get("kind") or "")
+    if kind == "region":
+        return execute_region_dimension_management(draft)
     operation = str(draft.get("operation") or "")
     config = dimension_management_config(kind)
     table_name = str(config["table"])
@@ -7883,7 +7915,7 @@ def dimension_management_notification_card(
     result: dict[str, object],
 ) -> dict[str, object]:
     kind = str(draft.get("kind") or "")
-    label = "型号" if kind == "model" else "语种"
+    label = {"model": "型号", "language": "语种", "region": "战区"}.get(kind, "基础维度")
     operation = str(draft.get("operation") or "")
     operation_label = {"create": "新增", "edit": "编辑", "delete": "删除"}.get(operation, operation)
     changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
@@ -7914,7 +7946,8 @@ def dimension_management_notification_card(
     for index, row in enumerate(rows[:40], start=1):
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
             f"{index:02d}. [{row.get('操作')}] {row.get('物料编码')} | "
-            f"{row.get('物料品类')} / {row.get('产品型号')} / {row.get('语种')}\n"
+            f"{row.get('物料品类')} / {row.get('产品型号')} / "
+            f"{row.get('战区') if kind == 'region' else row.get('语种')}\n"
             f"库存：{row.get('库存数量')}；状态：{row.get('启用状态')}；申领页显示：{row.get('申领页显示')}"
         )}})
     if not rows:
@@ -7933,7 +7966,7 @@ def notify_enabled_admins_of_dimension_management(
 ) -> int:
     client = feishu_client()
     if client is None:
-        raise RuntimeError("飞书未配置，无法发送型号或语种管理通知。")
+        raise RuntimeError("飞书未配置，无法发送基础维度管理通知。")
     recipients = enabled_admin_open_ids()
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
@@ -11372,6 +11405,67 @@ def build_material_relation_updates(
     return updates
 
 
+def sync_feishu_cultural_category_inventory(
+    *, old_product: str, new_product: str, models: list[str], regions: list[str],
+    category_record_id: str, category_zh_page_name: str, category_en_page_name: str,
+    category_status: str, category_request_visible: str,
+    commercial_invoice_name: str, packing_list_product_type: str,
+    target_values: dict[tuple[str, str], dict[str, object]],
+) -> dict[str, object]:
+    """Create or edit a culture category as model x region combinations."""
+    if not models or not regions:
+        raise ValueError("文化周边品类必须至少选择一个型号和一个战区。")
+    category_fields: dict[str, object] = {
+        "物料品类": new_product, "中文页面名称": category_zh_page_name,
+        "英文页面名称": category_en_page_name, "品类定义": CATEGORY_DEFINITION_CULTURAL,
+        "是否无需型号": "否", "是否无需语种": "否", "启用状态": category_status,
+        REQUEST_PAGE_VISIBILITY_FIELD: category_request_visible,
+    }
+    set_shipping_category_fields(category_fields, commercial_invoice_name, packing_list_product_type)
+    created_category = False
+    if category_record_id:
+        feishu_update_record_fields(CATEGORY_TABLE_NAME, category_record_id, category_fields)
+    else:
+        created = feishu_batch_create_records(CATEGORY_TABLE_NAME, [category_fields])
+        category_record_id = feishu_record_id(created[0] if created else {})
+        created_category = True
+    if not category_record_id:
+        raise RuntimeError("创建文化周边品类后未返回记录 ID。")
+
+    current = [item for item in load_cultural_dimension_inventory_records(fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)) if str(item.get("category") or "") == old_product]
+    current_by_key = {(str(item.get("model") or ""), str(item.get("region") or "")): item for item in current}
+    target_keys = {(str(model), str(region)) for model in models for region in regions}
+    model_ids = {model: _cultural_dimension_record_id(MODEL_TABLE_NAME, "产品型号", model) for model in models}
+    missing_models = [model for model, value in model_ids.items() if not value]
+    if missing_models:
+        raise RuntimeError("以下型号不存在：" + "、".join(missing_models))
+    deletes = [str(item.get("record_id") or "") for key, item in current_by_key.items() if key not in target_keys]
+    updates: list[dict[str, object]] = []
+    creates: list[dict[str, object]] = []
+    for key in sorted(target_keys):
+        model, region = key
+        values = dict(target_values.get(key) or {})
+        fields: dict[str, object] = {
+            "物料品类": new_product, "产品型号": model, "战区管理": region,
+            "物料品类关联": [category_record_id], "产品型号关联": [model_ids[model]],
+        }
+        existing = current_by_key.get(key)
+        if existing:
+            fields.update({
+                "当前库存": int(values.get("quantity", existing.get("quantity", 0)) or 0),
+                "单价（人民币）": float(values.get("unit_price", existing.get("unit_price", 0)) or 0),
+                "备注": str(existing.get("remark") or ""),
+            })
+            updates.append({"record_id": str(existing.get("record_id") or ""), "fields": fields})
+        else:
+            fields.update({"文化周边编码": f"CUL-{uuid.uuid4().hex[:8].upper()}", "当前库存": int(values.get("quantity") or 0), "单价（人民币）": float(values.get("unit_price") or 0), "备注": ""})
+            creates.append(fields)
+    created_rows = feishu_batch_create_records(CULTURAL_MATERIAL_TABLE_NAME, creates) if creates else []
+    updated_count = feishu_batch_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, updates)
+    deleted_count = feishu_batch_delete_record_ids(CULTURAL_MATERIAL_TABLE_NAME, deletes)
+    return {"created_category": created_category, "category_record_id": category_record_id, "created_material_count": len(created_rows), "updated_material_count": updated_count, "deleted_material_count": deleted_count, "plan": {"targets": [{"model": model, "language": region, "region": region} for model, region in sorted(target_keys)]}}
+
+
 def sync_feishu_category_inventory(
     *,
     old_product: str,
@@ -11418,6 +11512,20 @@ def sync_feishu_category_inventory(
     category_en_page_name = category_en_page_name.strip() or new_product
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
+
+    if category_definition == CATEGORY_DEFINITION_CULTURAL:
+        return sync_feishu_cultural_category_inventory(
+            old_product=old_product, new_product=new_product,
+            models=models, regions=languages,
+            category_record_id=category_record_id,
+            category_zh_page_name=category_zh_page_name,
+            category_en_page_name=category_en_page_name,
+            category_status=category_status,
+            category_request_visible=category_request_visible,
+            commercial_invoice_name=commercial_invoice_name,
+            packing_list_product_type=packing_list_product_type,
+            target_values=target_values or {},
+        )
 
     category_rows = fresh_feishu_rows("物料品类")
     if category_record_id and not category_definition:
@@ -14657,7 +14765,11 @@ def render_dimension_management_page(kind: str) -> None:
             safe_feishu_rows(str(counterpart_config["table"])),
         )
         categories = load_feishu_category_records()
-        inventory_records = load_feishu_inventory_records()
+        inventory_records = (
+            load_cultural_dimension_inventory_records()
+            if kind == "region"
+            else load_feishu_inventory_records()
+        )
     render_section_header("01", f"{label}管理", f"新增、编辑或删除{label}，提交前需核对变更。")
     mode = st.segmented_control(
         "操作类型",
@@ -14744,7 +14856,7 @@ def render_dimension_management_page(kind: str) -> None:
         selected_keys = [
             [str(row.get("category") or ""), str(row.get("language") if kind == "model" else row.get("model") or "")]
             for row in inventory_records
-            if normalize_option_label(str(row.get("model") if kind == "model" else row.get("language") or "")).casefold()
+            if normalize_option_label(str(row.get("model") if kind == "model" else (row.get("region") if kind == "region" else row.get("language")) or "")).casefold()
             == normalize_option_label(current_name).casefold()
         ]
     else:
@@ -14760,7 +14872,7 @@ def render_dimension_management_page(kind: str) -> None:
         existing_keys = {
             (str(row.get("category") or ""), str(row.get("language") if kind == "model" else row.get("model") or ""))
             for row in inventory_records
-            if normalize_option_label(str(row.get("model") if kind == "model" else row.get("language") or "")).casefold()
+            if normalize_option_label(str(row.get("model") if kind == "model" else (row.get("region") if kind == "region" else row.get("language")) or "")).casefold()
             == normalize_option_label(default_name).casefold()
         }
         counterpart_column = "语种" if kind == "model" else "产品型号"
@@ -14880,6 +14992,7 @@ def render_add_category_form() -> None:
         options = load_options()
         categories = load_feishu_category_records()
         inventory_records = load_feishu_inventory_records()
+        cultural_inventory_records = load_cultural_dimension_inventory_records()
 
     message = st.session_state.pop("category_added_message", "") or st.session_state.pop(
         "category_admin_message", ""
@@ -14930,16 +15043,24 @@ def render_add_category_form() -> None:
             key="category_management_selected_name",
         )
         selected_category = category_by_name[selected_name]
-        selected_record_count = sum(
-            1 for record in inventory_records if record["category"] == selected_name
+        selected_pool = (
+            cultural_inventory_records
+            if str(selected_category.get("category_definition") or "") == CATEGORY_DEFINITION_CULTURAL
+            else inventory_records
         )
+        selected_record_count = sum(1 for record in selected_pool if record["category"] == selected_name)
         st.caption(f"当前品类共有 {selected_record_count} 条库存组合，修改后将先进入明细确认页。")
 
     category_id = str((selected_category or {}).get("record_id") or "")
     old_product = str((selected_category or {}).get("category") or "")
-    current_records = [record for record in inventory_records if record["category"] == old_product] if is_edit else []
+    selected_is_cultural = str((selected_category or {}).get("category_definition") or "") == CATEGORY_DEFINITION_CULTURAL
+    current_records = [record for record in (cultural_inventory_records if selected_is_cultural else inventory_records) if record["category"] == old_product] if is_edit else []
     current_models = unique_preserve([str(record["model"] or NO_MODEL_TEXT) for record in current_records])
-    current_languages = unique_preserve([str(record["language"]) for record in current_records if record["language"]])
+    current_languages = unique_preserve([
+        str(record.get("region") if selected_is_cultural else record.get("language") or "")
+        for record in current_records
+        if str(record.get("region") if selected_is_cultural else record.get("language") or "").strip()
+    ])
     current_no_model = bool((selected_category or {}).get("no_model")) or (
         bool(current_models) and set(current_models) == {NO_MODEL_TEXT}
     )
@@ -15068,6 +15189,7 @@ def render_add_category_form() -> None:
                 }
             ),
         )
+        is_cultural_category = category_definition == CATEGORY_DEFINITION_CULTURAL
         category_status_key = f"category_status_{editor_key}"
         category_status = metadata_status_col.radio(
             "品类启用状态 *",
@@ -15124,27 +15246,33 @@ def render_add_category_form() -> None:
             **({} if no_model_key in st.session_state else {"value": current_no_model}),
         )
         no_language_key = f"category_no_language_{editor_key}"
-        no_language = rule_col_b.checkbox(
-            "该品类无需语种",
-            help="勾选后语种统一为“无需语种”，库存数量可在下方库存组合编辑区重新分配。",
-            key=no_language_key,
-            **(
-                {}
-                if no_language_key in st.session_state
-                else {"value": current_no_language}
-            ),
-        )
+        if is_cultural_category:
+            rule_col_b.info("文化周边品类按“产品型号＋战区”生成库存组合。")
+            no_language = False
+        else:
+            no_language = rule_col_b.checkbox(
+                "该品类无需语种",
+                help="勾选后语种统一为“无需语种”，库存数量可在下方库存组合编辑区重新分配。",
+                key=no_language_key,
+                **(
+                    {}
+                    if no_language_key in st.session_state
+                    else {"value": current_no_language}
+                ),
+            )
 
         available_models = unique_preserve(
             [model for model in current_models + list(options["models"]) if model and model != NO_MODEL_TEXT]
         )
         available_languages = unique_preserve(
-            [
-                language
-                for language in sort_languages(current_languages + list(options["languages"]))
-                if language and language != NO_LANGUAGE_TEXT
-            ]
+            current_languages
+            + (
+                [feishu_text(feishu_fields(row), "战区名称") for row in safe_feishu_rows(REGION_TABLE_NAME)]
+                if is_cultural_category
+                else sort_languages(list(options["languages"]))
+            )
         )
+        available_languages = [value for value in available_languages if value and value != NO_LANGUAGE_TEXT]
         default_models = [model for model in current_models if model != NO_MODEL_TEXT]
         default_languages = [language for language in current_languages if language != NO_LANGUAGE_TEXT]
 
@@ -15171,7 +15299,7 @@ def render_add_category_form() -> None:
         )
         selected_languages_key = f"category_languages_{editor_key}"
         selected_languages = language_col.multiselect(
-            "语种 *",
+            "战区 *" if is_cultural_category else "语种 *",
             available_languages,
             disabled=no_language,
             help="编辑时会自动勾选当前语种；取消勾选即可移除该语种。",
@@ -15183,9 +15311,9 @@ def render_add_category_form() -> None:
             ),
         )
         custom_languages_text = language_col.text_area(
-            "新增自定义语种",
+            "新增战区请前往“战区管理”" if is_cultural_category else "新增自定义语种",
             placeholder="可用逗号、分号、顿号或换行分隔",
-            disabled=no_language,
+            disabled=no_language or is_cultural_category,
             height=86,
             key=f"category_custom_languages_{editor_key}",
         )
@@ -15291,7 +15419,7 @@ def render_add_category_form() -> None:
             ).items()
             if str(source) in editable_current_languages and str(target).strip()
         }
-        if is_edit and editable_current_languages and not no_language:
+        if is_edit and editable_current_languages and not no_language and not is_cultural_category:
             with st.expander(
                 "修改已有语种",
                 expanded=pool_edit_dimension == "material",
@@ -15392,7 +15520,8 @@ def render_add_category_form() -> None:
             [NO_LANGUAGE_TEXT]
             if no_language
             else unique_preserve(
-                renamed_selected_languages + parse_custom_values(custom_languages_text)
+                renamed_selected_languages
+                + ([] if is_cultural_category else parse_custom_values(custom_languages_text))
             )
         )
         category_request_visible_key = f"category_request_visible_{editor_key}"
@@ -15436,7 +15565,7 @@ def render_add_category_form() -> None:
             )
         if current_records and languages and removed_languages:
             carry_language = st.selectbox(
-                "被取消语种的历史关联迁移到 *",
+                "被取消战区的库存迁移到 *" if is_cultural_category else "被取消语种的历史关联迁移到 *",
                 languages,
                 help="这里只决定申请明细和流水的关联去向；库存数量请在下方库存组合编辑区填写。",
                 key=f"category_carry_language_{editor_key}",
@@ -15471,7 +15600,11 @@ def render_add_category_form() -> None:
         discard_confirmed = True
         if plan is not None:
             st.markdown(f"**{ui_text('库存组合编辑')}**")
-            st.caption("选择一个型号和语种后编辑对应库存组合；切换到其他组合时，已经填写的内容会自动保留。")
+            st.caption(
+                "选择一个型号和战区后编辑对应库存组合；切换组合时，已填写内容会自动保留。"
+                if is_cultural_category
+                else "选择一个型号和语种后编辑对应库存组合；切换到其他组合时，已经填写的内容会自动保留。"
+            )
             signature = uuid.uuid5(
                 uuid.NAMESPACE_URL,
                 "|".join(f"{target['model']}::{target['language']}" for target in plan["targets"]),
@@ -15611,7 +15744,7 @@ def render_add_category_form() -> None:
             if pool_focus_language in languages:
                 st.session_state[selected_target_language_key] = pool_focus_language
             selected_target_language = selector_language_col.selectbox(
-                "选择要编辑的语种",
+                "选择要编辑的战区" if is_cultural_category else "选择要编辑的语种",
                 languages,
                 key=selected_target_language_key,
             )
@@ -15797,7 +15930,7 @@ def render_add_category_form() -> None:
         elif not models:
             st.error("请至少保留或新增一个产品型号，或勾选“无需产品型号”。")
         elif not languages:
-            st.error("请至少保留或新增一个语种，或勾选“无需语种”。")
+            st.error("请至少选择一个战区。" if is_cultural_category else "请至少保留或新增一个语种，或勾选“无需语种”。")
         elif category_metadata_error:
             st.error(category_metadata_error)
         elif plan is None:
@@ -17817,6 +17950,91 @@ def cultural_request_catalog(
     }
 
 
+def execute_region_dimension_management(draft: dict[str, object]) -> dict[str, object]:
+    """Apply region CRUD and its culture-inventory association plan."""
+    refresh_feishu_schema_cache()
+    operation = str(draft.get("operation") or "")
+    record_id = str(draft.get("record_id") or "")
+    name = str(draft.get("name") or "").strip()
+    status = normalize_enabled_status(draft.get("status"))
+    records = dimension_management_records("region", fresh_feishu_rows(REGION_TABLE_NAME))
+    by_id = {item["record_id"]: item for item in records}
+    if operation != "create" and record_id not in by_id:
+        raise ValueError("所选战区不存在，请刷新页面后重试。")
+    if not name:
+        raise ValueError("请填写战区名称。")
+    duplicate = next((item for item in records if normalize_option_label(item["name"]).casefold() == normalize_option_label(name).casefold() and item["record_id"] != record_id), None)
+    if duplicate:
+        raise ValueError("该战区名称已经存在。")
+    created_count = 0
+    if operation == "create":
+        created = feishu_batch_create_records(REGION_TABLE_NAME, [{"战区名称": name, "启用状态": status}])
+        record_id = feishu_record_id(created[0] if created else {})
+        created_count = len(created)
+    elif operation == "edit":
+        feishu_update_record_fields(REGION_TABLE_NAME, record_id, {"战区名称": name, "启用状态": status})
+    elif operation != "delete":
+        raise ValueError("不支持的战区管理操作。")
+
+    changes = [dict(item) for item in list(draft.get("changes") or []) if isinstance(item, dict)]
+    current_rows = {str(item.get("record_id") or ""): item for item in load_cultural_dimension_inventory_records(fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))}
+    delete_ids: list[str] = []
+    updates: list[dict[str, object]] = []
+    creates: list[dict[str, object]] = []
+    for item in changes:
+        action = str(item.get("action") or "")
+        item_id = str(item.get("record_id") or "")
+        if action in {"update", "delete"} and item_id not in current_rows:
+            raise RuntimeError("预览后关联文化周边已变化，请返回刷新后重新提交。")
+        if action == "delete":
+            delete_ids.append(item_id)
+        elif action == "update":
+            updates.append({"record_id": item_id, "fields": {"战区管理": name}})
+        elif action == "create":
+            category = str(item.get("category") or "")
+            model = str(item.get("model") or "")
+            category_id = _cultural_dimension_record_id(CATEGORY_TABLE_NAME, "物料品类", category)
+            model_id = _cultural_dimension_record_id(MODEL_TABLE_NAME, "产品型号", model)
+            if not category_id or not model_id:
+                raise RuntimeError("战区关联的文化周边品类或型号不存在。")
+            creates.append({
+                "文化周边编码": f"CUL-{uuid.uuid4().hex[:8].upper()}",
+                "物料品类": category, "产品型号": model, "战区管理": name,
+                "当前库存": 0, "单价（人民币）": 0.0, "备注": "",
+                "物料品类关联": [category_id], "产品型号关联": [model_id],
+            })
+    created_rows = feishu_batch_create_records(CULTURAL_MATERIAL_TABLE_NAME, creates) if creates else []
+    updated_count = feishu_batch_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, updates)
+    deleted_material_count = feishu_batch_delete_record_ids(CULTURAL_MATERIAL_TABLE_NAME, delete_ids)
+    deleted_count = feishu_batch_delete_record_ids(REGION_TABLE_NAME, [record_id]) if operation == "delete" else 0
+    return {"operation": operation, "created_count": created_count, "created_material_count": len(created_rows), "updated_material_count": updated_count, "deleted_material_count": deleted_material_count, "deleted_count": deleted_count}
+
+
+def load_cultural_dimension_inventory_records(
+    rows: list[dict] | None = None,
+) -> list[dict[str, object]]:
+    """Normalize culture inventory rows for the shared dimension editor."""
+    return [
+        {
+            "record_id": feishu_record_id(row),
+            "material_code": feishu_text(feishu_fields(row), "文化周边编码"),
+            "category": feishu_text(feishu_fields(row), "物料品类"),
+            "model": feishu_text(feishu_fields(row), "产品型号"),
+            # The shared category-plan engine uses its second dimension slot;
+            # for culture inventory that slot represents region, not language.
+            "language": feishu_text(feishu_fields(row), "战区管理"),
+            "region": feishu_text(feishu_fields(row), "战区管理"),
+            "quantity": feishu_int(feishu_fields(row), "当前库存"),
+            "unit_price": feishu_float(feishu_fields(row), "单价（人民币）"),
+            "remark": feishu_text(feishu_fields(row), "备注"),
+            "status": STATUS_ACTIVE,
+            "request_visible": REQUEST_PAGE_VISIBLE_VALUE,
+        }
+        for row in list(rows if rows is not None else safe_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
+        if feishu_record_id(row)
+    ]
+
+
 def cultural_request_display_category(product: object, catalog: dict[str, object]) -> str:
     labels = dict(dict(catalog.get("category_labels") or {}).get(str(product), {}) or {})
     return str(labels.get(get_ui_language()) or product)
@@ -18615,7 +18833,7 @@ def render_management_page() -> None:
         "物料管理": (
             {
                 "品类管理": "category",
-                "文化周边管理": "cultural_request",
+                "战区管理": "cultural_request",
                 "型号管理": "model_management",
                 "语种管理": "language_management",
                 "发货模板": "shipping",
@@ -18652,7 +18870,7 @@ def render_management_page() -> None:
         )
         cache_key = {
             "采购补库": "restock",
-            "文化周边管理": "cultural_request",
+            "战区管理": "cultural_request",
             "品类管理": "category",
             "型号管理": "model_management",
             "语种管理": "language_management",
@@ -18663,8 +18881,8 @@ def render_management_page() -> None:
             render_page_cache_toolbar(cache_key)
         if material_section == "采购补库":
             render_restock_form()
-        elif material_section == "文化周边管理":
-            render_cultural_material_management()
+        elif material_section == "战区管理":
+            render_dimension_management_page("region")
         elif material_section == "品类管理":
             render_add_category_form()
         elif material_section == "型号管理":
