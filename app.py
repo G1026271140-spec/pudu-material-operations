@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.5"
+APP_VERSION = "V1.6.6"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -467,10 +467,10 @@ MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记",)
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = (
     "采购补库",
-    "战区管理",
     "品类管理",
     "型号管理",
     "语种管理",
+    "战区管理",
     "仓库位置",
     "发货模板",
     "项目礼品管理",
