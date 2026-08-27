@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.9"
+APP_VERSION = "V1.6.0"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -12012,7 +12012,7 @@ def render_sidebar_link() -> None:
             st.markdown(
                 '<div class="pudu-sidebar-system-heading">'
                 f'<div class="pudu-sidebar-label">{escape(ui_text("数据与系统"))}</div>'
-                f'<div class="pudu-app-version">当前应用版本 {escape(APP_VERSION)}</div>'
+                f'<div class="pudu-app-version">{escape(ui_text("当前应用版本"))} {escape(APP_VERSION)}</div>'
                 '</div>',
                 unsafe_allow_html=True,
             )
@@ -17268,10 +17268,10 @@ def render_gift_fixed_rules() -> None:
     st.markdown(
         f"""
         <div class="pudu-fixed-rule-row">
-            <div><span>品类定义</span>{escape(CATEGORY_DEFINITION_GIFT)}</div>
-            <div><span>产品型号</span>{escape(NO_MODEL_TEXT)}</div>
-            <div><span>语种</span>{escape(NO_LANGUAGE_TEXT)}</div>
-            <div><span>物料状态</span>{escape(GIFT_PROJECT_STATUS_REQUESTED)}</div>
+            <div><span>{escape(ui_text("品类定义"))}</span>{escape(ui_text(CATEGORY_DEFINITION_GIFT))}</div>
+            <div><span>{escape(ui_text("产品型号"))}</span>{escape(ui_text(NO_MODEL_TEXT))}</div>
+            <div><span>{escape(ui_text("语种"))}</span>{escape(ui_text(NO_LANGUAGE_TEXT))}</div>
+            <div><span>{escape(ui_text("物料状态"))}</span>{escape(ui_text(GIFT_PROJECT_STATUS_REQUESTED))}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -17446,16 +17446,16 @@ def render_gift_project_detail_drawer(item: dict) -> None:
     usd_price = float(item.get("unit_price") or 0)
     rmb_price = float(item.get("unit_price_rmb") or 0)
     st.markdown(
-        f"**物料状态**　{escape(status)}\n\n"
-        f"**项目**　{escape(project_name)}\n\n"
-        f"**单价**　USD {usd_price:g} · RMB {rmb_price:.2f}"
+        f"**{escape(ui_text('物料状态'))}**　{escape(ui_text(status))}\n\n"
+        f"**{escape(ui_text('项目'))}**　{escape(project_name)}\n\n"
+        f"**{escape(ui_text('单价'))}**　USD {usd_price:g} · RMB {rmb_price:.2f}"
     )
     st.divider()
     st.markdown("**备注**")
     st.write(str(item.get("remark") or "暂无备注"))
     supplier = str(item.get("supplier_contact") or "").strip()
     if supplier:
-        st.markdown(f"**供应商联系方式**　{escape(supplier)}")
+        st.markdown(f"**{escape(ui_text('供应商联系方式'))}**　{escape(supplier)}")
 
 
 def remove_gift_batch_selected_item(
@@ -17566,7 +17566,10 @@ def render_gift_projects_page() -> None:
         new_line = st.session_state.get("gift_batch_new_line")
         with st.container(border=True):
             st.markdown('<span class="pudu-gift-batch-cart-marker"></span>', unsafe_allow_html=True)
-            st.markdown(f"**购物清单：** {len(gift_lines) + (1 if new_line else 0)} 项")
+            st.markdown(
+                f"**{escape(ui_text('购物清单'))}：** "
+                f"{len(gift_lines) + (1 if new_line else 0)} {escape(ui_text('项'))}"
+            )
             if gift_lines or new_line:
                 for item in gift_lines:
                     category_id = str(item.get("record_id") or "")
@@ -17601,7 +17604,7 @@ def render_gift_projects_page() -> None:
                     )
                     type_col.markdown(
                         '<div class="pudu-gift-batch-item-meta">'
-                        f"待新建品类 · 数量 {new_quantity}"
+                        f"{escape(ui_text('待新建品类'))} · {escape(ui_text('数量'))} {new_quantity}"
                         "</div>",
                         unsafe_allow_html=True,
                     )
@@ -17731,18 +17734,21 @@ def render_gift_projects_page() -> None:
                         status_class += " pudu-project-progress-status--stock"
                     with stage_columns[item_index % len(stage_columns)].container(border=True):
                         st.markdown('<span class="pudu-project-progress-card-marker"></span>', unsafe_allow_html=True)
-                        st.markdown(f'<div class="{status_class}">物料状态：{escape(status)}</div>', unsafe_allow_html=True)
+                        st.markdown(
+                            f'<div class="{status_class}">{escape(ui_text("物料状态"))}：{escape(ui_text(status))}</div>',
+                            unsafe_allow_html=True,
+                        )
                         render_gift_image(list(item.get("attachments") or []), product)
                         st.markdown(f'<div class="pudu-project-progress-title" title="{escape(product)}">{escape(product)}</div>', unsafe_allow_html=True)
                         st.markdown(
-                            f'<div class="pudu-project-progress-meta"><strong>项目：</strong>{escape(str(item.get("project_name") or "未命名项目"))}<br><strong>单价：</strong>USD {usd_price:g} · RMB {rmb_price:.2f}</div>',
+                            f'<div class="pudu-project-progress-meta"><strong>{escape(ui_text("项目"))}：</strong>{escape(str(item.get("project_name") or ui_text("未命名项目")))}<br><strong>{escape(ui_text("单价"))}：</strong>USD {usd_price:g} · RMB {rmb_price:.2f}</div>',
                             unsafe_allow_html=True,
                         )
                         st.markdown('<div class="pudu-project-progress-note-label">备注</div>', unsafe_allow_html=True)
                         st.markdown(f'<div class="pudu-project-progress-note">{escape(str(item.get("remark") or "暂无备注"))}</div>', unsafe_allow_html=True)
                         supplier = str(item.get("supplier_contact") or "").strip()
                         if supplier:
-                            st.caption(f"供应商联系方式：{supplier}")
+                            st.caption(f"{ui_text('供应商联系方式')}：{supplier}")
                         if st.button(
                             "查看完整信息",
                             icon=":material/arrow_forward:",
@@ -17812,6 +17818,17 @@ def cultural_request_catalog(
 def cultural_request_display_category(product: object, catalog: dict[str, object]) -> str:
     labels = dict(dict(catalog.get("category_labels") or {}).get(str(product), {}) or {})
     return str(labels.get(get_ui_language()) or product)
+
+
+CULTURAL_SIZE_ORDER = ("S", "M", "L", "XL", "2XL", "3XL", "4XL", "6XL")
+
+
+def cultural_size_sort_key(value: object) -> tuple[int, str]:
+    size = str(value or "").strip()
+    try:
+        return CULTURAL_SIZE_ORDER.index(size), ""
+    except ValueError:
+        return len(CULTURAL_SIZE_ORDER), size.casefold()
 
 
 def initialize_cultural_request_state() -> None:
@@ -18273,7 +18290,9 @@ def render_cultural_request_page() -> None:
         review_lines = [dict(line) for line in list(draft.get("lines") or [])]
         with st.container(border=True):
             render_section_header("01", "文化周边申请确认", "提交后将直接登记发放并扣减库存")
-            st.markdown(f"**申请人：** {escape(str(draft.get('requester') or '-'))}")
+            st.markdown(
+                f"**{escape(ui_text('申请人'))}：** {escape(str(draft.get('requester') or '-'))}"
+            )
         with st.container(border=True):
             render_section_header("02", "文化周边清单", f"共 {len(review_lines)} 种")
             edited = st.data_editor(
@@ -18315,7 +18334,10 @@ def render_cultural_request_page() -> None:
         combinations = dict(catalog.get("combinations") or {})
         for index, product in enumerate(products):
             scoped = [value for key, value in combinations.items() if key[0] == product]
-            models = unique_preserve(str(item["model"]) for item in scoped)
+            models = sorted(
+                unique_preserve(str(item["model"]) for item in scoped),
+                key=cultural_size_sort_key,
+            )
             regions = unique_preserve(str(item["region"]) for item in scoped)
             with columns[index % 6].container(border=True, key=f"cultural_product_card_{index}"):
                 image_path = request_category_image_path(product)
@@ -18327,7 +18349,14 @@ def render_cultural_request_page() -> None:
                     valid_regions = unique_preserve(
                         str(item["region"]) for item in scoped if item["model"] == selected_model
                     )
-                    selected_region = st.pills("战区", valid_regions, key=f"cultural_region_{index}", selection_mode="single", default=valid_regions[0] if valid_regions else None, width="stretch")
+                    st.markdown(
+                        '<div class="pudu-cultural-region-label">'
+                        f'<strong>{escape(ui_text("战区"))}</strong> '
+                        f'<span style="color:#d92d20;font-weight:600;">{escape(ui_text("如无法确定战区，请选择您所参加活动所在的地区即可。如美国的展会选择美洲战区。"))}</span>'
+                        '</div>',
+                        unsafe_allow_html=True,
+                    )
+                    selected_region = st.pills("战区", valid_regions, key=f"cultural_region_{index}", selection_mode="single", default=valid_regions[0] if valid_regions else None, width="stretch", label_visibility="collapsed")
                     quantity = st.number_input("数量", min_value=1, step=1, value=1, key=f"cultural_quantity_{index}")
                     remark = st.text_input("备注", key=f"cultural_remark_{index}")
                     if st.button("加入申领车", key=f"cultural_add_{index}", type="primary", width="stretch"):

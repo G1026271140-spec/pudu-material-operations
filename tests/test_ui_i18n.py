@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import ast
+import re
 import unittest
+from pathlib import Path
 
 import pandas as pd
 
@@ -14,6 +17,50 @@ from ui_i18n import (
 
 
 class UiInternationalizationTests(unittest.TestCase):
+    def test_literal_widget_text_has_english_translation(self) -> None:
+        source = (Path(__file__).resolve().parents[1] / "app.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        translated_methods = {
+            "button", "caption", "checkbox", "date_input", "download_button",
+            "error", "expander", "file_uploader", "form_submit_button", "header",
+            "info", "link_button", "markdown", "metric", "multiselect",
+            "number_input", "popover", "radio", "selectbox", "spinner", "subheader",
+            "success", "tabs", "text_area", "text_input", "title", "toggle",
+            "warning", "write", "render_page_header", "render_section_header",
+            "render_request_review_field", "required_field_label",
+        }
+        missing: set[str] = set()
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if isinstance(node.func, ast.Attribute):
+                method_name = node.func.attr
+            elif isinstance(node.func, ast.Name):
+                method_name = node.func.id
+            else:
+                continue
+            if method_name not in translated_methods:
+                continue
+            values = [
+                argument.value
+                for argument in node.args[:3]
+                if isinstance(argument, ast.Constant) and isinstance(argument.value, str)
+            ]
+            values.extend(
+                keyword.value.value
+                for keyword in node.keywords
+                if keyword.arg in {"label", "help", "placeholder"}
+                and isinstance(keyword.value, ast.Constant)
+                and isinstance(keyword.value.value, str)
+            )
+            for value in values:
+                if (
+                    re.search(r"[\u4e00-\u9fff]", value)
+                    and translate_ui_text(value, LANGUAGE_EN) == value
+                ):
+                    missing.add(value)
+        self.assertEqual(missing, set(), f"Missing English UI translations: {sorted(missing)}")
+
     def test_language_normalization_defaults_to_chinese(self) -> None:
         self.assertEqual(normalize_ui_language("en"), LANGUAGE_EN)
         self.assertEqual(normalize_ui_language("EN"), LANGUAGE_EN)

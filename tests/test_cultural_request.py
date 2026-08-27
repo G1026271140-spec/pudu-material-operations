@@ -6,6 +6,13 @@ import submission_queue as queue
 
 
 class CulturalRequestTests(unittest.TestCase):
+    def test_cultural_sizes_follow_business_order(self) -> None:
+        sizes = ["2XL", "3XL", "4XL", "6XL", "L", "M", "S", "XL"]
+        self.assertEqual(
+            sorted(sizes, key=app.cultural_size_sort_key),
+            ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "6XL"],
+        )
+
     def test_direct_route_opens_cultural_request_page(self) -> None:
         query_params = {"section": "cultural_request"}
         session_state: dict[str, object] = {}
