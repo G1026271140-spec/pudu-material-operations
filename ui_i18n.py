@@ -893,6 +893,8 @@ EN_DISPLAY_TEXT = {
     "当前没有文化周边库存数据，请先更新文化周边页面缓存。": "No cultural merchandise inventory is available. Refresh the cultural merchandise page cache first.",
     "文化周边管理": "Cultural Merchandise Management",
     "文化周边管理任务已进入后台队列。": "The cultural merchandise management task has entered the background queue.",
+    "每位申请人每次最多申领 2 件文化周边。": "Each applicant may request no more than 2 cultural merchandise items per request.",
+    "选择品类、尺码和战区并加入申领车，每位申请人每次最多申领 2 件。": "Choose a category, size, and region and add it to the request list. Each applicant may request no more than 2 items per request.",
     "确认后任务将进入后台队列，页面可直接关闭。": "After confirmation, the task will enter the background queue and this page can be closed.",
     "该页面仅供已授权管理员查看和编辑。": "This page is available only to authorized administrators.",
 

@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.0"
+APP_VERSION = "V1.6.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -17821,6 +17821,7 @@ def cultural_request_display_category(product: object, catalog: dict[str, object
 
 
 CULTURAL_SIZE_ORDER = ("S", "M", "L", "XL", "2XL", "3XL", "4XL", "6XL")
+CULTURAL_REQUEST_MAX_TOTAL_QUANTITY = 2
 
 
 def cultural_size_sort_key(value: object) -> tuple[int, str]:
@@ -17829,6 +17830,19 @@ def cultural_size_sort_key(value: object) -> tuple[int, str]:
         return CULTURAL_SIZE_ORDER.index(size), ""
     except ValueError:
         return len(CULTURAL_SIZE_ORDER), size.casefold()
+
+
+def validate_cultural_request_quantity(lines: list[dict[str, object]]) -> int:
+    total_quantity = sum(
+        max(0, int(line.get("quantity") or 0))
+        for line in lines
+        if isinstance(line, dict)
+    )
+    if total_quantity > CULTURAL_REQUEST_MAX_TOTAL_QUANTITY:
+        raise RuntimeError(
+            f"每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件文化周边。"
+        )
+    return total_quantity
 
 
 def initialize_cultural_request_state() -> None:
@@ -17881,6 +17895,7 @@ def enqueue_feishu_cultural_request(
     token = str(request_payload.get("submission_token") or "").strip()
     if not token:
         raise RuntimeError("文化周边申请提交幂等键不能为空。")
+    validate_cultural_request_quantity(lines)
     table_id = ensure_submission_queue_table(client)
     existing = find_task_by_idempotency_key(client, token, table_id)
     if existing is not None and existing.status != QUEUE_STATUS_FAILED:
@@ -18134,6 +18149,7 @@ def submit_feishu_cultural_request(
         raise RuntimeError("请至少选择一条文化周边。")
     if len(valid_lines) > MAX_REQUEST_LINE_COUNT:
         raise RuntimeError(f"一次最多提交 {MAX_REQUEST_LINE_COUNT} 条文化周边明细。")
+    validate_cultural_request_quantity(valid_lines)
     culture_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
     category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
@@ -18300,7 +18316,7 @@ def render_cultural_request_page() -> None:
                 hide_index=True,
                 width="stretch",
                 disabled=["物料品类", "尺码", "战区", "备注"],
-                column_config={"申请数量": st.column_config.NumberColumn(min_value=1, step=1, format="%d")},
+                column_config={"申请数量": st.column_config.NumberColumn(min_value=1, max_value=CULTURAL_REQUEST_MAX_TOTAL_QUANTITY, step=1, format="%d")},
                 key="cultural_request_review_editor",
             )
             review_lines = [
@@ -18314,6 +18330,11 @@ def render_cultural_request_page() -> None:
             st.session_state["cultural_request_stage"] = "edit"
             st.rerun()
         if submit_col.button("确认提交", key="cultural_request_confirm", type="primary", width="stretch"):
+            try:
+                validate_cultural_request_quantity(review_lines)
+            except RuntimeError as exc:
+                st.warning(str(exc))
+                return
             with fullscreen_data_sync("正在提交数据，请稍后......"):
                 enqueue_feishu_cultural_request(draft, review_lines)
             clear_cultural_request_state()
@@ -18326,7 +18347,11 @@ def render_cultural_request_page() -> None:
         requester_col, _ = st.columns([1.35, 1])
         department, department_id, requester, requester_open_id = render_request_contact_fields(requester_col)
     with st.container(border=True):
-        render_section_header("02", "选择文化周边", f"选择品类、尺码和战区并加入申领车，最多 {MAX_REQUEST_LINE_COUNT} 种。")
+        render_section_header(
+            "02",
+            "选择文化周边",
+            f"选择品类、尺码和战区并加入申领车，每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件。",
+        )
         if not products:
             st.error("当前没有文化周边库存数据，请先更新文化周边页面缓存。")
             return
@@ -18357,7 +18382,7 @@ def render_cultural_request_page() -> None:
                         unsafe_allow_html=True,
                     )
                     selected_region = st.pills("战区", valid_regions, key=f"cultural_region_{index}", selection_mode="single", default=valid_regions[0] if valid_regions else None, width="stretch", label_visibility="collapsed")
-                    quantity = st.number_input("数量", min_value=1, step=1, value=1, key=f"cultural_quantity_{index}")
+                    quantity = st.number_input("数量", min_value=1, max_value=CULTURAL_REQUEST_MAX_TOTAL_QUANTITY, step=1, value=1, key=f"cultural_quantity_{index}")
                     remark = st.text_input("备注", key=f"cultural_remark_{index}")
                     if st.button("加入申领车", key=f"cultural_add_{index}", type="primary", width="stretch"):
                         if not selected_model or not selected_region:
@@ -18365,6 +18390,12 @@ def render_cultural_request_page() -> None:
                         else:
                             key = (product, str(selected_model), str(selected_region))
                             existing = next((line for line in lines if (line["product"], line["model"], line["region"]) == key), None)
+                            requested_total = sum(int(line.get("quantity") or 0) for line in lines) + int(quantity)
+                            if requested_total > CULTURAL_REQUEST_MAX_TOTAL_QUANTITY:
+                                st.warning(
+                                    f"每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件文化周边。"
+                                )
+                                return
                             if existing:
                                 existing["quantity"] = int(existing["quantity"]) + int(quantity)
                             else:
@@ -18380,6 +18411,7 @@ def render_cultural_request_page() -> None:
                 width="stretch",
                 num_rows="dynamic",
                 disabled=["物料品类", "尺码", "战区"],
+                column_config={"数量": st.column_config.NumberColumn(min_value=1, max_value=CULTURAL_REQUEST_MAX_TOTAL_QUANTITY, step=1, format="%d")},
                 key="cultural_request_cart_editor",
             )
             lines = [
@@ -18390,6 +18422,11 @@ def render_cultural_request_page() -> None:
         if st.button("提交文化周边申请", key="cultural_request_preview", type="primary", width="stretch", disabled=not lines):
             if not requester or not requester_open_id:
                 show_request_validation_toast(["请选择申请人。"])
+                return
+            try:
+                validate_cultural_request_quantity(lines)
+            except RuntimeError as exc:
+                st.warning(str(exc))
                 return
             st.session_state["cultural_request_draft"] = {
                 "requester": requester,

@@ -6,6 +6,18 @@ import submission_queue as queue
 
 
 class CulturalRequestTests(unittest.TestCase):
+    def test_cultural_request_total_quantity_is_limited_to_two(self) -> None:
+        self.assertEqual(
+            app.validate_cultural_request_quantity(
+                [{"quantity": 1}, {"quantity": 1}]
+            ),
+            2,
+        )
+        with self.assertRaisesRegex(RuntimeError, "最多申领 2 件"):
+            app.validate_cultural_request_quantity(
+                [{"quantity": 2}, {"quantity": 1}]
+            )
+
     def test_cultural_sizes_follow_business_order(self) -> None:
         sizes = ["2XL", "3XL", "4XL", "6XL", "L", "M", "S", "XL"]
         self.assertEqual(
