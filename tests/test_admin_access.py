@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V1.5.8")
+        self.assertEqual(app.APP_VERSION, "V1.5.9")
 
     def test_admin_password_is_independent_from_inventory_password(self) -> None:
         with patch.object(app.st, "secrets", {}):
@@ -91,8 +91,9 @@ class AdminAccessTests(unittest.TestCase):
     def test_material_database_page_is_not_exposed(self) -> None:
         self.assertEqual(
             app.MATERIAL_MANAGEMENT_SECTIONS,
-            ("采购补库", "文化周边管理", "品类管理", "型号管理", "语种管理", "仓库位置", "发货模板"),
+            ("采购补库", "文化周边管理", "品类管理", "型号管理", "语种管理", "仓库位置", "发货模板", "项目礼品管理"),
         )
+        self.assertNotIn("项目礼品管理", app.MANAGEMENT_WORKBENCH_SECTIONS)
         self.assertNotIn("material_database", app.PAGE_CACHE_TABLES)
         self.assertFalse(hasattr(app, "render_material_database_page"))
 

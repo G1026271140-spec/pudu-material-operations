@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.8"
+APP_VERSION = "V1.5.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -463,7 +463,7 @@ MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
 FULLSCREEN_SYNC_IN_PROGRESS_KEY = "_fullscreen_sync_in_progress"
 MANAGEMENT_WORKBENCH_CONTROL_KEY = "management_section_control"
-MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记", "项目礼品管理")
+MANAGEMENT_WORKBENCH_SECTIONS = ("库存登记",)
 MATERIAL_MANAGEMENT_CONTROL_KEY = "material_management_section"
 MATERIAL_MANAGEMENT_SECTIONS = (
     "采购补库",
@@ -473,6 +473,7 @@ MATERIAL_MANAGEMENT_SECTIONS = (
     "语种管理",
     "仓库位置",
     "发货模板",
+    "项目礼品管理",
 )
 MATERIAL_DASHBOARD_MODULES = (
     "概览指标",
@@ -11999,12 +12000,6 @@ def render_sidebar_link() -> None:
             "文化周边申领",
             ":material/checkroom:",
         )
-        navigate_to_management_section(
-            "sidebar_open_gift_projects",
-            "项目礼品管理",
-            "项目礼品管理",
-            ":material/redeem:",
-        )
         render_inventory_query_link()
         navigate_to_management_section(
             "sidebar_open_material_management",
@@ -18381,8 +18376,9 @@ def render_cultural_request_page() -> None:
 
 def render_management_page() -> None:
     current_section = str(st.session_state.get(MANAGEMENT_NAVIGATION_KEY, "库存登记"))
-    if current_section == "周边礼品项目":
-        current_section = "项目礼品管理"
+    if current_section in {"周边礼品项目", "项目礼品管理"}:
+        st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = "项目礼品管理"
+        current_section = "物料管理"
     elif current_section == "发货模板填写":
         st.session_state[MATERIAL_MANAGEMENT_CONTROL_KEY] = "发货模板"
         current_section = "物料管理"
@@ -18395,7 +18391,6 @@ def render_management_page() -> None:
     if current_section not in {
         "库存登记",
         "文化周边申领",
-        "项目礼品管理",
         "物料管理",
     }:
         current_section = "库存登记"
@@ -18417,14 +18412,12 @@ def render_management_page() -> None:
     page_copy = {
         "库存登记": ("营销物料领取登记", "申请工作台", "登记领取申请并提交至审批发放流程。"),
         "文化周边申领": ("文化周边申领", "文化周边工作台", "选择文化周边、尺码和战区，提交后直接登记发放。"),
-        "项目礼品管理": ("项目礼品管理", "项目物料进度管理", "按项目跟踪礼品的状态、单价、备注和图片。"),
         "物料管理": ("物料管理", "库存工作台", "采购补库与物料品类统一管理。"),
     }
     page_title, page_kicker, page_subtitle = page_copy.get(current_section, page_copy["库存登记"])
     page_cache_key = {
         "库存登记": "request",
         "文化周边申领": "cultural_request",
-        "项目礼品管理": "gift_projects",
         "物料管理": (
             {
                 "品类管理": "category",
@@ -18432,6 +18425,7 @@ def render_management_page() -> None:
                 "型号管理": "model_management",
                 "语种管理": "language_management",
                 "发货模板": "shipping",
+                "项目礼品管理": "gift_projects",
                 "仓库位置": "",
             }.get(
                 str(st.session_state.get(MATERIAL_MANAGEMENT_CONTROL_KEY) or ""),
@@ -18446,10 +18440,6 @@ def render_management_page() -> None:
         page_key=page_cache_key,
     )
     if management_section_requires_admin(current_section) and not admin_auth_gate():
-        return
-    if current_section == "项目礼品管理":
-        render_page_cache_toolbar("gift_projects")
-        render_gift_projects_page()
         return
     if current_section == "文化周边申领":
         render_page_cache_toolbar("cultural_request")
@@ -18473,6 +18463,7 @@ def render_management_page() -> None:
             "型号管理": "model_management",
             "语种管理": "language_management",
             "发货模板": "shipping",
+            "项目礼品管理": "gift_projects",
         }.get(material_section)
         if cache_key:
             render_page_cache_toolbar(cache_key)
@@ -18489,6 +18480,8 @@ def render_management_page() -> None:
         elif material_section == "仓库位置":
             st.caption("仓库位置图片和申领页品类图片由本机“更新 PUDU 图片缓存”程序手动发布。")
             render_warehouse_location_view(show_header=False)
+        elif material_section == "项目礼品管理":
+            render_gift_projects_page()
         else:
             render_shipping_template_page(load_feishu_category_records())
         return
