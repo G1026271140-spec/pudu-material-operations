@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.5.7"
+APP_VERSION = "V1.5.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -17772,6 +17772,8 @@ def cultural_request_catalog(
     for row in categories:
         fields = feishu_fields(row)
         if feishu_text(fields, "品类定义") != CATEGORY_DEFINITION_CULTURAL:
+            continue
+        if not feishu_request_page_visible(fields):
             continue
         name = feishu_text(fields, "物料品类").strip()
         if not name:

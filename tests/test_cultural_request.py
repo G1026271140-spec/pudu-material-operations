@@ -23,17 +23,20 @@ class CulturalRequestTests(unittest.TestCase):
 
     def test_catalog_only_includes_cultural_categories(self) -> None:
         categories = [
-            {"record_id": "cat1", "fields": {"物料品类": "文化POLO衫", "品类定义": "文化周边", "中文页面名称": "文化POLO衫", "英文页面名称": "Cultural Polo Shirt"}},
+            {"record_id": "cat1", "fields": {"物料品类": "文化POLO衫", "品类定义": "文化周边", "是否在申领页显示": "是", "中文页面名称": "文化POLO衫", "英文页面名称": "Cultural Polo Shirt"}},
+            {"record_id": "cat-hidden", "fields": {"物料品类": "文化夹克", "品类定义": "文化周边", "是否在申领页显示": "否"}},
             {"record_id": "cat2", "fields": {"物料品类": "产品单页", "品类定义": "印刷物料"}},
         ]
         models = [{"record_id": "mod1", "fields": {"产品型号": "M"}}]
         culture = [
             {"record_id": "cul1", "fields": {"物料品类": "文化POLO衫", "产品型号": "M", "战区管理": "美洲战区", "当前库存": "8", "单价（人民币）": 78}},
+            {"record_id": "cul-hidden", "fields": {"物料品类": "文化夹克", "产品型号": "M", "战区管理": "美洲战区", "当前库存": "5"}},
             {"record_id": "cul2", "fields": {"物料品类": "产品单页", "产品型号": "M", "战区管理": "美洲战区", "当前库存": "99"}},
         ]
         catalog = app.cultural_request_catalog(culture, categories, models)
         self.assertEqual(catalog["products"], ["文化POLO衫"])
         self.assertEqual(catalog["combinations"][("文化POLO衫", "M", "美洲战区")]["stock"], 8)
+        self.assertNotIn(("文化夹克", "M", "美洲战区"), catalog["combinations"])
 
     def test_queue_payload_keeps_cultural_dimensions(self) -> None:
         payload = app.queued_cultural_request_payload(
