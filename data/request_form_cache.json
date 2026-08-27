@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-27 16:33:21",
+  "generated_at": "2026-08-27 16:38:35",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -127,9 +127,9 @@
     "3XL": "新项目",
     "4XL": "新项目",
     "6XL": "新项目",
-    "GT3": "CR",
-    "GT5": "CR",
-    "GT7": "CR"
+    "GT3": "新项目",
+    "GT5": "新项目",
+    "GT7": "新项目"
   },
   "model_display_names": {
     "BG1": {
@@ -635,7 +635,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "CR"
+          "product_line": "新项目"
         },
         {
           "model": "GT5",
@@ -652,7 +652,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "CR"
+          "product_line": "新项目"
         },
         {
           "model": "GT7",
@@ -669,7 +669,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "CR"
+          "product_line": "新项目"
         },
         {
           "model": "KettyBot Pro",
