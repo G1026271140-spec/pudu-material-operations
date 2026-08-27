@@ -8,6 +8,7 @@ from submission_queue import (
     QUEUE_STATUS_PROCESSING,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
     SubmissionTask,
@@ -73,7 +74,86 @@ def category_task(
     )
 
 
+def cultural_request_task(result: dict | None = None) -> SubmissionTask:
+    task = material_request_task(result)
+    return SubmissionTask(
+        **{
+            **task.__dict__,
+            "task_type": QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+            "payload": {
+                "version": 1,
+                "request_payload": {
+                    "submission_token": "token-1",
+                    "requester": "申请人",
+                    "requester_open_id": "ou_sales",
+                },
+                "lines": [
+                    {
+                        "product": "文化POLO衫",
+                        "model": "M",
+                        "region": "美洲战区",
+                        "quantity": 1,
+                    }
+                ],
+            },
+        }
+    )
+
+
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_cultural_request_rejects_before_business_write_when_quota_exceeded(self) -> None:
+        task = cultural_request_task()
+        checkpoints: list[dict] = []
+        with (
+            patch.object(
+                worker.inventory_app,
+                "cultural_request_quota_snapshot",
+                return_value={
+                    "allowed": False,
+                    "current_quantity": 2,
+                    "requested_quantity": 1,
+                    "target_quantity": 3,
+                    "permission_record_id": "rec-permission",
+                },
+            ),
+            patch.object(worker.inventory_app, "notify_cultural_request_rejected", return_value={"applicant": 1, "admins": 2}) as rejected_notice,
+            patch.object(worker.inventory_app, "submit_feishu_cultural_request") as submit,
+            patch.object(worker.inventory_app, "update_cultural_request_cumulative_quantity") as update_quota,
+        ):
+            result = worker.process_cultural_request(task, checkpoints.append)
+
+        rejected_notice.assert_called_once()
+        submit.assert_not_called()
+        update_quota.assert_not_called()
+        self.assertTrue(result["rejected"])
+        self.assertTrue(result["write_done"])
+
+    def test_cultural_request_updates_quota_after_idempotent_business_write(self) -> None:
+        task = cultural_request_task()
+        with (
+            patch.object(
+                worker.inventory_app,
+                "cultural_request_quota_snapshot",
+                return_value={
+                    "allowed": True,
+                    "current_quantity": 1,
+                    "requested_quantity": 1,
+                    "target_quantity": 2,
+                    "permission_record_id": "rec-permission",
+                },
+            ),
+            patch.object(worker.inventory_app, "submit_feishu_cultural_request", return_value=("REQ-1", 1, True)) as submit,
+            patch.object(worker.inventory_app, "update_cultural_request_cumulative_quantity") as update_quota,
+            patch.object(worker.inventory_app, "notify_cultural_request", return_value={"applicant": 1, "admins": 1}),
+            patch.object(worker.inventory_app, "submission_token_rows", return_value=[{"record_id": "rec-request"}]),
+            patch.object(worker.inventory_app, "feishu_update_record_fields"),
+        ):
+            result = worker.process_cultural_request(task)
+
+        submit.assert_called_once()
+        update_quota.assert_called_once_with("rec-permission", 2)
+        self.assertTrue(result["quota_updated"])
+
     def test_approval_writeback_success_notifies_and_completes(self) -> None:
         task = category_task(
             QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,

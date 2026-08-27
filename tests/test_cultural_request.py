@@ -18,6 +18,43 @@ class CulturalRequestTests(unittest.TestCase):
                 [{"quantity": 2}, {"quantity": 1}]
             )
 
+    def test_cultural_request_quota_uses_open_id_and_cumulative_quantity(self) -> None:
+        permission_rows = [
+            {
+                "record_id": "rec-permission",
+                "fields": {
+                    "用户账号": [{"id": "ou_requester"}],
+                    "文化衫申领数量累计": 1,
+                },
+            }
+        ]
+        with (
+            patch.object(app, "ensure_requester_sales_permission", return_value="existing"),
+            patch.object(app, "refresh_feishu_schema_cache"),
+            patch.object(app, "feishu_has_field", return_value=True),
+            patch.object(app, "fresh_feishu_rows", return_value=permission_rows),
+        ):
+            quota = app.cultural_request_quota_snapshot(
+                {"requester_open_id": "ou_requester"}, [{"quantity": 2}]
+            )
+
+        self.assertEqual(quota["current_quantity"], 1)
+        self.assertEqual(quota["target_quantity"], 3)
+        self.assertFalse(quota["allowed"])
+
+    def test_rejection_card_explains_limit_and_mentions_admin(self) -> None:
+        card = app._cultural_request_rejection_card(
+            "申请人",
+            2,
+            1,
+            applicant=True,
+            admin_open_ids=["ou_admin"],
+        )
+        content = "\n".join(item.get("content", "") for item in card["body"]["elements"])
+        self.assertIn("已驳回", content)
+        self.assertIn("历史累计已申领 2 件", content)
+        self.assertIn("<at id=ou_admin></at>", content)
+
     def test_cultural_sizes_follow_business_order(self) -> None:
         sizes = ["2XL", "3XL", "4XL", "6XL", "L", "M", "S", "XL"]
         self.assertEqual(

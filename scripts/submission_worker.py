@@ -255,6 +255,35 @@ def process_cultural_request(
         if checkpoint is not None:
             checkpoint(dict(progress))
 
+    if not progress.get("quota_checked"):
+        quota = inventory_app.cultural_request_quota_snapshot(request_payload, lines)
+        progress.update(
+            {
+                "quota_checked": True,
+                "quota_allowed": bool(quota["allowed"]),
+                "quota_current_quantity": int(quota["current_quantity"]),
+                "quota_requested_quantity": int(quota["requested_quantity"]),
+                "quota_target_quantity": int(quota["target_quantity"]),
+                "quota_permission_record_id": str(quota["permission_record_id"]),
+            }
+        )
+        save_progress()
+
+    if not progress.get("quota_allowed"):
+        if not progress.get("rejection_notification_done"):
+            progress["rejection_notification_counts"] = (
+                inventory_app.notify_cultural_request_rejected(
+                    request_payload,
+                    int(progress.get("quota_current_quantity") or 0),
+                    int(progress.get("quota_requested_quantity") or 0),
+                )
+            )
+            progress["rejection_notification_done"] = True
+            save_progress()
+        progress.update({"rejected": True, "write_done": True, "notification_done": True})
+        save_progress()
+        return progress
+
     if not progress.get("write_done"):
         request_no, line_count, created_new = inventory_app.submit_feishu_cultural_request(
             request_payload, lines
@@ -267,6 +296,13 @@ def process_cultural_request(
                 "created_new_request": created_new,
             }
         )
+        save_progress()
+    if not progress.get("quota_updated"):
+        inventory_app.update_cultural_request_cumulative_quantity(
+            str(progress.get("quota_permission_record_id") or ""),
+            int(progress.get("quota_target_quantity") or 0),
+        )
+        progress["quota_updated"] = True
         save_progress()
     if not progress.get("notification_done"):
         try:

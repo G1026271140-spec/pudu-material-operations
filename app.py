@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.1"
+APP_VERSION = "V1.6.2"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -17822,6 +17822,7 @@ def cultural_request_display_category(product: object, catalog: dict[str, object
 
 CULTURAL_SIZE_ORDER = ("S", "M", "L", "XL", "2XL", "3XL", "4XL", "6XL")
 CULTURAL_REQUEST_MAX_TOTAL_QUANTITY = 2
+CULTURAL_REQUEST_CUMULATIVE_FIELD = "文化衫申领数量累计"
 
 
 def cultural_size_sort_key(value: object) -> tuple[int, str]:
@@ -17843,6 +17844,55 @@ def validate_cultural_request_quantity(lines: list[dict[str, object]]) -> int:
             f"每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件文化周边。"
         )
     return total_quantity
+
+
+def cultural_request_quota_snapshot(
+    request_payload: dict[str, object], lines: list[dict[str, object]]
+) -> dict[str, object]:
+    requested_quantity = validate_cultural_request_quantity(lines)
+    requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
+    if not requester_open_id.startswith("ou_"):
+        raise RuntimeError("申请人未关联有效的飞书账号，无法核对文化周边申领额度。")
+    ensure_requester_sales_permission(request_payload)
+    refresh_feishu_schema_cache()
+    if not feishu_has_field(USER_PERMISSION_TABLE_NAME, CULTURAL_REQUEST_CUMULATIVE_FIELD):
+        raise RuntimeError(
+            f"用户权限表缺少字段“{CULTURAL_REQUEST_CUMULATIVE_FIELD}”，无法核对申领额度。"
+        )
+    permission_row = next(
+        (
+            row
+            for row in fresh_feishu_rows(USER_PERMISSION_TABLE_NAME)
+            if requester_open_id
+            in feishu_person_open_ids(feishu_fields(row), ["用户账号", "用户", "成员"])
+        ),
+        None,
+    )
+    if permission_row is None or not feishu_record_id(permission_row):
+        raise RuntimeError("未找到申请人的用户权限记录，无法核对文化周边申领额度。")
+    current_quantity = feishu_int(
+        feishu_fields(permission_row), CULTURAL_REQUEST_CUMULATIVE_FIELD
+    )
+    target_quantity = current_quantity + requested_quantity
+    return {
+        "permission_record_id": feishu_record_id(permission_row),
+        "current_quantity": current_quantity,
+        "requested_quantity": requested_quantity,
+        "target_quantity": target_quantity,
+        "allowed": target_quantity <= CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
+    }
+
+
+def update_cultural_request_cumulative_quantity(
+    permission_record_id: str, target_quantity: int
+) -> None:
+    if not str(permission_record_id or "").strip():
+        raise RuntimeError("用户权限记录缺少记录 ID，无法更新文化周边累计数量。")
+    feishu_update_record_fields(
+        USER_PERMISSION_TABLE_NAME,
+        str(permission_record_id),
+        {CULTURAL_REQUEST_CUMULATIVE_FIELD: int(target_quantity)},
+    )
 
 
 def initialize_cultural_request_state() -> None:
@@ -17984,6 +18034,82 @@ def notify_cultural_request(
             client,
             open_id,
             _cultural_request_card(request_no, requester, admin_lines, applicant=False),
+        )
+    return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
+
+
+def _cultural_request_rejection_card(
+    requester: str,
+    current_quantity: int,
+    requested_quantity: int,
+    *,
+    applicant: bool,
+    admin_open_ids: list[str] | None = None,
+) -> dict[str, object]:
+    admins = [str(value) for value in list(admin_open_ids or []) if str(value).strip()]
+    admin_mentions = " ".join(f"<at id={open_id}></at>" for open_id in admins)
+    reason = (
+        f"本次申请 {requested_quantity} 件，历史累计已申领 {current_quantity} 件，"
+        f"提交后将超过每人累计最多 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件的限制。"
+    )
+    if applicant:
+        lead = (
+            "您的文化周边申领已驳回，申请单、申请明细、库存流水和库存均未写入。"
+            f"如有疑问，请联系{admin_mentions or '已启用的管理员'}。"
+        )
+        title = "文化周边申领已驳回"
+    else:
+        lead = f"{requester} 的文化周边申领因累计数量超限已自动驳回，未写入业务数据。"
+        title = "文化周边申领超限通知"
+    return {
+        "schema": "2.0",
+        "config": {"update_multi": True, "width_mode": "default", "summary": {"content": title}},
+        "header": {"template": "red", "title": {"tag": "plain_text", "content": title}},
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 16px 12px",
+            "elements": [
+                {"tag": "markdown", "content": lead},
+                {"tag": "hr"},
+                {"tag": "markdown", "content": f"**驳回原因**\n{reason}"},
+            ],
+        },
+    }
+
+
+def notify_cultural_request_rejected(
+    request_payload: dict[str, object],
+    current_quantity: int,
+    requested_quantity: int,
+) -> dict[str, int]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送文化周边驳回通知。")
+    admins = enabled_admin_open_ids()
+    requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
+    requester = str(request_payload.get("requester") or "申请人")
+    if requester_open_id:
+        send_feishu_interactive_message(
+            client,
+            requester_open_id,
+            _cultural_request_rejection_card(
+                requester,
+                current_quantity,
+                requested_quantity,
+                applicant=True,
+                admin_open_ids=admins,
+            ),
+        )
+    for open_id in admins:
+        send_feishu_interactive_message(
+            client,
+            open_id,
+            _cultural_request_rejection_card(
+                requester,
+                current_quantity,
+                requested_quantity,
+                applicant=False,
+            ),
         )
     return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
 
