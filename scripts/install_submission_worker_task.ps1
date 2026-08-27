@@ -81,7 +81,10 @@ if ($LASTEXITCODE -ne 0) {
     throw "Submission queue setup failed. Check $LogDirectory\bootstrap.log"
 }
 
-$powershellPath = Join-Path $PSHOME "powershell.exe"
+$powershellPath = (Get-Process -Id $PID).Path
+if (-not (Test-Path -LiteralPath $powershellPath)) {
+    $powershellPath = Join-Path $PSHOME "pwsh.exe"
+}
 $taskArguments = @(
     "-NoProfile",
     "-NonInteractive",

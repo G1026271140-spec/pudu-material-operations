@@ -64,7 +64,10 @@ if (-not (Test-Path -LiteralPath $bootstrapPython)) {
     $bootstrapPython = (Get-Command python -ErrorAction Stop).Source
 }
 
-$powershellPath = Join-Path $PSHOME "powershell.exe"
+$powershellPath = (Get-Process -Id $PID).Path
+if (-not (Test-Path -LiteralPath $powershellPath)) {
+    $powershellPath = Join-Path $PSHOME "pwsh.exe"
+}
 $taskArguments = @(
     "-NoProfile",
     "-NonInteractive",
