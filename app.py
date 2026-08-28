@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.8"
+APP_VERSION = "V1.6.9"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -9756,9 +9756,10 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         raise PermissionError("只有已启用管理员可以确认库存。")
     context = request_inventory_review_context(request_id=request_id)
     request = dict(context["request"])
-    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
-        return {"request_no": request.get("request_no"), "already_confirmed": True}
-    if int(request.get("inventory_review_version") or 0) != expected_version:
+    already_confirmed = (
+        str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED
+    )
+    if not already_confirmed and int(request.get("inventory_review_version") or 0) != expected_version:
         raise RuntimeError("申请已发生修改，请查看最新卡片后再确认。")
     line_updates = [
         {
@@ -9772,9 +9773,28 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         }
         for line in list(context["lines"])
         if str(line.get("record_id") or "")
+        and (
+            not already_confirmed
+            or int(line.get("approved_qty") or 0) != int(line.get("quantity") or 0)
+            or int(line.get("actual_issue_qty") or 0) != int(line.get("quantity") or 0)
+        )
     ]
     if line_updates:
-        feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
+        updated_line_count = feishu_batch_update_record_fields(
+            REQUEST_LINE_TABLE_NAME, line_updates
+        )
+        if updated_line_count != len(line_updates):
+            raise RuntimeError(
+                f"库存确认应更新 {len(line_updates)} 条申请明细，实际仅更新 {updated_line_count} 条。"
+            )
+    else:
+        updated_line_count = 0
+    if already_confirmed:
+        return {
+            "request_no": request.get("request_no"),
+            "already_confirmed": True,
+            "repaired_line_count": updated_line_count,
+        }
     now = datetime.now()
     request_updates: dict[str, object] = {
         "库存审查状态": INVENTORY_REVIEW_CONFIRMED,

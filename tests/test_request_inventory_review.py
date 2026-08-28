@@ -434,6 +434,49 @@ class RequestInventoryReviewTests(unittest.TestCase):
         notify.assert_called_once()
         self.assertTrue(result["confirmed"])
 
+    def test_confirm_repairs_issued_quantity_when_request_is_already_confirmed(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "inventory_review_status": app.INVENTORY_REVIEW_CONFIRMED,
+                "inventory_review_version": 0,
+            },
+            "lines": [
+                {
+                    "record_id": "line-1",
+                    "quantity": 7,
+                    "approved_qty": 7,
+                    "actual_issue_qty": 0,
+                    "current_stock": 20,
+                    "inventory_status": app.INVENTORY_RESULT_SUFFICIENT,
+                }
+            ],
+            "result": app.INVENTORY_RESULT_SUFFICIENT,
+        }
+        with (
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou_admin"]),
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update_lines,
+            patch.object(app, "feishu_update_record_fields") as update_request,
+            patch.object(app, "notify_enabled_admins_of_material_request") as notify,
+        ):
+            result = app.execute_request_inventory_confirm(
+                {
+                    "request_id": "request-1",
+                    "expected_version": 0,
+                    "operator_open_id": "ou_admin",
+                }
+            )
+
+        self.assertEqual(
+            update_lines.call_args.args[1][0]["fields"]["实际发放数量"], 7
+        )
+        self.assertTrue(result["already_confirmed"])
+        self.assertEqual(result["repaired_line_count"], 1)
+        update_request.assert_not_called()
+        notify.assert_not_called()
+
     def test_complete_writeback_deletes_only_request_custom_materials(self) -> None:
         context = {
             "request": {"request_no": "REQ-1", "status": "已发放"},
