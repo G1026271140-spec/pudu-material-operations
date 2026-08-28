@@ -1,7 +1,7 @@
 {
   "schema_version": 5,
   "source": "static_snapshot",
-  "generated_at": "2026-08-28 11:17:13",
+  "generated_at": "2026-08-28 15:02:54",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -4050,7 +4050,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BellaBot",
       "language": "无需语种",
-      "quantity": 96
+      "quantity": 89
     },
     {
       "material_code": "MAT-0771",
@@ -4071,7 +4071,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 130
+      "quantity": 123
     },
     {
       "material_code": "MAT-0831",
@@ -4113,7 +4113,7 @@
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
       "language": "无需语种",
-      "quantity": 184
+      "quantity": 177
     },
     {
       "material_code": "MAT-0951",
@@ -4827,7 +4827,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "猛犸MP2000",
       "language": "无需语种",
-      "quantity": 200
+      "quantity": 193
     },
     {
       "material_code": "MAT-1149",
