@@ -10,6 +10,7 @@ from typing import Any
 from feishu_bitable import FeishuBitableClient
 
 
+SUBMISSION_QUEUE_MODULE_VERSION = 2
 QUEUE_TABLE_NAME = "后台任务队列"
 QUEUE_PAYLOAD_TABLE_NAME = "后台任务载荷"
 QUEUE_PAYLOAD_INLINE_LIMIT = 12_000

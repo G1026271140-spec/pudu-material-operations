@@ -30,6 +30,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from shipping_page import render_shipping_template_page
 from submission_queue import (
+    SUBMISSION_QUEUE_MODULE_VERSION,
     QUEUE_STATUS_COMPLETED,
     QUEUE_STATUS_FAILED,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
@@ -64,7 +65,12 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.7.3"
+APP_VERSION = "V1.7.4"
+REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
+if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
+    raise RuntimeError(
+        "后台队列模块版本不一致，请重新部署完整应用版本。"
+    )
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
