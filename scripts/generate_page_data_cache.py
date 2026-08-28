@@ -179,6 +179,11 @@ def sync_request_category_image_cache(
 
 def main() -> int:
     try:
+        claimability_stats = app.sync_cultural_material_claimability()
+    except (RuntimeError, ValueError, app.FeishuBitableError) as exc:
+        print(f"cultural_claimability_not_synced: {exc}", file=sys.stderr)
+        return 1
+    try:
         link_stats = app.sync_feishu_gift_project_category_links()
     except (RuntimeError, ValueError, app.FeishuBitableError) as exc:
         print(f"gift_project_category_links_not_synced: {exc}", file=sys.stderr)
@@ -223,6 +228,7 @@ def main() -> int:
         f"downloaded={image_stats['downloaded_count']}",
         f"deleted={image_stats['deleted_count']}",
         f"gift_link_updates={link_stats['written_count']}",
+        f"cultural_claimability_updates={claimability_stats['updated_count']}",
     )
     for table_name, row_count in counts.items():
         print(f"  {table_name}: {row_count}")

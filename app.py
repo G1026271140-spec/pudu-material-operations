@@ -62,7 +62,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.6.7"
+APP_VERSION = "V1.6.8"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -92,6 +92,9 @@ LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
 GIFT_PROJECT_TABLE_NAME = "项目周边礼品物料筹备详情list"
 CULTURAL_MATERIAL_TABLE_NAME = "文化周边管理库存"
+CULTURAL_CLAIMABLE_FIELD = "是否可申领"
+CULTURAL_CLAIMABLE_YES = "是"
+CULTURAL_CLAIMABLE_NO = "否"
 REGION_TABLE_NAME = "战区管理"
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
@@ -11452,13 +11455,13 @@ def sync_feishu_cultural_category_inventory(
         existing = current_by_key.get(key)
         if existing:
             fields.update({
-                "当前库存": int(values.get("quantity", existing.get("quantity", 0)) or 0),
+                **cultural_stock_fields(values.get("quantity", existing.get("quantity", 0))),
                 "单价（人民币）": float(values.get("unit_price", existing.get("unit_price", 0)) or 0),
                 "备注": str(existing.get("remark") or ""),
             })
             updates.append({"record_id": str(existing.get("record_id") or ""), "fields": fields})
         else:
-            fields.update({"文化周边编码": f"CUL-{uuid.uuid4().hex[:8].upper()}", "当前库存": int(values.get("quantity") or 0), "单价（人民币）": float(values.get("unit_price") or 0), "备注": ""})
+            fields.update({"文化周边编码": f"CUL-{uuid.uuid4().hex[:8].upper()}", **cultural_stock_fields(values.get("quantity"), initialize=True), "单价（人民币）": float(values.get("unit_price") or 0), "备注": ""})
             creates.append(fields)
     created_rows = feishu_batch_create_records(CULTURAL_MATERIAL_TABLE_NAME, creates) if creates else []
     updated_count = feishu_batch_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, updates)
@@ -17894,6 +17897,43 @@ def render_gift_projects_page() -> None:
 
 
 
+def cultural_claimability(stock: object) -> str:
+    return CULTURAL_CLAIMABLE_YES if int(stock or 0) > 0 else CULTURAL_CLAIMABLE_NO
+
+
+def cultural_stock_fields(stock: object, *, initialize: bool = False) -> dict[str, object]:
+    quantity = int(stock or 0)
+    fields: dict[str, object] = {"当前库存": quantity}
+    if quantity <= 0 or initialize:
+        fields[CULTURAL_CLAIMABLE_FIELD] = cultural_claimability(quantity)
+    return fields
+
+
+def sync_cultural_material_claimability(
+    rows: list[dict] | None = None,
+) -> dict[str, int]:
+    """Keep claimability aligned with stock before Worker/cache publication."""
+    resolved_rows = list(
+        rows if rows is not None else fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
+    )
+    updates: list[dict[str, object]] = []
+    for row in resolved_rows:
+        fields = feishu_fields(row)
+        if feishu_int(fields, "当前库存") > 0:
+            continue
+        expected = CULTURAL_CLAIMABLE_NO
+        if feishu_text(fields, CULTURAL_CLAIMABLE_FIELD).strip() == expected:
+            continue
+        record_id = feishu_record_id(row)
+        if record_id:
+            updates.append({"record_id": record_id, "fields": {CULTURAL_CLAIMABLE_FIELD: expected}})
+    written = (
+        feishu_batch_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, updates)
+        if updates else 0
+    )
+    return {"checked_count": len(resolved_rows), "updated_count": written}
+
+
 def cultural_request_catalog(
     cultural_rows: list[dict] | None = None,
     category_rows: list[dict] | None = None,
@@ -17927,6 +17967,8 @@ def cultural_request_catalog(
     combinations: dict[tuple[str, str, str], dict[str, object]] = {}
     for row in culture:
         fields = feishu_fields(row)
+        if feishu_text(fields, CULTURAL_CLAIMABLE_FIELD).strip() != CULTURAL_CLAIMABLE_YES:
+            continue
         product = feishu_text(fields, "物料品类").strip()
         model = feishu_text(fields, "产品型号").strip()
         region = feishu_text(fields, "战区管理").strip()
@@ -18000,7 +18042,7 @@ def execute_region_dimension_management(draft: dict[str, object]) -> dict[str, o
             creates.append({
                 "文化周边编码": f"CUL-{uuid.uuid4().hex[:8].upper()}",
                 "物料品类": category, "产品型号": model, "战区管理": name,
-                "当前库存": 0, "单价（人民币）": 0.0, "备注": "",
+                **cultural_stock_fields(0), "单价（人民币）": 0.0, "备注": "",
                 "物料品类关联": [category_id], "产品型号关联": [model_id],
             })
     created_rows = feishu_batch_create_records(CULTURAL_MATERIAL_TABLE_NAME, creates) if creates else []
@@ -18368,7 +18410,7 @@ def execute_cultural_material_management(draft: dict[str, object]) -> dict[str, 
             "物料品类": product,
             "产品型号": model,
             "战区管理": region,
-            "当前库存": int(draft.get("stock") or 0),
+            **cultural_stock_fields(draft.get("stock"), initialize=action == "create"),
             "单价（人民币）": float(draft.get("unit_price_rmb") or 0),
             "备注": str(draft.get("remark") or ""),
             "物料品类关联": [category_id],
@@ -18632,7 +18674,7 @@ def submit_feishu_cultural_request(
         feishu_update_record_fields(
             CULTURAL_MATERIAL_TABLE_NAME,
             str(item["record_id"]),
-            {"当前库存": after_stock},
+            cultural_stock_fields(after_stock),
         )
     feishu_update_record_fields(
         REQUEST_TABLE_NAME,
