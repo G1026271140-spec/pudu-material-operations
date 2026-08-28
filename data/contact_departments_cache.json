@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-08-24 11:00:30",
+  "generated_at": "2026-08-28 11:00:31",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1179,6 +1179,16 @@
       ]
     },
     {
+      "open_id": "ou_cb7e9f1462302611b3782db455888d01",
+      "name": "Genaro Torres",
+      "department_ids": [
+        "od-fe043774765220e2c51dfb9893e589bf"
+      ],
+      "department_paths": [
+        "美澳英战区"
+      ]
+    },
+    {
       "open_id": "ou_5a740a3b094cd6c6e89878fbe1395a19",
       "name": "Gregory Nicholas Stadler",
       "department_ids": [
@@ -1212,9 +1222,11 @@
       "open_id": "ou_bd2b28e93fc1244e8b0e10c179ebda12",
       "name": "James Loria",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-fe043774765220e2c51dfb9893e589bf"
       ],
       "department_paths": [
+        "X LAB",
         "美澳英战区"
       ]
     },
@@ -1551,13 +1563,13 @@
       ]
     },
     {
-      "open_id": "ou_ae0c0b64f3e238e078542f26d69f6a79",
-      "name": "付川江",
+      "open_id": "ou_2b7ddc36c22df4fbf04a8a218ce3712a",
+      "name": "付秀国",
       "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+        "od-8f3a4c538a65e3c3396660a2d4e21445"
       ],
       "department_paths": [
-        "桐乡生产组"
+        "建湖仓储物流组"
       ]
     },
     {
@@ -3193,6 +3205,16 @@
       ]
     },
     {
+      "open_id": "ou_33d2cc6be9cb95cab1aa531a9c927e86",
+      "name": "刘文涛",
+      "department_ids": [
+        "od-37c6236c5a825b772186d202361170a7"
+      ],
+      "department_paths": [
+        "物料计划组"
+      ]
+    },
+    {
       "open_id": "ou_2d5ca01f4e6bac2c2746889e77b055c6",
       "name": "刘文艺",
       "department_ids": [
@@ -3608,10 +3630,10 @@
       "open_id": "ou_7d7f34692bdd7d6f4337e0544e7a433b",
       "name": "刘舒莉",
       "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+        "od-b5594223b60818b552a17a06fc341b13"
       ],
       "department_paths": [
-        "桐乡生产组"
+        "桐乡品控组"
       ]
     },
     {
@@ -4725,6 +4747,16 @@
       ]
     },
     {
+      "open_id": "ou_e9c587f633b48a38b269681abd5618a6",
+      "name": "吴雅芳",
+      "department_ids": [
+        "od-b5594223b60818b552a17a06fc341b13"
+      ],
+      "department_paths": [
+        "桐乡品控组"
+      ]
+    },
+    {
       "open_id": "ou_a3aea4e93274d45913762f51e42db934",
       "name": "吴雨晨",
       "department_ids": [
@@ -4766,6 +4798,16 @@
       ],
       "department_paths": [
         "产品营销组"
+      ]
+    },
+    {
+      "open_id": "ou_954c3c18eb9f0d89d5c15e052c58850d",
+      "name": "吴飞",
+      "department_ids": [
+        "od-1be6a4cdafefb7cf090a1957825b7645"
+      ],
+      "department_paths": [
+        "九江综合组"
       ]
     },
     {
@@ -5261,6 +5303,20 @@
       ]
     },
     {
+      "open_id": "ou_57a4deeb231d81e6d4dd2f47eb303382",
+      "name": "唐瑜骐",
+      "department_ids": [
+        "od-d90d38def427cf71640b80459d6b5118",
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
+        "od-2c0bf991e0b608110fdc558188f948ac"
+      ],
+      "department_paths": [
+        "M LAB",
+        "X LAB",
+        "财经BP组"
+      ]
+    },
+    {
       "open_id": "ou_386fd3690877c628f94776cf491d72ef",
       "name": "唐登楼",
       "department_ids": [
@@ -5310,16 +5366,6 @@
       ],
       "department_paths": [
         "GRPBU机械组"
-      ]
-    },
-    {
-      "open_id": "ou_c730ab0100ce5fff82273b350c147b92",
-      "name": "喻亚飞",
-      "department_ids": [
-        "od-6ae6cb1fa6655a41401da78f8e07c6c1"
-      ],
-      "department_paths": [
-        "非营销招聘组"
       ]
     },
     {
@@ -5933,16 +5979,6 @@
       ]
     },
     {
-      "open_id": "ou_b9a7c8364dc892b666b215737e390fc2",
-      "name": "孟刚",
-      "department_ids": [
-        "od-0f6648d2be38f9764cbcf8fab9eb8408"
-      ],
-      "department_paths": [
-        "IQC组"
-      ]
-    },
-    {
       "open_id": "ou_0796685bf388bf29d5e10d81fc2f20b5",
       "name": "孟庆华",
       "department_ids": [
@@ -6469,16 +6505,6 @@
       ]
     },
     {
-      "open_id": "ou_aaa1a6c96afa08a18f5551928f800e91",
-      "name": "平方芳",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_3aeb086a41084ee93a98f97656d26eec",
       "name": "庄鸿杰",
       "department_ids": [
@@ -6516,6 +6542,16 @@
       ],
       "department_paths": [
         "CRPBU机械组"
+      ]
+    },
+    {
+      "open_id": "ou_5e17a6d65f5126521b0818a6d5677864",
+      "name": "庞静蓉",
+      "department_ids": [
+        "od-fba6a8915868e0848e1b05c4746457db"
+      ],
+      "department_paths": [
+        "采购执行组"
       ]
     },
     {
@@ -6702,18 +6738,6 @@
       ],
       "department_paths": [
         "桐乡生产组"
-      ]
-    },
-    {
-      "open_id": "ou_ccabfbf8843ee6e87da53b54a1890f9b",
-      "name": "张利松",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e",
-        "od-5d441daa075643882e57dc112e94aa3c"
-      ],
-      "department_paths": [
-        "X LAB",
-        "X LAB测试组"
       ]
     },
     {
@@ -7070,12 +7094,10 @@
       "open_id": "ou_52b65a63636f4ed0b6b2f44b6bd361fc",
       "name": "张文彦",
       "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e",
-        "od-306e7e8186e4bfd316136d0dfc4f21b1"
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
       ],
       "department_paths": [
-        "X LAB",
-        "硬件平台部电机组"
+        "X LAB"
       ]
     },
     {
@@ -7941,16 +7963,6 @@
       ]
     },
     {
-      "open_id": "ou_a8e2f7f3a9ae03806260c5f6e74b4ce3",
-      "name": "彭鹏",
-      "department_ids": [
-        "od-b5594223b60818b552a17a06fc341b13"
-      ],
-      "department_paths": [
-        "桐乡品控组"
-      ]
-    },
-    {
       "open_id": "ou_1b8eac1cbd8566fd860a5067f4cede4c",
       "name": "彭鹏辉",
       "department_ids": [
@@ -8101,6 +8113,16 @@
       ]
     },
     {
+      "open_id": "ou_22bada4c3e94eddf01bfddac9821209c",
+      "name": "徐志浩",
+      "department_ids": [
+        "od-1e491b60e74980792615bf38114130df"
+      ],
+      "department_paths": [
+        "业务运营平台团队"
+      ]
+    },
+    {
       "open_id": "ou_1ddbe0d199f60feb4ead665f2aa43f7d",
       "name": "徐晓琪",
       "department_ids": [
@@ -8118,6 +8140,16 @@
       ],
       "department_paths": [
         "CRPBU系统测试组"
+      ]
+    },
+    {
+      "open_id": "ou_58ddecf4d24d802df775cf9506cb2d84",
+      "name": "徐枫",
+      "department_ids": [
+        "od-e451542ef735b7c97c98dcf24e150401"
+      ],
+      "department_paths": [
+        "质量部"
       ]
     },
     {
@@ -8240,6 +8272,16 @@
       ],
       "department_paths": [
         "韩国服务组"
+      ]
+    },
+    {
+      "open_id": "ou_3a3fb0afe2af782f92c1954e5996075a",
+      "name": "戴亚斌",
+      "department_ids": [
+        "od-b5594223b60818b552a17a06fc341b13"
+      ],
+      "department_paths": [
+        "桐乡品控组"
       ]
     },
     {
@@ -9097,11 +9139,11 @@
       "name": "朱海明",
       "department_ids": [
         "od-d90d38def427cf71640b80459d6b5118",
-        "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
+        "od-5e0c85effb5980fef902cf64007ea666"
       ],
       "department_paths": [
         "M LAB",
-        "硬件测试组"
+        "M LAB测试组"
       ]
     },
     {
@@ -9239,6 +9281,16 @@
       ]
     },
     {
+      "open_id": "ou_b2c114f1eec94c0f06a3aa8d611df6b5",
+      "name": "李一凡",
+      "department_ids": [
+        "od-1e491b60e74980792615bf38114130df"
+      ],
+      "department_paths": [
+        "业务运营平台团队"
+      ]
+    },
+    {
       "open_id": "ou_d9057166e7ed083d99f00f6e1ebd561a",
       "name": "李世芳",
       "department_ids": [
@@ -9286,16 +9338,6 @@
       ],
       "department_paths": [
         "美澳英战区"
-      ]
-    },
-    {
-      "open_id": "ou_0d3bf643541f7d2533753918cd1376e0",
-      "name": "李云潇",
-      "department_ids": [
-        "od-881887a1314920e1df0803e13cb615d3"
-      ],
-      "department_paths": [
-        "CRPBU算法实习生组"
       ]
     },
     {
@@ -9705,6 +9747,16 @@
       ]
     },
     {
+      "open_id": "ou_7dd7a782d6be9ef4507c36414e593196",
+      "name": "李建梅",
+      "department_ids": [
+        "od-8f3a4c538a65e3c3396660a2d4e21445"
+      ],
+      "department_paths": [
+        "建湖仓储物流组"
+      ]
+    },
+    {
       "open_id": "ou_6673235ac22dfaba8364e315d42328a4",
       "name": "李建爽",
       "department_ids": [
@@ -9790,11 +9842,9 @@
       "open_id": "ou_262beb2f2d69c0ab4058e0daab68dd68",
       "name": "李承宇",
       "department_ids": [
-        "od-19e0ee1f867576e2a88732d4fa16b9a5",
         "od-264e0d6ec3e739c33ad5d32c3908108e"
       ],
       "department_paths": [
-        "CR产品组",
         "X LAB"
       ]
     },
@@ -9968,6 +10018,16 @@
       ],
       "department_paths": [
         "CRPBU软件组"
+      ]
+    },
+    {
+      "open_id": "ou_1582eae7c5c2f52d31f9d5515da8a094",
+      "name": "李柄权",
+      "department_ids": [
+        "od-9ad23d5284430da79278f14ad7fbadd6"
+      ],
+      "department_paths": [
+        "CRPBU算法组"
       ]
     },
     {
@@ -10682,6 +10742,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_610ee15afc4c47771f96e893e8e8ecfa",
+      "name": "杨吕泳",
+      "department_ids": [
+        "od-e8cc1fb212bdc51eb6b639db73e85c1e"
+      ],
+      "department_paths": [
+        "基座模型数采实习生组"
       ]
     },
     {
@@ -12046,10 +12116,10 @@
       "open_id": "ou_7d8e8c99e07294f6ae6aaa53a1c4bd55",
       "name": "段玉文",
       "department_ids": [
-        "od-1e491b60e74980792615bf38114130df"
+        "od-4460d5aedeb32b282f1fd1cf0fc5c8eb"
       ],
       "department_paths": [
-        "业务运营平台团队"
+        "GRPBU软件组"
       ]
     },
     {
@@ -12653,16 +12723,6 @@
       ]
     },
     {
-      "open_id": "ou_b9837346fa68d5b13b1dd40084cd263f",
-      "name": "潘为翠",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
-      ]
-    },
-    {
       "open_id": "ou_a2494b44a3f1aae4eda3b6b68132953b",
       "name": "潘亚",
       "department_ids": [
@@ -12971,16 +13031,6 @@
       ]
     },
     {
-      "open_id": "ou_7d7c9a374e23fe8f8e4443aac55638d7",
-      "name": "王世豪",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
-      ]
-    },
-    {
       "open_id": "ou_03b6ef0ec76a6d053b3752843b884c07",
       "name": "王丹丹",
       "department_ids": [
@@ -13283,16 +13333,6 @@
       ]
     },
     {
-      "open_id": "ou_d1abf2925c429f10d80838f605f1b317",
-      "name": "王庆平",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_df32b966fc59eea8e2cddfbd40c937c7",
       "name": "王应聪",
       "department_ids": [
@@ -13504,6 +13544,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_55782e5fec25900ddca77ae80696eeb9",
+      "name": "王晨光",
+      "department_ids": [
+        "od-bb30508003376665ccf103b15439c5cf"
+      ],
+      "department_paths": [
+        "渠道管理组"
       ]
     },
     {
@@ -13939,6 +13989,16 @@
       ]
     },
     {
+      "open_id": "ou_297dbe241425ed648ee5f4d6cf1b075b",
+      "name": "王锐颖",
+      "department_ids": [
+        "od-9ad23d5284430da79278f14ad7fbadd6"
+      ],
+      "department_paths": [
+        "CRPBU算法组"
+      ]
+    },
+    {
       "open_id": "ou_a0cd61b021bfb9269ec7857a1860f9ad",
       "name": "王长伟",
       "department_ids": [
@@ -13966,16 +14026,6 @@
       ],
       "department_paths": [
         "IRPBU软件组"
-      ]
-    },
-    {
-      "open_id": "ou_4aec37d7e3a24689bf2f9a9e8ed7350e",
-      "name": "王静",
-      "department_ids": [
-        "od-8e45a1055cf45a02f1c906e2c67e58af"
-      ],
-      "department_paths": [
-        "生产质量组"
       ]
     },
     {
@@ -14146,16 +14196,6 @@
       ],
       "department_paths": [
         "建湖品控组"
-      ]
-    },
-    {
-      "open_id": "ou_7062acd7938fc39de333a06b39577de1",
-      "name": "申松",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
       ]
     },
     {
@@ -14472,16 +14512,6 @@
       ],
       "department_paths": [
         "桐乡生产组"
-      ]
-    },
-    {
-      "open_id": "ou_05ad6514f3bb5629a8a53e4c7e4efe43",
-      "name": "秦芳",
-      "department_ids": [
-        "od-5e4ce3726c5963582cc77a891cabf052"
-      ],
-      "department_paths": [
-        "九江品控组"
       ]
     },
     {
@@ -14831,6 +14861,16 @@
       ]
     },
     {
+      "open_id": "ou_0b79844ce58ef4ee2b8a624cc2a6aa0b",
+      "name": "罗明",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_5d8e04b3d6917e30f1220daecb295ac6",
       "name": "罗桃园",
       "department_ids": [
@@ -14920,6 +14960,16 @@
       ],
       "department_paths": [
         "基座模型部"
+      ]
+    },
+    {
+      "open_id": "ou_1e3cc003a1a13e21bafeae37c4d1f61b",
+      "name": "罗玉聪",
+      "department_ids": [
+        "od-9ad23d5284430da79278f14ad7fbadd6"
+      ],
+      "department_paths": [
+        "CRPBU算法组"
       ]
     },
     {
@@ -15227,13 +15277,11 @@
       "name": "肖萌萌",
       "department_ids": [
         "od-62d305b24a1a254ea505354e9a4d4897",
-        "od-6a1072bf3977d7f847b93e394d868b6e",
-        "od-2215f5418e37914d077f58727c5490e3"
+        "od-6a1072bf3977d7f847b93e394d868b6e"
       ],
       "department_paths": [
         "PDT管理部",
-        "SRPBU",
-        "项目成员挂靠"
+        "SRPBU"
       ]
     },
     {
@@ -15431,6 +15479,16 @@
       ]
     },
     {
+      "open_id": "ou_84271748889403e5954a119138920dd7",
+      "name": "胡曦然",
+      "department_ids": [
+        "od-30db39571d65087f1a2b2b228a26f2fa"
+      ],
+      "department_paths": [
+        "生命周期工具链团队"
+      ]
+    },
+    {
       "open_id": "ou_dda2f9b476c7d973e0206b5f3b514863",
       "name": "胡桉桧",
       "department_ids": [
@@ -15540,16 +15598,6 @@
       ],
       "department_paths": [
         "KA业务部"
-      ]
-    },
-    {
-      "open_id": "ou_dd23cdcca5b9950b9ecb2942b71cb153",
-      "name": "胡虔诚",
-      "department_ids": [
-        "od-881887a1314920e1df0803e13cb615d3"
-      ],
-      "department_paths": [
-        "CRPBU算法实习生组"
       ]
     },
     {
@@ -15827,6 +15875,16 @@
       ]
     },
     {
+      "open_id": "ou_01a8c51d4544c4e74526013620ba53b8",
+      "name": "莫先洪",
+      "department_ids": [
+        "od-821a8df99001a505f8ecfd37f1ed07ec"
+      ],
+      "department_paths": [
+        "GRPBU电机组"
+      ]
+    },
+    {
       "open_id": "ou_8111ebac46f6c93ef4f54610bd46b6be",
       "name": "莫礎甄",
       "department_ids": [
@@ -15944,16 +16002,6 @@
       ],
       "department_paths": [
         "建湖生产组"
-      ]
-    },
-    {
-      "open_id": "ou_61906f5826379d8047893475b9104ae5",
-      "name": "董涛",
-      "department_ids": [
-        "od-8e45a1055cf45a02f1c906e2c67e58af"
-      ],
-      "department_paths": [
-        "生产质量组"
       ]
     },
     {
@@ -16833,16 +16881,6 @@
       ]
     },
     {
-      "open_id": "ou_d691a0147fe4bec08ae362f14c96640a",
-      "name": "谢江兰",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
-      ]
-    },
-    {
       "open_id": "ou_d46d02517c813aa2125e660f895c431e",
       "name": "谢涛",
       "department_ids": [
@@ -16856,11 +16894,9 @@
       "open_id": "ou_f53b2eff2b0c044def5553141ceaf637",
       "name": "谢艺宁",
       "department_ids": [
-        "od-05b225f00ac533c63b0f954e0e58df2d",
         "od-d90d38def427cf71640b80459d6b5118"
       ],
       "department_paths": [
-        "CRPBU机械组",
         "M LAB"
       ]
     },
@@ -16960,12 +16996,10 @@
       "open_id": "ou_51033cd0aba14abd7a21e8ceccdcaad1",
       "name": "谭浩志",
       "department_ids": [
-        "od-05b225f00ac533c63b0f954e0e58df2d",
         "od-d90d38def427cf71640b80459d6b5118",
         "od-b17d75858b35d6e9f37ecbac8012b60d"
       ],
       "department_paths": [
-        "CRPBU机械组",
         "M LAB",
         "机械平台部"
       ]
@@ -16995,11 +17029,11 @@
       "name": "谭路",
       "department_ids": [
         "od-d90d38def427cf71640b80459d6b5118",
-        "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
+        "od-5e0c85effb5980fef902cf64007ea666"
       ],
       "department_paths": [
         "M LAB",
-        "硬件测试组"
+        "M LAB测试组"
       ]
     },
     {
@@ -17190,16 +17224,6 @@
       ],
       "department_paths": [
         "桐乡品控组"
-      ]
-    },
-    {
-      "open_id": "ou_aa6e207786a4bbe2ba9fdc54659c2a2e",
-      "name": "赵冬萍",
-      "department_ids": [
-        "od-881887a1314920e1df0803e13cb615d3"
-      ],
-      "department_paths": [
-        "CRPBU算法实习生组"
       ]
     },
     {
@@ -17643,16 +17667,6 @@
       ]
     },
     {
-      "open_id": "ou_e9bf56bb9a84fdeb0e6665783ffbe53f",
-      "name": "邓鹏",
-      "department_ids": [
-        "od-e9be822e07696582ef8c156ffbc06d39"
-      ],
-      "department_paths": [
-        "GRPBU硬件组"
-      ]
-    },
-    {
       "open_id": "ou_cf8e34d9005e0552dc2afc4fd61c8499",
       "name": "邢丙坤",
       "department_ids": [
@@ -17837,6 +17851,16 @@
     {
       "open_id": "ou_0fe63b68496540484abf06805d0678c9",
       "name": "郑敏鹏",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
+      ]
+    },
+    {
+      "open_id": "ou_0d9c1094f1cb67d5638bdd7795924d22",
+      "name": "郑文锋",
       "department_ids": [
         "od-264e0d6ec3e739c33ad5d32c3908108e"
       ],
@@ -18242,16 +18266,6 @@
       ],
       "department_paths": [
         "桐乡生产组"
-      ]
-    },
-    {
-      "open_id": "ou_7102d27b527190e3c6d75014cb32569b",
-      "name": "鄂宣源",
-      "department_ids": [
-        "od-2295dcc624847d67ab4019f92559a36e"
-      ],
-      "department_paths": [
-        "资产费用组"
       ]
     },
     {
@@ -19381,6 +19395,16 @@
       ]
     },
     {
+      "open_id": "ou_c091a598bc7924614ceab9dad80cd042",
+      "name": "陈熙",
+      "department_ids": [
+        "od-09be02d0c22e49d9acb523e297ce841e"
+      ],
+      "department_paths": [
+        "欧洲GR业务部"
+      ]
+    },
+    {
       "open_id": "ou_8cdf07f57710f8697c25bea7b7286449",
       "name": "陈玉珊",
       "department_ids": [
@@ -19660,16 +19684,6 @@
       ],
       "department_paths": [
         "建湖生产组"
-      ]
-    },
-    {
-      "open_id": "ou_6c22726e69be4ea6f60828bebd1174e6",
-      "name": "陶文庆",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
       ]
     },
     {
@@ -20448,10 +20462,10 @@
       "open_id": "ou_9c600666a6de87b645ae0de09268b35d",
       "name": "魏军丽",
       "department_ids": [
-        "od-b5594223b60818b552a17a06fc341b13"
+        "od-0f6648d2be38f9764cbcf8fab9eb8408"
       ],
       "department_paths": [
-        "桐乡品控组"
+        "IQC组"
       ]
     },
     {
@@ -20695,11 +20709,11 @@
       "name": "黄光辉",
       "department_ids": [
         "od-d90d38def427cf71640b80459d6b5118",
-        "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
+        "od-5e0c85effb5980fef902cf64007ea666"
       ],
       "department_paths": [
         "M LAB",
-        "硬件测试组"
+        "M LAB测试组"
       ]
     },
     {
@@ -20792,16 +20806,6 @@
       ],
       "department_paths": [
         "GRPBU机械组"
-      ]
-    },
-    {
-      "open_id": "ou_70e4bb07559c0686319837f0d3e25a1f",
-      "name": "黄宝佳",
-      "department_ids": [
-        "od-b944fc7cdfcb318f3a43bed28c1ee6d1"
-      ],
-      "department_paths": [
-        "SR产品组"
       ]
     },
     {
@@ -20982,6 +20986,16 @@
       "department_paths": [
         "日本CR业务组",
         "日本战队"
+      ]
+    },
+    {
+      "open_id": "ou_3c344c23453e23c4f358a28da203b0ad",
+      "name": "黄武伟",
+      "department_ids": [
+        "od-d90d38def427cf71640b80459d6b5118"
+      ],
+      "department_paths": [
+        "M LAB"
       ]
     },
     {
@@ -21371,5 +21385,5 @@
       ]
     }
   ],
-  "user_count": 1976
+  "user_count": 1978
 }
