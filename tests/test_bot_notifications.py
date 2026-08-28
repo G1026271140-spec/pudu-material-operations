@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 import unittest
 from unittest.mock import Mock, patch
@@ -742,6 +743,12 @@ class BotNotificationTests(unittest.TestCase):
             )
 
         self.assertEqual(result, ("REQ-1", 2, False))
+
+    def test_normal_material_request_sets_request_type(self) -> None:
+        source = inspect.getsource(app.submit_feishu_material_request)
+
+        self.assertIn('"申请类型": "普通物料申请"', source)
+        self.assertNotIn('"申请类型": "文化周边申请"', source)
 
 
 if __name__ == "__main__":
