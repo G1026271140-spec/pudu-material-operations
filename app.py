@@ -100,7 +100,7 @@ LEDGER_TABLE_NAME = "库存流水"
 USER_PERMISSION_TABLE_NAME = "用户权限表"
 GIFT_PROJECT_TABLE_NAME = "项目周边礼品物料筹备详情list"
 CULTURAL_MATERIAL_TABLE_NAME = "文化周边管理库存"
-CULTURAL_CLAIMABLE_FIELD = "是否可申领"
+CULTURAL_CLAIMABLE_FIELD = "是否可以申领"
 CULTURAL_CLAIMABLE_YES = "是"
 CULTURAL_CLAIMABLE_NO = "否"
 REGION_TABLE_NAME = "战区管理"
@@ -18330,7 +18330,7 @@ def sync_cultural_material_claimability(
         ]
         if failed:
             raise RuntimeError(
-                f"文化周边是否可申领字段写入后校验失败：{len(failed)} 条"
+                f"文化周边是否可以申领字段写入后校验失败：{len(failed)} 条"
             )
     return {"checked_count": len(resolved_rows), "updated_count": written}
 

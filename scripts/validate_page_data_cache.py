@@ -64,7 +64,7 @@ def validate_page_data_cache(
     ]
     if invalid_claimability_rows:
         raise ValueError(
-            "文化周边页面缓存存在缺失或无效的是否可申领字段："
+            "文化周边页面缓存存在缺失或无效的是否可以申领字段："
             f"{len(invalid_claimability_rows)} 条"
         )
     cultural_catalog = app.cultural_request_catalog(
