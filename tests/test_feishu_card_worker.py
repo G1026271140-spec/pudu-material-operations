@@ -117,25 +117,6 @@ class FeishuCardWorkerTests(unittest.TestCase):
         )
         enqueue.assert_not_called()
 
-    def test_reminder_button_opens_schedule_form(self) -> None:
-        client = Mock()
-        card = {"schema": "2.0"}
-        with (
-            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
-            patch.object(worker.inventory_app, "request_inventory_reminder_form", return_value=card),
-            patch.object(worker.inventory_app, "feishu_client", return_value=client),
-        ):
-            worker.process_card_action_async(
-                action_key="adjust_inventory_review_time",
-                action_name="",
-                value={"request_id": "request-1"},
-                form_value={},
-                operator_open_id="ou-admin",
-                message_id="om-card-1",
-            )
-
-        client.update_interactive_message.assert_called_once_with("om-card-1", card)
-
     def test_reminder_schedule_form_submission_is_accepted(self) -> None:
         thread = Mock()
         event = SimpleNamespace(

@@ -222,15 +222,6 @@ def process_card_action_async(
                 raise RuntimeError("飞书未配置，无法更新库存编辑卡片。")
             client.update_interactive_message(message_id, card)
             return
-        if action_key == "adjust_inventory_review_time":
-            if not message_id:
-                raise RuntimeError("飞书未返回卡片消息标识，请在最新卡片中重试。")
-            card = inventory_app.request_inventory_reminder_form(request_id)
-            client = inventory_app.feishu_client()
-            if client is None:
-                raise RuntimeError("飞书未配置，无法更新库存提醒卡片。")
-            client.update_interactive_message(message_id, card)
-            return
         if action_name.startswith("save_inventory_edit__"):
             parts = action_name.split("__")
             if len(parts) != 3:
@@ -295,19 +286,12 @@ def process_card_action_async(
             try:
                 client = inventory_app.feishu_client()
                 if client is not None:
-                    if action_key == "adjust_inventory_review_time" or action_name.startswith(
-                        "save_inventory_reminder__"
-                    ):
-                        error_card = inventory_app.request_inventory_reminder_form(
-                            request_id,
-                            error_message=str(exc),
-                        )
-                    else:
+                    if not action_name.startswith("save_inventory_reminder__"):
                         error_card = inventory_app.request_inventory_card_edit_form(
                             request_id,
                             error_message=str(exc),
                         )
-                    client.update_interactive_message(message_id, error_card)
+                        client.update_interactive_message(message_id, error_card)
             except Exception:
                 logging.exception("Updating card with asynchronous action error failed")
 
@@ -323,7 +307,6 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
     if action_key not in {
         "edit_request_inventory",
         "confirm_request_inventory",
-        "adjust_inventory_review_time",
     } and not action_name.startswith(("save_inventory_edit__", "save_inventory_reminder__")):
         return card_action_response("warning", "暂不支持该卡片操作。")
     context = getattr(event, "context", None) if event else None

@@ -17,7 +17,7 @@ class InventoryReviewReminderTests(unittest.TestCase):
         self.assertEqual(options[0], ("tomorrow", "明天上午10:00", datetime(2026, 8, 29, 10, 0)))
         self.assertEqual(options[-1], ("2months", "2个月后上午10:00", datetime(2026, 10, 27, 10, 0)))
 
-    def test_inventory_card_contains_adjust_reminder_button(self) -> None:
+    def test_inventory_card_contains_embedded_reminder_select(self) -> None:
         context = {
             "request": {
                 "record_id": "request-1",
@@ -34,8 +34,9 @@ class InventoryReviewReminderTests(unittest.TestCase):
         )
         serialized = json.dumps(card, ensure_ascii=False)
 
-        self.assertIn("调整核实时间", serialized)
-        self.assertIn("adjust_inventory_review_time", serialized)
+        self.assertIn("选择再次核实库存的时间", serialized)
+        self.assertIn("save_inventory_reminder__request-1", serialized)
+        self.assertNotIn("adjust_inventory_review_time", serialized)
 
     def test_schedule_update_writes_plan_and_pending_status(self) -> None:
         context = {
@@ -47,7 +48,9 @@ class InventoryReviewReminderTests(unittest.TestCase):
         }
         with (
             patch.object(app, "enabled_admin_open_ids", return_value=["ou-admin"]),
-            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_client") as client,
+            patch.object(app, "feishu_table_id", return_value="table-1"),
+            patch.object(app, "load_feishu_request_records", return_value=[context["request"]]),
             patch.object(app, "feishu_datetime_value", return_value=123456),
             patch.object(app, "feishu_update_record_fields") as update,
         ):

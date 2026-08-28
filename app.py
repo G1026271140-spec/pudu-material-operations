@@ -64,7 +64,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.7.1"
+APP_VERSION = "V1.7.2"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -7164,7 +7164,8 @@ def material_request_notification_card(
                 }
             )
         edit_url = f"{base_url}?{url_parse.urlencode(edit_args)}"
-        elements.append(
+        elements.extend(
+            [
             {
                 "tag": "column_set",
                 "flex_mode": "none",
@@ -7215,29 +7216,38 @@ def material_request_notification_card(
                             }
                         ],
                     },
+                ],
+            },
+            {
+                "tag": "form",
+                "name": f"inventory_review_reminder_form__{request_id}",
+                "vertical_spacing": "8px",
+                "elements": [
                     {
-                        "tag": "column",
-                        "width": "weighted",
-                        "weight": 1,
-                        "elements": [
+                        "tag": "select_static",
+                        "name": "reminder_schedule",
+                        "required": True,
+                        "width": "fill",
+                        "placeholder": {"tag": "plain_text", "content": "选择再次核实库存的时间"},
+                        "options": [
                             {
-                                "tag": "button",
-                                "text": {"tag": "plain_text", "content": "调整核实时间"},
-                                "type": "default",
-                                "behaviors": [
-                                    {
-                                        "type": "callback",
-                                        "value": {
-                                            "action": "adjust_inventory_review_time",
-                                            "request_id": request_id,
-                                        },
-                                    }
-                                ],
+                                "text": {"tag": "plain_text", "content": label},
+                                "value": value,
                             }
+                            for value, label, _scheduled_at in inventory_review_reminder_schedule_options()
                         ],
                     },
+                    {
+                        "tag": "button",
+                        "name": f"save_inventory_reminder__{request_id}",
+                        "text": {"tag": "plain_text", "content": "保存核实时间"},
+                        "type": "default",
+                        "width": "fill",
+                        "form_action_type": "submit",
+                    },
                 ],
-            }
+            },
+            ]
         )
     return {
         "schema": "2.0",
@@ -7503,91 +7513,6 @@ def inventory_review_reminder_schedule_options(
     ]
 
 
-def request_inventory_reminder_form(
-    request_id: str,
-    *,
-    error_message: str = "",
-) -> dict[str, object]:
-    context = request_inventory_review_context(request_id=request_id)
-    request = dict(context["request"])
-    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
-        raise RuntimeError("该申请已经完成库存核实，无需设置提醒。")
-    options = inventory_review_reminder_schedule_options()
-    return {
-        "schema": "2.0",
-        "config": {
-            "update_multi": True,
-            "width_mode": "default",
-            "summary": {"content": "调整库存核实时间"},
-        },
-        "header": {
-            "template": "orange",
-            "title": {"tag": "plain_text", "content": "调整库存核实时间"},
-            "subtitle": {
-                "tag": "plain_text",
-                "content": str(request.get("request_no") or "-"),
-            },
-            "icon": {"tag": "standard_icon", "token": "approve_colorful"},
-        },
-        "body": {
-            "direction": "vertical",
-            "padding": "12px 12px 20px 12px",
-            "vertical_spacing": "12px",
-            "elements": [
-                *(
-                    [
-                        {
-                            "tag": "markdown",
-                            "content": f"**<font color='red'>保存失败</font>**\n{_feishu_card_plain_text(error_message, max_length=500)}",
-                        }
-                    ]
-                    if error_message
-                    else []
-                ),
-                {
-                    "tag": "markdown",
-                    "content": (
-                        "请选择再次核实库存的时间。到达该时间后，系统会重新读取最新申请明细和库存，"
-                        "并再次通知当前已启用管理员。"
-                    ),
-                },
-                {
-                    "tag": "form",
-                    "name": "inventory_review_reminder_form",
-                    "vertical_spacing": "12px",
-                    "elements": [
-                        {
-                            "tag": "select_static",
-                            "name": "reminder_schedule",
-                            "required": True,
-                            "width": "fill",
-                            "placeholder": {"tag": "plain_text", "content": "选择核实时间"},
-                            "options": [
-                                {
-                                    "text": {
-                                        "tag": "plain_text",
-                                        "content": f"{label}（{scheduled_at:%Y-%m-%d %H:%M}）",
-                                    },
-                                    "value": value,
-                                }
-                                for value, label, scheduled_at in options
-                            ],
-                        },
-                        {
-                            "tag": "button",
-                            "name": f"save_inventory_reminder__{request_id}",
-                            "text": {"tag": "plain_text", "content": "保存核实时间"},
-                            "type": "primary_filled",
-                            "width": "fill",
-                            "form_action_type": "submit",
-                        },
-                    ],
-                },
-            ],
-        },
-    }
-
-
 def execute_inventory_review_reminder_schedule(
     request_id: str,
     operator_open_id: str,
@@ -7597,8 +7522,13 @@ def execute_inventory_review_reminder_schedule(
 ) -> dict[str, object]:
     if operator_open_id not in enabled_admin_open_ids():
         raise PermissionError("只有已启用管理员可以调整库存核实时间。")
-    context = request_inventory_review_context(request_id=request_id)
-    request = dict(context["request"])
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法保存库存核实时间。")
+    request_row = client.get_record(feishu_table_id(REQUEST_TABLE_NAME), request_id)
+    if not request_row:
+        raise RuntimeError("申请单不存在或已被删除。")
+    request = load_feishu_request_records([request_row])[0]
     if str(request.get("status") or "") != REQUEST_STATUS_PENDING:
         raise RuntimeError("只有待审批申请可以设置库存核实提醒。")
     if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:

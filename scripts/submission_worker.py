@@ -606,8 +606,10 @@ def run_forever(poll_seconds: float, worker_priority: int) -> bool:
                 and scheduler_now - float(_INVENTORY_REVIEW_SCHEDULER_STATE.get("checked_at") or 0)
                 >= INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS
             ):
-                created = inventory_app.enqueue_inventory_review_scheduled_tasks()
+                # A temporary Feishu read failure must not turn the normal
+                # five-second queue poll into an aggressive Base scan loop.
                 _INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = scheduler_now
+                created = inventory_app.enqueue_inventory_review_scheduled_tasks()
                 if created:
                     logging.info("Enqueued %s inventory review reminder tasks", created)
             processed = process_one(name, worker_priority)
