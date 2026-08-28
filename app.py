@@ -64,7 +64,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.7.2"
+APP_VERSION = "V1.7.3"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -18284,16 +18284,24 @@ def sync_cultural_material_claimability(
     rows: list[dict] | None = None,
 ) -> dict[str, int]:
     """Keep claimability aligned with stock before Worker/cache publication."""
+    if rows is None:
+        # Cache jobs are long-lived processes; refresh schema so newly-added
+        # control fields are writable immediately instead of being filtered out.
+        refresh_feishu_schema_cache()
     resolved_rows = list(
         rows if rows is not None else fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
     )
     updates: list[dict[str, object]] = []
     for row in resolved_rows:
         fields = feishu_fields(row)
-        if feishu_int(fields, "当前库存") > 0:
+        stock = feishu_int(fields, "当前库存")
+        current = feishu_text(fields, CULTURAL_CLAIMABLE_FIELD).strip()
+        # Initialize the newly-added selector for historical positive-stock rows,
+        # while preserving an administrator's explicit manual "否" choice.
+        expected = CULTURAL_CLAIMABLE_NO if stock <= 0 else CULTURAL_CLAIMABLE_YES
+        if stock > 0 and current:
             continue
-        expected = CULTURAL_CLAIMABLE_NO
-        if feishu_text(fields, CULTURAL_CLAIMABLE_FIELD).strip() == expected:
+        if current == expected:
             continue
         record_id = feishu_record_id(row)
         if record_id:

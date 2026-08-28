@@ -104,15 +104,19 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertIn(("文化POLO衫", "M", "美洲战区"), catalog["combinations"])
         self.assertNotIn(("文化POLO衫", "L", "美洲战区"), catalog["combinations"])
 
-    def test_claimability_sync_only_forces_nonpositive_stock_to_no(self) -> None:
+    def test_claimability_sync_initializes_blank_positive_stock_and_forces_nonpositive_to_no(self) -> None:
         rows = [
             {"record_id": "zero", "fields": {"当前库存": 0, "是否可申领": "是"}},
+            {"record_id": "blank-positive", "fields": {"当前库存": 5}},
             {"record_id": "manual-no", "fields": {"当前库存": 5, "是否可申领": "否"}},
         ]
-        with patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update:
+        with patch.object(app, "feishu_batch_update_record_fields", return_value=2) as update:
             result = app.sync_cultural_material_claimability(rows)
-        self.assertEqual(result, {"checked_count": 2, "updated_count": 1})
-        self.assertEqual(update.call_args.args[1], [{"record_id": "zero", "fields": {"是否可申领": "否"}}])
+        self.assertEqual(result, {"checked_count": 3, "updated_count": 2})
+        self.assertEqual(update.call_args.args[1], [
+            {"record_id": "zero", "fields": {"是否可申领": "否"}},
+            {"record_id": "blank-positive", "fields": {"是否可申领": "是"}},
+        ])
 
     def test_queue_payload_keeps_cultural_dimensions(self) -> None:
         payload = app.queued_cultural_request_payload(
