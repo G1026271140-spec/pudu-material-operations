@@ -23,8 +23,10 @@ def validate_page_data_cache(
 
     required_tables = (
         app.CATEGORY_TABLE_NAME,
+        app.MODEL_TABLE_NAME,
         app.MATERIAL_TABLE_NAME,
         app.GIFT_PROJECT_TABLE_NAME,
+        app.CULTURAL_MATERIAL_TABLE_NAME,
     )
     missing_tables = [table_name for table_name in required_tables if table_name not in tables]
     if missing_tables:
@@ -47,8 +49,31 @@ def validate_page_data_cache(
     category_rows = rows_by_table[app.CATEGORY_TABLE_NAME]
     material_rows = rows_by_table[app.MATERIAL_TABLE_NAME]
     gift_project_rows = rows_by_table[app.GIFT_PROJECT_TABLE_NAME]
+    cultural_rows = rows_by_table[app.CULTURAL_MATERIAL_TABLE_NAME]
+    model_rows = rows_by_table[app.MODEL_TABLE_NAME]
     if require_data and (not category_rows or not material_rows):
         raise ValueError("页面缓存中的物料品类或物料主数据为空。")
+
+    invalid_claimability_rows = [
+        app.feishu_record_id(row)
+        for row in cultural_rows
+        if app.feishu_text(
+            app.feishu_fields(row), app.CULTURAL_CLAIMABLE_FIELD
+        ).strip()
+        not in {app.CULTURAL_CLAIMABLE_YES, app.CULTURAL_CLAIMABLE_NO}
+    ]
+    if invalid_claimability_rows:
+        raise ValueError(
+            "文化周边页面缓存存在缺失或无效的是否可申领字段："
+            f"{len(invalid_claimability_rows)} 条"
+        )
+    cultural_catalog = app.cultural_request_catalog(
+        cultural_rows,
+        category_rows,
+        model_rows,
+    )
+    if cultural_rows and not cultural_catalog["combinations"]:
+        raise ValueError("文化周边页面缓存有库存记录，但没有可申领的品类/型号/战区组合。")
 
     gift_category_ids = {
         str(category.get("record_id") or "")
@@ -106,6 +131,8 @@ def validate_page_data_cache(
         "gift_categories": len(gift_category_ids),
         "gift_gallery_rows": len(gallery),
         "gift_image_count": len(cached_image_paths),
+        "cultural_rows": len(cultural_rows),
+        "cultural_combinations": len(cultural_catalog["combinations"]),
     }
 
 
@@ -128,6 +155,8 @@ def main() -> int:
         f"gift_projects={stats['gift_project_rows']}",
         f"gift_categories={stats['gift_categories']}",
         f"gift_images={stats['gift_image_count']}",
+        f"cultural_rows={stats['cultural_rows']}",
+        f"cultural_combinations={stats['cultural_combinations']}",
     )
     return 0
 

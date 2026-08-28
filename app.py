@@ -18316,6 +18316,22 @@ def sync_cultural_material_claimability(
         feishu_batch_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, updates)
         if updates else 0
     )
+    if updates:
+        verified_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
+        verified_by_id = {feishu_record_id(row): row for row in verified_rows}
+        failed = [
+            item["record_id"]
+            for item in updates
+            if feishu_text(
+                feishu_fields(verified_by_id.get(item["record_id"], {})),
+                CULTURAL_CLAIMABLE_FIELD,
+            ).strip()
+            != str(item["fields"][CULTURAL_CLAIMABLE_FIELD])
+        ]
+        if failed:
+            raise RuntimeError(
+                f"文化周边是否可申领字段写入后校验失败：{len(failed)} 条"
+            )
     return {"checked_count": len(resolved_rows), "updated_count": written}
 
 

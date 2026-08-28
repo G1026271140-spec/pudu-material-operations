@@ -188,7 +188,15 @@ def main() -> int:
     except (RuntimeError, ValueError, app.FeishuBitableError) as exc:
         print(f"gift_project_category_links_not_synced: {exc}", file=sys.stderr)
         return 1
+    # Re-read the table after writes; publishing the pre-update snapshot would
+    # leave newly initialized claimability fields out of the static cache.
     cache = app.build_page_data_static_snapshot()
+    cache["tables"][app.CULTURAL_MATERIAL_TABLE_NAME] = app.fresh_feishu_rows(
+        app.CULTURAL_MATERIAL_TABLE_NAME
+    )
+    cache["row_counts"][app.CULTURAL_MATERIAL_TABLE_NAME] = len(
+        cache["tables"][app.CULTURAL_MATERIAL_TABLE_NAME]
+    )
     counts = cache.get("row_counts") or {}
     required_counts = {
         app.CATEGORY_TABLE_NAME: int(counts.get(app.CATEGORY_TABLE_NAME) or 0),

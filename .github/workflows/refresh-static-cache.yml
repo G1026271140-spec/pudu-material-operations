@@ -42,6 +42,7 @@ jobs:
 
       - name: Generate and validate static cache files
         run: |
+          python scripts/validate_release_consistency.py
           python scripts/generate_page_data_cache.py
           python scripts/generate_request_form_cache.py
           python scripts/generate_contact_departments_cache.py

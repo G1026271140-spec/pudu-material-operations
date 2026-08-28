@@ -209,7 +209,8 @@ try {
         }
         Invoke-CheckedCommand $venvPython (@("scripts/preserve_unchanged_cache_files.py") + $CacheFiles) | Out-Null
         if ($CacheScope -eq "Material") {
-            Write-RunnerLog "Validating page and request caches."
+            Write-RunnerLog "Validating application modules, page cache, and request cache."
+            Invoke-CheckedCommand $venvPython @("scripts/validate_release_consistency.py") | Out-Null
             Invoke-CheckedCommand $venvPython @("scripts/validate_page_data_cache.py") | Out-Null
             Invoke-CheckedCommand $venvPython @("scripts/validate_request_form_cache.py") | Out-Null
         } elseif ($CacheScope -eq "Warehouse") {
