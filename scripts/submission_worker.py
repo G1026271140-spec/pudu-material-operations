@@ -29,6 +29,8 @@ from submission_queue import (
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+    QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
@@ -55,12 +57,14 @@ DEFAULT_WORKER_PRIORITY = 100
 WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS = 60
 WORKER_HEARTBEAT_INTERVAL_SECONDS = 21_600
 WORKER_HEARTBEAT_TIMEOUT_SECONDS = 28_800
+INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS = 300
 _LEADERSHIP_STATE: dict[str, object] = {
     "checked_at": 0.0,
     "is_leader": False,
     "leader_id": "",
     "heartbeat_at": 0.0,
 }
+_INVENTORY_REVIEW_SCHEDULER_STATE: dict[str, float] = {"checked_at": 0.0}
 
 
 def repository_revision() -> str:
@@ -442,6 +446,22 @@ def process_task(
         return inventory_app.execute_request_inventory_edit(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
         return inventory_app.execute_request_inventory_confirm(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER:
+        request_id = str(payload.get("request_id") or "")
+        return {
+            "request_id": request_id,
+            "notification_count": inventory_app.notify_enabled_admins_of_inventory_review_reminder(
+                request_id,
+                reason="计划核实时间已到",
+                mark_scheduled_reminder=True,
+            ),
+        }
+    if task.task_type == QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW:
+        return {
+            "iso_year": int(payload.get("iso_year") or 0),
+            "iso_week": int(payload.get("iso_week") or 0),
+            "notification_count": inventory_app.notify_weekly_pending_inventory_reviews(),
+        }
     if task.task_type == QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY:
         request_no = str(payload.get("request_no") or "")
         instance_code = str(payload.get("instance_code") or "")
@@ -580,6 +600,16 @@ def run_forever(poll_seconds: float, worker_priority: int) -> bool:
     )
     while True:
         try:
+            scheduler_now = time.monotonic()
+            if (
+                worker_has_leadership(inventory_app.feishu_client(), worker_priority)
+                and scheduler_now - float(_INVENTORY_REVIEW_SCHEDULER_STATE.get("checked_at") or 0)
+                >= INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS
+            ):
+                created = inventory_app.enqueue_inventory_review_scheduled_tasks()
+                _INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = scheduler_now
+                if created:
+                    logging.info("Enqueued %s inventory review reminder tasks", created)
             processed = process_one(name, worker_priority)
         except Exception:
             logging.exception("Submission worker polling failed")

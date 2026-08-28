@@ -41,6 +41,8 @@ from submission_queue import (
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+    QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
     QUEUE_TASK_TYPE_TRANSACTION_REVERT,
@@ -62,7 +64,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.7.0"
+APP_VERSION = "V1.7.1"
 NO_MODEL_TEXT = "无需型号"
 NO_LANGUAGE_TEXT = "无需语种"
 MODEL_TYPE_FIELD = "型号类型"
@@ -142,6 +144,15 @@ REQUEST_LINE_STATUS_WITHDRAWN = "已撤回"
 INVENTORY_REVIEW_PENDING = "待核实库存"
 INVENTORY_REVIEW_EDITING = "编辑处理中"
 INVENTORY_REVIEW_CONFIRMED = "已核实库存"
+INVENTORY_REVIEW_REMINDER_AT_FIELD = "计划库存核实时间"
+INVENTORY_REVIEW_REMINDER_STATUS_FIELD = "库存核实提醒状态"
+INVENTORY_REVIEW_LAST_REMINDER_FIELD_CANDIDATES = (
+    "库存核实最后提醒时间",
+    "库存合适最后提醒时间",
+)
+INVENTORY_REVIEW_REMINDER_PENDING = "待提醒"
+INVENTORY_REVIEW_REMINDER_SENT = "已提醒"
+INVENTORY_REVIEW_REMINDER_NONE = "无需提醒"
 INVENTORY_RESULT_SUFFICIENT = "库存充足"
 INVENTORY_RESULT_PARTIAL = "部分库存不足"
 INVENTORY_RESULT_INSUFFICIENT = "全部库存不足"
@@ -7102,6 +7113,10 @@ def material_request_notification_card(
                         ("库存结论", review_result or "待计算"),
                         ("库存快照时间", snapshot_at),
                         ("申请变更次数", review_request.get("inventory_review_version", 0)),
+                        (
+                            "计划核实时间",
+                            review_request.get("inventory_review_reminder_at") or "未设置",
+                        ),
                     ]
                 )
             ],
@@ -7194,6 +7209,27 @@ def material_request_notification_card(
                                             "request_id": request_id,
                                             "request_no": request_no,
                                             "version": int(review_request.get("inventory_review_version") or 0),
+                                        },
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "weight": 1,
+                        "elements": [
+                            {
+                                "tag": "button",
+                                "text": {"tag": "plain_text", "content": "调整核实时间"},
+                                "type": "default",
+                                "behaviors": [
+                                    {
+                                        "type": "callback",
+                                        "value": {
+                                            "action": "adjust_inventory_review_time",
+                                            "request_id": request_id,
                                         },
                                     }
                                 ],
@@ -7441,6 +7477,378 @@ def request_inventory_card_edit_draft(
         "before_lines": _request_review_line_summary(list(context["lines"])),
         "lines": desired,
     }
+
+
+def inventory_review_reminder_schedule_options(
+    now: datetime | None = None,
+) -> list[tuple[str, str, datetime]]:
+    base = now or datetime.now()
+    offsets = (
+        ("tomorrow", "明天上午10:00", 1),
+        ("3days", "3天后上午10:00", 3),
+        ("1week", "1周后上午10:00", 7),
+        ("2weeks", "2周后上午10:00", 14),
+        ("1month", "1个月后上午10:00", 30),
+        ("2months", "2个月后上午10:00", 60),
+    )
+    return [
+        (
+            value,
+            label,
+            (base + timedelta(days=days)).replace(
+                hour=10, minute=0, second=0, microsecond=0
+            ),
+        )
+        for value, label, days in offsets
+    ]
+
+
+def request_inventory_reminder_form(
+    request_id: str,
+    *,
+    error_message: str = "",
+) -> dict[str, object]:
+    context = request_inventory_review_context(request_id=request_id)
+    request = dict(context["request"])
+    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
+        raise RuntimeError("该申请已经完成库存核实，无需设置提醒。")
+    options = inventory_review_reminder_schedule_options()
+    return {
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "default",
+            "summary": {"content": "调整库存核实时间"},
+        },
+        "header": {
+            "template": "orange",
+            "title": {"tag": "plain_text", "content": "调整库存核实时间"},
+            "subtitle": {
+                "tag": "plain_text",
+                "content": str(request.get("request_no") or "-"),
+            },
+            "icon": {"tag": "standard_icon", "token": "approve_colorful"},
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "vertical_spacing": "12px",
+            "elements": [
+                *(
+                    [
+                        {
+                            "tag": "markdown",
+                            "content": f"**<font color='red'>保存失败</font>**\n{_feishu_card_plain_text(error_message, max_length=500)}",
+                        }
+                    ]
+                    if error_message
+                    else []
+                ),
+                {
+                    "tag": "markdown",
+                    "content": (
+                        "请选择再次核实库存的时间。到达该时间后，系统会重新读取最新申请明细和库存，"
+                        "并再次通知当前已启用管理员。"
+                    ),
+                },
+                {
+                    "tag": "form",
+                    "name": "inventory_review_reminder_form",
+                    "vertical_spacing": "12px",
+                    "elements": [
+                        {
+                            "tag": "select_static",
+                            "name": "reminder_schedule",
+                            "required": True,
+                            "width": "fill",
+                            "placeholder": {"tag": "plain_text", "content": "选择核实时间"},
+                            "options": [
+                                {
+                                    "text": {
+                                        "tag": "plain_text",
+                                        "content": f"{label}（{scheduled_at:%Y-%m-%d %H:%M}）",
+                                    },
+                                    "value": value,
+                                }
+                                for value, label, scheduled_at in options
+                            ],
+                        },
+                        {
+                            "tag": "button",
+                            "name": f"save_inventory_reminder__{request_id}",
+                            "text": {"tag": "plain_text", "content": "保存核实时间"},
+                            "type": "primary_filled",
+                            "width": "fill",
+                            "form_action_type": "submit",
+                        },
+                    ],
+                },
+            ],
+        },
+    }
+
+
+def execute_inventory_review_reminder_schedule(
+    request_id: str,
+    operator_open_id: str,
+    schedule_value: str,
+    *,
+    now: datetime | None = None,
+) -> dict[str, object]:
+    if operator_open_id not in enabled_admin_open_ids():
+        raise PermissionError("只有已启用管理员可以调整库存核实时间。")
+    context = request_inventory_review_context(request_id=request_id)
+    request = dict(context["request"])
+    if str(request.get("status") or "") != REQUEST_STATUS_PENDING:
+        raise RuntimeError("只有待审批申请可以设置库存核实提醒。")
+    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
+        raise RuntimeError("该申请已经完成库存核实，无需设置提醒。")
+    choices = {
+        value: scheduled_at
+        for value, _label, scheduled_at in inventory_review_reminder_schedule_options(now)
+    }
+    scheduled_at = choices.get(str(schedule_value or ""))
+    if scheduled_at is None:
+        raise RuntimeError("请选择有效的库存核实时间。")
+    feishu_update_record_fields(
+        REQUEST_TABLE_NAME,
+        request_id,
+        {
+            INVENTORY_REVIEW_REMINDER_AT_FIELD: feishu_datetime_value(
+                REQUEST_TABLE_NAME, INVENTORY_REVIEW_REMINDER_AT_FIELD, scheduled_at
+            ),
+            INVENTORY_REVIEW_REMINDER_STATUS_FIELD: INVENTORY_REVIEW_REMINDER_PENDING,
+        },
+    )
+    return {
+        "request_id": request_id,
+        "request_no": str(request.get("request_no") or ""),
+        "scheduled_at": scheduled_at,
+    }
+
+
+def pending_inventory_review_contexts() -> list[dict[str, object]]:
+    contexts: list[dict[str, object]] = []
+    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
+    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    all_lines = load_feishu_request_line_records(
+        fresh_feishu_rows(REQUEST_LINE_TABLE_NAME),
+        material_rows,
+    )
+    snapshot_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    for row in request_rows:
+        fields = feishu_fields(row)
+        if feishu_text(fields, "申请类型") != "普通物料申请":
+            continue
+        if feishu_text(fields, "审批状态") != REQUEST_STATUS_PENDING:
+            continue
+        if feishu_text(fields, "库存审查状态") == INVENTORY_REVIEW_CONFIRMED:
+            continue
+        request_id = feishu_record_id(row)
+        if not request_id:
+            continue
+        request = load_feishu_request_records([row])[0]
+        lines = request_lines_for_request(request, all_lines)
+        contexts.append(
+            {
+                "request": request,
+                "request_row": row,
+                "lines": lines,
+                "result": request_inventory_review_result(lines),
+                "snapshot_at": snapshot_at,
+                "material_rows": material_rows,
+            }
+        )
+    return contexts
+
+
+def notify_enabled_admins_of_inventory_review_reminder(
+    request_id: str,
+    *,
+    reason: str = "计划核实时间已到",
+    mark_scheduled_reminder: bool = True,
+) -> int:
+    context = request_inventory_review_context(request_id=request_id)
+    request = dict(context["request"])
+    if str(request.get("status") or "") != REQUEST_STATUS_PENDING:
+        return 0
+    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
+        return 0
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送库存核实提醒。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    message_ids: list[str] = []
+    for open_id in recipients:
+        card = material_request_notification_card(
+            str(request.get("request_no") or ""),
+            request,
+            list(context.get("lines") or []),
+            review_context=context,
+            operator_open_id=open_id,
+        )
+        card["header"]["title"]["content"] = "营销物料申请库存核实提醒"
+        card["header"]["subtitle"] = {
+            "tag": "plain_text",
+            "content": reason,
+        }
+        message_ids.append(send_feishu_interactive_message(client, open_id, card))
+    updates: dict[str, object] = {
+        "库存确认消息ID": json.dumps(message_ids, ensure_ascii=False),
+        "管理员通知状态": "已发送",
+        "管理员通知时间": feishu_datetime_value(
+            REQUEST_TABLE_NAME, "管理员通知时间", datetime.now()
+        ),
+    }
+    if mark_scheduled_reminder:
+        updates[INVENTORY_REVIEW_REMINDER_STATUS_FIELD] = INVENTORY_REVIEW_REMINDER_SENT
+        last_field = first_feishu_field(
+            REQUEST_TABLE_NAME,
+            list(INVENTORY_REVIEW_LAST_REMINDER_FIELD_CANDIDATES),
+        )
+        if feishu_has_field(REQUEST_TABLE_NAME, last_field):
+            updates[last_field] = feishu_datetime_value(
+                REQUEST_TABLE_NAME, last_field, datetime.now()
+            )
+    feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, updates)
+    return len(recipients)
+
+
+def weekly_inventory_review_digest_card(
+    contexts: list[dict[str, object]],
+    operator_open_id: str,
+    *,
+    now: datetime | None = None,
+) -> dict[str, object]:
+    current = now or datetime.now()
+    sorted_contexts = sorted(
+        contexts,
+        key=lambda item: str(dict(item.get("request") or {}).get("submitted_at") or ""),
+    )
+    elements: list[dict[str, object]] = [
+        {
+            "tag": "markdown",
+            "content": f"截至 {current:%Y-%m-%d %H:%M}，共有 **{len(sorted_contexts)}** 条普通物料申请尚未核实库存。",
+        }
+    ]
+    base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
+    for context in sorted_contexts[:20]:
+        request = dict(context.get("request") or {})
+        request_id = str(request.get("record_id") or "")
+        planned = str(request.get("inventory_review_reminder_at") or "未设置")
+        edit_args = {
+            "allocation": "request",
+            "request_id": request_id,
+            "operator": operator_open_id,
+            "review_token": request_review_access_token(request_id, operator_open_id),
+        }
+        edit_url = f"{base_url}?{url_parse.urlencode(edit_args)}"
+        elements.extend(
+            [
+                {
+                    "tag": "markdown",
+                    "content": (
+                        f"**{request.get('request_no') or '-'}**｜{request.get('requester') or '-'}｜"
+                        f"提交 {request.get('submitted_at') or '-'}｜计划核实 {planned}"
+                    ),
+                },
+                {
+                    "tag": "button",
+                    "text": {"tag": "plain_text", "content": "查看并调整配货方案"},
+                    "type": "default",
+                    "behaviors": [
+                        {
+                            "type": "open_url",
+                            "default_url": edit_url,
+                            "pc_url": edit_url,
+                            "ios_url": edit_url,
+                            "android_url": edit_url,
+                        }
+                    ],
+                },
+            ]
+        )
+    if len(sorted_contexts) > 20:
+        elements.append(
+            {
+                "tag": "markdown",
+                "content": f"另有 {len(sorted_contexts) - 20} 条未展示，请进入系统查看。",
+            }
+        )
+    return {
+        "schema": "2.0",
+        "config": {"update_multi": True, "width_mode": "default"},
+        "header": {
+            "template": "orange",
+            "title": {"tag": "plain_text", "content": "营销物料申请待核实库存提醒"},
+            "icon": {"tag": "standard_icon", "token": "approve_colorful"},
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "vertical_spacing": "10px",
+            "elements": elements,
+        },
+    }
+
+
+def notify_weekly_pending_inventory_reviews(*, now: datetime | None = None) -> int:
+    contexts = pending_inventory_review_contexts()
+    if not contexts:
+        return 0
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送每周库存核实汇总。")
+    recipients = enabled_admin_open_ids()
+    if not recipients:
+        raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    for open_id in recipients:
+        send_feishu_interactive_message(
+            client,
+            open_id,
+            weekly_inventory_review_digest_card(contexts, open_id, now=now),
+        )
+    return len(recipients)
+
+
+def enqueue_inventory_review_scheduled_tasks(now: datetime | None = None) -> int:
+    current = now or datetime.now()
+    created = 0
+    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
+    for row in request_rows:
+        fields = feishu_fields(row)
+        if feishu_text(fields, "申请类型") != "普通物料申请":
+            continue
+        if feishu_text(fields, "审批状态") != REQUEST_STATUS_PENDING:
+            continue
+        if feishu_text(fields, "库存审查状态") == INVENTORY_REVIEW_CONFIRMED:
+            continue
+        if feishu_text(fields, INVENTORY_REVIEW_REMINDER_STATUS_FIELD) != INVENTORY_REVIEW_REMINDER_PENDING:
+            continue
+        scheduled_ms = feishu_int(fields, INVENTORY_REVIEW_REMINDER_AT_FIELD)
+        if scheduled_ms <= 0 or scheduled_ms > int(current.timestamp() * 1000):
+            continue
+        request_id = feishu_record_id(row)
+        _task, is_new = enqueue_feishu_background_write(
+            QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+            {"request_id": request_id, "scheduled_at_ms": scheduled_ms},
+            idempotency_key=f"inventory-review-reminder:{request_id}:{scheduled_ms}",
+        )
+        created += int(is_new)
+    monday = (current - timedelta(days=current.weekday())).replace(
+        hour=10, minute=0, second=0, microsecond=0
+    )
+    if current.weekday() == 0 and current >= monday:
+        iso_year, iso_week, _ = current.isocalendar()
+        _task, is_new = enqueue_feishu_background_write(
+            QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
+            {"iso_year": iso_year, "iso_week": iso_week},
+            idempotency_key=f"weekly-inventory-review:{iso_year}-W{iso_week:02d}",
+        )
+        created += int(is_new)
+    return created
 
 
 def _send_feishu_message_compat(
@@ -9129,6 +9537,7 @@ def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str
                 "record_id": feishu_record_id(row),
                 "request_no": request_no,
                 "title": feishu_text(fields, "标题"),
+                "request_type": feishu_text(fields, "申请类型"),
                 "requester": request_applicant_text(fields),
                 "requester_open_id": requester_open_ids[0] if requester_open_ids else "",
                 "department": feishu_text_any(fields, ["申请部门/区域", "申请部门|区域", "申请部门"]),
@@ -9146,6 +9555,17 @@ def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str
                 "submitted_at": feishu_datetime_text(fields.get("提交时间", "")),
                 "approved_at": feishu_datetime_text(fields.get("审批时间", "")),
                 "approval_comment": feishu_text(fields, "审批意见"),
+                "inventory_review_status": feishu_text(fields, "库存审查状态")
+                or INVENTORY_REVIEW_PENDING,
+                "inventory_review_reminder_at": feishu_datetime_text(
+                    fields.get(INVENTORY_REVIEW_REMINDER_AT_FIELD, "")
+                ),
+                "inventory_review_reminder_at_ms": feishu_int(
+                    fields, INVENTORY_REVIEW_REMINDER_AT_FIELD
+                ),
+                "inventory_review_reminder_status": feishu_text(
+                    fields, INVENTORY_REVIEW_REMINDER_STATUS_FIELD
+                ),
             }
         )
     records.sort(key=lambda item: str(item["request_no"]), reverse=True)

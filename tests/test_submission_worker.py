@@ -10,6 +10,8 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+    QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
     SubmissionTask,
 )
@@ -101,6 +103,40 @@ def cultural_request_task(result: dict | None = None) -> SubmissionTask:
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_inventory_review_reminder_task_sends_current_card(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+            {"request_id": "request-1", "scheduled_at_ms": 123},
+        )
+        with patch.object(
+            worker.inventory_app,
+            "notify_enabled_admins_of_inventory_review_reminder",
+            return_value=2,
+        ) as notify:
+            result = worker.process_task(task)
+
+        self.assertEqual(result["notification_count"], 2)
+        notify.assert_called_once_with(
+            "request-1",
+            reason="计划核实时间已到",
+            mark_scheduled_reminder=True,
+        )
+
+    def test_weekly_inventory_review_task_sends_digest(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
+            {"iso_year": 2026, "iso_week": 36},
+        )
+        with patch.object(
+            worker.inventory_app,
+            "notify_weekly_pending_inventory_reviews",
+            return_value=2,
+        ) as notify:
+            result = worker.process_task(task)
+
+        self.assertEqual(result["notification_count"], 2)
+        notify.assert_called_once_with()
+
     def test_cultural_request_rejects_before_business_write_when_quota_exceeded(self) -> None:
         task = cultural_request_task()
         checkpoints: list[dict] = []
