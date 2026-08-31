@@ -55,7 +55,7 @@ if (-not (Test-Path -LiteralPath $bootstrapPython)) { $bootstrapPython = (Get-Co
 & $WebRunner -RepoPath $RunnerRepoPath -SecretsPath $RunnerSecretsPath -LogDirectory $LogDirectory -BootstrapPython $bootstrapPython -Port $Port -SetupOnly
 if ($LASTEXITCODE -ne 0) { throw "Web setup failed. Check $LogDirectory\web.log" }
 
-$powershellPath = (Get-Process -Id $PID).Path
+$powershellPath = (Get-Command powershell.exe -ErrorAction Stop).Source
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
