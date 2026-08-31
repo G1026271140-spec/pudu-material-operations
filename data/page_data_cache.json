@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-08-28 16:32:24",
+  "generated_at": "2026-08-31 10:33:02",
   "tables": {
     "物料品类": [
       {
@@ -122437,7 +122437,7 @@
           "用途|活动": "9月22日普渡机器人新品发布会（天津）暨品牌推介大会",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0010v_1fb626f7-2a6c-4d7b-a157-dce1a4c0a09g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0010v_1fb626f7-2a6c-4d7b-a157-dce1a4c0a09g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wangxingdong@pudutech.com",
               "en_name": "王兴东",
               "id": "ou_194942f10227e794ee16424fc7642efc",
@@ -122805,7 +122805,7 @@
           "用途|活动": "用于接待上午三井 MOL 的 5 位来访和下午学研集团的 2 位来访",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00129_fd3a5fb5-2a16-4ce2-9384-25df03a3e31g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00129_fd3a5fb5-2a16-4ce2-9384-25df03a3e31g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "isla.wei@pudutech.com",
               "en_name": "魏思敏",
               "id": "ou_b16eefde0a03dc337d8eed61ecc4e8a5",
