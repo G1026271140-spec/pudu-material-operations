@@ -69,6 +69,15 @@ foreach ($taskName in @($TunnelTaskName, $WebTaskName)) {
         } while ($null -ne $existingTask -and $existingTask.State -eq "Running")
     }
 }
+$escapedRunnerRepoPath = [Regex]::Escape($RunnerRepoPath)
+$orphanedWebProcesses = Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.CommandLine -match $escapedRunnerRepoPath -and
+        $_.CommandLine -match "streamlit\s+run\s+app\.py"
+    }
+foreach ($process in $orphanedWebProcesses) {
+    Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+}
 $webArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $WebRunner), "-RepoPath", ('"{0}"' -f $RunnerRepoPath), "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-BootstrapPython", ('"{0}"' -f $bootstrapPython), "-Port", $Port) -join " "
 $webAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $webArgs -WorkingDirectory $RunnerRoot
 Register-ScheduledTask -TaskName $WebTaskName -InputObject (New-ScheduledTask -Action $webAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the PUDU material Streamlit app on localhost only.") -Force | Out-Null

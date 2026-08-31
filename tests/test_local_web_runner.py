@@ -17,6 +17,7 @@ class LocalWebRunnerTests(unittest.TestCase):
         installer = (ROOT / "scripts" / "install_local_web_app_task.ps1").read_text(encoding="utf-8")
         self.assertIn("--token-file $TokenFile", runner)
         self.assertIn("tunnel --no-autoupdate --url http://127.0.0.1:8501 run", runner)
+        self.assertIn('$ErrorActionPreference = "Continue"', runner)
         self.assertIn("SetAccessRuleProtection($true, $false)", installer)
         self.assertNotIn("--token $token", runner)
 
@@ -28,6 +29,8 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn('$env:USERPROFILE "PuduMaterialWebRunner"', installer)
         self.assertNotIn('$env:LOCALAPPDATA "PuduMaterialWebRunner"', installer)
         self.assertIn("Stop-ScheduledTask -TaskName $taskName", installer)
+        self.assertIn("Get-CimInstance Win32_Process", installer)
+        self.assertIn("$escapedRunnerRepoPath", installer)
 
 
 if __name__ == "__main__":
