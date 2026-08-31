@@ -16,6 +16,7 @@ class LocalWebRunnerTests(unittest.TestCase):
         runner = (ROOT / "scripts" / "run_cloudflare_named_tunnel.ps1").read_text(encoding="utf-8")
         installer = (ROOT / "scripts" / "install_local_web_app_task.ps1").read_text(encoding="utf-8")
         self.assertIn("--token-file $TokenFile", runner)
+        self.assertIn("--url http://127.0.0.1:8501", runner)
         self.assertIn("SetAccessRuleProtection($true, $false)", installer)
         self.assertNotIn("--token $token", runner)
 
