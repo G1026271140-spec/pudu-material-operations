@@ -59,6 +59,16 @@ $powershellPath = (Get-Command powershell.exe -ErrorAction Stop).Source
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
+foreach ($taskName in @($TunnelTaskName, $WebTaskName)) {
+    $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($null -ne $existingTask -and $existingTask.State -eq "Running") {
+        Stop-ScheduledTask -TaskName $taskName
+        do {
+            Start-Sleep -Milliseconds 250
+            $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+        } while ($null -ne $existingTask -and $existingTask.State -eq "Running")
+    }
+}
 $webArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $WebRunner), "-RepoPath", ('"{0}"' -f $RunnerRepoPath), "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-BootstrapPython", ('"{0}"' -f $bootstrapPython), "-Port", $Port) -join " "
 $webAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $webArgs -WorkingDirectory $RunnerRoot
 Register-ScheduledTask -TaskName $WebTaskName -InputObject (New-ScheduledTask -Action $webAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the PUDU material Streamlit app on localhost only.") -Force | Out-Null

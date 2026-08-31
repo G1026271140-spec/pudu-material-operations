@@ -13,6 +13,6 @@ if (-not (Test-Path -LiteralPath $TokenFile)) { throw "Cloudflare tunnel token f
 $token = (Get-Content -LiteralPath $TokenFile -Raw -Encoding UTF8).Trim()
 if (-not $token) { throw "Cloudflare tunnel token is empty." }
 Add-Content -LiteralPath $logPath -Value ("{0} [INFO] Starting Cloudflare Named Tunnel." -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss")) -Encoding UTF8
-& $CloudflaredPath tunnel run --no-autoupdate --url http://127.0.0.1:8501 --token-file $TokenFile 2>&1 |
+& $CloudflaredPath tunnel --no-autoupdate --url http://127.0.0.1:8501 run --token-file $TokenFile 2>&1 |
     ForEach-Object { Add-Content -LiteralPath $logPath -Value ("{0} {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), [string]$_) -Encoding UTF8 }
 exit $LASTEXITCODE
