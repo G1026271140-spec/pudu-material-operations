@@ -23,6 +23,8 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn("-RestartCount 999", installer)
         self.assertIn("-MultipleInstances IgnoreNew", installer)
         self.assertIn("Get-Command powershell.exe", installer)
+        self.assertIn('$env:USERPROFILE "PuduMaterialWebRunner"', installer)
+        self.assertNotIn('$env:LOCALAPPDATA "PuduMaterialWebRunner"', installer)
 
 
 if __name__ == "__main__":
