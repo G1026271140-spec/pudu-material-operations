@@ -96,11 +96,15 @@ class PageDataCacheTests(unittest.TestCase):
         gift_project_rows: list[dict] = []
         cache = {
             "tables": {
+                app.MODEL_TABLE_NAME: [],
+                app.CULTURAL_MATERIAL_TABLE_NAME: [],
                 app.CATEGORY_TABLE_NAME: category_rows,
                 app.MATERIAL_TABLE_NAME: material_rows,
                 app.GIFT_PROJECT_TABLE_NAME: gift_project_rows,
             },
             "row_counts": {
+                app.MODEL_TABLE_NAME: 0,
+                app.CULTURAL_MATERIAL_TABLE_NAME: 0,
                 app.CATEGORY_TABLE_NAME: 1,
                 app.MATERIAL_TABLE_NAME: 1,
                 app.GIFT_PROJECT_TABLE_NAME: 0,

@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.7.4"
+APP_VERSION = "V1.7.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2293,8 +2293,14 @@ def inject_global_styles() -> None:
         }
         [data-testid="stAppDeployButton"],
         [data-testid="stMainMenuButton"],
-        [data-testid="stExpandSidebarButton"] {
-            display: none;
+        [data-testid="stExpandSidebarButton"],
+        [data-testid="stToolbar"],
+        [data-testid="stStatusWidget"],
+        [data-testid="stDecoration"],
+        [data-testid="stHeader"],
+        [class*="viewerBadge"],
+        [class*="ViewerBadge"] {
+            display: none !important;
         }
         .pudu-sync-overlay {
             position: fixed;
@@ -18316,7 +18322,7 @@ def sync_cultural_material_claimability(
         feishu_batch_update_record_fields(CULTURAL_MATERIAL_TABLE_NAME, updates)
         if updates else 0
     )
-    if updates:
+    if updates and rows is None:
         verified_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
         verified_by_id = {feishu_record_id(row): row for row in verified_rows}
         failed = [

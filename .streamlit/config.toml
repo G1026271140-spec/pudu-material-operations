@@ -6,6 +6,9 @@ maxUploadSize = 20
 [browser]
 gatherUsageStats = false
 
+[client]
+toolbarMode = "minimal"
+
 [theme]
 primaryColor = "#2563EB"
 backgroundColor = "#F6F9FC"
