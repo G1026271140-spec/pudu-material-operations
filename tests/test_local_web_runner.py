@@ -10,6 +10,7 @@ class LocalWebRunnerTests(unittest.TestCase):
         source = (ROOT / "scripts" / "run_local_web_app.ps1").read_text(encoding="utf-8")
         self.assertIn("--server.address=127.0.0.1", source)
         self.assertNotIn("--server.address=0.0.0.0", source)
+        self.assertIn('$ErrorActionPreference = "Continue"', source)
 
     def test_named_tunnel_uses_private_token_file(self) -> None:
         runner = (ROOT / "scripts" / "run_cloudflare_named_tunnel.ps1").read_text(encoding="utf-8")

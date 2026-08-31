@@ -94,6 +94,8 @@ try {
     if ($SetupOnly) { Write-RunnerLog "Web runner setup completed."; exit 0 }
     Write-RunnerLog "Starting Streamlit on 127.0.0.1:${Port}."
     Push-Location -LiteralPath $RepoPath
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
         & $venvPython -m streamlit run app.py `
             --server.address=127.0.0.1 `
@@ -101,7 +103,10 @@ try {
             --server.headless=true `
             --browser.gatherUsageStats=false 2>&1 | ForEach-Object { Write-RunnerLog ([string]$_) }
         $ExitCode = $LASTEXITCODE
-    } finally { Pop-Location }
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+        Pop-Location
+    }
     if ($ExitCode -ne 0) { throw "Streamlit exited with code $ExitCode." }
 } catch {
     $ExitCode = 1
