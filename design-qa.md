@@ -36,6 +36,25 @@
 
 final result: passed
 
+## V1.9.1 short-viewport action verification
+
+- Source visual truth: `C:/Users/gaohongyuan1/AppData/Roaming/LarkShell/sdk_storage/eb5ca27929f63de7192a073d17f0a140/resources/images/img_v3_02154_b76c1c19-4743-479f-a254-45563d5dcf3g.jpg` (1080 x 2351 px), showing the add-to-cart action clipped at the bottom of the mobile specification window.
+- Implementation screenshots: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.9.1-spec-390x849.png` at 390 x 849 CSS pixels and `pudu-mobile-v1.9.1-short-spec.png` at 390 x 600 CSS pixels, device scale factor 1.
+- Combined comparison: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.9.1-spec-comparison.png`; the source was normalized to 390 x 849 px to match the implementation viewport.
+- Earlier P1: the real mobile WebView allowed the language and option regions to consume the remaining modal height, clipping the primary add-to-cart action. Fix: language pills now use smaller type, tighter line height, 16 px minimum controls, and reduced gaps/padding; quantity and remark controls are also compacted.
+- Earlier P1: short viewports had no guaranteed space for the primary action. Fix: the add-to-cart wrapper is sticky inside the modal's fixed action region, and viewports at or below 760 px use a responsive 108 px model-region minimum instead of forcing 136 px.
+- Post-fix evidence at 390 x 600: modal y=48-552, language region height=133.86 px, add-to-cart y=489.72-516.09 and fully visible.
+- Extreme-height evidence at 390 x 520: modal y=41.60-478.40, add-to-cart y=421.30-447.68 and fully visible.
+- Primary interaction: the button reported enabled with pointer events active; clicking it successfully changed the cart count from 0 to 1.
+- Typography: language labels remain readable at the smaller mobile size; selected and unselected states retain clear hierarchy.
+- Spacing/layout: model, language, option, and action regions remain separated without overlap; the saved vertical space is assigned to the primary action rather than blank padding.
+- Colors/tokens: the V1.9.0 section colors and selected-button blue remain unchanged.
+- Image quality: no logos, product images, or icons were changed.
+- Copy/content: all language names, labels, and action copy remain unchanged.
+- Desktop guard: all new compact and short-height rules remain inside the mobile media query.
+
+final result: passed
+
 ## V1.9.0 specification-section verification
 
 - Source visual truth: `C:/Users/gaohongyuan1/AppData/Local/Temp/codex-clipboard-fa467b8b-e943-4ed4-92bb-89dedfc9f0cf.png` (482 x 863 px).

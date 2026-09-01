@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.9.0"
+APP_VERSION = "V1.9.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -3040,10 +3040,24 @@ def inject_global_styles() -> None:
                 box-shadow: 0 -8px 18px rgba(255, 255, 255, 0.96) !important;
             }
             [class*="st-key-request_language_pills_"] {
-                padding: 0.28rem 0.3rem 0.32rem !important;
+                padding: 0.18rem 0.2rem 0.2rem !important;
                 border: 1px solid rgba(29, 111, 107, 0.13) !important;
                 border-radius: 9px !important;
                 background: #EEF8F6 !important;
+            }
+            [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] > div:last-child {
+                gap: 0.1rem !important;
+            }
+            [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] button {
+                min-height: 16px !important;
+                padding: 0.04rem 0.08rem !important;
+                font-size: 0.48rem !important;
+                line-height: 1.02 !important;
+            }
+            [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] button p,
+            [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] button span {
+                font-size: 0.48rem !important;
+                line-height: 1.02 !important;
             }
             [data-testid="stPopoverBody"] [class*="st-key-request_spec_fixed_"]
             [data-testid="stButtonGroup"] > div:last-child {
@@ -3054,18 +3068,39 @@ def inject_global_styles() -> None:
             [class*="st-key-request_spec_fixed_"] div[data-baseweb="input"],
             [class*="st-key-request_spec_fixed_"] input,
             [class*="st-key-request_spec_fixed_"] button {
-                min-height: 26px !important;
-                font-size: 0.6rem !important;
+                min-height: 22px !important;
+                font-size: 0.54rem !important;
             }
             [class*="st-key-request_spec_fixed_"] [data-testid="stHorizontalBlock"] {
                 display: grid !important;
                 grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) !important;
-                gap: 0.24rem !important;
+                gap: 0.16rem !important;
                 align-items: end !important;
-                padding: 0.28rem 0.3rem 0.32rem !important;
+                padding: 0.18rem 0.2rem 0.2rem !important;
                 border: 1px solid rgba(173, 103, 37, 0.13) !important;
                 border-radius: 9px !important;
                 background: #FFF7ED !important;
+            }
+            [class*="st-key-request_spec_fixed_"] [class*="st-key-request_add_to_cart_"] {
+                position: sticky !important;
+                bottom: 0 !important;
+                z-index: 8 !important;
+                margin-top: 0.08rem !important;
+                padding-top: 0.06rem !important;
+                background: #ffffff !important;
+            }
+            [class*="st-key-request_spec_fixed_"] [class*="st-key-request_add_to_cart_"] button {
+                min-height: 24px !important;
+            }
+            @media (max-height: 760px) {
+                [class*="st-key-request_spec_model_scroll_"] {
+                    min-height: 6.75rem !important;
+                }
+                [class*="st-key-request_spec_fixed_"] {
+                    gap: 0.1rem !important;
+                    margin-top: 0.08rem !important;
+                    padding-top: 0.18rem !important;
+                }
             }
             [class*="st-key-request_spec_fixed_"] [data-testid="column"] {
                 width: auto !important;

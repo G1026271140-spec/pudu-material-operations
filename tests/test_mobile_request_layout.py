@@ -99,6 +99,13 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('background: #EEF8F6 !important;', SOURCE)
         self.assertIn('background: #FFF7ED !important;', SOURCE)
 
+    def test_phone_specification_keeps_add_action_above_short_viewport_chrome(self) -> None:
+        self.assertIn('[class*="st-key-request_add_to_cart_"]', SOURCE)
+        self.assertIn('position: sticky !important;', SOURCE)
+        self.assertIn('@media (max-height: 760px)', SOURCE)
+        self.assertIn('font-size: 0.48rem !important;', SOURCE)
+        self.assertIn('min-height: 16px !important;', SOURCE)
+
 
 if __name__ == "__main__":
     unittest.main()
