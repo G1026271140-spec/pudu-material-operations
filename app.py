@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.3"
+APP_VERSION = "V1.8.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -1346,6 +1346,15 @@ def inject_global_styles() -> None:
            changes scoped to the request page instead of shrinking admin tools. */
         .stApp:has(.pudu-request-page-marker) [data-testid="stMainBlockContainer"] {
             padding-top: 0.3rem;
+        }
+        .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar {
+            display: none;
+        }
+        .stApp:has(.pudu-request-page-marker) .st-key-request_catalog_grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 0.75rem;
+            align-items: start;
         }
         [data-testid="stSidebar"][aria-expanded="false"] {
             position: fixed !important;
@@ -2648,6 +2657,230 @@ def inject_global_styles() -> None:
                 max-height: 82dvh !important;
                 border-radius: 16px 16px 0 0 !important;
                 overflow-y: auto !important;
+            }
+            /* Phone storefront refinement: compact two-column form and catalog,
+               with category details in a single centered scroll surface. */
+            .stApp:has(.pudu-request-page-marker) [data-testid="stMainBlockContainer"] {
+                padding: 2.75rem 0.4rem 5.25rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar {
+                display: flex !important;
+                position: fixed !important;
+                top: max(0.35rem, env(safe-area-inset-top));
+                left: 0.4rem;
+                z-index: 1000000 !important;
+                width: 5.2rem !important;
+                margin: 0 !important;
+                padding: 0.18rem !important;
+                border: 1px solid rgba(20, 79, 113, 0.18);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.96);
+                box-shadow: 0 5px 18px rgba(22, 52, 73, 0.13);
+                backdrop-filter: blur(12px);
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stHorizontalBlock"] {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.18rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stPopover"] > button {
+                min-height: 2.05rem !important;
+                height: 2.05rem !important;
+                padding: 0.2rem !important;
+                border: 0 !important;
+                font-size: 0 !important;
+                box-shadow: none !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar button p {
+                display: none !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stIconMaterial"] {
+                font-size: 1.05rem !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-home-popover-marker),
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-navigation-popover-marker) {
+                width: min(13rem, calc(100vw - 1rem)) !important;
+                max-width: calc(100vw - 1rem) !important;
+                border-radius: 12px !important;
+                background: #ffffff !important;
+                box-shadow: 0 12px 34px rgba(12, 38, 58, 0.22) !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-home-popover-marker) > div,
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-navigation-popover-marker) > div {
+                gap: 0.35rem !important;
+                padding: 0.55rem !important;
+                background: #ffffff !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-home-popover-marker) p,
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-navigation-popover-marker) p,
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-home-popover-marker) label {
+                font-size: 0.7rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-page-title {
+                font-size: 1.02rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker)
+            [data-testid="stLayoutWrapper"]:has(.pudu-section-heading) > [data-testid="stVerticalBlock"] {
+                gap: 0.28rem !important;
+                padding: 0.42rem !important;
+                border-radius: 9px !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-section-heading {
+                margin-bottom: 0.18rem !important;
+                gap: 0.34rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-section-index {
+                width: 1.45rem !important;
+                height: 1.45rem !important;
+                font-size: 0.58rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-section-title {
+                font-size: 0.82rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-field-label {
+                margin-bottom: 0.1rem !important;
+                font-size: 0.68rem !important;
+                line-height: 1.15 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-inline-required-hint {
+                display: none !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="stHorizontalBlock"] {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.3rem !important;
+                align-items: start !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="column"] {
+                width: auto !important;
+                min-width: 0 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="stVerticalBlock"] {
+                gap: 0.12rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section div[data-baseweb="input"],
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section div[data-baseweb="select"] > div {
+                min-height: 28px !important;
+                height: 28px !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section input {
+                min-height: 26px !important;
+                height: 26px !important;
+                padding-top: 0.12rem !important;
+                padding-bottom: 0.12rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section textarea {
+                min-height: 36px !important;
+                height: 36px !important;
+                padding: 0.24rem 0.36rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) div[data-baseweb="input"],
+            .stApp:has(.pudu-request-page-marker) div[data-baseweb="select"] > div,
+            .stApp:has(.pudu-request-page-marker) .stButton > button,
+            .stApp:has(.pudu-request-page-marker) [data-testid="stPopover"] > button {
+                min-height: 34px !important;
+                font-size: 0.68rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) input,
+            .stApp:has(.pudu-request-page-marker) [data-baseweb="select"] * {
+                font-size: 0.68rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) textarea {
+                min-height: 52px !important;
+                height: 52px !important;
+                padding: 0.4rem !important;
+                font-size: 0.66rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker)
+            .st-key-request_catalog_grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.38rem !important;
+                align-items: start !important;
+            }
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] > [data-testid="stVerticalBlock"] {
+                gap: 0.2rem !important;
+                padding: 0.34rem !important;
+                border-radius: 9px !important;
+            }
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] [data-testid="stImage"] img,
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] .pudu-product-image-placeholder {
+                height: 82px !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-product-card-kicker {
+                margin: 0.12rem 0 0 !important;
+                font-size: 0.54rem !important;
+                line-height: 1.1 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .pudu-product-card-title {
+                min-height: 1.9rem !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 0.72rem !important;
+                line-height: 1.25 !important;
+                overflow-wrap: anywhere;
+            }
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] [data-testid="stPopover"] > button {
+                min-height: 32px !important;
+                height: 32px !important;
+                padding: 0.2rem 0.35rem !important;
+                font-size: 0.68rem !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) {
+                inset: 50% auto auto 50% !important;
+                width: min(22rem, calc(100vw - 1.1rem)) !important;
+                min-width: 0 !important;
+                max-width: calc(100vw - 1.1rem) !important;
+                height: min(78dvh, 38rem) !important;
+                max-height: 78dvh !important;
+                border-radius: 14px !important;
+                overflow: hidden !important;
+                transform: translate(-50%, -50%) !important;
+                box-shadow: 0 18px 48px rgba(12, 38, 58, 0.28) !important;
+                background: #ffffff !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) > div {
+                gap: 0.25rem !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                padding: 0.55rem !important;
+                overflow-y: auto !important;
+                overscroll-behavior: contain !important;
+                scrollbar-width: thin;
+                background: #ffffff !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) h4 {
+                margin: 0 0 0.2rem !important;
+                font-size: 0.94rem !important;
+                line-height: 1.2 !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) p,
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) label,
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) span {
+                font-size: 0.64rem !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+            [data-testid="stButtonGroup"] > div:last-child,
+            [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] > div:last-child {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 0.28rem !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
+            [data-testid="stButtonGroup"] button {
+                min-height: 30px !important;
+                padding: 0.24rem 0.3rem !important;
+                font-size: 0.62rem !important;
+                line-height: 1.15 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_compact_cart button,
+            .stApp:has(.pudu-request-page-marker) .st-key-request_preview button {
+                min-height: 44px !important;
+                border-radius: 10px !important;
+                font-size: 0.76rem !important;
             }
         }
         </style>
@@ -12704,6 +12937,80 @@ def render_sidebar_link() -> None:
         st.divider()
 
 
+def sync_mobile_request_language() -> None:
+    selected = normalize_ui_language(
+        st.session_state.get("request_mobile_ui_language", get_ui_language())
+    )
+    st.session_state[UI_LANGUAGE_SESSION_KEY] = selected
+
+
+def render_mobile_request_toolbar() -> None:
+    current_language = get_ui_language()
+    if "request_mobile_ui_language" not in st.session_state or normalize_ui_language(
+        st.session_state.get("request_mobile_ui_language", current_language)
+    ) != current_language:
+        st.session_state["request_mobile_ui_language"] = current_language
+
+    with st.container(key="request_mobile_toolbar"):
+        home_col, menu_col = st.columns(2, gap="small")
+        with home_col.popover(
+            ui_text("主页"),
+            key="request_mobile_home",
+            icon=":material/home:",
+            width="stretch",
+        ):
+            st.markdown(
+                '<span class="pudu-mobile-home-popover-marker"></span>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(f"**{escape(ui_text('语言设置'))} / Language**")
+            st.radio(
+                "界面语言 / Interface Language",
+                SUPPORTED_UI_LANGUAGES,
+                key="request_mobile_ui_language",
+                format_func=lambda language: (
+                    "中文 / Chinese" if language == LANGUAGE_ZH else "English / 英文"
+                ),
+                on_change=sync_mobile_request_language,
+                label_visibility="collapsed",
+            )
+        with menu_col.popover(
+            ui_text("导航"),
+            key="request_mobile_navigation",
+            icon=":material/menu:",
+            width="stretch",
+        ):
+            st.markdown(
+                '<span class="pudu-mobile-navigation-popover-marker"></span>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(f"**{escape(ui_text('工作台导航'))}**")
+            navigate_to_management_section(
+                "mobile_open_request",
+                "库存登记",
+                ui_text("物料申领"),
+                ":material/edit_note:",
+            )
+            navigate_to_management_section(
+                "mobile_open_cultural_request",
+                "文化周边申领",
+                ui_text("文化周边申领"),
+                ":material/checkroom:",
+            )
+            st.link_button(
+                ui_text("查询库存"),
+                INVENTORY_QUERY_URL,
+                icon=":material/search:",
+                width="stretch",
+            )
+            navigate_to_management_section(
+                "mobile_open_material_management",
+                "物料管理",
+                ui_text("物料管理"),
+                ":material/inventory_2:",
+            )
+
+
 def build_request_title(material_usage: object, requester: object) -> str:
     usage_text = str(material_usage or "").strip() or "物料用途"
     requester_text = str(requester or "").strip() or "申请人"
@@ -13541,7 +13848,8 @@ def render_request_material_builder(
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")
         else:
-            card_columns = st.columns(6, gap="small")
+            catalog_grid = st.container(key="request_catalog_grid")
+            card_columns = [catalog_grid] * 6
             for index, catalog_product in enumerate(filtered_products):
                 product_state_key = normalize_option_label(catalog_product)
                 _, scoped_models = product_model_state(
@@ -13784,6 +14092,7 @@ def render_change_form(show_title: bool = True) -> None:
         '<span class="pudu-request-page-marker" aria-hidden="true"></span>',
         unsafe_allow_html=True,
     )
+    render_mobile_request_toolbar()
     if st.session_state.get("request_form_stage") == "review":
         render_request_review()
         return
