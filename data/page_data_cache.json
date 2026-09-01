@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-01 10:33:18",
+  "generated_at": "2026-09-01 16:16:13",
   "tables": {
     "物料品类": [
       {
@@ -45066,16 +45066,18 @@
                 "recvsDRO8PFzUf",
                 "recvtngJU5s4Qq",
                 "recvtyXSi819Rv",
-                "recvtRLbXF2ClN"
+                "recvtRLbXF2ClN",
+                "recvtX0HL9fSkr"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260817-001,REQ-20260818-004,REQ-20260826-002,REQ-20260828-005,REQ-20260831-003",
+              "text": "REQ-20260817-001,REQ-20260818-004,REQ-20260826-002,REQ-20260828-005,REQ-20260831-003,REQ-20260901-001",
               "text_arr": [
                 "REQ-20260817-001",
                 "REQ-20260818-004",
                 "REQ-20260826-002",
                 "REQ-20260828-005",
-                "REQ-20260831-003"
+                "REQ-20260831-003",
+                "REQ-20260901-001"
               ],
               "type": "text"
             }
@@ -45099,10 +45101,11 @@
                 "recvsDRP2RI918",
                 "recvtngLbcRbQi",
                 "recvtyXThqKxYD",
-                "recvtRLdh3s1uP"
+                "recvtRLdh3s1uP",
+                "recvtX0KfqF8z9"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260730-004-01,REQ-20260811-001-01,REQ-20260817-001-01,REQ-20260818-004-01,REQ-20260826-002-04,REQ-20260828-005-10,REQ-20260831-003-01",
+              "text": "REQ-20260730-004-01,REQ-20260811-001-01,REQ-20260817-001-01,REQ-20260818-004-01,REQ-20260826-002-04,REQ-20260828-005-10,REQ-20260831-003-01,REQ-20260901-001-01",
               "text_arr": [
                 "REQ-20260730-004-01",
                 "REQ-20260811-001-01",
@@ -45110,7 +45113,8 @@
                 "REQ-20260818-004-01",
                 "REQ-20260826-002-04",
                 "REQ-20260828-005-10",
-                "REQ-20260831-003-01"
+                "REQ-20260831-003-01",
+                "REQ-20260901-001-01"
               ],
               "type": "text"
             }
@@ -123738,6 +123742,109 @@
         },
         "id": "recvtRMGzJLnHY",
         "record_id": "recvtRMGzJLnHY"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "临时物料清理状态": null,
+          "国家": "中国",
+          "备注": "客户名称：前台\n国家：中国\n收件人信息：公司10楼前台\n运费承担者：普渡付款(PUDU)\n物料用途：前台接待展示\n申请人：苏艳娜",
+          "审批实例Code": "D784808B-8D56-40E8-8FB3-225C32494BA9",
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "前台",
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012o_f0dcd27f-b0a5-421e-a9e4-95741c712e0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "库存审查时间": 1788247277751,
+          "库存审查状态": "已核实库存",
+          "库存审查结论": "库存充足",
+          "库存快照时间": 1788247277751,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": "[\"om_x100b6653864918a8c333d9f7b3dae26\", \"om_x100b665386588880dd4c51b6d7b8596\"]",
+          "所属战区": null,
+          "提交幂等键": "bf1c602ca82f4d76b1819887560165f5",
+          "提交时间": 1788247118487,
+          "收件人信息": "公司10楼前台",
+          "文化周边处理状态": null,
+          "文化周边通知状态": null,
+          "期望发放日期": null,
+          "标题": "前台接待展示-苏艳娜-营销物料领取",
+          "物料明细": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYem"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0369",
+              "text_arr": [
+                "MAT-0369"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 品牌手册(Product Brochure (All\nBanner)） / 无需型号 / 简中(Simplified Chinese) × 135",
+          "物料用途": "前台接待展示",
+          "用途|活动": "前台接待展示",
+          "申请人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00117_f884f816-d64a-4df4-a175-ec63ab5c476g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "suyanna@pudutech.com",
+              "en_name": "苏艳娜",
+              "id": "ou_1dccd378d719715eeb87f45a5855e8de",
+              "name": "苏艳娜"
+            }
+          ],
+          "申请人.部门": [
+            "行政服务部"
+          ],
+          "申请单号": "REQ-20260901-001",
+          "申请变更次数": "0",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvtX0KfqF8z9"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260901-001-01",
+              "text_arr": [
+                "REQ-20260901-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012o_f0dcd27f-b0a5-421e-a9e4-95741c712e0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "申请物料最后修改时间": 1788247277751,
+          "申请类型": "普通物料申请",
+          "申请部门|区域": "行政服务部",
+          "相关附件": null,
+          "管理员通知时间": 1788247308025,
+          "管理员通知状态": "已发送",
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "731.16",
+          "运费承担者": "普渡付款(PUDU)"
+        },
+        "id": "recvtX0HL9fSkr",
+        "record_id": "recvtX0HL9fSkr"
       }
     ],
     "申请明细": [
@@ -146861,6 +146968,131 @@
         },
         "id": "recvtRMIWLXGst",
         "record_id": "recvtRMIWLXGst"
+      },
+      {
+        "fields": {
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "135",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6LG"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "003",
+              "text_arr": [
+                "003"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "品牌手册(Product Brochure (All\nBanner)）",
+          "备注": "一箱",
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "135",
+          "实际发放物料品类": "品牌手册(Product Brochure (All\nBanner)）",
+          "实际发放物料编码": null,
+          "实际发放语种": "简中(Simplified Chinese)",
+          "审批通过数量": "135",
+          "库存审查时库存": "454",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvtX0HL9fSkr"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260901-001",
+              "text_arr": [
+                "REQ-20260901-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "454",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260901-001-01",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYem"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0369",
+              "text_arr": [
+                "MAT-0369"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "135",
+          "申请时单价（人民币）": "5.416",
+          "缺货说明": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZxfSqM9E"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y09",
+              "text_arr": [
+                "Y09"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "简中(Simplified Chinese)",
+          "费用小计（人民币）": "731.16",
+          "附件": null
+        },
+        "id": "recvtX0KfqF8z9",
+        "record_id": "recvtX0KfqF8z9"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -152680,8 +152912,8 @@
     "物料语种": 12,
     "物料主数据": 911,
     "库存流水": 148,
-    "物料申请单": 28,
-    "申请明细": 185,
+    "物料申请单": 29,
+    "申请明细": 186,
     "项目周边礼品物料筹备详情list": 12,
     "文化周边管理库存": 67,
     "战区管理": 10
