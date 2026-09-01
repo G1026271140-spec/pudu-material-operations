@@ -36,6 +36,25 @@
 
 final result: passed
 
+## V1.9.0 specification-section verification
+
+- Source visual truth: `C:/Users/gaohongyuan1/AppData/Local/Temp/codex-clipboard-fa467b8b-e943-4ed4-92bb-89dedfc9f0cf.png` (482 x 863 px).
+- Implementation screenshot: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.9.0-spec.png` (390 x 720 px) at a 390 x 720 CSS viewport and device scale factor 1.
+- Combined comparison: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.9.0-spec-comparison.png`; the source was proportionally normalized to 390 px wide before comparison.
+- State: the Product Flyer specification window is open with a multi-product-line model list, one selected language, quantity 1, an empty remark, and the add-to-cart action enabled.
+- Earlier P1: the model section did not expose its own title, while language and quantity did. Fix: a sticky `型号选择` / `Model Selection` heading now anchors the upper-left corner of the model region.
+- Earlier P2: model, language, and quantity/remark regions visually blended together. Fix: the three regions now use restrained blue-gray, teal, and warm-neutral backgrounds with matching low-contrast borders.
+- Earlier P2: the model selector exposed only 104 px of vertical space. Fix: the mobile model region now measures 136 px at 390 x 720, while remaining independently scrollable and keeping the add-to-cart action visible.
+- Typography: existing compact type sizes and weights are retained; the new model heading matches the hierarchy of the existing language and quantity labels without wrapping.
+- Spacing/layout: all three sections have distinct padding and 9 px radii; no controls overlap, and the add-to-cart button remains fully inside the 604.8 px modal body.
+- Colors/tokens: section fills are `#F3F6FA`, `#EEF8F6`, and `#FFF7ED`; contrast remains sufficient and selected-button blue is unchanged.
+- Image quality: no product image, logo, or icon assets were changed.
+- Copy/content: Chinese and English model-section labels are present; existing product, language, quantity, remark, and action copy is unchanged.
+- Primary interaction: model selection remains scrollable; language selection, quantity input, remark input, and add-to-cart remain visible and interactive.
+- Desktop guard: all new styling remains inside the existing mobile media query; desktop specification layout is unchanged.
+
+final result: passed
+
 ## V1.8.9 mobile regression verification
 
 - Source references: `C:/Users/gaohongyuan1/AppData/Roaming/LarkShell/sdk_storage/eb5ca27929f63de7192a073d17f0a140/resources/images/img_v3_02154_95cb697d-5946-4602-a1aa-17ebac11f14g.jpg`, `img_v3_02154_b4ea0ad8-13ee-409b-948b-ca494b110efg.jpg`, and `img_v3_02154_b38fba07-afde-43a1-93c8-2dccfac13f9g.jpg`.

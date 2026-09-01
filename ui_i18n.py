@@ -519,6 +519,7 @@ EN_DISPLAY_TEXT = {
     "保存修改": "Save Changes",
     "加入清单": "Add to List",
     "选择规格": "Choose Options",
+    "型号选择": "Model Selection",
     "加入采购车": "Add to Cart",
     "编辑选中": "Edit Selected",
     "删除选中": "Delete Selected",

@@ -57,8 +57,8 @@ class MobileRequestLayoutTests(unittest.TestCase):
     def test_phone_specification_keeps_models_scrollable_and_actions_fixed(self) -> None:
         self.assertIn('key=f"request_spec_model_scroll_', SOURCE)
         self.assertIn('key=f"request_spec_fixed_', SOURCE)
-        self.assertIn('max-height: 28dvh !important;', SOURCE)
-        self.assertIn('min-height: 6.5rem !important;', SOURCE)
+        self.assertIn('max-height: 34dvh !important;', SOURCE)
+        self.assertIn('min-height: 8.5rem !important;', SOURCE)
         self.assertIn('flex: 1 1 0 !important;', SOURCE)
         self.assertIn('position: relative !important;', SOURCE)
         self.assertIn(
@@ -91,6 +91,13 @@ class MobileRequestLayoutTests(unittest.TestCase):
             SOURCE,
         )
         self.assertIn('min-height: 1.05rem !important;', SOURCE)
+
+    def test_phone_specification_sections_are_labeled_and_visually_separated(self) -> None:
+        self.assertIn('class="pudu-spec-model-heading"', SOURCE)
+        self.assertIn('ui_text("型号选择")', SOURCE)
+        self.assertIn('background: #F3F6FA !important;', SOURCE)
+        self.assertIn('background: #EEF8F6 !important;', SOURCE)
+        self.assertIn('background: #FFF7ED !important;', SOURCE)
 
 
 if __name__ == "__main__":

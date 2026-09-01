@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.9"
+APP_VERSION = "V1.9.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2992,14 +2992,29 @@ def inject_global_styles() -> None:
                 line-height: 1.15 !important;
             }
             [class*="st-key-request_spec_model_scroll_"] {
-                min-height: 6.5rem !important;
+                min-height: 8.5rem !important;
                 height: auto !important;
-                max-height: 28dvh !important;
+                max-height: 34dvh !important;
                 flex: 1 1 0 !important;
                 overflow-y: auto !important;
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin;
-                padding-right: 0.12rem !important;
+                padding: 0.28rem 0.24rem 0.34rem !important;
+                border: 1px solid rgba(55, 91, 128, 0.13) !important;
+                border-radius: 9px !important;
+                background: #F3F6FA !important;
+            }
+            [class*="st-key-request_spec_model_scroll_"] .pudu-spec-model-heading {
+                position: sticky;
+                top: -0.28rem;
+                z-index: 5;
+                margin: -0.28rem -0.24rem 0.2rem !important;
+                padding: 0.34rem 0.36rem 0.24rem;
+                color: #173B56;
+                background: #F3F6FA;
+                font-size: 0.66rem !important;
+                font-weight: 750;
+                line-height: 1.2;
             }
             [data-testid="stPopoverBody"]:has(.pudu-mobile-specification-popover-compact)
             [class*="st-key-request_spec_model_scroll_"] {
@@ -3009,6 +3024,8 @@ def inject_global_styles() -> None:
                 flex: 0 0 auto !important;
                 overflow: visible !important;
                 padding-right: 0 !important;
+                border: 0 !important;
+                background: transparent !important;
             }
             [class*="st-key-request_spec_fixed_"] {
                 position: relative !important;
@@ -3021,6 +3038,12 @@ def inject_global_styles() -> None:
                 border-top: 1px solid rgba(20, 79, 113, 0.16) !important;
                 background: #ffffff !important;
                 box-shadow: 0 -8px 18px rgba(255, 255, 255, 0.96) !important;
+            }
+            [class*="st-key-request_language_pills_"] {
+                padding: 0.28rem 0.3rem 0.32rem !important;
+                border: 1px solid rgba(29, 111, 107, 0.13) !important;
+                border-radius: 9px !important;
+                background: #EEF8F6 !important;
             }
             [data-testid="stPopoverBody"] [class*="st-key-request_spec_fixed_"]
             [data-testid="stButtonGroup"] > div:last-child {
@@ -3039,6 +3062,10 @@ def inject_global_styles() -> None:
                 grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) !important;
                 gap: 0.24rem !important;
                 align-items: end !important;
+                padding: 0.28rem 0.3rem 0.32rem !important;
+                border: 1px solid rgba(173, 103, 37, 0.13) !important;
+                border-radius: 9px !important;
+                background: #FFF7ED !important;
             }
             [class*="st-key-request_spec_fixed_"] [data-testid="column"] {
                 width: auto !important;
@@ -14148,6 +14175,10 @@ def render_request_material_builder(
                                 )
                         else:
                             with st.container(key=f"request_spec_model_scroll_{product_state_key}"):
+                                st.markdown(
+                                    f'<div class="pudu-spec-model-heading">{escape(ui_text("型号选择"))}</div>',
+                                    unsafe_allow_html=True,
+                                )
                                 selected_models = render_request_model_selector(
                                     catalog_product,
                                     selection_context,
