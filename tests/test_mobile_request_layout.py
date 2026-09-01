@@ -65,8 +65,8 @@ class MobileRequestLayoutTests(unittest.TestCase):
         )
 
     def test_phone_compact_specification_window_hugs_single_model_content(self) -> None:
-        self.assertIn('option_complexity = len(model_options)', SOURCE)
-        self.assertIn('pudu-specification-popover-compact', SOURCE)
+        self.assertIn('mobile_model_complexity = len(model_options)', SOURCE)
+        self.assertIn('pudu-mobile-specification-popover-compact', SOURCE)
         self.assertIn('height: auto !important;', SOURCE)
         self.assertIn('overflow: visible !important;', SOURCE)
 

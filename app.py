@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.7"
+APP_VERSION = "V1.8.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2901,7 +2901,7 @@ def inject_global_styles() -> None:
                 box-shadow: 0 18px 48px rgba(12, 38, 58, 0.28) !important;
                 background: #ffffff !important;
             }
-            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact) {
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-specification-popover-compact) {
                 height: auto !important;
                 max-height: 84dvh !important;
                 overflow: visible !important;
@@ -2916,7 +2916,7 @@ def inject_global_styles() -> None:
                 scrollbar-width: thin;
                 background: #ffffff !important;
             }
-            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact) > div {
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-specification-popover-compact) > div {
                 height: auto !important;
                 min-height: 0 !important;
                 padding: 0.32rem 0.42rem 0.38rem !important;
@@ -2983,7 +2983,7 @@ def inject_global_styles() -> None:
                 scrollbar-width: thin;
                 padding-right: 0.12rem !important;
             }
-            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact)
+            [data-testid="stPopoverBody"]:has(.pudu-mobile-specification-popover-compact)
             [class*="st-key-request_spec_model_scroll_"] {
                 height: auto !important;
                 max-height: none !important;
@@ -14050,19 +14050,25 @@ def render_request_material_builder(
                             catalog_product,
                             model_options,
                         )
-                        # On phone the model list, rather than the shared language
-                        # choices, determines whether the specification window needs
-                        # a fixed scrolling area.  A category with one/no-model option
-                        # should hug its content instead of reserving a tall blank panel.
-                        option_complexity = len(model_options)
+                        # Preserve the desktop popover widths, which also account for
+                        # shared language choices. Phone height is evaluated separately
+                        # from the model count below.
+                        option_complexity = max(len(model_options), len(all_language_options))
                         popover_size = (
                             "compact" if option_complexity <= 4
                             else "medium" if option_complexity <= 8
                             else "wide"
                         )
+                        mobile_model_complexity = len(model_options)
+                        mobile_popover_size = (
+                            "compact" if mobile_model_complexity <= 4
+                            else "medium" if mobile_model_complexity <= 8
+                            else "wide"
+                        )
                         st.markdown(
                             f'<span class="pudu-specification-popover-marker '
-                            f'pudu-specification-popover-{popover_size}"></span>',
+                            f'pudu-specification-popover-{popover_size} '
+                            f'pudu-mobile-specification-popover-{mobile_popover_size}"></span>',
                             unsafe_allow_html=True,
                         )
                         st.markdown(
