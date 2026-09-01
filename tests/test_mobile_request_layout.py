@@ -32,6 +32,9 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('key="request_mobile_toolbar"', SOURCE)
         self.assertIn('key="request_mobile_ui_language"', SOURCE)
         self.assertIn('key="request_mobile_navigation"', SOURCE)
+        self.assertIn('icon=":material/translate:"', SOURCE)
+        self.assertIn('pudu_col.image', SOURCE)
+        self.assertIn('app_col.image', SOURCE)
 
     def test_phone_form_and_catalog_use_two_column_grids(self) -> None:
         self.assertIn('.st-key-request_business_section [data-testid="stHorizontalBlock"]', SOURCE)
@@ -40,6 +43,16 @@ class MobileRequestLayoutTests(unittest.TestCase):
             SOURCE.count('grid-template-columns: repeat(2, minmax(0, 1fr))'),
             2,
         )
+
+    def test_phone_cart_bottom_sheet_resets_native_popover_transform(self) -> None:
+        cart_css = SOURCE.split(
+            '[data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker)', 1
+        )[1]
+        self.assertIn('transform: none !important;', cart_css)
+
+    def test_model_line_selector_uses_a_responsive_group_grid(self) -> None:
+        self.assertIn('key=f"request_model_line_grid_', SOURCE)
+        self.assertIn('for name, options in visible_groups:', SOURCE)
 
 
 if __name__ == "__main__":

@@ -1,22 +1,33 @@
 # Mobile request page design QA
 
-- Source references: user-provided mobile screenshots and Taobao catalog/specification examples in the conversation.
+- Source visual truth: `C:/Users/gaohongyuan1/AppData/Local/Temp/codex-clipboard-4d436af4-b732-44d3-ba0f-480f42e356b3.webp` plus the user-provided Taobao catalog/specification examples in the conversation.
+- Implementation screenshot: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.8.5.png`.
+- Combined visual comparison: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.8.5-comparison.png`.
 - Implementation: `app.py`, mobile media-query rules for the material request page.
 - Mobile viewport: 390 x 844 CSS pixels.
 - Desktop viewport: 1440 x 900 CSS pixels.
+- Density normalization: browser capture at device scale factor 1; the source screenshot was proportionally reduced to 390 px width for the combined comparison.
+- State: request catalog loaded; focused checks additionally covered open specification panel, open empty-cart sheet, language control, and mobile navigation menu.
 
 ## Comparison history
 
 1. The original mobile form used one full-width field per row. It now uses a two-column grid; controls are 26-28 px high and long-text fields are 36 px high.
 2. The original catalog/specification controls consumed most of the viewport. The catalog now uses two image-led cards per row and specifications open in one centered, internally scrollable panel.
 3. Product headings previously collided with card borders. Card spacing and title line height were tightened while keeping the title inside its card.
-4. Mobile language and navigation controls are available from the compact top-left toolbar.
+4. The mobile toolbar now presents the real PUDU logo and application icon before separate translate and menu controls. The menu contains only material request and cultural-merchandise request.
 5. Desktop verification retained six catalog columns and the existing desktop form behavior.
+6. Field labels previously crossed their control borders after the height reduction. Mobile labels now reserve vertical space and use an opaque section-colored background; the rendered form no longer overlaps.
+7. The cart popover previously retained the native translated position even after becoming a fixed bottom sheet, leaving it below the viewport. Its transform is now reset and the empty-cart sheet was clicked and verified inside the 390 x 844 viewport.
+8. Product-line groups now use one compact row per product line on mobile. Model choices use one reduced-height full-width item per row inside each group so long model names do not collide. Desktop retains three product-line columns.
 
 ## Evidence
 
-- Mobile computed controls: input 26 px, select 28 px, textarea 36 px.
+- Mobile computed controls: input 26 px, select 28 px, textarea 36 px; field-label separation verified visually at 390 x 844.
 - Mobile catalog computed columns: 172.844 px and 172.859 px at 390 px viewport width.
-- Automated regression: 432 passed, 3 subtests passed.
+- Primary interaction: empty cart opens as a visible bottom sheet at x=0, y=672, width=390 within the mobile viewport.
+- Product lines: one group per mobile row; model buttons render one per internal row at reduced height without overlap. Desktop was measured at three equal 367 px columns in a 1111 px selector grid.
+- Navigation interaction: material request and cultural-merchandise request visible; inventory query and material management absent.
+- Full-view comparison: mobile form hierarchy, two-column catalog, fixed action bar, compact branded toolbar, and viewport density were compared in one combined image.
+- Focused-region comparison: form labels, toolbar controls, specification product-line groups, model wrapping, and bottom-cart placement were inspected separately because they are too small to judge reliably in the full view.
 
 final result: passed

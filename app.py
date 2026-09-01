@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.4"
+APP_VERSION = "V1.8.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -1355,6 +1355,12 @@ def inject_global_styles() -> None:
             grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 0.75rem;
             align-items: start;
+        }
+        [class*="st-key-request_model_line_grid_"] {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 0.5rem !important;
+            align-items: start !important;
         }
         [data-testid="stSidebar"][aria-expanded="false"] {
             position: fixed !important;
@@ -2652,6 +2658,7 @@ def inject_global_styles() -> None:
             [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
                 position: fixed !important;
                 inset: auto 0 0 0 !important;
+                transform: none !important;
                 width: 100vw !important;
                 max-width: 100vw !important;
                 max-height: 82dvh !important;
@@ -2669,7 +2676,7 @@ def inject_global_styles() -> None:
                 top: max(0.35rem, env(safe-area-inset-top));
                 left: 0.4rem;
                 z-index: 1000000 !important;
-                width: 5.2rem !important;
+                width: 10.4rem !important;
                 margin: 0 !important;
                 padding: 0.18rem !important;
                 border: 1px solid rgba(20, 79, 113, 0.18);
@@ -2680,8 +2687,25 @@ def inject_global_styles() -> None:
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stHorizontalBlock"] {
                 display: grid !important;
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-template-columns: 3.25rem repeat(3, 1.75rem) !important;
                 gap: 0.18rem !important;
+                align-items: center !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="column"] {
+                width: auto !important;
+                min-width: 0 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stImage"] {
+                margin: 0 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stImage"] img {
+                display: block !important;
+                width: 100% !important;
+                height: 1.45rem !important;
+                object-fit: contain !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stImage"] button {
+                display: none !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stPopover"] > button {
                 min-height: 2.05rem !important;
@@ -2696,6 +2720,10 @@ def inject_global_styles() -> None:
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stIconMaterial"] {
                 font-size: 1.05rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
+            [data-testid="stPopover"] > button [data-testid="stIconMaterial"]:last-child {
+                display: none !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-mobile-home-popover-marker),
             [data-testid="stPopoverBody"]:has(.pudu-mobile-navigation-popover-marker) {
@@ -2738,9 +2766,15 @@ def inject_global_styles() -> None:
                 font-size: 0.82rem !important;
             }
             .stApp:has(.pudu-request-page-marker) .pudu-field-label {
-                margin-bottom: 0.1rem !important;
+                position: relative !important;
+                z-index: 2 !important;
+                display: table !important;
+                width: auto !important;
+                margin: 0 0 0.48rem 0.08rem !important;
+                padding: 0 0.12rem !important;
+                background: #f3f8ff !important;
                 font-size: 0.68rem !important;
-                line-height: 1.15 !important;
+                line-height: 1.3 !important;
             }
             .stApp:has(.pudu-request-page-marker) .pudu-inline-required-hint {
                 display: none !important;
@@ -2748,7 +2782,8 @@ def inject_global_styles() -> None:
             .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="stHorizontalBlock"] {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                gap: 0.3rem !important;
+                column-gap: 0.38rem !important;
+                row-gap: 0.62rem !important;
                 align-items: start !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="column"] {
@@ -2756,7 +2791,11 @@ def inject_global_styles() -> None:
                 min-width: 0 !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="stVerticalBlock"] {
-                gap: 0.12rem !important;
+                gap: 0.24rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section [data-testid="column"] > [data-testid="stVerticalBlock"] {
+                padding-top: 0.08rem !important;
+                padding-bottom: 0.2rem !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_business_section div[data-baseweb="input"],
             .stApp:has(.pudu-request-page-marker) .st-key-request_business_section div[data-baseweb="select"] > div {
@@ -2832,11 +2871,11 @@ def inject_global_styles() -> None:
             }
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) {
                 inset: 50% auto auto 50% !important;
-                width: min(22rem, calc(100vw - 1.1rem)) !important;
+                width: min(20rem, calc(100vw - 1.5rem)) !important;
                 min-width: 0 !important;
                 max-width: calc(100vw - 1.1rem) !important;
-                height: min(78dvh, 38rem) !important;
-                max-height: 78dvh !important;
+                height: min(68dvh, 31rem) !important;
+                max-height: 68dvh !important;
                 border-radius: 14px !important;
                 overflow: hidden !important;
                 transform: translate(-50%, -50%) !important;
@@ -2847,7 +2886,7 @@ def inject_global_styles() -> None:
                 gap: 0.25rem !important;
                 height: 100% !important;
                 min-height: 0 !important;
-                padding: 0.55rem !important;
+                padding: 0.42rem !important;
                 overflow-y: auto !important;
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin;
@@ -2866,15 +2905,52 @@ def inject_global_styles() -> None:
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
             [data-testid="stButtonGroup"] > div:last-child,
             [class*="st-key-request_language_pills_"] [data-testid="stButtonGroup"] > div:last-child {
-                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-                gap: 0.28rem !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.22rem !important;
+            }
+            [class*="st-key-request_model_line_grid_"] {
+                grid-template-columns: minmax(0, 1fr) !important;
+                gap: 0.22rem !important;
+            }
+            [class*="st-key-request_model_line_grid_"] [data-testid="stVerticalBlockBorderWrapper"] {
+                padding: 0.2rem !important;
+            }
+            [class*="st-key-request_model_line_grid_"] [data-testid="stVerticalBlock"] {
+                gap: 0.08rem !important;
+            }
+            [class*="st-key-request_model_line_grid_"] [data-testid="stCaptionContainer"] {
+                margin: 0 !important;
+                line-height: 1 !important;
+            }
+            [data-testid="stPopoverBody"] [class*="st-key-request_cart_models_v2_"]
+            [data-testid="stButtonGroup"] > div:last-child {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) !important;
+                gap: 0.16rem !important;
+            }
+            [data-testid="stPopoverBody"] [class*="st-key-request_cart_models_v2_"]
+            [data-testid="stButtonGroup"] button {
+                width: 100% !important;
+                min-width: 0 !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+                margin: 0 !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker)
             [data-testid="stButtonGroup"] button {
-                min-height: 30px !important;
-                padding: 0.24rem 0.3rem !important;
-                font-size: 0.62rem !important;
+                min-height: 18px !important;
+                height: auto !important;
+                padding: 0.1rem 0.18rem !important;
+                font-size: 0.54rem !important;
                 line-height: 1.15 !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_compact_cart {
+                z-index: 1000003 !important;
+                pointer-events: auto !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-full-cart-popover-marker) {
+                z-index: 1000004 !important;
+                pointer-events: auto !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_compact_cart button,
             .stApp:has(.pudu-request-page-marker) .st-key-request_preview button {
@@ -12952,11 +13028,19 @@ def render_mobile_request_toolbar() -> None:
         st.session_state["request_mobile_ui_language"] = current_language
 
     with st.container(key="request_mobile_toolbar"):
-        home_col, menu_col = st.columns(2, gap="small")
-        with home_col.popover(
-            ui_text("主页"),
-            key="request_mobile_home",
-            icon=":material/home:",
+        pudu_col, app_col, language_col, menu_col = st.columns(
+            [1.6, 0.8, 0.8, 0.8],
+            gap="small",
+            vertical_alignment="center",
+        )
+        if PUDU_BLUE_LOGO_PATH.exists():
+            pudu_col.image(str(PUDU_BLUE_LOGO_PATH), width="stretch")
+        if APP_ICON_PATH.exists():
+            app_col.image(str(APP_ICON_PATH), width="stretch")
+        with language_col.popover(
+            ui_text("语言设置"),
+            key="request_mobile_language",
+            icon=":material/translate:",
             width="stretch",
         ):
             st.markdown(
@@ -12996,18 +13080,6 @@ def render_mobile_request_toolbar() -> None:
                 "文化周边申领",
                 ui_text("文化周边申领"),
                 ":material/checkroom:",
-            )
-            st.link_button(
-                ui_text("查询库存"),
-                INVENTORY_QUERY_URL,
-                icon=":material/search:",
-                width="stretch",
-            )
-            navigate_to_management_section(
-                "mobile_open_material_management",
-                "物料管理",
-                ui_text("物料管理"),
-                ":material/inventory_2:",
             )
 
 
@@ -13407,19 +13479,14 @@ def render_request_model_selector(
 
     st.markdown('<span class="pudu-model-line-grid-marker"></span>', unsafe_allow_html=True)
     visible_groups = [item for item in primary_groups + other_groups if item[1]]
-    column_groups: list[list[tuple[str, list[str]]]] = [[], [], []]
-    column_weights = [0, 0, 0]
-    for group_index, group in enumerate(visible_groups):
-        column_index = group_index if group_index < 3 else min(
-            range(3), key=lambda index: column_weights[index]
-        )
-        column_groups[column_index].append(group)
-        column_weights[column_index] += max(2, len(group[1]))
-    columns = st.columns(min(3, max(1, len(visible_groups))), gap="small")
-    for column, groups_in_column in zip(columns, column_groups):
-        for name, options in groups_in_column:
+    with st.container(key=f"request_model_line_grid_{normalize_option_label(product)}"):
+        for name, options in visible_groups:
             group_key = f"{state_key}_{name}"
-            with column.container(border=True):
+            with st.container(border=True):
+                st.markdown(
+                    '<span class="pudu-model-line-group-marker"></span>',
+                    unsafe_allow_html=True,
+                )
                 st.caption(name)
                 st.pills(
                     f"{name} 产品型号",
