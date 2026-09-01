@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$ShortcutName = "PUDU 配置与运行控制台.lnk"
+    [string]$ShortcutName = "Marketing materials Control.lnk"
 )
 
 $ErrorActionPreference = "Stop"
@@ -19,8 +19,8 @@ $Shortcut = $Shell.CreateShortcut($ShortcutPath)
 $Shortcut.TargetPath = $PowerShellPath
 $Shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$LauncherPath`""
 $Shortcut.WorkingDirectory = $ProjectRoot
-$Shortcut.Description = "Open the PUDU configuration and operations control center"
-$Shortcut.IconLocation = "$env:SystemRoot\System32\imageres.dll,109"
+$Shortcut.Description = "Open Marketing materials Control"
+$Shortcut.IconLocation = "$(Join-Path $ProjectRoot 'Marketing materials Control.exe'),0"
 $Shortcut.Save()
 
 Write-Output $ShortcutPath

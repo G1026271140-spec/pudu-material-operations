@@ -67,7 +67,7 @@ class ScrollableFrame(tk.Frame):
 class ControlCenter(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title(f"PUDU 配置与运行控制台 · {current_app_version()}")
+        self.title(f"Marketing materials Control · {current_app_version()}")
         self.geometry("1180x780")
         self.minsize(980, 680)
         self.configure(background=BG)
@@ -114,7 +114,7 @@ class ControlCenter(tk.Tk):
         header.pack_propagate(False)
         brand = tk.Frame(header, bg=PANEL)
         brand.pack(side="left", fill="y", padx=(22, 28))
-        ttk.Label(brand, text="PUDU Control", style="Header.TLabel").pack(anchor="w", pady=(14, 0))
+        ttk.Label(brand, text="Marketing materials Control", style="Header.TLabel").pack(anchor="w", pady=(14, 0))
         ttk.Label(brand, text=f"配置与运行控制台  ·  {current_app_version()}", style="Subheader.TLabel").pack(anchor="w", pady=(2, 0))
 
         nav = tk.Frame(header, bg=PANEL)

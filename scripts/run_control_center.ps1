@@ -3,8 +3,8 @@ param()
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
-$PackagedApp = Join-Path $ProjectRoot "PUDU-Control-Center.exe"
-$PackagedVersionFile = Join-Path $ProjectRoot "PUDU-Control-Center.version"
+$PackagedApp = Join-Path $ProjectRoot "Marketing materials Control.exe"
+$PackagedVersionFile = Join-Path $ProjectRoot "Marketing materials Control.version"
 $PythonwPath = Join-Path $ProjectRoot ".venv\Scripts\pythonw.exe"
 $PythonPath = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
 

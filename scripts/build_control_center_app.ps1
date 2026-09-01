@@ -36,11 +36,11 @@ VSVersionInfo(
   kids=[
     StringFileInfo([StringTable('040904B0', [
       StringStruct('CompanyName', 'PUDU'),
-      StringStruct('FileDescription', 'PUDU Configuration and Runtime Control Center'),
+      StringStruct('FileDescription', 'Marketing materials Control'),
       StringStruct('FileVersion', '$VersionText'),
-      StringStruct('InternalName', 'PUDU-Control-Center'),
-      StringStruct('OriginalFilename', 'PUDU-Control-Center.exe'),
-      StringStruct('ProductName', 'PUDU Control Center'),
+      StringStruct('InternalName', 'Marketing materials Control'),
+      StringStruct('OriginalFilename', 'Marketing materials Control.exe'),
+      StringStruct('ProductName', 'Marketing materials Control'),
       StringStruct('ProductVersion', '$VersionText')
     ])]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])
@@ -52,7 +52,7 @@ $Arguments = @(
     "--clean",
     "--onefile",
     "--windowed",
-    "--name", "PUDU-Control-Center",
+    "--name", "Marketing materials Control",
     "--distpath", $ProjectRoot,
     "--workpath", (Join-Path $WorkRoot "build"),
     "--specpath", $WorkRoot,
@@ -67,7 +67,7 @@ $Arguments += $EntryPoint
 & $Python -m PyInstaller @Arguments
 if ($LASTEXITCODE -ne 0) { throw "Control center packaging failed." }
 
-$Output = Join-Path $ProjectRoot "PUDU-Control-Center.exe"
-$VersionMarker = Join-Path $ProjectRoot "PUDU-Control-Center.version"
+$Output = Join-Path $ProjectRoot "Marketing materials Control.exe"
+$VersionMarker = Join-Path $ProjectRoot "Marketing materials Control.version"
 $VersionText | Set-Content -LiteralPath $VersionMarker -Encoding ASCII
 Write-Host "Built portable application: $Output"

@@ -1,10 +1,10 @@
-# PUDU 配置与运行控制台
+# Marketing materials Control
 
 本地控制台把项目配置、配置来源、外部修改入口、Windows 后台任务、日志和生效动作放在同一界面中。它是项目代码的一部分，会随仓库版本更新；实际密码、App Secret 和 Token 仍只保存在被 Git 忽略的 `.streamlit/secrets.toml`。
 
 ## 启动
 
-下载或克隆源码后，可直接双击项目根目录的 `PUDU-Control-Center.exe`。这是便携式 Windows 应用，不要求先启动 Streamlit，也不会在打开时停止、重启或重新安装现有网页、Tunnel、Worker 或缓存任务。
+下载或克隆源码后，可直接双击项目根目录的 `Marketing materials Control.exe`。这是便携式 Windows 应用，不要求先启动 Streamlit，也不会在打开时停止、重启或重新安装现有网页、Tunnel、Worker 或缓存任务。
 
 如果需要从源码重新生成应用：
 
@@ -12,7 +12,7 @@
 .\scripts\build_control_center_app.ps1
 ```
 
-打包脚本会读取 `app.py` 中的 `APP_VERSION`，同步写入 EXE 元数据和 `PUDU-Control-Center.version`。现有启动脚本只会优先打开与源码版本一致的 EXE，避免项目升级后误开旧控制台；每次正式版本发布都应重新运行打包脚本并提交新的 EXE 与版本标记。
+打包脚本会读取 `app.py` 中的 `APP_VERSION`，同步写入 EXE 元数据和 `Marketing materials Control.version`。现有启动脚本只会优先打开与源码版本一致的 EXE，避免项目升级后误开旧控制台；每次正式版本发布都应重新运行打包脚本并提交新的 EXE 与版本标记。
 
 运行：
 
