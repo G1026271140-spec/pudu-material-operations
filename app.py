@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.6"
+APP_VERSION = "V1.8.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2676,19 +2676,19 @@ def inject_global_styles() -> None:
                 top: max(0.35rem, env(safe-area-inset-top));
                 left: 0.4rem;
                 z-index: 1000000 !important;
-                width: 15.4rem !important;
+                width: 10.15rem !important;
                 margin: 0 !important;
-                padding: 0.18rem !important;
-                border: 1px solid rgba(20, 79, 113, 0.18);
-                border-radius: 12px;
-                background: rgba(255, 255, 255, 0.96);
-                box-shadow: 0 5px 18px rgba(22, 52, 73, 0.13);
-                backdrop-filter: blur(12px);
+                padding: 0 !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stHorizontalBlock"] {
                 display: grid !important;
-                grid-template-columns: 4.4rem 2.2rem 3.6rem 3.6rem !important;
-                gap: 0.28rem !important;
+                grid-template-columns: 3.8rem 1.45rem 1.85rem 1.85rem !important;
+                gap: 0.4rem !important;
                 align-items: center !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="column"] {
@@ -2701,17 +2701,19 @@ def inject_global_styles() -> None:
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stImage"] img {
                 display: block !important;
                 width: 100% !important;
-                height: 1.45rem !important;
+                height: 1.25rem !important;
                 object-fit: contain !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stImage"] button {
                 display: none !important;
             }
-            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stPopover"] > button {
-                min-height: 2.05rem !important;
-                height: 2.05rem !important;
-                padding: 0.2rem !important;
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stPopoverButton"] {
+                min-height: 1.85rem !important;
+                height: 1.85rem !important;
+                padding: 0 !important;
                 border: 0 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
                 font-size: 0 !important;
                 box-shadow: none !important;
                 width: 100% !important;
@@ -2724,17 +2726,11 @@ def inject_global_styles() -> None:
                 font-size: 1.05rem !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
-            [data-testid="stPopover"] > button [data-testid="stIconMaterial"]:last-child {
+            [data-testid="stPopoverButton"] [aria-hidden="true"] {
                 display: none !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
-            [data-testid="stPopover"] > button > div > span:last-child,
-            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
-            [data-testid="stPopover"] > button > span:last-child {
-                display: none !important;
-            }
-            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
-            [data-testid="stPopover"] > button > div {
+            [data-testid="stPopoverButton"] > div {
                 width: 100% !important;
                 justify-content: center !important;
                 gap: 0 !important;
@@ -2780,15 +2776,17 @@ def inject_global_styles() -> None:
                 font-size: 0.82rem !important;
             }
             .stApp:has(.pudu-request-page-marker) .pudu-field-label {
-                position: relative !important;
-                z-index: 2 !important;
-                display: table !important;
+                position: static !important;
+                z-index: auto !important;
+                display: block !important;
                 width: auto !important;
-                margin: 0 0 0.48rem 0.08rem !important;
-                padding: 0 0.12rem !important;
-                background: #f3f8ff !important;
+                margin: 0 0 0.24rem !important;
+                padding: 0 !important;
+                background: transparent !important;
                 font-size: 0.68rem !important;
                 line-height: 1.3 !important;
+                text-shadow: none !important;
+                box-shadow: none !important;
             }
             .stApp:has(.pudu-request-page-marker) .pudu-inline-required-hint {
                 display: none !important;
@@ -2826,6 +2824,13 @@ def inject_global_styles() -> None:
                 min-height: 36px !important;
                 height: 36px !important;
                 padding: 0.24rem 0.36rem !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section div[data-baseweb="input"],
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section div[data-baseweb="select"] > div,
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section textarea {
+                box-shadow: none !important;
+                text-shadow: none !important;
+                filter: none !important;
             }
             .stApp:has(.pudu-request-page-marker) div[data-baseweb="input"],
             .stApp:has(.pudu-request-page-marker) div[data-baseweb="select"] > div,
@@ -2896,6 +2901,11 @@ def inject_global_styles() -> None:
                 box-shadow: 0 18px 48px rgba(12, 38, 58, 0.28) !important;
                 background: #ffffff !important;
             }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact) {
+                height: auto !important;
+                max-height: 84dvh !important;
+                overflow: visible !important;
+            }
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) > div {
                 gap: 0.25rem !important;
                 height: 100% !important;
@@ -2905,6 +2915,12 @@ def inject_global_styles() -> None:
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin;
                 background: #ffffff !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact) > div {
+                height: auto !important;
+                min-height: 0 !important;
+                padding: 0.32rem 0.42rem 0.38rem !important;
+                overflow: visible !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) h4 {
                 margin: 0 0 0.2rem !important;
@@ -2966,6 +2982,13 @@ def inject_global_styles() -> None:
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin;
                 padding-right: 0.12rem !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-compact)
+            [class*="st-key-request_spec_model_scroll_"] {
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding-right: 0 !important;
             }
             [class*="st-key-request_spec_fixed_"] {
                 position: sticky !important;
@@ -14027,7 +14050,11 @@ def render_request_material_builder(
                             catalog_product,
                             model_options,
                         )
-                        option_complexity = max(len(model_options), len(all_language_options))
+                        # On phone the model list, rather than the shared language
+                        # choices, determines whether the specification window needs
+                        # a fixed scrolling area.  A category with one/no-model option
+                        # should hug its content instead of reserving a tall blank panel.
+                        option_complexity = len(model_options)
                         popover_size = (
                             "compact" if option_complexity <= 4
                             else "medium" if option_complexity <= 8

@@ -64,6 +64,21 @@ class MobileRequestLayoutTests(unittest.TestCase):
             SOURCE,
         )
 
+    def test_phone_compact_specification_window_hugs_single_model_content(self) -> None:
+        self.assertIn('option_complexity = len(model_options)', SOURCE)
+        self.assertIn('pudu-specification-popover-compact', SOURCE)
+        self.assertIn('height: auto !important;', SOURCE)
+        self.assertIn('overflow: visible !important;', SOURCE)
+
+    def test_phone_toolbar_is_icon_only_without_a_container_frame(self) -> None:
+        start = SOURCE.rindex('.st-key-request_mobile_toolbar {')
+        toolbar_css = SOURCE[start : SOURCE.index('[data-testid="stHorizontalBlock"]', start)]
+        self.assertIn('border: 0 !important;', toolbar_css)
+        self.assertIn('background: transparent !important;', toolbar_css)
+        self.assertIn('box-shadow: none !important;', toolbar_css)
+        self.assertIn('[data-testid="stPopoverButton"]', SOURCE)
+        self.assertIn('[aria-hidden="true"]', SOURCE)
+
 
 if __name__ == "__main__":
     unittest.main()
