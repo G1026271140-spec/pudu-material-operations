@@ -25,11 +25,16 @@ http://服务器IP:端口/?view=inventory
 本地运行时写入 `.streamlit/secrets.toml`，云端部署时写入 Streamlit Cloud Secrets：
 
 ```toml
-INVENTORY_VIEW_PASSWORD = "376493"
-
+INVENTORY_VIEW_PASSWORD = "replace-with-a-strong-password"
+APPROVAL_VIEW_PASSWORD = "replace-with-a-strong-password"
+CONTROL_CENTER_MASTER_PASSWORD = "replace-with-a-strong-local-password"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
+FEISHU_APPROVAL_WRITEBACK_APP_ID = "cli_xxx"
+FEISHU_APPROVAL_WRITEBACK_APP_SECRET = "审批回写应用的 app secret"
+GITHUB_CACHE_REFRESH_TOKEN = "GitHub repository_dispatch token"
+CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
 STREAMLIT_APP_URL = "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
 ```
 

@@ -3,6 +3,7 @@ param(
     [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduSubmissionWorker"),
     [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
+    [string]$Branch = "master",
     [string]$TaskName = "PUDU Submission Worker",
     [ValidateRange(1, 10000)]
     [int]$WorkerPriority = 100
@@ -59,7 +60,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $RunnerRepoPath ".git"))) {
     if (Test-Path -LiteralPath $RunnerRepoPath) {
         throw "Runner repository path exists but is not a Git repository: $RunnerRepoPath"
     }
-    & $git clone --branch master --single-branch $RepositoryUrl $RunnerRepoPath
+    & $git clone --branch $Branch --single-branch $RepositoryUrl $RunnerRepoPath
     if ($LASTEXITCODE -ne 0) {
         throw "Unable to clone the submission worker repository."
     }

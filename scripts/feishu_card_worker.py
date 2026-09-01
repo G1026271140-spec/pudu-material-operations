@@ -3,9 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import sys
 import threading
 import tomllib
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import lark_oapi as lark
@@ -328,9 +330,24 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
 
 
 def main() -> int:
+    configured_log_directory = os.environ.get("PUDU_FEISHU_CARD_WORKER_LOG_DIR")
+    log_directory = (
+        Path(configured_log_directory)
+        if configured_log_directory
+        else Path(os.environ.get("LOCALAPPDATA") or ROOT / "work") / "PuduFeishuCardWorker" / "logs"
+    )
+    log_directory.mkdir(parents=True, exist_ok=True)
+    file_handler = RotatingFileHandler(
+        log_directory / "worker.log",
+        maxBytes=5_000_000,
+        backupCount=3,
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
     logging.basicConfig(
-        level=logging.WARNING,
+        level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[file_handler],
     )
     app_id, app_secret = load_credentials()
     handler = (

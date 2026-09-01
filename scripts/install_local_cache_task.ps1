@@ -3,8 +3,13 @@ param(
     [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduMaterialCacheRunner"),
     [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
+    [string]$Branch = "master",
     [string]$TaskName = "PUDU Material Cache Refresh",
     [string]$ContactTaskName = "PUDU Contact Cache Refresh",
+    [ValidatePattern('^(?:[01]\d|2[0-3]):[0-5]\d$')][string]$MorningTime = "10:30",
+    [ValidatePattern('^(?:[01]\d|2[0-3]):[0-5]\d$')][string]$AfternoonTime = "16:30",
+    [ValidatePattern('^(?:[01]\d|2[0-3]):[0-5]\d$')][string]$ContactTime = "11:00",
+    [string]$ContactDays = "Monday,Wednesday,Friday",
     [switch]$SkipInitialRun
 )
 
@@ -50,7 +55,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $RunnerRepoPath ".git"))) {
     if (Test-Path -LiteralPath $RunnerRepoPath) {
         throw "Runner repository path exists but is not a Git repository: $RunnerRepoPath"
     }
-    & $git clone --branch master --single-branch $RepositoryUrl $RunnerRepoPath
+    & $git clone --branch $Branch --single-branch $RepositoryUrl $RunnerRepoPath
     if ($LASTEXITCODE -ne 0) {
         throw "Unable to clone the runner repository."
     }
@@ -83,8 +88,8 @@ $taskArguments = @(
 
 $action = New-ScheduledTaskAction -Execute $powershellPath -Argument $taskArguments -WorkingDirectory $RunnerRoot
 $triggers = @(
-    (New-ScheduledTaskTrigger -Daily -At "10:30")
-    (New-ScheduledTaskTrigger -Daily -At "16:30")
+    (New-ScheduledTaskTrigger -Daily -At $MorningTime)
+    (New-ScheduledTaskTrigger -Daily -At $AfternoonTime)
 )
 $settings = New-ScheduledTaskSettingsSet `
     -StartWhenAvailable `
@@ -115,7 +120,13 @@ $contactArguments = @(
     "-CacheScope", "Contacts"
 ) -join " "
 $contactAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $contactArguments -WorkingDirectory $RunnerRoot
-$contactTrigger = New-ScheduledTaskTrigger -Weekly -WeeksInterval 1 -DaysOfWeek Monday,Wednesday,Friday -At "11:00"
+$contactDayValues = @($ContactDays -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$allowedContactDays = @("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+foreach ($contactDay in $contactDayValues) {
+    if ($contactDay -notin $allowedContactDays) { throw "Invalid contact cache weekday: $contactDay" }
+}
+if ($contactDayValues.Count -eq 0) { throw "At least one contact cache weekday is required." }
+$contactTrigger = New-ScheduledTaskTrigger -Weekly -WeeksInterval 1 -DaysOfWeek $contactDayValues -At $ContactTime
 $contactTask = New-ScheduledTask -Action $contactAction -Trigger $contactTrigger -Settings $settings -Principal $principal
 Register-ScheduledTask -TaskName $ContactTaskName -InputObject $contactTask -Force | Out-Null
 
@@ -164,8 +175,8 @@ $warehouseShortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,238"
 $warehouseShortcut.Save()
 
 Write-Host "Local cache runner installed." -ForegroundColor Green
-Write-Host "Task: $TaskName (daily at 10:30 and 16:30)"
-Write-Host "Contact task: $ContactTaskName (Monday, Wednesday, Friday at 11:00)"
+Write-Host "Task: $TaskName (daily at $MorningTime and $AfternoonTime)"
+Write-Host "Contact task: $ContactTaskName ($($contactDayValues -join ', ') at $ContactTime)"
 Write-Host "Runner: $RunnerRoot"
 Write-Host "Manual shortcut: $shortcutPath"
 Write-Host "Warehouse shortcut: $warehouseShortcutPath"

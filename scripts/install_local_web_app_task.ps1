@@ -3,6 +3,7 @@ param(
     [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:USERPROFILE "PuduMaterialWebRunner"),
     [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
+    [string]$Branch = "master",
     [string]$WebTaskName = "PUDU Material Web App",
     [string]$TunnelTaskName = "PUDU Material Cloudflare Tunnel",
     [string]$TunnelToken = "",
@@ -24,6 +25,14 @@ $TunnelRunner = Join-Path $RunnerRoot "run_cloudflare_named_tunnel.ps1"
 
 foreach ($path in @($SourceSecretsPath, (Join-Path $SourceRepoPath "scripts\run_local_web_app.ps1"), (Join-Path $SourceRepoPath "scripts\run_cloudflare_named_tunnel.ps1"))) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Required installation file is missing: $path" }
+}
+if (-not $TunnelToken -and (Test-Path -LiteralPath $SourceSecretsPath)) {
+    $tokenLine = Get-Content -LiteralPath $SourceSecretsPath -Encoding UTF8 |
+        Where-Object { $_ -match '^\s*CLOUDFLARE_TUNNEL_TOKEN\s*=' } |
+        Select-Object -First 1
+    if ($tokenLine -match '^\s*CLOUDFLARE_TUNNEL_TOKEN\s*=\s*"(?<token>(?:[^"\\]|\\.)*)"\s*$') {
+        $TunnelToken = [regex]::Unescape($Matches.token)
+    }
 }
 New-Item -ItemType Directory -Path $RunnerRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
@@ -47,7 +56,7 @@ if ($TunnelToken) {
 $git = (Get-Command git -ErrorAction Stop).Source
 if (-not (Test-Path -LiteralPath (Join-Path $RunnerRepoPath ".git"))) {
     if (Test-Path -LiteralPath $RunnerRepoPath) { throw "Runner repository path exists but is not a Git repository: $RunnerRepoPath" }
-    & $git clone --branch master --single-branch $RepositoryUrl $RunnerRepoPath
+    & $git clone --branch $Branch --single-branch $RepositoryUrl $RunnerRepoPath
     if ($LASTEXITCODE -ne 0) { throw "Unable to clone the web repository." }
 }
 $bootstrapPython = Join-Path $SourceRepoPath ".venv\Scripts\python.exe"
@@ -88,7 +97,7 @@ if (-not $SkipTunnel) {
     $cloudflared = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source
     if (-not $cloudflared) { $cloudflared = "C:\Program Files (x86)\cloudflared\cloudflared.exe" }
     if (-not (Test-Path -LiteralPath $cloudflared)) { throw "cloudflared is not installed." }
-    $tunnelArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $TunnelRunner), "-CloudflaredPath", ('"{0}"' -f $cloudflared), "-TokenFile", ('"{0}"' -f $TokenFile), "-LogDirectory", ('"{0}"' -f $LogDirectory)) -join " "
+    $tunnelArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $TunnelRunner), "-CloudflaredPath", ('"{0}"' -f $cloudflared), "-TokenFile", ('"{0}"' -f $TokenFile), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-Port", $Port) -join " "
     $tunnelAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $tunnelArgs -WorkingDirectory $RunnerRoot
     Register-ScheduledTask -TaskName $TunnelTaskName -InputObject (New-ScheduledTask -Action $tunnelAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Connects the local PUDU web app through Cloudflare Named Tunnel.") -Force | Out-Null
     Start-ScheduledTask -TaskName $TunnelTaskName

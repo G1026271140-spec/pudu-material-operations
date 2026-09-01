@@ -2,7 +2,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$CloudflaredPath,
     [Parameter(Mandatory = $true)][string]$TokenFile,
-    [Parameter(Mandatory = $true)][string]$LogDirectory
+    [Parameter(Mandatory = $true)][string]$LogDirectory,
+    [ValidateRange(1, 65535)][int]$Port = 8501
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,7 +17,7 @@ Add-Content -LiteralPath $logPath -Value ("{0} [INFO] Starting Cloudflare Named 
 $previousErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 try {
-    & $CloudflaredPath tunnel --no-autoupdate --url http://127.0.0.1:8501 run --token-file $TokenFile 2>&1 |
+    & $CloudflaredPath tunnel --no-autoupdate --url "http://127.0.0.1:$Port" run --token-file $TokenFile 2>&1 |
         ForEach-Object { Add-Content -LiteralPath $logPath -Value ("{0} {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), [string]$_) -Encoding UTF8 }
     $exitCode = $LASTEXITCODE
 } finally {

@@ -8,18 +8,19 @@ from dataclasses import dataclass
 from typing import Any
 
 from feishu_bitable import FeishuBitableClient
+from project_config import get_setting
 
 
 SUBMISSION_QUEUE_MODULE_VERSION = 2
-QUEUE_TABLE_NAME = "后台任务队列"
-QUEUE_PAYLOAD_TABLE_NAME = "后台任务载荷"
-QUEUE_PAYLOAD_INLINE_LIMIT = 12_000
-QUEUE_PAYLOAD_CHUNK_SIZE = 12_000
+QUEUE_TABLE_NAME = str(get_setting("feishu.tables.queue", "后台任务队列"))
+QUEUE_PAYLOAD_TABLE_NAME = str(get_setting("feishu.tables.queue_payload", "后台任务载荷"))
+QUEUE_PAYLOAD_INLINE_LIMIT = int(get_setting("queue.payload_inline_limit", 12_000))
+QUEUE_PAYLOAD_CHUNK_SIZE = int(get_setting("queue.payload_chunk_size", 12_000))
 QUEUE_PAYLOAD_FIELD_TASK_ID = "任务ID"
 QUEUE_PAYLOAD_FIELD_INDEX = "分片序号"
 QUEUE_PAYLOAD_FIELD_CONTENT = "分片内容"
-WORKER_REGISTRY_TABLE_NAME = "后台任务节点列表"
-LEGACY_WORKER_REGISTRY_TABLE_NAME = "后台Worker节点"
+WORKER_REGISTRY_TABLE_NAME = str(get_setting("feishu.tables.worker_registry", "后台任务节点列表"))
+LEGACY_WORKER_REGISTRY_TABLE_NAME = str(get_setting("feishu.tables.legacy_worker_registry", "后台Worker节点"))
 WORKER_FIELD_NODE_ID = "节点标识"
 WORKER_FIELD_HOSTNAME = "电脑名称"
 WORKER_FIELD_PRIORITY = "优先级"

@@ -29,6 +29,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from shipping_page import render_shipping_template_page
+from project_config import get_setting
 from submission_queue import (
     SUBMISSION_QUEUE_MODULE_VERSION,
     QUEUE_STATUS_COMPLETED,
@@ -65,7 +66,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.9.1"
+APP_VERSION = "V1.9.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -89,21 +90,21 @@ ACTION_PURCHASE = "物料采购（增加库存）"
 ACTION_OPTIONS = [ACTION_RECEIVE, ACTION_PURCHASE]
 DECREASE_ACTIONS = {ACTION_RECEIVE, "出库减少"}
 INCREASE_ACTIONS = {ACTION_PURCHASE, "入库增加"}
-REQUEST_TABLE_NAME = "物料申请单"
-REQUEST_LINE_TABLE_NAME = "申请明细"
-REQUEST_CHANGE_TABLE_NAME = "申请物料变更记录表"
-MATERIAL_TABLE_NAME = "物料主数据"
-CATEGORY_TABLE_NAME = "物料品类"
-MODEL_TABLE_NAME = "产品型号"
-LANGUAGE_TABLE_NAME = "物料语种"
-LEDGER_TABLE_NAME = "库存流水"
-USER_PERMISSION_TABLE_NAME = "用户权限表"
-GIFT_PROJECT_TABLE_NAME = "项目周边礼品物料筹备详情list"
-CULTURAL_MATERIAL_TABLE_NAME = "文化周边管理库存"
+REQUEST_TABLE_NAME = str(get_setting("feishu.tables.request", "物料申请单"))
+REQUEST_LINE_TABLE_NAME = str(get_setting("feishu.tables.request_line", "申请明细"))
+REQUEST_CHANGE_TABLE_NAME = str(get_setting("feishu.tables.request_change", "申请物料变更记录表"))
+MATERIAL_TABLE_NAME = str(get_setting("feishu.tables.material", "物料主数据"))
+CATEGORY_TABLE_NAME = str(get_setting("feishu.tables.category", "物料品类"))
+MODEL_TABLE_NAME = str(get_setting("feishu.tables.model", "产品型号"))
+LANGUAGE_TABLE_NAME = str(get_setting("feishu.tables.language", "物料语种"))
+LEDGER_TABLE_NAME = str(get_setting("feishu.tables.ledger", "库存流水"))
+USER_PERMISSION_TABLE_NAME = str(get_setting("feishu.tables.user_permission", "用户权限表"))
+GIFT_PROJECT_TABLE_NAME = str(get_setting("feishu.tables.gift_project", "项目周边礼品物料筹备详情list"))
+CULTURAL_MATERIAL_TABLE_NAME = str(get_setting("feishu.tables.cultural_material", "文化周边管理库存"))
 CULTURAL_CLAIMABLE_FIELD = "是否可以申领"
 CULTURAL_CLAIMABLE_YES = "是"
 CULTURAL_CLAIMABLE_NO = "否"
-REGION_TABLE_NAME = "战区管理"
+REGION_TABLE_NAME = str(get_setting("feishu.tables.region", "战区管理"))
 MODEL_LINK_FIELD_CANDIDATES = ("型号关联", "产品型号 2")
 LANGUAGE_LINK_FIELD_CANDIDATES = ("语种关联", "物料语种", "语言种类 2")
 AUTO_REQUEST_MODEL_CATEGORIES = (
@@ -133,7 +134,7 @@ CATEGORY_DEFINITION_OPTIONS = (
 UNDEFINED_CATEGORY_DEFINITION = "未定义"
 GIFT_PROJECT_STATUS_REQUESTED = "已提需"
 INVENTORY_ZERO_SINCE_FIELD = "库存归零时间"
-INVENTORY_AUTO_DISABLE_DAYS = 14
+INVENTORY_AUTO_DISABLE_DAYS = int(get_setting("runtime.inventory_auto_disable_days", 14))
 CATEGORY_CREATE_STAGE_KEY = "category_create_stage"
 CATEGORY_CREATE_DRAFT_KEY = "category_create_draft"
 CATEGORY_EDIT_STAGE_KEY = "category_edit_stage"
@@ -162,8 +163,11 @@ INVENTORY_REVIEW_REMINDER_NONE = "无需提醒"
 INVENTORY_RESULT_SUFFICIENT = "库存充足"
 INVENTORY_RESULT_PARTIAL = "部分库存不足"
 INVENTORY_RESULT_INSUFFICIENT = "全部库存不足"
-DEFAULT_STREAMLIT_APP_URL = (
-    "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
+DEFAULT_STREAMLIT_APP_URL = str(
+    get_setting(
+        "deployment.streamlit_app_url",
+        "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/",
+    )
 )
 FREIGHT_PAYER_OPTIONS = [
     "申请部门承担",
@@ -179,8 +183,8 @@ REQUEST_MANUAL_PRODUCT_ORDER = (
     "配送线产品手册DR",
     "具身线产品手册ER",
 )
-GITHUB_REPOSITORY = "G1026271140-spec/pudu-material-inventory"
-GITHUB_CACHE_WORKFLOW_FILE = "refresh-static-cache.yml"
+GITHUB_REPOSITORY = str(get_setting("project.github_repository", "G1026271140-spec/pudu-material-inventory"))
+GITHUB_CACHE_WORKFLOW_FILE = str(get_setting("project.cache_workflow_file", "refresh-static-cache.yml"))
 GITHUB_CACHE_WORKFLOW_URL = (
     f"https://github.com/{GITHUB_REPOSITORY}/actions/workflows/{GITHUB_CACHE_WORKFLOW_FILE}"
 )
@@ -476,8 +480,8 @@ TRANSACTION_HEADERS = [
 ]
 
 DATA_LOCK = threading.Lock()
-DATA_CACHE_TTL_SECONDS = 30
-MAX_REQUEST_LINE_COUNT = 20
+DATA_CACHE_TTL_SECONDS = int(get_setting("runtime.data_cache_ttl_seconds", 30))
+MAX_REQUEST_LINE_COUNT = int(get_setting("runtime.max_request_line_count", 20))
 ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
@@ -503,7 +507,7 @@ MATERIAL_DASHBOARD_MODULES = (
     "库存预警",
 )
 MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存")
-DEFAULT_LOW_STOCK_THRESHOLD = 100
+DEFAULT_LOW_STOCK_THRESHOLD = int(get_setting("runtime.default_low_stock_threshold", 100))
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
 REQUEST_FORM_CACHE_SCHEMA_VERSION = 5

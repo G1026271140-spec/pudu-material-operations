@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import app as inventory_app
+from project_config import get_setting
 from submission_queue import (
     QUEUE_STATUS_FAILED,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
@@ -48,16 +49,16 @@ from submission_queue import (
 )
 
 
-DEFAULT_POLL_SECONDS = 5.0
-DEFAULT_LEASE_SECONDS = 600
-MAX_RETRIES = 10
+DEFAULT_POLL_SECONDS = float(get_setting("submission_worker.poll_seconds", 5.0))
+DEFAULT_LEASE_SECONDS = int(get_setting("submission_worker.lease_seconds", 600))
+MAX_RETRIES = int(get_setting("submission_worker.max_retries", 10))
 RELOAD_EXIT_CODE = 75
 ALREADY_RUNNING_EXIT_CODE = 76
-DEFAULT_WORKER_PRIORITY = 100
-WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS = 60
-WORKER_HEARTBEAT_INTERVAL_SECONDS = 21_600
-WORKER_HEARTBEAT_TIMEOUT_SECONDS = 28_800
-INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS = 300
+DEFAULT_WORKER_PRIORITY = int(get_setting("submission_worker.priority", 100))
+WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS = int(get_setting("submission_worker.leadership_check_interval_seconds", 60))
+WORKER_HEARTBEAT_INTERVAL_SECONDS = int(get_setting("submission_worker.heartbeat_interval_seconds", 21_600))
+WORKER_HEARTBEAT_TIMEOUT_SECONDS = int(get_setting("submission_worker.heartbeat_timeout_seconds", 28_800))
+INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS = int(get_setting("submission_worker.inventory_review_schedule_check_interval_seconds", 300))
 _LEADERSHIP_STATE: dict[str, object] = {
     "checked_at": 0.0,
     "is_leader": False,
