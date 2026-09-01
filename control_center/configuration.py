@@ -4,6 +4,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime
@@ -11,7 +12,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(os.environ.get("PUDU_PROJECT_ROOT") or (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]))
 PROJECT_CONFIG_PATH = ROOT / "config" / "project_config.json"
 SECRETS_PATH = ROOT / ".streamlit" / "secrets.toml"
 STREAMLIT_CONFIG_PATH = ROOT / ".streamlit" / "config.toml"

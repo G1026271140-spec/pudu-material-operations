@@ -19,6 +19,15 @@ from .system import TASKS, TASK_BY_KEY, control_task, current_app_version, synch
 
 MASK = "••••••••••••"
 
+BG = "#f7f7f7"
+PANEL = "#ffffff"
+BORDER = "#e5e5e5"
+TEXT = "#202020"
+MUTED = "#6b6b6b"
+ACCENT = "#0078d4"
+ACCENT_SOFT = "#e8f3fb"
+SUCCESS = "#107c10"
+
 
 def _display_value(spec, value: Any, unlocked: bool) -> str:
     if spec.sensitive and value not in (None, "") and not unlocked:
@@ -28,86 +37,147 @@ def _display_value(spec, value: Any, unlocked: bool) -> str:
     return str(value if value is not None else "")
 
 
+class ScrollableFrame(tk.Frame):
+    """A neutral scroll region that keeps the MAA-style content column calm."""
+
+    def __init__(self, parent, *, background: str = BG) -> None:
+        super().__init__(parent, bg=background)
+        self.canvas = tk.Canvas(self, bg=background, highlightthickness=0, borderwidth=0)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.inner = tk.Frame(self.canvas, bg=background)
+        self.window_id = self.canvas.create_window((0, 0), window=self.inner, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+        self.inner.bind("<Configure>", self._sync_scroll_region)
+        self.canvas.bind("<Configure>", self._sync_width)
+        self.canvas.bind("<Enter>", lambda _event: self.canvas.bind_all("<MouseWheel>", self._wheel))
+        self.canvas.bind("<Leave>", lambda _event: self.canvas.unbind_all("<MouseWheel>"))
+
+    def _sync_scroll_region(self, _event=None) -> None:
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _sync_width(self, event) -> None:
+        self.canvas.itemconfigure(self.window_id, width=event.width)
+
+    def _wheel(self, event) -> None:
+        self.canvas.yview_scroll(int(-event.delta / 120), "units")
+
+
 class ControlCenter(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title(f"PUDU 配置与运行控制台 · {current_app_version()}")
-        self.geometry("1360x820")
-        self.minsize(1120, 700)
-        self.configure(background="#f3f6fb")
+        self.geometry("1180x780")
+        self.minsize(980, 680)
+        self.configure(background=BG)
+        icon_path = ROOT / "assets" / "app-icon.png"
+        if icon_path.exists():
+            try:
+                self.app_icon = tk.PhotoImage(file=str(icon_path))
+                self.iconphoto(True, self.app_icon)
+            except tk.TclError:
+                self.app_icon = None
         self.unlocked = False
         self.current_spec = None
+        self.current_category = CATEGORIES[0]
+        self.current_page = "运行总览"
         self.status_var = tk.StringVar(value="就绪")
         self._configure_style()
         self._build_layout()
-        self.show_overview()
+        requested_page = os.environ.get("PUDU_CONTROL_CENTER_PAGE", "运行总览")
+        self._show_page(requested_page if requested_page in self.nav_items else "运行总览")
 
     def _configure_style(self) -> None:
         style = ttk.Style(self)
-        if "vista" in style.theme_names():
-            style.theme_use("vista")
-        style.configure("Header.TLabel", font=("Microsoft YaHei UI", 18, "bold"), foreground="#0b2351", background="#ffffff")
-        style.configure("Subheader.TLabel", font=("Microsoft YaHei UI", 10), foreground="#5d6b82", background="#ffffff")
-        style.configure("Section.TLabel", font=("Microsoft YaHei UI", 12, "bold"), foreground="#163b73")
-        style.configure("Treeview", rowheight=31, font=("Microsoft YaHei UI", 9))
-        style.configure("Treeview.Heading", font=("Microsoft YaHei UI", 9, "bold"))
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+        style.configure("TFrame", background=BG)
+        style.configure("TLabel", background=BG, foreground=TEXT, font=("Microsoft YaHei UI", 9))
+        style.configure("Header.TLabel", font=("Microsoft YaHei UI", 14, "bold"), foreground=TEXT, background=PANEL)
+        style.configure("Subheader.TLabel", font=("Microsoft YaHei UI", 9), foreground=MUTED, background=PANEL)
+        style.configure("Section.TLabel", font=("Microsoft YaHei UI", 13, "bold"), foreground=TEXT, background=BG)
+        style.configure("CardTitle.TLabel", font=("Microsoft YaHei UI", 10, "bold"), foreground=TEXT, background=PANEL)
+        style.configure("TButton", font=("Microsoft YaHei UI", 9), padding=(12, 7), relief="flat", borderwidth=1)
+        style.map("TButton", background=[("active", "#f0f0f0")])
+        style.configure("Accent.TButton", foreground="#ffffff", background=ACCENT, bordercolor=ACCENT)
+        style.map("Accent.TButton", background=[("active", "#006cbe"), ("pressed", "#005a9e")])
+        style.configure("Treeview", rowheight=34, font=("Microsoft YaHei UI", 9), background=PANEL, fieldbackground=PANEL, bordercolor=BORDER, relief="flat")
+        style.configure("Treeview.Heading", font=("Microsoft YaHei UI", 9), foreground=MUTED, background="#fafafa", relief="flat", bordercolor=BORDER)
+        style.map("Treeview", background=[("selected", ACCENT_SOFT)], foreground=[("selected", TEXT)])
+        style.configure("TEntry", padding=(8, 7), fieldbackground=PANEL, bordercolor="#cfcfcf", lightcolor="#cfcfcf", darkcolor="#cfcfcf")
+        style.configure("TCombobox", padding=(8, 6))
 
     def _build_layout(self) -> None:
-        header = tk.Frame(self, bg="#ffffff", height=78)
+        header = tk.Frame(self, bg=PANEL, height=92, highlightbackground=BORDER, highlightthickness=0)
         header.pack(fill="x")
         header.pack_propagate(False)
-        ttk.Label(header, text="PUDU 配置与运行控制台", style="Header.TLabel").pack(anchor="w", padx=24, pady=(14, 0))
-        ttk.Label(header, text="配置来源、修改入口、生效范围和后台任务集中管理", style="Subheader.TLabel").pack(anchor="w", padx=25, pady=(2, 0))
+        brand = tk.Frame(header, bg=PANEL)
+        brand.pack(side="left", fill="y", padx=(22, 28))
+        ttk.Label(brand, text="PUDU Control", style="Header.TLabel").pack(anchor="w", pady=(14, 0))
+        ttk.Label(brand, text=f"配置与运行控制台  ·  {current_app_version()}", style="Subheader.TLabel").pack(anchor="w", pady=(2, 0))
 
-        body = tk.PanedWindow(self, orient="horizontal", sashwidth=1, bg="#d9e1ef")
-        body.pack(fill="both", expand=True, padx=14, pady=14)
-
-        nav = tk.Frame(body, bg="#102a56", width=220)
-        body.add(nav, minsize=205)
-        tk.Label(nav, text="导航", bg="#102a56", fg="#a9bddc", font=("Microsoft YaHei UI", 9, "bold")).pack(anchor="w", padx=18, pady=(18, 8))
-        self.nav_list = tk.Listbox(nav, bg="#102a56", fg="#edf4ff", selectbackground="#2563eb", selectforeground="#ffffff", relief="flat", borderwidth=0, highlightthickness=0, font=("Microsoft YaHei UI", 10), activestyle="none")
-        self.nav_items = ["运行总览", "后台任务与日志", "后台电脑节点", "飞书审批实例", *CATEGORIES]
+        nav = tk.Frame(header, bg=PANEL)
+        nav.pack(side="left", fill="both", expand=True)
+        self.nav_items = ["运行总览", "后台任务", "飞书工具", "设置"]
+        self.nav_buttons: dict[str, tk.Frame] = {}
         for item in self.nav_items:
-            self.nav_list.insert("end", item)
-        self.nav_list.pack(fill="both", expand=True, padx=8, pady=(0, 12))
-        self.nav_list.bind("<<ListboxSelect>>", self._on_navigation)
+            slot = tk.Frame(nav, bg=PANEL, width=128)
+            slot.pack(side="left", fill="y")
+            slot.pack_propagate(False)
+            button = tk.Button(slot, text=item, command=lambda name=item: self._show_page(name), bg=PANEL, fg=TEXT, activebackground=PANEL, activeforeground=ACCENT, relief="flat", borderwidth=0, font=("Microsoft YaHei UI", 10), cursor="hand2")
+            button.pack(fill="both", expand=True, pady=(12, 4))
+            underline = tk.Frame(slot, bg=PANEL, height=2)
+            underline.pack(fill="x")
+            self.nav_buttons[item] = (slot, button, underline)
 
-        content = tk.Frame(body, bg="#ffffff")
-        body.add(content, stretch="always")
-        self.content = content
+        safe = tk.Label(header, text="● 旁路管理", bg=PANEL, fg=SUCCESS, font=("Microsoft YaHei UI", 9))
+        safe.pack(side="right", padx=24)
 
-        status = tk.Label(self, textvariable=self.status_var, anchor="w", bg="#e8eef8", fg="#34445f", padx=14, pady=7, font=("Microsoft YaHei UI", 9))
+        separator = tk.Frame(self, bg=BORDER, height=1)
+        separator.pack(fill="x")
+        self.content = tk.Frame(self, bg=BG)
+        self.content.pack(fill="both", expand=True)
+
+        status = tk.Label(self, textvariable=self.status_var, anchor="w", bg="#fafafa", fg=MUTED, padx=18, pady=7, font=("Microsoft YaHei UI", 9), highlightbackground=BORDER, highlightthickness=1)
         status.pack(fill="x")
+        self._select_top_tab("运行总览")
 
     def _clear_content(self) -> None:
         for child in self.content.winfo_children():
             child.destroy()
 
-    def _on_navigation(self, _event=None) -> None:
-        selection = self.nav_list.curselection()
-        if not selection:
-            return
-        item = self.nav_items[selection[0]]
+    def _select_top_tab(self, selected: str) -> None:
+        self.current_page = selected
+        for item, (_slot, button, underline) in self.nav_buttons.items():
+            button.configure(fg=ACCENT if item == selected else TEXT)
+            underline.configure(bg=ACCENT if item == selected else PANEL)
+
+    def _show_page(self, item: str) -> None:
+        self._select_top_tab(item)
         if item == "运行总览":
             self.show_overview()
-        elif item == "后台任务与日志":
+        elif item == "后台任务":
             self.show_tasks()
-        elif item == "后台电脑节点":
-            self.show_worker_nodes()
-        elif item == "飞书审批实例":
-            self.show_approval_instances()
-        else:
-            self.show_settings(item)
+        elif item == "飞书工具":
+            self.show_feishu_tools()
+        elif item == "设置":
+            self.show_settings(self.current_category)
+
+    def _page_heading(self, title: str, intro: str) -> None:
+        ttk.Label(self.content, text=title, style="Section.TLabel").pack(anchor="w", padx=28, pady=(22, 5))
+        tk.Label(self.content, text=intro, bg=BG, fg=MUTED, justify="left", wraplength=1040, font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=28, pady=(0, 14))
 
     def show_overview(self) -> None:
         self._clear_content()
-        title = ttk.Label(self.content, text="运行总览", style="Section.TLabel")
-        title.pack(anchor="w", padx=22, pady=(20, 6))
-        intro = tk.Label(self.content, text="这里显示当前代码、Git、本地端口和计划任务的实际状态。Running 只代表进程存在，最终结果仍需结合日志与业务读回判断。", bg="#ffffff", fg="#5d6b82", justify="left", wraplength=920)
-        intro.pack(anchor="w", padx=22, pady=(0, 14))
-        self.overview_frame = tk.Frame(self.content, bg="#ffffff")
+        self._page_heading("运行总览", "只读检查本机代码、端口和计划任务。打开控制台和刷新状态不会停止、重启或重新安装任何服务。")
+        notice = tk.Frame(self.content, bg="#f0f8ee", highlightbackground="#c9e4c5", highlightthickness=1)
+        notice.pack(fill="x", padx=28, pady=(0, 12))
+        tk.Label(notice, text="旁路管理已启用", bg="#f0f8ee", fg=SUCCESS, font=("Microsoft YaHei UI", 10, "bold")).pack(anchor="w", padx=15, pady=(10, 2))
+        tk.Label(notice, text="配置保存后仅记录变更，不会自动重启网页、Tunnel、Worker 或缓存任务。", bg="#f0f8ee", fg="#3f5f3f", font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=15, pady=(0, 10))
+        self.overview_frame = tk.Frame(self.content, bg=BG)
         self.overview_frame.pack(fill="both", expand=True, padx=22)
-        ttk.Button(self.content, text="刷新实际状态", command=self._refresh_overview).pack(anchor="e", padx=22, pady=14)
+        ttk.Button(self.content, text="刷新实际状态", command=self._refresh_overview).pack(anchor="e", padx=28, pady=14)
         self._refresh_overview()
 
     def _refresh_overview(self) -> None:
@@ -137,46 +207,105 @@ class ControlCenter(tk.Tk):
             ("本地 Web", f"{web['address']}:{web['port']}", "正在监听" if web["listening"] else "未监听"),
         ]
         for index, (label, value, note) in enumerate(rows):
-            card = tk.Frame(self.overview_frame, bg="#f6f9fe", highlightbackground="#dce5f3", highlightthickness=1)
+            card = tk.Frame(self.overview_frame, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)
             card.grid(row=index // 2, column=index % 2, sticky="nsew", padx=6, pady=6)
-            tk.Label(card, text=label, bg="#f6f9fe", fg="#607089", font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=16, pady=(12, 2))
-            tk.Label(card, text=value, bg="#f6f9fe", fg="#102a56", font=("Microsoft YaHei UI", 12, "bold"), wraplength=410, justify="left").pack(anchor="w", padx=16)
-            tk.Label(card, text=note, bg="#f6f9fe", fg="#65758c", font=("Microsoft YaHei UI", 8)).pack(anchor="w", padx=16, pady=(4, 12))
+            tk.Label(card, text=label, bg=PANEL, fg=MUTED, font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=16, pady=(14, 3))
+            value_size = 10 if label == "Git 远端" else 12
+            tk.Label(card, text=value, bg=PANEL, fg=TEXT, font=("Microsoft YaHei UI", value_size, "bold"), wraplength=510, justify="left").pack(anchor="w", padx=16)
+            tk.Label(card, text=note, bg=PANEL, fg=MUTED, font=("Microsoft YaHei UI", 8)).pack(anchor="w", padx=16, pady=(5, 14))
         self.overview_frame.columnconfigure(0, weight=1)
         self.overview_frame.columnconfigure(1, weight=1)
         self.status_var.set("实际状态已刷新")
 
     def show_settings(self, category: str) -> None:
         self._clear_content()
-        ttk.Label(self.content, text=category, style="Section.TLabel").pack(anchor="w", padx=22, pady=(20, 10))
-        pane = tk.PanedWindow(self.content, orient="horizontal", sashwidth=1, bg="#dce5f3")
-        pane.pack(fill="both", expand=True, padx=22, pady=(0, 18))
-        left = tk.Frame(pane, bg="#ffffff")
-        right = tk.Frame(pane, bg="#f8faff", width=420)
-        pane.add(left, stretch="always")
-        pane.add(right, minsize=380)
+        self.current_category = category
+        shell = tk.Frame(self.content, bg=BG)
+        shell.pack(fill="both", expand=True, padx=22, pady=(18, 16))
+        main = tk.Frame(shell, bg=BG)
+        main.pack(side="left", fill="both", expand=True)
+        rail = tk.Frame(shell, bg=PANEL, width=250, highlightbackground=BORDER, highlightthickness=1)
+        rail.pack(side="right", fill="y", padx=(18, 0))
+        rail.pack_propagate(False)
 
-        tree = ttk.Treeview(left, columns=("value", "source", "impact"), show="headings", selectmode="browse")
-        tree.heading("value", text="配置项 / 当前值")
-        tree.heading("source", text="保存来源")
-        tree.heading("impact", text="修改后生效范围")
-        tree.column("value", width=310)
-        tree.column("source", width=180)
-        tree.column("impact", width=210)
-        tree.pack(fill="both", expand=True)
-        self.settings_tree = tree
-        self.detail_frame = right
+        heading = tk.Frame(main, bg=BG)
+        heading.pack(fill="x", padx=6)
+        ttk.Label(heading, text=category, style="Section.TLabel").pack(side="left")
+        count = sum(1 for item in SETTINGS if item.category == category)
+        tk.Label(heading, text=f"{count} 项", bg=BG, fg=MUTED, font=("Microsoft YaHei UI", 9)).pack(side="left", padx=9, pady=(4, 0))
+        if any(item.sensitive for item in SETTINGS if item.category == category):
+            ttk.Button(heading, text="立即锁定敏感项" if self.unlocked else "解锁敏感项", command=self._lock if self.unlocked else self._unlock).pack(side="right")
+        tk.Label(main, text="每项均显示本机保存位置、平台修改入口和生效范围。保存配置不会自动中断正在运行的应用。", bg=BG, fg=MUTED, justify="left", font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=6, pady=(5, 12))
+
+        scroller = ScrollableFrame(main)
+        scroller.pack(fill="both", expand=True)
+        self.setting_vars: dict[str, tk.StringVar] = {}
         for spec in SETTINGS:
-            if spec.category != category:
-                continue
-            value = read_setting(spec)
-            source_text = configuration_location(spec)[0]
-            tree.insert("", "end", iid=spec.key, values=(f"{spec.label}\n{_display_value(spec, value, self.unlocked)}", source_text, spec.restart_scope))
-        tree.bind("<<TreeviewSelect>>", self._on_setting_selected)
-        children = tree.get_children()
-        if children:
-            tree.selection_set(children[0])
-            self._render_setting_detail(SETTINGS_BY_KEY[children[0]])
+            if spec.category == category:
+                self._setting_card(scroller.inner, spec)
+
+        tk.Label(rail, text="设置分类", bg=PANEL, fg=MUTED, font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=18, pady=(18, 10))
+        for index, item in enumerate(CATEGORIES, start=1):
+            selected = item == category
+            row = tk.Frame(rail, bg=ACCENT_SOFT if selected else PANEL, height=43, cursor="hand2")
+            row.pack(fill="x", padx=8, pady=1)
+            row.pack_propagate(False)
+            number = tk.Label(row, text=str(index), width=3, bg=ACCENT_SOFT if selected else PANEL, fg=ACCENT if selected else "#999999", font=("Segoe UI", 9, "bold" if selected else "normal"))
+            number.pack(side="left", padx=(6, 0))
+            label = tk.Label(row, text=item, anchor="w", bg=ACCENT_SOFT if selected else PANEL, fg=ACCENT if selected else TEXT, font=("Microsoft YaHei UI", 9, "bold" if selected else "normal"))
+            label.pack(side="left", fill="both", expand=True)
+            for widget in (row, number, label):
+                widget.bind("<Button-1>", lambda _event, name=item: self.show_settings(name))
+        tk.Label(rail, text="配置仅在明确点击保存后写入。\n需重启的项目会单独提示。", bg=PANEL, fg=MUTED, justify="left", wraplength=200, font=("Microsoft YaHei UI", 8)).pack(side="bottom", anchor="w", padx=18, pady=18)
+
+    def _setting_card(self, parent, spec) -> None:
+        local, external = configuration_location(spec)
+        value = read_setting(spec)
+        card = tk.Frame(parent, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)
+        card.pack(fill="x", padx=6, pady=(0, 10))
+
+        top = tk.Frame(card, bg=PANEL)
+        top.pack(fill="x", padx=16, pady=(14, 8))
+        copy = tk.Frame(top, bg=PANEL)
+        copy.pack(side="left", fill="x", expand=True)
+        tk.Label(copy, text=spec.label, bg=PANEL, fg=TEXT, font=("Microsoft YaHei UI", 10, "bold")).pack(anchor="w")
+        tk.Label(copy, text=spec.description, bg=PANEL, fg=MUTED, justify="left", wraplength=480, font=("Microsoft YaHei UI", 8)).pack(anchor="w", pady=(3, 0))
+
+        value_var = tk.StringVar(value=_display_value(spec, value, self.unlocked))
+        self.setting_vars[spec.key] = value_var
+        editor = tk.Frame(top, bg=PANEL)
+        editor.pack(side="right", padx=(18, 0))
+        if spec.value_type == "bool":
+            field = ttk.Combobox(editor, textvariable=value_var, values=("true", "false"), state="readonly", width=24)
+        else:
+            field = ttk.Entry(editor, textvariable=value_var, show="•" if (spec.sensitive and not self.unlocked) else "", width=26)
+        field.pack(side="left")
+        if spec.sensitive and not self.unlocked:
+            field.configure(state="disabled")
+        ttk.Button(editor, text="保存", style="Accent.TButton", command=lambda item=spec, variable=value_var: self._save_setting(item, variable)).pack(side="right", padx=(7, 0))
+
+        meta = tk.Frame(card, bg="#fbfbfb", highlightbackground="#eeeeee", highlightthickness=1)
+        meta.pack(fill="x")
+        text = f"本机：{local}\n入口：{external}\n生效：{spec.restart_scope}"
+        tk.Label(meta, text=text, bg="#fbfbfb", fg=MUTED, justify="left", wraplength=700, font=("Microsoft YaHei UI", 8)).pack(side="left", fill="x", expand=True, padx=16, pady=10)
+        actions = tk.Frame(meta, bg="#fbfbfb")
+        actions.pack(side="right", padx=12)
+        ttk.Button(actions, text="打开本机位置", command=lambda item=spec: self._open_local(item)).pack(side="left")
+        ttk.Button(actions, text="打开平台入口", command=lambda item=spec: self._open_external(item)).pack(side="left", padx=(6, 0))
+
+    def _save_setting(self, spec, variable: tk.StringVar) -> None:
+        self.current_spec = spec
+        if spec.sensitive and not self.unlocked:
+            self._unlock()
+            return
+        try:
+            write_setting(spec, variable.get())
+        except Exception as exc:
+            messagebox.showerror("保存失败", str(exc), parent=self)
+            return
+        self.status_var.set(f"已保存：{spec.label}；未自动重启任何服务；备份位于 work/control_center/backups")
+        messagebox.showinfo("保存成功", f"{spec.label} 已保存。\n\n没有停止或重启正在运行的应用。\n需要时请在后台任务页手动执行：{spec.restart_scope}", parent=self)
+        self.show_settings(spec.category)
 
     def _on_setting_selected(self, _event=None) -> None:
         selected = self.settings_tree.selection()
@@ -226,8 +355,14 @@ class ControlCenter(tk.Tk):
                 messagebox.showerror("解锁失败", "密码不正确。", parent=self)
                 return
             self.unlocked = True
-        if self.current_spec:
-            self._render_setting_detail(self.current_spec)
+        if self.current_page == "设置":
+            self.show_settings(self.current_spec.category if self.current_spec else self.current_category)
+
+    def _lock(self) -> None:
+        self.unlocked = False
+        self.status_var.set("敏感配置已重新锁定")
+        if self.current_page == "设置":
+            self.show_settings(self.current_category)
 
     def _save_current(self) -> None:
         spec = self.current_spec
@@ -270,16 +405,17 @@ class ControlCenter(tk.Tk):
 
     def show_tasks(self) -> None:
         self._clear_content()
-        ttk.Label(self.content, text="后台任务与日志", style="Section.TLabel").pack(anchor="w", padx=22, pady=(20, 6))
-        tk.Label(self.content, text="任务控制只允许操作项目清单内的固定任务。停止或重启前会再次确认。", bg="#ffffff", fg="#5d6b82").pack(anchor="w", padx=22, pady=(0, 10))
-        tree = ttk.Treeview(self.content, columns=("name", "state", "result", "next"), show="headings", selectmode="browse")
+        self._page_heading("后台任务", "查看计划任务和日志不会干扰服务。只有你明确点击启动、停止、重启或同步后才会执行操作。")
+        tree_shell = tk.Frame(self.content, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)
+        tree_shell.pack(fill="both", expand=True, padx=28)
+        tree = ttk.Treeview(tree_shell, columns=("name", "state", "result", "next"), show="headings", selectmode="browse")
         for key, title, width in (("name", "任务", 310), ("state", "状态", 120), ("result", "最近结果", 140), ("next", "下次运行", 220)):
             tree.heading(key, text=title)
             tree.column(key, width=width)
-        tree.pack(fill="both", expand=True, padx=22)
+        tree.pack(fill="both", expand=True)
         self.task_tree = tree
-        controls = tk.Frame(self.content, bg="#ffffff")
-        controls.pack(fill="x", padx=22, pady=14)
+        controls = tk.Frame(self.content, bg=BG)
+        controls.pack(fill="x", padx=28, pady=14)
         for action, label in (("start", "启动"), ("run", "立即运行"), ("restart", "重启"), ("stop", "停止")):
             ttk.Button(controls, text=label, command=lambda a=action: self._task_action(a)).pack(side="left", padx=(0, 7))
         ttk.Button(controls, text="同步所选任务配置", command=self._synchronize_task).pack(side="left", padx=10)
@@ -319,7 +455,7 @@ class ControlCenter(tk.Tk):
         task = self._selected_task()
         if task is None:
             return
-        if action in {"stop", "restart"} and not messagebox.askyesno("确认任务操作", f"确定要{ '停止' if action == 'stop' else '重启' }“{task.label}”吗？", parent=self):
+        if action in {"stop", "restart"} and not messagebox.askyesno("高风险操作确认", f"该操作会短暂中断对应服务。\n\n确定要{ '停止' if action == 'stop' else '重启' }“{task.label}”吗？", parent=self):
             return
         try:
             control_task(task, action)
@@ -341,19 +477,31 @@ class ControlCenter(tk.Tk):
         text.insert("1.0", tail_log(task))
         text.configure(state="disabled")
 
+    def show_feishu_tools(self) -> None:
+        self.show_worker_nodes()
+
+    def _feishu_switcher(self, active: str) -> None:
+        switcher = tk.Frame(self.content, bg=BG)
+        switcher.pack(fill="x", padx=28, pady=(18, 0))
+        for label, command in (("后台电脑节点", self.show_worker_nodes), ("审批实例", self.show_approval_instances)):
+            selected = label == active
+            tk.Button(switcher, text=label, command=command, bg=ACCENT if selected else PANEL, fg="#ffffff" if selected else TEXT, activebackground=ACCENT if selected else "#f0f0f0", activeforeground="#ffffff" if selected else TEXT, relief="flat", borderwidth=1, highlightbackground=BORDER, font=("Microsoft YaHei UI", 9), padx=18, pady=7, cursor="hand2").pack(side="left", padx=(0, 1))
+
     def show_worker_nodes(self) -> None:
         self._clear_content()
-        ttk.Label(self.content, text="后台电脑节点", style="Section.TLabel").pack(anchor="w", padx=22, pady=(20, 6))
-        tk.Label(self.content, text="实时读取飞书“后台任务节点列表”。可调整节点优先级和启用状态；电脑名称、心跳、版本和运行状态由 Worker 自动回写。", bg="#ffffff", fg="#5d6b82").pack(anchor="w", padx=22, pady=(0, 10))
-        tree = ttk.Treeview(self.content, columns=("host", "node", "priority", "enabled", "status", "version", "heartbeat"), show="headings", selectmode="browse")
+        self._feishu_switcher("后台电脑节点")
+        self._page_heading("后台电脑节点", "实时读取飞书“后台任务节点列表”。刷新是只读操作；编辑时只更新优先级和启用状态。")
+        tree_shell = tk.Frame(self.content, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)
+        tree_shell.pack(fill="both", expand=True, padx=28)
+        tree = ttk.Treeview(tree_shell, columns=("host", "node", "priority", "enabled", "status", "version", "heartbeat"), show="headings", selectmode="browse")
         columns = (("host", "电脑", 150), ("node", "节点标识", 220), ("priority", "优先级", 75), ("enabled", "启用", 65), ("status", "状态", 90), ("version", "版本", 90), ("heartbeat", "最后心跳", 180))
         for key, title, width in columns:
             tree.heading(key, text=title)
             tree.column(key, width=width)
-        tree.pack(fill="both", expand=True, padx=22)
+        tree.pack(fill="both", expand=True)
         self.node_tree = tree
-        controls = tk.Frame(self.content, bg="#ffffff")
-        controls.pack(fill="x", padx=22, pady=14)
+        controls = tk.Frame(self.content, bg=BG)
+        controls.pack(fill="x", padx=28, pady=14)
         ttk.Button(controls, text="编辑优先级与启用状态", command=self._edit_worker_node).pack(side="left")
         ttk.Button(controls, text="刷新飞书实时数据", command=self._refresh_worker_nodes).pack(side="right")
         self._refresh_worker_nodes()
@@ -406,15 +554,17 @@ class ControlCenter(tk.Tk):
 
     def show_approval_instances(self) -> None:
         self._clear_content()
-        ttk.Label(self.content, text="飞书审批实例", style="Section.TLabel").pack(anchor="w", padx=22, pady=(20, 6))
-        tk.Label(self.content, text="审批实例 Code 是每次业务运行产生的记录，这里从“物料申请单”实时查询；固定审批定义 Code 请在“审批与通知”配置页修改。", bg="#ffffff", fg="#5d6b82").pack(anchor="w", padx=22, pady=(0, 10))
-        tree = ttk.Treeview(self.content, columns=("request", "instance", "status", "requester", "time"), show="headings")
+        self._feishu_switcher("审批实例")
+        self._page_heading("飞书审批实例", "从“物料申请单”只读查询审批实例；固定审批定义 Code 请在设置页修改。")
+        tree_shell = tk.Frame(self.content, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)
+        tree_shell.pack(fill="both", expand=True, padx=28)
+        tree = ttk.Treeview(tree_shell, columns=("request", "instance", "status", "requester", "time"), show="headings")
         for key, title, width in (("request", "申请单号", 150), ("instance", "审批实例 Code", 320), ("status", "审批状态", 110), ("requester", "申请人", 120), ("time", "提交时间", 180)):
             tree.heading(key, text=title)
             tree.column(key, width=width)
-        tree.pack(fill="both", expand=True, padx=22)
+        tree.pack(fill="both", expand=True)
         self.approval_tree = tree
-        ttk.Button(self.content, text="刷新飞书审批实例", command=self._refresh_approval_instances).pack(anchor="e", padx=22, pady=14)
+        ttk.Button(self.content, text="刷新飞书审批实例", command=self._refresh_approval_instances).pack(anchor="e", padx=28, pady=14)
         self._refresh_approval_instances()
 
     def _refresh_approval_instances(self) -> None:

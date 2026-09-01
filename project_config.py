@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import threading
 from pathlib import Path
 from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(os.environ.get("PUDU_PROJECT_ROOT") or (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent))
 PROJECT_CONFIG_PATH = PROJECT_ROOT / "config" / "project_config.json"
 _LOCK = threading.RLock()
 _CACHE: dict[str, Any] = {}

@@ -3,8 +3,20 @@ param()
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
+$PackagedApp = Join-Path $ProjectRoot "PUDU-Control-Center.exe"
+$PackagedVersionFile = Join-Path $ProjectRoot "PUDU-Control-Center.version"
 $PythonwPath = Join-Path $ProjectRoot ".venv\Scripts\pythonw.exe"
 $PythonPath = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+
+if ((Test-Path -LiteralPath $PackagedApp) -and (Test-Path -LiteralPath $PackagedVersionFile)) {
+    $SourceVersion = (Select-String -LiteralPath (Join-Path $ProjectRoot "app.py") -Pattern '^APP_VERSION\s*=\s*["'']([^"'']+)' | Select-Object -First 1).Matches.Groups[1].Value
+    $PackagedVersion = (Get-Content -LiteralPath $PackagedVersionFile -Raw).Trim()
+}
+
+if ((Test-Path -LiteralPath $PackagedApp) -and ($PackagedVersion -eq $SourceVersion)) {
+    Start-Process -FilePath $PackagedApp -WorkingDirectory $ProjectRoot
+    return
+}
 
 if (-not (Test-Path -LiteralPath $PythonwPath)) {
     if (Test-Path -LiteralPath $PythonPath) {

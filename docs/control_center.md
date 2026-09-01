@@ -4,6 +4,16 @@
 
 ## 启动
 
+下载或克隆源码后，可直接双击项目根目录的 `PUDU-Control-Center.exe`。这是便携式 Windows 应用，不要求先启动 Streamlit，也不会在打开时停止、重启或重新安装现有网页、Tunnel、Worker 或缓存任务。
+
+如果需要从源码重新生成应用：
+
+```powershell
+.\scripts\build_control_center_app.ps1
+```
+
+打包脚本会读取 `app.py` 中的 `APP_VERSION`，同步写入 EXE 元数据和 `PUDU-Control-Center.version`。现有启动脚本只会优先打开与源码版本一致的 EXE，避免项目升级后误开旧控制台；每次正式版本发布都应重新运行打包脚本并提交新的 EXE 与版本标记。
+
 运行：
 
 ```powershell
@@ -27,7 +37,7 @@
 
 ## 本机与云端的边界
 
-本机控制台不会静默覆盖云端 Secrets。修改 `.streamlit/secrets.toml` 后，相关本地 Runner 可通过“同步所选任务配置”复制新值并重装任务；Streamlit Cloud、GitHub Actions、飞书开放平台和 Cloudflare Dashboard 中的同名值仍需在每条配置显示的平台入口同步。这样可避免本机配置误覆盖生产环境。
+本机控制台不会静默覆盖云端 Secrets，也不会因保存配置而自动重启任何服务。修改 `.streamlit/secrets.toml` 后，相关本地 Runner 可在管理员明确确认后通过“同步所选任务配置”复制新值并重装任务；Streamlit Cloud、GitHub Actions、飞书开放平台和 Cloudflare Dashboard 中的同名值仍需在每条配置显示的平台入口同步。这样可避免本机配置误覆盖生产环境。
 
 ## 审批定义与审批实例
 
