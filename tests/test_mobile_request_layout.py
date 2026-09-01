@@ -54,6 +54,16 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('key=f"request_model_line_grid_', SOURCE)
         self.assertIn('for name, options in visible_groups:', SOURCE)
 
+    def test_phone_specification_keeps_models_scrollable_and_actions_fixed(self) -> None:
+        self.assertIn('key=f"request_spec_model_scroll_', SOURCE)
+        self.assertIn('key=f"request_spec_fixed_', SOURCE)
+        self.assertIn('max-height: 28dvh !important;', SOURCE)
+        self.assertIn('position: sticky !important;', SOURCE)
+        self.assertIn(
+            'grid-template-columns: repeat(2, minmax(0, 1fr)) !important;',
+            SOURCE,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

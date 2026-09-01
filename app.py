@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.5"
+APP_VERSION = "V1.8.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2676,7 +2676,7 @@ def inject_global_styles() -> None:
                 top: max(0.35rem, env(safe-area-inset-top));
                 left: 0.4rem;
                 z-index: 1000000 !important;
-                width: 10.4rem !important;
+                width: 15.4rem !important;
                 margin: 0 !important;
                 padding: 0.18rem !important;
                 border: 1px solid rgba(20, 79, 113, 0.18);
@@ -2687,8 +2687,8 @@ def inject_global_styles() -> None:
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="stHorizontalBlock"] {
                 display: grid !important;
-                grid-template-columns: 3.25rem repeat(3, 1.75rem) !important;
-                gap: 0.18rem !important;
+                grid-template-columns: 4.4rem 2.2rem 3.6rem 3.6rem !important;
+                gap: 0.28rem !important;
                 align-items: center !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar [data-testid="column"] {
@@ -2714,6 +2714,8 @@ def inject_global_styles() -> None:
                 border: 0 !important;
                 font-size: 0 !important;
                 box-shadow: none !important;
+                width: 100% !important;
+                overflow: hidden !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar button p {
                 display: none !important;
@@ -2724,6 +2726,18 @@ def inject_global_styles() -> None:
             .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
             [data-testid="stPopover"] > button [data-testid="stIconMaterial"]:last-child {
                 display: none !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
+            [data-testid="stPopover"] > button > div > span:last-child,
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
+            [data-testid="stPopover"] > button > span:last-child {
+                display: none !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_mobile_toolbar
+            [data-testid="stPopover"] > button > div {
+                width: 100% !important;
+                justify-content: center !important;
+                gap: 0 !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-mobile-home-popover-marker),
             [data-testid="stPopoverBody"]:has(.pudu-mobile-navigation-popover-marker) {
@@ -2874,8 +2888,8 @@ def inject_global_styles() -> None:
                 width: min(20rem, calc(100vw - 1.5rem)) !important;
                 min-width: 0 !important;
                 max-width: calc(100vw - 1.1rem) !important;
-                height: min(68dvh, 31rem) !important;
-                max-height: 68dvh !important;
+                height: min(84dvh, 42rem) !important;
+                max-height: 84dvh !important;
                 border-radius: 14px !important;
                 overflow: hidden !important;
                 transform: translate(-50%, -50%) !important;
@@ -2887,7 +2901,7 @@ def inject_global_styles() -> None:
                 height: 100% !important;
                 min-height: 0 !important;
                 padding: 0.42rem !important;
-                overflow-y: auto !important;
+                overflow: hidden !important;
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin;
                 background: #ffffff !important;
@@ -2925,7 +2939,7 @@ def inject_global_styles() -> None:
             [data-testid="stPopoverBody"] [class*="st-key-request_cart_models_v2_"]
             [data-testid="stButtonGroup"] > div:last-child {
                 display: grid !important;
-                grid-template-columns: minmax(0, 1fr) !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                 gap: 0.16rem !important;
             }
             [data-testid="stPopoverBody"] [class*="st-key-request_cart_models_v2_"]
@@ -2943,6 +2957,49 @@ def inject_global_styles() -> None:
                 padding: 0.1rem 0.18rem !important;
                 font-size: 0.54rem !important;
                 line-height: 1.15 !important;
+            }
+            [class*="st-key-request_spec_model_scroll_"] {
+                min-height: 0 !important;
+                height: 28dvh !important;
+                max-height: 28dvh !important;
+                overflow-y: auto !important;
+                overscroll-behavior: contain !important;
+                scrollbar-width: thin;
+                padding-right: 0.12rem !important;
+            }
+            [class*="st-key-request_spec_fixed_"] {
+                position: sticky !important;
+                bottom: 0 !important;
+                z-index: 4 !important;
+                flex: 0 0 auto !important;
+                gap: 0.18rem !important;
+                margin-top: 0.18rem !important;
+                padding: 0.34rem 0.08rem 0.05rem !important;
+                border-top: 1px solid rgba(20, 79, 113, 0.16) !important;
+                background: #ffffff !important;
+                box-shadow: 0 -8px 18px rgba(255, 255, 255, 0.96) !important;
+            }
+            [data-testid="stPopoverBody"] [class*="st-key-request_spec_fixed_"]
+            [data-testid="stButtonGroup"] > div:last-child {
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 0.16rem !important;
+            }
+            [class*="st-key-request_spec_fixed_"] div[data-baseweb="input"],
+            [class*="st-key-request_spec_fixed_"] input,
+            [class*="st-key-request_spec_fixed_"] button {
+                min-height: 26px !important;
+                font-size: 0.6rem !important;
+            }
+            [class*="st-key-request_spec_fixed_"] [data-testid="stHorizontalBlock"] {
+                display: grid !important;
+                grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) !important;
+                gap: 0.24rem !important;
+                align-items: end !important;
+            }
+            [class*="st-key-request_spec_fixed_"] [data-testid="column"] {
+                width: auto !important;
+                min-width: 0 !important;
             }
             .stApp:has(.pudu-request-page-marker) .st-key-request_compact_cart {
                 z-index: 1000003 !important;
@@ -14037,70 +14094,73 @@ def render_request_material_builder(
                                     on_change=mark_request_form_dirty,
                                 )
                         else:
-                            selected_models = render_request_model_selector(
-                                catalog_product,
-                                selection_context,
-                                model_options,
-                                multiple=model_multi,
-                                state_key=model_widget_key,
-                            )
+                            with st.container(key=f"request_spec_model_scroll_{product_state_key}"):
+                                selected_models = render_request_model_selector(
+                                    catalog_product,
+                                    selection_context,
+                                    model_options,
+                                    multiple=model_multi,
+                                    state_key=model_widget_key,
+                                )
                             language_options = request_language_options_for_models(
                                 selection_context,
                                 catalog_product,
                                 selected_models,
                             )
                             ensure_request_language_default(language_widget_key, language_options)
-                            selected_language_values: object = []
-                            if language_options:
-                                language_columns = min(4, max(2, len(language_options)))
-                                with st.container(key=f"request_language_pills_{product_state_key}"):
-                                    st.markdown(
-                                        f'<span class="pudu-language-pills-marker '
-                                        f'pudu-language-columns-{language_columns}"></span>',
-                                        unsafe_allow_html=True,
-                                    )
-                                    selected_language_values = st.pills(
-                                        "语种",
-                                        language_options,
-                                        selection_mode="multi" if language_multi else "single",
-                                        required=not language_multi,
-                                        format_func=request_option_display_label,
-                                        key=language_widget_key,
-                                        on_change=mark_request_form_dirty,
-                                        width="stretch",
-                                    )
-                            selected_languages = (
-                                list(selected_language_values or [])
-                                if language_multi
-                                else [selected_language_values] if selected_language_values else []
-                            )
+                        with st.container(key=f"request_spec_fixed_{product_state_key}"):
+                            if not custom_mode:
+                                selected_language_values: object = []
+                                if language_options:
+                                    language_columns = min(4, max(2, len(language_options)))
+                                    with st.container(key=f"request_language_pills_{product_state_key}"):
+                                        st.markdown(
+                                            f'<span class="pudu-language-pills-marker '
+                                            f'pudu-language-columns-{language_columns}"></span>',
+                                            unsafe_allow_html=True,
+                                        )
+                                        selected_language_values = st.pills(
+                                            "语种",
+                                            language_options,
+                                            selection_mode="multi" if language_multi else "single",
+                                            required=not language_multi,
+                                            format_func=request_option_display_label,
+                                            key=language_widget_key,
+                                            on_change=mark_request_form_dirty,
+                                            width="stretch",
+                                        )
+                                selected_languages = (
+                                    list(selected_language_values or [])
+                                    if language_multi
+                                    else [selected_language_values] if selected_language_values else []
+                                )
 
-                        option_cols = st.columns([0.8, 1.6], gap="small")
-                        quantity = option_cols[0].number_input(
-                            "数量",
-                            min_value=1,
-                            max_value=1_000_000,
-                            value=1,
-                            step=1,
-                            key=f"request_cart_quantity_{product_state_key}",
-                            on_change=mark_request_form_dirty,
-                        )
-                        remark = option_cols[1].text_input(
-                            "备注",
-                            key=f"request_cart_remark_{product_state_key}",
-                            placeholder="可选",
-                            on_change=mark_request_form_dirty,
-                        )
-                        action_clicked = st.button(
-                            "加入采购车",
-                            key=f"request_add_to_cart_{product_state_key}",
-                            type="primary",
-                            icon=":material/add_shopping_cart:",
-                            disabled=(not str(custom_description).strip()) if custom_mode else (
-                                not selected_models or not selected_languages
-                            ),
-                            width="stretch",
-                        )
+                            option_cols = st.columns([0.8, 1.6], gap="small")
+                            quantity = option_cols[0].number_input(
+                                "数量",
+                                min_value=1,
+                                max_value=1_000_000,
+                                value=1,
+                                step=1,
+                                key=f"request_cart_quantity_{product_state_key}",
+                                on_change=mark_request_form_dirty,
+                            )
+                            remark = option_cols[1].text_input(
+                                "备注",
+                                key=f"request_cart_remark_{product_state_key}",
+                                placeholder="可选",
+                                on_change=mark_request_form_dirty,
+                            )
+                            action_clicked = st.button(
+                                "加入采购车",
+                                key=f"request_add_to_cart_{product_state_key}",
+                                type="primary",
+                                icon=":material/add_shopping_cart:",
+                                disabled=(not str(custom_description).strip()) if custom_mode else (
+                                    not selected_models or not selected_languages
+                                ),
+                                width="stretch",
+                            )
                         if action_clicked:
                             selected_lines = (
                                 [build_custom_request_material_line(custom_description, int(quantity), remark)]
