@@ -58,7 +58,9 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('key=f"request_spec_model_scroll_', SOURCE)
         self.assertIn('key=f"request_spec_fixed_', SOURCE)
         self.assertIn('max-height: 28dvh !important;', SOURCE)
-        self.assertIn('position: sticky !important;', SOURCE)
+        self.assertIn('min-height: 6.5rem !important;', SOURCE)
+        self.assertIn('flex: 1 1 0 !important;', SOURCE)
+        self.assertIn('position: relative !important;', SOURCE)
         self.assertIn(
             'grid-template-columns: repeat(2, minmax(0, 1fr)) !important;',
             SOURCE,
@@ -78,6 +80,17 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('box-shadow: none !important;', toolbar_css)
         self.assertIn('[data-testid="stPopoverButton"]', SOURCE)
         self.assertIn('[aria-hidden="true"]', SOURCE)
+
+    def test_phone_business_labels_reserve_real_layout_height(self) -> None:
+        self.assertIn(
+            '[data-testid="stElementContainer"]:has(.pudu-section-heading)',
+            SOURCE,
+        )
+        self.assertIn(
+            '[data-testid="stElementContainer"]:has(.pudu-field-label)',
+            SOURCE,
+        )
+        self.assertIn('min-height: 1.05rem !important;', SOURCE)
 
 
 if __name__ == "__main__":

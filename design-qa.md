@@ -35,3 +35,16 @@
 - Focused-region comparison: form labels, toolbar controls, specification product-line groups, model wrapping, and bottom-cart placement were inspected separately because they are too small to judge reliably in the full view.
 
 final result: passed
+
+## V1.8.9 mobile regression verification
+
+- Source references: `C:/Users/gaohongyuan1/AppData/Roaming/LarkShell/sdk_storage/eb5ca27929f63de7192a073d17f0a140/resources/images/img_v3_02154_95cb697d-5946-4602-a1aa-17ebac11f14g.jpg`, `img_v3_02154_b4ea0ad8-13ee-409b-948b-ca494b110efg.jpg`, and `img_v3_02154_b38fba07-afde-43a1-93c8-2dccfac13f9g.jpg`.
+- Implementation captures: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.8.9-form.png` and `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.8.9-spec.png` at 390 x 720 CSS pixels, device scale factor 1.
+- Combined comparison inputs: `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.8.9-form-comparison.png` and `C:/Users/gaohongyuan1/AppData/Local/Temp/pudu-mobile-v1.8.9-spec-comparison.png`.
+- P1 finding: Streamlit collapsed the heading wrapper to about 10 px and field-label wrappers to about 2-6 px, so their text overflowed across the following control border. Mobile-only wrapper minimum heights and margins now keep every label in normal flow; typography, colors, wording, and desktop sizing remain unchanged.
+- P1 finding: the complex specification window's model selector consumed the available vertical space and the body clipped the add-to-cart action. The window is now a column flex layout: the model list is the only shrinking, scrollable region, while language, quantity, remark, and add-to-cart remain visible in a non-shrinking lower region.
+- Post-fix mobile measurement: specification body y=57.6-662.4; model list y=159.7-263.7 with independent scrolling; fixed controls y=271.0-534.8; add-to-cart y=507.6-534.0 and fully inside the body.
+- Visual inspection: heading and field labels are readable with clear vertical separation; input borders have no label collision; the complex and no-model specification states retain the existing type scale, colors, copy, product imagery, model wrapping, and primary action styling.
+- Desktop guard check at 1440 x 900: catalog remains six columns, the business section remains 1098 px wide, and the desktop heading height remains 35.95 px.
+
+final result: passed

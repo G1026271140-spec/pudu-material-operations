@@ -65,7 +65,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.8.8"
+APP_VERSION = "V1.8.9"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2788,6 +2788,20 @@ def inject_global_styles() -> None:
                 text-shadow: none !important;
                 box-shadow: none !important;
             }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section
+            [data-testid="stElementContainer"]:has(.pudu-section-heading) {
+                min-height: 2rem !important;
+                height: auto !important;
+                margin-bottom: 0.28rem !important;
+                overflow: visible !important;
+            }
+            .stApp:has(.pudu-request-page-marker) .st-key-request_business_section
+            [data-testid="stElementContainer"]:has(.pudu-field-label) {
+                min-height: 1.05rem !important;
+                height: auto !important;
+                margin-bottom: 0.24rem !important;
+                overflow: visible !important;
+            }
             .stApp:has(.pudu-request-page-marker) .pudu-inline-required-hint {
                 display: none !important;
             }
@@ -2900,6 +2914,7 @@ def inject_global_styles() -> None:
                 transform: translate(-50%, -50%) !important;
                 box-shadow: 0 18px 48px rgba(12, 38, 58, 0.28) !important;
                 background: #ffffff !important;
+                z-index: 1000005 !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-mobile-specification-popover-compact) {
                 height: auto !important;
@@ -2907,6 +2922,8 @@ def inject_global_styles() -> None:
                 overflow: visible !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) > div {
+                display: flex !important;
+                flex-direction: column !important;
                 gap: 0.25rem !important;
                 height: 100% !important;
                 min-height: 0 !important;
@@ -2975,9 +2992,10 @@ def inject_global_styles() -> None:
                 line-height: 1.15 !important;
             }
             [class*="st-key-request_spec_model_scroll_"] {
-                min-height: 0 !important;
-                height: 28dvh !important;
+                min-height: 6.5rem !important;
+                height: auto !important;
                 max-height: 28dvh !important;
+                flex: 1 1 0 !important;
                 overflow-y: auto !important;
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin;
@@ -2985,14 +3003,16 @@ def inject_global_styles() -> None:
             }
             [data-testid="stPopoverBody"]:has(.pudu-mobile-specification-popover-compact)
             [class*="st-key-request_spec_model_scroll_"] {
+                min-height: 0 !important;
                 height: auto !important;
                 max-height: none !important;
+                flex: 0 0 auto !important;
                 overflow: visible !important;
                 padding-right: 0 !important;
             }
             [class*="st-key-request_spec_fixed_"] {
-                position: sticky !important;
-                bottom: 0 !important;
+                position: relative !important;
+                bottom: auto !important;
                 z-index: 4 !important;
                 flex: 0 0 auto !important;
                 gap: 0.18rem !important;
