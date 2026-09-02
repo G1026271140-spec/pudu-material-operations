@@ -84,7 +84,7 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertFalse(list(app_test.exception))
         self.assertEqual(
             [item.label for item in app_test.pills],
-            ["印刷物料品类", "周边礼品品类"],
+            ["箱型模板（可选）", "印刷物料品类", "周边礼品品类"],
         )
         self.assertEqual(
             [item.label for item in app_test.number_input[:5]],
@@ -95,8 +95,8 @@ class ShippingPageStateTests(unittest.TestCase):
             ["品类", "体积（自动）", "包材重量（自动）", "净重（自动）"],
         )
 
-        app_test.pills[0].set_value(["print-1"])
-        app_test.pills[1].set_value(["gift-1"])
+        app_test.pills[1].set_value(["print-1"])
+        app_test.pills[2].set_value(["gift-1"])
         app_test.number_input[1].set_value(50)
         app_test.number_input[2].set_value(40)
         app_test.number_input[3].set_value(25)
@@ -108,6 +108,65 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertEqual(app_test.metric[1].value, "0.050 CBM")
         self.assertEqual(app_test.metric[2].value, "1 KG")
         self.assertEqual(app_test.metric[3].value, "14 KG")
+
+    def test_carton_preset_fills_dimensions_and_gross_weight(self) -> None:
+        app_test = AppTest.from_function(
+            render_shipping_carton_page_fixture,
+            default_timeout=10,
+        ).run()
+
+        app_test.pills[0].set_value("中大箱")
+        app_test.run()
+
+        self.assertFalse(list(app_test.exception))
+        self.assertEqual(
+            [item.value for item in app_test.number_input[1:5]],
+            [68.0, 50.0, 52.0, 14.0],
+        )
+        self.assertEqual(app_test.metric[1].value, "0.177 CBM")
+        self.assertEqual(app_test.metric[2].value, "3 KG")
+        self.assertEqual(app_test.metric[3].value, "11 KG")
+
+    def test_manual_carton_edit_clears_selected_preset(self) -> None:
+        app_test = AppTest.from_function(
+            render_shipping_carton_page_fixture,
+            default_timeout=10,
+        ).run()
+
+        app_test.pills[0].set_value("中大箱")
+        app_test.run()
+        app_test.number_input[1].set_value(70.0)
+        app_test.run()
+
+        self.assertFalse(list(app_test.exception))
+        self.assertIsNone(app_test.pills[0].value)
+        self.assertEqual(app_test.number_input[1].value, 70.0)
+        self.assertEqual(
+            [item.value for item in app_test.number_input[2:5]],
+            [50.0, 52.0, 14.0],
+        )
+
+    def test_carton_presets_use_requested_dimensions_and_weight_range(self) -> None:
+        expected_dimensions = {
+            "单页箱": (44, 30, 13),
+            "手册箱": (44, 32, 20),
+            "易拉宝箱": (80, 30, 35),
+            "笔记本礼盒箱": (73, 26, 40),
+            "小箱": (43, 27, 17),
+            "中小箱": (40, 35, 29),
+            "中大箱": (68, 50, 52),
+            "大箱": (63, 50, 66),
+        }
+
+        self.assertEqual(set(shipping_page.CARTON_PRESETS), set(expected_dimensions))
+        for name, dimensions in expected_dimensions.items():
+            preset = shipping_page.CARTON_PRESETS[name]
+            self.assertEqual(
+                (preset["length"], preset["width"], preset["height"]),
+                dimensions,
+            )
+            self.assertGreaterEqual(preset["gross_weight"], 6)
+            self.assertLessEqual(preset["gross_weight"], 16)
 
     def test_shipping_page_uses_compact_two_carton_layout(self) -> None:
         source = open(shipping_page.__file__, encoding="utf-8").read()

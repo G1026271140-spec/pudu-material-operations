@@ -30,6 +30,16 @@ CARTON_FIELD_DEFAULTS: dict[str, object] = {
     "width": 0.0,
     "height": 0.0,
 }
+CARTON_PRESETS: dict[str, dict[str, float]] = {
+    "单页箱": {"length": 44.0, "width": 30.0, "height": 13.0, "gross_weight": 6.0},
+    "手册箱": {"length": 44.0, "width": 32.0, "height": 20.0, "gross_weight": 7.0},
+    "易拉宝箱": {"length": 80.0, "width": 30.0, "height": 35.0, "gross_weight": 11.0},
+    "笔记本礼盒箱": {"length": 73.0, "width": 26.0, "height": 40.0, "gross_weight": 10.0},
+    "小箱": {"length": 43.0, "width": 27.0, "height": 17.0, "gross_weight": 6.5},
+    "中小箱": {"length": 40.0, "width": 35.0, "height": 29.0, "gross_weight": 8.0},
+    "中大箱": {"length": 68.0, "width": 50.0, "height": 52.0, "gross_weight": 14.0},
+    "大箱": {"length": 63.0, "width": 50.0, "height": 66.0, "gross_weight": 16.0},
+}
 
 
 def _render_shipping_page_styles() -> None:
@@ -188,6 +198,40 @@ def initialize_shipping_carton_state(
             else default_value
         )
         session_state.setdefault(target_key, source_value)
+    preset_key = f"shipping_carton_preset_{carton_no}"
+    source_preset_key = (
+        f"shipping_carton_preset_{source_carton_no}" if source_carton_no else ""
+    )
+    session_state.setdefault(
+        preset_key,
+        session_state.get(source_preset_key) if source_preset_key else None,
+    )
+
+
+def shipping_carton_preset_label(preset_name: str) -> str:
+    preset = CARTON_PRESETS[preset_name]
+    return (
+        f"{preset_name} · {preset['length']:g}×{preset['width']:g}×"
+        f"{preset['height']:g} CM · {preset['gross_weight']:g} KG"
+    )
+
+
+def apply_shipping_carton_preset(
+    session_state: MutableMapping[str, object],
+    carton_no: int,
+) -> bool:
+    preset_name = str(session_state.get(f"shipping_carton_preset_{carton_no}") or "")
+    preset = CARTON_PRESETS.get(preset_name)
+    if preset is None:
+        return False
+    for suffix in CARTON_FIELD_DEFAULTS:
+        session_state[f"shipping_{suffix}_{carton_no}"] = float(preset[suffix])
+    return True
+
+
+def clear_shipping_carton_preset(carton_no: int) -> None:
+    """Mark a preset carton as manually adjusted after a dimension/weight edit."""
+    st.session_state[f"shipping_carton_preset_{carton_no}"] = None
 
 
 def _carton_categories_key(carton_no: int) -> str:
@@ -468,6 +512,17 @@ def _render_cartons_and_contents(
             title_col.markdown(f"**箱子 {carton_no:02d}**")
             item_count_col.metric("品类", len(selected_before))
 
+            st.pills(
+                "箱型模板（可选）",
+                list(CARTON_PRESETS),
+                selection_mode="single",
+                format_func=shipping_carton_preset_label,
+                key=f"shipping_carton_preset_{carton_no}",
+                on_change=apply_shipping_carton_preset,
+                args=(st.session_state, carton_no),
+                width="stretch",
+            )
+
             dimensions = st.columns(4)
             dimensions[0].markdown(
                 '<span class="pudu-required-control-marker"></span>',
@@ -478,6 +533,8 @@ def _render_cartons_and_contents(
                 min_value=0.0,
                 step=1.0,
                 key=f"shipping_length_{carton_no}",
+                on_change=clear_shipping_carton_preset,
+                args=(carton_no,),
             )
             dimensions[1].markdown(
                 '<span class="pudu-required-control-marker"></span>',
@@ -488,6 +545,8 @@ def _render_cartons_and_contents(
                 min_value=0.0,
                 step=1.0,
                 key=f"shipping_width_{carton_no}",
+                on_change=clear_shipping_carton_preset,
+                args=(carton_no,),
             )
             dimensions[2].markdown(
                 '<span class="pudu-required-control-marker"></span>',
@@ -498,6 +557,8 @@ def _render_cartons_and_contents(
                 min_value=0.0,
                 step=1.0,
                 key=f"shipping_height_{carton_no}",
+                on_change=clear_shipping_carton_preset,
+                args=(carton_no,),
             )
             calculated_cbm = calculate_carton_cbm(length_cm, width_cm, height_cm)
             dimensions[3].metric("体积（自动）", f"{calculated_cbm:.3f} CBM")
@@ -512,6 +573,8 @@ def _render_cartons_and_contents(
                 min_value=0.0,
                 step=0.1,
                 key=f"shipping_gross_weight_{carton_no}",
+                on_change=clear_shipping_carton_preset,
+                args=(carton_no,),
             )
             packaging_weight = estimate_packaging_weight(
                 calculated_cbm,
