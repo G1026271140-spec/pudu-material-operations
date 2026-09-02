@@ -150,9 +150,9 @@ def calculate_net_weight(gross_weight: float, packaging_weight: float) -> float:
 
 
 def _category_label(category: dict[str, object]) -> str:
-    invoice_name = str(category.get("commercial_invoice_name") or "").strip()
+    zh_page_name = str(category.get("zh_page_name") or "").strip()
     category_name = str(category.get("category") or "").strip()
-    return f"{invoice_name or category_name} · {category_name}"
+    return zh_page_name or category_name
 
 
 def _category_options(categories: list[dict]) -> list[dict[str, object]]:
@@ -277,6 +277,38 @@ def shipping_category_pool_options(
         pool_id = pool_by_definition.get(definition, "undefined")
         options[pool_id].append(category_id)
     return options
+
+
+def shipping_category_pool_columns(
+    pool_options: dict[str, list[str]],
+) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    """Balance visible category-definition pools into two stable columns."""
+    visible_pools = [
+        (pool_id, definition)
+        for pool_id, definition in CATEGORY_DEFINITION_POOLS
+        if pool_options.get(pool_id)
+    ]
+    if len(visible_pools) <= 1:
+        return visible_pools, []
+
+    first_pool = visible_pools[0]
+    remaining_pools = visible_pools[1:]
+    best_columns: tuple[list[tuple[str, str]], list[tuple[str, str]]] | None = None
+    best_score: tuple[int, int] | None = None
+    for mask in range(1 << len(remaining_pools)):
+        left = [first_pool]
+        right: list[tuple[str, str]] = []
+        for index, pool in enumerate(remaining_pools):
+            (left if mask & (1 << index) else right).append(pool)
+        if not right:
+            continue
+        left_count = sum(len(pool_options[pool_id]) for pool_id, _ in left)
+        right_count = sum(len(pool_options[pool_id]) for pool_id, _ in right)
+        score = (abs(left_count - right_count), abs(len(left) - len(right)))
+        if best_score is None or score < best_score:
+            best_columns = (left, right)
+            best_score = score
+    return best_columns or (visible_pools, [])
 
 
 def initialize_shipping_carton_category_pool_state(
@@ -605,35 +637,35 @@ def _render_cartons_and_contents(
             )
 
             selected_category_ids: list[str] = []
-            visible_pools = [
-                (pool_id, definition)
-                for pool_id, definition in CATEGORY_DEFINITION_POOLS
-                if category_pool_options.get(pool_id)
-            ]
-            if not visible_pools:
+            category_pool_columns = shipping_category_pool_columns(
+                category_pool_options
+            )
+            if not any(category_pool_columns):
                 st.caption("暂无可选品类")
             else:
-                pool_columns = st.columns(len(visible_pools), gap="small")
-                for pool_column, (pool_id, definition) in zip(
+                pool_columns = st.columns(2, gap="small")
+                for pool_column, assigned_pools in zip(
                     pool_columns,
-                    visible_pools,
+                    category_pool_columns,
                 ):
-                    options = category_pool_options.get(pool_id, [])
-                    with pool_column.container(border=True):
-                        st.markdown(f"**{definition}**")
-                        st.caption(f"可选 {len(options)} 项")
-                        pool_selection = st.pills(
-                            f"{definition}品类",
-                            options,
-                            selection_mode="multi",
-                            format_func=lambda value, mapping=category_by_id: _category_label(
-                                mapping[value]
-                            ),
-                            key=_carton_category_pool_key(carton_no, pool_id),
-                            label_visibility="collapsed",
-                            width="stretch",
-                        )
-                        selected_category_ids.extend(pool_selection or [])
+                    with pool_column:
+                        for pool_id, definition in assigned_pools:
+                            options = category_pool_options.get(pool_id, [])
+                            with st.container(border=True):
+                                st.markdown(f"**{definition}**")
+                                st.caption(f"可选 {len(options)} 项")
+                                pool_selection = st.pills(
+                                    f"{definition}品类",
+                                    options,
+                                    selection_mode="multi",
+                                    format_func=lambda value, mapping=category_by_id: _category_label(
+                                        mapping[value]
+                                    ),
+                                    key=_carton_category_pool_key(carton_no, pool_id),
+                                    label_visibility="collapsed",
+                                    width="stretch",
+                                )
+                                selected_category_ids.extend(pool_selection or [])
             st.session_state[_carton_categories_key(carton_no)] = selected_category_ids
             if not selected_category_ids:
                 st.info("这个箱子还没有添加物料。")

@@ -84,7 +84,23 @@ class ShippingPageStateTests(unittest.TestCase):
             "4911101000",
         )
 
-    def test_carton_page_renders_two_pools_and_automatic_metrics(self) -> None:
+    def test_shipping_category_pool_label_uses_chinese_page_name_only(self) -> None:
+        self.assertEqual(
+            shipping_page._category_label(
+                {
+                    "zh_page_name": "产品单页",
+                    "category": "产品单页(Product Flyer)",
+                    "commercial_invoice_name": "Product Flyer",
+                }
+            ),
+            "产品单页",
+        )
+        self.assertEqual(
+            shipping_page._category_label({"category": "历史物料品类"}),
+            "历史物料品类",
+        )
+
+    def test_carton_page_renders_two_columns_and_automatic_metrics(self) -> None:
         app_test = AppTest.from_function(
             render_shipping_carton_page_fixture,
             default_timeout=10,
@@ -104,8 +120,9 @@ class ShippingPageStateTests(unittest.TestCase):
             ["品类", "体积（自动）", "包材重量（自动）", "净重（自动）"],
         )
 
-        app_test.pills[1].set_value(["print-1"])
-        app_test.pills[2].set_value(["gift-1"])
+        pills_by_label = {item.label: item for item in app_test.pills}
+        pills_by_label["印刷物料品类"].set_value(["print-1"])
+        pills_by_label["周边礼品品类"].set_value(["gift-1"])
         app_test.number_input[1].set_value(50)
         app_test.number_input[2].set_value(40)
         app_test.number_input[3].set_value(25)
@@ -307,6 +324,25 @@ class ShippingPageStateTests(unittest.TestCase):
                 "cultural": ["cultural-1"],
                 "undefined": ["legacy-1"],
             },
+        )
+
+    def test_category_definition_pools_balance_into_two_columns(self) -> None:
+        pool_options = {
+            "print": [f"print-{index}" for index in range(10)],
+            "gift": [f"gift-{index}" for index in range(18)],
+            "cultural": ["cultural-1", "cultural-2"],
+            "undefined": [],
+        }
+
+        self.assertEqual(
+            shipping_page.shipping_category_pool_columns(pool_options),
+            (
+                [
+                    ("print", shipping_page.CATEGORY_DEFINITION_PRINT),
+                    ("cultural", shipping_page.CATEGORY_DEFINITION_CULTURAL),
+                ],
+                [("gift", shipping_page.CATEGORY_DEFINITION_GIFT)],
+            ),
         )
 
     def test_existing_carton_selection_migrates_into_definition_pools(self) -> None:
