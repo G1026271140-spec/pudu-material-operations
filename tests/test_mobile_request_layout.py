@@ -95,6 +95,8 @@ class MobileRequestLayoutTests(unittest.TestCase):
     def test_phone_specification_sections_are_labeled_and_visually_separated(self) -> None:
         self.assertIn('class="pudu-spec-model-heading"', SOURCE)
         self.assertIn('ui_text("型号选择")', SOURCE)
+        self.assertIn('class="pudu-product-model-label"', SOURCE)
+        self.assertIn('ui_text("产品型号")', SOURCE)
         self.assertIn('background: #F3F6FA !important;', SOURCE)
         self.assertIn('background: #EEF8F6 !important;', SOURCE)
         self.assertIn('background: #FFF7ED !important;', SOURCE)
@@ -115,6 +117,14 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('font-size: 0.74rem !important;', desktop_rule)
         self.assertIn('white-space: nowrap !important;', desktop_rule)
         self.assertIn('word-break: keep-all !important;', desktop_rule)
+
+    def test_request_specification_has_quantity_presets_and_compact_custom_fields(self) -> None:
+        self.assertIn('"快捷数量",', SOURCE)
+        self.assertIn('[20, 50, 100, 200]', SOURCE)
+        self.assertIn('"自定义数量",', SOURCE)
+        self.assertIn('st.columns([0.6, 1.0, 0.4]', SOURCE)
+        self.assertIn('apply_request_quantity_preset', SOURCE)
+        self.assertIn('clear_request_quantity_preset', SOURCE)
 
     def test_phone_specification_keeps_add_action_above_short_viewport_chrome(self) -> None:
         self.assertIn('[class*="st-key-request_add_to_cart_"]', SOURCE)

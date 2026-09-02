@@ -337,6 +337,8 @@ EN_DISPLAY_TEXT = {
     "产品型号": "Product Model",
     "语种": "Language",
     "数量": "Quantity",
+    "快捷数量": "Quick Quantity",
+    "自定义数量": "Custom Quantity",
     "备注": "Remarks",
     "序号": "No.",
     "申请数量": "Requested Quantity",
