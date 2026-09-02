@@ -66,7 +66,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.9.10"
+APP_VERSION = "V2.0.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -1380,6 +1380,21 @@ def inject_global_styles() -> None:
             align-items: start !important;
         }
         @media (min-width: 641px) {
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] [data-testid="stPopover"] > button {
+                font-size: 0.74rem !important;
+                white-space: nowrap !important;
+            }
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] [data-testid="stPopover"] > button p,
+            .stApp:has(.pudu-request-page-marker)
+            [class*="st-key-request_product_card_"] [data-testid="stPopover"] > button span {
+                font-size: inherit !important;
+                line-height: 1.1 !important;
+                white-space: nowrap !important;
+                overflow-wrap: normal !important;
+                word-break: keep-all !important;
+            }
             [data-testid="stPopoverBody"] [class*="st-key-request_spec_model_scroll_"]
             [data-testid="stElementContainer"]:has(.pudu-spec-model-heading) {
                 min-height: 1.35rem !important;

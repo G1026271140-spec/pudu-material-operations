@@ -43,7 +43,15 @@ def next_patch_version(version: str) -> str:
     if not match:
         raise ValueError(f"无法识别版本号：{version}")
     major, minor, patch = (int(part) for part in match.groups())
-    return f"V{major}.{minor}.{patch + 1}"
+    if patch >= 9:
+        patch = 0
+        minor += 1
+    else:
+        patch += 1
+    if minor >= 10:
+        minor = 0
+        major += 1
+    return f"V{major}.{minor}.{patch}"
 
 
 def bump_release_version_files(root: Path = ROOT) -> tuple[str, str]:

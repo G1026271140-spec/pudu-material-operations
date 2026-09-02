@@ -13,7 +13,7 @@ from control_center.release import bump_release_version_files
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Increment the application patch version and its exact version test.")
+    parser = argparse.ArgumentParser(description="Increment the application version with base-10 carry and update its exact version test.")
     parser.add_argument("--root", type=Path, required=True)
     args = parser.parse_args()
     current_version, new_version = bump_release_version_files(args.root.resolve())

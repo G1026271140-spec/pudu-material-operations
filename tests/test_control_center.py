@@ -99,6 +99,8 @@ def test_manual_tools_cover_all_cache_scopes_and_high_risk_sync() -> None:
 
 def test_next_patch_version() -> None:
     assert next_patch_version("V1.9.4") == "V1.9.5"
+    assert next_patch_version("V2.4.9") == "V2.5.0"
+    assert next_patch_version("V1.9.10") == "V2.0.0"
     with pytest.raises(ValueError):
         next_patch_version("1.9")
 
@@ -109,9 +111,9 @@ def test_bump_release_version_files_updates_source_and_exact_test(tmp_path: Path
     (tmp_path / "tests" / "test_admin_access.py").write_text(
         'self.assertEqual(app.APP_VERSION, "V2.4.9")\n', encoding="utf-8"
     )
-    assert bump_release_version_files(tmp_path) == ("V2.4.9", "V2.4.10")
-    assert 'APP_VERSION = "V2.4.10"' in (tmp_path / "app.py").read_text(encoding="utf-8")
-    assert 'app.APP_VERSION, "V2.4.10"' in (tmp_path / "tests" / "test_admin_access.py").read_text(encoding="utf-8")
+    assert bump_release_version_files(tmp_path) == ("V2.4.9", "V2.5.0")
+    assert 'APP_VERSION = "V2.5.0"' in (tmp_path / "app.py").read_text(encoding="utf-8")
+    assert 'app.APP_VERSION, "V2.5.0"' in (tmp_path / "tests" / "test_admin_access.py").read_text(encoding="utf-8")
 
 
 def test_bump_release_version_cli_can_import_project_package(tmp_path: Path) -> None:

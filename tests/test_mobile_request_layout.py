@@ -108,6 +108,14 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('margin-bottom: 0.45rem !important;', desktop_rule)
         self.assertIn('[data-testid="stWidgetLabel"]', desktop_rule)
 
+    def test_desktop_specification_selector_label_stays_on_one_line(self) -> None:
+        desktop_rule = SOURCE.split('@media (min-width: 641px)', 1)[1].split(
+            '[data-testid="stSidebar"]', 1
+        )[0]
+        self.assertIn('font-size: 0.74rem !important;', desktop_rule)
+        self.assertIn('white-space: nowrap !important;', desktop_rule)
+        self.assertIn('word-break: keep-all !important;', desktop_rule)
+
     def test_phone_specification_keeps_add_action_above_short_viewport_chrome(self) -> None:
         self.assertIn('[class*="st-key-request_add_to_cart_"]', SOURCE)
         self.assertIn('position: sticky !important;', SOURCE)
