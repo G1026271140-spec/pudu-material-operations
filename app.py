@@ -66,7 +66,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.9.9"
+APP_VERSION = "V1.9.10"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -1378,6 +1378,24 @@ def inject_global_styles() -> None:
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
             gap: 0.5rem !important;
             align-items: start !important;
+        }
+        @media (min-width: 641px) {
+            [data-testid="stPopoverBody"] [class*="st-key-request_spec_model_scroll_"]
+            [data-testid="stElementContainer"]:has(.pudu-spec-model-heading) {
+                min-height: 1.35rem !important;
+                margin-bottom: 0.45rem !important;
+                overflow: visible !important;
+            }
+            [data-testid="stPopoverBody"] [class*="st-key-request_spec_model_scroll_"]
+            .pudu-spec-model-heading {
+                margin: 0 !important;
+                line-height: 1.35 !important;
+                font-weight: 750 !important;
+            }
+            [data-testid="stPopoverBody"] [class*="st-key-request_spec_model_scroll_"]
+            [data-testid="stWidgetLabel"] {
+                margin-top: 0.1rem !important;
+            }
         }
         [data-testid="stSidebar"][aria-expanded="false"] {
             position: fixed !important;

@@ -99,6 +99,15 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('background: #EEF8F6 !important;', SOURCE)
         self.assertIn('background: #FFF7ED !important;', SOURCE)
 
+    def test_desktop_model_heading_reserves_space_above_widget_label(self) -> None:
+        desktop_rule = SOURCE.split('@media (min-width: 641px)', 1)[1].split(
+            '[data-testid="stSidebar"]', 1
+        )[0]
+        self.assertIn(':has(.pudu-spec-model-heading)', desktop_rule)
+        self.assertIn('min-height: 1.35rem !important;', desktop_rule)
+        self.assertIn('margin-bottom: 0.45rem !important;', desktop_rule)
+        self.assertIn('[data-testid="stWidgetLabel"]', desktop_rule)
+
     def test_phone_specification_keeps_add_action_above_short_viewport_chrome(self) -> None:
         self.assertIn('[class*="st-key-request_add_to_cart_"]', SOURCE)
         self.assertIn('position: sticky !important;', SOURCE)
