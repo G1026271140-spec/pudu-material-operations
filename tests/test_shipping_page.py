@@ -109,6 +109,18 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertEqual(app_test.metric[2].value, "1 KG")
         self.assertEqual(app_test.metric[3].value, "14 KG")
 
+    def test_shipping_page_uses_compact_two_carton_layout(self) -> None:
+        source = open(shipping_page.__file__, encoding="utf-8").read()
+
+        self.assertIn('shipping_recipient_panel', source)
+        self.assertIn('shipping_carton_row_', source)
+        self.assertIn('shipping_carton_card_', source)
+        self.assertIn('st.columns(2, gap="small")', source)
+        self.assertIn('@media (max-width: 900px)', source)
+        self.assertIn('height=56', source)
+        self.assertIn('top_a, top_b, top_c = st.columns([1, 1, 1])', source)
+        self.assertIn('row_a = st.columns(4)', source)
+
     def test_country_name_input_is_replaced_with_address_code(self) -> None:
         app_test = AppTest.from_function(
             render_shipping_recipient_page_fixture,

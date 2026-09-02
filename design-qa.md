@@ -40,3 +40,48 @@ No actionable P0, P1, or P2 visual differences remain for the requested MAA-insp
 - P3: a future signed installer could add Windows publisher identity; the current portable EXE is intentionally unsigned and project-local.
 
 final result: passed
+
+# Shipping Template Compact Layout QA
+
+- Source visual truth: `C:/Users/gaohongyuan1/AppData/Local/Temp/codex-clipboard-da695bff-62d6-4243-a21d-eb2cbfa37244.png`
+- Implementation screenshots: `C:/Users/gaohongyuan1/AppData/Local/Temp/shipping-v1.9.3-recipient-final2.png` and `C:/Users/gaohongyuan1/AppData/Local/Temp/shipping-v1.9.3-cartons-final.png`
+- Combined comparison screenshots: `C:/Users/gaohongyuan1/AppData/Local/Temp/shipping-v1.9.3-comparison.png` and `C:/Users/gaohongyuan1/AppData/Local/Temp/shipping-v1.9.3-comparison-cartons.png`
+- Source pixels: 1640 x 824
+- Implementation browser viewport: 1280 x 720 CSS pixels at device scale factor 1
+- Normalization: the recipient comparison places the full source and implementation captures in equal-width browser columns; the focused carton comparison preserves the implementation's native browser capture without stretching.
+- State: shipping-template page with recipient fields empty, two cartons, automatic metrics at their zero/default state, and two available category pools.
+
+## Full-view evidence
+
+The recipient panel now fits the date, country code, and automatic invoice number in one row; contact details use four columns; email, delivery term, and payment term use one final row. The panel is materially shorter while every original field remains visible and readable.
+
+## Focused-region evidence
+
+The focused carton capture shows boxes 01 and 02 on the same row. Each card retains its box title, category count, dimensions, computed volume and weights, both category pools, and the empty-content message without overlap or clipping.
+
+## Required fidelity surfaces
+
+- Fonts and typography: existing application typography is preserved; field labels and compact-card supporting text are reduced without truncation.
+- Spacing and layout rhythm: recipient rows and carton cards use tighter vertical gaps and padding; the two-column carton grid has a consistent center gutter.
+- Colors and visual tokens: existing borders, background colors, metric treatment, and semantic information panel remain unchanged.
+- Image quality and assets: this form contains no application imagery or decorative raster assets; no placeholders or artificial icons were introduced.
+- Copy and content: all field labels, carton copy, category names, units, and automatic-calculation descriptions are unchanged except for the new visible `发票编号（自动）` label.
+
+## Comparison history
+
+1. First implementation: widget heights were smaller but the recipient panel still used the original six-row structure, so the visible height reduction was modest. Severity P2.
+2. Fix: moved the automatic invoice number into the first row, grouped contact/phone fields into four columns, and moved payment terms into the final three-column row.
+3. Responsive fix: corrected the narrow-layout selector to target Streamlit's `stColumn` nodes so the two-column carton row can return to one column below 900 px.
+4. Revised evidence: the recipient panel is substantially shorter and two complete carton cards fit side by side at desktop width with no actionable clipping or overlap.
+
+## Findings
+
+No actionable P0, P1, or P2 visual differences remain for the requested compact shipping-template layout.
+
+## Primary interactions and console
+
+- Date, country, recipient, carton-count, dimension, weight, category, and quantity controls are present in the browser-rendered DOM.
+- The two-carton default state renders both independent cards and all automatic metrics.
+- Browser console checked: no errors.
+
+final result: passed

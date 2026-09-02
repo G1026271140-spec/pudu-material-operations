@@ -32,6 +32,95 @@ CARTON_FIELD_DEFAULTS: dict[str, object] = {
 }
 
 
+def _render_shipping_page_styles() -> None:
+    st.markdown(
+        """
+        <style>
+        [class*="st-key-shipping_recipient_panel"] {
+            padding: 0.7rem 0.9rem 0.75rem !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] [data-testid="stVerticalBlock"] {
+            gap: 0.38rem !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] h3 {
+            margin: 0 0 0.1rem !important;
+            font-size: 1.18rem !important;
+            line-height: 1.25 !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] label p,
+        [class*="st-key-shipping_recipient_panel"] [data-testid="stWidgetLabel"] p {
+            font-size: 0.76rem !important;
+            line-height: 1.1 !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] input,
+        [class*="st-key-shipping_recipient_panel"] button {
+            min-height: 2rem !important;
+            height: 2rem !important;
+            font-size: 0.78rem !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] textarea {
+            min-height: 3.35rem !important;
+            height: 3.35rem !important;
+            font-size: 0.78rem !important;
+            line-height: 1.25 !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] [data-testid="stCode"] {
+            padding: 0.42rem 0.62rem !important;
+            min-height: 2rem !important;
+        }
+        [class*="st-key-shipping_recipient_panel"] [data-testid="stCode"] code {
+            font-size: 0.76rem !important;
+        }
+
+        [class*="st-key-shipping_carton_card_"] {
+            padding: 0.62rem 0.72rem 0.68rem !important;
+        }
+        [class*="st-key-shipping_carton_card_"] [data-testid="stVerticalBlock"] {
+            gap: 0.34rem !important;
+        }
+        [class*="st-key-shipping_carton_card_"] label p,
+        [class*="st-key-shipping_carton_card_"] [data-testid="stWidgetLabel"] p,
+        [class*="st-key-shipping_carton_card_"] [data-testid="stCaptionContainer"] p {
+            font-size: 0.7rem !important;
+            line-height: 1.12 !important;
+        }
+        [class*="st-key-shipping_carton_card_"] input,
+        [class*="st-key-shipping_carton_card_"] button {
+            min-height: 1.9rem !important;
+            height: 1.9rem !important;
+            font-size: 0.74rem !important;
+        }
+        [class*="st-key-shipping_carton_card_"] [data-testid="stMetric"] {
+            padding: 0.08rem 0 !important;
+        }
+        [class*="st-key-shipping_carton_card_"] [data-testid="stMetricLabel"] p {
+            font-size: 0.66rem !important;
+        }
+        [class*="st-key-shipping_carton_card_"] [data-testid="stMetricValue"] {
+            font-size: 0.92rem !important;
+        }
+        [class*="st-key-shipping_carton_card_"] [data-testid="stPills"] button {
+            min-height: 1.7rem !important;
+            height: auto !important;
+            padding: 0.12rem 0.38rem !important;
+        }
+
+        @media (max-width: 900px) {
+            [class*="st-key-shipping_carton_row_"] > [data-testid="stLayoutWrapper"] > [data-testid="stHorizontalBlock"] {
+                flex-wrap: wrap !important;
+            }
+            [class*="st-key-shipping_carton_row_"] > [data-testid="stLayoutWrapper"] > [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+                flex: 1 1 100% !important;
+                width: 100% !important;
+                min-width: 100% !important;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def calculate_carton_cbm(length_cm: float, width_cm: float, height_cm: float) -> float:
     return float(length_cm * width_cm * height_cm / 1_000_000)
 
@@ -252,27 +341,12 @@ def _normalize_shipping_address_code_input() -> None:
 
 
 def _render_recipient_fields(template_date: date) -> tuple[date, str, dict[str, object]]:
-    with st.container(border=True):
+    with st.container(border=True, key="shipping_recipient_panel"):
         st.subheader("发票与收件信息")
-        top_a, top_b = st.columns([1, 1])
+        top_a, top_b, top_c = st.columns([1, 1, 1])
         selected_date = top_a.date_input(
             "填写模板日期", value=template_date, key="shipping_template_date"
         )
-        address = st.text_area(
-            "收货地址",
-            key="shipping_recipient_address",
-            height=92,
-            placeholder="可填写中文或英文地址",
-        )
-        inferred_code = infer_address_code(address)
-        previous_address = str(st.session_state.get("shipping_address_for_code") or "")
-        previous_auto_code = str(st.session_state.get("shipping_auto_address_code") or "")
-        if address != previous_address:
-            current_code = str(st.session_state.get("shipping_address_code") or "")
-            if not current_code or current_code == previous_auto_code:
-                st.session_state["shipping_address_code"] = inferred_code
-            st.session_state["shipping_address_for_code"] = address
-            st.session_state["shipping_auto_address_code"] = inferred_code
         address_code = top_b.text_input(
             "国家名称或英文缩写",
             key="shipping_address_code",
@@ -284,17 +358,33 @@ def _render_recipient_fields(template_date: date) -> tuple[date, str, dict[str, 
             invoice_number = build_invoice_number(selected_date, address_code)
         except ValueError:
             invoice_number = "等待填写地址缩写"
-        st.code(invoice_number, language=None)
+        top_c.markdown("<small>发票编号（自动）</small>", unsafe_allow_html=True)
+        top_c.code(invoice_number, language=None)
 
-        row_a = st.columns(3)
+        address = st.text_area(
+            "收货地址",
+            key="shipping_recipient_address",
+            height=56,
+            placeholder="可填写中文或英文地址",
+        )
+        inferred_code = infer_address_code(address)
+        previous_address = str(st.session_state.get("shipping_address_for_code") or "")
+        previous_auto_code = str(st.session_state.get("shipping_auto_address_code") or "")
+        if address != previous_address:
+            current_code = str(st.session_state.get("shipping_address_code") or "")
+            if not current_code or current_code == previous_auto_code:
+                st.session_state["shipping_address_code"] = inferred_code
+            st.session_state["shipping_address_for_code"] = address
+            st.session_state["shipping_auto_address_code"] = inferred_code
+        row_a = st.columns(4)
         contact = row_a[0].text_input("联系人", key="shipping_recipient_contact")
         company = row_a[1].text_input("公司", key="shipping_recipient_company")
         postal_code = row_a[2].text_input("邮政编码", key="shipping_recipient_postal")
+        phone = row_a[3].text_input("电话", key="shipping_recipient_phone")
         row_b = st.columns(3)
-        phone = row_b[0].text_input("电话", key="shipping_recipient_phone")
-        email = row_b[1].text_input("邮箱", key="shipping_recipient_email")
-        delivery_term = row_b[2].text_input("交货条款", key="shipping_delivery_term")
-        payment_term = st.text_input(
+        email = row_b[0].text_input("邮箱", key="shipping_recipient_email")
+        delivery_term = row_b[1].text_input("交货条款", key="shipping_delivery_term")
+        payment_term = row_b[2].text_input(
             "付款条款",
             value=DEFAULT_PAYMENT_TERM,
             key="shipping_payment_term",
@@ -338,6 +428,7 @@ def _render_cartons_and_contents(
 
     cartons: list[Carton] = []
     carton_items: list[dict[str, object]] = []
+    carton_columns = []
     for carton_no in range(1, carton_count + 1):
         source_carton_no = carton_no - 1 if carton_no > 1 else None
         initialize_shipping_carton_state(
@@ -356,7 +447,14 @@ def _render_cartons_and_contents(
             carton_no,
             category_pool_options,
         )
-        with st.container(border=True):
+        if carton_no % 2 == 1:
+            with st.container(key=f"shipping_carton_row_{(carton_no + 1) // 2}"):
+                carton_columns = st.columns(2, gap="small")
+        carton_column = carton_columns[(carton_no - 1) % 2]
+        with carton_column.container(
+            border=True,
+            key=f"shipping_carton_card_{carton_no}",
+        ):
             selected_before = shipping_carton_category_pool_selection(
                 st.session_state,
                 carton_no,
@@ -674,6 +772,7 @@ def _render_live_summary(
 def render_shipping_template_page(
     categories: list[dict],
 ) -> None:
+    _render_shipping_page_styles()
     template_date = st.session_state.get("shipping_template_date", date.today())
     if not isinstance(template_date, date):
         template_date = date.today()
