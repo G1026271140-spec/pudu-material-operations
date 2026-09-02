@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-02 10:32:10",
+  "generated_at": "2026-09-02 11:03:12",
   "tables": {
     "物料品类": [
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "产品折页(Single Product Brochure)",
           "产品型号数量": "18",
           "创建时间": "",
           "单价（人民币）": 0.4062,
@@ -1113,9 +1113,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "Product Flyer",
@@ -1127,7 +1127,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "品牌手册(Product Brochure (All\nBanner)）",
           "产品型号数量": "1",
           "创建时间": "",
           "单价（人民币）": 5.416,
@@ -1197,9 +1197,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "Product Brochure (All\nBanner)",
@@ -1283,9 +1283,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "IR(Industrial Product Line Brochure）",
@@ -1369,12 +1369,12 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
-          "英文页面名称": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+          "英文页面名称": "CR(Cleaning Product Line Brochure）",
           "装箱单产品类型": "Brochures",
           "语种数量": "11"
         },
@@ -1455,12 +1455,12 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
-          "英文页面名称": "配送线产品手册SR(Delivery Robot Product Brochure)",
+          "英文页面名称": "SR(Delivery Robot Product Brochure)",
           "装箱单产品类型": "Brochures",
           "语种数量": "11"
         },
@@ -1541,9 +1541,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "GR(Embodied AI Robot Product Brochure)",
@@ -1555,7 +1555,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "产品易拉宝(Product Roll-Up)",
           "产品型号数量": "29",
           "创建时间": "",
           "单价（人民币）": 74.47,
@@ -2185,9 +2185,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "Product Roll-Up",
@@ -2199,7 +2199,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "公仔(Plush Toy)",
           "产品型号数量": "15",
           "创建时间": "",
           "单价（人民币）": 24.9813,
@@ -2279,9 +2279,9 @@
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "Plush Toy",
@@ -2293,7 +2293,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "冰箱贴( 默认混发)",
           "产品型号数量": "18",
           "创建时间": "",
           "单价（人民币）": 13.54,
@@ -2379,12 +2379,12 @@
               "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
-          "英文页面名称": " Fridge Magnet",
+          "英文页面名称": " Fridge Magnet(Default to Mixed Shipping)",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2393,7 +2393,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "笔记本礼盒(Notebook Gift Box)",
           "产品型号数量": "1",
           "创建时间": "",
           "单价（人民币）": 33.85,
@@ -2445,9 +2445,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "Notebook Gift Box",
@@ -2459,7 +2459,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "普渡logo无纺布手提袋(PUDU logo bag)",
           "产品型号数量": "1",
           "创建时间": "",
           "单价（人民币）": 1.0155,
@@ -2529,9 +2529,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
           "英文页面名称": "PUDU logo bag",
@@ -2543,7 +2543,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "定制LOGO书包(Customized PUDU bag)",
           "产品型号数量": "1",
           "创建时间": "",
           "单价（人民币）": 100.0606,
@@ -2600,7 +2600,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "普渡logo高级手提袋(Premium PUDU Branded Gift Bag)",
           "产品型号数量": "1",
           "创建时间": "",
           "单价（人民币）": 1.6925,
@@ -2675,7 +2675,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "展会服装（Clothes）",
           "产品型号数量": "1",
           "创建时间": "",
           "单价（人民币）": 79.0059,
@@ -2732,7 +2732,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "定制扇子",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 0.4062,
@@ -2784,12 +2784,12 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
-          "英文页面名称": null,
+          "英文页面名称": "Custom Fan",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2798,7 +2798,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "伴手礼礼包盒（纸袋）",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 3.9266,
@@ -2846,7 +2846,7 @@
           "物料品类": "伴手礼礼包盒（纸袋）",
           "物料品类编码": "018",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Gift Set Packaging Box (Paper Bag)",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2855,7 +2855,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "定制帽子",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 11.9829,
@@ -2903,7 +2903,7 @@
           "物料品类": "定制帽子",
           "物料品类编码": "020",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Custom Cap",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2912,7 +2912,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "全套产品冰箱贴",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 10.0196,
@@ -2964,12 +2964,12 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A841%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A857%7D%7D"
             }
           ],
-          "英文页面名称": null,
+          "英文页面名称": "Full Product Series Fridge Magnet Set",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -2978,7 +2978,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "定制高尔夫球",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 44.2081,
@@ -3026,7 +3026,7 @@
           "物料品类": "定制高尔夫球",
           "物料品类编码": "022",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Custom Golf Ball",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -3035,7 +3035,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "手持充电电风扇（充电）",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 25.9968,
@@ -3083,7 +3083,7 @@
           "物料品类": "手持充电电风扇（充电）",
           "物料品类编码": "023",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Rechargeable Handheld Electric Fan",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -3092,7 +3092,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "嘉宾胸牌/臂贴",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 0.4739,
@@ -3140,7 +3140,7 @@
           "物料品类": "嘉宾胸牌/臂贴",
           "物料品类编码": "024",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Guest Badge / Arm Sticker",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -3149,7 +3149,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "工作证",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 4.4682,
@@ -3197,7 +3197,7 @@
           "物料品类": "工作证",
           "物料品类编码": "025",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Staff Badge / Work ID Card",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -3206,7 +3206,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "代理商颁奖牌",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 5.0098,
@@ -3254,7 +3254,7 @@
           "物料品类": "代理商颁奖牌",
           "物料品类编码": "026",
           "申领页图片": null,
-          "英文页面名称": null,
+          "英文页面名称": "Distributor Award Plaque",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
         },
@@ -3263,7 +3263,7 @@
       },
       {
         "fields": {
-          "中文页面名称": null,
+          "中文页面名称": "PUDU定制眼镜",
           "产品型号数量": "1",
           "创建时间": null,
           "单价（人民币）": 3.9943,
@@ -3446,7 +3446,7 @@
           "是否在申领页显示": "是",
           "是否无需型号": "否",
           "是否无需语种": "是",
-          "海关编码": null,
+          "海关编码": "6105100090",
           "父记录": [
             {
               "record_ids": null,
@@ -3533,7 +3533,7 @@
           "是否在申领页显示": "否",
           "是否无需型号": "否",
           "是否无需语种": "是",
-          "海关编码": null,
+          "海关编码": "6201409000",
           "父记录": [
             {
               "record_ids": null,
@@ -3561,6 +3561,63 @@
         },
         "id": "recvtnWQU3oSsm",
         "record_id": "recvtnWQU3oSsm"
+      },
+      {
+        "fields": {
+          "中文页面名称": "挂绳",
+          "产品型号数量": "1",
+          "创建时间": null,
+          "单价（人民币）": 1.0832,
+          "单价（美元）": "0.16",
+          "启用状态": "停用",
+          "品类定义": "周边礼品",
+          "商业发票产品名称": "Polyester ID Card Lanyard",
+          "备注": null,
+          "库存行数": "1",
+          "文化周边": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "是否在申领页显示": "否",
+          "是否无需型号": "是",
+          "是否无需语种": "是",
+          "海关编码": "6307909000",
+          "父记录": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料主数据": [
+            {
+              "record_ids": [
+                "recvu1H2tVbqVM"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1398",
+              "text_arr": [
+                "MAT-1398"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料品类": "挂绳",
+          "物料品类编码": "037",
+          "申领页图片": null,
+          "英文页面名称": "Polyester ID Card Lanyard",
+          "装箱单产品类型": "Give aways",
+          "语种数量": "1"
+        },
+        "id": "recvu1H0vrka3i",
+        "record_id": "recvu1H0vrka3i"
       }
     ],
     "产品型号": [
@@ -6090,10 +6147,11 @@
                 "recvtu405xgZEz",
                 "recvtu405xthlv",
                 "recvtu405xTyz5",
-                "recvtu405xBmdZ"
+                "recvtu405xBmdZ",
+                "recvu1H2tVbqVM"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0365,MAT-0374,MAT-0390,MAT-0388,MAT-0382,MAT-0372,MAT-0366,MAT-0375,MAT-0384,MAT-0387,MAT-0362,MAT-0378,MAT-0380,MAT-0381,MAT-0371,MAT-0377,MAT-0364,MAT-0373,MAT-0367,MAT-0369,MAT-0385,MAT-0363,MAT-0386,MAT-0389,MAT-0370,MAT-0368,MAT-0376,MAT-0383,MAT-0361,MAT-0953,MAT-0973,MAT-0959,MAT-0961,MAT-0960,MAT-0951,MAT-0974,MAT-0971,MAT-0976,MAT-0941,MAT-0958,MAT-0957,MAT-0975,MAT-0954,MAT-0952,MAT-0956,MAT-0977,MAT-0981,MAT-0972,MAT-0955,MAT-0980,MAT-0979,MAT-0978,MAT-1024,MAT-1025,MAT-1034,MAT-1035,MAT-1139,MAT-1141,MAT-1142,MAT-1143,MAT-1144,MAT-1145,MAT-1146,MAT-1147,MAT-1148,MAT-1269,MAT-1377,MAT-1378,MAT-1379,MAT-1380,MAT-1381,MAT-1382,MAT-1383,MAT-1384,MAT-1385,MAT-1386,MAT-1387,MAT-1388,MAT-1389,MAT-1390,MAT-1391,MAT-1392,MAT-1393,MAT-1394,MAT-1395,MAT-1396,MAT-1397",
+              "text": "MAT-0365,MAT-0374,MAT-0390,MAT-0388,MAT-0382,MAT-0372,MAT-0366,MAT-0375,MAT-0384,MAT-0387,MAT-0362,MAT-0378,MAT-0380,MAT-0381,MAT-0371,MAT-0377,MAT-0364,MAT-0373,MAT-0367,MAT-0369,MAT-0385,MAT-0363,MAT-0386,MAT-0389,MAT-0370,MAT-0368,MAT-0376,MAT-0383,MAT-0361,MAT-0953,MAT-0973,MAT-0959,MAT-0961,MAT-0960,MAT-0951,MAT-0974,MAT-0971,MAT-0976,MAT-0941,MAT-0958,MAT-0957,MAT-0975,MAT-0954,MAT-0952,MAT-0956,MAT-0977,MAT-0981,MAT-0972,MAT-0955,MAT-0980,MAT-0979,MAT-0978,MAT-1024,MAT-1025,MAT-1034,MAT-1035,MAT-1139,MAT-1141,MAT-1142,MAT-1143,MAT-1144,MAT-1145,MAT-1146,MAT-1147,MAT-1148,MAT-1269,MAT-1377,MAT-1378,MAT-1379,MAT-1380,MAT-1381,MAT-1382,MAT-1383,MAT-1384,MAT-1385,MAT-1386,MAT-1387,MAT-1388,MAT-1389,MAT-1390,MAT-1391,MAT-1392,MAT-1393,MAT-1394,MAT-1395,MAT-1396,MAT-1397,MAT-1398",
               "text_arr": [
                 "MAT-0365",
                 "MAT-0374",
@@ -6181,7 +6239,8 @@
                 "MAT-1394",
                 "MAT-1395",
                 "MAT-1396",
-                "MAT-1397"
+                "MAT-1397",
+                "MAT-1398"
               ],
               "type": "text"
             }
@@ -6193,7 +6252,7 @@
       },
       {
         "fields": {
-          "中文页面名称": "PUDU公司介绍",
+          "中文页面名称": "公司介绍",
           "产品型号": "公司介绍",
           "产品型号编码": "X033",
           "产品线": "新项目",
@@ -6239,7 +6298,7 @@
               "type": "text"
             }
           ],
-          "英文页面名称": "PUDU Company Introduction"
+          "英文页面名称": "Company Introduction"
         },
         "id": "recvtcdauC7jNk",
         "record_id": "recvtcdauC7jNk"
@@ -6647,7 +6706,7 @@
           "中文页面名称": "GT3",
           "产品型号": "GT3",
           "产品型号编码": "X044",
-          "产品线": "新项目",
+          "产品线": "GT",
           "启用状态": "启用",
           "型号类型": "普通物料",
           "文化周边": [
@@ -6702,7 +6761,7 @@
           "中文页面名称": "GT5",
           "产品型号": "GT5",
           "产品型号编码": "X045",
-          "产品线": "新项目",
+          "产品线": "GT",
           "启用状态": "启用",
           "型号类型": "普通物料",
           "文化周边": [
@@ -6757,7 +6816,7 @@
           "中文页面名称": "GT7",
           "产品型号": "GT7",
           "产品型号编码": "X046",
-          "产品线": "新项目",
+          "产品线": "GT",
           "启用状态": "启用",
           "型号类型": "普通物料",
           "文化周边": [
@@ -8810,10 +8869,11 @@
                 "recvrZ6rlQRvrQ",
                 "recvrZ6rlQHJ0R",
                 "recvrZ6rlQNxV7",
-                "recvswTnIdKGWq"
+                "recvswTnIdKGWq",
+                "recvu1H2tVbqVM"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0581,MAT-0591,MAT-0601,MAT-0621,MAT-0641,MAT-0651,MAT-0661,MAT-0671,MAT-0681,MAT-0701,MAT-0711,MAT-0721,MAT-0731,MAT-0741,MAT-0751,MAT-0761,MAT-0771,MAT-0781,MAT-0801,MAT-0821,MAT-0831,MAT-0841,MAT-0851,MAT-0861,MAT-0881,MAT-0891,MAT-0901,MAT-0911,MAT-0921,MAT-0931,MAT-0941,MAT-0961,MAT-0981,MAT-1032,MAT-1033,MAT-1035,MAT-1140,MAT-1141,MAT-1142,MAT-1143,MAT-1144,MAT-1145,MAT-1146,MAT-1147,MAT-1148,MAT-1269",
+              "text": "MAT-0581,MAT-0591,MAT-0601,MAT-0621,MAT-0641,MAT-0651,MAT-0661,MAT-0671,MAT-0681,MAT-0701,MAT-0711,MAT-0721,MAT-0731,MAT-0741,MAT-0751,MAT-0761,MAT-0771,MAT-0781,MAT-0801,MAT-0821,MAT-0831,MAT-0841,MAT-0851,MAT-0861,MAT-0881,MAT-0891,MAT-0901,MAT-0911,MAT-0921,MAT-0931,MAT-0941,MAT-0961,MAT-0981,MAT-1032,MAT-1033,MAT-1035,MAT-1140,MAT-1141,MAT-1142,MAT-1143,MAT-1144,MAT-1145,MAT-1146,MAT-1147,MAT-1148,MAT-1269,MAT-1398",
               "text_arr": [
                 "MAT-0581",
                 "MAT-0591",
@@ -8860,7 +8920,8 @@
                 "MAT-1146",
                 "MAT-1147",
                 "MAT-1148",
-                "MAT-1269"
+                "MAT-1269",
+                "MAT-1398"
               ],
               "type": "text"
             }
@@ -112242,6 +112303,118 @@
         },
         "id": "recvtu405xBmdZ",
         "record_id": "recvtu405xBmdZ"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "仓库物料位置": [
+            {
+              "record_ids": null,
+              "table_id": "tbldA8qhSeIfJp3k",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "单价（人民币）": 0,
+          "单价（美元）": "0",
+          "启用状态": "停用",
+          "品类关联": [
+            {
+              "record_ids": [
+                "recvu1H0vrka3i"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "037",
+              "text_arr": [
+                "037"
+              ],
+              "type": "text"
+            }
+          ],
+          "型号关联": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "备注": null,
+          "库存归零时间": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "当前库存": "0",
+          "战区管理": [
+            {
+              "record_ids": null,
+              "table_id": "tblFEKwM1kw9QZAx",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "是否临时物料": null,
+          "是否在申领页显示": "否",
+          "海关编码": null,
+          "物料品类": "挂绳",
+          "物料申请单": [
+            {
+              "record_ids": null,
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料编码": "MAT-1398",
+          "物料货架": [
+            {
+              "record_ids": null,
+              "table_id": "tblqz8xmpgtv4Q9C",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种",
+          "语种关联": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ]
+        },
+        "id": "recvu1H2tVbqVM",
+        "record_id": "recvu1H2tVbqVM"
       }
     ],
     "库存流水": [
@@ -147491,18 +147664,18 @@
               "file_token": "FEcLbvMD5owQR5xOwiNc19O8nLf",
               "name": "026329d8-1de1-4365-8d72-0c18f0a82231.jpg",
               "size": 1134140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FEcLbvMD5owQR5xOwiNc19O8nLf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FEcLbvMD5owQR5xOwiNc19O8nLf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/8037856b2214aa72d317.webp"
             },
             {
               "file_token": "IVi3bViUaoDJB2xiMlYcQlTRnsd",
               "name": "0950006d75ef6e3076c4282f475242fe(1).png",
               "size": 28337,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IVi3bViUaoDJB2xiMlYcQlTRnsd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IVi3bViUaoDJB2xiMlYcQlTRnsd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/d080d85efd6566443407.webp"
             }
           ],
@@ -147547,9 +147720,9 @@
               "file_token": "KAkebk1MuoUlwZxwQb0cwiSwnIb",
               "name": "76893361-4130-4141-8359-a3d240b7af73.png",
               "size": 166239,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KAkebk1MuoUlwZxwQb0cwiSwnIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KAkebk1MuoUlwZxwQb0cwiSwnIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/eb63fd20472ee48a7ba8.webp"
             }
           ],
@@ -147594,9 +147767,9 @@
               "file_token": "AE4Rb1HnjoA1hMxOd3acBWdunjd",
               "name": "image.png",
               "size": 94114,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AE4Rb1HnjoA1hMxOd3acBWdunjd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AE4Rb1HnjoA1hMxOd3acBWdunjd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/43dc0d9c2b7d49de4d01.webp"
             }
           ],
@@ -147641,9 +147814,9 @@
               "file_token": "FIaab7VkEoIRpOxf9ANctQ98nIb",
               "name": "9e95b14c-1ddc-403d-b292-1ad76fc2258e.jpg",
               "size": 262068,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FIaab7VkEoIRpOxf9ANctQ98nIb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FIaab7VkEoIRpOxf9ANctQ98nIb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/f50ae498e27a427e92d5.webp"
             }
           ],
@@ -147688,9 +147861,9 @@
               "file_token": "XGosb0o0Uouzn7xdxZIcsI8qn3e",
               "name": "20260813-164753.jpg",
               "size": 130503,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XGosb0o0Uouzn7xdxZIcsI8qn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XGosb0o0Uouzn7xdxZIcsI8qn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XGosb0o0Uouzn7xdxZIcsI8qn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XGosb0o0Uouzn7xdxZIcsI8qn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/713fb44d0289926d9e59.webp"
             }
           ],
@@ -147735,9 +147908,9 @@
               "file_token": "GlTObQQGhoHUfRxjVoYcC0Vtnbd",
               "name": "img_v3_02149_de15c820-8c5a-4595-b1b1-0b20d1d2f07g.jpg",
               "size": 354165,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GlTObQQGhoHUfRxjVoYcC0Vtnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GlTObQQGhoHUfRxjVoYcC0Vtnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/3cba6d296614195a7aa7.webp"
             }
           ],
@@ -147782,9 +147955,9 @@
               "file_token": "Wg5EbXbo1oOxpRxIrYac4aOEnYe",
               "name": "image.png",
               "size": 244396,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Wg5EbXbo1oOxpRxIrYac4aOEnYe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Wg5EbXbo1oOxpRxIrYac4aOEnYe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Wg5EbXbo1oOxpRxIrYac4aOEnYe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Wg5EbXbo1oOxpRxIrYac4aOEnYe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/5fe90af578b9910d69c1.webp"
             }
           ],
@@ -147866,9 +148039,9 @@
               "file_token": "JJdkbKdFToAf3Lx7PNCclEPTnTh",
               "name": "企业微信截图_17865186083941.png",
               "size": 436318,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JJdkbKdFToAf3Lx7PNCclEPTnTh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JJdkbKdFToAf3Lx7PNCclEPTnTh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JJdkbKdFToAf3Lx7PNCclEPTnTh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JJdkbKdFToAf3Lx7PNCclEPTnTh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/f179e56146c3daedb353.webp"
             }
           ],
@@ -147909,9 +148082,9 @@
               "file_token": "PbuebbuAOooj1BxjbGGcG1csnz2",
               "name": "模型.png",
               "size": 12625005,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PbuebbuAOooj1BxjbGGcG1csnz2&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PbuebbuAOooj1BxjbGGcG1csnz2&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PbuebbuAOooj1BxjbGGcG1csnz2/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PbuebbuAOooj1BxjbGGcG1csnz2/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/152e9f7334846d1ea16d.webp"
             }
           ],
@@ -147956,9 +148129,9 @@
               "file_token": "JhOxbpdmkoRpmzxBwVmcZXqOnW2",
               "name": "img_v3_0214l_865e286a-8283-456d-84d3-b11aa1b7eddg.jpg",
               "size": 3534752,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JhOxbpdmkoRpmzxBwVmcZXqOnW2&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JhOxbpdmkoRpmzxBwVmcZXqOnW2&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JhOxbpdmkoRpmzxBwVmcZXqOnW2/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JhOxbpdmkoRpmzxBwVmcZXqOnW2/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/7efa9f35bbc6a3fd67f3.webp"
             }
           ],
@@ -148007,9 +148180,9 @@
               "file_token": "DZSZbQkoZot9sixlneMcODN1nJd",
               "name": "Bella积木场景.png",
               "size": 2485193,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DZSZbQkoZot9sixlneMcODN1nJd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DZSZbQkoZot9sixlneMcODN1nJd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DZSZbQkoZot9sixlneMcODN1nJd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A194%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DZSZbQkoZot9sixlneMcODN1nJd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblIK0aWEMcMIbxt%22%2C%22rev%22%3A195%7D%7D",
               "cached_path": "assets/gift_projects/8eea5642452885706dda.webp"
             }
           ],
@@ -148020,6 +148193,51 @@
         },
         "id": "recvsHAlQQxxwD",
         "record_id": "recvsHAlQQxxwD"
+      },
+      {
+        "fields": {
+          "供应商联系方式": null,
+          "参与人": null,
+          "备注": "数量：3100",
+          "父记录 2": [
+            {
+              "record_ids": null,
+              "table_id": "tblIK0aWEMcMIbxt",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料名称": "挂绳",
+          "物料品类关联": [
+            {
+              "record_ids": [
+                "recvu1H0vrka3i"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "037",
+              "text_arr": [
+                "037"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料图片": null,
+          "物料状态": "已提需",
+          "负责人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012o_f0dcd27f-b0a5-421e-a9e4-95741c712e0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "项目名称": "澳洲ISSA",
+          "项目状态": "筹备中"
+        },
+        "id": "recvu1H4JYkgr3",
+        "record_id": "recvu1H4JYkgr3"
       }
     ],
     "文化周边管理库存": [
@@ -153269,14 +153487,14 @@
     ]
   },
   "row_counts": {
-    "物料品类": 27,
+    "物料品类": 28,
     "产品型号": 41,
     "物料语种": 12,
-    "物料主数据": 911,
+    "物料主数据": 912,
     "库存流水": 150,
     "物料申请单": 30,
     "申请明细": 187,
-    "项目周边礼品物料筹备详情list": 12,
+    "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "战区管理": 10
   },

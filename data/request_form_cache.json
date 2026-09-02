@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-02 10:57:40",
+  "generated_at": "2026-09-02 11:03:17",
   "products": [
     "产品单页(Product Flyer )",
     "品牌手册(Product Brochure (All\nBanner)）",
@@ -127,9 +127,9 @@
     "3XL": "新项目",
     "4XL": "新项目",
     "6XL": "新项目",
-    "GT3": "新项目",
-    "GT5": "新项目",
-    "GT7": "新项目"
+    "GT3": "GT",
+    "GT5": "GT",
+    "GT7": "GT"
   },
   "model_display_names": {
     "BG1": {
@@ -249,8 +249,8 @@
       "en": "No model required"
     },
     "公司介绍": {
-      "zh": "PUDU公司介绍",
-      "en": "PUDU Company Introduction"
+      "zh": "公司介绍",
+      "en": "Company Introduction"
     },
     "S": {
       "zh": "S",
@@ -303,7 +303,7 @@
       "en": "Product Flyer"
     },
     "品牌手册(Product Brochure (All\nBanner)）": {
-      "zh": "",
+      "zh": "品牌手册(Product Brochure (All\nBanner)）",
       "en": "Product Brochure (All\nBanner)"
     },
     "工业产品线手册IR(Industrial Product Line Brochure）": {
@@ -312,34 +312,34 @@
     },
     "清洁产品线手册CR(Cleaning Product Line Brochure）": {
       "zh": "清洁产品线手册CR(Cleaning Product Line Brochure）",
-      "en": "清洁产品线手册CR(Cleaning Product Line Brochure）"
+      "en": "CR(Cleaning Product Line Brochure）"
     },
     "配送线产品手册SR(Delivery Robot Product Brochure)": {
       "zh": "配送线产品手册SR(Delivery Robot Product Brochure)",
-      "en": "配送线产品手册SR(Delivery Robot Product Brochure)"
+      "en": "SR(Delivery Robot Product Brochure)"
     },
     "具身线产品手册GR(Embodied AI Robot Product Brochure)": {
       "zh": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
       "en": "GR(Embodied AI Robot Product Brochure)"
     },
     "产品易拉宝(Product Roll-Up)": {
-      "zh": "",
+      "zh": "产品易拉宝(Product Roll-Up)",
       "en": "Product Roll-Up"
     },
     "公仔(Plush Toy)": {
-      "zh": "",
+      "zh": "公仔(Plush Toy)",
       "en": "Plush Toy"
     },
     "冰箱贴( Fridge Magnet)": {
-      "zh": "",
-      "en": "Fridge Magnet"
+      "zh": "冰箱贴( 默认混发)",
+      "en": "Fridge Magnet(Default to Mixed Shipping)"
     },
     "笔记本礼盒(Notebook Gift Box)": {
-      "zh": "",
+      "zh": "笔记本礼盒(Notebook Gift Box)",
       "en": "Notebook Gift Box"
     },
     "普渡logo无纺布手提袋(PUDU logo bag)": {
-      "zh": "",
+      "zh": "普渡logo无纺布手提袋(PUDU logo bag)",
       "en": "PUDU logo bag"
     },
     "文化POLO衫": {
@@ -635,7 +635,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "新项目"
+          "product_line": "GT"
         },
         {
           "model": "GT5",
@@ -652,7 +652,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "新项目"
+          "product_line": "GT"
         },
         {
           "model": "GT7",
@@ -669,7 +669,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "新项目"
+          "product_line": "GT"
         },
         {
           "model": "KettyBot Pro",
