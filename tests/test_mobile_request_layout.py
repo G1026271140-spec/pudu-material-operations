@@ -122,9 +122,15 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('"快捷数量",', SOURCE)
         self.assertIn('[20, 50, 100, 200]', SOURCE)
         self.assertIn('"自定义数量",', SOURCE)
-        self.assertIn('st.columns([0.6, 1.0, 0.4]', SOURCE)
+        self.assertIn('st.columns([0.65, 1.35, 0.9]', SOURCE)
+        self.assertIn('label_visibility="hidden"', SOURCE)
         self.assertIn('apply_request_quantity_preset', SOURCE)
         self.assertIn('clear_request_quantity_preset', SOURCE)
+
+    def test_product_model_label_reserves_layout_space_before_product_lines(self) -> None:
+        self.assertIn(':has(.pudu-product-model-label)', SOURCE)
+        self.assertIn('min-height: 1.25rem !important;', SOURCE)
+        self.assertIn('margin-bottom: 0.42rem !important;', SOURCE)
 
     def test_phone_specification_keeps_add_action_above_short_viewport_chrome(self) -> None:
         self.assertIn('[class*="st-key-request_add_to_cart_"]', SOURCE)

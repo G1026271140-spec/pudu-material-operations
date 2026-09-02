@@ -66,7 +66,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.0.1"
+APP_VERSION = "V2.0.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -1423,8 +1423,14 @@ def inject_global_styles() -> None:
                 margin-top: 0.1rem !important;
             }
             [data-testid="stPopoverBody"] [class*="st-key-request_spec_model_scroll_"]
+            [data-testid="stElementContainer"]:has(.pudu-product-model-label) {
+                min-height: 1.25rem !important;
+                margin-bottom: 0.42rem !important;
+                overflow: visible !important;
+            }
+            [data-testid="stPopoverBody"] [class*="st-key-request_spec_model_scroll_"]
             .pudu-product-model-label {
-                margin: 0.08rem 0 0.38rem !important;
+                margin: 0 !important;
                 font-size: 0.88rem !important;
                 line-height: 1.2 !important;
                 font-weight: 650 !important;
@@ -3113,13 +3119,19 @@ def inject_global_styles() -> None:
                 line-height: 1.2;
             }
             [class*="st-key-request_spec_model_scroll_"] .pudu-product-model-label {
-                margin: 0 0 0.2rem !important;
+                margin: 0 !important;
                 font-size: 0.6rem !important;
                 line-height: 1.15 !important;
                 font-weight: 650 !important;
             }
+            [class*="st-key-request_spec_model_scroll_"]
+            [data-testid="stElementContainer"]:has(.pudu-product-model-label) {
+                min-height: 0.8rem !important;
+                margin-bottom: 0.2rem !important;
+                overflow: visible !important;
+            }
             [class*="st-key-request_quantity_presets_"] [data-testid="stWidgetLabel"] {
-                min-height: 0 !important;
+                min-height: 1.05rem !important;
                 margin-bottom: 0.08rem !important;
             }
             [class*="st-key-request_quantity_presets_"] [data-testid="stButtonGroup"] > div:last-child {
@@ -14421,17 +14433,7 @@ def render_request_material_builder(
 
                             quantity_key = f"request_cart_quantity_{product_state_key}"
                             quantity_preset_key = f"request_quantity_presets_{product_state_key}"
-                            st.pills(
-                                "快捷数量",
-                                [20, 50, 100, 200],
-                                selection_mode="single",
-                                format_func=lambda value: str(value),
-                                key=quantity_preset_key,
-                                on_change=apply_request_quantity_preset,
-                                args=(quantity_preset_key, quantity_key),
-                                width="stretch",
-                            )
-                            option_cols = st.columns([0.6, 1.0, 0.4], gap="small")
+                            option_cols = st.columns([0.65, 1.35, 0.9], gap="small")
                             quantity = option_cols[0].number_input(
                                 "自定义数量",
                                 min_value=1,
@@ -14441,7 +14443,18 @@ def render_request_material_builder(
                                 on_change=clear_request_quantity_preset,
                                 args=(quantity_preset_key,),
                             )
-                            remark = option_cols[1].text_input(
+                            option_cols[1].pills(
+                                "快捷数量",
+                                [20, 50, 100, 200],
+                                selection_mode="single",
+                                format_func=lambda value: str(value),
+                                key=quantity_preset_key,
+                                on_change=apply_request_quantity_preset,
+                                args=(quantity_preset_key, quantity_key),
+                                label_visibility="hidden",
+                                width="stretch",
+                            )
+                            remark = option_cols[2].text_input(
                                 "备注",
                                 key=f"request_cart_remark_{product_state_key}",
                                 placeholder="可选",
