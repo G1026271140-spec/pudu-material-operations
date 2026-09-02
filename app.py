@@ -66,7 +66,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.9.8"
+APP_VERSION = "V1.9.9"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -509,6 +509,7 @@ MATERIAL_DASHBOARD_MODULES = (
 MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存")
 DEFAULT_LOW_STOCK_THRESHOLD = int(get_setting("runtime.default_low_stock_threshold", 100))
 UI_LANGUAGE_SESSION_KEY = "ui_language"
+UI_LANGUAGE_QUERY_SESSION_KEY = "ui_language_query_value"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
 REQUEST_FORM_CACHE_SCHEMA_VERSION = 6
 REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
@@ -582,6 +583,18 @@ def get_ui_language() -> str:
         return normalize_ui_language(st.session_state.get(UI_LANGUAGE_SESSION_KEY, LANGUAGE_ZH))
     except (AttributeError, KeyError):
         return LANGUAGE_ZH
+
+
+def apply_ui_language_from_query() -> str:
+    """Apply a stable URL language without overriding later in-page changes."""
+    requested = str(st.query_params.get("lang", "")).strip().casefold()
+    if requested not in SUPPORTED_UI_LANGUAGES:
+        return ""
+    if st.session_state.get(UI_LANGUAGE_QUERY_SESSION_KEY) != requested:
+        st.session_state[UI_LANGUAGE_SESSION_KEY] = requested
+        st.session_state["request_mobile_ui_language"] = requested
+        st.session_state[UI_LANGUAGE_QUERY_SESSION_KEY] = requested
+    return requested
 
 
 def ui_text(value: object) -> str:
@@ -20441,6 +20454,7 @@ def render_request_inventory_review_page() -> None:
 
 
 def main() -> None:
+    apply_ui_language_from_query()
     install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
         page_title=ui_text("营销物料管理系统"),

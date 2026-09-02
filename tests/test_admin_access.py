@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V1.9.8")
+        self.assertEqual(app.APP_VERSION, "V1.9.9")
 
     def test_submission_queue_module_version_matches_application(self) -> None:
         self.assertEqual(
@@ -30,6 +30,41 @@ class AdminAccessTests(unittest.TestCase):
                 app.data_submission_success_message(),
                 "Data submitted successfully. Please follow the Feishu approval progress. Thank you for using this application.",
             )
+
+    def test_direct_language_route_initializes_requested_language_once(self) -> None:
+        query_params = {"lang": "en"}
+        session_state: dict[str, object] = {}
+        with (
+            patch.object(app.st, "query_params", query_params),
+            patch.object(app.st, "session_state", session_state),
+        ):
+            self.assertEqual(app.apply_ui_language_from_query(), app.LANGUAGE_EN)
+            self.assertEqual(
+                session_state[app.UI_LANGUAGE_SESSION_KEY],
+                app.LANGUAGE_EN,
+            )
+            self.assertEqual(
+                session_state["request_mobile_ui_language"],
+                app.LANGUAGE_EN,
+            )
+
+            session_state[app.UI_LANGUAGE_SESSION_KEY] = app.LANGUAGE_ZH
+            app.apply_ui_language_from_query()
+
+        self.assertEqual(
+            session_state[app.UI_LANGUAGE_SESSION_KEY],
+            app.LANGUAGE_ZH,
+        )
+
+    def test_invalid_direct_language_route_does_not_change_session(self) -> None:
+        session_state: dict[str, object] = {}
+        with (
+            patch.object(app.st, "query_params", {"lang": "fr"}),
+            patch.object(app.st, "session_state", session_state),
+        ):
+            self.assertEqual(app.apply_ui_language_from_query(), "")
+
+        self.assertNotIn(app.UI_LANGUAGE_SESSION_KEY, session_state)
 
     def test_inventory_review_page_is_available_for_signed_admin_links(self) -> None:
         self.assertTrue(callable(app.render_request_inventory_review_page))
