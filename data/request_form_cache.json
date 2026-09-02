@@ -1,10 +1,10 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-02 11:03:17",
+  "generated_at": "2026-09-02 14:25:17",
   "products": [
     "产品单页(Product Flyer )",
-    "品牌手册(Product Brochure (All\nBanner)）",
+    "公司产品手册",
     "工业产品线手册IR(Industrial Product Line Brochure）",
     "清洁产品线手册CR(Cleaning Product Line Brochure）",
     "配送线产品手册SR(Delivery Robot Product Brochure)",
@@ -16,7 +16,7 @@
     "普渡logo无纺布手提袋(PUDU logo bag)"
   ],
   "no_model_products": [
-    "品牌手册(Product Brochure (All\nBanner)）",
+    "公司产品手册",
     "工业产品线手册IR(Industrial Product Line Brochure）",
     "清洁产品线手册CR(Cleaning Product Line Brochure）",
     "配送线产品手册SR(Delivery Robot Product Brochure)",
@@ -34,7 +34,7 @@
   ],
   "configured_language_products": [
     "产品单页(Product Flyer )",
-    "品牌手册(Product Brochure (All\nBanner)）",
+    "公司产品手册",
     "工业产品线手册IR(Industrial Product Line Brochure）",
     "清洁产品线手册CR(Cleaning Product Line Brochure）",
     "配送线产品手册SR(Delivery Robot Product Brochure)",
@@ -299,35 +299,35 @@
   },
   "category_display_names": {
     "产品单页(Product Flyer )": {
-      "zh": "产品单页(Product Flyer )",
+      "zh": "产品单页",
       "en": "Product Flyer"
     },
-    "品牌手册(Product Brochure (All\nBanner)）": {
-      "zh": "品牌手册(Product Brochure (All\nBanner)）",
-      "en": "Product Brochure (All\nBanner)"
+    "公司产品手册": {
+      "zh": "公司产品手册",
+      "en": "Product Brochure"
     },
     "工业产品线手册IR(Industrial Product Line Brochure）": {
-      "zh": "工业产品线手册IR(Industrial Product Line Brochure）",
+      "zh": "工业产品线手册IR",
       "en": "IR(Industrial Product Line Brochure）"
     },
     "清洁产品线手册CR(Cleaning Product Line Brochure）": {
-      "zh": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+      "zh": "清洁产品线手册CR",
       "en": "CR(Cleaning Product Line Brochure）"
     },
     "配送线产品手册SR(Delivery Robot Product Brochure)": {
-      "zh": "配送线产品手册SR(Delivery Robot Product Brochure)",
+      "zh": "配送线产品手册SR",
       "en": "SR(Delivery Robot Product Brochure)"
     },
     "具身线产品手册GR(Embodied AI Robot Product Brochure)": {
-      "zh": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
+      "zh": "具身线产品手册GR",
       "en": "GR(Embodied AI Robot Product Brochure)"
     },
     "产品易拉宝(Product Roll-Up)": {
-      "zh": "产品易拉宝(Product Roll-Up)",
+      "zh": "产品易拉宝",
       "en": "Product Roll-Up"
     },
     "公仔(Plush Toy)": {
-      "zh": "公仔(Plush Toy)",
+      "zh": "公仔",
       "en": "Plush Toy"
     },
     "冰箱贴( Fridge Magnet)": {
@@ -335,11 +335,11 @@
       "en": "Fridge Magnet(Default to Mixed Shipping)"
     },
     "笔记本礼盒(Notebook Gift Box)": {
-      "zh": "笔记本礼盒(Notebook Gift Box)",
+      "zh": "笔记本礼盒",
       "en": "Notebook Gift Box"
     },
     "普渡logo无纺布手提袋(PUDU logo bag)": {
-      "zh": "普渡logo无纺布手提袋(PUDU logo bag)",
+      "zh": "普渡logo无纺布手提袋",
       "en": "PUDU logo bag"
     },
     "文化POLO衫": {
@@ -878,7 +878,7 @@
       ]
     },
     {
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "models": [
         {
           "model": "无需型号",
@@ -1266,21 +1266,6 @@
           "product_line": "CR"
         },
         {
-          "model": "Pudu SwiftBot",
-          "languages": [
-            "英语(English)",
-            "简中(Simplified Chinese)",
-            "俄语(Russian)",
-            "德语(German)",
-            "意大利语(Italian)",
-            "日语(apanese)",
-            "法语(French)",
-            "繁中(Traditional Chinese)",
-            "葡语(Portuguese)",
-            "西语(Spanish)"
-          ]
-        },
-        {
           "model": "SwiftBot",
           "languages": [
             "英语(English)",
@@ -1579,7 +1564,7 @@
       ]
     }
   ],
-  "combination_count": 682,
+  "combination_count": 672,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -2863,7 +2848,7 @@
     },
     {
       "material_code": "MAT-0361",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "英语(English)",
       "quantity": 1450,
@@ -2871,7 +2856,7 @@
     },
     {
       "material_code": "MAT-0362",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "德语(German)",
       "quantity": 0,
@@ -2879,7 +2864,7 @@
     },
     {
       "material_code": "MAT-0363",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "日语(apanese)",
       "quantity": 0,
@@ -2887,7 +2872,7 @@
     },
     {
       "material_code": "MAT-0364",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "法语(French)",
       "quantity": 0,
@@ -2895,7 +2880,7 @@
     },
     {
       "material_code": "MAT-0365",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "西语(Spanish)",
       "quantity": 0,
@@ -2903,7 +2888,7 @@
     },
     {
       "material_code": "MAT-0366",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "葡语(Portuguese)",
       "quantity": 0,
@@ -2911,7 +2896,7 @@
     },
     {
       "material_code": "MAT-0367",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "俄语(Russian)",
       "quantity": 0,
@@ -2919,7 +2904,7 @@
     },
     {
       "material_code": "MAT-0368",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "繁中(Traditional Chinese)",
       "quantity": 0,
@@ -2927,7 +2912,7 @@
     },
     {
       "material_code": "MAT-0369",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
       "quantity": 380,
@@ -2935,7 +2920,7 @@
     },
     {
       "material_code": "MAT-0370",
-      "product": "品牌手册(Product Brochure (All\nBanner)）",
+      "product": "公司产品手册",
       "model": "无需型号",
       "language": "意大利语(Italian)",
       "quantity": 0,
@@ -5854,86 +5839,6 @@
       "unit_price_rmb": 74.47
     },
     {
-      "material_code": "MAT-1239",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "俄语(Russian)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1240",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "德语(German)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1241",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "意大利语(Italian)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1242",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "日语(apanese)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1243",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "法语(French)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1244",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "简中(Simplified Chinese)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1245",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "繁中(Traditional Chinese)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1246",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "英语(English)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1247",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "葡语(Portuguese)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
-      "material_code": "MAT-1248",
-      "product": "产品易拉宝(Product Roll-Up)",
-      "model": "Pudu SwiftBot",
-      "language": "西语(Spanish)",
-      "quantity": 0,
-      "unit_price_rmb": 74.47
-    },
-    {
       "material_code": "MAT-1249",
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "SwiftBot Neo",
@@ -7038,6 +6943,6 @@
       "unit_price_rmb": 5.416
     }
   ],
-  "row_count": 682,
+  "row_count": 672,
   "built_from": "page_data_static_snapshot"
 }
