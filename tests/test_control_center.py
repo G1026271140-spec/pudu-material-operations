@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from control_center import configuration
 from control_center.catalog import SETTINGS, configuration_location
+from control_center.manual_tools import MANUAL_TOOLS
+from control_center.release import bump_release_version_files, next_patch_version
 from control_center.system import TASKS
 
 
@@ -84,3 +88,72 @@ def test_tunnel_runner_uses_configured_port() -> None:
     installer = (root / "scripts" / "install_local_web_app_task.ps1").read_text(encoding="utf-8")
     assert 'http://127.0.0.1:$Port' in runner
     assert '"-Port", $Port' in installer
+
+
+def test_manual_tools_cover_all_cache_scopes_and_high_risk_sync() -> None:
+    tools = {tool.key: tool for tool in MANUAL_TOOLS}
+    assert {"MaterialCache", "ContactCache", "WarehouseCache", "AllCaches", "ValidateCaches"} <= tools.keys()
+    assert tools["SyncAllRuntimes"].interrupts_services is True
+    assert all(not tools[key].interrupts_services for key in ("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches"))
+
+
+def test_next_patch_version() -> None:
+    assert next_patch_version("V1.9.4") == "V1.9.5"
+    with pytest.raises(ValueError):
+        next_patch_version("1.9")
+
+
+def test_bump_release_version_files_updates_source_and_exact_test(tmp_path: Path) -> None:
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "app.py").write_text('APP_VERSION = "V2.4.9"\n', encoding="utf-8")
+    (tmp_path / "tests" / "test_admin_access.py").write_text(
+        'self.assertEqual(app.APP_VERSION, "V2.4.9")\n', encoding="utf-8"
+    )
+    assert bump_release_version_files(tmp_path) == ("V2.4.9", "V2.4.10")
+    assert 'APP_VERSION = "V2.4.10"' in (tmp_path / "app.py").read_text(encoding="utf-8")
+    assert 'app.APP_VERSION, "V2.4.10"' in (tmp_path / "tests" / "test_admin_access.py").read_text(encoding="utf-8")
+
+
+def test_bump_release_version_cli_can_import_project_package(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "app.py").write_text('APP_VERSION = "V3.1.7"\n', encoding="utf-8")
+    (tmp_path / "tests" / "test_admin_access.py").write_text(
+        'self.assertEqual(app.APP_VERSION, "V3.1.7")\n', encoding="utf-8"
+    )
+    result = subprocess.run(
+        [sys.executable, str(root / "scripts" / "bump_release_version.py"), "--root", str(tmp_path)],
+        cwd=tmp_path,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"current_version": "V3.1.7", "new_version": "V3.1.8"}
+
+
+def test_release_pipeline_has_required_fail_closed_stages() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = (root / "scripts" / "run_control_center_release.ps1").read_text(encoding="utf-8")
+    ordered = [
+        'Set-Stage "发布预检"',
+        'Set-Stage "递增应用版本"',
+        'Set-Stage "刷新全部页面缓存"',
+        'Set-Stage "完整测试与发布校验"',
+        'Set-Stage "重新打包控制程序"',
+        'Set-Stage "提交并推送 GitHub"',
+        'Set-Stage "同步并重启运行组件"',
+        'Set-Stage "运行状态与健康验证"',
+    ]
+    positions = [script.index(stage) for stage in ordered]
+    assert positions == sorted(positions)
+    assert "Sensitive files cannot be committed" in script
+    assert 'Set-ReleaseStatus "failed"' in script
+
+
+def test_launcher_rejects_stale_exe_metadata() -> None:
+    root = Path(__file__).resolve().parents[1]
+    launcher = (root / "scripts" / "run_control_center.ps1").read_text(encoding="utf-8")
+    assert ".VersionInfo.ProductVersion" in launcher
+    assert "$PackagedMetadataVersion -eq $SourceVersion" in launcher

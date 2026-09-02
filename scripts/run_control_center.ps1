@@ -11,9 +11,10 @@ $PythonPath = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
 if ((Test-Path -LiteralPath $PackagedApp) -and (Test-Path -LiteralPath $PackagedVersionFile)) {
     $SourceVersion = (Select-String -LiteralPath (Join-Path $ProjectRoot "app.py") -Pattern '^APP_VERSION\s*=\s*["'']([^"'']+)' | Select-Object -First 1).Matches.Groups[1].Value
     $PackagedVersion = (Get-Content -LiteralPath $PackagedVersionFile -Raw).Trim()
+    $PackagedMetadataVersion = (Get-Item -LiteralPath $PackagedApp).VersionInfo.ProductVersion
 }
 
-if ((Test-Path -LiteralPath $PackagedApp) -and ($PackagedVersion -eq $SourceVersion)) {
+if ((Test-Path -LiteralPath $PackagedApp) -and ($PackagedVersion -eq $SourceVersion) -and ($PackagedMetadataVersion -eq $SourceVersion)) {
     Start-Process -FilePath $PackagedApp -WorkingDirectory $ProjectRoot
     return
 }

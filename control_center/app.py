@@ -14,6 +14,8 @@ from project_config import get_setting
 from .catalog import CATEGORIES, SETTINGS, SETTINGS_BY_KEY, configuration_location
 from .configuration import ROOT, SECRETS_PATH, STREAMLIT_CONFIG_PATH, read_setting, read_toml_setting, write_setting
 from .feishu_runtime import load_approval_instances, load_worker_nodes, update_worker_node
+from .manual_tools import MANUAL_TOOLS, ManualTool, run_manual_tool
+from .release import latest_release_log, latest_release_status, launch_release_worker, release_preview
 from .system import TASKS, TASK_BY_KEY, control_task, current_app_version, synchronize_task_group, system_snapshot, tail_log
 
 
@@ -82,6 +84,7 @@ class ControlCenter(tk.Tk):
         self.current_spec = None
         self.current_category = CATEGORIES[0]
         self.current_page = "运行总览"
+        self.operation_running = False
         self.status_var = tk.StringVar(value="就绪")
         self._configure_style()
         self._build_layout()
@@ -119,7 +122,7 @@ class ControlCenter(tk.Tk):
 
         nav = tk.Frame(header, bg=PANEL)
         nav.pack(side="left", fill="both", expand=True)
-        self.nav_items = ["运行总览", "后台任务", "飞书工具", "设置"]
+        self.nav_items = ["运行总览", "后台任务", "手动工具", "飞书工具", "设置"]
         self.nav_buttons: dict[str, tk.Frame] = {}
         for item in self.nav_items:
             slot = tk.Frame(nav, bg=PANEL, width=128)
@@ -159,6 +162,8 @@ class ControlCenter(tk.Tk):
             self.show_overview()
         elif item == "后台任务":
             self.show_tasks()
+        elif item == "手动工具":
+            self.show_manual_tools()
         elif item == "飞书工具":
             self.show_feishu_tools()
         elif item == "设置":
@@ -306,6 +311,158 @@ class ControlCenter(tk.Tk):
         self.status_var.set(f"已保存：{spec.label}；未自动重启任何服务；备份位于 work/control_center/backups")
         messagebox.showinfo("保存成功", f"{spec.label} 已保存。\n\n没有停止或重启正在运行的应用。\n需要时请在后台任务页手动执行：{spec.restart_scope}", parent=self)
         self.show_settings(spec.category)
+
+    def show_manual_tools(self) -> None:
+        self._clear_content()
+        self._page_heading("手动工具", "集中运行页面缓存、联系人缓存、仓库图片缓存和发布前校验。普通工具只保留本地结果，不会自动提交或重启。")
+        scroller = ScrollableFrame(self.content)
+        scroller.pack(fill="both", expand=True, padx=22, pady=(0, 16))
+
+        release = tk.Frame(scroller.inner, bg="#f4f9fd", highlightbackground="#b8d8ef", highlightthickness=1)
+        release.pack(fill="x", padx=6, pady=(0, 12))
+        release_copy = tk.Frame(release, bg="#f4f9fd")
+        release_copy.pack(side="left", fill="both", expand=True, padx=18, pady=16)
+        tk.Label(release_copy, text="版本刷新", bg="#f4f9fd", fg=TEXT, font=("Microsoft YaHei UI", 12, "bold")).pack(anchor="w")
+        tk.Label(
+            release_copy,
+            text="自动递增版本 → 刷新全部页面缓存 → 完整测试 → 重新打包控制程序 → 提交并推送 master → 同步并重启运行组件 → 健康验证",
+            bg="#f4f9fd",
+            fg=MUTED,
+            justify="left",
+            wraplength=760,
+            font=("Microsoft YaHei UI", 9),
+        ).pack(anchor="w", pady=(5, 8))
+        status = latest_release_status()
+        if status:
+            status_color = SUCCESS if status.get("state") == "success" else "#c42b1c" if status.get("state") == "failed" else ACCENT
+            status_text = f"最近状态：{status.get('stage', '—')} · {status.get('message', '')} · {status.get('updated_at', '')}"
+        else:
+            status_color = MUTED
+            status_text = "尚未通过控制台执行版本刷新。"
+        tk.Label(release_copy, text=status_text, bg="#f4f9fd", fg=status_color, justify="left", wraplength=760, font=("Microsoft YaHei UI", 8)).pack(anchor="w")
+        release_actions = tk.Frame(release, bg="#f4f9fd")
+        release_actions.pack(side="right", padx=18)
+        ttk.Button(release_actions, text="查看发布日志", command=self._show_latest_release_log).pack(pady=(0, 7))
+        ttk.Button(release_actions, text="开始版本刷新", style="Accent.TButton", command=self._start_release).pack()
+
+        tk.Label(scroller.inner, text="缓存与维护程序", bg=BG, fg=MUTED, font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=8, pady=(2, 8))
+        for tool in MANUAL_TOOLS:
+            card = tk.Frame(scroller.inner, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)
+            card.pack(fill="x", padx=6, pady=(0, 9))
+            copy = tk.Frame(card, bg=PANEL)
+            copy.pack(side="left", fill="both", expand=True, padx=16, pady=13)
+            tk.Label(copy, text=tool.label, bg=PANEL, fg=TEXT, font=("Microsoft YaHei UI", 10, "bold")).pack(anchor="w")
+            tk.Label(copy, text=tool.description, bg=PANEL, fg=MUTED, justify="left", wraplength=720, font=("Microsoft YaHei UI", 8)).pack(anchor="w", pady=(3, 2))
+            result_color = "#c42b1c" if tool.interrupts_services else MUTED
+            tk.Label(copy, text=tool.result, bg=PANEL, fg=result_color, justify="left", wraplength=720, font=("Microsoft YaHei UI", 8)).pack(anchor="w")
+            ttk.Button(card, text="一键启动", command=lambda item=tool: self._start_manual_tool(item)).pack(side="right", padx=18)
+
+    def _start_manual_tool(self, tool: ManualTool) -> None:
+        if self.operation_running:
+            messagebox.showwarning("已有程序运行", "请等待当前手动程序完成。", parent=self)
+            return
+        if tool.interrupts_services and not messagebox.askyesno(
+            "高风险操作确认",
+            f"“{tool.label}”会短暂中断网页或后台 Worker。\n\n仅在发布后恢复或人工维护时使用，是否继续？",
+            parent=self,
+        ):
+            return
+        self.operation_running = True
+        window, text = self._create_log_window(f"运行日志 · {tool.label}")
+        self.status_var.set(f"正在运行：{tool.label}……")
+
+        def append(line: str) -> None:
+            self.after(0, lambda value=line: self._append_log(text, value))
+
+        def worker() -> None:
+            try:
+                code, output = run_manual_tool(tool, append)
+            except Exception as exc:
+                self.after(0, lambda error=exc: self._manual_tool_finished(tool, 1, str(error), window))
+                return
+            self.after(0, lambda: self._manual_tool_finished(tool, code, output, window))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _manual_tool_finished(self, tool: ManualTool, code: int, output: str, window: tk.Toplevel) -> None:
+        self.operation_running = False
+        parent = window if window.winfo_exists() else self
+        if code == 0:
+            self.status_var.set(f"手动程序已完成：{tool.label}")
+            messagebox.showinfo("运行完成", f"{tool.label} 已完成。\n\n{tool.result}", parent=parent)
+        else:
+            self.status_var.set(f"手动程序失败：{tool.label}")
+            messagebox.showerror("运行失败", output[-1800:] or "请查看运行日志。", parent=parent)
+
+    def _create_log_window(self, title: str) -> tuple[tk.Toplevel, tk.Text]:
+        window = tk.Toplevel(self)
+        window.title(title)
+        window.geometry("980x620")
+        text = tk.Text(window, wrap="word", bg="#101820", fg="#d8e4ee", insertbackground="#ffffff", font=("Consolas", 9), padx=12, pady=12)
+        text.pack(fill="both", expand=True)
+        text.insert("end", "等待程序输出……\n")
+        return window, text
+
+    @staticmethod
+    def _append_log(text: tk.Text, line: str) -> None:
+        if not text.winfo_exists():
+            return
+        text.insert("end", line + "\n")
+        text.see("end")
+
+    def _show_latest_release_log(self) -> None:
+        path = latest_release_log()
+        if path is None:
+            messagebox.showinfo("暂无日志", "尚未生成版本刷新日志。", parent=self)
+            return
+        window, text = self._create_log_window("最近版本刷新日志")
+        text.delete("1.0", "end")
+        text.insert("1.0", path.read_text(encoding="utf-8-sig", errors="replace"))
+        text.configure(state="disabled")
+
+    def _start_release(self) -> None:
+        if self.operation_running:
+            messagebox.showwarning("已有程序运行", "请等待当前手动程序完成。", parent=self)
+            return
+        try:
+            preview = release_preview()
+        except Exception as exc:
+            messagebox.showerror("发布预检失败", str(exc), parent=self)
+            return
+        changes = "\n".join(preview.changed_files[:18]) or "（当前没有未提交文件；流程仍会递增版本并刷新缓存）"
+        if len(preview.changed_files) > 18:
+            changes += f"\n……另有 {len(preview.changed_files) - 18} 项"
+        prompt = (
+            f"当前分支：{preview.branch}\n"
+            f"当前版本：{preview.current_version}\n"
+            f"目标版本：{preview.next_version}\n\n"
+            f"将纳入发布的本地修改：\n{changes}\n\n"
+            "流程会关闭并在完成后重新打开控制程序，也会短暂重启本地网页、Tunnel 和后台 Worker。是否进入最终确认？"
+        )
+        if not messagebox.askyesno("版本刷新预览", prompt, parent=self):
+            return
+        commit_message = simpledialog.askstring(
+            "GitHub 提交说明",
+            "请输入本次版本刷新的提交说明：",
+            initialvalue=f"Release {preview.next_version}",
+            parent=self,
+        )
+        if commit_message is None or not commit_message.strip():
+            return
+        if not messagebox.askyesno(
+            "最终发布确认",
+            f"确定执行 {preview.next_version} 的完整刷新吗？\n\n"
+            "开始后控制程序会关闭；缓存、测试或推送失败时会停止后续步骤并保留日志，不会跳过失败继续重启。",
+            parent=self,
+        ):
+            return
+        try:
+            launch_release_worker(control_center_pid=os.getpid(), commit_message=commit_message.strip())
+        except Exception as exc:
+            messagebox.showerror("无法启动版本刷新", str(exc), parent=self)
+            return
+        self.status_var.set("版本刷新已交给独立发布程序；控制台即将关闭，完成后会自动重新打开。")
+        self.after(500, self.destroy)
 
     def _on_setting_selected(self, _event=None) -> None:
         selected = self.settings_tree.selection()
