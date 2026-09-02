@@ -20,9 +20,13 @@ from shipping_template import (
 PACKING_TYPE_OPTIONS = ("Flyers", "Brochures", "Banners", "Give aways")
 CATEGORY_DEFINITION_PRINT = "印刷物料"
 CATEGORY_DEFINITION_GIFT = "周边礼品"
+CATEGORY_DEFINITION_CULTURAL = "文化周边"
+CATEGORY_DEFINITION_UNDEFINED = "未定义"
 CATEGORY_DEFINITION_POOLS = (
     ("print", CATEGORY_DEFINITION_PRINT),
     ("gift", CATEGORY_DEFINITION_GIFT),
+    ("cultural", CATEGORY_DEFINITION_CULTURAL),
+    ("undefined", CATEGORY_DEFINITION_UNDEFINED),
 )
 CARTON_FIELD_DEFAULTS: dict[str, object] = {
     "gross_weight": 0.0,
@@ -263,9 +267,14 @@ def shipping_category_pool_options(
     category_by_id: dict[str, dict[str, object]],
 ) -> dict[str, list[str]]:
     options = {pool_id: [] for pool_id, _ in CATEGORY_DEFINITION_POOLS}
+    pool_by_definition = {
+        definition: pool_id
+        for pool_id, definition in CATEGORY_DEFINITION_POOLS
+        if definition != CATEGORY_DEFINITION_UNDEFINED
+    }
     for category_id, category in category_by_id.items():
         definition = str(category.get("category_definition") or "").strip()
-        pool_id = "gift" if definition == CATEGORY_DEFINITION_GIFT else "print"
+        pool_id = pool_by_definition.get(definition, "undefined")
         options[pool_id].append(category_id)
     return options
 
@@ -596,16 +605,23 @@ def _render_cartons_and_contents(
             )
 
             selected_category_ids: list[str] = []
-            pool_columns = st.columns(2, gap="small")
-            for pool_column, (pool_id, definition) in zip(
-                pool_columns,
-                CATEGORY_DEFINITION_POOLS,
-            ):
-                options = category_pool_options.get(pool_id, [])
-                with pool_column.container(border=True):
-                    st.markdown(f"**{definition}**")
-                    st.caption(f"可选 {len(options)} 项")
-                    if options:
+            visible_pools = [
+                (pool_id, definition)
+                for pool_id, definition in CATEGORY_DEFINITION_POOLS
+                if category_pool_options.get(pool_id)
+            ]
+            if not visible_pools:
+                st.caption("暂无可选品类")
+            else:
+                pool_columns = st.columns(len(visible_pools), gap="small")
+                for pool_column, (pool_id, definition) in zip(
+                    pool_columns,
+                    visible_pools,
+                ):
+                    options = category_pool_options.get(pool_id, [])
+                    with pool_column.container(border=True):
+                        st.markdown(f"**{definition}**")
+                        st.caption(f"可选 {len(options)} 项")
                         pool_selection = st.pills(
                             f"{definition}品类",
                             options,
@@ -618,8 +634,6 @@ def _render_cartons_and_contents(
                             width="stretch",
                         )
                         selected_category_ids.extend(pool_selection or [])
-                    else:
-                        st.caption("暂无可选品类")
             st.session_state[_carton_categories_key(carton_no)] = selected_category_ids
             if not selected_category_ids:
                 st.info("这个箱子还没有添加物料。")

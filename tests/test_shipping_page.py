@@ -27,6 +27,15 @@ def render_shipping_carton_page_fixture() -> None:
                 "unit_price": 2.0,
                 "customs_code": "4202920000",
             },
+            {
+                "record_id": "cultural-1",
+                "category": "文化POLO衫",
+                "category_definition": shipping_page.CATEGORY_DEFINITION_CULTURAL,
+                "commercial_invoice_name": "Cultural Polo Shirt",
+                "packing_list_product_type": "Give aways",
+                "unit_price": 10.0,
+                "customs_code": "6105100090",
+            },
         ]
     )
 
@@ -84,7 +93,7 @@ class ShippingPageStateTests(unittest.TestCase):
         self.assertFalse(list(app_test.exception))
         self.assertEqual(
             [item.label for item in app_test.pills],
-            ["箱型模板（可选）", "印刷物料品类", "周边礼品品类"],
+            ["箱型模板（可选）", "印刷物料品类", "周边礼品品类", "文化周边品类"],
         )
         self.assertEqual(
             [item.label for item in app_test.number_input[:5]],
@@ -284,14 +293,19 @@ class ShippingPageStateTests(unittest.TestCase):
             "gift-1": {
                 "category_definition": shipping_page.CATEGORY_DEFINITION_GIFT,
             },
+            "cultural-1": {
+                "category_definition": shipping_page.CATEGORY_DEFINITION_CULTURAL,
+            },
             "legacy-1": {"category_definition": ""},
         }
 
         self.assertEqual(
             shipping_page.shipping_category_pool_options(category_by_id),
             {
-                "print": ["print-1", "legacy-1"],
+                "print": ["print-1"],
                 "gift": ["gift-1"],
+                "cultural": ["cultural-1"],
+                "undefined": ["legacy-1"],
             },
         )
 
