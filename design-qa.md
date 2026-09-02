@@ -41,6 +41,40 @@ No actionable P0, P1, or P2 visual differences remain for the requested MAA-insp
 
 final result: passed
 
+# Request Confirmation Estimated Cost QA
+
+- Source visual truth: `C:/Users/gaohongyuan1/AppData/Local/Temp/codex-clipboard-f641a320-4b3f-4af1-b1e5-850925347c74.png`
+- Desktop implementation: `C:/Users/gaohongyuan1/AppData/Local/Temp/request-cost-v1.9.4-desktop.png`
+- Mobile implementation: `C:/Users/gaohongyuan1/AppData/Local/Temp/request-cost-v1.9.4-mobile.png`
+- Combined comparison: `C:/Users/gaohongyuan1/AppData/Local/Temp/request-cost-v1.9.4-comparison.png`
+- Source pixels: 1631 x 873; desktop viewport: 1280 x 900 CSS pixels; mobile viewport: 390 x 844 CSS pixels; device scale factor 1.
+- State: confirmation page with two cart lines, total quantity 3, and an estimated RMB total of ¥39.26.
+
+## Full-view and focused evidence
+
+The combined comparison places the annotated source and desktop implementation side by side. The new cost card fills the intended third metric position without changing the existing review sections, table, or action buttons. The mobile capture is the focused responsive evidence: material types and total quantity share the first row, while the wider amount and explanatory text occupy a full second row with no horizontal overflow.
+
+## Required fidelity surfaces
+
+- Fonts and typography: existing application font family, weights, and label hierarchy are preserved; the amount uses the established metric weight and teal emphasis.
+- Spacing and layout rhythm: desktop remains a three-column metric strip; mobile becomes a compact two-row grid. Borders, padding, and radius match the existing summary component.
+- Colors and visual tokens: the cost card uses existing teal, ink, muted-text, line, and pale-surface tokens with accessible contrast.
+- Image quality and assets: this confirmation surface contains no product imagery or decorative assets; no placeholder or drawn asset was introduced.
+- Copy and content: `预计总花费` and `按当前单价估算，以最终审核为准` clearly distinguish the applicant preview from the authoritative backend snapshot.
+
+## Interactions and console
+
+- Quantity changes rerun the page and recompute the estimate from the current draft lines.
+- Model and language selectors now retain an empty state until the applicant selects an option; invalid stale choices are still cleared.
+- Desktop and mobile browser-rendered DOM both showed `¥39.26`; mobile metric width was 377 px with 375 px content width and no overflow.
+- Browser console checked: no errors.
+
+## Comparison history and findings
+
+The first browser-rendered implementation matched the requested third-column placement and mobile responsive target. No actionable P0, P1, or P2 visual differences were found, so no visual-fix iteration was required. No focused region beyond the mobile metric strip was needed because the change introduces no imagery or dense new control.
+
+final result: passed
+
 # Shipping Template Compact Layout QA
 
 - Source visual truth: `C:/Users/gaohongyuan1/AppData/Local/Temp/codex-clipboard-da695bff-62d6-4243-a21d-eb2cbfa37244.png`

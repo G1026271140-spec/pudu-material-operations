@@ -330,6 +330,8 @@ EN_DISPLAY_TEXT = {
     "相关附件": "Attachments",
     "物料种类": "Material Types",
     "申请总数量": "Total Requested Quantity",
+    "预计总花费": "Estimated Total Cost",
+    "按当前单价估算，以最终审核为准": "Estimated at current prices; final review prevails",
     "附件数量": "Attachments",
     "物料品类": "Material Category",
     "产品型号": "Product Model",

@@ -218,9 +218,9 @@ class RequestCartTests(unittest.TestCase):
             )
 
         self.assertEqual(state["models"], ["M1"])
-        self.assertEqual(state["language"], "英语")
+        self.assertIsNone(state["language"])
 
-    def test_language_defaults_to_first_available_option(self) -> None:
+    def test_language_does_not_default_to_first_available_option(self) -> None:
         state = {"language": None}
         with patch.object(app.st, "session_state", state):
             selected = app.ensure_request_language_default(
@@ -228,8 +228,34 @@ class RequestCartTests(unittest.TestCase):
                 ["英语", "简中"],
             )
 
-        self.assertEqual(selected, "英语")
-        self.assertEqual(state["language"], "英语")
+        self.assertIsNone(selected)
+        self.assertIsNone(state["language"])
+
+    def test_model_multi_select_does_not_preselect_first_option(self) -> None:
+        state = {"models": []}
+        with patch.object(app.st, "session_state", state):
+            app.normalize_request_option_state(
+                "models",
+                ["M1", "M2"],
+                multiple=True,
+            )
+
+        self.assertEqual(state["models"], [])
+
+    def test_request_estimated_total_uses_cached_rmb_prices(self) -> None:
+        context = {
+            "unit_price_rmb_by_combination": {
+                ("产品单页", "M1", "英语"): 2.5,
+                ("产品手册", "无需型号", "无需语种"): 8.0,
+            }
+        }
+        lines = [
+            {"product": "产品单页", "model": "M1", "language": "英语", "quantity": 4},
+            {"product": "产品手册", "model": app.NO_MODEL_TEXT, "language": app.NO_LANGUAGE_TEXT, "quantity": 2},
+            {"product": "自定义", "model": "自定义", "language": "自定义", "quantity": 99, "is_custom_material": True},
+        ]
+
+        self.assertEqual(app.request_estimated_total_rmb(lines, context), 26.0)
 
     def test_enabling_one_multi_select_turns_the_other_off(self) -> None:
         state = {

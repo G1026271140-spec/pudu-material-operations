@@ -66,7 +66,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V1.9.3"
+APP_VERSION = "V1.9.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -510,7 +510,7 @@ MATERIAL_STOCK_STATUSES = ("负库存", "零库存", "低库存", "正常库存"
 DEFAULT_LOW_STOCK_THRESHOLD = int(get_setting("runtime.default_low_stock_threshold", 100))
 UI_LANGUAGE_SESSION_KEY = "ui_language"
 REQUEST_CONTACT_USER_LOOKUP_KEY = "_request_contact_user_by_id"
-REQUEST_FORM_CACHE_SCHEMA_VERSION = 5
+REQUEST_FORM_CACHE_SCHEMA_VERSION = 6
 REQUEST_PAGE_VISIBILITY_FIELD = "是否在申领页显示"
 REQUEST_CATEGORY_IMAGE_FIELD = "申领页图片"
 REQUEST_PAGE_VISIBLE_VALUE = "是"
@@ -2307,6 +2307,19 @@ def inject_global_styles() -> None:
             font-size: 1.35rem;
             font-weight: 680;
         }
+        .pudu-review-metric small {
+            display: block;
+            margin-top: 0.22rem;
+            color: var(--pudu-muted);
+            font-size: 0.66rem;
+            line-height: 1.35;
+        }
+        .pudu-review-metric-cost {
+            background: #F4FBFA;
+        }
+        .pudu-review-metric-cost strong {
+            color: var(--pudu-teal);
+        }
         hr {
             border-color: var(--pudu-line-soft);
         }
@@ -2508,6 +2521,21 @@ def inject_global_styles() -> None:
             }
             .pudu-review-metric strong {
                 font-size: 1.1rem;
+            }
+            .pudu-review-metrics {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .pudu-review-metric:nth-child(2) {
+                border-right: 0;
+            }
+            .pudu-review-metric-cost {
+                grid-column: 1 / -1;
+                border-top: 1px solid var(--pudu-line);
+                border-right: 0;
+                padding-block: 0.58rem;
+            }
+            .pudu-review-metric-cost small {
+                font-size: 0.62rem;
             }
             /* Dedicated phone layout for the request page. Every selector is
                scoped by the request marker so desktop and admin pages retain
@@ -4957,6 +4985,9 @@ def request_form_cache_from_inventory(
                     "model": str(item[2]).strip() or NO_MODEL_TEXT,
                     "language": str(item[3]).strip() or NO_LANGUAGE_TEXT,
                     "quantity": int(item[4] or 0),
+                    # Keep the same RMB conversion used by backend snapshots so
+                    # the cache-only request page can estimate a cart total.
+                    "unit_price_rmb": round(float(item[5] or 0) * 6.77, 4),
                 }
             )
     model_product_lines = {
@@ -5093,6 +5124,7 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
     product_languages: dict[str, list[str]] = {}
     product_model_languages: dict[tuple[str, str], list[str]] = {}
     inventory_product_keys: set[str] = set()
+    unit_price_rmb_by_combination: dict[tuple[str, str, str], float] = {}
     rows = list(cache_data.get("inventory_rows") or [])
     has_active_combination_config = "active_combinations" in cache_data
     for item in rows:
@@ -5104,9 +5136,12 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
         if not product:
             continue
         product_key = normalize_option_label(product)
+        model_key = normalize_option_label(model)
         inventory_product_keys.add(product_key)
+        unit_price_rmb_by_combination[(product_key, model_key, language)] = float(
+            item.get("unit_price_rmb") or 0
+        )
         if not has_active_combination_config:
-            model_key = normalize_option_label(model)
             product_models.setdefault(product_key, []).append(model)
             product_languages.setdefault(product_key, []).append(language)
             product_model_languages.setdefault((product_key, model_key), []).append(language)
@@ -5187,6 +5222,7 @@ def request_form_cache_to_selection_context(cache_data: dict[str, object]) -> di
         "product_model_languages": {
             key: sort_languages(values) for key, values in product_model_languages.items()
         },
+        "unit_price_rmb_by_combination": unit_price_rmb_by_combination,
         "inventory_df": pd.DataFrame(rows),
         "cache_source": cache_data.get("source", ""),
         "cache_generated_at": cache_data.get("generated_at", ""),
@@ -13557,17 +13593,36 @@ def normalize_request_option_state(
             if isinstance(current_value, list)
             else []
         )
-        st.session_state[state_key] = selected_values or options[:1]
+        st.session_state[state_key] = selected_values
         return
     if not isinstance(current_value, str) or current_value not in options:
-        st.session_state[state_key] = options[0] if options else None
+        st.session_state[state_key] = None
 
 
 def ensure_request_language_default(state_key: str, options: list[str]) -> str | None:
-    """Keep one valid language selected whenever language options are available."""
+    """Keep a deliberate language choice valid without preselecting one."""
     normalize_request_option_state(state_key, options, multiple=False)
     selected = st.session_state.get(state_key)
     return str(selected) if isinstance(selected, str) and selected in options else None
+
+
+def request_estimated_total_rmb(
+    lines: list[dict[str, object]],
+    selection_context: dict[str, object],
+) -> float:
+    """Estimate cart cost from cached prices; backend snapshots stay authoritative."""
+    price_index = dict(selection_context.get("unit_price_rmb_by_combination") or {})
+    total = 0.0
+    for line in lines:
+        if bool(line.get("is_custom_material")):
+            continue
+        key = (
+            normalize_option_label(line.get("product")),
+            normalize_option_label(line.get("model") or NO_MODEL_TEXT),
+            str(line.get("language") or NO_LANGUAGE_TEXT).strip(),
+        )
+        total += float(price_index.get(key) or 0) * max(0, int(line.get("quantity") or 0))
+    return round(total, 2)
 
 
 def sync_request_model_line_selection(
@@ -13864,13 +13919,20 @@ def render_request_review() -> None:
 
     lines = [dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)]
     total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+    estimated_total_rmb = request_estimated_total_rmb(
+        lines,
+        get_request_form_selection_context(),
+    )
     material_types_label = escape(ui_text("物料种类"))
     total_quantity_label = escape(ui_text("申请总数量"))
+    estimated_total_label = escape(ui_text("预计总花费"))
+    estimated_total_hint = escape(ui_text("按当前单价估算，以最终审核为准"))
     st.markdown(
         f"""
         <div class="pudu-review-metrics">
             <div class="pudu-review-metric"><span>{material_types_label}</span><strong>{len(lines)}</strong></div>
             <div class="pudu-review-metric"><span>{total_quantity_label}</span><strong>{total_quantity}</strong></div>
+            <div class="pudu-review-metric pudu-review-metric-cost"><span>{estimated_total_label}</span><strong>¥{estimated_total_rmb:,.2f}</strong><small>{estimated_total_hint}</small></div>
         </div>
         """,
         unsafe_allow_html=True,
