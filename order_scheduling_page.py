@@ -242,7 +242,7 @@ def render_order_scheduling_page(app):
     date_range = filters[0].date_input("需要下单日期范围", value=[], key="order_filter_dates")
     query = filters[1].text_input("搜索申请单／申请人／用途", key="order_filter_query").strip().casefold()
     only_unreviewed = filters[2].checkbox("仅未核实库存", value=False, key="order_filter_unreviewed")
-    only_unordered = filters[3].checkbox("仅未下单", value=False, key="order_filter_unordered")
+    exclude_unreviewed = filters[3].checkbox("排除未核实库存", value=False, key="order_filter_exclude_unreviewed")
     review_date = filters[4].date_input("下次核实库存日期", value=None, key="order_filter_review_date")
     include_missing = filters[5].checkbox("包含待补充日期", value=True)
     groups = service.grouped_requests(snapshot)
@@ -259,7 +259,7 @@ def render_order_scheduling_page(app):
         review_status = app.feishu_text(group["fields"], "库存审查状态") or app.INVENTORY_REVIEW_PENDING
         if only_unreviewed and review_status != app.INVENTORY_REVIEW_PENDING:
             continue
-        if only_unordered and group["generated"]:
+        if exclude_unreviewed and review_status == app.INVENTORY_REVIEW_PENDING:
             continue
         if review_date:
             next_review = rules.as_date(group["fields"].get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))

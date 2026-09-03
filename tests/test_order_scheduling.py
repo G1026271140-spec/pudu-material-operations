@@ -39,6 +39,12 @@ def test_customer_visit_has_no_lead_time_limit():
     assert result[r.TIME_CLASS] == "时间豁免"
 
 
+def test_order_schedule_filters_use_review_exclusion_not_order_filter():
+    source = open("order_scheduling_page.py", encoding="utf-8").read()
+    assert "排除未核实库存" in source
+    assert "仅未下单" not in source
+
+
 def test_invalid_dates_and_unknown_reason():
     for start, end, reason in [(None, None, "代理活动"), ("2026-10-02", "2026-10-01", "代理活动"),
                                ("2026-10-01", "2026-10-02", "")]:
