@@ -43,7 +43,7 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn('"PUDU Submission Worker"', runner)
         self.assertIn("Start-ScheduledTask", runner)
         self.assertIn("New-ScheduledTaskSettingsSet -Hidden", installer)
-        self.assertIn('"PT1M"', installer)
+        self.assertIn("-RepetitionInterval (New-TimeSpan -Minutes 1)", installer)
         self.assertIn("wscript.exe", installer)
 
 
