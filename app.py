@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.0.4"
+APP_VERSION = "V2.0.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -9920,8 +9920,8 @@ def submit_feishu_material_request(
         "客户名称": request_payload.get("customer_name"),
         "国家": request_payload.get("country"),
         "收件人信息": request_payload.get("recipient_info"),
-        "运费的承担者": request_payload.get("freight_payer"),
-        "运费承担者": request_payload.get("freight_payer"),
+        "运费的承担者": DEFAULT_FREIGHT_PAYER,
+        "运费承担者": DEFAULT_FREIGHT_PAYER,
         "业务类型": "物料领取",
         "用途/活动": material_usage,
         "用途|活动": material_usage,
@@ -10076,6 +10076,7 @@ def queued_material_request_payload(
             "accepted_roles",
         )
     }
+    queued_request["freight_payer"] = DEFAULT_FREIGHT_PAYER
     queued_lines = [
         {
             "product": str(line.get("product") or ""),
@@ -14127,9 +14128,8 @@ def render_request_review() -> None:
         render_request_review_field(overview_cols[2], "客户名称", draft.get("customer_name"))
         render_request_review_field(overview_cols[3], "国家", draft.get("country"))
         detail_cols = st.columns([1.2, 1, 1.4])
-        render_request_review_field(detail_cols[0], "运费承担者", draft.get("freight_payer"))
-        render_request_review_field(detail_cols[1], "物料用途", draft.get("material_usage"))
-        render_request_review_field(detail_cols[2], "收件人信息", draft.get("recipient_info"))
+        render_request_review_field(detail_cols[0], "物料用途", draft.get("material_usage"))
+        render_request_review_field(detail_cols[1], "收件人信息", draft.get("recipient_info"))
         if draft.get("scheduling_version") == 1:
             schedule_cols = st.columns(3)
             render_request_review_field(schedule_cols[0], "申请原因", draft.get("request_reason"))
@@ -14682,17 +14682,7 @@ def render_change_form(show_title: bool = True) -> None:
             on_change=mark_request_form_dirty,
         )
 
-        freight_cols = st.columns([1, 2])
-        required_field_label(freight_cols[0], "运费的承担者")
-        if st.session_state.get("request_freight_payer") not in FREIGHT_PAYER_OPTIONS:
-            st.session_state["request_freight_payer"] = DEFAULT_FREIGHT_PAYER
-        freight_payer = freight_cols[0].selectbox(
-            "运费的承担者",
-            FREIGHT_PAYER_OPTIONS,
-            key="request_freight_payer",
-            label_visibility="collapsed",
-            on_change=mark_request_form_dirty,
-        )
+        freight_payer = DEFAULT_FREIGHT_PAYER
         from order_scheduling_page import request_schedule_inputs
         scheduling_inputs = request_schedule_inputs(sys.modules[__name__])
 

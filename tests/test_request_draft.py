@@ -70,6 +70,14 @@ class RequestDraftTests(unittest.TestCase):
 
         self.assertEqual(session_state["request_freight_payer"], "普渡付款(PUDU)")
 
+    def test_queued_request_forces_pudu_freight_payer(self) -> None:
+        queued = app.queued_material_request_payload(
+            {"freight_payer": "申请部门承担"}, []
+        )
+        self.assertEqual(
+            queued["request_payload"]["freight_payer"], app.DEFAULT_FREIGHT_PAYER
+        )
+
     def test_product_line_manuals_are_displayed_together(self) -> None:
         products = app.sort_request_products(
             [
