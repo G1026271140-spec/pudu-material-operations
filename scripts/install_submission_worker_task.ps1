@@ -135,8 +135,10 @@ Start-ScheduledTask -TaskName $TaskName
 $running = $false
 for ($attempt = 0; $attempt -lt 20; $attempt++) {
     Start-Sleep -Milliseconds 500
-    $state = (Get-ScheduledTask -TaskName $TaskName).State
-    if ($state -eq "Running") {
+    $escapedRunner = [Regex]::Escape([IO.Path]::GetFullPath($InstalledRunnerScript))
+    $workerProcess = Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe' OR Name = 'pwsh.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match $escapedRunner }
+    if ($null -ne $workerProcess) {
         $running = $true
         break
     }
