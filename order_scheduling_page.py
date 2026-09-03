@@ -119,18 +119,16 @@ def request_schedule_inputs(app):
     cols = st.columns([1, 1.5], gap="small")
     reasons_en = {"代理活动": "Dealer activity", "展会需求": "Exhibition", "客户来访": "Customer visit"}
     app.required_field_label(cols[0], "Request reason" if en else "申请原因")
-    app.required_field_label(cols[1], "Arrival date / range" if en else "到达日期／范围")
+    app.required_field_label(cols[1], "Material usage time" if en else "物料使用时间")
     reason = cols[0].selectbox("Request reason *" if en else "申请原因 *", rules.REASONS,
                               index=None, key="request_schedule_reason",
                               format_func=lambda v: reasons_en[v] if en else v,
                               placeholder="Please select" if en else "请选择", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
-    dates = cols[1].date_input("Required arrival date/range *" if en else "要求到达使用场景的日期／范围 *",
+    dates = cols[1].date_input("Material usage time *" if en else "物料使用时间 *",
                               value=[], min_value=rules.today(), key="request_schedule_dates",
                               format="YYYY-MM-DD", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
-    st.caption("Arrival means delivery to the place of use. Calendar days: 7–14 = urgent; 15+ = standard. Customer visits and regional marketing managers are exempt. Date ranges use the start date."
-               if en else "到达日期指到达使用场景的日期。按自然日：7～14天加急，15天起普通；客户来访、区域市场经理豁免。范围按开始日倒排，单日可选相同开始和结束日。")
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
     return {"scheduling_version": 1, "request_reason": reason or "",
             "arrival_start": dates[0].isoformat() if dates else "",
@@ -195,8 +193,7 @@ def dates_dialog(app, group, operator):
                               index=rules.REASONS.index(f["申请原因"]) if f.get("申请原因") in rules.REASONS else None)
         start = rules.as_date(f.get(rules.ARRIVAL_START))
         end = rules.as_date(f.get(rules.ARRIVAL_END))
-        dates = st.date_input("要求到达使用场景的日期／范围", value=(start, end) if start and end else [], format="YYYY-MM-DD")
-        st.caption("以原申请提交日计算提前天数；不会修改提交日期或审批状态。")
+        dates = st.date_input("物料使用时间", value=(start, end) if start and end else [], format="YYYY-MM-DD")
         if st.button("保存排期日期", type="primary", disabled=not reason or not dates):
             enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "request_dates", "request_id": group["id"],
                     "expected_fingerprint": group["fingerprint"], "operator_open_id": operator,

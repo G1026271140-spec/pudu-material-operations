@@ -48,8 +48,8 @@ class LocalWebRunnerTests(unittest.TestCase):
 
     def test_request_quantity_controls_are_compact_and_no_200_preset(self) -> None:
         source = (ROOT / "app.py").read_text(encoding="utf-8")
-        self.assertIn("[20, 50, 100]", source)
-        self.assertNotIn("[20, 50, 100, 200]", source)
+        self.assertIn("[20, 50]", source)
+        self.assertNotIn("[20, 50, 100]", source)
         self.assertIn("grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr) minmax(0, 0.92fr)", source)
         self.assertIn("position: static !important", source)
 

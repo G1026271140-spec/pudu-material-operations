@@ -31,6 +31,8 @@ ZH_DISPLAY_TEXT = {
 
 
 EN_DISPLAY_TEXT = {
+    "物料使用时间": "Material usage time",
+    "物料使用时间 *": "Material usage time *",
     "申请原因": "Request reason",
     "要求到达开始日期": "Required arrival start date",
     "要求到达结束日期": "Required arrival end date",

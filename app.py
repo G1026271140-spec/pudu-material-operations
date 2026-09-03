@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.1.2"
+APP_VERSION = "V2.1.3"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -3206,6 +3206,14 @@ def inject_global_styles() -> None:
             [class*="st-key-request_spec_fixed_"] button {
                 min-height: 22px !important;
                 font-size: 0.54rem !important;
+            }
+            [class*="st-key-request_cart_quantity_"] div[data-baseweb="input"],
+            [class*="st-key-request_cart_remark_"] div[data-baseweb="input"],
+            [class*="st-key-request_cart_quantity_"] input,
+            [class*="st-key-request_cart_remark_"] input {
+                min-height: 24px !important;
+                height: 24px !important;
+                padding-block: 0 !important;
             }
             [class*="st-key-request_spec_fixed_"] [data-testid="stHorizontalBlock"] {
                 display: grid !important;
@@ -14482,7 +14490,7 @@ def render_request_material_builder(
                                             unsafe_allow_html=True,
                                         )
                                         selected_language_values = st.pills(
-                                            "语种",
+                                            ui_text("语种"),
                                             language_options,
                                             selection_mode="multi" if language_multi else "single",
                                             required=not language_multi,
@@ -14511,7 +14519,7 @@ def render_request_material_builder(
                             )
                             option_cols[1].pills(
                                 "快捷数量",
-                                [20, 50, 100],
+                                [20, 50],
                                 selection_mode="single",
                                 format_func=lambda value: str(value),
                                 key=quantity_preset_key,
