@@ -87,6 +87,12 @@ if (-not (Test-Path -LiteralPath (Join-Path $RunnerRepoPath ".git"))) {
 
 & $git -C $RunnerRepoPath config user.name "pudu-cache-runner"
 & $git -C $RunnerRepoPath config user.email "pudu-cache-runner@users.noreply.github.com"
+& $git -C $RunnerRepoPath fetch origin $Branch
+if ($LASTEXITCODE -ne 0) { throw "Unable to fetch the cache runner repository." }
+& $git -C $RunnerRepoPath switch $Branch
+if ($LASTEXITCODE -ne 0) { throw "Unable to switch the cache runner repository to $Branch." }
+& $git -C $RunnerRepoPath pull --ff-only origin $Branch
+if ($LASTEXITCODE -ne 0) { throw "Unable to update the cache runner repository." }
 
 $bootstrapPython = Join-Path $SourceRepoPath ".venv\Scripts\python.exe"
 if (-not (Test-Path -LiteralPath $bootstrapPython)) {

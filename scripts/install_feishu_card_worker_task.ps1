@@ -17,7 +17,8 @@ $action = New-ScheduledTaskAction `
 $TaskUser = "$env:USERDOMAIN\$env:USERNAME"
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $TaskUser
 $settings = New-ScheduledTaskSettingsSet `
-    -AllowStartIfOnBatteries `
+	-Hidden `
+	-AllowStartIfOnBatteries `
     -DontStopIfGoingOnBatteries `
     -ExecutionTimeLimit ([TimeSpan]::Zero) `
     -RestartCount 999 `

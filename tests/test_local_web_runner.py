@@ -43,6 +43,8 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn("Stop-RunnerPowerShell $InstalledRunnerScript", submission)
         self.assertIn("-notmatch \"-Interactive\"", cache)
         self.assertIn("-Hidden", cache)
+        card = (ROOT / "scripts" / "install_feishu_card_worker_task.ps1").read_text(encoding="utf-8")
+        self.assertIn("-Hidden", card)
 
     def test_runtime_watchdog_is_hidden_and_checks_three_tasks(self) -> None:
         runner = (ROOT / "scripts" / "run_runtime_watchdog.ps1").read_text(encoding="utf-8")
