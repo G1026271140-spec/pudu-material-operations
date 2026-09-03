@@ -34,6 +34,11 @@ def test_exemptions(roles, reason):
         r.calculate_dates("2026-09-02", "2026-09-02", reason, roles, submitted="2026-09-03")
 
 
+def test_customer_visit_has_no_lead_time_limit():
+    result = r.calculate_dates("2026-09-04", "2026-09-05", "客户来访", ["销售"], submitted="2026-09-03")
+    assert result[r.TIME_CLASS] == "时间豁免"
+
+
 def test_invalid_dates_and_unknown_reason():
     for start, end, reason in [(None, None, "代理活动"), ("2026-10-02", "2026-10-01", "代理活动"),
                                ("2026-10-01", "2026-10-02", "")]:

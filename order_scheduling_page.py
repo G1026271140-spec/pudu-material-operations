@@ -130,7 +130,7 @@ def request_schedule_inputs(app):
                               format="YYYY-MM-DD", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
-    if dates:
+    if dates and reason != "客户来访":
         lead_days = (dates[0] - rules.today()).days
         if lead_days < 7:
             st.error("Your material usage time is too soon to fulfill; please do not submit this request."
