@@ -14,15 +14,14 @@ def test_real_xlsx_has_five_columns_numeric_quantities_and_exact_aggregation():
     content = build_order_workbook([sample(), sample(), sample(model="GT5", remark="加厚纸")])
     wb = load_workbook(BytesIO(content))
     ws = wb.active
-    assert wb.sheetnames == ["物料下单表"]
+    assert wb.sheetnames[0].endswith("营销物料下单")
     assert tuple(c.value for c in ws[1]) == HEADERS
     assert ws.max_column == 5 and ws.max_row == 3
     assert ws["D2"].value == 100 and ws["D2"].data_type == "n"
     assert sum(ws.cell(row, 4).value for row in (2, 3)) == 150
     assert ws["E3"].value == "展会使用\n制作备注：加厚纸"
-    assert ws.freeze_panes == "A2" and ws.auto_filter.ref == "A1:E3"
-    assert ws.print_title_rows == "$1:$1"
-    assert ws.column_dimensions["E"].width == 65
+    assert ws.freeze_panes is None and ws.auto_filter.ref is None
+    assert ws.column_dimensions["E"].width == 72.75
 
 
 @pytest.mark.parametrize("text", ['=HYPERLINK("https://example.invalid", "x")', '+cmd', '-1+1', '@SUM(A1)', '=1+1'])

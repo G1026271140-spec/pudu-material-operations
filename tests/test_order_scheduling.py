@@ -359,7 +359,7 @@ def test_request_date_widgets_default_empty_and_accept_single_date(monkeypatch):
     ui.selectbox[0].set_value("代理活动")
     ui.date_input[0].set_value(date(2026, 10, 1)).run()
     assert not ui.exception
-    assert ui.date_input[0].value == (date(2026, 10, 1), date(2026, 10, 3))
+    assert ui.date_input[0].value == date(2026, 10, 1)
 
 
 def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):

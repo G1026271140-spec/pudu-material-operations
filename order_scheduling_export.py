@@ -6,19 +6,21 @@ Source allocations stay in Base; the supplier sheet has exactly five columns.
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
+from copy import copy
+from datetime import datetime, timedelta, timezone
 import math
 import unicodedata
 
-from openpyxl import Workbook
+from openpyxl import load_workbook
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.page import PageMargins
 
 from order_scheduling import aggregate_export_rows
 
 HEADERS = ("类型", "物料名称", "语种", "数量", "用途")
-WIDTHS = (22, 35, 25, 12, 65)
+TEMPLATE_PATH = Path(__file__).resolve().parent / "assets" / "templates" / "marketing_material_order.xlsx"
 
 
 def _wrapped_lines(value: str, width: float) -> int:
@@ -32,12 +34,18 @@ def build_order_workbook(lines: list[dict]) -> bytes:
         raise ValueError("至少选择一条有效明细后才能生成下单表。")
     if len(rows) > 1_048_575:
         raise ValueError("下单明细超过 Excel 行数上限，请拆分批次。")
-    wb = Workbook()
+    if not TEMPLATE_PATH.exists():
+        raise FileNotFoundError(f"申请单下载模板不存在：{TEMPLATE_PATH}")
+    wb = load_workbook(TEMPLATE_PATH)
     ws = wb.active
-    ws.title = "物料下单表"
-    wb.properties.creator = "PUDU"
-    wb.properties.title = "物料下单表"
-    ws.append(HEADERS)
+    now = datetime.now(timezone(timedelta(hours=8)))
+    ws.title = f"{now.month}月{now.day}日营销物料下单"
+    template_styles = [copy(ws.cell(2, col)._style) for col in range(1, len(HEADERS) + 1)] if ws.max_row >= 2 else [None] * len(HEADERS)
+    if ws.max_row > 1:
+        ws.delete_rows(2, ws.max_row - 1)
+    for col, header in enumerate(HEADERS, start=1):
+        if ws.cell(1, col).value != header:
+            raise ValueError(f"下载模板表头不匹配：第{col}列应为{header}。")
     for index, values in enumerate(rows, start=2):
         text_lines = 1
         for col, value in enumerate(values, start=1):
@@ -49,32 +57,16 @@ def build_order_workbook(lines: list[dict]) -> bytes:
                 # Force literal text, including =/+/-/@ prefixes. Never execute
                 # request remarks as Excel formulas or external links.
                 cell.data_type = "s"
-                text_lines = max(text_lines, _wrapped_lines(value, WIDTHS[col-1]))
+                column_width = ws.column_dimensions[get_column_letter(col)].width or 10
+                text_lines = max(text_lines, _wrapped_lines(value, column_width))
             else:
                 cell.value = value
-                cell.number_format = "#,##0"
-            cell.font = Font(name="微软雅黑", size=11, color="152B3C")
-            cell.alignment = Alignment(horizontal="right" if col == 4 else "left", vertical="center", wrap_text=True)
-            cell.border = Border(bottom=Side(style="hair", color="DFE6EC"))
-        ws.row_dimensions[index].height = min(409, max(30, text_lines * 16 + 10))
-    for cell in ws[1]:
-        cell.font = Font(name="微软雅黑", size=11, bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="1C4B71")
-        cell.alignment = Alignment(horizontal="left", vertical="center")
-    ws.row_dimensions[1].height = 30
-    for index, width in enumerate(WIDTHS, start=1):
-        ws.column_dimensions[get_column_letter(index)].width = width
-    ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:E{ws.max_row}"
-    ws.sheet_view.showGridLines = False
-    ws.print_title_rows = "1:1"
-    ws.print_options.horizontalCentered = True
-    ws.page_setup.orientation = "landscape"
-    ws.page_setup.paperSize = ws.PAPERSIZE_A4
-    ws.page_setup.fitToWidth, ws.page_setup.fitToHeight = 1, 0
-    ws.sheet_properties.pageSetUpPr.fitToPage = True
-    ws.page_margins = PageMargins(left=.25, right=.25, top=.35, bottom=.35, header=.15, footer=.15)
-    ws.print_area = ws.auto_filter.ref
+            if template_styles[col - 1]:
+                cell._style = copy(template_styles[col - 1])
+            if isinstance(value, str):
+                cell.value = value
+                cell.data_type = "s"
+        ws.row_dimensions[index].height = ws.row_dimensions[2].height
     output = BytesIO()
     wb.save(output)
     return output.getvalue()
