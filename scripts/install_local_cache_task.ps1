@@ -106,11 +106,6 @@ if (-not (Test-Path -LiteralPath $powershellPath)) {
     $powershellPath = Join-Path $PSHOME "pwsh.exe"
 }
 $taskArguments = @(
-    "-NoProfile",
-    "-NonInteractive",
-    "-ExecutionPolicy", "Bypass",
-    "-WindowStyle", "Hidden",
-    "-File", ('"{0}"' -f $InstalledRunnerScript),
     "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
     "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
     "-LogDirectory", ('"{0}"' -f $LogDirectory),
@@ -141,11 +136,6 @@ Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 $contactLogDirectory = Join-Path $LogDirectory "contacts"
 New-Item -ItemType Directory -Path $contactLogDirectory -Force | Out-Null
 $contactArguments = @(
-    "-NoProfile",
-    "-NonInteractive",
-    "-ExecutionPolicy", "Bypass",
-    "-WindowStyle", "Hidden",
-    "-File", ('"{0}"' -f $InstalledRunnerScript),
     "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
     "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
     "-LogDirectory", ('"{0}"' -f $contactLogDirectory),

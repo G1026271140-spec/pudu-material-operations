@@ -98,11 +98,6 @@ if (-not (Test-Path -LiteralPath $powershellPath)) {
     $powershellPath = Join-Path $PSHOME "pwsh.exe"
 }
 $taskArguments = @(
-    "-NoProfile",
-    "-NonInteractive",
-    "-ExecutionPolicy", "Bypass",
-    "-WindowStyle", "Hidden",
-    "-File", ('"{0}"' -f $InstalledRunnerScript),
     "-RepoPath", ('"{0}"' -f $RunnerRepoPath),
     "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath),
     "-LogDirectory", ('"{0}"' -f $LogDirectory),
@@ -112,7 +107,7 @@ $taskArguments = @(
 
 $action = New-ScheduledTaskAction `
     -Execute "wscript.exe" `
-    -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $InstalledRunnerScript, $taskArguments) `
+    -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $InstalledRunnerScript, ($taskArguments -join " ")) `
     -WorkingDirectory $RunnerRoot
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
 $settings = New-ScheduledTaskSettingsSet `

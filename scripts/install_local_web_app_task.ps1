@@ -99,7 +99,7 @@ $orphanedWebProcesses = Get-CimInstance Win32_Process -Filter "Name = 'python.ex
 foreach ($process in $orphanedWebProcesses) {
     Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
 }
-$webArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $WebRunner), "-RepoPath", ('"{0}"' -f $RunnerRepoPath), "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-BootstrapPython", ('"{0}"' -f $bootstrapPython), "-Port", $Port) -join " "
+$webArgs = @("-RepoPath", ('"{0}"' -f $RunnerRepoPath), "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-BootstrapPython", ('"{0}"' -f $bootstrapPython), "-Port", $Port) -join " "
 $webAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $WebRunner, $webArgs) -WorkingDirectory $RunnerRoot
 Register-ScheduledTask -TaskName $WebTaskName -InputObject (New-ScheduledTask -Action $webAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the PUDU material Streamlit app on localhost only.") -Force | Out-Null
 Start-ScheduledTask -TaskName $WebTaskName
@@ -109,7 +109,7 @@ if (-not $SkipTunnel) {
     $cloudflared = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source
     if (-not $cloudflared) { $cloudflared = "C:\Program Files (x86)\cloudflared\cloudflared.exe" }
     if (-not (Test-Path -LiteralPath $cloudflared)) { throw "cloudflared is not installed." }
-    $tunnelArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $TunnelRunner), "-CloudflaredPath", ('"{0}"' -f $cloudflared), "-TokenFile", ('"{0}"' -f $TokenFile), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-Port", $Port) -join " "
+$tunnelArgs = @("-CloudflaredPath", ('"{0}"' -f $cloudflared), "-TokenFile", ('"{0}"' -f $TokenFile), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-Port", $Port) -join " "
     $tunnelAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $TunnelRunner, $tunnelArgs) -WorkingDirectory $RunnerRoot
     Register-ScheduledTask -TaskName $TunnelTaskName -InputObject (New-ScheduledTask -Action $tunnelAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Connects the local PUDU web app through Cloudflare Named Tunnel.") -Force | Out-Null
     Start-ScheduledTask -TaskName $TunnelTaskName
