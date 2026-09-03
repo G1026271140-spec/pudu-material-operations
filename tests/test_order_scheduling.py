@@ -187,10 +187,8 @@ def test_generate_selected_only_then_exclude_whole_request_and_retry_no_duplicat
     payload = generation_payload(svc)
     progress = svc.generate(payload, {}, lambda _: None)
     assert progress["write_done"]
-    from io import BytesIO
-    from openpyxl import load_workbook
-    workbook = load_workbook(BytesIO(svc.app.upload_media.call_args.args[1]))
-    assert workbook.active["D2"].value == 20
+    svc.app.upload_media.assert_not_called()
+    assert "下单表文件" not in r.SCHEMA[r.BATCH_TABLE]
     assert len(svc.app.data[r.DETAIL_TABLE]) == 1
     assert svc.app.data[r.DETAIL_TABLE][0]["fields"]["下单数量"] == 20
     assert svc.app.data[app.REQUEST_LINE_TABLE_NAME][1]["fields"].get(r.GENERATED) is None
@@ -343,7 +341,7 @@ def render_request_dates_fixture():
 def test_request_date_widgets_default_empty_and_accept_range(monkeypatch):
     from streamlit.testing.v1 import AppTest
     monkeypatch.setattr(app, "get_ui_language", lambda: app.LANGUAGE_ZH)
-    ui = AppTest.from_function(render_request_dates_fixture).run()
+    ui = AppTest.from_function(render_request_dates_fixture, default_timeout=10).run()
     assert not ui.exception
     assert ui.selectbox[0].value is None
     assert not ui.date_input[0].value
@@ -373,3 +371,72 @@ def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):
     assert not ui.exception
     assert any(button.label == "新增明细" for button in ui.button)
     assert any(widget.label == "修改说明（必填）" for widget in ui.text_input)
+
+
+def test_prepare_download_without_network_or_writes_and_worker_no_attachment(svc):
+    from order_scheduling_export import build_order_workbook
+    payload = generation_payload(svc)
+    snapshot = svc.snapshot()
+    original_read = svc.app.fresh_feishu_rows
+    svc.app.fresh_feishu_rows = Mock(side_effect=AssertionError("UI must not read network"))
+    prepared = svc.prepare_export(payload, snapshot)
+    assert build_order_workbook(prepared).startswith(b"PK")
+    assert not svc.app.changes
+    svc.app.fresh_feishu_rows = original_read
+    svc.generate({**payload, "export_rows": prepared}, {}, lambda _: None)
+    svc.app.upload_media.assert_not_called()
+    assert "下单表文件" not in svc.app.data[r.BATCH_TABLE][0]["fields"]
+
+
+def test_download_snapshot_mismatch_rejected_before_batch_write(svc):
+    payload = generation_payload(svc)
+    prepared = svc.prepare_export(payload, svc.snapshot())
+    prepared[0]["quantity"] += 1
+    with pytest.raises(ValueError, match="下载明细"):
+        svc.generate({**payload, "export_rows": prepared}, {}, lambda _: None)
+    assert not svc.app.data[r.BATCH_TABLE]
+    assert not svc.app.changes
+
+
+def test_async_write_copies_payload_and_does_not_wait():
+    from threading import Event
+    from order_scheduling_async import submit_write
+    entered, release = Event(), Event()
+    def write(kind, payload, key):
+        entered.set()
+        assert release.wait(5)
+        return payload
+    payload = {"lines": [1]}
+    future = submit_write(SimpleNamespace(enqueue_feishu_background_write=write), "kind", payload, "stable-key")
+    try:
+        assert entered.wait(2)
+        assert not future.done()
+        payload["lines"].append(2)
+    finally:
+        release.set()
+    assert future.result(timeout=2) == {"lines": [1]}
+
+
+def test_pending_io_does_not_block_page_and_issued_requests_hidden(svc, monkeypatch):
+    import sys
+    import order_scheduling_page as page
+    from concurrent.futures import Future
+    from streamlit.testing.v1 import AppTest
+    svc.app.data[app.USER_PERMISSION_TABLE_NAME] = [record("admin", 用户账号=[{"id": "ou_admin"}], 角色=["管理员"], 是否启用="是")]
+    issued = deepcopy(svc.app.data[app.REQUEST_TABLE_NAME][0])
+    issued["record_id"] = "issued"
+    issued["fields"].update(申请单号="ISSUED-HIDDEN", 审批状态="已发放")
+    svc.app.data[app.REQUEST_TABLE_NAME].append(issued)
+    monkeypatch.setitem(sys.modules, "schedule_ui_fixture", SimpleNamespace(api=svc.app))
+    monkeypatch.setattr(svc.app, "admin_auth_gate", lambda: True)
+    monkeypatch.setattr(svc.app, "load_static_page_data_cache", lambda: {"tables": svc.app.data})
+    monkeypatch.setattr(page, "schema_ready", Mock(side_effect=AssertionError("no network schema read")))
+    ui = AppTest.from_string("from schedule_ui_fixture import api\nfrom order_scheduling_page import render_order_scheduling_page\nrender_order_scheduling_page(api)", default_timeout=3)
+    ui.session_state["order_jobs"] = {"other": {"phase": "poll", "future": Future(), "request_ids": {"other-req"}}}
+    ui.run()
+    assert not ui.exception
+    assert len(ui.expander) == 1
+    assert "REQ-1" in ui.expander[0].label
+    ui.selectbox(key="order_operator").set_value("ou_admin").run()
+    assert not ui.button(key="edit_req").disabled
+    page.schema_ready.assert_not_called()

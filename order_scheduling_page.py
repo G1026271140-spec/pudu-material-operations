@@ -3,11 +3,14 @@ from __future__ import annotations
 
 from datetime import timedelta
 import uuid
+import time
 import pandas as pd
 import streamlit as st
 
 import order_scheduling as rules
 from order_scheduling_service import SchedulingService
+from order_scheduling_async import submit_write, submit_poll, submit_refresh
+from order_scheduling_export import build_order_workbook
 from submission_queue import QUEUE_TASK_TYPE_ORDER_EDIT, QUEUE_TASK_TYPE_ORDER_GENERATE, QUEUE_TASK_TYPE_ORDER_PLAN
 
 
@@ -26,37 +29,88 @@ def date_label(value):
 
 
 def enqueue(app, kind, payload, key=None):
-    with app.fullscreen_data_sync("正在提交数据，请稍后......"):
-        task, _ = app.enqueue_feishu_background_write(kind, payload, key or uuid.uuid4().hex)
-    st.session_state["order_pending"] = task.idempotency_key
+    key = key or uuid.uuid4().hex
+    st.session_state.setdefault("order_jobs", {})[key] = {
+        "future": submit_write(app, kind, payload, key), "phase": "enqueue",
+        "request_ids": set(payload.get("fingerprints", {})) | {payload.get("request_id", "")},
+        "kind": kind, "payload": payload,
+    }
     st.rerun()
+
+
+def start_refresh(app, *, replace=False):
+    if replace or not st.session_state.get("order_refresh_future"):
+        st.session_state["order_refresh_future"] = submit_refresh(app)
+
+
+def pending_request_ids():
+    return {rid for job in st.session_state.get("order_jobs", {}).values()
+            for rid in job.get("request_ids", ()) if rid}
 
 
 @st.fragment(run_every=5)
 def pending_task(app):
-    key = st.session_state.get("order_pending")
-    if not key:
-        return
-    try:
-        task = app.find_task_by_idempotency_key(app.feishu_client(), key)
-        if task is None:
-            st.info("后台任务正在登记，请稍候。")
-        elif task.status == app.QUEUE_STATUS_COMPLETED:
-            SchedulingService(app).refresh()
-            st.session_state.pop("order_pending", None)
-            st.session_state["order_completed_message"] = "后台处理完成，页面已刷新。"
-            st.session_state.pop("order_selection_token", None)
-            st.rerun(scope="app")
-        elif task.status == app.QUEUE_STATUS_FAILED:
-            st.error("后台处理失败，不能视为已保存。请核对任务错误后再处理，避免重复下单或补库。")
-            st.code(str(getattr(task, "error", "") or task.result))
-            if st.button("关闭任务提示", key="order_close_task"):
-                st.session_state.pop("order_pending", None)
-                st.rerun(scope="app")
+    jobs = st.session_state.setdefault("order_jobs", {})
+    legacy = st.session_state.pop("order_pending", None)
+    if legacy:
+        jobs.setdefault(legacy, {"phase": "poll", "request_ids": set()})
+    for key, job in list(jobs.items()):
+        future = job.get("future")
+        if future and future.done():
+            job.pop("future", None)
+            try:
+                result = future.result()
+                if job["phase"] == "enqueue":
+                    job["phase"] = "poll"
+                elif result and result.status == app.QUEUE_STATUS_COMPLETED:
+                    job["phase"] = "complete"
+                    start_refresh(app, replace=True)
+                elif result and result.status == app.QUEUE_STATUS_FAILED:
+                    job.update(phase="failed", error=str(getattr(result, "error", "") or result.result))
+                if job["phase"] != "failed":
+                    job.pop("error", None)
+            except Exception as exc:
+                # An uncertain enqueue is retried only with its original key.
+                job["error"] = str(exc)
+                if job["phase"] == "enqueue":
+                    job["phase"] = "enqueue_error"
+            job["next_poll"] = time.monotonic() + 10
+        phase = job["phase"]
+        if phase == "poll" and not job.get("future") and time.monotonic() >= job.get("next_poll", 0):
+            job["future"] = submit_poll(app, key)
+        if phase == "complete":
+            st.success(f"{key[:8]}：后台数据登记完成。")
+        elif phase in {"failed", "enqueue_error"}:
+            st.error(f"{key[:8]}：未确认保存成功，请勿重复下单。{job.get('error', '')}")
+            if phase == "enqueue_error" and st.button("重试登记（沿用原任务编号）", key="retry_"+key):
+                job.update(phase="enqueue", future=submit_write(app, job["kind"], job["payload"], key))
         else:
-            st.info("已进入后台队列，正在处理；完成后自动更新本页。")
-    except Exception as exc:
-        st.warning(f"任务状态暂时无法读取：{exc}")
+            st.info(f"{key[:8]}：{'正在登记任务' if phase == 'enqueue' else '后台处理中'}；可继续操作其他申请单或切换页面。")
+            if job.get("error"):
+                st.warning("任务状态暂时无法读取，正在重试。")
+    refresh = st.session_state.get("order_refresh_future")
+    if refresh:
+        if refresh.done():
+            try:
+                snapshot = refresh.result()
+                if st.button("数据已准备好，应用最新数据", key="order_apply_refresh"):
+                    st.session_state["order_view_snapshot"] = snapshot
+                    st.session_state["order_view_cache_stamp"] = rules.fingerprint(app.load_static_page_data_cache())
+                    st.session_state.pop("order_refresh_future", None)
+                    st.session_state["order_jobs"] = {k: j for k, j in jobs.items() if j["phase"] != "complete"}
+                    st.session_state.pop("order_selection_token", None)
+                    st.rerun(scope="app")
+            except Exception as exc:
+                st.warning(f"刷新失败，仍显示原缓存：{exc}")
+                st.session_state.pop("order_refresh_future", None)
+        else:
+            st.caption("最新数据正在后台读取，不影响当前操作。")
+    for key, download in st.session_state.get("order_downloads", {}).items():
+        st.download_button("下载下单表 · "+key[:8], download, file_name=f"物料下单表-{key[:10]}.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                           key="order_download_"+key, on_click="ignore")
+    if st.session_state.get("order_downloads"):
+        st.caption("下载不会重复提交。文件已生成不代表后台登记成功，请以上方任务状态为准。")
 
 
 def request_schedule_inputs(app):
@@ -156,16 +210,13 @@ def render_order_scheduling_page(app):
     service = SchedulingService(app)
     st.subheader("下单排期管理")
     st.caption("仅普通物料申请 · 按申请单展示 · 任一明细成功生成下单表后，整单退出待下单队列")
-    try:
-        schema_ready(app, app.feishu_bitable_app_token())
-    except Exception as exc:
-        st.error(str(exc))
-        st.info("仅下单排期功能暂不可用，现有申领、审批与文化周边流程不受影响。")
-        return
-    if st.session_state.pop("order_completed_message", None):
-        st.success("后台处理完成，页面已刷新。")
+    # Field contracts are checked by the Worker before any write, not by
+    # blocking network calls on every page render.
     pending_task(app)
-    snapshot = service.snapshot()
+    stamp = rules.fingerprint(app.load_static_page_data_cache())
+    if st.session_state.get("order_view_cache_stamp") != stamp:
+        st.session_state.pop("order_view_snapshot", None)
+    snapshot = st.session_state.get("order_view_snapshot") or service.snapshot()
     missing = [table for table in service.tables if table not in dict(app.load_static_page_data_cache().get("tables") or {})
                and not snapshot[table]]
     if missing:
@@ -193,6 +244,8 @@ def render_order_scheduling_page(app):
     displayed = 0
     token = st.session_state.setdefault("order_selection_token", uuid.uuid4().hex)
     for group in sorted(groups.values(), key=lambda g: (date_label(g["fields"].get(rules.ORDER_DATE)), g["request_no"])):
+        if group["status"] in {"已发放", "已完成"}:
+            continue
         if mode == "未生成下单表" and group["generated"]:
             continue
         if query and query not in f"{group['request_no']} {group['requester']} {group['usage']}".casefold():
@@ -210,7 +263,7 @@ def render_order_scheduling_page(app):
                        f"提交：{date_label(f.get('提交时间'))}　时效：{f.get(rules.TIME_CLASS) or '待补充日期'}")
             st.caption(f"需要下单：{date_label(f.get(rules.ORDER_DATE))}　制作完成／到仓：{date_label(f.get(rules.READY_DATE))}　"
                        f"要求到达：{date_label(f.get(rules.ARRIVAL_START))} ～ {date_label(f.get(rules.ARRIVAL_END))}")
-            locked = group["generated"] or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
+            locked = group["generated"] or group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
             a, b, c = st.columns([1, 1, 2])
             if a.button("编辑申请明细", key="edit_"+group["id"], disabled=not operator or locked):
                 try:
@@ -234,8 +287,9 @@ def render_order_scheduling_page(app):
                 column_config={"明细ID": None}, key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
             picked = edited.loc[edited["选中下单"] == True, "明细ID"].tolist() if not locked else []
             if picked:
-                planned = st.date_input("本次所选明细计划到仓日期", value=rules.as_date(f.get(rules.READY_DATE)),
+                planned = st.date_input("计划制作完成／到仓日期（自动补库日）", value=rules.as_date(f.get(rules.READY_DATE)),
                                          key="planned_"+group["id"], format="YYYY-MM-DD")
+                st.caption("此日期不是到达使用场景的日期。批次登记成功并启用自动补库后，到该日期才执行补库；仅选择日期不会修改库存。")
                 confirmed = False
                 if planned and planned < rules.today():
                     st.warning("计划到仓日期已过：请改期；只有确实已制作完成并到仓时才勾选确认。")
@@ -253,10 +307,18 @@ def render_order_scheduling_page(app):
     st.write(f"已选择 {len(fingerprints)} 张申请单、{len(selections)} 条明细。未选择的明细不会下单或补库。")
     note = st.text_input("下单批次备注（可选）", key="order_batch_note")
     valid = bool(selections) and all(s["planned_date"] and (rules.as_date(s["planned_date"]) >= rules.today() or s["confirmed_arrived"]) for s in selections)
-    if st.button("生成下单表", type="primary", disabled=not operator or not valid or bool(st.session_state.get("order_pending"))):
+    if st.button("生成下单表", type="primary", disabled=not operator or not valid):
         key = uuid.uuid4().hex
-        enqueue(app, QUEUE_TASK_TYPE_ORDER_GENERATE, {"operator_open_id": operator, "generation_key": key,
-                "selections": selections, "fingerprints": fingerprints, "note": note}, key)
+        payload = {"operator_open_id": operator, "generation_key": key,
+                   "selections": selections, "fingerprints": fingerprints, "note": note}
+        try:
+            prepared = service.prepare_export(payload, snapshot)
+            content = build_order_workbook(prepared)
+        except (ValueError, TypeError) as exc:
+            st.error(str(exc))
+        else:
+            st.session_state.setdefault("order_downloads", {})[key] = content
+            enqueue(app, QUEUE_TASK_TYPE_ORDER_GENERATE, {**payload, "export_rows": prepared}, key)
 
 
 def render_history(app, service, snapshot, operator):
@@ -267,16 +329,18 @@ def render_history(app, service, snapshot, operator):
         bid, f = app.feishu_record_id(row), app.feishu_fields(row)
         with st.expander(f"{f.get('下单批次号')} · {f.get('批次状态')}", expanded=True):
             st.caption(f"生成时间：{app.feishu_datetime_text(f.get('生成时间'))}　自动补库：{'启用' if f.get('启用自动补库') is True else '暂停'}")
-            for attachment in app.feishu_attachment_items(f, "下单表文件"):
-                if st.button("准备下载下单表", key=f"order_download_{bid}_{attachment.get('file_token')}"):
-                    try:
-                        data = app.load_feishu_attachment(attachment["file_token"], attachment.get("tmp_url") or attachment.get("url") or "")
-                        st.download_button("下载 Excel", data=data, file_name=attachment.get("name") or "物料下单表.xlsx",
-                                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key=f"order_file_{bid}")
-                    except Exception as exc:
-                        st.error(f"下载失败：{exc}")
             details = [r for r in snapshot[rules.DETAIL_TABLE] if bid in app.feishu_link_ids(app.feishu_fields(r), "所属下单批次")]
             if details:
+                if f.get("批次状态") == "已生成":
+                    frozen = [{"category": app.feishu_text(app.feishu_fields(r), "品类名称快照"),
+                               "model": app.feishu_text(app.feishu_fields(r), "型号或尺码快照"),
+                               "language": app.feishu_text(app.feishu_fields(r), "语种快照"),
+                               "quantity": app.feishu_int(app.feishu_fields(r), "下单数量"),
+                               "usage": app.feishu_text(app.feishu_fields(r), "申请用途快照"),
+                               "remark": app.feishu_text(app.feishu_fields(r), "明细备注快照")} for r in details]
+                    st.download_button("下载下单表", build_order_workbook(frozen),
+                        file_name=f"物料下单表-{f['下单批次号']}.xlsx", key="history_download_"+bid,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", on_click="ignore")
                 st.dataframe(pd.DataFrame([{k: app.feishu_fields(r).get(k) for k in
                     ("品类名称快照", "型号或尺码快照", "语种快照", "下单数量", "补库状态", "补库异常说明")}
                     | {"计划到仓日期": date_label(app.feishu_fields(r).get("计划到仓日期"))} for r in details]), hide_index=True, width="stretch")

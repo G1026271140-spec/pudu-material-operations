@@ -275,6 +275,37 @@ class SchedulingService:
         self.refresh()
         return progress
 
+    def prepare_export(self, payload, snapshot):
+        """Pure preparation from a supplied snapshot; no network or Base writes."""
+        groups = self.grouped_requests(snapshot)
+        selections = list(payload.get("selections") or [])
+        if not selections:
+            raise ValueError("请选择至少一条下单明细。")
+        catalog = self.catalog(snapshot, include_ids={l["material_id"] for g in groups.values() for l in g["lines"]})
+        prepared, seen = [], set()
+        for selection in selections:
+            rid, lid = selection.get("request_id"), selection.get("line_id")
+            group = groups.get(rid)
+            self.check_group(group, dict(payload.get("fingerprints") or {}).get(rid),
+                             generation_key=str(payload.get("generation_key") or ""))
+            lines = {line["id"]: line for line in group["lines"]}
+            if lid not in lines or lid in seen:
+                raise ValueError("选择的明细不属于申请单或存在重复。")
+            seen.add(lid)
+            line = lines[lid]
+            if line["status"] in {"已撤回", "已取消", "已发放"} or line["material_id"] not in catalog:
+                raise ValueError("所选明细已失效或未关联有效物料。")
+            item = catalog[line["material_id"]]
+            if line["quantity"] <= 0:
+                raise ValueError("下单数量必须大于零。")
+            planned = rules.validate_planned_receipt(selection.get("planned_date"), now=rules.today(),
+                                                     confirmed_arrived=selection.get("confirmed_arrived") is True)
+            prepared.append({"request_id": rid, "line_id": lid, "material_id": line["material_id"],
+                "category": item["category"], "model": item["model"], "language": item["language"],
+                "quantity": line["quantity"], "usage": group["usage"], "remark": line["remark"],
+                "planned_date": planned.isoformat(), "confirmed_arrived": selection.get("confirmed_arrived") is True})
+        return prepared
+
     def generate(self, payload, progress, checkpoint):
         a = self.app
         self.require_admin(payload.get("operator_open_id"))
@@ -310,8 +341,7 @@ class SchedulingService:
         selections = list(payload.get("selections") or [])
         if not selections:
             raise ValueError("请选择至少一条下单明细。")
-        catalog = self.catalog(snapshot, include_ids={line["material_id"] for g in groups.values() for line in g["lines"]})
-        prepared, seen = [], set()
+        prepared = []
         if progress.get("prepared"):
             prepared = list(progress["prepared"])
             # A partial export resumes its frozen values, but never ignores canceled sources.
@@ -319,32 +349,13 @@ class SchedulingService:
                 g = groups.get(item["request_id"])
                 self.check_group(g, payload["fingerprints"].get(item["request_id"]), generation_key=key)
         else:
-            for selection in selections:
-                rid, lid = selection.get("request_id"), selection.get("line_id")
-                group = groups.get(rid)
-                self.check_group(group, dict(payload.get("fingerprints") or {}).get(rid), generation_key=key)
-                lines = {line["id"]: line for line in group["lines"]}
-                if lid not in lines or lid in seen:
-                    raise ValueError("选择的明细不属于申请单或存在重复。")
-                seen.add(lid)
-                line = lines[lid]
-                if line["status"] in {"已撤回", "已取消", "已发放"} or line["material_id"] not in catalog:
-                    raise ValueError("所选明细已失效或未关联有效物料。")
-                item = catalog[line["material_id"]]
-                if line["quantity"] <= 0:
-                    raise ValueError("下单数量必须大于零。")
-                planned = rules.validate_planned_receipt(selection.get("planned_date"), now=rules.today(),
-                                                         confirmed_arrived=selection.get("confirmed_arrived") is True)
-                prepared.append({"request_id": rid, "line_id": lid, "material_id": line["material_id"],
-                                 "category": item["category"], "model": item["model"], "language": item["language"],
-                                 "quantity": line["quantity"], "usage": group["usage"], "remark": line["remark"],
-                                 "planned_date": planned.isoformat(), "confirmed_arrived": selection.get("confirmed_arrived") is True})
+            prepared = self.prepare_export(payload, snapshot)
             progress["prepared"] = prepared
             checkpoint(dict(progress))
         for item in prepared:
             rules.validate_planned_receipt(item["planned_date"], now=rules.today(), confirmed_arrived=item["confirmed_arrived"])
-        from order_scheduling_export import build_order_workbook
-        content = build_order_workbook(prepared)
+        if "export_rows" in payload and rules.fingerprint(payload["export_rows"]) != rules.fingerprint(prepared):
+            raise ValueError("下载明细与最新申请不一致，请刷新并重新生成；未登记批次。")
         if not batch:
             progress["generation_started"] = True
             checkpoint(dict(progress))
@@ -352,16 +363,11 @@ class SchedulingService:
                 "下单批次号": f"PO-{rules.today():%Y%m%d}-{key[:10].upper()}", "批次状态": "生成中",
                 "生成幂等键": key, "生成人": [{"id": payload["operator_open_id"]}],
                 "生成时间": int(datetime.now(rules.CHINA_TZ).timestamp() * 1000),
-                # Arm only after the attachment and every batch line are durably saved.
+                # Arm only after every batch line is durably saved.
                 "启用自动补库": False, "批次备注": str(payload.get("note") or ""),
             })
         bid = a.feishu_record_id(batch)
         existing_details = {a.feishu_text(a.feishu_fields(r), rules.RESTOCK_KEY): r for r in snapshot[rules.DETAIL_TABLE]}
-        if not progress.get("file_token"):
-            progress["file_token"] = a.feishu_client().upload_media(
-                f"物料下单表-{key[:10]}.xlsx", content,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            checkpoint(dict(progress))
         for item in prepared:
             line_key = f"order:{key}:{item['line_id']}"
             if line_key in existing_details:
@@ -390,8 +396,7 @@ class SchedulingService:
         expected_keys = {f"order:{key}:{item['line_id']}" for item in prepared}
         if set(saved_keys) != expected_keys or len(saved_keys) != len(expected_keys):
             raise RuntimeError("批次明细写入尚未完整确认，暂不标记生成成功、不启用补库。")
-        self.write(rules.BATCH_TABLE, bid, {"下单表文件": [{"file_token": progress["file_token"]}],
-                                          "批次状态": "已生成", "启用自动补库": True})
+        self.write(rules.BATCH_TABLE, bid, {"批次状态": "已生成", "启用自动补库": True})
         for item in prepared:
             self.write(a.REQUEST_LINE_TABLE_NAME, item["line_id"], {rules.GENERATED: "已生成"})
         progress.update(write_done=True, batch_id=bid)
