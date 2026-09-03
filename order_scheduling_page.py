@@ -238,10 +238,13 @@ def render_order_scheduling_page(app):
     if mode == "下单批次历史":
         render_history(app, service, snapshot, operator)
         return
-    filters = st.columns([1.5, 1.5, 1])
+    filters = st.columns([1.35, 1.35, 1.15, 1.15, 1.15, 1])
     date_range = filters[0].date_input("需要下单日期范围", value=[], key="order_filter_dates")
     query = filters[1].text_input("搜索申请单／申请人／用途", key="order_filter_query").strip().casefold()
-    include_missing = filters[2].checkbox("包含待补充日期", value=True)
+    only_unreviewed = filters[2].checkbox("仅未核实库存", value=False, key="order_filter_unreviewed")
+    only_unordered = filters[3].checkbox("仅未下单", value=False, key="order_filter_unordered")
+    review_date = filters[4].date_input("下次核实库存日期", value=None, key="order_filter_review_date")
+    include_missing = filters[5].checkbox("包含待补充日期", value=True)
     groups = service.grouped_requests(snapshot)
     all_material_ids = {l["material_id"] for g in groups.values() for l in g["lines"]}
     catalog = service.catalog(snapshot, include_ids=all_material_ids)
@@ -253,6 +256,15 @@ def render_order_scheduling_page(app):
             continue
         if mode == "未生成下单表" and group["generated"]:
             continue
+        review_status = str(group["fields"].get(app.INVENTORY_REVIEW_STATUS_FIELD) or app.INVENTORY_REVIEW_PENDING).strip()
+        if only_unreviewed and review_status != app.INVENTORY_REVIEW_PENDING:
+            continue
+        if only_unordered and group["generated"]:
+            continue
+        if review_date:
+            next_review = rules.as_date(group["fields"].get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
+            if next_review != review_date:
+                continue
         if query and query not in f"{group['request_no']} {group['requester']} {group['usage']}".casefold():
             continue
         order_day = rules.as_date(group["fields"].get(rules.ORDER_DATE))
@@ -268,6 +280,8 @@ def render_order_scheduling_page(app):
                        f"提交：{date_label(f.get('提交时间'))}　时效：{f.get(rules.TIME_CLASS) or '待补充日期'}")
             st.caption(f"需要下单：{date_label(f.get(rules.ORDER_DATE))}　制作完成／到仓：{date_label(f.get(rules.READY_DATE))}　"
                        f"要求到达：{date_label(f.get(rules.ARRIVAL_START))} ～ {date_label(f.get(rules.ARRIVAL_END))}")
+            next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
+            st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
             locked = group["generated"] or group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
             a, b, c = st.columns([1, 1, 2])
             if a.button("编辑申请明细", key="edit_"+group["id"], disabled=not operator or locked):
