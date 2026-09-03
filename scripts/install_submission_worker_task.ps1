@@ -105,6 +105,7 @@ $action = New-ScheduledTaskAction `
     -WorkingDirectory $RunnerRoot
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
 $settings = New-ScheduledTaskSettingsSet `
+    -Hidden `
     -AllowStartIfOnBatteries `
     -DontStopIfGoingOnBatteries `
     -StartWhenAvailable `
