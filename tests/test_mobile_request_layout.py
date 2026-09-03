@@ -95,6 +95,7 @@ class MobileRequestLayoutTests(unittest.TestCase):
     def test_phone_specification_sections_are_labeled_and_visually_separated(self) -> None:
         self.assertIn('class="pudu-spec-model-heading"', SOURCE)
         self.assertIn('ui_text("型号选择")', SOURCE)
+        self.assertIn('.pudu-spec-model-heading {\n                display: none !important;', SOURCE)
         self.assertIn('class="pudu-product-model-label"', SOURCE)
         self.assertIn('ui_text("产品型号")', SOURCE)
         self.assertIn('background: #F3F6FA !important;', SOURCE)

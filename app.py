@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.0.5"
+APP_VERSION = "V2.0.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -3115,10 +3115,11 @@ def inject_global_styles() -> None:
                 background: #F3F6FA !important;
             }
             [class*="st-key-request_spec_model_scroll_"] .pudu-spec-model-heading {
+                display: none !important;
                 position: sticky;
                 top: -0.28rem;
                 z-index: 5;
-                margin: -0.28rem -0.24rem 0.2rem !important;
+                margin: 0 !important;
                 padding: 0.34rem 0.36rem 0.24rem;
                 color: #173B56;
                 background: #F3F6FA;
