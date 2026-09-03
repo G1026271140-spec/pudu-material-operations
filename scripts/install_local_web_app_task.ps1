@@ -66,7 +66,7 @@ if ($LASTEXITCODE -ne 0) { throw "Web setup failed. Check $LogDirectory\web.log"
 
 $powershellPath = (Get-Command powershell.exe -ErrorAction Stop).Source
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
+$settings = New-ScheduledTaskSettingsSet -Hidden -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
 foreach ($taskName in @($TunnelTaskName, $WebTaskName)) {
     $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue

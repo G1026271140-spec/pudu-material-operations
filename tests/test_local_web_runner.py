@@ -27,6 +27,7 @@ class LocalWebRunnerTests(unittest.TestCase):
         installer = (ROOT / "scripts" / "install_local_web_app_task.ps1").read_text(encoding="utf-8")
         self.assertIn("-RestartCount 999", installer)
         self.assertIn("-MultipleInstances IgnoreNew", installer)
+        self.assertIn("New-ScheduledTaskSettingsSet -Hidden", installer)
         self.assertIn("Get-Command powershell.exe", installer)
         self.assertIn('$env:USERPROFILE "PuduMaterialWebRunner"', installer)
         self.assertNotIn('$env:LOCALAPPDATA "PuduMaterialWebRunner"', installer)
