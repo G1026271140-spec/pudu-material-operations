@@ -34,6 +34,15 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn("Stop-ScheduledTask -TaskName $taskName", installer)
         self.assertIn("Get-CimInstance Win32_Process", installer)
         self.assertIn("$escapedRunnerRepoPath", installer)
+        self.assertIn("Stop-RunnerPowerShell $WebRunner", installer)
+        self.assertIn("Stop-RunnerPowerShell $TunnelRunner", installer)
+
+    def test_submission_and_cache_installers_clean_only_owned_shells(self) -> None:
+        submission = (ROOT / "scripts" / "install_submission_worker_task.ps1").read_text(encoding="utf-8")
+        cache = (ROOT / "scripts" / "install_local_cache_task.ps1").read_text(encoding="utf-8")
+        self.assertIn("Stop-RunnerPowerShell $InstalledRunnerScript", submission)
+        self.assertIn("-notmatch \"-Interactive\"", cache)
+        self.assertIn("-Hidden", cache)
 
     def test_runtime_watchdog_is_hidden_and_checks_three_tasks(self) -> None:
         runner = (ROOT / "scripts" / "run_runtime_watchdog.ps1").read_text(encoding="utf-8")

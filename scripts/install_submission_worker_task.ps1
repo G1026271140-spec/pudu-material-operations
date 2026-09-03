@@ -37,6 +37,15 @@ if ($null -ne $existingTask -and $existingTask.State -eq "Running") {
         $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
     } while ($null -ne $existingTask -and $existingTask.State -eq "Running")
 }
+function Stop-RunnerPowerShell([string]$RunnerScript) {
+    $escapedScript = [Regex]::Escape([IO.Path]::GetFullPath($RunnerScript))
+    $staleShells = Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe' OR Name = 'pwsh.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -match $escapedScript }
+    foreach ($process in $staleShells) {
+        Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+}
+Stop-RunnerPowerShell $InstalledRunnerScript
 
 New-Item -ItemType Directory -Path $RunnerRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null

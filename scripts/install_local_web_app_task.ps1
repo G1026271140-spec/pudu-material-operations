@@ -78,6 +78,16 @@ foreach ($taskName in @($TunnelTaskName, $WebTaskName)) {
         } while ($null -ne $existingTask -and $existingTask.State -eq "Running")
     }
 }
+function Stop-RunnerPowerShell([string]$RunnerScript) {
+    $escapedScript = [Regex]::Escape([IO.Path]::GetFullPath($RunnerScript))
+    $staleShells = Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe' OR Name = 'pwsh.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -match $escapedScript }
+    foreach ($process in $staleShells) {
+        Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+}
+Stop-RunnerPowerShell $WebRunner
+Stop-RunnerPowerShell $TunnelRunner
 $escapedRunnerRepoPath = [Regex]::Escape($RunnerRepoPath)
 $orphanedWebProcesses = Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" -ErrorAction SilentlyContinue |
     Where-Object {

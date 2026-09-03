@@ -33,6 +33,30 @@ if (-not (Test-Path -LiteralPath $SourceRunnerScript)) {
     throw "Cache runner script was not found: $SourceRunnerScript"
 }
 
+foreach ($taskName in @($TaskName, $ContactTaskName)) {
+    $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($null -ne $existingTask -and $existingTask.State -eq "Running") {
+        Stop-ScheduledTask -TaskName $taskName
+    }
+}
+
+function Stop-RunnerPowerShell([string]$RunnerScript, [string]$Scope) {
+    $escapedScript = [Regex]::Escape([IO.Path]::GetFullPath($RunnerScript))
+    $escapedScope = [Regex]::Escape($Scope)
+    $staleShells = Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe' OR Name = 'pwsh.exe'" -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.ProcessId -ne $PID -and
+            $_.CommandLine -match $escapedScript -and
+            $_.CommandLine -match "-CacheScope\s+$escapedScope" -and
+            $_.CommandLine -notmatch "-Interactive"
+        }
+    foreach ($process in $staleShells) {
+        Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+}
+Stop-RunnerPowerShell $InstalledRunnerScript "Material"
+Stop-RunnerPowerShell $InstalledRunnerScript "Contacts"
+
 New-Item -ItemType Directory -Path $RunnerRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 Copy-Item -LiteralPath $SourceSecretsPath -Destination $RunnerSecretsPath -Force
@@ -92,6 +116,7 @@ $triggers = @(
     (New-ScheduledTaskTrigger -Daily -At $AfternoonTime)
 )
 $settings = New-ScheduledTaskSettingsSet `
+    -Hidden `
     -StartWhenAvailable `
     -WakeToRun `
     -MultipleInstances IgnoreNew `
