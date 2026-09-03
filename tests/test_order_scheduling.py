@@ -1,0 +1,375 @@
+from copy import deepcopy
+from datetime import date, timedelta
+from types import SimpleNamespace
+from unittest.mock import Mock
+
+import pytest
+import app
+import order_scheduling as r
+from order_scheduling_service import SchedulingService
+
+
+@pytest.mark.parametrize("days,expected", [(7, "加急申请"), (8, "加急申请"), (14, "加急申请"), (15, "普通申请"), (30, "普通申请")])
+def test_sales_boundaries(days, expected):
+    start = date(2026, 9, 3)
+    result = r.calculate_dates(start + timedelta(days=days), start + timedelta(days=days + 3),
+                               "代理活动", ["销售"], submitted=start)
+    assert result[r.TIME_CLASS] == expected
+    assert r.as_date(result[r.ORDER_DATE]) == start + timedelta(days=days - 15)
+    assert r.as_date(result[r.READY_DATE]) == start + timedelta(days=days - 10)
+
+
+@pytest.mark.parametrize("days", [-1, 0, 1, 6])
+def test_sales_reject_short_dates(days):
+    start = date(2026, 9, 3)
+    with pytest.raises(ValueError):
+        r.calculate_dates(start + timedelta(days=days), start + timedelta(days=days), "展会需求", ["销售"], submitted=start)
+
+
+@pytest.mark.parametrize("roles,reason", [(["销售"], "客户来访"), (["区域市场经理"], "展会需求"),
+                                        (["销售", "区域市场经理"], "代理活动")])
+def test_exemptions(roles, reason):
+    assert r.calculate_dates("2026-09-03", "2026-09-03", reason, roles, submitted="2026-09-03")[r.TIME_CLASS] == "时间豁免"
+    with pytest.raises(ValueError):
+        r.calculate_dates("2026-09-02", "2026-09-02", reason, roles, submitted="2026-09-03")
+
+
+def test_invalid_dates_and_unknown_reason():
+    for start, end, reason in [(None, None, "代理活动"), ("2026-10-02", "2026-10-01", "代理活动"),
+                               ("2026-10-01", "2026-10-02", "")]:
+        with pytest.raises(ValueError):
+            r.calculate_dates(start, end, reason, ["销售"], submitted="2026-09-03")
+
+
+def test_midnight_timezone_and_receipt_guard():
+    assert r.as_date(r.date_ms("2026-09-03")) == date(2026, 9, 3)
+    with pytest.raises(ValueError):
+        r.validate_planned_receipt("2026-09-02", now=date(2026, 9, 3))
+    assert r.validate_planned_receipt("2026-09-02", now=date(2026, 9, 3), confirmed_arrived=True) == date(2026, 9, 2)
+
+
+def complete_schema():
+    schema = {name: {"table_id": name, "fields": {}} for name in {*r.SCHEMA, "物料主数据", "库存流水"}}
+    for table, fields in r.SCHEMA.items():
+        for name, (kind, extra) in fields.items():
+            prop = {"table_id": extra} if kind == 18 else {"options": [{"name": n} for n in extra]} if kind == 3 else {}
+            schema[table]["fields"][name] = {"type": kind, "property": prop}
+    return schema
+
+
+def test_schema_matches_user_actual_spelling_and_checks_options_links_types():
+    schema = complete_schema()
+    assert r.schema_errors(schema) == []
+    assert r.ARRIVAL_START == "要求达到开始日期"
+    assert r.RESTOCK_KEY == "补库幂等建"
+    schema["物料申请单"]["fields"][r.ARRIVAL_START]["type"] = 1
+    schema[r.DETAIL_TABLE]["fields"]["关联物料"]["property"]["table_id"] = "文化周边管理库存"
+    schema[r.BATCH_TABLE]["fields"]["批次状态"]["property"]["options"] = []
+    assert len(r.schema_errors(schema)) == 3
+
+
+def record(rid, **fields):
+    return {"record_id": rid, "fields": fields}
+
+
+class FakeApp:
+    def __init__(self):
+        self.data = {name: [] for name in app.ALL_PAGE_CACHE_TABLES}
+        self.data[app.LEDGER_TABLE_NAME] = []
+        self.data[app.REQUEST_TABLE_NAME] = [record("req", 申请类型="普通物料申请", 申请单号="REQ-1",
+            申请人=[{"id": "ou_sales", "name": "销售甲"}], 物料用途="活动", 审批状态="待审批",
+            库存审查状态="待核实库存", 提交时间=r.date_ms("2026-09-03"), 排期编辑版本=0)]
+        self.data[app.REQUEST_LINE_TABLE_NAME] = [record(f"line{i}", 所属申请单=["req"], 物料编码=["mat"],
+            申请数量=20, 实际发放数量=0, 明细状态="待审批", 明细编号=f"REQ-1-{i}", 品类名称="旧名", 语种名称="英语", 备注="") for i in range(2)]
+        self.data[app.MATERIAL_TABLE_NAME] = [record("mat", 物料品类="内部品类", 产品型号="M1", 语种="英语",
+                                                     品类关联=["cat"], 当前库存=10, 启用状态="启用")]
+        self.data[app.CATEGORY_TABLE_NAME] = [record("cat", 物料品类="内部品类", 中文页面名称="最新中文名", **{app.UNIT_PRICE_RMB_FIELD: 2.0})]
+        self.data[r.BATCH_TABLE] = []
+        self.data[r.DETAIL_TABLE] = []
+        self.data[app.REQUEST_CHANGE_TABLE_NAME] = []
+        self.upload_media = Mock(return_value="file_token_test")
+        self.changes = []
+        self.schema = complete_schema()
+        for table, rows in self.data.items():
+            self.schema.setdefault(table, {"table_id": table, "fields": {}})
+            for row in rows:
+                for field in row["fields"]:
+                    self.schema[table]["fields"].setdefault(field, {"type": 1})
+        for name in ("明细变更说明", "审批通过数量", "原申请数量", "提交时库存快照", "明细业务类型", "品类名称", "产品型号名称", "语种名称", app.REQUEST_PRICE_SNAPSHOT_FIELD, app.REQUEST_LINE_SUBTOTAL_FIELD):
+            self.schema[app.REQUEST_LINE_TABLE_NAME]["fields"][name] = {"type": 1}
+        for name in ("申请变更次数", "物料明细文字信息", app.REQUEST_TOTAL_RMB_FIELD):
+            self.schema[app.REQUEST_TABLE_NAME]["fields"][name] = {"type": 1}
+        for name in ("文本", "申请单号", "操作人OpenID", "操作时间", "变更说明", "变更前JSON", "变更后JSON", "变更版本"):
+            self.schema[app.REQUEST_CHANGE_TABLE_NAME]["fields"][name] = {"type": 1}
+        for name in ("幂等键", "数量", "物料编码", "操作状态"):
+            self.schema[app.LEDGER_TABLE_NAME]["fields"][name] = {"type": 1}
+
+    def __getattr__(self, name):
+        return getattr(app, name)
+
+    def enabled_admin_open_ids(self):
+        return ["ou_admin"]
+
+    def feishu_table_fields(self, table):
+        return self.schema[table]["fields"]
+
+    def feishu_client(self):
+        return self
+
+    def fresh_feishu_rows(self, table):
+        return deepcopy(self.data[table])
+
+    page_data_cache_rows = fresh_feishu_rows
+
+    def refresh_page_cache_tables(self, tables):
+        return {}
+
+    def feishu_update_record_fields(self, table, rid, fields):
+        row = next(row for row in self.data[table] if row["record_id"] == rid)
+        row["fields"].update(deepcopy(fields))
+        self.changes.append((table, rid, deepcopy(fields)))
+        return deepcopy(row)
+
+    def feishu_batch_create_records(self, table, fields):
+        result = []
+        for values in fields:
+            row = record(f"new-{table}-{len(self.data[table])}", **deepcopy(values))
+            self.data[table].append(row)
+            result.append(deepcopy(row))
+        return result
+
+    def feishu_batch_delete_record_ids(self, table, ids):
+        self.data[table] = [row for row in self.data[table] if row["record_id"] not in ids]
+
+    def set_request_line_material_fields(self, fields, material, product, model, language):
+        fields.update({"物料编码": [material["record_id"]], "品类名称": product,
+                       "产品型号名称": model, "语种名称": language})
+
+    def filter_feishu_fields(self, table, fields):
+        return {k: v for k, v in fields.items() if k in self.feishu_table_fields(table)}
+
+    def build_feishu_ledger_fields(self, *args, **kwargs):
+        return {"幂等键": kwargs["idempotency_key"], "数量": args[5], "物料编码": [args[0]], "操作状态": "有效"}
+
+
+@pytest.fixture
+def svc(monkeypatch):
+    fake = FakeApp()
+    service = SchedulingService(fake)
+    monkeypatch.setattr(service, "validate_schema", lambda: True)
+    monkeypatch.setattr(r, "today", lambda: date(2026, 9, 3))
+    return service
+
+
+def test_group_excludes_cultural_and_uses_current_chinese_name(svc):
+    svc.app.data[app.REQUEST_TABLE_NAME].append(record("culture", 申请类型="文化周边申请", 申请单号="C1"))
+    groups = svc.grouped_requests(svc.snapshot())
+    assert list(groups) == ["req"]
+    assert groups["req"]["lines"][0]["category"] == "最新中文名"
+    svc.app.data[app.REQUEST_LINE_TABLE_NAME][0]["fields"][r.GENERATED] = "已生成"
+    assert svc.grouped_requests(svc.snapshot())["req"]["generated"]
+    assert len(svc.grouped_requests(svc.snapshot())["req"]["lines"]) == 2
+
+
+def generation_payload(svc):
+    group = svc.grouped_requests(svc.snapshot())["req"]
+    return {"operator_open_id": "ou_admin", "generation_key": "unique-generation-key",
+            "fingerprints": {"req": group["fingerprint"]},
+            "selections": [{"request_id": "req", "line_id": "line0", "planned_date": "2026-09-10", "confirmed_arrived": False}]}
+
+
+def mock_export(monkeypatch):
+    import sys
+    monkeypatch.setitem(sys.modules, "order_scheduling_export", SimpleNamespace(build_order_workbook=lambda _: b"test-workbook-bytes"))
+
+
+def test_generate_selected_only_then_exclude_whole_request_and_retry_no_duplicate(svc, monkeypatch):
+    payload = generation_payload(svc)
+    progress = svc.generate(payload, {}, lambda _: None)
+    assert progress["write_done"]
+    from io import BytesIO
+    from openpyxl import load_workbook
+    workbook = load_workbook(BytesIO(svc.app.upload_media.call_args.args[1]))
+    assert workbook.active["D2"].value == 20
+    assert len(svc.app.data[r.DETAIL_TABLE]) == 1
+    assert svc.app.data[r.DETAIL_TABLE][0]["fields"]["下单数量"] == 20
+    assert svc.app.data[app.REQUEST_LINE_TABLE_NAME][1]["fields"].get(r.GENERATED) is None
+    assert svc.grouped_requests(svc.snapshot())["req"]["generated"]
+    svc.generate(payload, {}, lambda _: None)
+    assert len(svc.app.data[r.BATCH_TABLE]) == len(svc.app.data[r.DETAIL_TABLE]) == 1
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 10
+    with pytest.raises(ValueError):
+        svc.generate({**payload, "generation_key": "other-key"}, {}, lambda _: None)
+
+
+def test_stale_selection_and_cultural_payload_rejected(svc, monkeypatch):
+    mock_export(monkeypatch)
+    payload = generation_payload(svc)
+    svc.app.data[app.REQUEST_LINE_TABLE_NAME][0]["fields"]["申请数量"] = 50
+    with pytest.raises(ValueError, match="变化"):
+        svc.generate(payload, {}, lambda _: None)
+    svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]["申请类型"] = "文化周边申请"
+    with pytest.raises(ValueError, match="普通物料"):
+        svc.generate(payload, {}, lambda _: None)
+    assert svc.app.data[r.BATCH_TABLE] == []
+
+
+def add_due(svc, **overrides):
+    svc.app.data[r.BATCH_TABLE] = [record("batch", 批次状态="已生成", 启用自动补库=True, 生成时间=r.date_ms("2026-09-01"))]
+    f = {"所属下单批次": ["batch"], "来源申请单": ["req"], "来源申请明细": ["line0"], "关联物料": ["mat"],
+         "补库状态": "待补库", r.RESTOCK_KEY: "unique-restock-key", "下单数量": 20,
+         "计划到仓日期": r.date_ms("2026-09-03"), "批次明细编号": "D1"}
+    f.update(overrides)
+    svc.app.data[r.DETAIL_TABLE] = [record("detail", **f)]
+
+
+def test_due_guard_past_at_generation_requires_confirmation(svc):
+    add_due(svc, 计划到仓日期=r.date_ms("2026-08-31"))
+    assert svc.due_details(svc.snapshot()) == []
+    svc.app.data[r.DETAIL_TABLE][0]["fields"]["补库异常说明"] = "管理员已确认制作完成并到仓"
+    assert len(svc.due_details(svc.snapshot())) == 1
+    svc.app.data[r.BATCH_TABLE][0]["fields"]["启用自动补库"] = False
+    assert svc.due_details(svc.snapshot()) == []
+
+
+def test_restock_exactly_once_and_never_issue(svc):
+    add_due(svc)
+    progress = svc.restock({"detail_id": "detail"}, {}, lambda _: None)
+    assert progress["write_done"]
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 30
+    assert len(svc.app.data[app.LEDGER_TABLE_NAME]) == 1
+    svc.restock({"detail_id": "detail"}, {}, lambda _: None)
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 30
+    assert all(row["fields"]["实际发放数量"] == 0 for row in svc.app.data[app.REQUEST_LINE_TABLE_NAME])
+
+
+def test_uncertain_stock_write_fails_closed_even_on_retries(svc):
+    add_due(svc)
+    for _ in range(2):
+        with pytest.raises(RuntimeError, match="不明确"):
+            svc.restock({"detail_id": "detail"}, {"stock_write_started": True}, lambda _: None)
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 10
+    assert svc.app.data[r.DETAIL_TABLE][0]["fields"]["补库状态"] == "补库异常"
+
+
+def test_stock_written_resume_only_writes_ledger(svc):
+    add_due(svc)
+    svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] = 30
+    progress = {"stock_write_started": True, "stock_written": True, "material_id": "mat", "before": 10, "after": 30, "quantity": 20}
+    svc.restock({"detail_id": "detail"}, progress, lambda _: None)
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 30
+    assert len(svc.app.data[app.LEDGER_TABLE_NAME]) == 1
+
+
+def test_edit_preserves_review_and_stock_and_logs_before_delete(svc):
+    group = svc.grouped_requests(svc.snapshot())["req"]
+    svc.edit({"operator_open_id": "ou_admin", "request_id": "req", "expected_fingerprint": group["fingerprint"],
+              "change_note": "合并需求", "lines": [{"id": "line0", "material_id": "mat", "quantity": 50, "remark": "备注"}]}, {}, lambda _: None)
+    assert len(svc.app.data[app.REQUEST_LINE_TABLE_NAME]) == 1
+    f = svc.app.data[app.REQUEST_LINE_TABLE_NAME][0]["fields"]
+    assert f["申请数量"] == 50 and f["实际发放数量"] == 0
+    rf = svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]
+    assert rf["库存审查状态"] == "待核实库存" and rf["审批状态"] == "待审批"
+    assert rf["申请变更次数"] == "1"
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 10
+    assert len(svc.app.data[app.REQUEST_CHANGE_TABLE_NAME]) == 1
+
+
+def test_edit_rejects_approved_or_unauthorized(svc):
+    group = svc.grouped_requests(svc.snapshot())["req"]
+    with pytest.raises(PermissionError):
+        svc.edit({"operator_open_id": "ou_sales"}, {}, lambda _: None)
+    group["status"] = "已通过"
+    with pytest.raises(ValueError, match="编辑"):
+        svc.check_group(group, group["fingerprint"], editing=True)
+
+
+def test_export_aggregation_keeps_different_production_remarks_separate():
+    line = {"category": "单页", "model": "M", "language": "英语", "quantity": 20, "usage": "活动", "remark": "纸张A"}
+    result = r.aggregate_export_rows([line, line, {**line, "remark": "纸张B"}])
+    assert [row[3] for row in result] == [40, 20]
+    assert "纸张A" in result[0][4]
+
+
+def test_queue_dispatch_requires_checkpoints_and_cache_is_separate():
+    from scripts.submission_worker import process_task, SUPPORTED_QUEUE_TASK_TYPES
+    from submission_queue import QUEUE_TASK_TYPE_ORDER_RESTOCK
+    task = SimpleNamespace(task_type=QUEUE_TASK_TYPE_ORDER_RESTOCK, payload={}, result={})
+    assert QUEUE_TASK_TYPE_ORDER_RESTOCK in SUPPORTED_QUEUE_TASK_TYPES
+    with pytest.raises(RuntimeError, match="检查点"):
+        process_task(task)
+    assert r.BATCH_TABLE in app.PAGE_CACHE_TABLES["order_scheduling"]
+    assert r.BATCH_TABLE not in app.PAGE_CACHE_TABLES["cultural_request"]
+
+
+def test_catalog_excludes_legacy_cultural_materials(svc):
+    svc.app.data[app.CATEGORY_TABLE_NAME][0]["fields"]["品类定义"] = "文化周边"
+    assert svc.catalog(svc.snapshot(), include_ids={"mat"}) == {}
+
+
+def test_restock_scheduler_resumes_skipped_jobs_but_not_failed_jobs(svc, monkeypatch):
+    import submission_queue as queue
+    add_due(svc)
+    base = "schedule-restock:unique-restock-key"
+    old = SimpleNamespace(status=queue.QUEUE_STATUS_COMPLETED, result={"skipped": "暂停"}, task_id="previous")
+    lookup = {base: old}
+    monkeypatch.setattr(queue, "find_task_by_idempotency_key", lambda client, key: lookup.get(key))
+    enqueue = Mock(return_value=(None, True))
+    monkeypatch.setattr(svc.app, "enqueue_feishu_background_write", enqueue)
+    assert svc.enqueue_due() == 1
+    assert enqueue.call_args.args[2] == base + ":after:previous"
+    lookup[base + ":after:previous"] = SimpleNamespace(status=queue.QUEUE_STATUS_FAILED, result={}, task_id="failed")
+    assert svc.enqueue_due() == 0
+    assert enqueue.call_count == 1
+
+
+def test_date_edit_retains_submission_role_snapshot(svc):
+    svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]["申请时角色快照"] = "销售"
+    svc.roles = Mock(return_value=["区域市场经理"])
+    group = svc.grouped_requests(svc.snapshot())["req"]
+    with pytest.raises(ValueError, match="至少提前7"):
+        svc.plan({"operator_open_id": "ou_admin", "action": "request_dates", "request_id": "req",
+            "expected_fingerprint": group["fingerprint"], "request_reason": "代理活动",
+            "arrival_start": "2026-09-05", "arrival_end": "2026-09-05"}, {}, lambda _: None)
+    svc.roles.assert_not_called()
+
+
+def render_request_dates_fixture():
+    import app
+    import order_scheduling_page
+    order_scheduling_page.request_schedule_inputs(app)
+
+
+def test_request_date_widgets_default_empty_and_accept_range(monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setattr(app, "get_ui_language", lambda: app.LANGUAGE_ZH)
+    ui = AppTest.from_function(render_request_dates_fixture).run()
+    assert not ui.exception
+    assert ui.selectbox[0].value is None
+    assert not ui.date_input[0].value
+    ui.selectbox[0].set_value("代理活动")
+    ui.date_input[0].set_value((date(2026, 10, 1), date(2026, 10, 3))).run()
+    assert not ui.exception
+    assert ui.date_input[0].value == (date(2026, 10, 1), date(2026, 10, 3))
+
+
+def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):
+    import sys
+    import order_scheduling_page as page
+    from streamlit.testing.v1 import AppTest
+    svc.app.data[app.USER_PERMISSION_TABLE_NAME] = [record("admin", 用户账号=[{"id": "ou_admin", "name": "管理员甲"}],
+        角色=["管理员"], 是否启用="是")]
+    monkeypatch.setitem(sys.modules, "schedule_ui_fixture", SimpleNamespace(api=svc.app))
+    monkeypatch.setattr(svc.app, "admin_auth_gate", lambda: True)
+    monkeypatch.setattr(svc.app, "feishu_bitable_app_token", lambda: "test-base")
+    monkeypatch.setattr(svc.app, "load_static_page_data_cache", lambda: {"tables": svc.app.data})
+    monkeypatch.setattr(page, "schema_ready", lambda *args: True)
+    ui = AppTest.from_string("from schedule_ui_fixture import api\nfrom order_scheduling_page import render_order_scheduling_page\nrender_order_scheduling_page(api)", default_timeout=10).run()
+    assert not ui.exception
+    assert "REQ-1" in ui.expander[0].label
+    assert len(ui.dataframe) == 1
+    ui.selectbox(key="order_operator").set_value("ou_admin").run()
+    ui.button(key="edit_req").click().run()
+    assert not ui.exception
+    assert any(button.label == "新增明细" for button in ui.button)
+    assert any(widget.label == "修改说明（必填）" for widget in ui.text_input)

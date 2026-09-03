@@ -240,6 +240,7 @@ class GiftProjectUpdateMonitorTests(unittest.TestCase):
                 "request", "restock", "category", "model_management",
                 "language_management", "maintenance", "inventory",
                 "gift_projects", "shipping",
+                "order_scheduling",
                 "cultural_request",
             },
         )

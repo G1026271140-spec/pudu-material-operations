@@ -20,6 +20,10 @@ if str(ROOT) not in sys.path:
 import app as inventory_app
 from project_config import get_setting
 from submission_queue import (
+    QUEUE_TASK_TYPE_ORDER_EDIT,
+    QUEUE_TASK_TYPE_ORDER_GENERATE,
+    QUEUE_TASK_TYPE_ORDER_PLAN,
+    QUEUE_TASK_TYPE_ORDER_RESTOCK,
     QUEUE_STATUS_FAILED,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
@@ -67,6 +71,10 @@ _LEADERSHIP_STATE: dict[str, object] = {
 }
 _INVENTORY_REVIEW_SCHEDULER_STATE: dict[str, float] = {"checked_at": 0.0}
 SUPPORTED_QUEUE_TASK_TYPES = {
+    QUEUE_TASK_TYPE_ORDER_EDIT,
+    QUEUE_TASK_TYPE_ORDER_GENERATE,
+    QUEUE_TASK_TYPE_ORDER_PLAN,
+    QUEUE_TASK_TYPE_ORDER_RESTOCK,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
@@ -353,6 +361,16 @@ def process_task(
     task: SubmissionTask,
     checkpoint: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
+    if task.task_type in {QUEUE_TASK_TYPE_ORDER_EDIT, QUEUE_TASK_TYPE_ORDER_GENERATE,
+                         QUEUE_TASK_TYPE_ORDER_PLAN, QUEUE_TASK_TYPE_ORDER_RESTOCK}:
+        from order_scheduling_service import SchedulingService
+        service = SchedulingService(inventory_app)
+        method = {QUEUE_TASK_TYPE_ORDER_EDIT: service.edit, QUEUE_TASK_TYPE_ORDER_GENERATE: service.generate,
+                  QUEUE_TASK_TYPE_ORDER_PLAN: service.plan, QUEUE_TASK_TYPE_ORDER_RESTOCK: service.restock}[task.task_type]
+        if checkpoint is None:
+            raise RuntimeError("排期写入必须使用持久化检查点，禁止无检查点执行。")
+        with inventory_app.DATA_LOCK:
+            return method(dict(task.payload), dict(task.result), checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_MATERIAL_REQUEST:
         return process_material_request(task, checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST:
@@ -630,6 +648,14 @@ def run_forever(poll_seconds: float, worker_priority: int) -> bool:
                 created = inventory_app.enqueue_inventory_review_scheduled_tasks()
                 if created:
                     logging.info("Enqueued %s inventory review reminder tasks", created)
+                try:
+                    from order_scheduling_service import SchedulingService
+                    scheduled = SchedulingService(inventory_app).enqueue_due()
+                    if scheduled:
+                        logging.info("Enqueued %s order scheduling restock tasks", scheduled)
+                except Exception:
+                    # Scheduling is isolated; a schema/read failure must not stop existing tasks.
+                    logging.exception("Order scheduling scan failed; ordinary queue processing continues")
             processed = process_one(name, worker_priority)
         except Exception:
             logging.exception("Submission worker polling failed")

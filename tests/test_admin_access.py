@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V2.0.2")
+        self.assertEqual(app.APP_VERSION, "V2.0.3")
 
     def test_submission_queue_module_version_matches_application(self) -> None:
         self.assertEqual(
@@ -132,7 +132,7 @@ class AdminAccessTests(unittest.TestCase):
     def test_material_database_page_is_not_exposed(self) -> None:
         self.assertEqual(
             app.MATERIAL_MANAGEMENT_SECTIONS,
-            ("采购补库", "品类管理", "型号管理", "语种管理", "战区管理", "仓库位置", "发货模板", "项目礼品管理"),
+            ("采购补库", "品类管理", "型号管理", "语种管理", "战区管理", "仓库位置", "发货模板", "下单排期管理", "项目礼品管理"),
         )
         self.assertNotIn("项目礼品管理", app.MANAGEMENT_WORKBENCH_SECTIONS)
         self.assertNotIn("material_database", app.PAGE_CACHE_TABLES)

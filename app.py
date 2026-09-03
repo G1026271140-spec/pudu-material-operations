@@ -9,6 +9,7 @@ import threading
 import time
 import unicodedata
 import uuid
+import sys
 from collections import Counter
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -66,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.0.2"
+APP_VERSION = "V2.0.3"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -497,6 +498,7 @@ MATERIAL_MANAGEMENT_SECTIONS = (
     "战区管理",
     "仓库位置",
     "发货模板",
+    "下单排期管理",
     "项目礼品管理",
 )
 MATERIAL_DASHBOARD_MODULES = (
@@ -549,6 +551,9 @@ ALL_PAGE_CACHE_TABLES = (
     GIFT_PROJECT_TABLE_NAME,
     CULTURAL_MATERIAL_TABLE_NAME,
     REGION_TABLE_NAME,
+    USER_PERMISSION_TABLE_NAME,
+    "物料下单批次",
+    "物料下单批次明细",
 )
 REQUEST_FORM_CACHE_TABLES = (
     CATEGORY_TABLE_NAME,
@@ -572,6 +577,9 @@ PAGE_CACHE_TABLES = {
         REGION_TABLE_NAME,
     ),
     "shipping": (CATEGORY_TABLE_NAME,),
+    "order_scheduling": (REQUEST_TABLE_NAME, REQUEST_LINE_TABLE_NAME, MATERIAL_TABLE_NAME,
+                         CATEGORY_TABLE_NAME, MODEL_TABLE_NAME, LANGUAGE_TABLE_NAME,
+                         USER_PERMISSION_TABLE_NAME, "物料下单批次", "物料下单批次明细"),
 }
 OPTIONAL_PAGE_CACHE_TABLES = {LANGUAGE_TABLE_NAME}
 def page_update_session_key(page_key: str, suffix: str) -> str:
@@ -9824,6 +9832,18 @@ def submit_feishu_material_request(
         existing_row, existing_line_count = existing_submission
         return feishu_text(feishu_fields(existing_row), "申请单号"), existing_line_count, False
 
+    scheduling_fields = {}
+    if request_payload.get("scheduling_version") == 1:
+        import order_scheduling as scheduling_rules
+        from order_scheduling_service import SchedulingService
+        SchedulingService(sys.modules[__name__]).validate_schema()
+        scheduling_fields = scheduling_rules.calculate_dates(
+            request_payload.get("arrival_start"), request_payload.get("arrival_end"),
+            str(request_payload.get("request_reason") or ""),
+            list(request_payload.get("accepted_roles") or ["销售"]),
+            submitted=request_payload.get("accepted_date") or scheduling_rules.today(),
+        )
+
     # The queue may run immediately after a category/inventory task. Always
     # validate submissions against live Feishu rows instead of the static page
     # cache, which can legitimately lag behind the preceding background write.
@@ -9922,6 +9942,11 @@ def submit_feishu_material_request(
         "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", now),
         "备注": request_note_text(request_payload),
     }
+    if scheduling_fields:
+        request_fields.update(scheduling_fields)
+        request_fields["排期编辑版本"] = 0
+        # The accepted calendar day must not move forward because a Worker was delayed.
+        request_fields["提交时间"] = int(request_payload["accepted_at_ms"])
     if any(bool(item.get("is_custom_material")) for item in prepared_lines):
         set_first_plain_field(
             REQUEST_TABLE_NAME,
@@ -10038,6 +10063,13 @@ def queued_material_request_payload(
             "freight_payer",
             "material_usage",
             "submission_token",
+            "scheduling_version",
+            "request_reason",
+            "arrival_start",
+            "arrival_end",
+            "accepted_date",
+            "accepted_at_ms",
+            "accepted_roles",
         )
     }
     queued_lines = [
@@ -10082,6 +10114,18 @@ def enqueue_feishu_material_request(
                 existing.payload,
             )
         return existing, False
+    if request_payload.get("scheduling_version") == 1:
+        import order_scheduling as scheduling_rules
+        from order_scheduling_service import SchedulingService
+        service = SchedulingService(sys.modules[__name__])
+        service.validate_schema()
+        accepted_now = datetime.now(scheduling_rules.CHINA_TZ)
+        roles = service.roles(request_payload.get("requester_open_id"))
+        scheduling_rules.calculate_dates(request_payload.get("arrival_start"), request_payload.get("arrival_end"),
+            str(request_payload.get("request_reason") or ""), roles, submitted=accepted_now.date())
+        request_payload = {**request_payload, "accepted_roles": roles,
+                           "accepted_date": accepted_now.date().isoformat(),
+                           "accepted_at_ms": int(accepted_now.timestamp() * 1000)}
     payload = queued_material_request_payload(request_payload, lines)
     return enqueue_submission_task(
         client,
@@ -13910,6 +13954,12 @@ def apply_request_material_table_edits(
 
 def validate_request_draft(draft: dict[str, object]) -> list[str]:
     errors: list[str] = []
+    if draft.get("scheduling_version") == 1:
+        from order_scheduling_service import SchedulingService
+        try:
+            SchedulingService(sys.modules[__name__]).request_dates(draft)
+        except Exception as exc:
+            errors.append(str(exc))
     missing = [
         label
         for label, value in [
@@ -13965,6 +14015,13 @@ def restore_request_form_from_draft(draft: dict[str, object]) -> None:
     st.session_state["request_requester_open_id"] = draft.get("requester_open_id") or None
     st.session_state["request_department_manual"] = draft.get("department", "")
     st.session_state["request_requester_manual"] = draft.get("requester", "")
+    if draft.get("scheduling_version") == 1:
+        import order_scheduling as scheduling_rules
+        st.session_state["request_schedule_reason"] = draft.get("request_reason") or None
+        st.session_state["request_schedule_dates"] = tuple(
+            scheduling_rules.as_date(draft.get(k)) for k in ("arrival_start", "arrival_end")
+            if draft.get(k)
+        )
     st.session_state["request_material_lines"] = [
         dict(line) for line in list(draft.get("lines") or []) if isinstance(line, dict)
     ]
@@ -14069,6 +14126,11 @@ def render_request_review() -> None:
         render_request_review_field(detail_cols[0], "运费承担者", draft.get("freight_payer"))
         render_request_review_field(detail_cols[1], "物料用途", draft.get("material_usage"))
         render_request_review_field(detail_cols[2], "收件人信息", draft.get("recipient_info"))
+        if draft.get("scheduling_version") == 1:
+            schedule_cols = st.columns(3)
+            render_request_review_field(schedule_cols[0], "申请原因", draft.get("request_reason"))
+            render_request_review_field(schedule_cols[1], "要求到达开始日期", draft.get("arrival_start"))
+            render_request_review_field(schedule_cols[2], "要求到达结束日期", draft.get("arrival_end"))
 
     with st.container(border=True):
         render_section_header("02", "申请物料清单", f"共 {len(lines)} 种物料")
@@ -14627,6 +14689,8 @@ def render_change_form(show_title: bool = True) -> None:
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,
         )
+        from order_scheduling_page import request_schedule_inputs
+        scheduling_inputs = request_schedule_inputs(sys.modules[__name__])
 
     lines, preview_clicked = render_request_material_builder(
         selection_context,
@@ -14647,6 +14711,7 @@ def render_change_form(show_title: bool = True) -> None:
             "material_usage": material_usage,
             "submission_token": st.session_state["request_submission_token"],
             "lines": [dict(line) for line in lines],
+            **scheduling_inputs,
         }
         errors = validate_request_draft(draft)
         if errors:
@@ -20190,6 +20255,7 @@ def render_management_page() -> None:
                 "型号管理": "model_management",
                 "语种管理": "language_management",
                 "发货模板": "shipping",
+                "下单排期管理": "order_scheduling",
                 "项目礼品管理": "gift_projects",
                 "仓库位置": "",
             }.get(
@@ -20228,6 +20294,7 @@ def render_management_page() -> None:
             "型号管理": "model_management",
             "语种管理": "language_management",
             "发货模板": "shipping",
+            "下单排期管理": "order_scheduling",
             "项目礼品管理": "gift_projects",
         }.get(material_section)
         if cache_key:
@@ -20247,6 +20314,9 @@ def render_management_page() -> None:
             render_warehouse_location_view(show_header=False)
         elif material_section == "项目礼品管理":
             render_gift_projects_page()
+        elif material_section == "下单排期管理":
+            from order_scheduling_page import render_order_scheduling_page
+            render_order_scheduling_page(sys.modules[__name__])
         else:
             render_shipping_template_page(load_feishu_category_records())
         return

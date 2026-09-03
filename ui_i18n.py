@@ -31,6 +31,13 @@ ZH_DISPLAY_TEXT = {
 
 
 EN_DISPLAY_TEXT = {
+    "申请原因": "Request reason",
+    "要求到达开始日期": "Required arrival start date",
+    "要求到达结束日期": "Required arrival end date",
+    "下单排期管理": "Order scheduling",
+    "代理活动": "Dealer activity",
+    "展会需求": "Exhibition",
+    "客户来访": "Customer visit",
     # Brand, navigation, and shared controls.
     "营销物料中心": "Marketing Materials Center",
     "营销物料管理系统": "Marketing Materials System",
