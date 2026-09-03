@@ -46,6 +46,13 @@ class LocalWebRunnerTests(unittest.TestCase):
         card = (ROOT / "scripts" / "install_feishu_card_worker_task.ps1").read_text(encoding="utf-8")
         self.assertIn("-Hidden", card)
 
+    def test_request_quantity_controls_are_compact_and_no_200_preset(self) -> None:
+        source = (ROOT / "app.py").read_text(encoding="utf-8")
+        self.assertIn("[20, 50, 100]", source)
+        self.assertNotIn("[20, 50, 100, 200]", source)
+        self.assertIn("grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr) minmax(0, 0.92fr)", source)
+        self.assertIn("position: static !important", source)
+
     def test_runtime_watchdog_is_hidden_and_checks_three_tasks(self) -> None:
         runner = (ROOT / "scripts" / "run_runtime_watchdog.ps1").read_text(encoding="utf-8")
         installer = (ROOT / "scripts" / "install_runtime_watchdog_task.ps1").read_text(encoding="utf-8")

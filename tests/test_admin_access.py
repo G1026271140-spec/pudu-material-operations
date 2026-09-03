@@ -6,7 +6,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V2.0.8")
+        self.assertEqual(app.APP_VERSION, "V2.0.9")
 
     def test_submission_queue_module_version_matches_application(self) -> None:
         self.assertEqual(

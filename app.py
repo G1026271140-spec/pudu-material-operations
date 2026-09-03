@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.0.8"
+APP_VERSION = "V2.0.9"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -3209,7 +3209,7 @@ def inject_global_styles() -> None:
             }
             [class*="st-key-request_spec_fixed_"] [data-testid="stHorizontalBlock"] {
                 display: grid !important;
-                grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) !important;
+                grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr) minmax(0, 0.92fr) !important;
                 gap: 0.16rem !important;
                 align-items: end !important;
                 padding: 0.18rem 0.2rem 0.2rem !important;
@@ -3218,8 +3218,7 @@ def inject_global_styles() -> None:
                 background: #FFF7ED !important;
             }
             [class*="st-key-request_spec_fixed_"] [class*="st-key-request_add_to_cart_"] {
-                position: sticky !important;
-                bottom: 0 !important;
+                position: static !important;
                 z-index: 8 !important;
                 margin-top: 0.08rem !important;
                 padding-top: 0.06rem !important;
@@ -14512,7 +14511,7 @@ def render_request_material_builder(
                             )
                             option_cols[1].pills(
                                 "快捷数量",
-                                [20, 50, 100, 200],
+                                [20, 50, 100],
                                 selection_mode="single",
                                 format_func=lambda value: str(value),
                                 key=quantity_preset_key,
