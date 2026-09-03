@@ -256,7 +256,7 @@ def render_order_scheduling_page(app):
             continue
         if mode == "未生成下单表" and group["generated"]:
             continue
-        review_status = str(group["fields"].get(app.INVENTORY_REVIEW_STATUS_FIELD) or app.INVENTORY_REVIEW_PENDING).strip()
+        review_status = app.feishu_text(group["fields"], "库存审查状态") or app.INVENTORY_REVIEW_PENDING
         if only_unreviewed and review_status != app.INVENTORY_REVIEW_PENDING:
             continue
         if only_unordered and group["generated"]:
