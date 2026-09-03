@@ -35,6 +35,16 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn("Get-CimInstance Win32_Process", installer)
         self.assertIn("$escapedRunnerRepoPath", installer)
 
+    def test_runtime_watchdog_is_hidden_and_checks_three_tasks(self) -> None:
+        runner = (ROOT / "scripts" / "run_runtime_watchdog.ps1").read_text(encoding="utf-8")
+        installer = (ROOT / "scripts" / "install_runtime_watchdog_task.ps1").read_text(encoding="utf-8")
+        self.assertIn('"PUDU Material Web App"', runner)
+        self.assertIn('"PUDU Material Cloudflare Tunnel"', runner)
+        self.assertIn('"PUDU Submission Worker"', runner)
+        self.assertIn("Start-ScheduledTask", runner)
+        self.assertIn("New-ScheduledTaskSettingsSet -Hidden", installer)
+        self.assertIn('"PT1M"', installer)
+
 
 if __name__ == "__main__":
     unittest.main()
