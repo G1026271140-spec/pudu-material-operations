@@ -126,7 +126,7 @@ def request_schedule_inputs(app):
                               placeholder="Please select" if en else "请选择", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
     dates = cols[1].date_input("Material usage time *" if en else "物料使用时间 *",
-                              value=[], min_value=rules.today(), key="request_schedule_dates",
+                              value=None, min_value=rules.today(), key="request_schedule_dates",
                               format="YYYY-MM-DD", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
@@ -201,7 +201,7 @@ def dates_dialog(app, group, operator):
                               index=rules.REASONS.index(f["申请原因"]) if f.get("申请原因") in rules.REASONS else None)
         start = rules.as_date(f.get(rules.ARRIVAL_START))
         end = rules.as_date(f.get(rules.ARRIVAL_END))
-        dates = st.date_input("物料使用时间", value=(start, end) if start and end else [], format="YYYY-MM-DD")
+        dates = st.date_input("物料使用时间", value=start or end, format="YYYY-MM-DD")
         if st.button("保存排期日期", type="primary", disabled=not reason or not dates):
             enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "request_dates", "request_id": group["id"],
                     "expected_fingerprint": group["fingerprint"], "operator_open_id": operator,

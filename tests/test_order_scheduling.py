@@ -343,7 +343,7 @@ def render_request_dates_fixture():
     order_scheduling_page.request_schedule_inputs(app)
 
 
-def test_request_date_widgets_default_empty_and_accept_range(monkeypatch):
+def test_request_date_widgets_default_empty_and_accept_single_date(monkeypatch):
     from streamlit.testing.v1 import AppTest
     monkeypatch.setattr(app, "get_ui_language", lambda: app.LANGUAGE_ZH)
     ui = AppTest.from_function(render_request_dates_fixture, default_timeout=10).run()
@@ -351,7 +351,7 @@ def test_request_date_widgets_default_empty_and_accept_range(monkeypatch):
     assert ui.selectbox[0].value is None
     assert not ui.date_input[0].value
     ui.selectbox[0].set_value("代理活动")
-    ui.date_input[0].set_value((date(2026, 10, 1), date(2026, 10, 3))).run()
+    ui.date_input[0].set_value(date(2026, 10, 1)).run()
     assert not ui.exception
     assert ui.date_input[0].value == (date(2026, 10, 1), date(2026, 10, 3))
 
