@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.1.4"
+APP_VERSION = "V2.1.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -3048,6 +3048,19 @@ def inject_global_styles() -> None:
                 min-height: 0 !important;
                 padding: 0.32rem 0.42rem 0.38rem !important;
                 overflow: visible !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) [data-testid="stAlert"] {
+                margin: 0.08rem 0 !important;
+                padding: 0.22rem 0.34rem !important;
+                min-height: 0 !important;
+                border-radius: 6px !important;
+                font-size: 0.56rem !important;
+                line-height: 1.2 !important;
+            }
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) [data-testid="stAlert"] p,
+            [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) [data-testid="stAlert"] span {
+                font-size: 0.56rem !important;
+                line-height: 1.2 !important;
             }
             [data-testid="stPopoverBody"]:has(.pudu-specification-popover-marker) h4 {
                 margin: 0 0 0.2rem !important;

@@ -136,11 +136,8 @@ def request_schedule_inputs(app):
             st.error("Your material usage time is too soon to fulfill; please do not submit this request."
                      if en else "您的物料需求时间过于仓促，当前无法满足，请勿下单。")
         elif lead_days <= 14:
-            st.warning("This is an urgent request (7–14 calendar days); fulfillment is subject to confirmation."
-                       if en else "该物料需求属于加急申请（提前7～14个自然日），能否满足需确认。")
-        else:
-            st.success("The selected material usage time meets the standard lead-time requirement."
-                       if en else "所选物料使用时间符合常规提前期要求。")
+            st.warning("Your request is urgent. Please confirm feasibility with the material administrator after submitting."
+                       if en else "您的申请属于加急申请，能否满足请在提交申请之后向物料管理员确认。")
     return {"scheduling_version": 1, "request_reason": reason or "",
             "arrival_start": dates[0].isoformat() if dates else "",
             "arrival_end": dates[-1].isoformat() if dates else ""}
