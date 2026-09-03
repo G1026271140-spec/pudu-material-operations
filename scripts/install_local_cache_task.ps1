@@ -25,6 +25,7 @@ $RunnerRepoPath = Join-Path $RunnerRoot "repo"
 $RunnerSecretsPath = Join-Path $RunnerRoot "secrets.toml"
 $InstalledRunnerScript = Join-Path $RunnerRoot "run_local_cache_refresh.ps1"
 $LogDirectory = Join-Path $RunnerRoot "logs"
+$HiddenWrapper = Join-Path $SourceRepoPath "scripts\run_powershell_hidden.vbs"
 
 if (-not (Test-Path -LiteralPath $SourceSecretsPath)) {
     throw "Local Streamlit secrets were not found: $SourceSecretsPath"
@@ -32,6 +33,7 @@ if (-not (Test-Path -LiteralPath $SourceSecretsPath)) {
 if (-not (Test-Path -LiteralPath $SourceRunnerScript)) {
     throw "Cache runner script was not found: $SourceRunnerScript"
 }
+if (-not (Test-Path -LiteralPath $HiddenWrapper)) { throw "Hidden PowerShell wrapper is missing: $HiddenWrapper" }
 
 foreach ($taskName in @($TaskName, $ContactTaskName)) {
     $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
@@ -116,7 +118,7 @@ $taskArguments = @(
     "-CacheScope", "Material"
 ) -join " "
 
-$action = New-ScheduledTaskAction -Execute $powershellPath -Argument $taskArguments -WorkingDirectory $RunnerRoot
+$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $InstalledRunnerScript, $taskArguments) -WorkingDirectory $RunnerRoot
 $triggers = @(
     (New-ScheduledTaskTrigger -Daily -At $MorningTime)
     (New-ScheduledTaskTrigger -Daily -At $AfternoonTime)
@@ -150,7 +152,7 @@ $contactArguments = @(
     "-BootstrapPython", ('"{0}"' -f $bootstrapPython),
     "-CacheScope", "Contacts"
 ) -join " "
-$contactAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $contactArguments -WorkingDirectory $RunnerRoot
+$contactAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $InstalledRunnerScript, $contactArguments) -WorkingDirectory $RunnerRoot
 $contactDayValues = @($ContactDays -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 $allowedContactDays = @("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 foreach ($contactDay in $contactDayValues) {

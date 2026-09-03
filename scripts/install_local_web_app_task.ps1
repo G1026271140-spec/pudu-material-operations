@@ -22,10 +22,12 @@ $LogDirectory = Join-Path $RunnerRoot "logs"
 $SourceSecretsPath = Join-Path $SourceRepoPath ".streamlit\secrets.toml"
 $WebRunner = Join-Path $RunnerRoot "run_local_web_app.ps1"
 $TunnelRunner = Join-Path $RunnerRoot "run_cloudflare_named_tunnel.ps1"
+$HiddenWrapper = Join-Path $SourceRepoPath "scripts\run_powershell_hidden.vbs"
 
 foreach ($path in @($SourceSecretsPath, (Join-Path $SourceRepoPath "scripts\run_local_web_app.ps1"), (Join-Path $SourceRepoPath "scripts\run_cloudflare_named_tunnel.ps1"))) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Required installation file is missing: $path" }
 }
+if (-not (Test-Path -LiteralPath $HiddenWrapper)) { throw "Hidden PowerShell wrapper is missing: $HiddenWrapper" }
 if (-not $TunnelToken -and (Test-Path -LiteralPath $SourceSecretsPath)) {
     $tokenLine = Get-Content -LiteralPath $SourceSecretsPath -Encoding UTF8 |
         Where-Object { $_ -match '^\s*CLOUDFLARE_TUNNEL_TOKEN\s*=' } |
@@ -98,7 +100,7 @@ foreach ($process in $orphanedWebProcesses) {
     Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
 }
 $webArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $WebRunner), "-RepoPath", ('"{0}"' -f $RunnerRepoPath), "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-BootstrapPython", ('"{0}"' -f $bootstrapPython), "-Port", $Port) -join " "
-$webAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $webArgs -WorkingDirectory $RunnerRoot
+$webAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $WebRunner, $webArgs) -WorkingDirectory $RunnerRoot
 Register-ScheduledTask -TaskName $WebTaskName -InputObject (New-ScheduledTask -Action $webAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the PUDU material Streamlit app on localhost only.") -Force | Out-Null
 Start-ScheduledTask -TaskName $WebTaskName
 
@@ -108,7 +110,7 @@ if (-not $SkipTunnel) {
     if (-not $cloudflared) { $cloudflared = "C:\Program Files (x86)\cloudflared\cloudflared.exe" }
     if (-not (Test-Path -LiteralPath $cloudflared)) { throw "cloudflared is not installed." }
     $tunnelArgs = @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", ('"{0}"' -f $TunnelRunner), "-CloudflaredPath", ('"{0}"' -f $cloudflared), "-TokenFile", ('"{0}"' -f $TokenFile), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-Port", $Port) -join " "
-    $tunnelAction = New-ScheduledTaskAction -Execute $powershellPath -Argument $tunnelArgs -WorkingDirectory $RunnerRoot
+    $tunnelAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $TunnelRunner, $tunnelArgs) -WorkingDirectory $RunnerRoot
     Register-ScheduledTask -TaskName $TunnelTaskName -InputObject (New-ScheduledTask -Action $tunnelAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Connects the local PUDU web app through Cloudflare Named Tunnel.") -Force | Out-Null
     Start-ScheduledTask -TaskName $TunnelTaskName
 }

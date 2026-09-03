@@ -21,6 +21,7 @@ $RunnerRepoPath = Join-Path $RunnerRoot "repo"
 $RunnerSecretsPath = Join-Path $RunnerRoot "secrets.toml"
 $InstalledRunnerScript = Join-Path $RunnerRoot "run_submission_worker.ps1"
 $LogDirectory = Join-Path $RunnerRoot "logs"
+$HiddenWrapper = Join-Path $SourceRepoPath "scripts\run_powershell_hidden.vbs"
 
 if (-not (Test-Path -LiteralPath $SourceSecretsPath)) {
     throw "Local Streamlit secrets were not found: $SourceSecretsPath"
@@ -37,6 +38,7 @@ if ($null -ne $existingTask -and $existingTask.State -eq "Running") {
         $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
     } while ($null -ne $existingTask -and $existingTask.State -eq "Running")
 }
+if (-not (Test-Path -LiteralPath $HiddenWrapper)) { throw "Hidden PowerShell wrapper is missing: $HiddenWrapper" }
 function Stop-RunnerPowerShell([string]$RunnerScript) {
     $escapedScript = [Regex]::Escape([IO.Path]::GetFullPath($RunnerScript))
     $staleShells = Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe' OR Name = 'pwsh.exe'" -ErrorAction SilentlyContinue |
@@ -109,8 +111,8 @@ $taskArguments = @(
 ) -join " "
 
 $action = New-ScheduledTaskAction `
-    -Execute $powershellPath `
-    -Argument $taskArguments `
+    -Execute "wscript.exe" `
+    -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $InstalledRunnerScript, $taskArguments) `
     -WorkingDirectory $RunnerRoot
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
 $settings = New-ScheduledTaskSettingsSet `

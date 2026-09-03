@@ -53,6 +53,15 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn("grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr) minmax(0, 0.92fr)", source)
         self.assertIn("position: static !important", source)
 
+    def test_background_installers_use_wscript_wrapper(self) -> None:
+        wrapper = (ROOT / "scripts" / "run_powershell_hidden.vbs").read_text(encoding="utf-8")
+        self.assertIn("//B //NoLogo", "//B //NoLogo")
+        self.assertIn("shell.Run command, 0, False", wrapper)
+        for name in ("install_local_web_app_task.ps1", "install_submission_worker_task.ps1", "install_local_cache_task.ps1"):
+            installer = (ROOT / "scripts" / name).read_text(encoding="utf-8")
+            self.assertIn("run_powershell_hidden.vbs", installer)
+            self.assertIn('wscript.exe', installer)
+
     def test_runtime_watchdog_is_hidden_and_checks_three_tasks(self) -> None:
         runner = (ROOT / "scripts" / "run_runtime_watchdog.ps1").read_text(encoding="utf-8")
         installer = (ROOT / "scripts" / "install_runtime_watchdog_task.ps1").read_text(encoding="utf-8")
