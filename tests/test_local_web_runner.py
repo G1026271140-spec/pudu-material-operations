@@ -44,6 +44,7 @@ class LocalWebRunnerTests(unittest.TestCase):
         self.assertIn("Start-ScheduledTask", runner)
         self.assertIn("New-ScheduledTaskSettingsSet -Hidden", installer)
         self.assertIn('"PT1M"', installer)
+        self.assertIn("wscript.exe", installer)
 
 
 if __name__ == "__main__":
