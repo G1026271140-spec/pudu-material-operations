@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.2.0"
+APP_VERSION = "V2.3.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -10912,6 +10912,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             sum(float(item["subtotal_rmb"]) for item in prepared), 2
         ),
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
+        INVENTORY_REVIEW_REMINDER_STATUS_FIELD: INVENTORY_REVIEW_REMINDER_NONE,
     }
     person_value = _request_review_person_value(operator_open_id)
     if person_value:
@@ -11005,6 +11006,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
             now,
         ),
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
+        INVENTORY_REVIEW_REMINDER_STATUS_FIELD: INVENTORY_REVIEW_REMINDER_NONE,
     }
     person_value = _request_review_person_value(operator_open_id)
     if person_value:
@@ -20470,11 +20472,12 @@ def render_request_inventory_review_page() -> None:
         "页面内调整不会写入后台，点击提交后才会一次性进入任务队列。"
     )
     remove_uid = ""
-    for row in draft_rows:
+    line_cards = st.columns(3, gap="small")
+    for index, row in enumerate(draft_rows):
         uid = str(row.get("uid") or uuid.uuid4().hex)
         row["uid"] = uid
         widget_prefix = f"request_inventory_line_{request_id}_{uid}"
-        with st.container(border=True):
+        with line_cards[index % 3].container(border=True):
             category_col, model_col, language_col, quantity_col, action_col = st.columns(
                 [2.2, 1.6, 1.6, 0.8, 0.55]
             )

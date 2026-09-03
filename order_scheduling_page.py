@@ -283,7 +283,7 @@ def render_order_scheduling_page(app):
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
             st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
             locked = group["generated"] or group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
-            a, b, c = st.columns([1, 1, 2])
+            a, b, c, review_action = st.columns([1, 1, 1.2, 1.2])
             if a.button("编辑申请明细", key="edit_"+group["id"], disabled=not operator or locked):
                 try:
                     service.check_group(group, group["fingerprint"], editing=True)
@@ -292,6 +292,20 @@ def render_order_scheduling_page(app):
                     st.error(str(exc))
             if b.button("补充／调整日期", key="dates_"+group["id"], disabled=not operator or locked):
                 dates_dialog(app, group, operator)
+            if review_status == app.INVENTORY_REVIEW_PENDING and operator:
+                base_url = app.get_secret_value("STREAMLIT_APP_URL", app.DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
+                review_args = {
+                    "allocation": "request",
+                    "request_id": group["id"],
+                    "operator": operator,
+                    "review_token": app.request_review_access_token(group["id"], operator),
+                }
+                review_action.link_button(
+                    "核实库存",
+                    base_url + "?" + app.url_parse.urlencode(review_args),
+                    type="primary",
+                    use_container_width=True,
+                )
             if group["generated"]:
                 c.success("本申请已有明细生成过下单表")
             if not group["lines"]:
