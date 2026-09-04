@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.5.9"
+APP_VERSION = "V2.6.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -10870,6 +10870,107 @@ def sync_request_ship_date_to_schedule(request_id: str, ship_date: object) -> in
     return updates
 
 
+def apply_inventory_allocation_schedule(
+    request_id: str,
+    line_plans: list[dict[str, object]],
+    operator_open_id: str,
+    generation_key: str,
+    *,
+    validated_line_ids: set[str] | None = None,
+) -> dict[str, object]:
+    """Persist per-line order decisions made in the inventory workbench."""
+    from order_scheduling import ARRIVAL_DATE, FULFILLMENT_STATUS, date_ms, today
+    from order_scheduling_service import SchedulingService
+
+    request_key = str(request_id or "").strip()
+    operator = str(operator_open_id or "").strip()
+    if not request_key or not generation_key:
+        raise RuntimeError("申请单或下单批次标识不能为空。")
+    current_day = today()
+    planned_day = current_day + timedelta(days=5)
+    line_ids = {str(item.get("line_id") or "") for item in line_plans}
+    if validated_line_ids is None:
+        line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+        line_by_id = {
+            feishu_record_id(row)
+            for row in line_rows
+            if feishu_record_id(row) in line_ids
+            and request_key in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
+        }
+        if line_by_id != line_ids:
+            raise RuntimeError("配货明细已发生变化，请刷新申请单后重新提交。")
+    elif not line_ids <= {str(value) for value in validated_line_ids}:
+        raise RuntimeError("配货明细校验不完整，请刷新申请单后重新提交。")
+    order_plans = [item for item in line_plans if item.get("order_required") is True]
+    no_order_plans = [item for item in line_plans if item.get("order_required") is not True]
+    line_updates: list[dict[str, object]] = []
+    for item in no_order_plans:
+        fields: dict[str, object] = {}
+        if feishu_has_field(REQUEST_LINE_TABLE_NAME, FULFILLMENT_STATUS):
+            fields[FULFILLMENT_STATUS] = "已到货"
+        if feishu_has_field(REQUEST_LINE_TABLE_NAME, ARRIVAL_DATE):
+            fields[ARRIVAL_DATE] = date_ms(current_day)
+        if fields:
+            line_updates.append({"record_id": str(item["line_id"]), "fields": fields})
+    for item in order_plans:
+        fields = {}
+        if feishu_has_field(REQUEST_LINE_TABLE_NAME, FULFILLMENT_STATUS):
+            fields[FULFILLMENT_STATUS] = "已下单"
+        if feishu_has_field(REQUEST_LINE_TABLE_NAME, ARRIVAL_DATE):
+            fields[ARRIVAL_DATE] = date_ms(planned_day)
+        if fields:
+            line_updates.append({"record_id": str(item["line_id"]), "fields": fields})
+    if line_updates:
+        written = 0
+        for update in line_updates:
+            result = feishu_update_record_fields(
+                REQUEST_LINE_TABLE_NAME,
+                str(update["record_id"]),
+                dict(update["fields"]),
+            )
+            if result is not False:
+                written += 1
+        if written != len(line_updates):
+            raise RuntimeError(f"配货下单状态写入不完整：应更新{len(line_updates)}条，实际{written}条。")
+
+    generated = 0
+    if order_plans and feishu_client() is not None:
+        service = SchedulingService(sys.modules[__name__])
+        live_snapshot = service.snapshot(live=True)
+        live_groups = service.grouped_requests(live_snapshot)
+        if request_key in live_groups:
+            selections = [
+                {
+                    "request_id": request_key,
+                    "line_id": str(item["line_id"]),
+                    "planned_date": planned_day.isoformat(),
+                    "confirmed_arrived": False,
+                }
+                for item in order_plans
+            ]
+            payload = {
+                "operator_open_id": operator,
+                "generation_key": generation_key,
+                "selections": selections,
+                "fingerprints": {request_key: live_groups[request_key]["fingerprint"]},
+                "note": "配货工作台自动生成下单批次",
+            }
+            service.record_schedule(payload, {}, lambda _progress: None)
+            generated = len(order_plans)
+
+    request_status = "全部已到货" if no_order_plans and not order_plans else "部分已到货" if no_order_plans else "待下单"
+    request_updates: dict[str, object] = {}
+    if feishu_has_field(REQUEST_TABLE_NAME, FULFILLMENT_STATUS):
+        request_updates[FULFILLMENT_STATUS] = request_status
+    if request_updates:
+        feishu_update_record_fields(REQUEST_TABLE_NAME, request_key, request_updates)
+    return {
+        "planned_arrival_date": planned_day.isoformat(),
+        "generated_order_lines": generated,
+        "arrived_without_order_lines": len(no_order_plans),
+    }
+
+
 def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object]:
     request_id = str(draft.get("request_id") or "")
     expected_version = int(draft.get("expected_version") or 0)
@@ -10893,6 +10994,20 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     ):
         raise RuntimeError("该申请已经完成库存核实，不能继续修改。")
     if recovering_notifications:
+        generation_key = str(draft.get("generation_key") or f"allocation:{request_id}:{expected_version}")
+        allocation_plans = [
+            {"line_id": str(item.get("line_record_id") or ""), "order_required": item.get("order_required") is True}
+            for item in list(draft.get("lines") or [])
+            if str(item.get("line_record_id") or "")
+        ]
+        if allocation_plans:
+            apply_inventory_allocation_schedule(
+                request_id,
+                allocation_plans,
+                operator_open_id,
+                generation_key,
+                validated_line_ids={item["line_id"] for item in allocation_plans},
+            )
         if ship_date not in (None, ""):
             from order_scheduling import SHIP_DATE, date_ms
             feishu_update_record_fields(
@@ -10971,6 +11086,11 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
                 "quantity": quantity,
                 "remark": str(item.get("remark") or "").strip(),
                 "current_stock": feishu_int(material_fields, "当前库存"),
+                "order_required": (
+                    item.get("order_required")
+                    if "order_required" in item
+                    else feishu_int(material_fields, "当前库存") < quantity
+                ),
                 "unit_price_rmb": unit_price_rmb,
                 "subtotal_rmb": request_line_subtotal_rmb(unit_price_rmb, quantity),
             }
@@ -11076,8 +11196,9 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     ]
     if line_updates:
         feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
+    created_line_rows = []
     if line_creates:
-        feishu_batch_create_records(REQUEST_LINE_TABLE_NAME, line_creates)
+        created_line_rows = feishu_batch_create_records(REQUEST_LINE_TABLE_NAME, line_creates)
     if removed_ids:
         feishu_batch_delete_record_ids(REQUEST_LINE_TABLE_NAME, removed_ids)
 
@@ -11113,6 +11234,42 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     if ship_date not in (None, ""):
         sync_request_ship_date_to_schedule(request_id, ship_date)
 
+    current_line_rows = list(created_line_rows or [])
+    unresolved_material_ids = {
+        str(item.get("material_record_id") or "")
+        for item in prepared
+        if not str(item.get("line_record_id") or "")
+    }
+    if unresolved_material_ids:
+        current_line_rows.extend(fresh_feishu_rows(REQUEST_LINE_TABLE_NAME))
+    allocation_plans = []
+    for item in prepared:
+        line_id = str(item.get("line_record_id") or "")
+        if not line_id:
+            line_id = next(
+                (
+                    feishu_record_id(row)
+                    for row in current_line_rows
+                    if request_id in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
+                    and str(item.get("material_record_id") or "") in feishu_link_ids_any(
+                        feishu_fields(row), ["物料编码", "物料"]
+                    )
+                ),
+                "",
+            )
+        if line_id:
+            allocation_plans.append({
+                "line_id": line_id,
+                "order_required": item.get("order_required") is True,
+            })
+    allocation_result = apply_inventory_allocation_schedule(
+        request_id,
+        allocation_plans,
+        operator_open_id,
+        str(draft.get("generation_key") or f"allocation:{request_id}:{expected_version}"),
+        validated_line_ids={item["line_id"] for item in allocation_plans},
+    ) if allocation_plans else {}
+
     ensure_request_change_record_fields()
     after_lines = _request_review_line_summary(prepared)
     feishu_batch_create_records(
@@ -11132,10 +11289,11 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     )
     notify_requester_of_inventory_edit(request, before_lines, after_lines, change_note)
     notify_enabled_admins_of_material_request(request_no, request, after_lines)
-    return {"request_no": request_no, "version": new_version, "result": result}
+    return {"request_no": request_no, "version": new_version, "result": result, **allocation_result}
 
 
 def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, object]:
+    from order_scheduling import SHIP_DATE, date_ms
     request_id = str(draft.get("request_id") or "")
     expected_version = int(draft.get("expected_version") or 0)
     operator_open_id = str(draft.get("operator_open_id") or "").strip()
@@ -11177,6 +11335,25 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
             )
     else:
         updated_line_count = 0
+    allocation_plans = [
+        {
+            "line_id": str(line.get("record_id") or ""),
+            "order_required": int(line.get("current_stock") or 0) < int(line.get("quantity") or 0),
+        }
+        for line in list(context["lines"])
+        if str(line.get("record_id") or "")
+    ]
+    allocation_result = (
+        apply_inventory_allocation_schedule(
+            request_id,
+            allocation_plans,
+            operator_open_id,
+            str(draft.get("generation_key") or f"allocation:{request_id}:{expected_version}"),
+            validated_line_ids={str(line.get("record_id") or "") for line in list(context["lines"])},
+        )
+        if allocation_plans and not already_confirmed
+        else {}
+    )
     if already_confirmed:
         if ship_date not in (None, ""):
             feishu_update_record_fields(
@@ -11191,7 +11368,6 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
             "repaired_line_count": updated_line_count,
         }
     now = datetime.now()
-    from order_scheduling import SHIP_DATE, date_ms
     request_updates: dict[str, object] = {
         "库存审查状态": INVENTORY_REVIEW_CONFIRMED,
         "库存审查结论": str(context["result"]),
@@ -11221,6 +11397,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         "request_no": request.get("request_no"),
         "result": context["result"],
         "confirmed": True,
+        **allocation_result,
     }
 
 
@@ -15028,8 +15205,9 @@ def get_restock_material_lines() -> list[dict[str, object]]:
             "model": str(item.get("model") or "").strip() or NO_MODEL_TEXT,
             "language": str(item.get("language") or "").strip() or NO_LANGUAGE_TEXT,
             "quantity": int(item.get("quantity") or 0),
-            "remark": str(item.get("remark") or "").strip(),
-        }
+                "remark": str(item.get("remark") or "").strip(),
+                "order_required": item.get("order_required") is True,
+            }
         for item in raw_lines
         if isinstance(item, dict)
     ]
@@ -20724,6 +20902,7 @@ def render_request_inventory_review_page() -> None:
                 "language": str(line.get("language") or NO_LANGUAGE_TEXT),
                 "quantity": max(1, int(line.get("quantity") or 1)),
                 "remark": str(line.get("remark") or ""),
+                "order_required": int(line.get("current_stock") or 0) < int(line.get("quantity") or 0),
             }
             for line in lines
         ]
@@ -20752,6 +20931,7 @@ def render_request_inventory_review_page() -> None:
                         "expected_version": int(request.get("inventory_review_version") or 0),
                         "operator_open_id": operator_open_id if signed_admin else "",
                         "ship_date": ship_date.isoformat() if ship_date else "",
+                        "generation_key": f"allocation:{request_id}:{int(request.get('inventory_review_version') or 0)}",
                     }
                 },
                 idempotency_key=(
@@ -20835,6 +21015,12 @@ def render_request_inventory_review_page() -> None:
                 value=str(row.get("remark") or ""),
                 key=f"{widget_prefix}_remark",
             )
+            order_choice = st.selectbox(
+                "是否下单",
+                ("需要下单", "无需下单"),
+                index=0 if row.get("order_required") is True else 1,
+                key=f"{widget_prefix}_order_required",
+            )
         row.update(
             {
                 "category": category,
@@ -20842,6 +21028,7 @@ def render_request_inventory_review_page() -> None:
                 "language": language,
                 "quantity": quantity,
                 "remark": remark,
+                "order_required": order_choice == "需要下单",
             }
         )
     st.session_state[draft_key] = draft_rows
@@ -20917,6 +21104,7 @@ def render_request_inventory_review_page() -> None:
             ],
             "quantity": int(row.get("quantity") or 0),
             "remark": str(row.get("remark") or ""),
+            "order_required": row.get("order_required") is True,
         }
         for row in rows
     ]
@@ -20933,6 +21121,7 @@ def render_request_inventory_review_page() -> None:
                     "change_note": change_note.strip(),
                     "operator_open_id": operator_open_id if signed_admin else "",
                     "ship_date": ship_date.isoformat(),
+                    "generation_key": f"allocation:{request_id}:{int(request.get('inventory_review_version') or 0)}",
                     "before_lines": _request_review_line_summary(lines),
                     "lines": payload_lines,
                 }

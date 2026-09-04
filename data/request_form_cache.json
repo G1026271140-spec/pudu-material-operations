@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-02 14:25:17",
+  "generated_at": "2026-09-04 15:56:47",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -127,9 +127,9 @@
     "3XL": "新项目",
     "4XL": "新项目",
     "6XL": "新项目",
-    "GT3": "GT",
-    "GT5": "GT",
-    "GT7": "GT"
+    "GT3": "Hulk",
+    "GT5": "Hulk",
+    "GT7": "Hulk"
   },
   "model_display_names": {
     "BG1": {
@@ -635,7 +635,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "GT"
+          "product_line": "Hulk"
         },
         {
           "model": "GT5",
@@ -652,7 +652,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "GT"
+          "product_line": "Hulk"
         },
         {
           "model": "GT7",
@@ -669,7 +669,7 @@
             "西语(Spanish)",
             "韩语(Korean)"
           ],
-          "product_line": "GT"
+          "product_line": "Hulk"
         },
         {
           "model": "KettyBot Pro",

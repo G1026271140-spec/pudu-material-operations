@@ -40,6 +40,7 @@ EN_DISPLAY_TEXT = {
     "申请单发货日期 *": "Request ship date *",
     "申请单发货日期": "Request ship date",
     "按原申请确认并提交": "Confirm and submit original request",
+    "是否下单": "Order required",
     "请选择申请单发货日期。": "Please select a request ship date.",
     "代理活动": "Dealer activity",
     "展会需求": "Exhibition",

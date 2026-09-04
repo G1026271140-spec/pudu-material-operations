@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-04 15:21:20",
+  "generated_at": "2026-09-04 15:57:09",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -7742,10 +7742,12 @@
       "open_id": "ou_d307b888fccfb9c49d2212b1f8fbe68a",
       "name": "张舒雅",
       "department_ids": [
-        "od-2ef0ed2a9652dcc4a1e137f9cb141c5d"
+        "od-2ef0ed2a9652dcc4a1e137f9cb141c5d",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "IRPBU"
+        "IRPBU",
+        "产品市场部"
       ]
     },
     {
@@ -9408,10 +9410,14 @@
       "open_id": "ou_516bd1d74d960a4973f714bd12a2eb27",
       "name": "朱红奕",
       "department_ids": [
-        "od-2ef0ed2a9652dcc4a1e137f9cb141c5d"
+        "od-2ef0ed2a9652dcc4a1e137f9cb141c5d",
+        "od-2b672221d2482c393be9e63da8af30b1",
+        "od-6d165a595b7980645d86341ff90e9918"
       ],
       "department_paths": [
-        "IRPBU"
+        "IRPBU",
+        "产品市场部",
+        "产品管理部"
       ]
     },
     {
@@ -11248,10 +11254,12 @@
       "open_id": "ou_633f3ad0f53c9bc20f6fead048c987ec",
       "name": "杨珂",
       "department_ids": [
-        "od-6a1072bf3977d7f847b93e394d868b6e"
+        "od-6a1072bf3977d7f847b93e394d868b6e",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "SRPBU"
+        "SRPBU",
+        "产品市场部"
       ]
     },
     {
@@ -16322,10 +16330,12 @@
       "open_id": "ou_f1315aeaa0045d050d3d2fb16b31e211",
       "name": "蒋斯语",
       "department_ids": [
-        "od-2ef0ed2a9652dcc4a1e137f9cb141c5d"
+        "od-2ef0ed2a9652dcc4a1e137f9cb141c5d",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "IRPBU"
+        "IRPBU",
+        "产品市场部"
       ]
     },
     {
@@ -19064,10 +19074,12 @@
       "open_id": "ou_dc6b658ce7d06177adf0d076df735016",
       "name": "陈依萱",
       "department_ids": [
-        "od-6a1072bf3977d7f847b93e394d868b6e"
+        "od-6a1072bf3977d7f847b93e394d868b6e",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "SRPBU"
+        "SRPBU",
+        "产品市场部"
       ]
     },
     {
