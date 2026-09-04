@@ -400,20 +400,20 @@ def render_order_scheduling_page(app):
     if not displayed:
         st.info("此筛选范围内没有申请单。")
     edits = st.session_state.get("order_edit_drafts", [])
-    if edits:
-        st.markdown("""<style>
+    st.markdown("""<style>
         div.st-key-order_submit_edits button {background:#d92d20;color:white;border-color:#d92d20;font-weight:700}
         div.st-key-order_submit_edits button:hover {background:#b42318;color:white;border-color:#b42318}
-        </style>""", unsafe_allow_html=True)
-        st.warning(f"已暂存 {len(edits)} 项下单排期编辑，尚未写入飞书。")
-        edit_cols = st.columns([1, 1, 3])
-        if edit_cols[0].button("提交数据（下单排期编辑）", type="primary", key="order_submit_edits", disabled=not operator):
-            stage = {"action": "batch_edit", "operator_open_id": operator, "edits": edits}
-            st.session_state.pop("order_edit_drafts", None)
-            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
-        if edit_cols[1].button("清空排期编辑"):
-            st.session_state.pop("order_edit_drafts", None)
-            st.rerun()
+    </style>""", unsafe_allow_html=True)
+    st.markdown("#### 排期编辑提交")
+    st.caption(f"已暂存 {len(edits)} 项编辑；完成修改后请点击红色按钮统一提交。")
+    edit_cols = st.columns([1, 1, 3])
+    if edit_cols[0].button("提交数据（下单排期编辑）", type="primary", key="order_submit_edits", disabled=not operator or not edits):
+        stage = {"action": "batch_edit", "operator_open_id": operator, "edits": edits}
+        st.session_state.pop("order_edit_drafts", None)
+        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
+    if edit_cols[1].button("清空排期编辑", disabled=not edits):
+        st.session_state.pop("order_edit_drafts", None)
+        st.rerun()
     st.divider()
     st.write(f"已选择 {len(fingerprints)} 张申请单、{len(selections)} 条明细。未选择的明细不会下单或补库。")
     note = st.text_input("下单批次备注（可选）", key="order_batch_note")
