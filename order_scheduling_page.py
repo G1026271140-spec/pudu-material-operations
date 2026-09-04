@@ -297,23 +297,16 @@ def render_order_scheduling_page(app):
                        f"物料发货：{date_label(f.get(rules.SHIP_DATE))}　物料到货：{date_label(f.get(rules.ARRIVAL_DATE) or f.get(rules.READY_DATE))}")
             ship_plan = st.date_input("申请单发货日期", value=rules.as_date(f.get(rules.SHIP_DATE)),
                                       key="request_ship_plan_"+group["id"], format="YYYY-MM-DD")
-            if st.button("保存申请单发货日期", key="request_ship_save_"+group["id"], disabled=not operator or not ship_plan):
+            ship_stage_key = f"request_ship:{group['id']}:{ship_plan.isoformat() if ship_plan else ''}"
+            if operator and ship_plan and ship_plan != rules.as_date(f.get(rules.SHIP_DATE)) and ship_stage_key not in st.session_state.setdefault("order_staged_edit_keys", set()):
                 stage_order_edit({"action": "request_ship_date", "request_id": group["id"],
                     "ship_date": ship_plan.isoformat(), "operator_open_id": operator,
                     "expected_fingerprint": group["fingerprint"]})
+                st.session_state["order_staged_edit_keys"].add(ship_stage_key)
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
             st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
             locked = group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
-            a, b, c, review_action = st.columns([1, 1, 1.2, 1.2])
-            edit_locked = group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
-            if a.button("编辑申请明细", key="edit_"+group["id"], disabled=not operator or edit_locked):
-                try:
-                    service.check_group(group, group["fingerprint"], editing=True)
-                    edit_dialog(app, group, catalog, operator)
-                except ValueError as exc:
-                    st.error(str(exc))
-            if b.button("补充／调整日期", key="dates_"+group["id"], disabled=not operator or locked):
-                dates_dialog(app, group, operator)
+            a, c, review_action = st.columns([1, 1.2, 1.2])
             if review_status == app.INVENTORY_REVIEW_PENDING and operator:
                 base_url = app.get_secret_value("STREAMLIT_APP_URL", app.DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
                 review_args = {
@@ -409,10 +402,12 @@ def render_order_scheduling_page(app):
     edit_cols = st.columns([1, 1, 3])
     if edit_cols[0].button("提交数据（下单排期编辑）", type="primary", key="order_submit_edits", disabled=not operator or not edits):
         stage = {"action": "batch_edit", "operator_open_id": operator, "edits": edits}
-        st.session_state.pop("order_edit_drafts", None)
-        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
+            st.session_state.pop("order_edit_drafts", None)
+            st.session_state.pop("order_staged_edit_keys", None)
+            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
     if edit_cols[1].button("清空排期编辑", disabled=not edits):
-        st.session_state.pop("order_edit_drafts", None)
+            st.session_state.pop("order_edit_drafts", None)
+            st.session_state.pop("order_staged_edit_keys", None)
         st.rerun()
     st.divider()
     st.write(f"已选择 {len(fingerprints)} 张申请单、{len(selections)} 条明细。未选择的明细不会下单或补库。")
