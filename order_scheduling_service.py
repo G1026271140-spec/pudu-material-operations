@@ -488,6 +488,15 @@ class SchedulingService:
             return progress
         snapshot = self.snapshot(live=True)
         action = payload.get("action")
+        if action == "batch_edit":
+            edits = list(payload.get("edits") or [])
+            for edit in edits:
+                edit_payload = {**edit, "operator_open_id": payload.get("operator_open_id")}
+                self.plan(edit_payload, {}, checkpoint)
+            progress["write_done"] = True
+            checkpoint(dict(progress))
+            self.refresh()
+            return progress
         if action == "request_dates":
             group = self.grouped_requests(snapshot).get(payload.get("request_id"))
             self.check_group(group, payload.get("expected_fingerprint"))

@@ -38,6 +38,12 @@ def enqueue(app, kind, payload, key=None):
     st.rerun()
 
 
+def stage_order_edit(payload):
+    edits = st.session_state.setdefault("order_edit_drafts", [])
+    edits.append(dict(payload))
+    st.toast("已加入下单排期编辑，完成后请统一提交")
+
+
 def start_refresh(app, *, replace=False):
     if replace or not st.session_state.get("order_refresh_future"):
         st.session_state["order_refresh_future"] = submit_refresh(app)
@@ -208,7 +214,7 @@ def dates_dialog(app, group, operator):
         end = rules.as_date(f.get(rules.ARRIVAL_END))
         dates = st.date_input("物料使用时间", value=start or end, format="YYYY-MM-DD")
         if st.button("保存排期日期", type="primary", disabled=not reason or not dates):
-            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "request_dates", "request_id": group["id"],
+            stage_order_edit({"action": "request_dates", "request_id": group["id"],
                     "expected_fingerprint": group["fingerprint"], "operator_open_id": operator,
                     "request_reason": reason, "arrival_start": dates[0].isoformat(), "arrival_end": dates[-1].isoformat()})
     render()
@@ -292,7 +298,7 @@ def render_order_scheduling_page(app):
             ship_plan = st.date_input("申请单发货日期", value=rules.as_date(f.get(rules.SHIP_DATE)),
                                       key="request_ship_plan_"+group["id"], format="YYYY-MM-DD")
             if st.button("保存申请单发货日期", key="request_ship_save_"+group["id"], disabled=not operator or not ship_plan):
-                enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "request_ship_date", "request_id": group["id"],
+                stage_order_edit({"action": "request_ship_date", "request_id": group["id"],
                     "ship_date": ship_plan.isoformat(), "operator_open_id": operator,
                     "expected_fingerprint": group["fingerprint"]})
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
@@ -351,16 +357,16 @@ def render_order_scheduling_page(app):
                 status_choice = st.selectbox("批量设置到货状态", rules.FULFILLMENT_OPTIONS, key="bulk_status_"+group["id"])
                 action_cols = st.columns([1, 1, 1, 1.4])
                 if action_cols[0].button("保存选中状态", key="save_bulk_status_"+group["id"]):
-                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                    stage_order_edit({"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": status_choice})
                 if action_cols[1].button("选中明细：无需下单（已到货）", key="mark_arrived_"+group["id"]):
-                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                    stage_order_edit({"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": "无需下单", "arrival_date": rules.today().isoformat()})
                 if action_cols[2].button("选中明细：确认发货", key="mark_shipped_"+group["id"]):
-                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                    stage_order_edit({"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": "已发货", "ship_date": rules.today().isoformat()})
                 if action_cols[3].button("选中明细：确认到货", key="mark_received_"+group["id"]):
-                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                    stage_order_edit({"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": "已到货", "arrival_date": rules.today().isoformat()})
             if picked:
                 planned = st.date_input("计划制作完成／到仓日期（自动补库日）", value=rules.as_date(f.get(rules.READY_DATE)),
@@ -380,6 +386,17 @@ def render_order_scheduling_page(app):
                     fingerprints[group["id"]] = group["fingerprint"]
     if not displayed:
         st.info("此筛选范围内没有申请单。")
+    edits = st.session_state.get("order_edit_drafts", [])
+    if edits:
+        st.warning(f"已暂存 {len(edits)} 项下单排期编辑，尚未写入飞书。")
+        edit_cols = st.columns([1, 1, 3])
+        if edit_cols[0].button("提交下单排期编辑", type="primary", disabled=not operator):
+            stage = {"action": "batch_edit", "operator_open_id": operator, "edits": edits}
+            st.session_state.pop("order_edit_drafts", None)
+            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
+        if edit_cols[1].button("清空排期编辑"):
+            st.session_state.pop("order_edit_drafts", None)
+            st.rerun()
     st.divider()
     st.write(f"已选择 {len(fingerprints)} 张申请单、{len(selections)} 条明细。未选择的明细不会下单或补库。")
     note = st.text_input("下单批次备注（可选）", key="order_batch_note")
@@ -431,11 +448,11 @@ def render_shipping_management(app, service, snapshot):
                     st.caption(f"收货人信息：{app.feishu_text(f, '收件人信息') or '—'}　到货：{date_label(df.get(rules.ARRIVAL_DATE))}")
                     c1, c2 = st.columns(2)
                     if c1.button("确认发货", key="ship_confirm_"+did, disabled=status in {"已发货", "已到货", "已完成"}):
-                        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": did,
+                        stage_order_edit({"action": "fulfillment_update", "detail_id": did,
                             "operator_open_id": st.session_state.get("order_operator"), "status": "已发货",
                             "ship_date": today.isoformat(), "expected_fingerprint": rules.fingerprint(df)})
                     if c2.button("确认到货", key="arrival_confirm_"+did, disabled=status in {"已到货", "已完成"}):
-                        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": did,
+                        stage_order_edit({"action": "fulfillment_update", "detail_id": did,
                             "operator_open_id": st.session_state.get("order_operator"), "status": "已到货",
                             "arrival_date": today.isoformat(), "expected_fingerprint": rules.fingerprint(df)})
                 else:
@@ -470,7 +487,7 @@ def render_history(app, service, snapshot, operator):
             if operator and f.get("批次状态") == "已生成":
                 enabled = st.checkbox("启用此批次自动补库", value=f.get("启用自动补库") is True, key="order_auto_"+bid)
                 if st.button("保存补库开关", key="order_save_auto_"+bid):
-                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "batch_enabled", "batch_id": bid,
+                    stage_order_edit({"action": "batch_enabled", "batch_id": bid,
                         "operator_open_id": operator, "enabled": enabled})
                 for detail in details:
                     df, did = app.feishu_fields(detail), app.feishu_record_id(detail)
@@ -480,7 +497,7 @@ def render_history(app, service, snapshot, operator):
                         planned = st.date_input("计划到仓日期", value=rules.as_date(df.get("计划到仓日期")), key="order_change_date_"+did)
                         arrived = st.checkbox("确认该明细已经制作完成并到仓", key="order_change_arrived_"+did) if planned and planned < rules.today() else False
                         if st.button("保存到仓日期", key="order_change_save_"+did, disabled=not planned):
-                            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "receipt_date", "detail_id": did,
+                            stage_order_edit({"action": "receipt_date", "detail_id": did,
                                 "operator_open_id": operator, "planned_date": planned.isoformat(), "confirmed_arrived": arrived,
                                 "expected_fingerprint": rules.fingerprint(df)})
                     with st.expander(f"履约状态 · {df.get('品类名称快照')} / {df.get('型号或尺码快照')}"):
@@ -494,7 +511,7 @@ def render_history(app, service, snapshot, operator):
                         arrival_date = st.date_input("物料到货时间", value=rules.as_date(df.get(rules.ARRIVAL_DATE) or df.get("计划到仓日期")),
                                                      key="order_arrival_date_"+did, format="YYYY-MM-DD")
                         if st.button("保存履约状态", key="order_fulfillment_save_"+did):
-                            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": did,
+                            stage_order_edit({"action": "fulfillment_update", "detail_id": did,
                                 "operator_open_id": operator, "status": status,
                                 "ship_date": ship_date.isoformat() if ship_date else "",
                                 "arrival_date": arrival_date.isoformat() if arrival_date else "",
