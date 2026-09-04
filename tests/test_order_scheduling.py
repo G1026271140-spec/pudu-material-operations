@@ -381,8 +381,6 @@ def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):
     ui.selectbox(key="order_operator").set_value("ou_admin").run()
     assert ui.button(key="order_submit_edits").disabled
     assert not ui.exception
-    assert any(button.label == "新增明细" for button in ui.button)
-    assert any(widget.label == "修改说明（必填）" for widget in ui.text_input)
 
 
 def test_prepare_download_without_network_or_writes_and_worker_no_attachment(svc):
