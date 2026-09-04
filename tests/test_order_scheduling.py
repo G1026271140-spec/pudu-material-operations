@@ -379,7 +379,7 @@ def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):
     assert "REQ-1" in ui.expander[0].label
     assert len(ui.dataframe) == 1
     ui.selectbox(key="order_operator").set_value("ou_admin").run()
-    ui.button(key="edit_req").click().run()
+    assert ui.button(key="order_submit_edits").disabled
     assert not ui.exception
     assert any(button.label == "新增明细" for button in ui.button)
     assert any(widget.label == "修改说明（必填）" for widget in ui.text_input)
@@ -474,5 +474,5 @@ def test_pending_io_does_not_block_page_and_issued_requests_hidden(svc, monkeypa
     assert len(ui.expander) >= 1
     assert "REQ-1" in ui.expander[0].label
     ui.selectbox(key="order_operator").set_value("ou_admin").run()
-    assert not ui.button(key="edit_req").disabled
+    assert ui.button(key="order_submit_edits").disabled
     page.schema_ready.assert_not_called()
