@@ -176,6 +176,64 @@ class SchedulingService:
             raise ValueError(f"{table}缺少写入字段：{'、'.join(sorted(missing))}；未执行写入。")
         return self.app.feishu_update_record_fields(table, rid, fields)
 
+    def sync_request_schedule_dates(self, request_id, request_fields, line_rows, detail_rows, batch_rows):
+        date_fields = {
+            rules.USAGE_DATE: request_fields.get(rules.USAGE_DATE),
+            rules.ORDER_DATE: request_fields.get(rules.ORDER_DATE),
+            rules.ARRIVAL_DATE: request_fields.get(rules.ARRIVAL_DATE),
+            rules.SHIP_DATE: request_fields.get(rules.SHIP_DATE),
+        }
+        date_fields = {name: value for name, value in date_fields.items() if value not in (None, "")}
+        if not date_fields:
+            return 0
+        updated = 0
+        for row in line_rows:
+            fields = self.app.feishu_fields(row)
+            if request_id not in self.app.feishu_link_ids_any(fields, ["所属申请单", "申请单"]):
+                continue
+            writable = {
+                name: value for name, value in date_fields.items()
+                if name in self.app.feishu_table_fields(self.app.REQUEST_LINE_TABLE_NAME)
+            }
+            if writable:
+                self.write(self.app.REQUEST_LINE_TABLE_NAME, self.app.feishu_record_id(row), writable)
+                updated += 1
+        for row in detail_rows:
+            fields = self.app.feishu_fields(row)
+            if request_id not in self.app.feishu_link_ids(fields, "来源申请单"):
+                continue
+            writable = {
+                name: value
+                for name, value in date_fields.items()
+                if name in self.app.feishu_table_fields(rules.DETAIL_TABLE)
+            }
+            if rules.ARRIVAL_DATE in writable:
+                arrival_value = writable.pop(rules.ARRIVAL_DATE)
+                if rules.ARRIVAL_DATE in self.app.feishu_table_fields(rules.DETAIL_TABLE):
+                    writable[rules.ARRIVAL_DATE] = arrival_value
+                if rules.DETAIL_ARRIVAL_DATE in self.app.feishu_table_fields(rules.DETAIL_TABLE):
+                    writable[rules.DETAIL_ARRIVAL_DATE] = arrival_value
+            if writable:
+                self.write(rules.DETAIL_TABLE, self.app.feishu_record_id(row), writable)
+                updated += 1
+        batch_ids = {
+            bid
+            for row in detail_rows
+            if request_id in self.app.feishu_link_ids(self.app.feishu_fields(row), "来源申请单")
+            for bid in self.app.feishu_link_ids(self.app.feishu_fields(row), "所属下单批次")
+        }
+        for row in batch_rows:
+            if self.app.feishu_record_id(row) not in batch_ids:
+                continue
+            writable = {
+                name: value for name, value in date_fields.items()
+                if name in self.app.feishu_table_fields(rules.BATCH_TABLE)
+            }
+            if writable:
+                self.write(rules.BATCH_TABLE, self.app.feishu_record_id(row), writable)
+                updated += 1
+        return updated
+
     def create(self, table, fields):
         missing = set(fields) - set(self.app.feishu_table_fields(table))
         if missing:
@@ -308,7 +366,11 @@ class SchedulingService:
             prepared.append({"request_id": rid, "line_id": lid, "material_id": line["material_id"],
                 "category": item["category"], "model": item["model"], "language": item["language"],
                 "quantity": line["quantity"], "usage": group["usage"], "remark": line["remark"],
-                "planned_date": planned.isoformat(), "confirmed_arrived": selection.get("confirmed_arrived") is True})
+                "planned_date": planned.isoformat(), "confirmed_arrived": selection.get("confirmed_arrived") is True,
+                "usage_date": group["fields"].get(rules.USAGE_DATE),
+                "order_date": group["fields"].get(rules.ORDER_DATE),
+                "arrival_date": group["fields"].get(rules.ARRIVAL_DATE),
+                "ship_date": group["fields"].get(rules.SHIP_DATE)})
         return prepared
 
     def record_schedule(self, payload, progress, checkpoint):
@@ -369,13 +431,19 @@ class SchedulingService:
         if not batch:
             progress["generation_started"] = True
             checkpoint(dict(progress))
-            batch = self.create(rules.BATCH_TABLE, {
+            batch_fields = {
                 "下单批次号": f"PO-{rules.today():%Y%m%d}-{key[:10].upper()}", "批次状态": "生成中",
                 "生成幂等键": key, "生成人": [{"id": payload["operator_open_id"]}],
                 "生成时间": int(datetime.now(rules.CHINA_TZ).timestamp() * 1000),
                 # Arm only after every batch line is durably saved.
                 "启用自动补库": False, "批次备注": str(payload.get("note") or ""),
-            })
+            }
+            for field_name, item_key in ((rules.USAGE_DATE, "usage_date"), (rules.ORDER_DATE, "order_date"),
+                                         (rules.ARRIVAL_DATE, "arrival_date"), (rules.SHIP_DATE, "ship_date")):
+                values = {item.get(item_key) for item in prepared if item.get(item_key) not in (None, "")}
+                if len(values) == 1:
+                    batch_fields[field_name] = next(iter(values))
+            batch = self.create(rules.BATCH_TABLE, batch_fields)
         bid = a.feishu_record_id(batch)
         existing_details = {a.feishu_text(a.feishu_fields(r), rules.RESTOCK_KEY): r for r in snapshot[rules.DETAIL_TABLE]}
         for item in prepared:
@@ -392,8 +460,10 @@ class SchedulingService:
                 "来源申请明细": [item["line_id"]], "关联物料": [item["material_id"]],
                 "品类名称快照": item["category"], "型号或尺码快照": item["model"], "语种快照": item["language"],
                 "下单数量": item["quantity"], "申请用途快照": item["usage"], "明细备注快照": item["remark"],
-                "计划到仓日期": rules.date_ms(item["planned_date"]),
-                rules.SHIP_DATE: rules.date_ms(item["planned_date"]) if item["confirmed_arrived"] else None,
+                rules.USAGE_DATE: item.get("usage_date"), rules.ORDER_DATE: item.get("order_date"),
+                rules.ARRIVAL_DATE: item.get("arrival_date"),
+                rules.DETAIL_ARRIVAL_DATE: rules.date_ms(item["planned_date"]),
+                rules.SHIP_DATE: item.get("ship_date") or (rules.date_ms(item["planned_date"]) if item["confirmed_arrived"] else None),
                 rules.FULFILLMENT_STATUS: "已到货" if item["confirmed_arrived"] else "已下单",
                 "补库状态": "待补库",
                 rules.RESTOCK_KEY: line_key,
@@ -441,7 +511,7 @@ class SchedulingService:
                 continue
             if not rules.ordinary_request(a.feishu_fields(requests.get(rids[0], {}))):
                 continue
-            planned, generated = rules.as_date(f.get("计划到仓日期")), rules.as_date(bf.get("生成时间"))
+            planned, generated = rules.as_date(f.get(rules.DETAIL_ARRIVAL_DATE)), rules.as_date(bf.get("生成时间"))
             if planned is None or generated is None or planned > now or a.feishu_int(f, "下单数量") <= 0:
                 continue
             # Old dates entered directly in Base must not silently backfill inventory.
@@ -522,6 +592,11 @@ class SchedulingService:
                 str(payload.get("request_reason") or ""), roles, submitted=submitted)
             dates["排期编辑版本"] = a.feishu_int(f, "排期编辑版本") + 1
             self.write(a.REQUEST_TABLE_NAME, group["id"], dates)
+            self.sync_request_schedule_dates(
+                group["id"], {**f, **dates},
+                snapshot[a.REQUEST_LINE_TABLE_NAME], snapshot[rules.DETAIL_TABLE],
+                snapshot[rules.BATCH_TABLE],
+            )
         elif action == "request_ship_date":
             group = self.grouped_requests(snapshot).get(payload.get("request_id"))
             if not group:
@@ -533,6 +608,10 @@ class SchedulingService:
                 raise ValueError("请选择申请单发货日期。")
             ship_date_value = rules.date_ms(ship_date)
             self.write(a.REQUEST_TABLE_NAME, group["id"], {rules.SHIP_DATE: ship_date_value})
+            for line_row in snapshot[a.REQUEST_LINE_TABLE_NAME]:
+                line_fields = a.feishu_fields(line_row)
+                if group["id"] in a.feishu_link_ids_any(line_fields, ["所属申请单", "申请单"]):
+                    self.write(a.REQUEST_LINE_TABLE_NAME, a.feishu_record_id(line_row), {rules.SHIP_DATE: ship_date_value})
             for detail_row in snapshot[rules.DETAIL_TABLE]:
                 detail_fields = a.feishu_fields(detail_row)
                 if group["id"] in a.feishu_link_ids(detail_fields, "来源申请单"):
@@ -541,6 +620,15 @@ class SchedulingService:
                         a.feishu_record_id(detail_row),
                         {rules.SHIP_DATE: ship_date_value},
                     )
+            batch_ids = {
+                bid
+                for detail_row in snapshot[rules.DETAIL_TABLE]
+                if group["id"] in a.feishu_link_ids(a.feishu_fields(detail_row), "来源申请单")
+                for bid in a.feishu_link_ids(a.feishu_fields(detail_row), "所属下单批次")
+            }
+            for batch_row in snapshot[rules.BATCH_TABLE]:
+                if a.feishu_record_id(batch_row) in batch_ids:
+                    self.write(rules.BATCH_TABLE, a.feishu_record_id(batch_row), {rules.SHIP_DATE: ship_date_value})
         elif action == "batch_enabled":
             row = self.index(snapshot[rules.BATCH_TABLE]).get(payload.get("batch_id"), {})
             if a.feishu_text(a.feishu_fields(row), "批次状态") != "已生成":
@@ -555,10 +643,14 @@ class SchedulingService:
                 raise ValueError("明细正在补库、已补库或结果不明确，不能直接改期。")
             planned = rules.validate_planned_receipt(payload.get("planned_date"), now=rules.today(),
                                                      confirmed_arrived=payload.get("confirmed_arrived") is True)
-            self.write(rules.DETAIL_TABLE, a.feishu_record_id(row), {
-                "计划到仓日期": rules.date_ms(planned),
+            planned_value = rules.date_ms(planned)
+            receipt_fields = {
+                rules.DETAIL_ARRIVAL_DATE: planned_value,
                 "补库异常说明": "管理员已确认制作完成并到仓" if payload.get("confirmed_arrived") is True else "",
-            })
+            }
+            if rules.ARRIVAL_DATE in a.feishu_table_fields(rules.DETAIL_TABLE):
+                receipt_fields[rules.ARRIVAL_DATE] = planned_value
+            self.write(rules.DETAIL_TABLE, a.feishu_record_id(row), receipt_fields)
         elif action == "fulfillment_update":
             row = self.index(snapshot[rules.DETAIL_TABLE]).get(payload.get("detail_id"), {})
             f = a.feishu_fields(row)
@@ -572,7 +664,10 @@ class SchedulingService:
             if payload.get("ship_date"):
                 fields[rules.SHIP_DATE] = rules.date_ms(payload["ship_date"])
             if payload.get("arrival_date"):
-                fields[rules.ARRIVAL_DATE] = rules.date_ms(payload["arrival_date"])
+                arrival_value = rules.date_ms(payload["arrival_date"])
+                fields[rules.DETAIL_ARRIVAL_DATE] = arrival_value
+                if rules.ARRIVAL_DATE in a.feishu_table_fields(rules.DETAIL_TABLE):
+                    fields[rules.ARRIVAL_DATE] = arrival_value
                 fields["补库异常说明"] = "管理员已确认制作完成并到仓" if status == "已到货" else ""
             self.write(rules.DETAIL_TABLE, a.feishu_record_id(row), fields)
             request_ids = a.feishu_link_ids(f, "来源申请单")
@@ -599,7 +694,10 @@ class SchedulingService:
                 if payload.get("ship_date"):
                     fields[rules.SHIP_DATE] = rules.date_ms(payload["ship_date"])
                 if payload.get("arrival_date"):
-                    fields[rules.ARRIVAL_DATE] = rules.date_ms(payload["arrival_date"])
+                    arrival_value = rules.date_ms(payload["arrival_date"])
+                    fields[rules.DETAIL_ARRIVAL_DATE] = arrival_value
+                    if rules.ARRIVAL_DATE in a.feishu_table_fields(table):
+                        fields[rules.ARRIVAL_DATE] = arrival_value
                 self.write(table, detail_id, fields)
         else:
             raise ValueError("未知排期操作。")

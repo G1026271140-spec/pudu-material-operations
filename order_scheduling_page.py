@@ -497,7 +497,7 @@ def render_history(app, service, snapshot, operator):
                 st.dataframe(pd.DataFrame([{k: app.feishu_fields(r).get(k) for k in
                     ("品类名称快照", "型号或尺码快照", "语种快照", "下单数量", rules.FULFILLMENT_STATUS, "补库状态", "补库异常说明")}
                     | {"物料发货时间": date_label(app.feishu_fields(r).get(rules.SHIP_DATE)),
-                       "物料到货时间": date_label(app.feishu_fields(r).get(rules.ARRIVAL_DATE))} for r in details]), hide_index=True, width="stretch")
+                       "物料到货时间": date_label(app.feishu_fields(r).get(rules.DETAIL_ARRIVAL_DATE))} for r in details]), hide_index=True, width="stretch")
             if operator and f.get("批次状态") == "已生成":
                 enabled = st.checkbox("启用此批次自动补库", value=f.get("启用自动补库") is True, key="order_auto_"+bid)
                 if st.button("保存补库开关", key="order_save_auto_"+bid):
@@ -522,7 +522,7 @@ def render_history(app, service, snapshot, operator):
                                               key="order_fulfillment_status_"+did)
                         ship_date = st.date_input("物料发货时间", value=rules.as_date(df.get(rules.SHIP_DATE)),
                                                   key="order_ship_date_"+did, format="YYYY-MM-DD")
-                        arrival_date = st.date_input("物料到货时间", value=rules.as_date(df.get(rules.ARRIVAL_DATE) or df.get("计划到仓日期")),
+                        arrival_date = st.date_input("物料到货时间", value=rules.as_date(df.get(rules.DETAIL_ARRIVAL_DATE)),
                                                      key="order_arrival_date_"+did, format="YYYY-MM-DD")
                         if st.button("保存履约状态", key="order_fulfillment_save_"+did):
                             stage_order_edit({"action": "fulfillment_update", "detail_id": did,

@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.5.3"
+APP_VERSION = "V2.5.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7644,15 +7644,17 @@ def requester_has_enabled_role(requester_open_id: object, role_name: str) -> boo
 
 def ensure_order_scheduling_fields() -> None:
     """Create the explicit fulfillment columns required by order scheduling."""
-    from order_scheduling import FULFILLMENT_STATUS, SHIP_DATE
+    from order_scheduling import ARRIVAL_DATE, FULFILLMENT_STATUS, ORDER_DATE, SHIP_DATE, USAGE_DATE
     refresh_feishu_schema_cache()
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法创建下单排期履约字段。")
     options = [{"name": value} for value in ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")]
     required = {
-        REQUEST_TABLE_NAME: ((SHIP_DATE, 5, None), (FULFILLMENT_STATUS, 3, {"options": options})),
-        REQUEST_LINE_TABLE_NAME: ((SHIP_DATE, 5, None), ("计划到仓日期", 5, None),
+        REQUEST_TABLE_NAME: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
+                             (SHIP_DATE, 5, None), (FULFILLMENT_STATUS, 3, {"options": options})),
+        REQUEST_LINE_TABLE_NAME: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
+                                  (SHIP_DATE, 5, None), ("计划到仓日期", 5, None),
                                   (FULFILLMENT_STATUS, 3, {"options": options})),
     }
     for table, fields in required.items():
@@ -10125,6 +10127,15 @@ def submit_feishu_material_request(
             REQUEST_PRICE_SNAPSHOT_FIELD: float(item["unit_price_rmb"]),
             REQUEST_LINE_SUBTOTAL_FIELD: float(item["subtotal_rmb"]),
         }
+        if scheduling_fields:
+            for field_name in (
+                "物料使用时间",
+                "物料下单时间",
+                "物料到货时间",
+                "物料发货时间",
+            ):
+                if field_name in scheduling_fields:
+                    line_fields[field_name] = scheduling_fields[field_name]
         set_first_plain_field(REQUEST_LINE_TABLE_NAME, line_fields, ["申请单号"], request_no)
         set_request_line_material_fields(
             line_fields,

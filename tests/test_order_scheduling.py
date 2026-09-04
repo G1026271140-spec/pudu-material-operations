@@ -345,6 +345,11 @@ def test_date_edit_retains_submission_role_snapshot(svc):
 
 
 def test_request_ship_date_updates_request_and_all_schedule_details(svc):
+    svc.app.data[app.REQUEST_LINE_TABLE_NAME] = [
+        record("line-1", **{"所属申请单": ["req"], r.SHIP_DATE: None}),
+        record("line-2", **{"所属申请单": ["req"], r.SHIP_DATE: None}),
+        record("line-other", **{"所属申请单": ["other"], r.SHIP_DATE: None}),
+    ]
     svc.app.data[r.DETAIL_TABLE] = [
         record("detail-1", **{"来源申请单": ["req"], r.SHIP_DATE: None}),
         record("detail-2", **{"来源申请单": ["req"], r.SHIP_DATE: None}),
@@ -363,11 +368,25 @@ def test_request_ship_date_updates_request_and_all_schedule_details(svc):
 
     expected = r.date_ms("2026-09-12")
     assert svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"][r.SHIP_DATE] == expected
+    assert [svc.app.data[app.REQUEST_LINE_TABLE_NAME][index]["fields"][r.SHIP_DATE] for index in (0, 1)] == [expected, expected]
     assert [
         svc.app.data[r.DETAIL_TABLE][index]["fields"][r.SHIP_DATE]
         for index in (0, 1)
     ] == [expected, expected]
     assert svc.app.data[r.DETAIL_TABLE][2]["fields"][r.SHIP_DATE] is None
+
+
+def test_request_dates_syncs_all_schedule_dates_to_lines_details_and_batches(svc):
+    svc.app.data[app.REQUEST_LINE_TABLE_NAME] = [record("line-1", **{"所属申请单": ["req"]})]
+    svc.app.data[r.DETAIL_TABLE] = [record("detail-1", **{"来源申请单": ["req"], "所属下单批次": ["batch-1"]})]
+    svc.app.data[r.BATCH_TABLE] = [record("batch-1")]
+    svc.plan({"operator_open_id": "ou_admin", "action": "request_dates", "request_id": "req",
+              "request_reason": "代理活动", "arrival_start": "2026-09-20", "arrival_end": "2026-09-22"}, {}, lambda _: None)
+    request_fields = svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]
+    for table, index in ((app.REQUEST_LINE_TABLE_NAME, 0), (r.DETAIL_TABLE, 0), (r.BATCH_TABLE, 0)):
+        fields = svc.app.data[table][index]["fields"]
+        assert fields[r.USAGE_DATE] == request_fields[r.USAGE_DATE]
+        assert fields[r.ORDER_DATE] == request_fields[r.ORDER_DATE]
 
 
 def render_request_dates_fixture():

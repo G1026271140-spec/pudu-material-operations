@@ -13,10 +13,11 @@ REASONS = ("代理活动", "展会需求", "客户来访")
 ARRIVAL_START = "要求达到开始日期"
 ARRIVAL_END = "要求到达结束日期"
 READY_DATE = "预计完成制作日期"
-ORDER_DATE = "需要下单日期"
-USAGE_DATE = ARRIVAL_START
+USAGE_DATE = "物料使用时间"
+ORDER_DATE = "物料下单时间"
 SHIP_DATE = "物料发货时间"
-ARRIVAL_DATE = "计划到仓日期"
+ARRIVAL_DATE = "物料到货时间"
+DETAIL_ARRIVAL_DATE = "计划到仓日期"
 FULFILLMENT_STATUS = "物料到货状态"
 FULFILLMENT_OPTIONS = ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")
 TIME_CLASS = "时间判定"
@@ -73,10 +74,13 @@ def calculate_dates(start: object, end: object, reason: str, roles: list[str], *
     if not exempt and lead_days < 7:
         raise ValueError("销售物料申请须至少提前7个自然日；7～14天为加急，15天起为普通申请。")
     classification = "时间豁免" if exempt else "加急申请" if lead_days <= 14 else "普通申请"
+    order_day = order_workday(start_day - timedelta(days=15))
+    arrival_day = start_day - timedelta(days=10)
     return {
         "申请原因": reason, ARRIVAL_START: date_ms(start_day), ARRIVAL_END: date_ms(end_day),
-        ORDER_DATE: date_ms(order_workday(start_day - timedelta(days=15))),
-        READY_DATE: date_ms(start_day - timedelta(days=10)), TIME_CLASS: classification,
+        USAGE_DATE: date_ms(start_day), ORDER_DATE: date_ms(order_day),
+        READY_DATE: date_ms(arrival_day), ARRIVAL_DATE: date_ms(arrival_day),
+        TIME_CLASS: classification,
         "申请时角色快照": "、".join(sorted(role_set)),
     }
 
@@ -118,26 +122,30 @@ def aggregate_export_rows(lines: list[dict]) -> list[list]:
 SCHEMA = {
     "物料申请单": {
         "申请原因": (3, REASONS), ARRIVAL_START: (5, None), ARRIVAL_END: (5, None),
-        ORDER_DATE: (5, None), READY_DATE: (5, None), "申请时角色快照": (1, None),
+        USAGE_DATE: (5, None), ORDER_DATE: (5, None), ARRIVAL_DATE: (5, None),
+        READY_DATE: (5, None), "申请时角色快照": (1, None),
         SHIP_DATE: (5, None),
         FULFILLMENT_STATUS: (3, ()),
         TIME_CLASS: (3, ("普通申请", "加急申请", "时间豁免", "待补充日期")),
         "排期编辑版本": (2, None),
     },
     "申请明细": {GENERATED: (3, ("未生成", "生成中", "已生成")),
-                  SHIP_DATE: (5, None), ARRIVAL_DATE: (5, None), FULFILLMENT_STATUS: (3, FULFILLMENT_OPTIONS)},
+                  USAGE_DATE: (5, None), ORDER_DATE: (5, None), ARRIVAL_DATE: (5, None),
+                  SHIP_DATE: (5, None), FULFILLMENT_STATUS: (3, FULFILLMENT_OPTIONS)},
     BATCH_TABLE: {
         "下单批次号": (1, None), "批次状态": (3, ("生成中", "已生成", "生成失败", "已作废")),
         "生成人": (11, None), "生成时间": (5, None),
+        USAGE_DATE: (5, None), ORDER_DATE: (5, None), ARRIVAL_DATE: (5, None), SHIP_DATE: (5, None),
         "生成幂等键": (1, None), "启用自动补库": (7, None), "批次备注": (1, None),
     },
     DETAIL_TABLE: {
         "批次明细编号": (1, None), "所属下单批次": (18, BATCH_TABLE),
         "来源申请单": (18, "物料申请单"), "来源申请明细": (18, "申请明细"),
         "关联物料": (18, "物料主数据"), "品类名称快照": (1, None), "型号或尺码快照": (1, None),
+        USAGE_DATE: (5, None), ORDER_DATE: (5, None), ARRIVAL_DATE: (5, None),
         "语种快照": (1, None), "下单数量": (2, None), "申请用途快照": (1, None),
         "明细备注快照": (1, None), "计划到仓日期": (5, None),
-        SHIP_DATE: (5, None), ARRIVAL_DATE: (5, None),
+        SHIP_DATE: (5, None), DETAIL_ARRIVAL_DATE: (5, None),
         FULFILLMENT_STATUS: (3, FULFILLMENT_OPTIONS),
         "补库状态": (3, ("待补库", "补库中", "已补库", "补库异常", "已取消")),
         "实际补库时间": (5, None), "关联库存流水": (18, "库存流水"),
