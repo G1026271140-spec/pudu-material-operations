@@ -291,7 +291,7 @@ def render_order_scheduling_page(app):
                        f"物料发货：{date_label(f.get(rules.SHIP_DATE))}　物料到货：{date_label(f.get(rules.ARRIVAL_DATE) or f.get(rules.READY_DATE))}")
             ship_plan = st.date_input("申请单发货日期", value=rules.as_date(f.get(rules.SHIP_DATE)),
                                       key="request_ship_plan_"+group["id"], format="YYYY-MM-DD")
-            if operator and st.button("保存申请单发货日期", key="request_ship_save_"+group["id"], disabled=not ship_plan):
+            if st.button("保存申请单发货日期", key="request_ship_save_"+group["id"], disabled=not operator or not ship_plan):
                 enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "request_ship_date", "request_id": group["id"],
                     "ship_date": ship_plan.isoformat(), "operator_open_id": operator,
                     "expected_fingerprint": group["fingerprint"]})
@@ -334,8 +334,7 @@ def render_order_scheduling_page(app):
                 disabled=True if locked else [col for col in frame.columns if col != "选中下单"],
                 column_config={"明细ID": None}, key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
             picked = edited.loc[edited["选中下单"] == True, "明细ID"].tolist() if not locked else []
-            if operator:
-                with st.expander("明细履约操作（发货／到货／状态）", expanded=False):
+            with st.expander("明细履约操作（发货／到货／状态）", expanded=True):
                     detail_options = {l["id"]: f"{l['category']} / {l['model']} / {l['language']}" for l in group["lines"]}
                     selected_detail = st.selectbox("选择明细", list(detail_options), format_func=lambda x: detail_options[x],
                                                    key="fulfillment_detail_"+group["id"])
@@ -351,7 +350,7 @@ def render_order_scheduling_page(app):
                                                   key="fulfillment_ship_"+target["id"], format="YYYY-MM-DD")
                         arrival_date = st.date_input("物料到货时间", value=rules.as_date(tf.get(rules.ARRIVAL_DATE) or tf.get("计划到仓日期")),
                                                      key="fulfillment_arrival_"+target["id"], format="YYYY-MM-DD")
-                        if st.button("保存明细履约信息", key="fulfillment_save_"+target["id"]):
+                        if st.button("保存明细履约信息", key="fulfillment_save_"+target["id"], disabled=not operator):
                             enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": target["id"],
                                 "operator_open_id": operator, "status": status,
                                 "ship_date": ship_date.isoformat() if ship_date else "",
