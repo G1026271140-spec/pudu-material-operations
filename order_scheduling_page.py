@@ -131,7 +131,10 @@ def request_schedule_inputs(app):
                               on_change=app.mark_request_form_dirty)
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
     requester_open_id = str(st.session_state.get("request_requester_open_id") or "").strip()
-    regional_owner = bool(requester_open_id and getattr(app, "requester_has_enabled_role", lambda *_: False)(requester_open_id, "区域市场负责人"))
+    regional_owner = any(
+        requester_open_id and getattr(app, "requester_has_enabled_role", lambda *_: False)(requester_open_id, role)
+        for role in ("区域市场负责人", "区域市场经理")
+    )
     if dates and reason != "客户来访" and not regional_owner:
         lead_days = (dates[0] - rules.today()).days
         if lead_days < 7:
