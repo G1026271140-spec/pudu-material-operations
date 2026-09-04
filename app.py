@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.1"
+APP_VERSION = "V2.6.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7644,7 +7644,15 @@ def requester_has_enabled_role(requester_open_id: object, role_name: str) -> boo
 
 def ensure_order_scheduling_fields() -> None:
     """Create the explicit fulfillment columns required by order scheduling."""
-    from order_scheduling import ARRIVAL_DATE, FULFILLMENT_STATUS, ORDER_DATE, SHIP_DATE, USAGE_DATE
+    from order_scheduling import (
+        ARRIVAL_DATE,
+        BATCH_TABLE,
+        DETAIL_TABLE,
+        FULFILLMENT_STATUS,
+        ORDER_DATE,
+        SHIP_DATE,
+        USAGE_DATE,
+    )
     refresh_feishu_schema_cache()
     client = feishu_client()
     if client is None:
@@ -7656,12 +7664,21 @@ def ensure_order_scheduling_fields() -> None:
         REQUEST_LINE_TABLE_NAME: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
                                   (SHIP_DATE, 5, None), ("计划到仓日期", 5, None),
                                   (FULFILLMENT_STATUS, 3, {"options": options})),
+        BATCH_TABLE: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
+                      (SHIP_DATE, 5, None)),
+        DETAIL_TABLE: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
+                       (SHIP_DATE, 5, None)),
     }
     for table, fields in required.items():
         table_id = feishu_table_id(table)
+        live_fields = {
+            str(field.get("field_name") or "")
+            for field in client.list_fields(table_id)
+        }
         for field_name, field_type, prop in fields:
-            if not feishu_has_field(table, field_name):
+            if field_name not in live_fields:
                 client.create_field(table_id, field_name, field_type, prop)
+                live_fields.add(field_name)
     refresh_feishu_schema_cache()
 
 
