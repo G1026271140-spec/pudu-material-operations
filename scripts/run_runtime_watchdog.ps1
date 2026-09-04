@@ -16,6 +16,9 @@ function Write-WatchdogLog([string]$Message, [string]$Level = "INFO") {
 }
 
 function Test-RuntimeProcess([string]$Name) {
+    if ($Name -eq "PUDU Material Cloudflare Tunnel") {
+        return @(Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue).Count -gt 0
+    }
     $processes = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
     switch ($Name) {
         "PUDU Material Web App" {
