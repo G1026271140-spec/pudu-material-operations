@@ -521,7 +521,10 @@ class SchedulingService:
             self.write(a.REQUEST_TABLE_NAME, group["id"], dates)
         elif action == "request_ship_date":
             group = self.grouped_requests(snapshot).get(payload.get("request_id"))
-            self.check_group(group, payload.get("expected_fingerprint"))
+            if not group:
+                raise ValueError("申请单不存在，或不是普通物料申请。")
+            if group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}:
+                raise ValueError("申请已结束，不能修改发货日期。")
             ship_date = rules.as_date(payload.get("ship_date"))
             if ship_date is None:
                 raise ValueError("请选择申请单发货日期。")
