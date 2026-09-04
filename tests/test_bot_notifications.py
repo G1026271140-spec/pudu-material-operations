@@ -587,6 +587,12 @@ class BotNotificationTests(unittest.TestCase):
             if element.get("tag") == "date_picker"
         )
         self.assertNotIn("label", date_picker)
+        confirm_button = next(
+            element
+            for element in confirm_form["elements"]
+            if element.get("tag") == "button"
+        )
+        self.assertEqual(confirm_button["name"], "confirm_request_inventory__request-1__0")
         application_section = card["body"]["elements"][1]
         field_grid = application_section["columns"][0]["elements"][1]
         first_field = field_grid["columns"][0]["elements"][0]["columns"][0]
