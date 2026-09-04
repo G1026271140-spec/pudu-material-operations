@@ -41,7 +41,6 @@ def enqueue(app, kind, payload, key=None):
 def stage_order_edit(payload):
     edits = st.session_state.setdefault("order_edit_drafts", [])
     edits.append(dict(payload))
-    st.toast("已加入下单排期编辑，完成后请统一提交")
 
 
 def start_refresh(app, *, replace=False):
