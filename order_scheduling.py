@@ -8,7 +8,7 @@ import json
 CHINA_TZ = timezone(timedelta(hours=8))
 BATCH_TABLE = "物料下单批次"
 DETAIL_TABLE = "物料下单批次明细"
-REASONS = ("代理活动", "展会需求", "客户来访")
+REASONS = ("代理活动", "展会需求", "客户来访", "其他")
 # Verified against the user's live Base on 2026-09-03. Retain their spelling.
 ARRIVAL_START = "要求达到开始日期"
 ARRIVAL_END = "要求到达结束日期"
@@ -60,7 +60,7 @@ def order_workday(value: object) -> date:
 def calculate_dates(start: object, end: object, reason: str, roles: list[str], *, submitted: object) -> dict:
     start_day, end_day, submitted_day = as_date(start), as_date(end), as_date(submitted)
     if reason not in REASONS:
-        raise ValueError("请选择申请原因：代理活动、展会需求或客户来访。")
+        raise ValueError("请选择申请原因：代理活动、展会需求、客户来访或其他。")
     if start_day is None or end_day is None or submitted_day is None:
         raise ValueError("请选择完整的要求到达日期。")
     if end_day < start_day:

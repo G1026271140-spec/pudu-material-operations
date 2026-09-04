@@ -45,6 +45,7 @@ EN_DISPLAY_TEXT = {
     "代理活动": "Dealer activity",
     "展会需求": "Exhibition",
     "客户来访": "Customer visit",
+    "其他": "Other",
     # Brand, navigation, and shared controls.
     "营销物料中心": "Marketing Materials Center",
     "营销物料管理系统": "Marketing Materials System",

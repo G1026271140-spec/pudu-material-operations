@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.2"
+APP_VERSION = "V2.6.3"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7669,16 +7669,30 @@ def ensure_order_scheduling_fields() -> None:
         DETAIL_TABLE: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
                        (SHIP_DATE, 5, None)),
     }
+    request_reason_options = [{"name": value} for value in ("代理活动", "展会需求", "客户来访", "其他")]
     for table, fields in required.items():
         table_id = feishu_table_id(table)
-        live_fields = {
-            str(field.get("field_name") or "")
-            for field in client.list_fields(table_id)
-        }
+        live_field_rows = client.list_fields(table_id)
+        live_fields = {str(field.get("field_name") or ""): field for field in live_field_rows}
         for field_name, field_type, prop in fields:
             if field_name not in live_fields:
                 client.create_field(table_id, field_name, field_type, prop)
-                live_fields.add(field_name)
+                live_fields[field_name] = {"field_name": field_name, "type": field_type}
+        if table == REQUEST_TABLE_NAME and "申请原因" in live_fields:
+            reason_field = live_fields["申请原因"]
+            if int(reason_field.get("type") or 0) == 3:
+                current_options = {
+                    str(option.get("name") or "")
+                    for option in dict(reason_field.get("property") or {}).get("options", [])
+                }
+                if "其他" not in current_options:
+                    client.update_field(
+                        table_id,
+                        str(reason_field.get("field_id") or ""),
+                        "申请原因",
+                        3,
+                        {"options": request_reason_options},
+                    )
     refresh_feishu_schema_cache()
 
 
@@ -20959,14 +20973,14 @@ def render_request_inventory_review_page() -> None:
         render_inventory_plan_submission_success()
         st.stop()
     remove_uid = ""
-    line_cards = st.columns(3, gap="small")
+    line_cards = st.columns(2, gap="medium")
     for index, row in enumerate(draft_rows):
         uid = str(row.get("uid") or uuid.uuid4().hex)
         row["uid"] = uid
         widget_prefix = f"request_inventory_line_{request_id}_{uid}"
         with line_cards[index % 3].container(border=True):
             category_col, model_col, language_col, quantity_col, action_col = st.columns(
-                [2.2, 1.6, 1.6, 0.8, 0.55]
+                [2.8, 2.1, 2.1, 1.0, 0.7], gap="small"
             )
             category_key = f"{widget_prefix}_category"
             if st.session_state.get(category_key) not in categories:

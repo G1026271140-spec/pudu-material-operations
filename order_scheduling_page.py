@@ -122,7 +122,7 @@ def request_schedule_inputs(app):
     """Normal-material form only. Values are ISO strings for durable queue payloads."""
     en = app.get_ui_language() == app.LANGUAGE_EN
     cols = st.columns([1, 1.5], gap="small")
-    reasons_en = {"代理活动": "Dealer activity", "展会需求": "Exhibition", "客户来访": "Customer visit"}
+    reasons_en = {"代理活动": "Dealer activity", "展会需求": "Exhibition", "客户来访": "Customer visit", "其他": "Other"}
     app.required_field_label(cols[0], "Request reason" if en else "申请原因")
     app.required_field_label(cols[1], "Material usage time" if en else "物料使用时间")
     reason = cols[0].selectbox("Request reason *" if en else "申请原因 *", rules.REASONS,
