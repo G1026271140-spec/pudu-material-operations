@@ -298,9 +298,9 @@ def render_order_scheduling_page(app):
             ship_plan = st.date_input("申请单发货日期", value=rules.as_date(f.get(rules.SHIP_DATE)),
                                       key="request_ship_plan_"+group["id"], format="YYYY-MM-DD")
             ship_stage_key = f"request_ship:{group['id']}:{ship_plan.isoformat() if ship_plan else ''}"
-            if operator and ship_plan and ship_plan != rules.as_date(f.get(rules.SHIP_DATE)) and ship_stage_key not in st.session_state.setdefault("order_staged_edit_keys", set()):
+            if ship_plan and ship_plan != rules.as_date(f.get(rules.SHIP_DATE)) and ship_stage_key not in st.session_state.setdefault("order_staged_edit_keys", set()):
                 stage_order_edit({"action": "request_ship_date", "request_id": group["id"],
-                    "ship_date": ship_plan.isoformat(), "operator_open_id": operator,
+                    "ship_date": ship_plan.isoformat(),
                     "expected_fingerprint": group["fingerprint"]})
                 st.session_state["order_staged_edit_keys"].add(ship_stage_key)
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
