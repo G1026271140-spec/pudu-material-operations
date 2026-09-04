@@ -223,6 +223,8 @@ def render_order_scheduling_page(app):
     if not app.admin_auth_gate():
         return
     service = SchedulingService(app)
+    if st.session_state.pop("order_edit_submitted_notice", False):
+        st.success("数据编辑已提交")
     st.subheader("下单排期管理")
     st.caption("仅普通物料申请 · 按申请单展示 · 任一明细成功生成下单表后，整单退出待下单队列")
     # Field contracts are checked by the Worker before any write, not by
@@ -403,6 +405,7 @@ def render_order_scheduling_page(app):
         stage = {"action": "batch_edit", "operator_open_id": operator, "edits": edits}
         st.session_state.pop("order_edit_drafts", None)
         st.session_state.pop("order_staged_edit_keys", None)
+        st.session_state["order_edit_submitted_notice"] = True
         enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
     if edit_cols[1].button("清空排期编辑", disabled=not edits):
         st.session_state.pop("order_edit_drafts", None)
