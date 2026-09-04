@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.3"
+APP_VERSION = "V2.6.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20978,10 +20978,7 @@ def render_request_inventory_review_page() -> None:
         uid = str(row.get("uid") or uuid.uuid4().hex)
         row["uid"] = uid
         widget_prefix = f"request_inventory_line_{request_id}_{uid}"
-        with line_cards[index % 3].container(border=True):
-            category_col, model_col, language_col, quantity_col, action_col = st.columns(
-                [2.8, 2.1, 2.1, 1.0, 0.7], gap="small"
-            )
+        with line_cards[index % len(line_cards)].container(border=True):
             category_key = f"{widget_prefix}_category"
             if st.session_state.get(category_key) not in categories:
                 st.session_state[category_key] = (
@@ -20989,7 +20986,7 @@ def render_request_inventory_review_page() -> None:
                     if str(row.get("category") or "") in categories
                     else (categories[0] if categories else "")
                 )
-            category = category_col.selectbox(
+            category = st.selectbox(
                 "品类",
                 categories,
                 key=category_key,
@@ -21008,7 +21005,7 @@ def render_request_inventory_review_page() -> None:
                     if str(row.get("model") or NO_MODEL_TEXT) in models
                     else (models[0] if models else NO_MODEL_TEXT)
                 )
-            model = model_col.selectbox("型号", models, key=model_key)
+            model = st.selectbox("型号", models, key=model_key)
             languages = unique_preserve(
                 [
                     str(item.get("language") or NO_LANGUAGE_TEXT)
@@ -21024,7 +21021,8 @@ def render_request_inventory_review_page() -> None:
                     if str(row.get("language") or NO_LANGUAGE_TEXT) in languages
                     else (languages[0] if languages else NO_LANGUAGE_TEXT)
                 )
-            language = language_col.selectbox("语种", languages, key=language_key)
+            language = st.selectbox("语种", languages, key=language_key)
+            quantity_col, order_col = st.columns([1, 1], gap="small")
             quantity = int(
                 quantity_col.number_input(
                     "数量",
@@ -21034,8 +21032,7 @@ def render_request_inventory_review_page() -> None:
                     key=f"{widget_prefix}_quantity",
                 )
             )
-            action_col.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-            if action_col.button(
+            if order_col.button(
                 "删除",
                 key=f"{widget_prefix}_remove",
                 disabled=len(draft_rows) <= 1,
