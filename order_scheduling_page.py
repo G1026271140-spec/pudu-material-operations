@@ -246,10 +246,6 @@ def render_order_scheduling_page(app):
             for person in f.get("用户账号") or []:
                 admins[person["id"]] = person.get("name") or person["id"]
     operator = st.selectbox("操作管理员", list(admins), index=None, format_func=lambda x: admins[x], key="order_operator")
-    section = st.radio("功能分区", ["下单管理", "发货管理"], horizontal=True, key="order_section")
-    if section == "发货管理":
-        render_shipping_management(app, service, snapshot)
-        return
     mode = st.radio("下单管理", ["未生成下单表", "全部申请", "下单批次历史"], horizontal=True)
     if mode == "下单批次历史":
         render_history(app, service, snapshot, operator)
@@ -296,14 +292,6 @@ def render_order_scheduling_page(app):
                        f"提交：{date_label(f.get('提交时间'))}　时效：{f.get(rules.TIME_CLASS) or '待补充日期'}")
             st.caption(f"物料使用：{date_label(f.get(rules.USAGE_DATE))}　物料下单：{date_label(f.get(rules.ORDER_DATE))}　"
                        f"物料发货：{date_label(f.get(rules.SHIP_DATE))}　物料到货：{date_label(f.get(rules.ARRIVAL_DATE) or f.get(rules.READY_DATE))}")
-            ship_plan = st.date_input("申请单发货日期", value=rules.as_date(f.get(rules.SHIP_DATE)),
-                                      key="request_ship_plan_"+group["id"], format="YYYY-MM-DD")
-            ship_stage_key = f"request_ship:{group['id']}:{ship_plan.isoformat() if ship_plan else ''}"
-            if ship_plan and ship_plan != rules.as_date(f.get(rules.SHIP_DATE)) and ship_stage_key not in st.session_state.setdefault("order_staged_edit_keys", set()):
-                stage_order_edit({"action": "request_ship_date", "request_id": group["id"],
-                    "ship_date": ship_plan.isoformat(),
-                    "expected_fingerprint": group["fingerprint"]})
-                st.session_state["order_staged_edit_keys"].add(ship_stage_key)
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
             st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
             locked = group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
@@ -427,51 +415,6 @@ def render_order_scheduling_page(app):
         else:
             st.session_state.setdefault("order_downloads", {})[key] = content
             enqueue(app, QUEUE_TASK_TYPE_ORDER_RECORD, {**payload, "export_rows": prepared}, key)
-
-
-def render_shipping_management(app, service, snapshot):
-    """Show cached weekly order/shipping queues with explicit confirmations."""
-    today = rules.today()
-    monday = today - timedelta(days=today.weekday())
-    next_monday = monday + timedelta(days=7)
-    tabs = st.tabs(["本周需要下单", "本周需要发货", "下周需要下单", "下周需要发货"])
-    groups = service.grouped_requests(snapshot)
-    details = [r for r in snapshot[rules.DETAIL_TABLE]]
-    buckets = []
-    for offset in (0, 7):
-        start, end = monday + timedelta(days=offset), monday + timedelta(days=offset + 7)
-        buckets.extend([
-            [(g, None) for g in groups.values() if (d := rules.as_date(g["fields"].get(rules.ORDER_DATE))) and start <= d < end],
-            [(groups.get((rids := app.feishu_link_ids(app.feishu_fields(r), "来源申请单"))[0], {}), r)
-             for r in details if rids and (d := rules.as_date(app.feishu_fields(r).get(rules.SHIP_DATE))) and start <= d < end],
-        ])
-    for tab, entries in zip(tabs, buckets):
-        with tab:
-            if not entries:
-                st.info("本时间段暂无数据。")
-                continue
-            for group, detail in entries:
-                if not group:
-                    continue
-                f = group["fields"]
-                label = f"{group['request_no']} · {group['requester']}"
-                if detail:
-                    df, did = app.feishu_fields(detail), app.feishu_record_id(detail)
-                    status = app.feishu_text(df, rules.FULFILLMENT_STATUS) or "待安排"
-                    st.write(f"{label} · {app.feishu_text(df, '品类名称快照')} / {app.feishu_text(df, '型号或尺码快照')} · {status}")
-                    st.caption(f"收货人信息：{app.feishu_text(f, '收件人信息') or '—'}　到货：{date_label(df.get(rules.ARRIVAL_DATE))}")
-                    c1, c2 = st.columns(2)
-                    if c1.button("确认发货", key="ship_confirm_"+did, disabled=status in {"已发货", "已到货", "已完成"}):
-                        stage_order_edit({"action": "fulfillment_update", "detail_id": did,
-                            "operator_open_id": st.session_state.get("order_operator"), "status": "已发货",
-                            "ship_date": today.isoformat(), "expected_fingerprint": rules.fingerprint(df)})
-                    if c2.button("确认到货", key="arrival_confirm_"+did, disabled=status in {"已到货", "已完成"}):
-                        stage_order_edit({"action": "fulfillment_update", "detail_id": did,
-                            "operator_open_id": st.session_state.get("order_operator"), "status": "已到货",
-                            "arrival_date": today.isoformat(), "expected_fingerprint": rules.fingerprint(df)})
-                else:
-                    st.write(label)
-                    st.caption(f"收货人信息：{app.feishu_text(f, '收件人信息') or '—'}")
 
 
 def render_history(app, service, snapshot, operator):

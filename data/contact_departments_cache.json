@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-04 14:21:48",
+  "generated_at": "2026-09-04 15:21:20",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -4553,16 +4553,6 @@
       ]
     },
     {
-      "open_id": "ou_8d6fcea8217327181b53adc42186acff",
-      "name": "吴正生",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_5f9b760f5059fe013c54d6075883fa17",
       "name": "吴治江",
       "department_ids": [
@@ -7587,18 +7577,6 @@
       ]
     },
     {
-      "open_id": "ou_a8a7138047c91636aff75d0c7d57c2cb",
-      "name": "张清",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e",
-        "od-518ea4bbe9d0cff39ee3f05a2bdb7729"
-      ],
-      "department_paths": [
-        "X LAB",
-        "硬件测试组"
-      ]
-    },
-    {
       "open_id": "ou_3737f0493d5717ceb7a549fb12bef4c5",
       "name": "张瀚哲",
       "department_ids": [
@@ -9291,16 +9269,6 @@
       ]
     },
     {
-      "open_id": "ou_f2a8d0fd214a1e95dc0b5599528f44bd",
-      "name": "朱思娅",
-      "department_ids": [
-        "od-89f44bfe9d5e17bb4cb4e3f13fa6b8d6"
-      ],
-      "department_paths": [
-        "美洲服务部"
-      ]
-    },
-    {
       "open_id": "ou_04e9875e596a21b2faef9ca7723930df",
       "name": "朱悦堂",
       "department_ids": [
@@ -10655,16 +10623,6 @@
       ]
     },
     {
-      "open_id": "ou_f2d3974fdadeb1ea1773735daf6940ad",
-      "name": "李鑫玥",
-      "department_ids": [
-        "od-7366fcf482e4c8888cf056284375545d"
-      ],
-      "department_paths": [
-        "采购部"
-      ]
-    },
-    {
       "open_id": "ou_f351bad85ff2736dee4518b70c8e06ce",
       "name": "李锦鸿",
       "department_ids": [
@@ -11964,16 +11922,6 @@
       ],
       "department_paths": [
         "采购执行组"
-      ]
-    },
-    {
-      "open_id": "ou_d89925cf954ead634c9a296d342fe6e9",
-      "name": "梁宇雄",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
       ]
     },
     {
@@ -21801,5 +21749,5 @@
       ]
     }
   ],
-  "user_count": 2017
+  "user_count": 2012
 }

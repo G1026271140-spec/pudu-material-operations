@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.5.5"
+APP_VERSION = "V2.5.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8046,30 +8046,6 @@ def material_request_notification_card(
                         "elements": [
                             {
                                 "tag": "button",
-                                "text": {"tag": "plain_text", "content": "按原申请确认"},
-                                "type": "primary_filled",
-                                "disabled": review_status == INVENTORY_REVIEW_CONFIRMED,
-                                "behaviors": [
-                                    {
-                                        "type": "callback",
-                                        "value": {
-                                            "action": "confirm_request_inventory",
-                                            "request_id": request_id,
-                                            "request_no": request_no,
-                                            "version": int(review_request.get("inventory_review_version") or 0),
-                                        },
-                                    }
-                                ],
-                            }
-                        ],
-                    },
-                    {
-                        "tag": "column",
-                        "width": "weighted",
-                        "weight": 1,
-                        "elements": [
-                            {
-                                "tag": "button",
                                 "text": {"tag": "plain_text", "content": "驳回申请"},
                                 "type": "danger_filled",
                                 "behaviors": [
@@ -8085,6 +8061,34 @@ def material_request_notification_card(
                                 ],
                             }
                         ],
+                    },
+                ],
+            },
+            {
+                "tag": "form",
+                "name": "request_inventory_confirm_form",
+                "vertical_spacing": "8px",
+                "elements": [
+                    {
+                        "tag": "date_picker",
+                        "name": "ship_date",
+                        "required": True,
+                        "width": "fill",
+                        "label": {"tag": "plain_text", "content": "申请单发货日期 *"},
+                        "placeholder": {"tag": "plain_text", "content": "请选择发货日期"},
+                    },
+                    {
+                        "tag": "button",
+                        "name": "confirm_request_inventory",
+                        "text": {"tag": "plain_text", "content": "按原申请确认"},
+                        "type": "primary_filled",
+                        "form_action_type": "submit",
+                        "value": {
+                            "action": "confirm_request_inventory",
+                            "request_id": request_id,
+                            "request_no": request_no,
+                            "version": int(review_request.get("inventory_review_version") or 0),
+                        },
                     },
                 ],
             },
@@ -8270,6 +8274,14 @@ def request_inventory_card_edit_form(
     form_elements.extend(
         [
             {
+                "tag": "date_picker",
+                "name": "ship_date",
+                "required": True,
+                "width": "fill",
+                "label": {"tag": "plain_text", "content": "申请单发货日期 *"},
+                "placeholder": {"tag": "plain_text", "content": "请选择发货日期"},
+            },
+            {
                 "tag": "input",
                 "name": "change_note",
                 "required": True,
@@ -8388,6 +8400,7 @@ def request_inventory_card_edit_draft(
             }
         )
     change_note = str(form_value.get("change_note") or "").strip()
+    ship_date = str(form_value.get("ship_date") or "").strip()
     if not change_note:
         raise RuntimeError("请填写申请物料更改信息说明。")
     return {
@@ -8395,6 +8408,7 @@ def request_inventory_card_edit_draft(
         "expected_version": expected_version,
         "operator_open_id": operator_open_id,
         "change_note": change_note,
+        "ship_date": ship_date,
         "before_lines": _request_review_line_summary(list(context["lines"])),
         "lines": desired,
     }
@@ -10806,10 +10820,61 @@ def request_material_detail_text(lines: list[dict[str, object]]) -> str:
     )
 
 
+def sync_request_ship_date_to_schedule(request_id: str, ship_date: object) -> int:
+    """Propagate one request's ship date to every existing schedule record."""
+    from order_scheduling import BATCH_TABLE, DETAIL_TABLE, SHIP_DATE, date_ms
+
+    request_key = str(request_id or "").strip()
+    if not request_key:
+        raise RuntimeError("申请单标识不能为空，无法写入发货日期。")
+    ship_date_value = date_ms(ship_date)
+    line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+    detail_rows = fresh_feishu_rows(DETAIL_TABLE)
+    batch_rows = fresh_feishu_rows(BATCH_TABLE)
+    line_ids = {
+        feishu_record_id(row)
+        for row in line_rows
+        if request_key in feishu_link_ids_any(feishu_fields(row), ["所属申请单", "申请单"])
+    }
+    detail_ids = {
+        feishu_record_id(row)
+        for row in detail_rows
+        if request_key in feishu_link_ids(feishu_fields(row), "来源申请单")
+    }
+    batch_ids = {
+        batch_id
+        for row in detail_rows
+        if feishu_record_id(row) in detail_ids
+        for batch_id in feishu_link_ids(feishu_fields(row), "所属下单批次")
+    }
+    updates = 0
+    for table_name, rows, record_ids in (
+        (REQUEST_LINE_TABLE_NAME, line_rows, line_ids),
+        (DETAIL_TABLE, detail_rows, detail_ids),
+        (BATCH_TABLE, batch_rows, batch_ids),
+    ):
+        if SHIP_DATE not in feishu_table_fields(table_name):
+            raise RuntimeError(f"{table_name}缺少字段：{SHIP_DATE}。")
+        payload = [
+            {"record_id": feishu_record_id(row), "fields": {SHIP_DATE: ship_date_value}}
+            for row in rows
+            if feishu_record_id(row) in record_ids
+        ]
+        if payload:
+            written = feishu_batch_update_record_fields(table_name, payload)
+            if written != len(payload):
+                raise RuntimeError(
+                    f"{table_name}发货日期写入不完整：应更新{len(payload)}条，实际{written}条。"
+                )
+            updates += written
+    return updates
+
+
 def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object]:
     request_id = str(draft.get("request_id") or "")
     expected_version = int(draft.get("expected_version") or 0)
     change_note = str(draft.get("change_note") or "").strip()
+    ship_date = draft.get("ship_date")
     operator_open_id = str(draft.get("operator_open_id") or "").strip()
     if not change_note:
         raise RuntimeError("申请物料更改信息说明不能为空。")
@@ -11024,6 +11089,9 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
         INVENTORY_REVIEW_REMINDER_STATUS_FIELD: INVENTORY_REVIEW_REMINDER_NONE,
     }
+    if ship_date not in (None, ""):
+        from order_scheduling import SHIP_DATE, date_ms
+        request_updates[SHIP_DATE] = date_ms(ship_date)
     person_value = _request_review_person_value(operator_open_id)
     if person_value:
         request_updates["申请物料最后修改人"] = person_value
@@ -11034,6 +11102,8 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         now,
     )
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
+    if ship_date not in (None, ""):
+        sync_request_ship_date_to_schedule(request_id, ship_date)
 
     ensure_request_change_record_fields()
     after_lines = _request_review_line_summary(prepared)
@@ -11061,6 +11131,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     request_id = str(draft.get("request_id") or "")
     expected_version = int(draft.get("expected_version") or 0)
     operator_open_id = str(draft.get("operator_open_id") or "").strip()
+    ship_date = draft.get("ship_date")
     if operator_open_id not in enabled_admin_open_ids():
         raise PermissionError("只有已启用管理员可以确认库存。")
     context = request_inventory_review_context(request_id=request_id)
@@ -11105,6 +11176,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
             "repaired_line_count": updated_line_count,
         }
     now = datetime.now()
+    from order_scheduling import SHIP_DATE, date_ms
     request_updates: dict[str, object] = {
         "库存审查状态": INVENTORY_REVIEW_CONFIRMED,
         "库存审查结论": str(context["result"]),
@@ -11118,11 +11190,15 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         "库存快照时间": feishu_datetime_value(REQUEST_TABLE_NAME, "库存快照时间", now),
         INVENTORY_REVIEW_REMINDER_STATUS_FIELD: INVENTORY_REVIEW_REMINDER_NONE,
     }
+    if ship_date not in (None, ""):
+        request_updates[SHIP_DATE] = date_ms(ship_date)
     person_value = _request_review_person_value(operator_open_id)
     if person_value:
         request_updates["库存审查人"] = person_value
         request_updates["申请物料最后修改人"] = person_value
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
+    if ship_date not in (None, ""):
+        sync_request_ship_date_to_schedule(request_id, ship_date)
     notify_enabled_admins_of_material_request(
         str(request.get("request_no") or ""), request, list(context["lines"])
     )
@@ -20575,6 +20651,15 @@ def render_request_inventory_review_page() -> None:
         f"申请单 {request.get('request_no') or '-'}；实时库存更新于 {context.get('snapshot_at')}",
         page_key="",
     )
+    from order_scheduling import SHIP_DATE, as_date as scheduling_as_date
+    request_fields = feishu_fields(context.get("request_row") or {})
+    current_ship_date = scheduling_as_date(request_fields.get(SHIP_DATE))
+    ship_date = st.date_input(
+        "申请单发货日期 *",
+        value=current_ship_date,
+        format="YYYY-MM-DD",
+        key=f"request_inventory_ship_date_{request_id}",
+    )
     if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
         st.success("该申请已经完成库存核实，无需再次处理。")
         return
@@ -20633,6 +20718,34 @@ def render_request_inventory_review_page() -> None:
         f"品类、型号和语种来自页面缓存（{cache_data.get('generated_at') or '未知时间'}）。"
         "页面内调整不会写入后台，点击提交后才会一次性进入任务队列。"
     )
+    direct_confirm = st.button(
+        "按原申请确认并提交",
+        type="secondary",
+        icon=":material/check_circle:",
+        width="stretch",
+    )
+    if direct_confirm:
+        if not ship_date:
+            st.error("请选择申请单发货日期。")
+            return
+        with fullscreen_data_sync("正在提交库存确认，请稍后......"):
+            task, _ = enqueue_feishu_background_write(
+                QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+                {
+                    "draft": {
+                        "request_id": request_id,
+                        "expected_version": int(request.get("inventory_review_version") or 0),
+                        "operator_open_id": operator_open_id if signed_admin else "",
+                        "ship_date": ship_date.isoformat() if ship_date else "",
+                    }
+                },
+                idempotency_key=(
+                    f"request-inventory-confirm:{request_id}:"
+                    f"{int(request.get('inventory_review_version') or 0)}:{ship_date.isoformat()}"
+                ),
+            )
+        render_inventory_plan_submission_success()
+        st.stop()
     remove_uid = ""
     line_cards = st.columns(3, gap="small")
     for index, row in enumerate(draft_rows):
@@ -20754,6 +20867,10 @@ def render_request_inventory_review_page() -> None:
     ):
         return
 
+    if not ship_date:
+        st.error("请选择申请单发货日期。")
+        return
+
     rows = [dict(row) for row in list(st.session_state.get(draft_key) or [])]
     if not rows:
         st.error("配货方案必须至少保留一条物料明细。")
@@ -20800,6 +20917,7 @@ def render_request_inventory_review_page() -> None:
                     "expected_version": int(request.get("inventory_review_version") or 0),
                     "change_note": change_note.strip(),
                     "operator_open_id": operator_open_id if signed_admin else "",
+                    "ship_date": ship_date.isoformat(),
                     "before_lines": _request_review_line_summary(lines),
                     "lines": payload_lines,
                 }

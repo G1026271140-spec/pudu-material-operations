@@ -266,15 +266,16 @@ def process_card_action_async(
             )
             client.update_interactive_message(message_id, card)
             return
-        if action_key == "confirm_request_inventory":
+        if action_key == "confirm_request_inventory" or action_name == "confirm_request_inventory":
             version = int(value.get("version") or 0)
-            inventory_app.execute_request_inventory_confirm(
-                {
-                    "request_id": request_id,
-                    "expected_version": version,
-                    "operator_open_id": operator_open_id,
-                }
-            )
+            draft = {
+                "request_id": request_id,
+                "expected_version": version,
+                "operator_open_id": operator_open_id,
+            }
+            if str(form_value.get("ship_date") or "").strip():
+                draft["ship_date"] = str(form_value["ship_date"]).strip()
+            inventory_app.execute_request_inventory_confirm(draft)
             return
         if action_key == "reject_request_inventory":
             result = inventory_app.execute_request_inventory_reject(
