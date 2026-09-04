@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-20 17:01:59",
+  "generated_at": "2026-09-04 14:22:29",
   "source": "manual_feishu_snapshot",
   "image_count": 28,
   "shelves": [
@@ -136,18 +136,6 @@
               "category": "产品单页(Product Flyer )",
               "model": "FlashBot Lite",
               "language": "简中(Simplified Chinese)"
-            },
-            {
-              "material_code": "MAT-1029",
-              "category": "产品单页(Product Flyer )",
-              "model": "Flash Arm",
-              "language": "简中(Simplified Chinese)"
-            },
-            {
-              "material_code": "MAT-1030",
-              "category": "产品单页(Product Flyer )",
-              "model": "T300 Conveyor",
-              "language": "简中(Simplified Chinese)"
             }
           ]
         },
@@ -188,14 +176,8 @@
               "language": "简中(Simplified Chinese)"
             },
             {
-              "material_code": "MAT-1030",
-              "category": "产品单页(Product Flyer )",
-              "model": "T300 Conveyor",
-              "language": "简中(Simplified Chinese)"
-            },
-            {
               "material_code": "MAT-0369",
-              "category": "品牌手册(Product Brochure (All\nBanner)）",
+              "category": "公司产品手册",
               "model": "无需型号",
               "language": "简中(Simplified Chinese)"
             },
@@ -351,12 +333,6 @@
               "material_code": "MAT-0021",
               "category": "产品折页(Single Product Brochure)",
               "model": "PuduBot 2",
-              "language": "英语(English)"
-            },
-            {
-              "material_code": "MAT-0041",
-              "category": "产品折页(Single Product Brochure)",
-              "model": "SwiftBot",
               "language": "英语(English)"
             },
             {
@@ -580,7 +556,7 @@
       "materials": [
         {
           "material_code": "MAT-0361",
-          "category": "品牌手册(Product Brochure (All\nBanner)）",
+          "category": "公司产品手册",
           "model": "无需型号",
           "language": "英语(English)"
         },

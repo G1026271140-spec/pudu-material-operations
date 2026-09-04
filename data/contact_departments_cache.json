@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-04 11:00:43",
+  "generated_at": "2026-09-04 14:21:48",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -5219,6 +5219,16 @@
       ]
     },
     {
+      "open_id": "ou_b59773756e1189928db2a037a267b568",
+      "name": "周洪",
+      "department_ids": [
+        "od-b5594223b60818b552a17a06fc341b13"
+      ],
+      "department_paths": [
+        "桐乡品控组"
+      ]
+    },
+    {
       "open_id": "ou_756f98feb4f02e33ae8075b3de2eef7f",
       "name": "周浩",
       "department_ids": [
@@ -5372,6 +5382,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_a6ee431735ebc5d63c8914dc8225f9f4",
+      "name": "唐宇鹏",
+      "department_ids": [
+        "od-89f44bfe9d5e17bb4cb4e3f13fa6b8d6"
+      ],
+      "department_paths": [
+        "美洲服务部"
       ]
     },
     {
@@ -7602,10 +7622,12 @@
       "open_id": "ou_5746f469684659b84855853980bac079",
       "name": "张爱林",
       "department_ids": [
-        "od-13e447d65e4d340b80b0485b459f3ad0"
+        "od-13e447d65e4d340b80b0485b459f3ad0",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "GRPBU"
+        "GRPBU",
+        "产品市场部"
       ]
     },
     {
@@ -10128,10 +10150,12 @@
       "open_id": "ou_4ef289c2ce3664a82462c6d718ae4d3e",
       "name": "李星杰",
       "department_ids": [
-        "od-d90d38def427cf71640b80459d6b5118"
+        "od-d90d38def427cf71640b80459d6b5118",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "M LAB"
+        "M LAB",
+        "产品市场部"
       ]
     },
     {
@@ -12342,10 +12366,12 @@
       "open_id": "ou_d25556f6b7861b0e106a93a6d3c24be3",
       "name": "殷恋滋",
       "department_ids": [
-        "od-d90d38def427cf71640b80459d6b5118"
+        "od-d90d38def427cf71640b80459d6b5118",
+        "od-2b672221d2482c393be9e63da8af30b1"
       ],
       "department_paths": [
-        "M LAB"
+        "M LAB",
+        "产品市场部"
       ]
     },
     {
@@ -20027,6 +20053,16 @@
       ]
     },
     {
+      "open_id": "ou_c26c2e7d06162f72cf18c8df05afea3b",
+      "name": "陶文艳",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_e3970153b2b5f9854e82a54124568721",
       "name": "陶海平",
       "department_ids": [
@@ -21765,5 +21801,5 @@
       ]
     }
   ],
-  "user_count": 2014
+  "user_count": 2017
 }
