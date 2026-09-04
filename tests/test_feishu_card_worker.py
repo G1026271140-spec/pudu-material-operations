@@ -93,6 +93,27 @@ class FeishuCardWorkerTests(unittest.TestCase):
         self.assertFalse(hasattr(worker, "REQUEST_CACHE_REFRESH_SECONDS"))
         self.assertFalse(hasattr(worker, "request_cache_refresh_loop"))
 
+    def test_inventory_confirm_callback_accepts_form_button_name_without_value(self) -> None:
+        thread = Mock()
+        event = SimpleNamespace(
+            action=SimpleNamespace(
+                name="confirm_request_inventory__request-1__2",
+                value={},
+                form_value={"ship_date": "2026-09-09"},
+            ),
+            operator=SimpleNamespace(open_id="ou-admin"),
+            context=SimpleNamespace(open_message_id="om-card-1"),
+        )
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
+            response = worker.handle_card_action(SimpleNamespace(event=event))
+
+        self.assertEqual(response.toast.type, "success")
+        kwargs = thread_class.call_args.kwargs["kwargs"]
+        self.assertEqual(kwargs["action_key"], "confirm_request_inventory")
+        self.assertEqual(kwargs["value"]["request_id"], "request-1")
+        self.assertEqual(kwargs["value"]["version"], "2")
+        thread.start.assert_called_once_with()
+
     def test_inventory_confirm_executes_directly_without_queue_write(self) -> None:
         with (
             patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),

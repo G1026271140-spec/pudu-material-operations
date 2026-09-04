@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.5"
+APP_VERSION = "V2.6.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -168,6 +168,12 @@ DEFAULT_STREAMLIT_APP_URL = str(
     get_setting(
         "deployment.streamlit_app_url",
         "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/",
+    )
+)
+DEFAULT_LOCAL_APP_URL = str(
+    get_setting(
+        "deployment.custom_domain",
+        "https://material.gaohongyuan.me/",
     )
 )
 FREIGHT_PAYER_OPTIONS = [
@@ -8071,8 +8077,8 @@ def material_request_notification_card(
     request_id = str(review_request.get("record_id") or "")
     if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
         base_url = get_secret_value(
-            "STREAMLIT_APP_URL",
-            DEFAULT_STREAMLIT_APP_URL,
+            "LOCAL_APP_URL",
+            DEFAULT_LOCAL_APP_URL,
         ).rstrip("/") + "/"
         edit_args = {
             "allocation": "request",
@@ -8157,7 +8163,10 @@ def material_request_notification_card(
                     },
                     {
                         "tag": "button",
-                        "name": "confirm_request_inventory",
+                        "name": (
+                            f"confirm_request_inventory__{request_id}__"
+                            f"{int(review_request.get('inventory_review_version') or 0)}"
+                        ),
                         "text": {"tag": "plain_text", "content": "按原申请确认"},
                         "type": "primary_filled",
                         "form_action_type": "submit",
@@ -8666,7 +8675,7 @@ def weekly_inventory_review_digest_card(
             "content": f"截至 {current:%Y-%m-%d %H:%M}，共有 **{len(sorted_contexts)}** 条普通物料申请尚未核实库存。",
         }
     ]
-    base_url = get_secret_value("STREAMLIT_APP_URL", DEFAULT_STREAMLIT_APP_URL).rstrip("/") + "/"
+    base_url = get_secret_value("LOCAL_APP_URL", DEFAULT_LOCAL_APP_URL).rstrip("/") + "/"
     for context in sorted_contexts[:20]:
         request = dict(context.get("request") or {})
         request_id = str(request.get("record_id") or "")

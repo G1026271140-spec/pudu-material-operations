@@ -528,7 +528,7 @@ class BotNotificationTests(unittest.TestCase):
         }
         with (
             patch.object(
-                app, "get_secret_value", return_value="https://example.test/"
+                app, "get_secret_value", return_value="https://local.example.test/"
             ) as get_secret_value,
             patch.object(app, "request_review_access_token", return_value="signed-token"),
         ):
@@ -565,8 +565,10 @@ class BotNotificationTests(unittest.TestCase):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)
         self.assertIn("allocation=request", serialized)
+        self.assertIn("https://local.example.test/", serialized)
+        self.assertNotIn("streamlit.app", serialized)
         get_secret_value.assert_called_with(
-            "STREAMLIT_APP_URL", app.DEFAULT_STREAMLIT_APP_URL
+            "LOCAL_APP_URL", app.DEFAULT_LOCAL_APP_URL
         )
         self.assertIn("signed-token", serialized)
         self.assertIn('"type": "open_url"', serialized)

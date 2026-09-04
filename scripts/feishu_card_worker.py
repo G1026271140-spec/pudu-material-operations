@@ -212,6 +212,16 @@ def process_card_action_async(
     if not request_id and action_name.startswith("save_inventory_reminder__"):
         parts = action_name.split("__")
         request_id = parts[1] if len(parts) == 2 else ""
+    if action_name.startswith("confirm_request_inventory__"):
+        parts = action_name.split("__")
+        if len(parts) == 3:
+            request_id = request_id or parts[1]
+            value = {
+                **value,
+                "action": "confirm_request_inventory",
+                "request_id": request_id,
+                "version": parts[2],
+            }
     try:
         if operator_open_id not in inventory_app.enabled_admin_open_ids():
             raise PermissionError("只有已启用管理员可以处理库存确认。")
@@ -266,7 +276,9 @@ def process_card_action_async(
             )
             client.update_interactive_message(message_id, card)
             return
-        if action_key == "confirm_request_inventory" or action_name == "confirm_request_inventory":
+        if action_key == "confirm_request_inventory" or action_name in {
+            "confirm_request_inventory",
+        } or action_name.startswith("confirm_request_inventory__"):
             version = int(value.get("version") or 0)
             draft = {
                 "request_id": request_id,
@@ -328,11 +340,23 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
     operator_open_id = str(operator.open_id or "").strip() if operator else ""
     action_name = str(getattr(action, "name", "") or "") if action else ""
     action_key = str(value.get("action") or "")
+    if action_name.startswith("confirm_request_inventory__"):
+        parts = action_name.split("__")
+        if len(parts) == 3:
+            value = {
+                **value,
+                "action": "confirm_request_inventory",
+                "request_id": parts[1],
+                "version": parts[2],
+            }
+            action_key = "confirm_request_inventory"
     if action_key not in {
         "edit_request_inventory",
         "confirm_request_inventory",
         "reject_request_inventory",
-    } and not action_name.startswith(("save_inventory_edit__", "save_inventory_reminder__")):
+    } and not action_name.startswith(
+        ("save_inventory_edit__", "save_inventory_reminder__", "confirm_request_inventory__")
+    ):
         return card_action_response("warning", "暂不支持该卡片操作。")
     context = getattr(event, "context", None) if event else None
     message_id = str(getattr(context, "open_message_id", "") or "")
