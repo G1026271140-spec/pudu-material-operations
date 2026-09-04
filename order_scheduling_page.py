@@ -130,7 +130,9 @@ def request_schedule_inputs(app):
                               format="YYYY-MM-DD", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
-    if dates and reason != "客户来访":
+    requester_open_id = str(st.session_state.get("request_requester_open_id") or "").strip()
+    regional_owner = bool(requester_open_id and getattr(app, "requester_has_enabled_role", lambda *_: False)(requester_open_id, "区域市场负责人"))
+    if dates and reason != "客户来访" and not regional_owner:
         lead_days = (dates[0] - rules.today()).days
         if lead_days < 7:
             st.error("Your material usage time is too soon to fulfill; please do not submit this request."
@@ -278,8 +280,8 @@ def render_order_scheduling_page(app):
             st.write(f"申请用途：{group['usage'] or '—'}")
             st.caption(f"角色：{f.get('申请时角色快照') or '历史未记录'}　原因：{f.get('申请原因') or '待补充'}　"
                        f"提交：{date_label(f.get('提交时间'))}　时效：{f.get(rules.TIME_CLASS) or '待补充日期'}")
-            st.caption(f"需要下单：{date_label(f.get(rules.ORDER_DATE))}　制作完成／到仓：{date_label(f.get(rules.READY_DATE))}　"
-                       f"要求到达：{date_label(f.get(rules.ARRIVAL_START))} ～ {date_label(f.get(rules.ARRIVAL_END))}")
+            st.caption(f"物料使用：{date_label(f.get(rules.USAGE_DATE))}　物料下单：{date_label(f.get(rules.ORDER_DATE))}　"
+                       f"物料发货：{date_label(f.get(rules.SHIP_DATE))}　物料到货：{date_label(f.get(rules.ARRIVAL_DATE) or f.get(rules.READY_DATE))}")
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
             st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
             locked = group["generated"] or group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
@@ -375,8 +377,9 @@ def render_history(app, service, snapshot, operator):
                         file_name=f"物料下单表-{f['下单批次号']}.xlsx", key="history_download_"+bid,
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", on_click="ignore")
                 st.dataframe(pd.DataFrame([{k: app.feishu_fields(r).get(k) for k in
-                    ("品类名称快照", "型号或尺码快照", "语种快照", "下单数量", "补库状态", "补库异常说明")}
-                    | {"计划到仓日期": date_label(app.feishu_fields(r).get("计划到仓日期"))} for r in details]), hide_index=True, width="stretch")
+                    ("品类名称快照", "型号或尺码快照", "语种快照", "下单数量", rules.FULFILLMENT_STATUS, "补库状态", "补库异常说明")}
+                    | {"物料发货时间": date_label(app.feishu_fields(r).get(rules.SHIP_DATE)),
+                       "物料到货时间": date_label(app.feishu_fields(r).get(rules.ARRIVAL_DATE))} for r in details]), hide_index=True, width="stretch")
             if operator and f.get("批次状态") == "已生成":
                 enabled = st.checkbox("启用此批次自动补库", value=f.get("启用自动补库") is True, key="order_auto_"+bid)
                 if st.button("保存补库开关", key="order_save_auto_"+bid):
@@ -384,7 +387,7 @@ def render_history(app, service, snapshot, operator):
                         "operator_open_id": operator, "enabled": enabled})
                 for detail in details:
                     df, did = app.feishu_fields(detail), app.feishu_record_id(detail)
-                    if df.get("补库状态") not in {"待补库", "已取消"}:
+                    if df.get("补库状态") == "补库中":
                         continue
                     with st.expander(f"调整到仓日期 · {df.get('品类名称快照')} / {df.get('型号或尺码快照')}"):
                         planned = st.date_input("计划到仓日期", value=rules.as_date(df.get("计划到仓日期")), key="order_change_date_"+did)
@@ -392,4 +395,20 @@ def render_history(app, service, snapshot, operator):
                         if st.button("保存到仓日期", key="order_change_save_"+did, disabled=not planned):
                             enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "receipt_date", "detail_id": did,
                                 "operator_open_id": operator, "planned_date": planned.isoformat(), "confirmed_arrived": arrived,
+                                "expected_fingerprint": rules.fingerprint(df)})
+                    with st.expander(f"履约状态 · {df.get('品类名称快照')} / {df.get('型号或尺码快照')}"):
+                        statuses = ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")
+                        current_status = app.feishu_text(df, rules.FULFILLMENT_STATUS) or "待安排"
+                        status = st.selectbox("物料到货状态", statuses,
+                                              index=statuses.index(current_status) if current_status in statuses else 0,
+                                              key="order_fulfillment_status_"+did)
+                        ship_date = st.date_input("物料发货时间", value=rules.as_date(df.get(rules.SHIP_DATE)),
+                                                  key="order_ship_date_"+did, format="YYYY-MM-DD")
+                        arrival_date = st.date_input("物料到货时间", value=rules.as_date(df.get(rules.ARRIVAL_DATE) or df.get("计划到仓日期")),
+                                                     key="order_arrival_date_"+did, format="YYYY-MM-DD")
+                        if st.button("保存履约状态", key="order_fulfillment_save_"+did):
+                            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": did,
+                                "operator_open_id": operator, "status": status,
+                                "ship_date": ship_date.isoformat() if ship_date else "",
+                                "arrival_date": arrival_date.isoformat() if arrival_date else "",
                                 "expected_fingerprint": rules.fingerprint(df)})

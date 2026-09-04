@@ -25,6 +25,8 @@ class SchedulingService:
 
     def validate_schema(self):
         a = self.app
+        if hasattr(a, "ensure_order_scheduling_fields"):
+            a.ensure_order_scheduling_fields()
         schema = a.feishu_schema()
         full = {name: dict(value) for name, value in schema.get("tables", {}).items()}
         for table in rules.SCHEMA:
@@ -390,7 +392,10 @@ class SchedulingService:
                 "来源申请明细": [item["line_id"]], "关联物料": [item["material_id"]],
                 "品类名称快照": item["category"], "型号或尺码快照": item["model"], "语种快照": item["language"],
                 "下单数量": item["quantity"], "申请用途快照": item["usage"], "明细备注快照": item["remark"],
-                "计划到仓日期": rules.date_ms(item["planned_date"]), "补库状态": "待补库",
+                "计划到仓日期": rules.date_ms(item["planned_date"]),
+                rules.SHIP_DATE: rules.date_ms(item["planned_date"]) if item["confirmed_arrived"] else None,
+                rules.FULFILLMENT_STATUS: "已到货" if item["confirmed_arrived"] else "已下单",
+                "补库状态": "待补库",
                 rules.RESTOCK_KEY: line_key,
                 "补库异常说明": "管理员已确认制作完成并到仓" if item["confirmed_arrived"] else "",
             })
@@ -515,6 +520,31 @@ class SchedulingService:
                 "计划到仓日期": rules.date_ms(planned),
                 "补库异常说明": "管理员已确认制作完成并到仓" if payload.get("confirmed_arrived") is True else "",
             })
+        elif action == "fulfillment_update":
+            row = self.index(snapshot[rules.DETAIL_TABLE]).get(payload.get("detail_id"), {})
+            f = a.feishu_fields(row)
+            if not row:
+                raise ValueError("下单批次明细不存在。")
+            if rules.fingerprint(f) != payload.get("expected_fingerprint"):
+                raise ValueError("明细已变化，请刷新后重新调整。")
+            status = str(payload.get("status") or "")
+            allowed = {"待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消"}
+            if status not in allowed:
+                raise ValueError("无效的物料到货状态。")
+            fields = {rules.FULFILLMENT_STATUS: status}
+            if payload.get("ship_date"):
+                fields[rules.SHIP_DATE] = rules.date_ms(payload["ship_date"])
+            if payload.get("arrival_date"):
+                fields[rules.ARRIVAL_DATE] = rules.date_ms(payload["arrival_date"])
+                fields["补库异常说明"] = "管理员已确认制作完成并到仓" if status == "已到货" else ""
+            self.write(rules.DETAIL_TABLE, a.feishu_record_id(row), fields)
+            request_ids = a.feishu_link_ids(f, "来源申请单")
+            if request_ids:
+                lines = [a.feishu_fields(r) for r in snapshot[rules.DETAIL_TABLE]
+                         if request_ids[0] in a.feishu_link_ids(a.feishu_fields(r), "来源申请单")]
+                statuses = {a.feishu_text(line, rules.FULFILLMENT_STATUS) for line in lines}
+                request_status = "全部已到货" if statuses and statuses <= {"已到货", "已完成", "无需下单", "已取消"} else "部分履约"
+                self.write(a.REQUEST_TABLE_NAME, request_ids[0], {rules.FULFILLMENT_STATUS: request_status})
         else:
             raise ValueError("未知排期操作。")
         progress["write_done"] = True

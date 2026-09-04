@@ -27,6 +27,7 @@ def test_sales_reject_short_dates(days):
 
 
 @pytest.mark.parametrize("roles,reason", [(["销售"], "客户来访"), (["区域市场经理"], "展会需求"),
+                                        (["区域市场负责人"], "展会需求"),
                                         (["销售", "区域市场经理"], "代理活动")])
 def test_exemptions(roles, reason):
     assert r.calculate_dates("2026-09-03", "2026-09-03", reason, roles, submitted="2026-09-03")[r.TIME_CLASS] == "时间豁免"

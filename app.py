@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.4.2"
+APP_VERSION = "V2.4.3"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7626,6 +7626,41 @@ def enabled_role_open_ids(role_name: str) -> list[str]:
             if open_id not in open_ids:
                 open_ids.append(open_id)
     return open_ids
+
+
+def requester_has_enabled_role(requester_open_id: object, role_name: str) -> bool:
+    """Read the enabled permission row for a requester without name matching."""
+    target = str(requester_open_id or "").strip()
+    if not target:
+        return False
+    for row in fresh_feishu_rows(USER_PERMISSION_TABLE_NAME):
+        fields = feishu_fields(row)
+        if not feishu_permission_enabled(fields):
+            continue
+        if target in feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]):
+            return role_name in feishu_choice_values(fields, "角色")
+    return False
+
+
+def ensure_order_scheduling_fields() -> None:
+    """Create the explicit fulfillment columns required by order scheduling."""
+    from order_scheduling import FULFILLMENT_STATUS, SHIP_DATE
+    refresh_feishu_schema_cache()
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建下单排期履约字段。")
+    options = [{"name": value} for value in ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")]
+    required = {
+        REQUEST_TABLE_NAME: ((SHIP_DATE, 5, None), (FULFILLMENT_STATUS, 3, {"options": options})),
+        REQUEST_LINE_TABLE_NAME: ((SHIP_DATE, 5, None),
+                                  (FULFILLMENT_STATUS, 3, {"options": options})),
+    }
+    for table, fields in required.items():
+        table_id = feishu_table_id(table)
+        for field_name, field_type, prop in fields:
+            if not feishu_has_field(table, field_name):
+                client.create_field(table_id, field_name, field_type, prop)
+    refresh_feishu_schema_cache()
 
 
 def enabled_admin_open_ids() -> list[str]:

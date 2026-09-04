@@ -14,6 +14,10 @@ ARRIVAL_START = "要求达到开始日期"
 ARRIVAL_END = "要求到达结束日期"
 READY_DATE = "预计完成制作日期"
 ORDER_DATE = "需要下单日期"
+USAGE_DATE = ARRIVAL_START
+SHIP_DATE = "物料发货时间"
+ARRIVAL_DATE = "计划到仓日期"
+FULFILLMENT_STATUS = "物料到货状态"
 TIME_CLASS = "时间判定"
 RESTOCK_KEY = "补库幂等建"
 GENERATED = "下单表生成状态"
@@ -55,7 +59,7 @@ def calculate_dates(start: object, end: object, reason: str, roles: list[str], *
         raise ValueError("要求到达日期不能早于提交申请当天。")
     role_set = set(roles) or {"销售"}
     sales_only = role_set == {"销售"}
-    exempt = reason == "客户来访" or "区域市场经理" in role_set or not sales_only
+    exempt = reason == "客户来访" or bool({"区域市场经理", "区域市场负责人"} & role_set) or not sales_only
     if not exempt and lead_days < 7:
         raise ValueError("销售物料申请须至少提前7个自然日；7～14天为加急，15天起为普通申请。")
     classification = "时间豁免" if exempt else "加急申请" if lead_days <= 14 else "普通申请"
@@ -105,6 +109,8 @@ SCHEMA = {
     "物料申请单": {
         "申请原因": (3, REASONS), ARRIVAL_START: (5, None), ARRIVAL_END: (5, None),
         ORDER_DATE: (5, None), READY_DATE: (5, None), "申请时角色快照": (1, None),
+        SHIP_DATE: (5, None),
+        FULFILLMENT_STATUS: (3, ()),
         TIME_CLASS: (3, ("普通申请", "加急申请", "时间豁免", "待补充日期")),
         "排期编辑版本": (2, None),
     },
@@ -120,6 +126,8 @@ SCHEMA = {
         "关联物料": (18, "物料主数据"), "品类名称快照": (1, None), "型号或尺码快照": (1, None),
         "语种快照": (1, None), "下单数量": (2, None), "申请用途快照": (1, None),
         "明细备注快照": (1, None), "计划到仓日期": (5, None),
+        SHIP_DATE: (5, None), ARRIVAL_DATE: (5, None),
+        FULFILLMENT_STATUS: (3, ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")),
         "补库状态": (3, ("待补库", "补库中", "已补库", "补库异常", "已取消")),
         "实际补库时间": (5, None), "关联库存流水": (18, "库存流水"),
         RESTOCK_KEY: (1, None), "补库异常说明": (1, None),
