@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches", "ValidateCaches", "FeishuSmokeTest", "WakeStreamlit", "SyncAllRuntimes")]
+    [ValidateSet("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches", "ValidateCaches", "FeishuSmokeTest", "WakeStreamlit", "SyncAllRuntimes", "RefreshCommitRestartApp")]
     [string]$Tool,
 
     [Parameter(Mandatory = $true)]

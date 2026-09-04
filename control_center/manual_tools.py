@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -70,6 +71,13 @@ MANUAL_TOOLS = (
         "会短暂中断对应服务，仅用于发布后恢复或人工维护。",
         interrupts_services=True,
     ),
+    ManualTool(
+        "RefreshCommitRestartApp",
+        "刷新缓存并提交重启应用",
+        "关闭当前控制程序，刷新全部页面与业务缓存，执行完整测试后提交推送代码，再同步并重启 Web、Tunnel、Worker 和缓存任务。",
+        "会短暂停止应用并自动递增版本；仅在确认当前改动应正式发布时执行。",
+        interrupts_services=True,
+    ),
 )
 MANUAL_TOOL_BY_KEY = {tool.key: tool for tool in MANUAL_TOOLS}
 
@@ -78,6 +86,7 @@ def run_manual_tool(tool: ManualTool, on_line: Callable[[str], None] | None = No
     if tool.requires_secrets and not SECRETS_PATH.exists():
         raise RuntimeError("请先在设置中配置 .streamlit/secrets.toml。")
     log_directory = ROOT / "work" / "control_center" / "manual-tools"
+    script_path = ROOT / "scripts" / ("run_control_center_release.ps1" if tool.key == "RefreshCommitRestartApp" else "run_control_center_manual_tool.ps1")
     command = [
         "powershell.exe",
         "-NoProfile",
@@ -85,16 +94,18 @@ def run_manual_tool(tool: ManualTool, on_line: Callable[[str], None] | None = No
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        str(ROOT / "scripts" / "run_control_center_manual_tool.ps1"),
+        str(script_path),
         "-Tool",
         tool.key,
         "-RepoPath",
         str(ROOT),
-        "-SecretsPath",
-        str(SECRETS_PATH),
         "-LogDirectory",
         str(log_directory),
     ]
+    if tool.key != "RefreshCommitRestartApp":
+        command.extend(["-SecretsPath", str(SECRETS_PATH)])
+    if tool.key == "RefreshCommitRestartApp":
+        command.extend(["-ControlCenterPid", str(os.getpid())])
     process = subprocess.Popen(
         command,
         cwd=ROOT,
