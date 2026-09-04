@@ -344,6 +344,32 @@ def test_date_edit_retains_submission_role_snapshot(svc):
     svc.roles.assert_not_called()
 
 
+def test_request_ship_date_updates_request_and_all_schedule_details(svc):
+    svc.app.data[r.DETAIL_TABLE] = [
+        record("detail-1", **{"来源申请单": ["req"], r.SHIP_DATE: None}),
+        record("detail-2", **{"来源申请单": ["req"], r.SHIP_DATE: None}),
+        record("detail-other", **{"来源申请单": ["other"], r.SHIP_DATE: None}),
+    ]
+    svc.plan(
+        {
+            "operator_open_id": "ou_admin",
+            "action": "request_ship_date",
+            "request_id": "req",
+            "ship_date": "2026-09-12",
+        },
+        {},
+        lambda _: None,
+    )
+
+    expected = r.date_ms("2026-09-12")
+    assert svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"][r.SHIP_DATE] == expected
+    assert [
+        svc.app.data[r.DETAIL_TABLE][index]["fields"][r.SHIP_DATE]
+        for index in (0, 1)
+    ] == [expected, expected]
+    assert svc.app.data[r.DETAIL_TABLE][2]["fields"][r.SHIP_DATE] is None
+
+
 def render_request_dates_fixture():
     import app
     import order_scheduling_page
