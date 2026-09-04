@@ -146,11 +146,11 @@ class SchedulingService:
             group["fingerprint"] = rules.fingerprint({"fields": group["fields"], "lines": sorted(group["lines"], key=lambda r: r["id"])})
         return groups
 
-    def check_group(self, group, expected, *, editing=False, generation_key=""):
+    def check_group(self, group, expected=None, *, editing=False, generation_key="", check_fingerprint=True):
         a = self.app
         if not group:
             raise ValueError("申请单不存在，或不是普通物料申请。")
-        if group["fingerprint"] != expected:
+        if check_fingerprint and group["fingerprint"] != expected:
             raise ValueError("申请内容已变化，请刷新后重新选择，避免覆盖他人的修改。")
         if group["generated"] and not editing:
             raise ValueError("该申请单已有明细生成过下单表，不能重复生成或直接覆盖明细。")
@@ -200,7 +200,7 @@ class SchedulingService:
             raise RuntimeError("排期编辑曾中断，请先核对申请明细和变更记录；为避免重复增删，不自动重放。")
         snapshot = self.snapshot(live=True)
         group = self.grouped_requests(snapshot).get(payload.get("request_id"))
-        self.check_group(group, payload.get("expected_fingerprint"), editing=True)
+        self.check_group(group, editing=True, check_fingerprint=False)
         desired = list(payload.get("lines") or [])
         if not desired or len(desired) > a.MAX_REQUEST_LINE_COUNT:
             raise ValueError(f"申请须保留1～{a.MAX_REQUEST_LINE_COUNT}条明细。")
