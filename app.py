@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.5.1"
+APP_VERSION = "V2.5.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -11167,6 +11167,7 @@ def execute_request_inventory_reject(draft: dict[str, object]) -> dict[str, obje
     notify_requester_of_inventory_rejection(request)
     return {
         "request_no": request.get("request_no"),
+        "requester": request.get("requester"),
         "deleted_request_id": request_id,
         "deleted_line_count": deleted_lines,
         "rejected": True,

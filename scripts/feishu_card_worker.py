@@ -289,7 +289,8 @@ def process_card_action_async(
                 client.update_interactive_message(
                     message_id,
                     inventory_app.material_request_rejection_card(
-                        str(result.get("request_no") or value.get("request_no") or "")
+                        str(result.get("request_no") or value.get("request_no") or ""),
+                        str(result.get("requester") or "申请人"),
                     ),
                 )
             return
@@ -305,7 +306,10 @@ def process_card_action_async(
             try:
                 client = inventory_app.feishu_client()
                 if client is not None:
-                    if not action_name.startswith("save_inventory_reminder__"):
+                    if (
+                        not action_name.startswith("save_inventory_reminder__")
+                        and action_key != "reject_request_inventory"
+                    ):
                         error_card = inventory_app.request_inventory_card_edit_form(
                             request_id,
                             error_message=str(exc),
