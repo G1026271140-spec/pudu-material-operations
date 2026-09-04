@@ -119,7 +119,7 @@ class FeishuCardWorkerTests(unittest.TestCase):
 
     def test_inventory_reject_deletes_request_and_updates_card(self) -> None:
         client = Mock()
-        result = {"request_no": "REQ-1", "rejected": True}
+        result = {"request_no": "REQ-1", "requester": "销售甲", "rejected": True}
         with (
             patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
             patch.object(worker.inventory_app, "execute_request_inventory_reject", return_value=result) as reject,
@@ -142,7 +142,7 @@ class FeishuCardWorkerTests(unittest.TestCase):
                 "operator_open_id": "ou-admin",
             }
         )
-        card.assert_called_once_with("REQ-1")
+        card.assert_called_once_with("REQ-1", "销售甲")
         client.update_interactive_message.assert_called_once_with("om-card-1", {"schema": "2.0"})
 
     def test_inventory_reject_callback_is_supported(self) -> None:
