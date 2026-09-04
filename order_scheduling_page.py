@@ -11,7 +11,7 @@ import order_scheduling as rules
 from order_scheduling_service import SchedulingService
 from order_scheduling_async import submit_write, submit_poll, submit_refresh
 from order_scheduling_export import build_order_workbook
-from submission_queue import QUEUE_TASK_TYPE_ORDER_EDIT, QUEUE_TASK_TYPE_ORDER_GENERATE, QUEUE_TASK_TYPE_ORDER_PLAN
+from submission_queue import QUEUE_TASK_TYPE_ORDER_EDIT, QUEUE_TASK_TYPE_ORDER_RECORD, QUEUE_TASK_TYPE_ORDER_PLAN
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -340,7 +340,7 @@ def render_order_scheduling_page(app):
     st.write(f"已选择 {len(fingerprints)} 张申请单、{len(selections)} 条明细。未选择的明细不会下单或补库。")
     note = st.text_input("下单批次备注（可选）", key="order_batch_note")
     valid = bool(selections) and all(s["planned_date"] and (rules.as_date(s["planned_date"]) >= rules.today() or s["confirmed_arrived"]) for s in selections)
-    if st.button("生成下单表", type="primary", disabled=not operator or not valid):
+    if st.button("在线生成下单表", type="primary", disabled=not operator or not valid):
         key = uuid.uuid4().hex
         payload = {"operator_open_id": operator, "generation_key": key,
                    "selections": selections, "fingerprints": fingerprints, "note": note}
@@ -351,7 +351,7 @@ def render_order_scheduling_page(app):
             st.error(str(exc))
         else:
             st.session_state.setdefault("order_downloads", {})[key] = content
-            enqueue(app, QUEUE_TASK_TYPE_ORDER_GENERATE, {**payload, "export_rows": prepared}, key)
+            enqueue(app, QUEUE_TASK_TYPE_ORDER_RECORD, {**payload, "export_rows": prepared}, key)
 
 
 def render_history(app, service, snapshot, operator):

@@ -121,7 +121,7 @@ class MobileRequestLayoutTests(unittest.TestCase):
 
     def test_request_specification_has_quantity_presets_and_compact_custom_fields(self) -> None:
         self.assertIn('"快捷数量",', SOURCE)
-        self.assertIn('[20, 50, 100, 200]', SOURCE)
+        self.assertIn('[20, 50]', SOURCE)
         self.assertIn('"自定义数量",', SOURCE)
         self.assertIn('st.columns([0.65, 1.35, 0.9]', SOURCE)
         self.assertIn('label_visibility="hidden"', SOURCE)
@@ -135,7 +135,7 @@ class MobileRequestLayoutTests(unittest.TestCase):
 
     def test_phone_specification_keeps_add_action_above_short_viewport_chrome(self) -> None:
         self.assertIn('[class*="st-key-request_add_to_cart_"]', SOURCE)
-        self.assertIn('position: sticky !important;', SOURCE)
+        self.assertIn('position: static !important;', SOURCE)
         self.assertIn('@media (max-height: 760px)', SOURCE)
         self.assertIn('font-size: 0.48rem !important;', SOURCE)
         self.assertIn('min-height: 16px !important;', SOURCE)

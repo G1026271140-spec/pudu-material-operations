@@ -22,6 +22,7 @@ from project_config import get_setting
 from submission_queue import (
     QUEUE_TASK_TYPE_ORDER_EDIT,
     QUEUE_TASK_TYPE_ORDER_GENERATE,
+    QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
     QUEUE_TASK_TYPE_ORDER_PLAN,
     QUEUE_TASK_TYPE_ORDER_RESTOCK,
     QUEUE_STATUS_FAILED,
@@ -73,6 +74,7 @@ _INVENTORY_REVIEW_SCHEDULER_STATE: dict[str, float] = {"checked_at": 0.0}
 SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_ORDER_EDIT,
     QUEUE_TASK_TYPE_ORDER_GENERATE,
+    QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
     QUEUE_TASK_TYPE_ORDER_PLAN,
     QUEUE_TASK_TYPE_ORDER_RESTOCK,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
@@ -362,10 +364,13 @@ def process_task(
     checkpoint: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
     if task.task_type in {QUEUE_TASK_TYPE_ORDER_EDIT, QUEUE_TASK_TYPE_ORDER_GENERATE,
+                         QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
                          QUEUE_TASK_TYPE_ORDER_PLAN, QUEUE_TASK_TYPE_ORDER_RESTOCK}:
         from order_scheduling_service import SchedulingService
         service = SchedulingService(inventory_app)
-        method = {QUEUE_TASK_TYPE_ORDER_EDIT: service.edit, QUEUE_TASK_TYPE_ORDER_GENERATE: service.generate,
+        method = {QUEUE_TASK_TYPE_ORDER_EDIT: service.edit,
+                  QUEUE_TASK_TYPE_ORDER_GENERATE: service.record_schedule,
+                  QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY: service.record_schedule,
                   QUEUE_TASK_TYPE_ORDER_PLAN: service.plan, QUEUE_TASK_TYPE_ORDER_RESTOCK: service.restock}[task.task_type]
         if checkpoint is None:
             raise RuntimeError("排期写入必须使用持久化检查点，禁止无检查点执行。")

@@ -409,6 +409,30 @@ def test_download_snapshot_mismatch_rejected_before_batch_write(svc):
     assert not svc.app.changes
 
 
+def test_record_write_ignores_unrelated_request_fingerprint_change(svc):
+    payload = generation_payload(svc)
+    prepared = svc.prepare_export(payload, svc.snapshot())
+    svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]["客户名称"] = "与下单明细无关的后续更新"
+    result = svc.record_schedule({**payload, "export_rows": prepared}, {}, lambda _: None)
+    assert result["write_done"]
+    svc.app.upload_media.assert_not_called()
+
+
+def test_record_write_rejects_changed_selected_line_snapshot(svc):
+    payload = generation_payload(svc)
+    prepared = svc.prepare_export(payload, svc.snapshot())
+    svc.app.data[app.REQUEST_LINE_TABLE_NAME][0]["fields"]["申请数量"] = 21
+    with pytest.raises(ValueError, match="下载明细"):
+        svc.record_schedule({**payload, "export_rows": prepared}, {}, lambda _: None)
+    assert not svc.app.data[r.BATCH_TABLE]
+
+
+def test_new_queue_type_describes_record_write_only():
+    import submission_queue as queue
+    assert queue.QUEUE_TASK_TYPE_ORDER_RECORD == "下单排期记录写入"
+    assert queue.QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY == "下单排期生成表单"
+
+
 def test_async_write_copies_payload_and_does_not_wait():
     from threading import Event
     from order_scheduling_async import submit_write

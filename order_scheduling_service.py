@@ -275,7 +275,7 @@ class SchedulingService:
         self.refresh()
         return progress
 
-    def prepare_export(self, payload, snapshot):
+    def prepare_export(self, payload, snapshot, *, strict_request_fingerprint=True):
         """Pure preparation from a supplied snapshot; no network or Base writes."""
         groups = self.grouped_requests(snapshot)
         selections = list(payload.get("selections") or [])
@@ -286,7 +286,10 @@ class SchedulingService:
         for selection in selections:
             rid, lid = selection.get("request_id"), selection.get("line_id")
             group = groups.get(rid)
-            self.check_group(group, dict(payload.get("fingerprints") or {}).get(rid),
+            expected = dict(payload.get("fingerprints") or {}).get(rid)
+            if not strict_request_fingerprint and group:
+                expected = group["fingerprint"]
+            self.check_group(group, expected,
                              generation_key=str(payload.get("generation_key") or ""))
             lines = {line["id"]: line for line in group["lines"]}
             if lid not in lines or lid in seen:
@@ -306,7 +309,8 @@ class SchedulingService:
                 "planned_date": planned.isoformat(), "confirmed_arrived": selection.get("confirmed_arrived") is True})
         return prepared
 
-    def generate(self, payload, progress, checkpoint):
+    def record_schedule(self, payload, progress, checkpoint):
+        """Persist scheduling records only. XLSX construction belongs to the page."""
         a = self.app
         self.require_admin(payload.get("operator_open_id"))
         self.validate_schema()
@@ -347,9 +351,13 @@ class SchedulingService:
             # A partial export resumes its frozen values, but never ignores canceled sources.
             for item in prepared:
                 g = groups.get(item["request_id"])
-                self.check_group(g, payload["fingerprints"].get(item["request_id"]), generation_key=key)
+                expected = payload["fingerprints"].get(item["request_id"])
+                if "export_rows" in payload and g:
+                    expected = g["fingerprint"]
+                self.check_group(g, expected, generation_key=key)
         else:
-            prepared = self.prepare_export(payload, snapshot)
+            prepared = self.prepare_export(payload, snapshot,
+                                           strict_request_fingerprint="export_rows" not in payload)
             progress["prepared"] = prepared
             checkpoint(dict(progress))
         for item in prepared:
@@ -403,6 +411,10 @@ class SchedulingService:
         checkpoint(dict(progress))
         self.refresh()
         return progress
+
+    def generate(self, payload, progress, checkpoint):
+        """Backward-compatible method name; does not generate a workbook."""
+        return self.record_schedule(payload, progress, checkpoint)
 
     def due_details(self, snapshot, *, now=None):
         a = self.app
