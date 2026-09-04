@@ -289,6 +289,12 @@ def render_order_scheduling_page(app):
                        f"提交：{date_label(f.get('提交时间'))}　时效：{f.get(rules.TIME_CLASS) or '待补充日期'}")
             st.caption(f"物料使用：{date_label(f.get(rules.USAGE_DATE))}　物料下单：{date_label(f.get(rules.ORDER_DATE))}　"
                        f"物料发货：{date_label(f.get(rules.SHIP_DATE))}　物料到货：{date_label(f.get(rules.ARRIVAL_DATE) or f.get(rules.READY_DATE))}")
+            ship_plan = st.date_input("申请单发货日期", value=rules.as_date(f.get(rules.SHIP_DATE)),
+                                      key="request_ship_plan_"+group["id"], format="YYYY-MM-DD")
+            if operator and st.button("保存申请单发货日期", key="request_ship_save_"+group["id"], disabled=not ship_plan):
+                enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "request_ship_date", "request_id": group["id"],
+                    "ship_date": ship_plan.isoformat(), "operator_open_id": operator,
+                    "expected_fingerprint": group["fingerprint"]})
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
             st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
             locked = group["generated"] or group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
@@ -328,6 +334,29 @@ def render_order_scheduling_page(app):
                 disabled=True if locked else [col for col in frame.columns if col != "选中下单"],
                 column_config={"明细ID": None}, key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
             picked = edited.loc[edited["选中下单"] == True, "明细ID"].tolist() if not locked else []
+            if operator:
+                with st.expander("明细履约操作（发货／到货／状态）", expanded=False):
+                    detail_options = {l["id"]: f"{l['category']} / {l['model']} / {l['language']}" for l in group["lines"]}
+                    selected_detail = st.selectbox("选择明细", list(detail_options), format_func=lambda x: detail_options[x],
+                                                   key="fulfillment_detail_"+group["id"])
+                    target = next((l for l in group["lines"] if l["id"] == selected_detail), None)
+                    if target:
+                        tf = target["fields"]
+                        status_options = rules.FULFILLMENT_OPTIONS
+                        current_status = app.feishu_text(tf, rules.FULFILLMENT_STATUS) or "待安排"
+                        status = st.selectbox("物料到货状态", status_options,
+                                              index=status_options.index(current_status) if current_status in status_options else 0,
+                                              key="fulfillment_status_"+target["id"])
+                        ship_date = st.date_input("物料发货时间", value=rules.as_date(tf.get(rules.SHIP_DATE)),
+                                                  key="fulfillment_ship_"+target["id"], format="YYYY-MM-DD")
+                        arrival_date = st.date_input("物料到货时间", value=rules.as_date(tf.get(rules.ARRIVAL_DATE) or tf.get("计划到仓日期")),
+                                                     key="fulfillment_arrival_"+target["id"], format="YYYY-MM-DD")
+                        if st.button("保存明细履约信息", key="fulfillment_save_"+target["id"]):
+                            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": target["id"],
+                                "operator_open_id": operator, "status": status,
+                                "ship_date": ship_date.isoformat() if ship_date else "",
+                                "arrival_date": arrival_date.isoformat() if arrival_date else "",
+                                "expected_fingerprint": rules.fingerprint(tf)})
             if picked:
                 planned = st.date_input("计划制作完成／到仓日期（自动补库日）", value=rules.as_date(f.get(rules.READY_DATE)),
                                          key="planned_"+group["id"], format="YYYY-MM-DD")

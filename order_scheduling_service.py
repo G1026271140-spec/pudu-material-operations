@@ -502,6 +502,13 @@ class SchedulingService:
                 str(payload.get("request_reason") or ""), roles, submitted=submitted)
             dates["排期编辑版本"] = a.feishu_int(f, "排期编辑版本") + 1
             self.write(a.REQUEST_TABLE_NAME, group["id"], dates)
+        elif action == "request_ship_date":
+            group = self.grouped_requests(snapshot).get(payload.get("request_id"))
+            self.check_group(group, payload.get("expected_fingerprint"))
+            ship_date = rules.as_date(payload.get("ship_date"))
+            if ship_date is None:
+                raise ValueError("请选择申请单发货日期。")
+            self.write(a.REQUEST_TABLE_NAME, group["id"], {rules.SHIP_DATE: rules.date_ms(ship_date)})
         elif action == "batch_enabled":
             row = self.index(snapshot[rules.BATCH_TABLE]).get(payload.get("batch_id"), {})
             if a.feishu_text(a.feishu_fields(row), "批次状态") != "已生成":
