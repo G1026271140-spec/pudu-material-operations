@@ -402,12 +402,12 @@ def render_order_scheduling_page(app):
     edit_cols = st.columns([1, 1, 3])
     if edit_cols[0].button("提交数据（下单排期编辑）", type="primary", key="order_submit_edits", disabled=not operator or not edits):
         stage = {"action": "batch_edit", "operator_open_id": operator, "edits": edits}
-            st.session_state.pop("order_edit_drafts", None)
-            st.session_state.pop("order_staged_edit_keys", None)
-            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
+        st.session_state.pop("order_edit_drafts", None)
+        st.session_state.pop("order_staged_edit_keys", None)
+        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, stage)
     if edit_cols[1].button("清空排期编辑", disabled=not edits):
-            st.session_state.pop("order_edit_drafts", None)
-            st.session_state.pop("order_staged_edit_keys", None)
+        st.session_state.pop("order_edit_drafts", None)
+        st.session_state.pop("order_staged_edit_keys", None)
         st.rerun()
     st.divider()
     st.write(f"已选择 {len(fingerprints)} 张申请单、{len(selections)} 条明细。未选择的明细不会下单或补库。")
