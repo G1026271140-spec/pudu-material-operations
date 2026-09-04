@@ -348,8 +348,21 @@ def render_order_scheduling_page(app):
                 return [color] * len(row)
             styled_frame = frame.style.apply(highlight_ordered, axis=1)
             edited = st.data_editor(styled_frame, hide_index=True, width="stretch", num_rows="fixed",
-                disabled=True if locked else [col for col in frame.columns if col != "选中下单"],
-                column_config={"明细ID": None}, key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
+                disabled=True if locked else [col for col in frame.columns if col not in {"选中下单", "到货状态"}],
+                column_config={"明细ID": None, "到货状态": st.column_config.SelectboxColumn(
+                    "到货状态", options=list(rules.FULFILLMENT_OPTIONS), required=True)},
+                key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
+            if not locked and operator:
+                staged_status_keys = st.session_state.setdefault("order_staged_status_keys", set())
+                for row_index, row in edited.iterrows():
+                    line = group["lines"][row_index]
+                    new_status = str(row.get("到货状态") or "待安排")
+                    old_status = app.feishu_text(line["fields"], rules.FULFILLMENT_STATUS) or "待安排"
+                    stage_key = f"{group['id']}:{line['id']}:{new_status}"
+                    if new_status != old_status and stage_key not in staged_status_keys:
+                        stage_order_edit({"action": "fulfillment_bulk_update", "detail_ids": [line["id"]],
+                            "operator_open_id": operator, "status": new_status})
+                        staged_status_keys.add(stage_key)
             picked = edited.loc[edited["选中下单"] == True, "明细ID"].tolist() if not locked else []
             order_picked = [lid for lid in picked if next((l for l in group["lines"] if l["id"] == lid), {}).get("fields", {}).get(rules.GENERATED) != "已生成"]
             if operator and picked:
