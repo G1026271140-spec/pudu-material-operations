@@ -560,6 +560,7 @@ class BotNotificationTests(unittest.TestCase):
             "申请 3｜实时库存 2｜库存不足，需要制作",
             "调整配货方案",
             "按原申请确认",
+            "驳回申请",
         ):
             self.assertIn(expected, serialized)
         self.assertNotIn("打开审批与发放", serialized)

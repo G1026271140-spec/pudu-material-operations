@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.5.0"
+APP_VERSION = "V2.5.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8061,6 +8061,29 @@ def material_request_notification_card(
                             }
                         ],
                     },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "weight": 1,
+                        "elements": [
+                            {
+                                "tag": "button",
+                                "text": {"tag": "plain_text", "content": "驳回申请"},
+                                "type": "danger_filled",
+                                "behaviors": [
+                                    {
+                                        "type": "callback",
+                                        "value": {
+                                            "action": "reject_request_inventory",
+                                            "request_id": request_id,
+                                            "request_no": request_no,
+                                            "version": int(review_request.get("inventory_review_version") or 0),
+                                        },
+                                    }
+                                ],
+                            }
+                        ],
+                    },
                 ],
             },
             {
@@ -8124,6 +8147,47 @@ def material_request_notification_card(
             "direction": "vertical",
             "padding": "12px 12px 20px 12px",
             "elements": elements,
+        },
+    }
+
+
+def material_request_rejection_card(
+    request_no: str,
+    requester: str = "申请人",
+) -> dict[str, object]:
+    title = "营销物料申请已驳回"
+    return {
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "default",
+            "summary": {"content": title},
+        },
+        "header": {
+            "template": "red",
+            "title": {"tag": "plain_text", "content": title},
+            "subtitle": {"tag": "plain_text", "content": request_no or "-"},
+            "icon": {"tag": "standard_icon", "token": "close_colorful"},
+            "text_tag_list": [
+                {
+                    "tag": "text_tag",
+                    "text": {"tag": "plain_text", "content": "已驳回"},
+                    "color": "red",
+                }
+            ],
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 16px 12px",
+            "elements": [
+                {
+                    "tag": "markdown",
+                    "content": (
+                        f"{requester or '申请人'}，您的营销物料申请已被管理员驳回。"
+                        "申请单及申请明细已删除，如有需要请重新提交。"
+                    ),
+                }
+            ],
         },
     }
 
@@ -11055,6 +11119,57 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         "request_no": request.get("request_no"),
         "result": context["result"],
         "confirmed": True,
+    }
+
+
+def notify_requester_of_inventory_rejection(request: dict[str, object]) -> int:
+    requester_open_id = str(request.get("requester_open_id") or "").strip()
+    if not requester_open_id:
+        raise RuntimeError("申请单未记录申请人 OpenID，无法发送驳回通知。")
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送申请驳回通知。")
+    send_feishu_interactive_message(
+        client,
+        requester_open_id,
+        material_request_rejection_card(
+            str(request.get("request_no") or ""),
+            str(request.get("requester") or "申请人"),
+        ),
+    )
+    return 1
+
+
+def execute_request_inventory_reject(draft: dict[str, object]) -> dict[str, object]:
+    request_id = str(draft.get("request_id") or "").strip()
+    expected_version = int(draft.get("expected_version") or 0)
+    operator_open_id = str(draft.get("operator_open_id") or "").strip()
+    if operator_open_id not in enabled_admin_open_ids():
+        raise PermissionError("只有已启用管理员可以驳回库存核实申请。")
+    context = request_inventory_review_context(request_id=request_id)
+    request = dict(context["request"])
+    if str(request.get("status") or "") != REQUEST_STATUS_PENDING:
+        raise RuntimeError("只有待审批申请可以驳回。")
+    if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
+        raise RuntimeError("该申请已经完成库存核实，不能驳回。")
+    if int(request.get("inventory_review_version") or 0) != expected_version:
+        raise RuntimeError("申请已发生修改，请查看最新卡片后再驳回。")
+    line_ids = [
+        str(line.get("record_id") or "")
+        for line in list(context.get("lines") or [])
+        if str(line.get("record_id") or "")
+    ]
+    deleted_lines = feishu_batch_delete_record_ids(REQUEST_LINE_TABLE_NAME, line_ids)
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法删除申请单。")
+    client.delete_record(feishu_table_id(REQUEST_TABLE_NAME), request_id)
+    notify_requester_of_inventory_rejection(request)
+    return {
+        "request_no": request.get("request_no"),
+        "deleted_request_id": request_id,
+        "deleted_line_count": deleted_lines,
+        "rejected": True,
     }
 
 

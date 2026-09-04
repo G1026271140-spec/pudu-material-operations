@@ -117,6 +117,57 @@ class FeishuCardWorkerTests(unittest.TestCase):
         )
         enqueue.assert_not_called()
 
+    def test_inventory_reject_deletes_request_and_updates_card(self) -> None:
+        client = Mock()
+        result = {"request_no": "REQ-1", "rejected": True}
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "execute_request_inventory_reject", return_value=result) as reject,
+            patch.object(worker.inventory_app, "feishu_client", return_value=client),
+            patch.object(worker.inventory_app, "material_request_rejection_card", return_value={"schema": "2.0"}) as card,
+        ):
+            worker.process_card_action_async(
+                action_key="reject_request_inventory",
+                action_name="",
+                value={"request_id": "request-1", "request_no": "REQ-1", "version": 2},
+                form_value={},
+                operator_open_id="ou-admin",
+                message_id="om-card-1",
+            )
+
+        reject.assert_called_once_with(
+            {
+                "request_id": "request-1",
+                "expected_version": 2,
+                "operator_open_id": "ou-admin",
+            }
+        )
+        card.assert_called_once_with("REQ-1")
+        client.update_interactive_message.assert_called_once_with("om-card-1", {"schema": "2.0"})
+
+    def test_inventory_reject_callback_is_supported(self) -> None:
+        thread = Mock()
+        event = SimpleNamespace(
+            action=SimpleNamespace(
+                value={
+                    "action": "reject_request_inventory",
+                    "request_id": "request-1",
+                    "version": 2,
+                }
+            ),
+            operator=SimpleNamespace(open_id="ou-admin"),
+            context=SimpleNamespace(open_message_id="om-card-1"),
+        )
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
+            response = worker.handle_card_action(SimpleNamespace(event=event))
+
+        self.assertEqual(response.toast.type, "success")
+        self.assertEqual(
+            thread_class.call_args.kwargs["kwargs"]["action_key"],
+            "reject_request_inventory",
+        )
+        thread.start.assert_called_once_with()
+
     def test_reminder_schedule_form_submission_is_accepted(self) -> None:
         thread = Mock()
         event = SimpleNamespace(

@@ -477,6 +477,44 @@ class RequestInventoryReviewTests(unittest.TestCase):
         update_request.assert_not_called()
         notify.assert_not_called()
 
+    def test_reject_deletes_request_lines_and_notifies_requester(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "requester": "销售甲",
+                "requester_open_id": "ou-user",
+                "status": app.REQUEST_STATUS_PENDING,
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_review_version": 2,
+            },
+            "lines": [{"record_id": "line-1"}, {"record_id": "line-2"}],
+        }
+        client = Mock()
+        with (
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_batch_delete_record_ids", return_value=2) as delete_lines,
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "feishu_table_id", side_effect=lambda name: f"tbl-{name}"),
+            patch.object(app, "notify_requester_of_inventory_rejection", return_value=1) as notify,
+        ):
+            result = app.execute_request_inventory_reject(
+                {
+                    "request_id": "request-1",
+                    "expected_version": 2,
+                    "operator_open_id": "ou-admin",
+                }
+            )
+
+        delete_lines.assert_called_once_with(app.REQUEST_LINE_TABLE_NAME, ["line-1", "line-2"])
+        client.delete_record.assert_called_once_with(
+            f"tbl-{app.REQUEST_TABLE_NAME}", "request-1"
+        )
+        notify.assert_called_once_with(context["request"])
+        self.assertTrue(result["rejected"])
+        self.assertEqual(result["deleted_line_count"], 2)
+
     def test_complete_writeback_deletes_only_request_custom_materials(self) -> None:
         context = {
             "request": {"request_no": "REQ-1", "status": "已发放"},

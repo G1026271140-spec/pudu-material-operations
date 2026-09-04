@@ -276,6 +276,23 @@ def process_card_action_async(
                 }
             )
             return
+        if action_key == "reject_request_inventory":
+            result = inventory_app.execute_request_inventory_reject(
+                {
+                    "request_id": request_id,
+                    "expected_version": int(value.get("version") or 0),
+                    "operator_open_id": operator_open_id,
+                }
+            )
+            client = inventory_app.feishu_client()
+            if client is not None and message_id:
+                client.update_interactive_message(
+                    message_id,
+                    inventory_app.material_request_rejection_card(
+                        str(result.get("request_no") or value.get("request_no") or "")
+                    ),
+                )
+            return
         raise RuntimeError("暂不支持该卡片操作。")
     except Exception as exc:
         logging.exception(
@@ -309,6 +326,7 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
     if action_key not in {
         "edit_request_inventory",
         "confirm_request_inventory",
+        "reject_request_inventory",
     } and not action_name.startswith(("save_inventory_edit__", "save_inventory_reminder__")):
         return card_action_response("warning", "暂不支持该卡片操作。")
     context = getattr(event, "context", None) if event else None
