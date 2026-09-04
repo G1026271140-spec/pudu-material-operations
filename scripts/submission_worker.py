@@ -618,11 +618,22 @@ def process_one(
         complete_submission_task(client, task, result)
         logging.info("Completed task %s: %s", task.task_id, result.get("request_no"))
     except Exception as exc:
+        order_task_types = {
+            QUEUE_TASK_TYPE_ORDER_EDIT,
+            QUEUE_TASK_TYPE_ORDER_GENERATE,
+            QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
+            QUEUE_TASK_TYPE_ORDER_PLAN,
+            QUEUE_TASK_TYPE_ORDER_RESTOCK,
+        }
+        retryable = not (
+            task.task_type in order_task_types and isinstance(exc, ValueError)
+        )
         status = fail_submission_task(
             client,
             task,
             exc,
             max_retries=MAX_RETRIES,
+            retryable=retryable,
         )
         logging.exception("Task %s failed with status %s", task.task_id, status)
         if status == QUEUE_STATUS_FAILED:

@@ -828,26 +828,34 @@ def fail_submission_task(
     error: Exception | str,
     *,
     max_retries: int = 10,
+    retryable: bool = True,
     now_ms: int | None = None,
 ) -> str:
     now = timestamp_ms() if now_ms is None else int(now_ms)
     retry_count = task.retry_count + 1
-    terminal = retry_count >= max(1, int(max_retries))
+    terminal = not retryable or retry_count >= max(1, int(max_retries))
     status = QUEUE_STATUS_FAILED if terminal else QUEUE_STATUS_RETRY
     backoff_seconds = min(900, 5 * (3 ** min(retry_count - 1, 5)))
     next_retry_at = None if terminal else now + backoff_seconds * 1000
     table_id = ensure_submission_queue_table(client)
+    fields: dict[str, Any] = {
+        QUEUE_FIELD_STATUS: status,
+        QUEUE_FIELD_RETRY_COUNT: retry_count,
+        QUEUE_FIELD_NEXT_RETRY_AT: next_retry_at,
+        QUEUE_FIELD_LEASE_EXPIRES_AT: None,
+        QUEUE_FIELD_ERROR: str(error)[:5000],
+        QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
+    }
+    if not retryable:
+        fields[QUEUE_FIELD_RESULT] = json.dumps(
+            {"retryable": False},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
     client.update_record(
         table_id,
         task.record_id,
-        {
-            QUEUE_FIELD_STATUS: status,
-            QUEUE_FIELD_RETRY_COUNT: retry_count,
-            QUEUE_FIELD_NEXT_RETRY_AT: next_retry_at,
-            QUEUE_FIELD_LEASE_EXPIRES_AT: None,
-            QUEUE_FIELD_ERROR: str(error)[:5000],
-            QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
-        },
+        fields,
     )
     return status
 
@@ -859,6 +867,7 @@ def retry_failed_submission_tasks(client: FeishuBitableClient) -> int:
         for task in list_submission_tasks(client, table_id)
         if task.status == QUEUE_STATUS_FAILED
         and task.completion_status != QUEUE_COMPLETION_COMPLETED
+        and task.result.get("retryable") is not False
     ]
     for task in failed:
         client.update_record(

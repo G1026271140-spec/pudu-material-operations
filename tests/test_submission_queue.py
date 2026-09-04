@@ -340,6 +340,32 @@ class SubmissionQueueTests(unittest.TestCase):
         )
         self.assertEqual(completed.result["request_no"], "REQ-1")
 
+    def test_non_retryable_failure_is_terminal_and_not_recovered_on_restart(self) -> None:
+        client = FakeQueueClient()
+        queue.enqueue_submission_task(
+            client,
+            queue.QUEUE_TASK_TYPE_ORDER_RECORD,
+            "order-validation-failure",
+            {"version": 1},
+        )
+        claimed = queue.claim_next_submission_task(client, "worker-a")
+        assert claimed is not None
+
+        status = queue.fail_submission_task(
+            client,
+            claimed,
+            ValueError("申请单已生成过下单表"),
+            retryable=False,
+        )
+
+        self.assertEqual(status, queue.QUEUE_STATUS_FAILED)
+        failed = queue.list_submission_tasks(client)[0]
+        self.assertEqual(failed.result, {"retryable": False})
+        self.assertEqual(failed.next_retry_at, 0)
+        self.assertEqual(queue.retry_failed_submission_tasks(client), 0)
+        still_failed = queue.list_submission_tasks(client)[0]
+        self.assertEqual(still_failed.status, queue.QUEUE_STATUS_FAILED)
+
     def test_completed_marker_prevents_reclaim_even_if_technical_status_is_pending(self) -> None:
         client = FakeQueueClient()
         task, _ = queue.enqueue_submission_task(
