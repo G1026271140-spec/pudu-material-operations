@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.5.6"
+APP_VERSION = "V2.5.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -10893,6 +10893,14 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     ):
         raise RuntimeError("该申请已经完成库存核实，不能继续修改。")
     if recovering_notifications:
+        if ship_date not in (None, ""):
+            from order_scheduling import SHIP_DATE, date_ms
+            feishu_update_record_fields(
+                REQUEST_TABLE_NAME,
+                request_id,
+                {SHIP_DATE: date_ms(ship_date)},
+            )
+            sync_request_ship_date_to_schedule(request_id, ship_date)
         before_lines = [
             dict(item) for item in list(draft.get("before_lines") or []) if isinstance(item, dict)
         ]
@@ -11170,6 +11178,13 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     else:
         updated_line_count = 0
     if already_confirmed:
+        if ship_date not in (None, ""):
+            feishu_update_record_fields(
+                REQUEST_TABLE_NAME,
+                request_id,
+                {SHIP_DATE: date_ms(ship_date)},
+            )
+            sync_request_ship_date_to_schedule(request_id, ship_date)
         return {
             "request_no": request.get("request_no"),
             "already_confirmed": True,
