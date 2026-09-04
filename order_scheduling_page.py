@@ -239,7 +239,11 @@ def render_order_scheduling_page(app):
             for person in f.get("用户账号") or []:
                 admins[person["id"]] = person.get("name") or person["id"]
     operator = st.selectbox("操作管理员", list(admins), index=None, format_func=lambda x: admins[x], key="order_operator")
-    mode = st.radio("查看范围", ["未生成下单表", "全部申请", "下单批次历史"], horizontal=True)
+    section = st.radio("功能分区", ["下单管理", "发货管理"], horizontal=True, key="order_section")
+    if section == "发货管理":
+        render_shipping_management(app, service, snapshot)
+        return
+    mode = st.radio("下单管理", ["未生成下单表", "全部申请", "下单批次历史"], horizontal=True)
     if mode == "下单批次历史":
         render_history(app, service, snapshot, operator)
         return
@@ -357,6 +361,51 @@ def render_order_scheduling_page(app):
         else:
             st.session_state.setdefault("order_downloads", {})[key] = content
             enqueue(app, QUEUE_TASK_TYPE_ORDER_RECORD, {**payload, "export_rows": prepared}, key)
+
+
+def render_shipping_management(app, service, snapshot):
+    """Show cached weekly order/shipping queues with explicit confirmations."""
+    today = rules.today()
+    monday = today - timedelta(days=today.weekday())
+    next_monday = monday + timedelta(days=7)
+    tabs = st.tabs(["本周需要下单", "本周需要发货", "下周需要下单", "下周需要发货"])
+    groups = service.grouped_requests(snapshot)
+    details = [r for r in snapshot[rules.DETAIL_TABLE]]
+    buckets = []
+    for offset in (0, 7):
+        start, end = monday + timedelta(days=offset), monday + timedelta(days=offset + 7)
+        buckets.extend([
+            [(g, None) for g in groups.values() if (d := rules.as_date(g["fields"].get(rules.ORDER_DATE))) and start <= d < end],
+            [(groups.get((rids := app.feishu_link_ids(app.feishu_fields(r), "来源申请单"))[0], {}), r)
+             for r in details if rids and (d := rules.as_date(app.feishu_fields(r).get(rules.SHIP_DATE))) and start <= d < end],
+        ])
+    for tab, entries in zip(tabs, buckets):
+        with tab:
+            if not entries:
+                st.info("本时间段暂无数据。")
+                continue
+            for group, detail in entries:
+                if not group:
+                    continue
+                f = group["fields"]
+                label = f"{group['request_no']} · {group['requester']}"
+                if detail:
+                    df, did = app.feishu_fields(detail), app.feishu_record_id(detail)
+                    status = app.feishu_text(df, rules.FULFILLMENT_STATUS) or "待安排"
+                    st.write(f"{label} · {app.feishu_text(df, '品类名称快照')} / {app.feishu_text(df, '型号或尺码快照')} · {status}")
+                    st.caption(f"收货人信息：{app.feishu_text(f, '收件人信息') or '—'}　到货：{date_label(df.get(rules.ARRIVAL_DATE))}")
+                    c1, c2 = st.columns(2)
+                    if c1.button("确认发货", key="ship_confirm_"+did, disabled=status in {"已发货", "已到货", "已完成"}):
+                        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": did,
+                            "operator_open_id": st.session_state.get("order_operator"), "status": "已发货",
+                            "ship_date": today.isoformat(), "expected_fingerprint": rules.fingerprint(df)})
+                    if c2.button("确认到货", key="arrival_confirm_"+did, disabled=status in {"已到货", "已完成"}):
+                        enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": did,
+                            "operator_open_id": st.session_state.get("order_operator"), "status": "已到货",
+                            "arrival_date": today.isoformat(), "expected_fingerprint": rules.fingerprint(df)})
+                else:
+                    st.write(label)
+                    st.caption(f"收货人信息：{app.feishu_text(f, '收件人信息') or '—'}")
 
 
 def render_history(app, service, snapshot, operator):

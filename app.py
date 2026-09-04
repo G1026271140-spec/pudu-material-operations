@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.4.5"
+APP_VERSION = "V2.4.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7652,7 +7652,7 @@ def ensure_order_scheduling_fields() -> None:
     options = [{"name": value} for value in ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")]
     required = {
         REQUEST_TABLE_NAME: ((SHIP_DATE, 5, None), (FULFILLMENT_STATUS, 3, {"options": options})),
-        REQUEST_LINE_TABLE_NAME: ((SHIP_DATE, 5, None),
+        REQUEST_LINE_TABLE_NAME: ((SHIP_DATE, 5, None), ("计划到仓日期", 5, None),
                                   (FULFILLMENT_STATUS, 3, {"options": options})),
     }
     for table, fields in required.items():

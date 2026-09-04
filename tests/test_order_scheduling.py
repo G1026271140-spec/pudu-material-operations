@@ -15,7 +15,7 @@ def test_sales_boundaries(days, expected):
     result = r.calculate_dates(start + timedelta(days=days), start + timedelta(days=days + 3),
                                "代理活动", ["销售"], submitted=start)
     assert result[r.TIME_CLASS] == expected
-    assert r.as_date(result[r.ORDER_DATE]) == start + timedelta(days=days - 15)
+    assert r.as_date(result[r.ORDER_DATE]) == r.order_workday(start + timedelta(days=days - 15))
     assert r.as_date(result[r.READY_DATE]) == start + timedelta(days=days - 10)
 
 

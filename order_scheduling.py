@@ -18,6 +18,7 @@ USAGE_DATE = ARRIVAL_START
 SHIP_DATE = "物料发货时间"
 ARRIVAL_DATE = "计划到仓日期"
 FULFILLMENT_STATUS = "物料到货状态"
+FULFILLMENT_OPTIONS = ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")
 TIME_CLASS = "时间判定"
 RESTOCK_KEY = "补库幂等建"
 GENERATED = "下单表生成状态"
@@ -46,6 +47,15 @@ def date_ms(value: object) -> int:
     return int(datetime.combine(parsed, time.min, CHINA_TZ).timestamp() * 1000)
 
 
+def order_workday(value: object) -> date:
+    day = as_date(value)
+    if day is None:
+        raise ValueError("日期不能为空。")
+    while day.weekday() not in (1, 4):
+        day -= timedelta(days=1)
+    return day
+
+
 def calculate_dates(start: object, end: object, reason: str, roles: list[str], *, submitted: object) -> dict:
     start_day, end_day, submitted_day = as_date(start), as_date(end), as_date(submitted)
     if reason not in REASONS:
@@ -65,7 +75,7 @@ def calculate_dates(start: object, end: object, reason: str, roles: list[str], *
     classification = "时间豁免" if exempt else "加急申请" if lead_days <= 14 else "普通申请"
     return {
         "申请原因": reason, ARRIVAL_START: date_ms(start_day), ARRIVAL_END: date_ms(end_day),
-        ORDER_DATE: date_ms(start_day - timedelta(days=15)),
+        ORDER_DATE: date_ms(order_workday(start_day - timedelta(days=15))),
         READY_DATE: date_ms(start_day - timedelta(days=10)), TIME_CLASS: classification,
         "申请时角色快照": "、".join(sorted(role_set)),
     }
@@ -114,7 +124,8 @@ SCHEMA = {
         TIME_CLASS: (3, ("普通申请", "加急申请", "时间豁免", "待补充日期")),
         "排期编辑版本": (2, None),
     },
-    "申请明细": {GENERATED: (3, ("未生成", "生成中", "已生成"))},
+    "申请明细": {GENERATED: (3, ("未生成", "生成中", "已生成")),
+                  SHIP_DATE: (5, None), ARRIVAL_DATE: (5, None), FULFILLMENT_STATUS: (3, FULFILLMENT_OPTIONS)},
     BATCH_TABLE: {
         "下单批次号": (1, None), "批次状态": (3, ("生成中", "已生成", "生成失败", "已作废")),
         "生成人": (11, None), "生成时间": (5, None),
@@ -127,7 +138,7 @@ SCHEMA = {
         "语种快照": (1, None), "下单数量": (2, None), "申请用途快照": (1, None),
         "明细备注快照": (1, None), "计划到仓日期": (5, None),
         SHIP_DATE: (5, None), ARRIVAL_DATE: (5, None),
-        FULFILLMENT_STATUS: (3, ("待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消")),
+        FULFILLMENT_STATUS: (3, FULFILLMENT_OPTIONS),
         "补库状态": (3, ("待补库", "补库中", "已补库", "补库异常", "已取消")),
         "实际补库时间": (5, None), "关联库存流水": (18, "库存流水"),
         RESTOCK_KEY: (1, None), "补库异常说明": (1, None),
