@@ -345,17 +345,21 @@ def render_order_scheduling_page(app):
                 disabled=True if locked else [col for col in frame.columns if col != "选中下单"],
                 column_config={"明细ID": None}, key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
             picked = edited.loc[edited["选中下单"] == True, "明细ID"].tolist() if not locked else []
-            picked = [lid for lid in picked if next((l for l in group["lines"] if l["id"] == lid), {}).get("fields", {}).get(rules.GENERATED) != "已生成"]
+            order_picked = [lid for lid in picked if next((l for l in group["lines"] if l["id"] == lid), {}).get("fields", {}).get(rules.GENERATED) != "已生成"]
             if operator and picked:
-                st.caption(f"已选中 {len(picked)} 条未生成明细；请使用下方外部按钮操作。")
-                action_cols = st.columns([1, 1, 1.4])
-                if action_cols[0].button("选中明细：无需下单（已到货）", key="mark_arrived_"+group["id"]):
+                st.caption(f"已选中 {len(picked)} 条明细；履约状态请使用下方外部按钮操作。已下单明细不能再次生成下单表。")
+                status_choice = st.selectbox("批量设置到货状态", rules.FULFILLMENT_OPTIONS, key="bulk_status_"+group["id"])
+                action_cols = st.columns([1, 1, 1, 1.4])
+                if action_cols[0].button("保存选中状态", key="save_bulk_status_"+group["id"]):
+                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                        "operator_open_id": operator, "status": status_choice})
+                if action_cols[1].button("选中明细：无需下单（已到货）", key="mark_arrived_"+group["id"]):
                     enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": "无需下单", "arrival_date": rules.today().isoformat()})
-                if action_cols[1].button("选中明细：确认发货", key="mark_shipped_"+group["id"]):
+                if action_cols[2].button("选中明细：确认发货", key="mark_shipped_"+group["id"]):
                     enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": "已发货", "ship_date": rules.today().isoformat()})
-                if action_cols[2].button("选中明细：确认到货", key="mark_received_"+group["id"]):
+                if action_cols[3].button("选中明细：确认到货", key="mark_received_"+group["id"]):
                     enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
                         "operator_open_id": operator, "status": "已到货", "arrival_date": rules.today().isoformat()})
             if picked:
@@ -369,10 +373,11 @@ def render_order_scheduling_page(app):
                 required = rules.as_date(f.get(rules.ARRIVAL_START))
                 if planned and required and planned + timedelta(days=10) > required:
                     st.warning("按预留10天运输估算，此排期可能无法满足原要求到达日期；原需求日期不会自动推迟。")
-                for lid in picked:
+                for lid in order_picked:
                     selections.append({"request_id": group["id"], "line_id": lid,
                                        "planned_date": planned.isoformat() if planned else "", "confirmed_arrived": confirmed})
-                fingerprints[group["id"]] = group["fingerprint"]
+                if order_picked:
+                    fingerprints[group["id"]] = group["fingerprint"]
     if not displayed:
         st.info("此筛选范围内没有申请单。")
     st.divider()

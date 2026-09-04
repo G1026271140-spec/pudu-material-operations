@@ -152,7 +152,7 @@ class SchedulingService:
             raise ValueError("申请单不存在，或不是普通物料申请。")
         if group["fingerprint"] != expected:
             raise ValueError("申请内容已变化，请刷新后重新选择，避免覆盖他人的修改。")
-        if group["generated"]:
+        if group["generated"] and not editing:
             raise ValueError("该申请单已有明细生成过下单表，不能重复生成或直接覆盖明细。")
         if group.get("reserved_keys", set()) - {generation_key}:
             raise ValueError("此申请有未完成的下单批次，请先恢复原任务，不能另建批次或覆盖明细。")
@@ -552,6 +552,25 @@ class SchedulingService:
                 statuses = {a.feishu_text(line, rules.FULFILLMENT_STATUS) for line in lines}
                 if statuses and statuses <= {"已到货", "已完成", "无需下单", "已取消"}:
                     self.write(a.REQUEST_TABLE_NAME, request_ids[0], {rules.FULFILLMENT_STATUS: "全部已到货"})
+        elif action == "fulfillment_bulk_update":
+            detail_index = self.index(snapshot[rules.DETAIL_TABLE])
+            line_index = self.index(snapshot[a.REQUEST_LINE_TABLE_NAME])
+            for detail_id in payload.get("detail_ids") or []:
+                row = detail_index.get(detail_id, {})
+                table = rules.DETAIL_TABLE
+                if not row:
+                    row = line_index.get(detail_id, {})
+                    table = a.REQUEST_LINE_TABLE_NAME
+                f = a.feishu_fields(row)
+                if not row:
+                    continue
+                status = str(payload.get("status") or "")
+                fields = {rules.FULFILLMENT_STATUS: status}
+                if payload.get("ship_date"):
+                    fields[rules.SHIP_DATE] = rules.date_ms(payload["ship_date"])
+                if payload.get("arrival_date"):
+                    fields[rules.ARRIVAL_DATE] = rules.date_ms(payload["arrival_date"])
+                self.write(table, detail_id, fields)
         else:
             raise ValueError("未知排期操作。")
         progress["write_done"] = True
