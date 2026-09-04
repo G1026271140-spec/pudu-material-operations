@@ -297,9 +297,10 @@ def render_order_scheduling_page(app):
                     "expected_fingerprint": group["fingerprint"]})
             next_review = date_label(f.get(app.INVENTORY_REVIEW_REMINDER_AT_FIELD))
             st.caption(f"库存核实：{review_status}　下次核实：{next_review}")
-            locked = group["generated"] or group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
+            locked = group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
             a, b, c, review_action = st.columns([1, 1, 1.2, 1.2])
-            if a.button("编辑申请明细", key="edit_"+group["id"], disabled=not operator or locked):
+            edit_locked = group["id"] in pending_request_ids() or group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成"}
+            if a.button("编辑申请明细", key="edit_"+group["id"], disabled=not operator or edit_locked):
                 try:
                     service.check_group(group, group["fingerprint"], editing=True)
                     edit_dialog(app, group, catalog, operator)
@@ -329,33 +330,34 @@ def render_order_scheduling_page(app):
             frame = pd.DataFrame([{"选中下单": False, "明细ID": l["id"], "物料品类": l["category"],
                 "产品型号": l["model"], "语种": l["language"], "申请数量": l["quantity"],
                 "备注": l["remark"], "明细状态": l["status"], "下单表": l["fields"].get(rules.GENERATED) or "未生成"}
+                | {"到货状态": app.feishu_text(l["fields"], rules.FULFILLMENT_STATUS) or "待安排"}
                 for l in group["lines"]])
-            edited = st.data_editor(frame, hide_index=True, width="stretch", num_rows="fixed",
+            def highlight_ordered(row):
+                if row.get("到货状态") in {"已到货", "已完成", "无需下单"}:
+                    color = "background-color: #d9f7df"
+                elif row.get("下单表") == "已生成":
+                    color = "background-color: #fff3b0"
+                else:
+                    color = ""
+                return [color] * len(row)
+            styled_frame = frame.style.apply(highlight_ordered, axis=1)
+            edited = st.data_editor(styled_frame, hide_index=True, width="stretch", num_rows="fixed",
                 disabled=True if locked else [col for col in frame.columns if col != "选中下单"],
                 column_config={"明细ID": None}, key=f"order_select_{group['id']}_{group['fingerprint'][:12]}_{token}")
             picked = edited.loc[edited["选中下单"] == True, "明细ID"].tolist() if not locked else []
-            with st.expander("明细履约操作（发货／到货／状态）", expanded=True):
-                    detail_options = {l["id"]: f"{l['category']} / {l['model']} / {l['language']}" for l in group["lines"]}
-                    selected_detail = st.selectbox("选择明细", list(detail_options), format_func=lambda x: detail_options[x],
-                                                   key="fulfillment_detail_"+group["id"])
-                    target = next((l for l in group["lines"] if l["id"] == selected_detail), None)
-                    if target:
-                        tf = target["fields"]
-                        status_options = rules.FULFILLMENT_OPTIONS
-                        current_status = app.feishu_text(tf, rules.FULFILLMENT_STATUS) or "待安排"
-                        status = st.selectbox("物料到货状态", status_options,
-                                              index=status_options.index(current_status) if current_status in status_options else 0,
-                                              key="fulfillment_status_"+target["id"])
-                        ship_date = st.date_input("物料发货时间", value=rules.as_date(tf.get(rules.SHIP_DATE)),
-                                                  key="fulfillment_ship_"+target["id"], format="YYYY-MM-DD")
-                        arrival_date = st.date_input("物料到货时间", value=rules.as_date(tf.get(rules.ARRIVAL_DATE) or tf.get("计划到仓日期")),
-                                                     key="fulfillment_arrival_"+target["id"], format="YYYY-MM-DD")
-                        if st.button("保存明细履约信息", key="fulfillment_save_"+target["id"], disabled=not operator):
-                            enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_update", "detail_id": target["id"],
-                                "operator_open_id": operator, "status": status,
-                                "ship_date": ship_date.isoformat() if ship_date else "",
-                                "arrival_date": arrival_date.isoformat() if arrival_date else "",
-                                "expected_fingerprint": rules.fingerprint(tf)})
+            picked = [lid for lid in picked if next((l for l in group["lines"] if l["id"] == lid), {}).get("fields", {}).get(rules.GENERATED) != "已生成"]
+            if operator and picked:
+                st.caption(f"已选中 {len(picked)} 条未生成明细；请使用下方外部按钮操作。")
+                action_cols = st.columns([1, 1, 1.4])
+                if action_cols[0].button("选中明细：无需下单（已到货）", key="mark_arrived_"+group["id"]):
+                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                        "operator_open_id": operator, "status": "无需下单", "arrival_date": rules.today().isoformat()})
+                if action_cols[1].button("选中明细：确认发货", key="mark_shipped_"+group["id"]):
+                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                        "operator_open_id": operator, "status": "已发货", "ship_date": rules.today().isoformat()})
+                if action_cols[2].button("选中明细：确认到货", key="mark_received_"+group["id"]):
+                    enqueue(app, QUEUE_TASK_TYPE_ORDER_PLAN, {"action": "fulfillment_bulk_update", "detail_ids": picked,
+                        "operator_open_id": operator, "status": "已到货", "arrival_date": rules.today().isoformat()})
             if picked:
                 planned = st.date_input("计划制作完成／到仓日期（自动补库日）", value=rules.as_date(f.get(rules.READY_DATE)),
                                          key="planned_"+group["id"], format="YYYY-MM-DD")
