@@ -507,7 +507,10 @@ class SchedulingService:
             return progress
         if action == "request_dates":
             group = self.grouped_requests(snapshot).get(payload.get("request_id"))
-            self.check_group(group, payload.get("expected_fingerprint"))
+            if not group:
+                raise ValueError("申请单不存在，或不是普通物料申请。")
+            if group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成", "审批拒绝"}:
+                raise ValueError("申请已结束，不能修改申请日期。")
             f = group["fields"]
             submitted = rules.as_date(f.get("提交时间"))
             if submitted is None:
@@ -537,8 +540,8 @@ class SchedulingService:
         elif action == "receipt_date":
             row = self.index(snapshot[rules.DETAIL_TABLE]).get(payload.get("detail_id"), {})
             f = a.feishu_fields(row)
-            if rules.fingerprint(f) != payload.get("expected_fingerprint"):
-                raise ValueError("明细已变化，请刷新后重新调整。")
+            if not row:
+                raise ValueError("下单批次明细不存在。")
             if a.feishu_text(f, "补库状态") not in {"待补库", "已取消"}:
                 raise ValueError("明细正在补库、已补库或结果不明确，不能直接改期。")
             planned = rules.validate_planned_receipt(payload.get("planned_date"), now=rules.today(),
@@ -552,8 +555,6 @@ class SchedulingService:
             f = a.feishu_fields(row)
             if not row:
                 raise ValueError("下单批次明细不存在。")
-            if rules.fingerprint(f) != payload.get("expected_fingerprint"):
-                raise ValueError("明细已变化，请刷新后重新调整。")
             status = str(payload.get("status") or "")
             allowed = {"待安排", "已下单", "制作中", "已发货", "已到货", "已完成", "无需下单", "已取消"}
             if status not in allowed:
