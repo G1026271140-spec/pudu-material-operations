@@ -543,8 +543,8 @@ class SchedulingService:
                 lines = [a.feishu_fields(r) for r in snapshot[rules.DETAIL_TABLE]
                          if request_ids[0] in a.feishu_link_ids(a.feishu_fields(r), "来源申请单")]
                 statuses = {a.feishu_text(line, rules.FULFILLMENT_STATUS) for line in lines}
-                request_status = "全部已到货" if statuses and statuses <= {"已到货", "已完成", "无需下单", "已取消"} else "部分履约"
-                self.write(a.REQUEST_TABLE_NAME, request_ids[0], {rules.FULFILLMENT_STATUS: request_status})
+                if statuses and statuses <= {"已到货", "已完成", "无需下单", "已取消"}:
+                    self.write(a.REQUEST_TABLE_NAME, request_ids[0], {rules.FULFILLMENT_STATUS: "全部已到货"})
         else:
             raise ValueError("未知排期操作。")
         progress["write_done"] = True
