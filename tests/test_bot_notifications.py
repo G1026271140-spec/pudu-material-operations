@@ -573,6 +573,18 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn('"action": "confirm_request_inventory"', serialized)
         self.assertIn('"tag": "button"', serialized)
         self.assertNotIn('"tag": "action"', serialized)
+        confirm_form = next(
+            element
+            for element in card["body"]["elements"]
+            if element.get("tag") == "form"
+            and element.get("name") == "request_inventory_confirm_form"
+        )
+        date_picker = next(
+            element
+            for element in confirm_form["elements"]
+            if element.get("tag") == "date_picker"
+        )
+        self.assertNotIn("label", date_picker)
         application_section = card["body"]["elements"][1]
         field_grid = application_section["columns"][0]["elements"][1]
         first_field = field_grid["columns"][0]["elements"][0]["columns"][0]

@@ -67,7 +67,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.4"
+APP_VERSION = "V2.6.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -4748,6 +4748,38 @@ def request_category_image_path(product: object) -> Path | None:
     return None
 
 
+@st.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
+def request_category_image_paths(cache_generated_at: str) -> dict[str, str]:
+    """Build the request-card image index once per published cache snapshot."""
+    del cache_generated_at
+    result: dict[str, str] = {}
+    root = Path(__file__).resolve().parent
+    for row in safe_feishu_rows(CATEGORY_TABLE_NAME):
+        fields = feishu_fields(row)
+        product_key = normalize_category_match_key(feishu_text(fields, "物料品类"))
+        if not product_key or product_key in result:
+            continue
+        attachments = fields.get(REQUEST_CATEGORY_IMAGE_FIELD)
+        if not isinstance(attachments, list):
+            continue
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+            cached_path = str(attachment.get("cached_path") or "").strip()
+            if not cached_path:
+                file_token = str(attachment.get("file_token") or "").strip()
+                if file_token:
+                    digest = hashlib.sha256(file_token.encode("utf-8")).hexdigest()[:20]
+                    cached_path = f"assets/request_categories/{digest}.webp"
+            if not cached_path:
+                continue
+            candidate = (root / cached_path).resolve()
+            if candidate != root and root in candidate.parents and candidate.is_file():
+                result[product_key] = str(candidate)
+                break
+    return result
+
+
 def default_no_language_product_keys() -> set[str]:
     return {normalize_option_label(product) for product in DEFAULT_NO_LANGUAGE_PRODUCTS}
 
@@ -6196,6 +6228,16 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
         runtime_updated_at = dict(runtime_cache.get("updated_at") or {})
     if not all(table_name in runtime_tables for table_name in REQUEST_FORM_CACHE_TABLES):
         return None
+    runtime_signature = (
+        str(runtime_updated_at.get(MATERIAL_TABLE_NAME) or ""),
+        str(runtime_updated_at.get(CATEGORY_TABLE_NAME) or ""),
+        str(runtime_updated_at.get(MODEL_TABLE_NAME) or ""),
+        str(runtime_updated_at.get(LANGUAGE_TABLE_NAME) or ""),
+    )
+    cached_signature = st.session_state.get("request_runtime_cache_signature")
+    cached_data = st.session_state.get("request_runtime_cache_data")
+    if cached_signature == runtime_signature and isinstance(cached_data, dict):
+        return cached_data
     data = request_form_cache_from_inventory(
         load_feishu_options(),
         load_feishu_request_inventory(),
@@ -6207,6 +6249,8 @@ def request_form_cache_from_runtime_page_data() -> dict[str, object] | None:
     ]
     if all(timestamps):
         data["generated_at"] = min(timestamps)
+    st.session_state["request_runtime_cache_signature"] = runtime_signature
+    st.session_state["request_runtime_cache_data"] = data
     return data
 
 
@@ -8101,11 +8145,14 @@ def material_request_notification_card(
                 "vertical_spacing": "8px",
                 "elements": [
                     {
+                        "tag": "markdown",
+                        "content": "**申请单发货日期 ***",
+                    },
+                    {
                         "tag": "date_picker",
                         "name": "ship_date",
                         "required": True,
                         "width": "fill",
-                        "label": {"tag": "plain_text", "content": "申请单发货日期 *"},
                         "placeholder": {"tag": "plain_text", "content": "请选择发货日期"},
                     },
                     {
@@ -14780,6 +14827,11 @@ def render_request_material_builder(
             st.error("当前没有可申请的物料品类，请先刷新数据或联系管理员。")
             return lines, False
 
+        request_cache_generated_at = str(
+            load_static_request_form_cache().get("generated_at") or ""
+        )
+        category_image_paths = request_category_image_paths(request_cache_generated_at)
+
         search_col, cart_col, preview_col = st.columns(
             [5.6, 0.72, 1.75],
             gap="small",
@@ -14820,10 +14872,12 @@ def render_request_material_builder(
                     key=f"request_product_card_{index}",
                 ):
                     st.markdown('<span class="pudu-product-card-marker"></span>', unsafe_allow_html=True)
-                    category_image_path = request_category_image_path(catalog_product)
+                    category_image_path = category_image_paths.get(
+                        normalize_category_match_key(catalog_product)
+                    )
                     if category_image_path:
                         st.image(
-                            str(category_image_path),
+                            category_image_path,
                             width="stretch",
                         )
                     else:
