@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-05 10:31:12",
+  "generated_at": "2026-09-05 16:31:50",
   "tables": {
     "物料品类": [
       {
@@ -126990,7 +126990,7 @@
           "用途|活动": "1111",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0013s_2590ffc1-0e17-437a-a5e6-597e7b22b8ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_77b11ae0-d120-44e1-beb7-0fce2e034fag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "xiaoxinyi@pudutech.com",
               "en_name": "肖欣仪",
               "id": "ou_412117b017b01b1c33d91fd62e7bc028",
@@ -127553,7 +127553,7 @@
           "用途|活动": "马来本地的销售要50本产品手册",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012a_42557eb9-7756-4a16-9813-91c06ebda8eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00158_97410c66-29e7-453e-aecf-499c6df4acdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "jacob.xie@pudutech.com",
               "en_name": "谢志成",
               "id": "ou_27cdf766572f2dc8d16207c11755d26b",
@@ -162619,7 +162619,7 @@
           "用户编号": "7",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0013s_2590ffc1-0e17-437a-a5e6-597e7b22b8ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_77b11ae0-d120-44e1-beb7-0fce2e034fag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "xiaoxinyi@pudutech.com",
               "en_name": "肖欣仪",
               "id": "ou_412117b017b01b1c33d91fd62e7bc028",
@@ -162661,7 +162661,7 @@
           "用户编号": "9",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012a_42557eb9-7756-4a16-9813-91c06ebda8eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00158_97410c66-29e7-453e-aecf-499c6df4acdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "jacob.xie@pudutech.com",
               "en_name": "谢志成",
               "id": "ou_27cdf766572f2dc8d16207c11755d26b",
