@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-05 16:31:50",
+  "generated_at": "2026-09-06 10:31:22",
   "tables": {
     "物料品类": [
       {
@@ -128239,7 +128239,7 @@
           "库存合适最后提醒时间": null,
           "库存审查人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -128341,7 +128341,7 @@
           "申请物料更改信息说明": null,
           "申请物料最后修改人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -128932,7 +128932,7 @@
           "库存合适最后提醒时间": null,
           "库存审查人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -129030,7 +129030,7 @@
           "申请物料更改信息说明": "以下方内容为准发放：\n1、CC1公仔小版本数量50，9月中上旬到货\n2、笔记本礼盒国内暂无库存\n3、新增冰箱贴150个（主CR线混发）\n4、配送线产品手册发简中版本",
           "申请物料最后修改人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -129299,7 +129299,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0014l_7c1dc988-aa3f-410a-b607-239b1c9574cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0014l_7c1dc988-aa3f-410a-b607-239b1c9574cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "gakin.liu@pudutech.com",
               "en_name": "刘雅欣",
               "id": "ou_fc4a27162e9c15b06bc4bf7c8ac75ce4",
@@ -129953,7 +129953,7 @@
           "库存合适最后提醒时间": null,
           "库存审查人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -130035,7 +130035,7 @@
           "申请物料更改信息说明": "库存数量不足，CR手册正在更新ET1产品，预计下周有货",
           "申请物料最后修改人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -130426,15 +130426,15 @@
           "审批状态": "待审批",
           "客户名称": "河北易米优客商贸有限公司",
           "市场负责人": null,
-          "库存合适最后提醒时间": null,
+          "库存合适最后提醒时间": 1788660311567,
           "库存审查人": null,
           "库存审查时间": null,
           "库存审查状态": "待核实库存",
           "库存审查结论": "全部库存不足",
           "库存快照时间": 1788344455471,
-          "库存核实提醒状态": "待提醒",
+          "库存核实提醒状态": "已提醒",
           "库存流水": null,
-          "库存确认消息ID": "[\"om_x100b664bc4afbcb0c281ef1e36a2e0d\", \"om_x100b664bc4a02ca4c3f3ef5dfcf6668\"]",
+          "库存确认消息ID": "[\"om_x100b66f8ebaa74a8c110b016cce2275\", \"om_x100b66f8ebb998a8c38a747b7c406a2\"]",
           "所属战区": null,
           "排期编辑版本": null,
           "提交幂等键": "3e7750daa10b482fba2ea1ba6445dcb2",
@@ -130503,7 +130503,7 @@
           "申请类型": "普通物料申请",
           "申请部门|区域": "HMT战队",
           "相关附件": null,
-          "管理员通知时间": 1788344487060,
+          "管理员通知时间": 1788660311566,
           "管理员通知状态": "已发送",
           "要求到达结束日期": null,
           "要求达到开始日期": null,
@@ -162533,7 +162533,7 @@
           "用户编号": "2",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
@@ -162830,7 +162830,7 @@
           "用户编号": "20",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0014l_7c1dc988-aa3f-410a-b607-239b1c9574cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0014l_7c1dc988-aa3f-410a-b607-239b1c9574cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "gakin.liu@pudutech.com",
               "en_name": "刘雅欣",
               "id": "ou_fc4a27162e9c15b06bc4bf7c8ac75ce4",
@@ -163019,7 +163019,7 @@
           "用户编号": "29",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0014l_7c1dc988-aa3f-410a-b607-239b1c9574cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0014l_7c1dc988-aa3f-410a-b607-239b1c9574cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "gakin.liu@pudutech.com",
               "en_name": "刘雅欣",
               "id": "ou_fc4a27162e9c15b06bc4bf7c8ac75ce4",
@@ -163203,7 +163203,7 @@
           "物料发货时间": 1789401600000,
           "生成人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011k_988d503e-c00f-497a-815f-62101b5e81fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "weiwei@pudutech.com",
               "en_name": "魏薇",
               "id": "ou_db9afe55f685d6227b25f267261ec3e8",
