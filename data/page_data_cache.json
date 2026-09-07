@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-07 14:10:38",
+  "generated_at": "2026-09-07 16:32:56",
   "tables": {
     "物料品类": [
       {
@@ -1093,9 +1093,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Product Flyer",
@@ -1177,9 +1177,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Product Brochure",
@@ -1263,9 +1263,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "IR(Industrial Product Line Brochure）",
@@ -1349,9 +1349,9 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "CR(Cleaning Product Line Brochure）",
@@ -1435,9 +1435,9 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "SR(Delivery Robot Product Brochure)",
@@ -1521,9 +1521,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "GR(Embodied AI Robot Product Brochure)",
@@ -2145,9 +2145,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Product Roll-Up",
@@ -2237,9 +2237,9 @@
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Plush Toy",
@@ -2335,9 +2335,9 @@
               "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": " Fridge Magnet(Default to Mixed Shipping)",
@@ -2401,9 +2401,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Notebook Gift Box",
@@ -2485,9 +2485,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "PUDU logo bag",
@@ -2740,9 +2740,9 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Custom Fan",
@@ -2920,9 +2920,9 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A874%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A875%7D%7D"
             }
           ],
           "英文页面名称": "Full Product Series Fridge Magnet Set",
@@ -36993,10 +36993,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -37012,10 +37016,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNODLi"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-05",
+              "text_arr": [
+                "REQ-20260907-002-05"
+              ],
               "type": "text"
             }
           ],
@@ -38229,10 +38237,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -38248,10 +38260,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNh11Q"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-09",
+              "text_arr": [
+                "REQ-20260907-002-09"
+              ],
               "type": "text"
             }
           ],
@@ -39463,10 +39479,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -39482,10 +39502,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNCDxB"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-08",
+              "text_arr": [
+                "REQ-20260907-002-08"
+              ],
               "type": "text"
             }
           ],
@@ -40711,10 +40735,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -40730,10 +40758,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNTUlP"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-06",
+              "text_arr": [
+                "REQ-20260907-002-06"
+              ],
               "type": "text"
             }
           ],
@@ -41951,10 +41983,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -41970,10 +42006,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNb6vl"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-11",
+              "text_arr": [
+                "REQ-20260907-002-11"
+              ],
               "type": "text"
             }
           ],
@@ -43195,10 +43235,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -43214,10 +43258,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNNX5o"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-10",
+              "text_arr": [
+                "REQ-20260907-002-10"
+              ],
               "type": "text"
             }
           ],
@@ -46116,10 +46164,14 @@
           "物料品类": "公司产品手册",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -46135,10 +46187,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNPsgH"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-12",
+              "text_arr": [
+                "REQ-20260907-002-12"
+              ],
               "type": "text"
             }
           ],
@@ -47404,10 +47460,14 @@
           "物料品类": "工业产品线手册IR(Industrial Product Line Brochure）",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -47423,10 +47483,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNIHl6"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-13",
+              "text_arr": [
+                "REQ-20260907-002-13"
+              ],
               "type": "text"
             }
           ],
@@ -48523,10 +48587,14 @@
           "物料品类": "清洁产品线手册CR(Cleaning Product Line Brochure）",
           "物料申请单": [
             {
-              "record_ids": [],
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -48543,12 +48611,14 @@
           "申请明细": [
             {
               "record_ids": [
-                "recvoRzYf8blz8"
+                "recvoRzYf8blz8",
+                "recvuw3IiNDZ8X"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260709-001-01",
+              "text": "REQ-20260709-001-01,REQ-20260907-002-14",
               "text_arr": [
-                "REQ-20260709-001-01"
+                "REQ-20260709-001-01",
+                "REQ-20260907-002-14"
               ],
               "type": "text"
             }
@@ -68862,10 +68932,11 @@
                 "recvsJv62g3fQ9",
                 "recvtbksKkH7J5",
                 "recvtbkQWIikl1",
-                "recvtiFPkTqOQN"
+                "recvtiFPkTqOQN",
+                "recvuw3E57a8a6"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260818-001,REQ-20260818-002,REQ-20260818-004,REQ-20260819-001,REQ-20260819-004,REQ-20260824-001,REQ-20260824-002,REQ-20260825-001",
+              "text": "REQ-20260818-001,REQ-20260818-002,REQ-20260818-004,REQ-20260819-001,REQ-20260819-004,REQ-20260824-001,REQ-20260824-002,REQ-20260825-001,REQ-20260907-002",
               "text_arr": [
                 "REQ-20260818-001",
                 "REQ-20260818-002",
@@ -68874,7 +68945,8 @@
                 "REQ-20260819-004",
                 "REQ-20260824-001",
                 "REQ-20260824-002",
-                "REQ-20260825-001"
+                "REQ-20260825-001",
+                "REQ-20260907-002"
               ],
               "type": "text"
             }
@@ -68903,10 +68975,11 @@
                 "recvsJDbr9q3FU",
                 "recvtbkuooN7z2",
                 "recvtbkS87ao5F",
-                "recvtiFRsFJGtI"
+                "recvtiFRsFJGtI",
+                "recvuw3IiNnWQq"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260729-001-03,REQ-20260730-001-03,REQ-20260810-002-03,REQ-20260811-003-01,REQ-20260818-001-01,REQ-20260818-002-01,REQ-20260818-004-02,REQ-20260819-001-03,REQ-20260819-004-03,REQ-20260824-001-01,REQ-20260824-002-02,REQ-20260825-001-07",
+              "text": "REQ-20260729-001-03,REQ-20260730-001-03,REQ-20260810-002-03,REQ-20260811-003-01,REQ-20260818-001-01,REQ-20260818-002-01,REQ-20260818-004-02,REQ-20260819-001-03,REQ-20260819-004-03,REQ-20260824-001-01,REQ-20260824-002-02,REQ-20260825-001-07,REQ-20260907-002-02",
               "text_arr": [
                 "REQ-20260729-001-03",
                 "REQ-20260730-001-03",
@@ -68919,7 +68992,8 @@
                 "REQ-20260819-004-03",
                 "REQ-20260824-001-01",
                 "REQ-20260824-002-02",
-                "REQ-20260825-001-07"
+                "REQ-20260825-001-07",
+                "REQ-20260907-002-02"
               ],
               "type": "text"
             }
@@ -69029,13 +69103,15 @@
             {
               "record_ids": [
                 "recvswVdLLqj1I",
-                "recvtiFPkTqOQN"
+                "recvtiFPkTqOQN",
+                "recvuw3E57a8a6"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260817-002,REQ-20260825-001",
+              "text": "REQ-20260817-002,REQ-20260825-001,REQ-20260907-002",
               "text_arr": [
                 "REQ-20260817-002",
-                "REQ-20260825-001"
+                "REQ-20260825-001",
+                "REQ-20260907-002"
               ],
               "type": "text"
             }
@@ -69056,15 +69132,17 @@
                 "recvqJ1d67xiu6",
                 "recvsgjrCsXtGc",
                 "recvswVfiv9tmz",
-                "recvtiFRsFEpUG"
+                "recvtiFRsFEpUG",
+                "recvuw3IiNUUlR"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260729-001-02,REQ-20260814-004-02,REQ-20260817-002-01,REQ-20260825-001-08",
+              "text": "REQ-20260729-001-02,REQ-20260814-004-02,REQ-20260817-002-01,REQ-20260825-001-08,REQ-20260907-002-03",
               "text_arr": [
                 "REQ-20260729-001-02",
                 "REQ-20260814-004-02",
                 "REQ-20260817-002-01",
-                "REQ-20260825-001-08"
+                "REQ-20260825-001-08",
+                "REQ-20260907-002-03"
               ],
               "type": "text"
             }
@@ -69318,10 +69396,11 @@
                 "recvtiFPkTqOQN",
                 "recvtmEZSEAx76",
                 "recvtngJU5s4Qq",
-                "recvtyXSi819Rv"
+                "recvtyXSi819Rv",
+                "recvuw3E57a8a6"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260818-004,REQ-20260824-001,REQ-20260824-002,REQ-20260825-001,REQ-20260826-001,REQ-20260826-002,REQ-20260828-005",
+              "text": "REQ-20260818-004,REQ-20260824-001,REQ-20260824-002,REQ-20260825-001,REQ-20260826-001,REQ-20260826-002,REQ-20260828-005,REQ-20260907-002",
               "text_arr": [
                 "REQ-20260818-004",
                 "REQ-20260824-001",
@@ -69329,7 +69408,8 @@
                 "REQ-20260825-001",
                 "REQ-20260826-001",
                 "REQ-20260826-002",
-                "REQ-20260828-005"
+                "REQ-20260828-005",
+                "REQ-20260907-002"
               ],
               "type": "text"
             }
@@ -69356,10 +69436,11 @@
                 "recvtiFRsFviGW",
                 "recvtmF1tdmh22",
                 "recvtngLbcV7td",
-                "recvtyXThqIj3V"
+                "recvtyXThqIj3V",
+                "recvuw3IiNjF1q"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260729-001-01,REQ-20260730-001-04,REQ-20260810-003-03,REQ-20260818-004-03,REQ-20260824-001-02,REQ-20260824-002-01,REQ-20260825-001-06,REQ-20260826-001-01,REQ-20260826-002-01,REQ-20260828-005-18",
+              "text": "REQ-20260729-001-01,REQ-20260730-001-04,REQ-20260810-003-03,REQ-20260818-004-03,REQ-20260824-001-02,REQ-20260824-002-01,REQ-20260825-001-06,REQ-20260826-001-01,REQ-20260826-002-01,REQ-20260828-005-18,REQ-20260907-002-01",
               "text_arr": [
                 "REQ-20260729-001-01",
                 "REQ-20260730-001-04",
@@ -69370,7 +69451,8 @@
                 "REQ-20260825-001-06",
                 "REQ-20260826-001-01",
                 "REQ-20260826-002-01",
-                "REQ-20260828-005-18"
+                "REQ-20260828-005-18",
+                "REQ-20260907-002-01"
               ],
               "type": "text"
             }
@@ -71541,14 +71623,16 @@
               "record_ids": [
                 "recvtbksKkH7J5",
                 "recvtiFPkTqOQN",
-                "recvuuR296z4HT"
+                "recvuuR296z4HT",
+                "recvuw3E57a8a6"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260824-001,REQ-20260825-001,REQ-20260907-001",
+              "text": "REQ-20260824-001,REQ-20260825-001,REQ-20260907-001,REQ-20260907-002",
               "text_arr": [
                 "REQ-20260824-001",
                 "REQ-20260825-001",
-                "REQ-20260907-001"
+                "REQ-20260907-001",
+                "REQ-20260907-002"
               ],
               "type": "text"
             }
@@ -71568,14 +71652,16 @@
               "record_ids": [
                 "recvtbkuooCI2t",
                 "recvtiFRsFILnW",
-                "recvuuR4siqVrK"
+                "recvuuR4siqVrK",
+                "recvuw3IiNfyuK"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260824-001-05,REQ-20260825-001-03,REQ-20260907-001-02",
+              "text": "REQ-20260824-001-05,REQ-20260825-001-03,REQ-20260907-001-02,REQ-20260907-002-04",
               "text_arr": [
                 "REQ-20260824-001-05",
                 "REQ-20260825-001-03",
-                "REQ-20260907-001-02"
+                "REQ-20260907-001-02",
+                "REQ-20260907-002-04"
               ],
               "type": "text"
             }
@@ -88017,10 +88103,14 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
               "type": "text"
             }
           ],
@@ -88036,10 +88126,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuw3IiNRKjQ"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260907-002-07",
+              "text_arr": [
+                "REQ-20260907-002-07"
+              ],
               "type": "text"
             }
           ],
@@ -112229,14 +112323,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuwn3mmybys"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03",
+              "text_arr": [
+                "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03"
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "-40",
           "战区管理": [
             {
               "record_ids": null,
@@ -113568,14 +113666,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuwmXYFoBlO"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01",
+              "text_arr": [
+                "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01"
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "-40",
           "战区管理": [
             {
               "record_ids": null,
@@ -114907,14 +115009,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuwn0EfmDBb"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02",
+              "text_arr": [
+                "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02"
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "-40",
           "战区管理": [
             {
               "record_ids": null,
@@ -126851,6 +126957,183 @@
         },
         "id": "recvu7z4kvo41r",
         "record_id": "recvu7z4kvo41r"
+      },
+      {
+        "fields": {
+          "产品型号": "GT5",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvufbvQo4JF3"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260904-002-01",
+              "text_arr": [
+                "REQ-20260904-002-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01",
+          "原流水ID": null,
+          "发生时间": 1788769601072,
+          "变更前数量": "0",
+          "变更后数量": "-40",
+          "备注": "A555755D-BC22-4F8A-8BC7-5D51C9D43113",
+          "幂等键": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01",
+          "库存变化": "-40",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "40",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvtu2YNY8uF5"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1362",
+              "text_arr": [
+                "MAT-1362"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvuwmXYFoBlO",
+        "record_id": "recvuwmXYFoBlO"
+      },
+      {
+        "fields": {
+          "产品型号": "GT7",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvufbvQoUCs0"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260904-002-02",
+              "text_arr": [
+                "REQ-20260904-002-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02",
+          "原流水ID": null,
+          "发生时间": 1788769611567,
+          "变更前数量": "0",
+          "变更后数量": "-40",
+          "备注": "A555755D-BC22-4F8A-8BC7-5D51C9D43113",
+          "幂等键": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02",
+          "库存变化": "-40",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "40",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvtu2YNY5yhr"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1373",
+              "text_arr": [
+                "MAT-1373"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvuwn0EfmDBb",
+        "record_id": "recvuwn0EfmDBb"
+      },
+      {
+        "fields": {
+          "产品型号": "GT3",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvufbvQommLS"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260904-002-03",
+              "text_arr": [
+                "REQ-20260904-002-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03",
+          "原流水ID": null,
+          "发生时间": 1788769621853,
+          "变更前数量": "0",
+          "变更后数量": "-40",
+          "备注": "A555755D-BC22-4F8A-8BC7-5D51C9D43113",
+          "幂等键": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03",
+          "库存变化": "-40",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "40",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "产品单页(Product Flyer )",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvtu2YNYy8EO"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1351",
+              "text_arr": [
+                "MAT-1351"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvuwn3mmybys",
+        "record_id": "recvuwn3mmybys"
       }
     ],
     "物料申请单": [
@@ -126858,6 +127141,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "AAA",
           "备注": "客户名称：AAA\n国家：AAA\n收件人信息：AAA\n运费承担者：普渡付款(PUDU)\n物料用途：AA\n申请人：高鸿源",
           "审批实例Code": "DC1A2AAC-7BE8-485A-A7F7-3CA7E58CC0ED",
@@ -126963,6 +127247,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "1111",
           "备注": "客户名称：1111\n国家：1111\n收件人信息：1111\n运费承担者：普渡付款(PUDU)\n物料用途：1111\n申请人：肖欣仪",
           "审批实例Code": "C321C6AC-A668-4D5C-BD12-A63041D9D845",
@@ -127068,6 +127353,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：中山市力欧机械设备有限公司\n国家：中国\n收件人信息：李灵  13822799158  广东省中山市民盈路7号C栋1层A3区\n运费承担者：普渡付款(PUDU)\n物料用途：展会-广州物博会开展使用\n申请人：王子桂",
           "审批实例Code": "9F96F7A9-8DE4-43DB-8154-4BB99ABD1B52",
@@ -127181,6 +127467,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "111",
           "备注": "客户名称：111\n国家：111\n收件人信息：111\n运费承担者：普渡付款(PUDU)\n物料用途：111\n申请人：高鸿源",
           "审批实例Code": "704A03BC-95EB-48CE-9D53-91DB93E3FEF3",
@@ -127286,6 +127573,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "回调测试",
           "备注": "客户名称：回调测试\n国家：回调测试\n收件人信息：回调测试\n运费承担者：普渡付款(PUDU)\n物料用途：回调测试\n申请人：高鸿源",
           "审批实例Code": "8C063033-E4CA-427A-92AF-E43767275E4E",
@@ -127399,6 +127687,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "回调测试8.18 2",
           "备注": "客户名称：回调测试8.18 2\n国家：回调测试8.18 2\n收件人信息：回调测试8.18 2\n运费承担者：普渡付款(PUDU)\n物料用途：回调测试8.18 2\n申请人：高鸿源",
           "审批实例Code": "61BB258F-304F-4768-AB3A-F439E9F774F5",
@@ -127520,6 +127809,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "马来西亚",
           "备注": "客户名称：马来本地的销售要50本产品手册\n国家：马来西亚\n收件人信息：人肉带\n运费承担者：普渡付款(PUDU)\n物料用途：马来本地的销售要50本产品手册\n申请人：谢志成",
           "审批实例Code": "A71BA121-BAEC-475B-954D-B05DB286201A",
@@ -127637,6 +127927,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "客户来访",
           "备注": "客户名称：客户来访\n国家：客户来访\n收件人信息：客户来访\n运费承担者：普渡付款(PUDU)\n物料用途：客户来访\n申请人：陈晓敏",
           "审批实例Code": "F99466A7-22E9-4A92-9329-B6DACB1F66BA",
@@ -127762,6 +128053,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "新配货台测试",
           "备注": "客户名称：新配货台测试\n国家：新配货台测试\n收件人信息：新配货台测试\n运费承担者：普渡付款(PUDU)\n物料用途：新配货台测试\n申请人：高鸿源",
           "审批实例Code": "E8D0FB06-244F-45FC-B2B2-492A433CE4D9",
@@ -127887,6 +128179,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "配货台测试",
           "备注": "客户名称：配货台测试\n国家：配货台测试\n收件人信息：配货台测试\n运费承担者：普渡付款(PUDU)\n物料用途：配货台测试\n申请人：高鸿源",
           "审批实例Code": "DC5F05D8-993B-4A41-93B0-72DB693ED512",
@@ -128004,6 +128297,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "配货台测试",
           "备注": "客户名称：配货台测试\n国家：配货台测试\n收件人信息：配货台测试\n运费承担者：普渡付款(PUDU)\n物料用途：配货台测试\n申请人：高鸿源",
           "审批实例Code": "8817C902-BFDD-4A06-8393-1343CD42BB27",
@@ -128129,6 +128423,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：PUDU\n国家：中国\n收件人信息：深圳市南山区西丽街道西丽街道打石一路深圳国际创新谷3栋E座11楼 \n高鸿源 \n15515719890\n运费承担者：普渡付款(PUDU)\n物料用途：SOP填写说明\n申请人：高鸿源",
           "审批实例Code": "C3E20860-566D-4841-939D-48724FFF4943",
@@ -128254,6 +128549,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：金印强\n国家：中国\n收件人信息：云南金云洁智能科技有限公司邮寄大礼包\n金印强\n联系电话\n17796419686\n授权书邮寄收件地址\n云南省昆明市西山区金地中心写字楼\n运费承担者：普渡付款(PUDU)\n物料用途：云南金云洁智能科技有限公司邮寄大礼包\n申请人：寇银玲",
           "审批实例Code": "2043EB18-5795-4452-ABF4-57428E9511D9",
@@ -128395,6 +128691,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "巴西",
           "备注": "客户名称：Aesa Empilhadeiras Ltda.\n国家：巴西\n收件人信息：收件人: Eduardo\n收件人邮箱：eduardo@aesaempilhadeiras.com.br\n收件人电话: +55 11 97310-5149\n地址：Giovanni Battista Pirelli, 2100 Pq. Marajoara - Cep 09111-340- Santo André - SP - Brazil. CNPJ.65.020.539/0001-58\n邮编：Cep 09111-340\n运费承担者：普渡付款(PUDU)\n物料用途：参加巴西展会\n申请人：孙一尧",
           "审批实例Code": "14C1A109-ECCA-45F0-B42B-AC3029938934",
@@ -128544,6 +128841,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "巴西",
           "备注": "客户名称：MEDLASER, COMERCIO, IMPORTACAO E EXPORTACAO EIRELI\n国家：巴西\n收件人信息：收件人：Javier Blaustein\n电话：+52 1 55 7895 3348\n邮箱：javier.blaustein@robotecsolutions.com\n地址：Rua Desembargador Eliseu Guilherme, 53, Paraíso - São Paulo, SP - CEP 04004-030\n5°andar - Empresa Robotec Brasil\n邮编：CEP 04004-030\n运费承担者：普渡付款(PUDU)\n物料用途：参加巴西展会2\n申请人：孙一尧",
           "审批实例Code": "4191949F-BFF6-45A6-9951-A6314AD18F9F",
@@ -128685,6 +128983,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
+          "发货单号及文字信息": null,
           "国家": "新品测试",
           "备注": "客户名称：新品测试\n国家：新品测试\n收件人信息：新品测试\n运费承担者：普渡付款(PUDU)\n物料用途：新品测试\n申请人：高鸿源",
           "审批实例Code": "ECF18547-9E2F-4309-A323-FED207951AE0",
@@ -128830,6 +129129,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
+          "发货单号及文字信息": null,
           "国家": "客户8.28来公司到访",
           "备注": "客户名称：客户8.28来公司到访\n国家：客户8.28来公司到访\n收件人信息：客户8.28来公司到访\n运费承担者：普渡付款(PUDU)\n物料用途：客户8.28来公司到访\n申请人：伍斌",
           "审批实例Code": "7966282C-E389-44BF-B516-FE4188A9D226",
@@ -128947,6 +129247,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：北京耐特达智能机器人有限公司\n国家：中国\n收件人信息：天津市河东区大王庄街道新生活广场十一经路店地下停车场，李元妹，18678388984\n运费承担者：普渡付款(PUDU)\n物料用途：9月22日普渡机器人新品发布会（天津）暨品牌推介大会\n申请人：王兴东",
           "审批实例Code": "4261FCDE-33B4-4670-AC36-3D25F5AEBEC5",
@@ -129084,6 +129385,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -129181,6 +129483,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -129278,6 +129581,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -129375,6 +129679,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
+          "发货单号及文字信息": null,
           "国家": "日本",
           "备注": "客户名称：上午三井 MOL+下午学研集团\n国家：日本\n收件人信息：地址：深圳市南山区西丽街道西丽社区打石一路深圳国际创新谷3 栋1101 室 自提\n收件人：魏思敏\n电话：15701348163\n运费承担者：普渡付款(PUDU)\n物料用途：用于接待上午三井 MOL 的 5 位来访和下午学研集团的 2 位来访\n申请人：魏思敏",
           "审批实例Code": "63F240DB-0E25-4207-907F-BEE65B802B01",
@@ -129504,6 +129809,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：南京强盛机器人有限公司\n国家：中国\n收件人信息：朱振飞  17798531028  江苏省南京市浦口区园胜路55号云帆汇A座415南京强盛机器人有限公司\n运费承担者：普渡付款(PUDU)\n物料用途：今年10月的上海工博会展会参加 申请物料支持\n申请人：朱俊霖",
           "审批实例Code": null,
@@ -129677,6 +129983,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -129774,6 +130081,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -129871,6 +130179,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -129968,6 +130277,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：上海百汰清洁设备有限公司\n国家：中国\n收件人信息：浙江省杭州市拱墅区沈半路438号2楼203 黄录燕：18758102945\n运费承担者：普渡付款(PUDU)\n物料用途：经销商销售沙龙活动\n申请人：何国芳",
           "审批实例Code": "A59F03FE-C2E2-4159-BD21-B02DEF3989A4",
@@ -130089,6 +130399,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
+          "发货单号及文字信息": null,
           "国家": "111",
           "备注": "客户名称：手机端新页面测试\n国家：111\n收件人信息：111\n运费承担者：普渡付款(PUDU)\n物料用途：手机端新页面测试\n申请人：高鸿源",
           "审批实例Code": "4EBC2173-7BD4-4764-A608-4F5AC986AB5A",
@@ -130210,6 +130521,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：前台\n国家：中国\n收件人信息：公司10楼前台\n运费承担者：普渡付款(PUDU)\n物料用途：前台接待展示\n申请人：苏艳娜",
           "审批实例Code": "D784808B-8D56-40E8-8FB3-225C32494BA9",
@@ -130327,6 +130639,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
+          "发货单号及文字信息": null,
           "国家": "111",
           "备注": "客户名称：手机端页面\n国家：111\n收件人信息：111\n运费承担者：普渡付款(PUDU)\n物料用途：111\n申请人：高鸿源",
           "审批实例Code": "F6BEC193-75B2-4BB7-9F63-8B128DEBF990",
@@ -130444,6 +130757,7 @@
         "fields": {
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": null,
           "备注": null,
           "审批实例Code": null,
@@ -130541,6 +130855,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": null,
           "国家": "中国",
           "备注": "客户名称：河北易米优客商贸有限公司\n国家：中国\n收件人信息：收货地址:\n李立强13691268878\n河北省保定市高碑店市广场步行街东门F区27号（海康威视对面）\n运费承担者：普渡付款(PUDU)\n物料用途：河北工业展会使用\n申请人：胡光然",
           "审批实例Code": "4FE9ACE8-494A-4705-98D3-B2E05C977DDB",
@@ -130657,13 +130972,14 @@
       {
         "fields": {
           "业务类型": "物料领取",
-          "临时物料清理状态": null,
+          "临时物料清理状态": "已清理",
+          "发货单号及文字信息": "SF0215497786051，一箱",
           "国家": "英国",
           "备注": "客户名称：vivid\n国家：英国\n收件人信息：广东深圳南山铭昌公寓8467\n金 18621083885\n运费承担者：普渡付款(PUDU)\n物料用途：参加groundfest 展会\n申请人：金晨日",
           "审批实例Code": "A555755D-BC22-4F8A-8BC7-5D51C9D43113",
           "审批意见": null,
-          "审批时间": null,
-          "审批状态": "待审批",
+          "审批时间": 1788769592043,
+          "审批状态": "已发放",
           "客户名称": "vivid",
           "市场负责人": null,
           "库存合适最后提醒时间": null,
@@ -130691,7 +131007,7 @@
           "文化周边处理状态": null,
           "文化周边通知状态": null,
           "时间判定": "加急申请",
-          "是否发货": null,
+          "是否发货": true,
           "期望发放日期": null,
           "标题": "参加groundfest 展会-金晨日-营销物料领取",
           "物料下单时间": 1787846400000,
@@ -130766,7 +131082,7 @@
           "申请类型": "普通物料申请",
           "申请部门|区域": "美澳英战区",
           "相关附件": null,
-          "管理员通知时间": 1788516632051,
+          "管理员通知时间": 1788769635427,
           "管理员通知状态": "已发送",
           "要求到达结束日期": 1789315200000,
           "要求达到开始日期": 1789315200000,
@@ -130783,6 +131099,7 @@
         "fields": {
           "业务类型": "物料领取",
           "临时物料清理状态": null,
+          "发货单号及文字信息": "客户拜访",
           "国家": "法国",
           "备注": "客户名称：siag\n国家：法国\n收件人信息：总部自提\n运费承担者：普渡付款(PUDU)\n物料用途：法国潜在代理商客户来总部参观拜访\n申请人：桂欣蕊",
           "审批实例Code": "8EE24AC2-65AE-420C-B068-4782BAD51427",
@@ -130816,7 +131133,7 @@
           "文化周边处理状态": null,
           "文化周边通知状态": null,
           "时间判定": "时间豁免",
-          "是否发货": null,
+          "是否发货": true,
           "期望发放日期": null,
           "标题": "法国潜在代理商客户来总部参观拜访-桂欣蕊-营销物料领取",
           "物料下单时间": 1787241600000,
@@ -130919,6 +131236,176 @@
         },
         "id": "recvuuR296z4HT",
         "record_id": "recvuuR296z4HT"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "国家": "法国",
+          "备注": "客户名称：DRONE UP ACADEMY\n国家：法国\n收件人信息：DRONE UP ACADEMY,  41A rue Jean Jaures, 31620 Bouloc, France\n运费承担者：普渡付款(PUDU)\n物料用途：代理商展会支持\n申请人：王林慧",
+          "审批实例Code": "6F3E15C0-939F-46F6-BA3B-A9B3D4F2EC05",
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "DRONE UP ACADEMY",
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "weiwei@pudutech.com",
+              "en_name": "魏薇",
+              "id": "ou_db9afe55f685d6227b25f267261ec3e8",
+              "name": "魏薇"
+            }
+          ],
+          "库存审查时间": 1788766004723,
+          "库存审查状态": "已核实库存",
+          "库存审查结论": "部分库存不足",
+          "库存快照时间": 1788766004723,
+          "库存核实提醒状态": "无需提醒",
+          "库存流水": null,
+          "库存确认消息ID": "[\"om_x100b66d2764748e8c28c2481247e591\", \"om_x100b66d27656bcb0c42fd819538e1ed\"]",
+          "所属战区": null,
+          "排期编辑版本": "0",
+          "提交幂等键": "3b6c95d8c646460eba0a790c5bc4758c",
+          "提交时间": 1788764860601,
+          "收件人信息": "DRONE UP ACADEMY,  41A rue Jean Jaures, 31620 Bouloc, France",
+          "文化周边处理状态": null,
+          "文化周边通知状态": null,
+          "时间判定": "普通申请",
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "代理商展会支持-王林慧-营销物料领取",
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "部分已到货",
+          "物料发货时间": 1789488000000,
+          "物料明细": [
+            {
+              "record_ids": [
+                "rec27IsS6kfPn6",
+                "rec27IsS6kfQAy",
+                "rec27IsS6kfTiW",
+                "rec27IsS6kgwK2",
+                "rec27IsS6kfMqY",
+                "rec27IsS6kfYRD",
+                "rec27IsS6kg055",
+                "rec27IsS6kgyo0",
+                "rec27IsS6kfS41",
+                "rec27IsS6kfL5r",
+                "rec27IsS6khfvg",
+                "rec27IsS6kfXwz",
+                "rec27IsS6kgGYs",
+                "recvrRmemAkvDT"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0304,MAT-0314,MAT-0334,MAT-0581,MAT-0284,MAT-0374,MAT-0384,MAT-0591,MAT-0324,MAT-0274,MAT-0851,MAT-0364,MAT-0641,MAT-1120",
+              "text_arr": [
+                "MAT-0304",
+                "MAT-0314",
+                "MAT-0334",
+                "MAT-0581",
+                "MAT-0284",
+                "MAT-0374",
+                "MAT-0384",
+                "MAT-0591",
+                "MAT-0324",
+                "MAT-0274",
+                "MAT-0851",
+                "MAT-0364",
+                "MAT-0641",
+                "MAT-1120"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 公仔(Plush Toy) / 出尘CC1 / 无需语种 × 20\n02. 公仔(Plush Toy) / 贝拉 Bella / 无需语种 × 20\n03. 公仔(Plush Toy) / 葫芦pro KettyBotPro / 无需语种 × 20\n04. 冰箱贴( Fridge Magnet) / T300 / 无需语种 × 100\n05. 产品单页(Product Flyer ) / T300 / 法语(French) × 200\n06. 产品单页(Product Flyer ) / T600 / 法语(French) × 200\n07. 产品单页(Product Flyer ) / 猛犸MP2000 / 法语(French) × 200\n08. 产品单页(Product Flyer ) / 出尘Pro CC1 PRO / 法语(French) × 200\n09. 产品单页(Product Flyer ) / MT1 / 法语(French) × 200\n10. 产品单页(Product Flyer ) / MT1 Max / 法语(French) × 200\n11. 产品单页(Product Flyer ) / MT1 Vac / 法语(French) × 200\n12. 公司产品手册 / 无需型号 / 法语(French) × 50\n13. 工业产品线手册IR(Industrial Product Line Brochure） / 无需型号 / 法语(French) × 100\n14. 清洁产品线手册CR(Cleaning Product Line Brochure） / 无需型号 / 法语(French) × 100",
+          "物料用途": "代理商展会支持",
+          "用途|活动": "代理商展会支持",
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "lynn.wang@pudutech.com",
+              "en_name": "王林慧",
+              "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
+              "name": "王林慧"
+            }
+          ],
+          "申请人.部门": [
+            "法国战队"
+          ],
+          "申请单号": "REQ-20260907-002",
+          "申请原因": "代理活动",
+          "申请变更次数": "0",
+          "申请时角色快照": "销售",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNjF1q",
+                "recvuw3IiNnWQq",
+                "recvuw3IiNUUlR",
+                "recvuw3IiNfyuK",
+                "recvuw3IiNODLi",
+                "recvuw3IiNTUlP",
+                "recvuw3IiNRKjQ",
+                "recvuw3IiNCDxB",
+                "recvuw3IiNh11Q",
+                "recvuw3IiNNX5o",
+                "recvuw3IiNb6vl",
+                "recvuw3IiNPsgH",
+                "recvuw3IiNIHl6",
+                "recvuw3IiNDZ8X"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-01,REQ-20260907-002-02,REQ-20260907-002-03,REQ-20260907-002-04,REQ-20260907-002-05,REQ-20260907-002-06,REQ-20260907-002-07,REQ-20260907-002-08,REQ-20260907-002-09,REQ-20260907-002-10,REQ-20260907-002-11,REQ-20260907-002-12,REQ-20260907-002-13,REQ-20260907-002-14",
+              "text_arr": [
+                "REQ-20260907-002-01",
+                "REQ-20260907-002-02",
+                "REQ-20260907-002-03",
+                "REQ-20260907-002-04",
+                "REQ-20260907-002-05",
+                "REQ-20260907-002-06",
+                "REQ-20260907-002-07",
+                "REQ-20260907-002-08",
+                "REQ-20260907-002-09",
+                "REQ-20260907-002-10",
+                "REQ-20260907-002-11",
+                "REQ-20260907-002-12",
+                "REQ-20260907-002-13",
+                "REQ-20260907-002-14"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "weiwei@pudutech.com",
+              "en_name": "魏薇",
+              "id": "ou_db9afe55f685d6227b25f267261ec3e8",
+              "name": "魏薇"
+            }
+          ],
+          "申请物料最后修改时间": 1788766004723,
+          "申请类型": "普通物料申请",
+          "申请部门|区域": "法国战队",
+          "相关附件": null,
+          "管理员通知时间": 1788766043493,
+          "管理员通知状态": "已发送",
+          "要求到达结束日期": 1790006400000,
+          "要求达到开始日期": 1790006400000,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "4775.57",
+          "运费承担者": "普渡付款(PUDU)",
+          "需要下单日期": null,
+          "预计完成制作日期": 1789142400000
+        },
+        "id": "recvuw3E57a8a6",
+        "record_id": "recvuw3E57a8a6"
       }
     ],
     "申请明细": [
@@ -156202,10 +156689,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01",
           "原申请数量": "40",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1788769601072",
           "品类": [
             {
               "record_ids": [
@@ -156230,10 +156717,14 @@
           "库存审查时库存": "0",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuwmXYFoBlO"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01",
+              "text_arr": [
+                "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-01"
+              ],
               "type": "text"
             }
           ],
@@ -156264,7 +156755,7 @@
           ],
           "明细业务类型": null,
           "明细变更说明": "无改动，9号发货。",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260904-002-01",
           "是否到货": null,
           "物料下单时间": 1787846400000,
@@ -156335,10 +156826,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02",
           "原申请数量": "40",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1788769611567",
           "品类": [
             {
               "record_ids": [
@@ -156363,10 +156854,14 @@
           "库存审查时库存": "0",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuwn0EfmDBb"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02",
+              "text_arr": [
+                "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-02"
+              ],
               "type": "text"
             }
           ],
@@ -156397,7 +156892,7 @@
           ],
           "明细业务类型": null,
           "明细变更说明": "无改动，9号发货。",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260904-002-02",
           "是否到货": null,
           "物料下单时间": 1787846400000,
@@ -156468,10 +156963,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03",
           "原申请数量": "40",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1788769621853",
           "品类": [
             {
               "record_ids": [
@@ -156496,10 +156991,14 @@
           "库存审查时库存": "0",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuwn3mmybys"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03",
+              "text_arr": [
+                "issue:A555755D-BC22-4F8A-8BC7-5D51C9D43113:REQ-20260904-002-03"
+              ],
               "type": "text"
             }
           ],
@@ -156530,7 +157029,7 @@
           ],
           "明细业务类型": null,
           "明细变更说明": "无改动，9号发货。",
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260904-002-03",
           "是否到货": null,
           "物料下单时间": 1787846400000,
@@ -157501,6 +158000,1868 @@
         },
         "id": "recvuv4v1yyhx4",
         "record_id": "recvuv4v1yyhx4"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyRArYm"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X014",
+              "text_arr": [
+                "X014"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "PUDU CC1",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "20",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7mw"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "010",
+              "text_arr": [
+                "010"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公仔(Plush Toy)",
+          "备注": null,
+          "实际发放产品型号": "PUDU CC1",
+          "实际发放数量": "20",
+          "实际发放物料品类": "公仔(Plush Toy)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "20",
+          "库存审查时库存": "142",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "142",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-01",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1788710400000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgGYs"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0641",
+              "text_arr": [
+                "MAT-0641"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "20",
+          "申请时单价（人民币）": "24.9813",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "499.63",
+          "附件": null
+        },
+        "id": "recvuw3IiNjF1q",
+        "record_id": "recvuw3IiNjF1q"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMfBhyYrT"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X002",
+              "text_arr": [
+                "X002"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "BellaBot",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "20",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7mw"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "010",
+              "text_arr": [
+                "010"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公仔(Plush Toy)",
+          "备注": null,
+          "实际发放产品型号": "BellaBot",
+          "实际发放数量": "20",
+          "实际发放物料品类": "公仔(Plush Toy)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "20",
+          "库存审查时库存": "268",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "268",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-02",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1788710400000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgwK2"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0581",
+              "text_arr": [
+                "MAT-0581"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "20",
+          "申请时单价（人民币）": "24.9813",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "499.63",
+          "附件": null
+        },
+        "id": "recvuw3IiNnWQq",
+        "record_id": "recvuw3IiNnWQq"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyR11Wh"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X010",
+              "text_arr": [
+                "X010"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "KettyBot Pro",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "20",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7mw"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "010",
+              "text_arr": [
+                "010"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公仔(Plush Toy)",
+          "备注": null,
+          "实际发放产品型号": "KettyBot Pro",
+          "实际发放数量": "20",
+          "实际发放物料品类": "公仔(Plush Toy)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "20",
+          "库存审查时库存": "0",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-03",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgyo0"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0591",
+              "text_arr": [
+                "MAT-0591"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "20",
+          "申请时单价（人民币）": "24.9813",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "499.63",
+          "附件": null
+        },
+        "id": "recvuw3IiNUUlR",
+        "record_id": "recvuw3IiNUUlR"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywiaRV"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X017",
+              "text_arr": [
+                "X017"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "T300",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "100",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7u7"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "011",
+              "text_arr": [
+                "011"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "冰箱贴( Fridge Magnet)",
+          "备注": null,
+          "实际发放产品型号": "T300",
+          "实际发放数量": "100",
+          "实际发放物料品类": "冰箱贴( Fridge Magnet)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "100",
+          "库存审查时库存": "15",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "15",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-04",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khfvg"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0851",
+              "text_arr": [
+                "MAT-0851"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "100",
+          "申请时单价（人民币）": "13.54",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "1354",
+          "附件": null
+        },
+        "id": "recvuw3IiNfyuK",
+        "record_id": "recvuw3IiNfyuK"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywiaRV"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X017",
+              "text_arr": [
+                "X017"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "T300",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "T300",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "1000",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "1000",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-05",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1788710400000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfL5r"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0274",
+              "text_arr": [
+                "MAT-0274"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNODLi",
+        "record_id": "recvuw3IiNODLi"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywtWoX"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X018",
+              "text_arr": [
+                "X018"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "T600",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "T600",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "500",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "500",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-06",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1788710400000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfQAy"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0314",
+              "text_arr": [
+                "MAT-0314"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNTUlP",
+        "record_id": "recvuw3IiNTUlP"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvsaaWWP0tvm"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X027",
+              "text_arr": [
+                "X027"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "猛犸MP2000",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "猛犸MP2000",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "0",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-07",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvrRmemAkvDT"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1120",
+              "text_arr": [
+                "MAT-1120"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNRKjQ",
+        "record_id": "recvuw3IiNRKjQ"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMfBhHcBz"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X004",
+              "text_arr": [
+                "X004"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "CC1 PRO",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "CC1 PRO",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "130",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "130",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-08",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfPn6"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0304",
+              "text_arr": [
+                "MAT-0304"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNCDxB",
+        "record_id": "recvuw3IiNCDxB"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyRcMbg"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X011",
+              "text_arr": [
+                "X011"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "MT1",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "MT1",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "30",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "30",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-09",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfMqY"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0284",
+              "text_arr": [
+                "MAT-0284"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNh11Q",
+        "record_id": "recvuw3IiNh11Q"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyRkxcQ"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X012",
+              "text_arr": [
+                "X012"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "MT1 Max",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "MT1 Max",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "200",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "200",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-10",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1788710400000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfTiW"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0334",
+              "text_arr": [
+                "MAT-0334"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNNX5o",
+        "record_id": "recvuw3IiNNX5o"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyRG127"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X013",
+              "text_arr": [
+                "X013"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "MT1 Vac",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "200",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6Dr"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "002",
+              "text_arr": [
+                "002"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "产品单页(Product Flyer )",
+          "备注": "每样100个，MP2000需要200个",
+          "实际发放产品型号": "MT1 Vac",
+          "实际发放数量": "200",
+          "实际发放物料品类": "产品单页(Product Flyer )",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "200",
+          "库存审查时库存": "150",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "150",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-11",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfS41"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0324",
+              "text_arr": [
+                "MAT-0324"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "200",
+          "申请时单价（人民币）": "0.4062",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "81.24",
+          "附件": null
+        },
+        "id": "recvuw3IiNb6vl",
+        "record_id": "recvuw3IiNb6vl"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "50",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6LG"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "003",
+              "text_arr": [
+                "003"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公司产品手册",
+          "备注": null,
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "50",
+          "实际发放物料品类": "公司产品手册",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "50",
+          "库存审查时库存": "0",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-12",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfXwz"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0364",
+              "text_arr": [
+                "MAT-0364"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "50",
+          "申请时单价（人民币）": "5.416",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "270.8",
+          "附件": null
+        },
+        "id": "recvuw3IiNPsgH",
+        "record_id": "recvuw3IiNPsgH"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "100",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6SX"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "004",
+              "text_arr": [
+                "004"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "工业产品线手册IR(Industrial Product Line Brochure）",
+          "备注": null,
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "100",
+          "实际发放物料品类": "工业产品线手册IR(Industrial Product Line Brochure）",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "100",
+          "库存审查时库存": "0",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-13",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYRD"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0374",
+              "text_arr": [
+                "MAT-0374"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "100",
+          "申请时单价（人民币）": "5.416",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "541.6",
+          "附件": null
+        },
+        "id": "recvuw3IiNIHl6",
+        "record_id": "recvuw3IiNIHl6"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "100",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6ZU"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "005",
+              "text_arr": [
+                "005"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+          "备注": null,
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "100",
+          "实际发放物料品类": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+          "实际发放物料编码": null,
+          "实际发放语种": "法语(French)",
+          "审批通过数量": "100",
+          "库存审查时库存": "0",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260907-002-14",
+          "是否到货": null,
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kg055"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0384",
+              "text_arr": [
+                "MAT-0384"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "100",
+          "申请时单价（人民币）": "5.416",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZbqvKoXZ"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y04",
+              "text_arr": [
+                "Y04"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "法语(French)",
+          "费用小计（人民币）": "541.6",
+          "附件": null
+        },
+        "id": "recvuw3IiNDZ8X",
+        "record_id": "recvuw3IiNDZ8X"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -163977,6 +166338,27 @@
         },
         "id": "recvuuR8EreA0X",
         "record_id": "recvuuR8EreA0X"
+      },
+      {
+        "fields": {
+          "文化衫申领数量累计": null,
+          "是否启用": "是",
+          "用户编号": "35",
+          "用户账号": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "lynn.wang@pudutech.com",
+              "en_name": "王林慧",
+              "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
+              "name": "王林慧"
+            }
+          ],
+          "角色": [
+            "销售"
+          ]
+        },
+        "id": "recvuw3NTOkPWS",
+        "record_id": "recvuw3NTOkPWS"
       }
     ],
     "物料下单批次": [
@@ -164095,6 +166477,32 @@
         },
         "id": "recvu8oERonAkf",
         "record_id": "recvu8oERonAkf"
+      },
+      {
+        "fields": {
+          "下单批次号": "PO-20260907-ALLOCATION",
+          "下单表文件": null,
+          "启用自动补库": true,
+          "批次备注": "配货工作台自动生成下单批次",
+          "批次状态": "已生成",
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料发货时间": 1789488000000,
+          "生成人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "weiwei@pudutech.com",
+              "en_name": "魏薇",
+              "id": "ou_db9afe55f685d6227b25f267261ec3e8",
+              "name": "魏薇"
+            }
+          ],
+          "生成幂等键": "allocation:recvuw3E57a8a6:0",
+          "生成时间": 1788765891330
+        },
+        "id": "recvuw7omJ32ck",
+        "record_id": "recvuw7omJ32ck"
       }
     ],
     "物料下单批次明细": [
@@ -166273,6 +168681,852 @@
         },
         "id": "recvu8pe5JljOM",
         "record_id": "recvu8pe5JljOM"
+      },
+      {
+        "fields": {
+          "下单数量": "20",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kgyo0"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0591",
+              "text_arr": [
+                "MAT-0591"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "公仔",
+          "型号或尺码快照": "KettyBot Pro",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNUUlR",
+          "明细备注快照": null,
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNUUlR"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-03",
+              "text_arr": [
+                "REQ-20260907-002-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNUUlR",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "无需语种"
+        },
+        "id": "recvuw7p0CCH56",
+        "record_id": "recvuw7p0CCH56"
+      },
+      {
+        "fields": {
+          "下单数量": "100",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6khfvg"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0851",
+              "text_arr": [
+                "MAT-0851"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "冰箱贴( 默认混发)",
+          "型号或尺码快照": "T300",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNfyuK",
+          "明细备注快照": null,
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNfyuK"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-04",
+              "text_arr": [
+                "REQ-20260907-002-04"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNfyuK",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "无需语种"
+        },
+        "id": "recvuw7pDBEKuj",
+        "record_id": "recvuw7pDBEKuj"
+      },
+      {
+        "fields": {
+          "下单数量": "200",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "recvrRmemAkvDT"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1120",
+              "text_arr": [
+                "MAT-1120"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "产品单页",
+          "型号或尺码快照": "猛犸MP2000",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNRKjQ",
+          "明细备注快照": "每样100个，MP2000需要200个",
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNRKjQ"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-07",
+              "text_arr": [
+                "REQ-20260907-002-07"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNRKjQ",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7qbwAe7X",
+        "record_id": "recvuw7qbwAe7X"
+      },
+      {
+        "fields": {
+          "下单数量": "200",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kfPn6"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0304",
+              "text_arr": [
+                "MAT-0304"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "产品单页",
+          "型号或尺码快照": "CC1 PRO",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNCDxB",
+          "明细备注快照": "每样100个，MP2000需要200个",
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNCDxB"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-08",
+              "text_arr": [
+                "REQ-20260907-002-08"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNCDxB",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7qJ1EjlI",
+        "record_id": "recvuw7qJ1EjlI"
+      },
+      {
+        "fields": {
+          "下单数量": "200",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kfMqY"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0284",
+              "text_arr": [
+                "MAT-0284"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "产品单页",
+          "型号或尺码快照": "MT1",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNh11Q",
+          "明细备注快照": "每样100个，MP2000需要200个",
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNh11Q"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-09",
+              "text_arr": [
+                "REQ-20260907-002-09"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNh11Q",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7rrNv6ex",
+        "record_id": "recvuw7rrNv6ex"
+      },
+      {
+        "fields": {
+          "下单数量": "200",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kfS41"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0324",
+              "text_arr": [
+                "MAT-0324"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "产品单页",
+          "型号或尺码快照": "MT1 Vac",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNb6vl",
+          "明细备注快照": "每样100个，MP2000需要200个",
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNb6vl"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-11",
+              "text_arr": [
+                "REQ-20260907-002-11"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNb6vl",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7rYTrDel",
+        "record_id": "recvuw7rYTrDel"
+      },
+      {
+        "fields": {
+          "下单数量": "50",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kfXwz"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0364",
+              "text_arr": [
+                "MAT-0364"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "公司产品手册",
+          "型号或尺码快照": "无需型号",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNPsgH",
+          "明细备注快照": null,
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNPsgH"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-12",
+              "text_arr": [
+                "REQ-20260907-002-12"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNPsgH",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7sEqDpOE",
+        "record_id": "recvuw7sEqDpOE"
+      },
+      {
+        "fields": {
+          "下单数量": "100",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYRD"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0374",
+              "text_arr": [
+                "MAT-0374"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "工业产品线手册IR",
+          "型号或尺码快照": "无需型号",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNIHl6",
+          "明细备注快照": null,
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNIHl6"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-13",
+              "text_arr": [
+                "REQ-20260907-002-13"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNIHl6",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7tcmutrs",
+        "record_id": "recvuw7tcmutrs"
+      },
+      {
+        "fields": {
+          "下单数量": "100",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kg055"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0384",
+              "text_arr": [
+                "MAT-0384"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "清洁产品线手册CR",
+          "型号或尺码快照": "无需型号",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuw7omJ32ck"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260907-ALLOCATION",
+              "text_arr": [
+                "PO-20260907-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNDZ8X",
+          "明细备注快照": null,
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuw3E57a8a6"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260907-002",
+              "text_arr": [
+                "REQ-20260907-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuw3IiNDZ8X"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260907-002-14",
+              "text_arr": [
+                "REQ-20260907-002-14"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1788451200000,
+          "物料使用时间": 1790006400000,
+          "物料到货时间": 1789142400000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789488000000,
+          "申请用途快照": "代理商展会支持",
+          "补库幂等建": "order:allocation:recvuw3E57a8a6:0:recvuw3IiNDZ8X",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789142400000,
+          "语种快照": "法语(French)"
+        },
+        "id": "recvuw7tIcYGZW",
+        "record_id": "recvuw7tIcYGZW"
       }
     ]
   },
@@ -166281,15 +169535,15 @@
     "产品型号": 41,
     "物料语种": 12,
     "物料主数据": 891,
-    "库存流水": 151,
-    "物料申请单": 34,
-    "申请明细": 200,
+    "库存流水": 154,
+    "物料申请单": 35,
+    "申请明细": 214,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "战区管理": 10,
-    "用户权限表": 29,
-    "物料下单批次": 6,
-    "物料下单批次明细": 24
+    "用户权限表": 30,
+    "物料下单批次": 7,
+    "物料下单批次明细": 33
   },
   "gift_image_cache": {
     "directory": "assets/gift_projects",
