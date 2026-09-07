@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-07 11:00:41",
+  "generated_at": "2026-09-07 14:11:23",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -6189,6 +6189,16 @@
       ]
     },
     {
+      "open_id": "ou_87dcf4cbe901725a834678a9ce5f9ae2",
+      "name": "宋亚庆",
+      "department_ids": [
+        "od-0f6648d2be38f9764cbcf8fab9eb8408"
+      ],
+      "department_paths": [
+        "IQC组"
+      ]
+    },
+    {
       "open_id": "ou_63e5091ee7d41f750086a3697eaadff1",
       "name": "宋亚萍",
       "department_ids": [
@@ -8326,16 +8336,6 @@
       ],
       "department_paths": [
         "质量部"
-      ]
-    },
-    {
-      "open_id": "ou_66692f6ef711a2a94a7449cae98293a5",
-      "name": "徐波",
-      "department_ids": [
-        "od-ee55428dc13b208d651cb609357eb26c"
-      ],
-      "department_paths": [
-        "CRPBU硬件组"
       ]
     },
     {
@@ -11423,16 +11423,6 @@
       ]
     },
     {
-      "open_id": "ou_79cfac15b01fad7de1fcc56db773becc",
-      "name": "杨风",
-      "department_ids": [
-        "od-b17d75858b35d6e9f37ecbac8012b60d"
-      ],
-      "department_paths": [
-        "机械平台部"
-      ]
-    },
-    {
       "open_id": "ou_34fe5ecb7ba5ac3756deee215f0e2b64",
       "name": "杨飞凤",
       "department_ids": [
@@ -12903,6 +12893,16 @@
       ]
     },
     {
+      "open_id": "ou_2c814fc2315a262ab119aea5747a8b76",
+      "name": "潘小刚",
+      "department_ids": [
+        "od-8e45a1055cf45a02f1c906e2c67e58af"
+      ],
+      "department_paths": [
+        "生产质量组"
+      ]
+    },
+    {
       "open_id": "ou_dc9306f829e841d57766b6eb097808d3",
       "name": "潘小梅",
       "department_ids": [
@@ -14344,16 +14344,6 @@
       ],
       "department_paths": [
         "建湖品控组"
-      ]
-    },
-    {
-      "open_id": "ou_80dac7af35aa8175797f490ef12af002",
-      "name": "田亮",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
       ]
     },
     {
@@ -21789,5 +21779,5 @@
       ]
     }
   ],
-  "user_count": 2015
+  "user_count": 2014
 }

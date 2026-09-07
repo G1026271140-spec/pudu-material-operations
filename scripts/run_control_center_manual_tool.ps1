@@ -12,11 +12,15 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$LogDirectory,
 
-    [switch]$MutexAlreadyHeld
+    [switch]$MutexAlreadyHeld,
+
+    [switch]$SkipLivePublication
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
+$env:PYTHONIOENCODING = "utf-8"
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 $RepoPath = [IO.Path]::GetFullPath($RepoPath)
 $LogDirectory = [IO.Path]::GetFullPath($LogDirectory)
 New-Item -ItemType Directory -Force -Path $LogDirectory | Out-Null
@@ -120,6 +124,16 @@ try {
             $SyncCode = "from control_center.system import TASK_BY_KEY, synchronize_task_group; [print(synchronize_task_group(TASK_BY_KEY[key])) for key in ('web','submission','card','cache')]"
             Invoke-Checked $script:Python @("-c", $SyncCode)
         }
+    }
+    if (-not $SkipLivePublication -and $Tool -in @("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches")) {
+        $Scope = switch ($Tool) {
+            "MaterialCache" { "Material" }
+            "ContactCache" { "Contacts" }
+            "WarehouseCache" { "Warehouse" }
+            "AllCaches" { "All" }
+        }
+        Write-ToolLog "Publishing validated cache to the running local application."
+        Invoke-Checked $script:Python @("scripts/publish_live_cache.py", "--scope", $Scope, "--freshly-generated")
     }
     Write-ToolLog "Manual tool completed successfully: $Tool"
     Copy-Item -LiteralPath $LogPath -Destination (Join-Path $LogDirectory "latest.log") -Force

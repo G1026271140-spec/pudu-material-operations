@@ -358,6 +358,9 @@ class ControlCenter(tk.Tk):
             ttk.Button(card, text="一键启动", command=lambda item=tool: self._start_manual_tool(item)).pack(side="right", padx=18)
 
     def _start_manual_tool(self, tool: ManualTool) -> None:
+        if tool.key == "RefreshCommitRestartApp":
+            self._start_release()
+            return
         if self.operation_running:
             messagebox.showwarning("已有程序运行", "请等待当前手动程序完成。", parent=self)
             return

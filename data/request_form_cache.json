@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-04 15:56:47",
+  "generated_at": "2026-09-07 14:10:43",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -1651,7 +1651,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "KettyBot Pro",
       "language": "英语(English)",
-      "quantity": 1650,
+      "quantity": 1800,
       "unit_price_rmb": 0.4062
     },
     {
@@ -1715,7 +1715,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "KettyBot Pro",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": 500,
       "unit_price_rmb": 0.4062
     },
     {
@@ -1731,7 +1731,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "PuduBot 2",
       "language": "英语(English)",
-      "quantity": 290,
+      "quantity": 70,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2027,7 +2027,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "PUDU CC1",
       "language": "英语(English)",
-      "quantity": 1500,
+      "quantity": 1550,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2091,7 +2091,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "PUDU CC1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 100,
+      "quantity": 15,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2107,7 +2107,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "Bellabot pro",
       "language": "英语(English)",
-      "quantity": 0,
+      "quantity": 1050,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2171,7 +2171,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "Bellabot pro",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1200,
+      "quantity": 700,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2187,7 +2187,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "SH1",
       "language": "英语(English)",
-      "quantity": 2300,
+      "quantity": 2100,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2251,7 +2251,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "SH1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1090,
+      "quantity": 670,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2267,7 +2267,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "英语(English)",
-      "quantity": 2000,
+      "quantity": 2200,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2331,7 +2331,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1250,
+      "quantity": 1890,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2347,7 +2347,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "英语(English)",
-      "quantity": 300,
+      "quantity": 200,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2379,7 +2379,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "西语(Spanish)",
-      "quantity": 0,
+      "quantity": 650,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2427,7 +2427,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "英语(English)",
-      "quantity": 2000,
+      "quantity": 1100,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2491,7 +2491,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1460,
+      "quantity": 1100,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2507,7 +2507,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "英语(English)",
-      "quantity": 2300,
+      "quantity": 2100,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2571,7 +2571,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "简中(Simplified Chinese)",
-      "quantity": 850,
+      "quantity": 650,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2587,7 +2587,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Vac",
       "language": "英语(English)",
-      "quantity": 1000,
+      "quantity": 900,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2731,7 +2731,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1210,
+      "quantity": 550,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2747,7 +2747,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "英语(English)",
-      "quantity": 650,
+      "quantity": 2080,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2763,7 +2763,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1810,
+      "quantity": 1150,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2771,7 +2771,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "英语(English)",
-      "quantity": 1500,
+      "quantity": 650,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2835,7 +2835,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1500,
+      "quantity": 1000,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2851,7 +2851,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 1450,
+      "quantity": 245,
       "unit_price_rmb": 5.416
     },
     {
@@ -2915,7 +2915,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 380,
+      "quantity": 415,
       "unit_price_rmb": 5.416
     },
     {
@@ -2931,7 +2931,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 78,
+      "quantity": 0,
       "unit_price_rmb": 5.416
     },
     {
@@ -3003,7 +3003,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 358,
+      "quantity": 0,
       "unit_price_rmb": 5.416
     },
     {
@@ -4379,7 +4379,7 @@
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 342,
+      "quantity": 142,
       "unit_price_rmb": 24.9813
     },
     {
@@ -4387,7 +4387,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BellaBot",
       "language": "无需语种",
-      "quantity": 89,
+      "quantity": 10,
       "unit_price_rmb": 13.54
     },
     {
@@ -4411,7 +4411,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 123,
+      "quantity": 40,
       "unit_price_rmb": 13.54
     },
     {
@@ -4419,7 +4419,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "Bellabot pro",
       "language": "无需语种",
-      "quantity": 130,
+      "quantity": 20,
       "unit_price_rmb": 13.54
     },
     {
@@ -4435,7 +4435,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "T300",
       "language": "无需语种",
-      "quantity": 100,
+      "quantity": 15,
       "unit_price_rmb": 13.54
     },
     {
@@ -4443,7 +4443,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "MT1",
       "language": "无需语种",
-      "quantity": 346,
+      "quantity": 80,
       "unit_price_rmb": 13.54
     },
     {
@@ -4451,7 +4451,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BG1",
       "language": "无需语种",
-      "quantity": 250,
+      "quantity": 50,
       "unit_price_rmb": 13.54
     },
     {
@@ -4459,7 +4459,7 @@
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
       "language": "无需语种",
-      "quantity": 177,
+      "quantity": 524,
       "unit_price_rmb": 33.85
     },
     {
@@ -4523,7 +4523,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "简中(Simplified Chinese)",
-      "quantity": 2290,
+      "quantity": 650,
       "unit_price_rmb": 0.4062
     },
     {
@@ -4539,7 +4539,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "英语(English)",
-      "quantity": 1050,
+      "quantity": 900,
       "unit_price_rmb": 0.4062
     },
     {
@@ -4603,7 +4603,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D7",
       "language": "简中(Simplified Chinese)",
-      "quantity": 3294,
+      "quantity": 1000,
       "unit_price_rmb": 0.4062
     },
     {
@@ -4619,7 +4619,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D7",
       "language": "英语(English)",
-      "quantity": 1000,
+      "quantity": 850,
       "unit_price_rmb": 0.4062
     },
     {
@@ -4731,7 +4731,7 @@
       "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 350,
+      "quantity": 250,
       "unit_price_rmb": 5.416
     },
     {
@@ -4739,7 +4739,7 @@
       "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 360,
+      "quantity": 250,
       "unit_price_rmb": 5.416
     },
     {
@@ -4755,7 +4755,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "SwiftBot Neo",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1350,
+      "quantity": 1500,
       "unit_price_rmb": 0.4062
     },
     {
@@ -4763,7 +4763,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "FlashBot Lite",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1450,
+      "quantity": 1950,
       "unit_price_rmb": 0.4062
     },
     {
@@ -4771,7 +4771,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
       "language": "无需语种",
-      "quantity": 100,
+      "quantity": 0,
       "unit_price_rmb": 13.54
     },
     {
@@ -4779,7 +4779,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D7",
       "language": "无需语种",
-      "quantity": 100,
+      "quantity": 20,
       "unit_price_rmb": 13.54
     },
     {
@@ -4787,7 +4787,7 @@
       "product": "具身线产品手册GR(Embodied AI Robot Product Brochure)",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 135,
+      "quantity": 50,
       "unit_price_rmb": 5.416
     },
     {
@@ -5235,7 +5235,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "英语(English)",
-      "quantity": 1500,
+      "quantity": 500,
       "unit_price_rmb": 0.4062
     },
     {
@@ -5275,7 +5275,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "猛犸MP2000",
       "language": "无需语种",
-      "quantity": 193,
+      "quantity": 100,
       "unit_price_rmb": 13.54
     },
     {
@@ -5931,7 +5931,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "FlashBot Pro",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1000,
+      "quantity": 1005,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6099,7 +6099,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T150",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": 200,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6299,7 +6299,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "FlashBot Arm",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": 200,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6459,7 +6459,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "FlashBot Ultra",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": 150,
       "unit_price_rmb": 0.0
     },
     {

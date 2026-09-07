@@ -146,7 +146,7 @@ try {
         "-Tool", "AllCaches", "-RepoPath", $RepoPath,
         "-SecretsPath", (Join-Path $RepoPath ".streamlit\secrets.toml"),
         "-LogDirectory", (Join-Path $RepoPath "work\control_center\manual-tools"),
-        "-MutexAlreadyHeld"
+        "-MutexAlreadyHeld", "-SkipLivePublication"
     ) | Out-Null
     $Python = Join-Path $RepoPath ".venv\Scripts\python.exe"
     if (-not (Test-Path -LiteralPath $Python)) { throw "Project Python runtime was not created: $Python" }

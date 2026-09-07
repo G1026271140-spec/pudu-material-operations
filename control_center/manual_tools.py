@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import subprocess
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -24,25 +23,25 @@ MANUAL_TOOLS = (
         "MaterialCache",
         "刷新页面与申请缓存",
         "从飞书重新生成页面主缓存、申请/补库表单缓存和礼品图片缓存，并执行完整缓存校验。",
-        "只更新本地缓存文件，不提交 GitHub、不重启应用。",
+        "校验后同步到正式应用；页面 5 秒内提示更新，无需重启，不提交 GitHub。",
     ),
     ManualTool(
         "ContactCache",
         "刷新联系人缓存",
         "重新读取飞书联系人与部门数据，生成联系人部门静态缓存。",
-        "只更新本地联系人缓存，不提交 GitHub。",
+        "校验后同步到正式应用，无需重启，不提交 GitHub。",
     ),
     ManualTool(
         "WarehouseCache",
         "刷新仓库与分类图片缓存",
         "重新生成仓库位置、货架图片和申请分类图片缓存，并验证图片完整性。",
-        "只更新本地仓库和图片缓存，不提交 GitHub。",
+        "校验后同步到正式应用，图片与数据一起生效，无需重启。",
     ),
     ManualTool(
         "AllCaches",
         "刷新全部页面缓存",
         "按页面缓存、联系人缓存、仓库/分类图片缓存的顺序全部执行。",
-        "可能需要数分钟；只保留本地修改，不提交或重启。",
+        "可能需要数分钟；全部校验成功后一起同步到正式应用，不提交或重启。",
     ),
     ManualTool(
         "ValidateCaches",
@@ -83,10 +82,12 @@ MANUAL_TOOL_BY_KEY = {tool.key: tool for tool in MANUAL_TOOLS}
 
 
 def run_manual_tool(tool: ManualTool, on_line: Callable[[str], None] | None = None) -> tuple[int, str]:
+    if tool.key == "RefreshCommitRestartApp":
+        raise RuntimeError("请通过控制中心的版本刷新流程启动正式发布。")
     if tool.requires_secrets and not SECRETS_PATH.exists():
         raise RuntimeError("请先在设置中配置 .streamlit/secrets.toml。")
     log_directory = ROOT / "work" / "control_center" / "manual-tools"
-    script_path = ROOT / "scripts" / ("run_control_center_release.ps1" if tool.key == "RefreshCommitRestartApp" else "run_control_center_manual_tool.ps1")
+    script_path = ROOT / "scripts" / "run_control_center_manual_tool.ps1"
     command = [
         "powershell.exe",
         "-NoProfile",
@@ -102,10 +103,7 @@ def run_manual_tool(tool: ManualTool, on_line: Callable[[str], None] | None = No
         "-LogDirectory",
         str(log_directory),
     ]
-    if tool.key != "RefreshCommitRestartApp":
-        command.extend(["-SecretsPath", str(SECRETS_PATH)])
-    if tool.key == "RefreshCommitRestartApp":
-        command.extend(["-ControlCenterPid", str(os.getpid())])
+    command.extend(["-SecretsPath", str(SECRETS_PATH)])
     process = subprocess.Popen(
         command,
         cwd=ROOT,

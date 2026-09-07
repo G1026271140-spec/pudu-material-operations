@@ -31,6 +31,8 @@ ZH_DISPLAY_TEXT = {
 
 
 EN_DISPLAY_TEXT = {
+    "本地缓存已更新。可继续填写；切换页面或点击下方按钮加载新数据。": "The local cache has been updated. You can keep editing; switch pages or use the button below to load the latest data.",
+    "加载最新缓存": "Load latest cached data",
     "物料使用时间": "Material usage time",
     "物料使用时间 *": "Material usage time *",
     "申请原因": "Request reason",

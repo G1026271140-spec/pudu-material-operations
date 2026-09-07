@@ -19,6 +19,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
+$env:PYTHONIOENCODING = "utf-8"
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 $CacheFiles = @(switch ($CacheScope) {
     "Contacts" { @("data/contact_departments_cache.json") }
     "Warehouse" { @("data/warehouse_location_cache.json") }
@@ -237,6 +239,13 @@ try {
         Pop-Location
     }
 
+    Push-Location -LiteralPath $RepoPath
+    try {
+        Invoke-CheckedCommand $venvPython @("scripts/publish_live_cache.py", "--scope", $CacheScope, "--freshly-generated") | Out-Null
+        $FinalMessage += " Published and verified in the running local web application without restart."
+    } finally {
+        Pop-Location
+    }
     Write-RunnerStatus $true $FinalMessage
 } catch {
     $ExitCode = 1

@@ -31,6 +31,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from shipping_page import render_shipping_template_page
 from project_config import get_setting
+from live_cache import read_manifest, resolve_cache_path
 from submission_queue import (
     SUBMISSION_QUEUE_MODULE_VERSION,
     QUEUE_STATUS_COMPLETED,
@@ -67,7 +68,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.6"
+APP_VERSION = "V2.6.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -4746,7 +4747,7 @@ def request_category_image_path(product: object) -> Path | None:
                     cached_path = f"assets/request_categories/{digest}.webp"
             if not cached_path:
                 continue
-            candidate = (Path(__file__).resolve().parent / cached_path).resolve()
+            candidate = application_cache_path(cached_path)
             root = Path(__file__).resolve().parent
             if root == candidate or root in candidate.parents:
                 return candidate if candidate.is_file() else None
@@ -4779,7 +4780,7 @@ def request_category_image_paths(cache_generated_at: str) -> dict[str, str]:
                     cached_path = f"assets/request_categories/{digest}.webp"
             if not cached_path:
                 continue
-            candidate = (root / cached_path).resolve()
+            candidate = application_cache_path(cached_path)
             if candidate != root and root in candidate.parents and candidate.is_file():
                 result[product_key] = str(candidate)
                 break
@@ -5212,10 +5213,39 @@ def load_static_json_file(
 
 
 def static_cache_file_signature(path: Path) -> tuple[str, int, int]:
+    root = Path(__file__).resolve().parent
+    if root in path.resolve().parents:
+        path = application_cache_path(path.resolve().relative_to(root).as_posix())
     if not path.exists():
         return str(path), 0, 0
     stat = path.stat()
     return str(path), stat.st_mtime_ns, stat.st_size
+
+
+def application_cache_path(relative: str) -> Path:
+    # A full page render keeps one publication, including its image files.
+    return resolve_cache_path(
+        Path(__file__).resolve().parent, relative,
+        st.session_state.get("_live_cache_manifest"),
+    )
+
+
+def prepare_live_cache_view() -> None:
+    manifest = read_manifest(Path(__file__).resolve().parent)
+    previous = st.session_state.get("_live_cache_manifest", {})
+    if previous.get("revision") != manifest.get("revision"):
+        request_category_image_paths.clear()
+    st.session_state["_live_cache_manifest"] = manifest
+
+
+@st.fragment(run_every=5)
+def render_live_cache_notice() -> None:
+    current = read_manifest(Path(__file__).resolve().parent)
+    applied = st.session_state.get("_live_cache_manifest", {})
+    if current.get("revision") and current.get("revision") != applied.get("revision"):
+        st.info(ui_text("本地缓存已更新。可继续填写；切换页面或点击下方按钮加载新数据。"))
+        if st.button(ui_text("加载最新缓存"), key="load_published_cache"):
+            st.rerun(scope="app")
 
 
 def load_static_request_form_cache() -> dict[str, object]:
@@ -19134,7 +19164,7 @@ def render_cached_warehouse_images(images: list[dict], caption: str) -> None:
         image
         for image in images
         if isinstance(image, dict)
-        and (Path(__file__).resolve().parent / str(image.get("path") or "")).exists()
+        and application_cache_path(str(image.get("path") or "")).is_file()
     ]
     if not valid_images:
         st.caption(
@@ -19145,7 +19175,7 @@ def render_cached_warehouse_images(images: list[dict], caption: str) -> None:
         return
     image_columns = st.columns(min(3, len(valid_images)))
     for index, image in enumerate(valid_images):
-        image_path = Path(__file__).resolve().parent / str(image.get("path") or "")
+        image_path = application_cache_path(str(image.get("path") or ""))
         image_columns[index % len(image_columns)].image(
             str(image_path),
             caption=f"{caption} · {index + 1}",
@@ -19269,7 +19299,7 @@ def render_gift_image(attachments: list[dict], product: object) -> None:
         cached_path = str(attachment.get("cached_path") or "").strip()
         if cached_path:
             app_root = Path(__file__).resolve().parent
-            image_path = (app_root / cached_path).resolve()
+            image_path = application_cache_path(cached_path)
             if app_root in image_path.parents and image_path.is_file():
                 st.image(str(image_path), width="stretch")
                 return
@@ -21236,6 +21266,8 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
+    prepare_live_cache_view()
+    render_live_cache_notice()
     inject_global_styles()
     install_button_click_guard()
     apply_management_section_from_query()
