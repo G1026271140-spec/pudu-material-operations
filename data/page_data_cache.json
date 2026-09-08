@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-08 10:32:35",
+  "generated_at": "2026-09-08 16:32:47",
   "tables": {
     "物料品类": [
       {
@@ -26068,7 +26068,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -26087,7 +26087,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -41741,7 +41741,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -41760,7 +41760,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -102790,7 +102790,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -102809,7 +102809,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -130862,7 +130862,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_c1aa9c63-4bff-4bea-b86d-08a26c077afg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015b_5a3ba67b-2a50-4079-aa87-ca6fd372302g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "emerson.zhong@pudutech.com",
               "en_name": "钟睿",
               "id": "ou_3418a7b7b7b9b5c5d9040894a913e4cc",
@@ -166318,7 +166318,7 @@
           "用户编号": "31",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_c1aa9c63-4bff-4bea-b86d-08a26c077afg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015b_5a3ba67b-2a50-4079-aa87-ca6fd372302g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "emerson.zhong@pudutech.com",
               "en_name": "钟睿",
               "id": "ou_3418a7b7b7b9b5c5d9040894a913e4cc",
