@@ -7,7 +7,7 @@
 把项目部署在一台固定电脑、公司内网服务器、VPS 或 Streamlit Community Cloud 上，让所有管理人访问同一个 Streamlit 地址：
 
 ```powershell
-cd "$env:USERPROFILE\Desktop\飞书多维表格版"
+cd "$env:USERPROFILE\Desktop\营销物料管理系统"
 .\run_app.ps1
 ```
 

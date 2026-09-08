@@ -24,7 +24,7 @@
 ## 运行
 
 ```powershell
-cd "$env:USERPROFILE\Desktop\飞书多维表格版"
+cd "$env:USERPROFILE\Desktop\营销物料管理系统"
 .\run_app.ps1
 ```
 
