@@ -13904,8 +13904,8 @@ def render_sidebar_link() -> None:
             brand_icon_col.image(str(APP_ICON_PATH), width=64)
             brand_text_col.markdown(
                 f"""
-                    <div class="pudu-brand-name">{escape(ui_text("营销物料管理系统"))}</div>
-                    <div class="pudu-brand-subtitle">PUDU Material Operations</div>
+                    <div class="pudu-brand-name">PUDU Material Operations</div>
+                    <div class="pudu-brand-subtitle">{escape(ui_text("营销物料管理系统"))}</div>
                 """,
                 unsafe_allow_html=True,
             )
@@ -21356,7 +21356,7 @@ def main() -> None:
     apply_ui_language_from_query()
     install_streamlit_ui_translation(st, get_ui_language)
     st.set_page_config(
-        page_title=ui_text("营销物料管理系统"),
+        page_title="PUDU Material Operations",
         page_icon=str(APP_ICON_PATH) if APP_ICON_PATH.exists() else ":material/inventory_2:",
         layout="wide",
         initial_sidebar_state="expanded",
