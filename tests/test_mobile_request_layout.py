@@ -34,7 +34,7 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('st.rerun(scope="app")', SOURCE)
         self.assertIn('st.rerun(scope="fragment")', SOURCE)
         self.assertIn('on_change="rerun"', SOURCE)
-        self.assertIn("if not cart_popover.open:", SOURCE)
+        self.assertIn('key="request_compact_cart_panel"', SOURCE)
         self.assertIn("if not specification_popover.open:", SOURCE)
 
     def test_phone_toolbar_supports_language_and_navigation(self) -> None:

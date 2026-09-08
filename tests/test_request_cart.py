@@ -20,6 +20,14 @@ class RequestCartTests(unittest.TestCase):
         self.assertTrue(state["request_preview_requested"])
         rerun.assert_not_called()
 
+    def test_compact_cart_toggle_stays_in_session_state(self) -> None:
+        state = {}
+        with patch.object(app.st, "session_state", state):
+            app.toggle_request_compact_cart()
+            self.assertTrue(state["request_compact_cart_open"])
+            app.toggle_request_compact_cart()
+            self.assertFalse(state["request_compact_cart_open"])
+
     def test_category_image_uses_cached_attachment_field(self) -> None:
         rows = [
             {

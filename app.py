@@ -14857,17 +14857,23 @@ def render_request_review() -> None:
         st.stop()
 
 
+def toggle_request_compact_cart() -> None:
+    st.session_state["request_compact_cart_open"] = not bool(
+        st.session_state.get("request_compact_cart_open", False)
+    )
+
+
 def render_compact_request_cart(container: object, lines: list[dict[str, object]]) -> list[dict[str, object]]:
     total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
-    cart_popover = container.popover(
+    container.button(
         f"🛒 {len(lines)}",
         key="request_compact_cart",
         width="stretch",
-        on_change="rerun",
+        on_click=toggle_request_compact_cart,
     )
-    if not cart_popover.open:
+    if not st.session_state.get("request_compact_cart_open", False):
         return lines
-    with cart_popover:
+    with st.container(border=True, key="request_compact_cart_panel"):
         st.markdown(
             '<span class="pudu-full-cart-popover-marker"></span>',
             unsafe_allow_html=True,
@@ -14923,7 +14929,7 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
             ]
             st.session_state["request_material_table_version"] = table_version + 1
             mark_request_form_dirty()
-            st.rerun()
+            st.rerun(scope="fragment")
     return lines
 
 
