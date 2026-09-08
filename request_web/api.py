@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import Cookie, Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -152,6 +152,7 @@ api.add_middleware(
 )
 api.mount("/category-assets", StaticFiles(directory=ROOT / "assets" / "request_categories"), name="category-assets")
 api.mount("/app-assets", StaticFiles(directory=ROOT / "assets"), name="app-assets")
+_ADMIN_SESSIONS: set[str] = set()
 
 
 @api.get("/api/health")
@@ -197,8 +198,207 @@ def admin_unlock(attempt: PasswordAttempt, response: Response) -> dict[str, bool
 
     if not secrets.compare_digest(attempt.password, legacy.get_approval_password()):
         raise HTTPException(status_code=401, detail="密码不正确")
-    response.set_cookie("pudu_admin", secrets.token_urlsafe(32), httponly=True, secure=False, samesite="strict", max_age=3600)
+    token = secrets.token_urlsafe(32)
+    _ADMIN_SESSIONS.add(token)
+    response.set_cookie("pudu_admin", token, httponly=True, secure=False, samesite="strict", max_age=3600)
     return {"unlocked": True}
+
+
+def require_admin(pudu_admin: str = Cookie(default="")) -> str:
+    if not pudu_admin or pudu_admin not in _ADMIN_SESSIONS:
+        raise HTTPException(status_code=401, detail="管理页面需要密码解锁。")
+    return pudu_admin
+
+
+@api.get("/api/admin/status")
+def admin_status(pudu_admin: str = Cookie(default="")) -> dict[str, bool]:
+    return {"unlocked": bool(pudu_admin and pudu_admin in _ADMIN_SESSIONS)}
+
+
+def _management_snapshot() -> dict[str, Any]:
+    import app as legacy
+
+    page = _json("page_data_cache.json")
+    tables = page.get("tables", {})
+    category_rows = list(tables.get(legacy.CATEGORY_TABLE_NAME, []))
+    material_rows = list(tables.get(legacy.MATERIAL_TABLE_NAME, []))
+    model_rows = list(tables.get(legacy.MODEL_TABLE_NAME, []))
+    language_rows = list(tables.get(legacy.LANGUAGE_TABLE_NAME, []))
+    region_rows = list(tables.get(legacy.REGION_TABLE_NAME, []))
+    cultural_rows = list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, []))
+    categories = legacy.feishu_category_records_from_rows(category_rows)
+    inventory = legacy.feishu_inventory_records_from_rows(
+        material_rows, category_rows, active_only=False
+    )
+    restock_inventory = [dict(item) for item in inventory]
+    inventory_category_keys = {
+        legacy.normalize_category_match_key(item.get("category")) for item in inventory
+    }
+    restock_inventory.extend(
+        {
+            "record_id": "",
+            "material_code": "",
+            "category": str(category.get("category") or ""),
+            "model": legacy.NO_MODEL_TEXT,
+            "language": legacy.NO_LANGUAGE_TEXT,
+            "quantity": 0,
+            "unit_price": float(category.get("unit_price") or 0),
+            "status": str(category.get("status") or legacy.STATUS_INACTIVE),
+            "request_visible": str(category.get("request_visible") or legacy.REQUEST_PAGE_HIDDEN_VALUE),
+            "synthetic": True,
+        }
+        for category in categories
+        if category.get("no_model")
+        and category.get("no_language")
+        and legacy.normalize_category_match_key(category.get("category"))
+        not in inventory_category_keys
+    )
+    cultural = legacy.load_cultural_dimension_inventory_records(cultural_rows)
+    return {
+        "generatedAt": page.get("generated_at"),
+        "categories": categories,
+        "inventory": inventory,
+        "restockInventory": restock_inventory,
+        "culturalInventory": cultural,
+        "dimensions": {
+            "model": legacy.dimension_management_records("model", model_rows),
+            "language": legacy.dimension_management_records("language", language_rows),
+            "region": legacy.dimension_management_records("region", region_rows),
+        },
+        "categoryDefinitions": list(legacy.CATEGORY_DEFINITION_OPTIONS),
+        "packingTypes": list(legacy.PACKING_LIST_PRODUCT_TYPE_OPTIONS),
+        "statuses": list(legacy.MATERIAL_STATUS_OPTIONS),
+        "visibilityOptions": list(legacy.REQUEST_PAGE_VISIBILITY_OPTIONS),
+        "modelTypes": list(legacy.MODEL_TYPE_OPTIONS),
+        "noModelText": legacy.NO_MODEL_TEXT,
+        "noLanguageText": legacy.NO_LANGUAGE_TEXT,
+        "maxRestockLines": legacy.MAX_RESTOCK_LINE_COUNT,
+    }
+
+
+@api.get("/api/admin/management-catalog")
+def management_catalog(_: str = Depends(require_admin)) -> dict[str, Any]:
+    return _management_snapshot()
+
+
+@api.post("/api/admin/restock/submit")
+def management_restock_submit(
+    draft: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+    from submission_queue import QUEUE_TASK_TYPE_RESTOCK
+
+    errors = legacy.validate_restock_draft(draft)
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+    token = str(draft.get("submission_token") or uuid4().hex)
+    normalized = {
+        **draft,
+        "submission_token": token,
+        "restock_no": str(draft.get("restock_no") or legacy.build_restock_no(token)),
+    }
+    try:
+        task_id = _enqueue_fast(
+            QUEUE_TASK_TYPE_RESTOCK,
+            str(normalized["restock_no"]),
+            {"draft": normalized},
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"采购补库任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id, "restockNo": normalized["restock_no"]}
+
+
+@api.post("/api/admin/dimension/preview")
+def management_dimension_preview(
+    draft: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+
+    snapshot = _management_snapshot()
+    kind = str(draft.get("kind") or "")
+    if kind not in {"model", "language", "region"}:
+        raise HTTPException(status_code=422, detail="不支持的基础维度类型。")
+    operation = str(draft.get("operation") or "")
+    records = list(snapshot["dimensions"][kind])
+    record_id = str(draft.get("record_id") or "")
+    current = next((item for item in records if item["record_id"] == record_id), None)
+    if operation != "create" and current is None:
+        raise HTTPException(status_code=422, detail="所选记录不存在，请刷新后重试。")
+    name = str(draft.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="请填写名称。")
+    duplicate = next(
+        (
+            item for item in records
+            if legacy.normalize_option_label(item["name"]).casefold()
+            == legacy.normalize_option_label(name).casefold()
+            and item["record_id"] != record_id
+        ),
+        None,
+    )
+    if operation != "delete" and duplicate:
+        raise HTTPException(status_code=422, detail="名称已经存在。")
+    changes = legacy.dimension_association_plan(
+        kind,
+        operation,
+        str((current or {}).get("name") or name),
+        name,
+        list(draft.get("selected_keys") or []),
+        list(snapshot["culturalInventory"] if kind == "region" else snapshot["inventory"]),
+        list(snapshot["categories"]),
+    )
+    return {"draft": {**draft, "changes": changes}, "changes": changes}
+
+
+@api.post("/api/admin/dimension/submit")
+def management_dimension_submit(
+    draft: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    from submission_queue import QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT
+
+    try:
+        task_id = _enqueue_fast(
+            QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
+            str(draft.get("submission_token") or uuid4().hex),
+            {"draft": draft},
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"基础维度任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id}
+
+
+@api.post("/api/admin/category/submit")
+def management_category_submit(
+    body: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+    from submission_queue import QUEUE_TASK_TYPE_CATEGORY_DELETE, QUEUE_TASK_TYPE_CATEGORY_SYNC
+
+    operation = str(body.get("operation") or "")
+    token = str(body.get("submission_token") or uuid4().hex)
+    try:
+        if operation == "delete":
+            draft = dict(body.get("draft") or {})
+            task_id = _enqueue_fast(
+                QUEUE_TASK_TYPE_CATEGORY_DELETE, token, {"draft": draft}
+            )
+        else:
+            raw_sync_args = dict(body.get("sync_args") or {})
+            if "target_values_rows" in raw_sync_args and "target_values" not in raw_sync_args:
+                raw_sync_args = legacy.deserialize_category_sync_args(raw_sync_args)
+            sync_args = legacy.serialize_category_sync_args(raw_sync_args)
+            task_id = _enqueue_fast(
+                QUEUE_TASK_TYPE_CATEGORY_SYNC,
+                token,
+                {
+                    "sync_args": sync_args,
+                    "draft": dict(body.get("draft") or {}),
+                    "notification_kind": "create" if operation == "create" else "edit",
+                },
+            )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"品类管理任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id}
 
 
 def _field_text(value: Any) -> str:
@@ -275,18 +475,24 @@ def _cached_schedule_errors(draft: RequestDraft) -> list[str]:
 
 
 @lru_cache(maxsize=1)
-def _queue_client_and_table() -> tuple[Any, str]:
+def _queue_client_and_table() -> tuple[Any, str, str]:
     import app as legacy
-    from submission_queue import QUEUE_TABLE_NAME
+    from submission_queue import QUEUE_PAYLOAD_TABLE_NAME, QUEUE_TABLE_NAME
 
     client = legacy.feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法创建后台申请任务。")
-    table = next((row for row in client.list_tables() if str(row.get("name") or "").strip() == QUEUE_TABLE_NAME), None)
+    tables = client.list_tables()
+    table = next((row for row in tables if str(row.get("name") or "").strip() == QUEUE_TABLE_NAME), None)
     table_id = str((table or {}).get("table_id") or "").strip()
     if not table_id:
         raise RuntimeError("未找到后台任务队列表。")
-    return client, table_id
+    payload_table = next(
+        (row for row in tables if str(row.get("name") or "").strip() == QUEUE_PAYLOAD_TABLE_NAME),
+        None,
+    )
+    payload_table_id = str((payload_table or {}).get("table_id") or "").strip()
+    return client, table_id, payload_table_id
 
 
 def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
@@ -295,21 +501,63 @@ def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any])
         QUEUE_FIELD_IDEMPOTENCY_KEY, QUEUE_FIELD_PAYLOAD, QUEUE_FIELD_RETRY_COUNT,
         QUEUE_FIELD_STATUS, QUEUE_FIELD_SUBMITTED_AT, QUEUE_FIELD_TASK_ID,
         QUEUE_FIELD_TASK_TYPE, QUEUE_PAYLOAD_INLINE_LIMIT, QUEUE_STATUS_PENDING,
+        QUEUE_PAYLOAD_CHUNK_SIZE, QUEUE_PAYLOAD_FIELD_CONTENT,
+        QUEUE_PAYLOAD_FIELD_INDEX, QUEUE_PAYLOAD_FIELD_TASK_ID,
         timestamp_ms,
     )
 
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-    if len(serialized) > QUEUE_PAYLOAD_INLINE_LIMIT:
-        raise RuntimeError("申请内容超过队列单条载荷限制，请减少明细后重试。")
-    client, table_id = _queue_client_and_table()
+    client, table_id, payload_table_id = _queue_client_and_table()
     task_id = uuid4().hex
-    rows = client.batch_create_records(table_id, [{
-        QUEUE_FIELD_TASK_ID: task_id, QUEUE_FIELD_TASK_TYPE: task_type,
-        QUEUE_FIELD_IDEMPOTENCY_KEY: idempotency_key, QUEUE_FIELD_STATUS: QUEUE_STATUS_PENDING,
-        QUEUE_FIELD_PAYLOAD: serialized, QUEUE_FIELD_SUBMITTED_AT: timestamp_ms(),
-        QUEUE_FIELD_RETRY_COUNT: 0, QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
-    }])
+    stored_payload = serialized
+    chunk_record_ids: list[str] = []
+    if len(serialized) > QUEUE_PAYLOAD_INLINE_LIMIT:
+        if not payload_table_id:
+            raise RuntimeError("未找到后台任务载荷表，无法保存大型任务。")
+        chunks = [
+            serialized[index:index + QUEUE_PAYLOAD_CHUNK_SIZE]
+            for index in range(0, len(serialized), QUEUE_PAYLOAD_CHUNK_SIZE)
+        ]
+        created_chunks = client.batch_create_records(
+            payload_table_id,
+            [
+                {
+                    QUEUE_PAYLOAD_FIELD_TASK_ID: task_id,
+                    QUEUE_PAYLOAD_FIELD_INDEX: index,
+                    QUEUE_PAYLOAD_FIELD_CONTENT: content,
+                }
+                for index, content in enumerate(chunks)
+            ],
+        )
+        if len(created_chunks) != len(chunks):
+            raise RuntimeError("后台任务载荷分片未完整写入。")
+        chunk_record_ids = [str(row.get("record_id") or "") for row in created_chunks]
+        stored_payload = json.dumps(
+            {
+                "storage": "chunks",
+                "task_id": task_id,
+                "chunks": len(chunks),
+                "sha256": hashlib.sha256(serialized.encode("utf-8")).hexdigest(),
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    try:
+        rows = client.batch_create_records(table_id, [{
+            QUEUE_FIELD_TASK_ID: task_id, QUEUE_FIELD_TASK_TYPE: task_type,
+            QUEUE_FIELD_IDEMPOTENCY_KEY: idempotency_key, QUEUE_FIELD_STATUS: QUEUE_STATUS_PENDING,
+            QUEUE_FIELD_PAYLOAD: stored_payload, QUEUE_FIELD_SUBMITTED_AT: timestamp_ms(),
+            QUEUE_FIELD_RETRY_COUNT: 0, QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
+        }])
+    except Exception:
+        for record_id in chunk_record_ids:
+            if record_id:
+                client.delete_record(payload_table_id, record_id)
+        raise
     if not rows:
+        for record_id in chunk_record_ids:
+            if record_id:
+                client.delete_record(payload_table_id, record_id)
         raise RuntimeError("申请未能写入后台任务队列。")
     return task_id
 

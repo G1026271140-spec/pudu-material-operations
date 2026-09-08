@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RequestPage from "./App";
 import CulturalPage from "./CulturalPage";
+import ManagementPage from "./ManagementPage";
 import "./portal.css";
 
 type Lang = "zh" | "en";
@@ -45,6 +46,12 @@ export default function Portal() {
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const t = text[lang];
+  useEffect(() => {
+    fetch("/api/admin/status")
+      .then((response) => response.json())
+      .then((body) => setUnlocked(Boolean(body.unlocked)))
+      .catch(() => undefined);
+  }, []);
   function changeLang(next: Lang) {
     localStorage.setItem("pudu-lang", next);
     setLang(next);
@@ -130,30 +137,25 @@ export default function Portal() {
           <RequestPage lang={lang} />
         ) : page === "cultural" ? (
           <CulturalPage lang={lang} />
+        ) : unlocked ? (
+          <ManagementPage lang={lang} />
         ) : (
           <main className="locked-page">
             <img src="/app-assets/app-icon.png" alt="" />
             <h1>{t.management}</h1>
-            {!unlocked ? (
-              <div className="unlock-card">
-                <div className="lock-mark">🔒</div>
-                <h2>{t.locked}</h2>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && unlock()}
-                  placeholder={t.password}
-                />
-                <button onClick={unlock}>{t.unlock}</button>
-                {error && <p>{error}</p>}
-              </div>
-            ) : (
-              <div className="unlock-card">
-                <h2>{t.locked}</h2>
-                <p>页面复刻完成前不会向公网用户开放。</p>
-              </div>
-            )}
+            <div className="unlock-card">
+              <div className="lock-mark">🔒</div>
+              <h2>{t.locked}</h2>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && unlock()}
+                placeholder={t.password}
+              />
+              <button onClick={unlock}>{t.unlock}</button>
+              {error && <p>{error}</p>}
+            </div>
           </main>
         )}
       </div>

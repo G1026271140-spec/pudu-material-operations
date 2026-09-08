@@ -1,4 +1,5 @@
 import importlib
+import json
 
 from fastapi.testclient import TestClient
 
@@ -42,7 +43,7 @@ def test_fast_enqueue_performs_one_queue_write_without_readback(monkeypatch):
             return [{"record_id": "rec-queue"}]
 
     client = QueueClient()
-    monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue"))
+    monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue", "tbl-payload"))
 
     task_id = web_api._enqueue_fast("物料申请写入", "stable-token", {"version": 1})
 
@@ -53,6 +54,28 @@ def test_fast_enqueue_performs_one_queue_write_without_readback(monkeypatch):
     assert len(rows) == 1
     assert rows[0]["幂等键"] == "stable-token"
     assert rows[0]["载荷JSON"] == '{"version":1}'
+
+
+def test_fast_enqueue_chunks_large_management_payload(monkeypatch):
+    class QueueClient:
+        def __init__(self):
+            self.calls = []
+
+        def batch_create_records(self, table_id, records):
+            self.calls.append((table_id, records))
+            return [{"record_id": f"rec-{index}"} for index, _ in enumerate(records)]
+
+    client = QueueClient()
+    monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue", "tbl-payload"))
+    monkeypatch.setattr("submission_queue.QUEUE_PAYLOAD_INLINE_LIMIT", 20)
+    monkeypatch.setattr("submission_queue.QUEUE_PAYLOAD_CHUNK_SIZE", 10)
+
+    web_api._enqueue_fast("物料品类同步", "large-token", {"rows": ["大型载荷" * 20]})
+
+    assert [call[0] for call in client.calls] == ["tbl-payload", "tbl-queue"]
+    marker = json.loads(client.calls[1][1][0]["载荷JSON"])
+    assert marker["storage"] == "chunks"
+    assert marker["chunks"] == len(client.calls[0][1])
 
 
 def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypatch):
@@ -175,3 +198,123 @@ def test_page_validation_keeps_manager_time_exemption(monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"valid": True, "errors": []}
+
+
+def admin_client():
+    client = TestClient(api)
+    web_api._ADMIN_SESSIONS.add("test-admin-session")
+    client.cookies.set("pudu_admin", "test-admin-session")
+    return client
+
+
+def test_management_catalog_requires_password_and_uses_cached_snapshot():
+    assert TestClient(api).get("/api/admin/management-catalog").status_code == 401
+    response = admin_client().get("/api/admin/management-catalog")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["categories"]
+    assert payload["inventory"]
+    assert payload["dimensions"]["model"]
+    assert payload["dimensions"]["language"]
+    assert payload["dimensions"]["region"]
+
+
+def test_management_restock_queues_existing_worker_payload(monkeypatch):
+    observed = {}
+    monkeypatch.setattr(legacy_app, "validate_restock_draft", lambda draft: [])
+    monkeypatch.setattr(legacy_app, "build_restock_no", lambda token: "RST-TEST")
+    monkeypatch.setattr(
+        web_api,
+        "_enqueue_fast",
+        lambda task_type, key, payload: observed.update(
+            task_type=task_type, key=key, payload=payload
+        ) or "task-restock",
+    )
+    draft = {
+        "operator": "管理员",
+        "submission_token": "restock-token",
+        "lines": [
+            {
+                "category_definition": "印刷物料",
+                "product": "产品单页",
+                "model": "T300",
+                "language": "英语",
+                "quantity": 10,
+            }
+        ],
+    }
+    response = admin_client().post("/api/admin/restock/submit", json=draft)
+    assert response.status_code == 200
+    assert response.json()["restockNo"] == "RST-TEST"
+    assert observed["key"] == "RST-TEST"
+    assert observed["payload"]["draft"]["lines"][0]["quantity"] == 10
+
+
+def test_dimension_preview_builds_worker_changes_from_cached_associations(monkeypatch):
+    snapshot = {
+        "categories": [{"record_id": "cat-1", "category": "产品单页", "no_model": False, "no_language": False}],
+        "inventory": [],
+        "culturalInventory": [],
+        "dimensions": {
+            "model": [],
+            "language": [{"record_id": "lang-1", "name": "英语"}],
+            "region": [],
+        },
+    }
+    monkeypatch.setattr(web_api, "_management_snapshot", lambda: snapshot)
+    response = admin_client().post(
+        "/api/admin/dimension/preview",
+        json={
+            "kind": "model",
+            "operation": "create",
+            "name": "T300",
+            "status": "启用",
+            "selected_keys": [["产品单页", "英语"]],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["changes"] == [
+        {
+            "action": "create",
+            "category": "产品单页",
+            "category_record_id": "cat-1",
+            "model": "T300",
+            "language": "英语",
+            "region": "",
+            "quantity": 0,
+            "unit_price": 0.0,
+            "customs_code": "",
+            "status": "启用",
+            "request_visible": "是",
+        }
+    ]
+
+
+def test_category_submit_preserves_target_value_rows_for_worker(monkeypatch):
+    observed = {}
+    monkeypatch.setattr(
+        web_api,
+        "_enqueue_fast",
+        lambda task_type, key, payload: observed.update(payload=payload) or "task-category",
+    )
+    response = admin_client().post(
+        "/api/admin/category/submit",
+        json={
+            "operation": "edit",
+            "submission_token": "category-token",
+            "sync_args": {
+                "old_product": "产品单页",
+                "new_product": "产品单页",
+                "target_values_rows": [
+                    {
+                        "model": "T300",
+                        "language": "英语",
+                        "values": {"quantity": 8, "status": "启用"},
+                    }
+                ],
+            },
+            "draft": {"product": "产品单页"},
+        },
+    )
+    assert response.status_code == 200
+    assert observed["payload"]["sync_args"]["target_values_rows"][0]["values"]["quantity"] == 8
