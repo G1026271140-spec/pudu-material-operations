@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-07 16:32:56",
+  "generated_at": "2026-09-08 10:32:35",
   "tables": {
     "物料品类": [
       {
@@ -72814,19 +72814,21 @@
               "record_ids": [
                 "recvq5pCbgYZ91",
                 "recvtcSpVGRT3y",
-                "recvtiRQGiLUcu"
+                "recvtiRQGiLUcu",
+                "recvuABV0z2HpZ"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-07,issue:ECF18547-9E2F-4309-A323-FED207951AE0:REQ-20260825-001-09",
+              "text": ",issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-07,issue:ECF18547-9E2F-4309-A323-FED207951AE0:REQ-20260825-001-09,",
               "text_arr": [
                 "",
                 "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-07",
-                "issue:ECF18547-9E2F-4309-A323-FED207951AE0:REQ-20260825-001-09"
+                "issue:ECF18547-9E2F-4309-A323-FED207951AE0:REQ-20260825-001-09",
+                ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "235",
+          "当前库存": "4535",
           "战区管理": [
             {
               "record_ids": null,
@@ -127134,6 +127136,61 @@
         },
         "id": "recvuwn3mmybys",
         "record_id": "recvuwn3mmybys"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1788832269935,
+          "变更前数量": "235",
+          "变更后数量": "4535",
+          "备注": "补库单 RST-20260908-1F701A；补库人：高鸿源",
+          "幂等键": "restock:1f701a2be35644a490d0befc94677b8c:1",
+          "库存变化": "4300",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "4300",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "普渡logo无纺布手提袋(PUDU logo bag)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khxfo"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0951",
+              "text_arr": [
+                "MAT-0951"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "英语(English)"
+        },
+        "id": "recvuABV0z2HpZ",
+        "record_id": "recvuABV0z2HpZ"
       }
     ],
     "物料申请单": [
@@ -130031,7 +130088,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_a7951b9c-1046-475a-820b-670d8256d2fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_6a72ba6a-7456-4efb-80ed-52b2d408504g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "amasa.lan@pudutech.com",
               "en_name": "兰天佐",
               "id": "ou_5011cfd8143498cf485cbbcf00eb1bde",
@@ -165796,7 +165853,7 @@
           "用户编号": "4",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00106_c2047324-ce26-4859-98c2-bbdd4ea5e4cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_5a08a7a3-f963-4140-a735-836514fe488g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhongweilin@pudutech.com",
               "en_name": "钟炜琳",
               "id": "ou_04d8f2ec1168e767cf5114340f47d354",
@@ -166113,7 +166170,7 @@
           "用户编号": "23",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_a7951b9c-1046-475a-820b-670d8256d2fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_6a72ba6a-7456-4efb-80ed-52b2d408504g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "amasa.lan@pudutech.com",
               "en_name": "兰天佐",
               "id": "ou_5011cfd8143498cf485cbbcf00eb1bde",
@@ -169535,7 +169592,7 @@
     "产品型号": 41,
     "物料语种": 12,
     "物料主数据": 891,
-    "库存流水": 154,
+    "库存流水": 155,
     "物料申请单": 35,
     "申请明细": 214,
     "项目周边礼品物料筹备详情list": 13,
