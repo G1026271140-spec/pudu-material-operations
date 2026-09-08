@@ -90,6 +90,12 @@ function Stop-RunnerPowerShell([string]$RunnerScript) {
 }
 Stop-RunnerPowerShell $WebRunner
 Stop-RunnerPowerShell $TunnelRunner
+$escapedTokenFile = [Regex]::Escape([IO.Path]::GetFullPath($TokenFile))
+$orphanedTunnelProcesses = Get-CimInstance Win32_Process -Filter "Name = 'cloudflared.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -match $escapedTokenFile }
+foreach ($process in $orphanedTunnelProcesses) {
+    Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+}
 $escapedRunnerRepoPath = [Regex]::Escape($RunnerRepoPath)
 $orphanedWebProcesses = Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" -ErrorAction SilentlyContinue |
     Where-Object {
