@@ -29,6 +29,18 @@ def valid_draft() -> dict[str, object]:
 
 
 class RequestDraftTests(unittest.TestCase):
+    def test_preview_validation_skips_live_schedule_lookup(self) -> None:
+        draft = valid_draft()
+        draft["scheduling_version"] = 1
+        with patch("order_scheduling_service.SchedulingService") as service:
+            errors = app.validate_request_draft(
+                draft,
+                include_live_schedule_validation=False,
+            )
+
+        self.assertEqual(errors, [])
+        service.assert_not_called()
+
     def test_request_validation_errors_use_prominent_toast(self) -> None:
         with patch.object(app.st, "toast") as toast:
             app.show_request_validation_toast(["请补充必填信息：申请人", "请至少加入一种申请物料"])

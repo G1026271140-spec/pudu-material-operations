@@ -33,9 +33,23 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertTrue(builder.rstrip().endswith("@st.fragment"))
         self.assertIn('st.rerun(scope="app")', SOURCE)
         self.assertIn('st.rerun(scope="fragment")', SOURCE)
-        self.assertIn('on_change="rerun"', SOURCE)
         self.assertIn('key="request_compact_cart_panel"', SOURCE)
-        self.assertIn("if not specification_popover.open:", SOURCE)
+        self.assertNotIn("if not specification_popover.open:", SOURCE)
+
+    def test_all_request_specification_popovers_are_preloaded(self) -> None:
+        builder = SOURCE.split("def render_request_material_builder", 1)[1].split(
+            "def render_change_form", 1
+        )[0]
+        self.assertIn("with st.popover(", builder)
+        self.assertNotIn('on_change="rerun"', builder)
+        self.assertNotIn(".open", builder)
+
+    def test_request_editor_displays_cached_estimated_total(self) -> None:
+        builder = SOURCE.split("def render_request_material_builder", 1)[1].split(
+            "def render_change_form", 1
+        )[0]
+        self.assertIn("request_estimated_total_rmb(lines, selection_context)", builder)
+        self.assertIn('ui_text("预计总花费")', builder)
 
     def test_phone_toolbar_supports_language_and_navigation(self) -> None:
         self.assertIn('key="request_mobile_toolbar"', SOURCE)

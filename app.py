@@ -14597,9 +14597,13 @@ def apply_request_material_table_edits(
     return updated_lines, list(dict.fromkeys(selected_indices))
 
 
-def validate_request_draft(draft: dict[str, object]) -> list[str]:
+def validate_request_draft(
+    draft: dict[str, object],
+    *,
+    include_live_schedule_validation: bool = True,
+) -> list[str]:
     errors: list[str] = []
-    if draft.get("scheduling_version") == 1:
+    if include_live_schedule_validation and draft.get("scheduling_version") == 1:
         from order_scheduling_service import SchedulingService
         try:
             SchedulingService(APP_RUNTIME).request_dates(draft)
@@ -14961,8 +14965,8 @@ def render_request_material_builder(
         )
         category_image_paths = request_category_image_paths(request_cache_generated_at)
 
-        search_col, cart_col, preview_col = st.columns(
-            [5.6, 0.72, 1.75],
+        search_col, cart_col, price_col, preview_col = st.columns(
+            [4.7, 0.72, 1.25, 1.75],
             gap="small",
             vertical_alignment="bottom",
         )
@@ -14974,6 +14978,13 @@ def render_request_material_builder(
             label_visibility="collapsed",
         )
         lines = render_compact_request_cart(cart_col, lines)
+        estimated_total_rmb = request_estimated_total_rmb(lines, selection_context)
+        price_col.metric(
+            ui_text("预计总花费"),
+            f"¥{estimated_total_rmb:,.2f}",
+            help=ui_text("按当前缓存单价估算，自定义物料不计价，以最终审核为准"),
+            border=True,
+        )
         preview_clicked = bool(st.session_state.pop("request_preview_validation_pending", False))
         preview_col.button(
             "提交物料申请",
@@ -15036,16 +15047,12 @@ def render_request_material_builder(
                         """,
                         unsafe_allow_html=True,
                     )
-                    specification_popover = st.popover(
+                    with st.popover(
                         "选择规格",
                         key=f"request_catalog_select_{index}_{normalize_option_label(catalog_product)}",
                         icon=":material/shopping_cart:",
                         width="stretch",
-                        on_change="rerun",
-                    )
-                    if not specification_popover.open:
-                        continue
-                    with specification_popover:
+                    ):
                         all_language_options = request_language_options_for_models(
                             selection_context,
                             catalog_product,
@@ -15372,7 +15379,10 @@ def render_change_form(show_title: bool = True) -> None:
             "lines": [dict(line) for line in lines],
             **scheduling_inputs,
         }
-        errors = validate_request_draft(draft)
+        errors = validate_request_draft(
+            draft,
+            include_live_schedule_validation=False,
+        )
         if errors:
             show_request_validation_toast(errors)
             return
