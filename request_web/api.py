@@ -256,6 +256,24 @@ def _validate(draft: RequestDraft, *, live: bool) -> tuple[dict[str, Any], list[
     return data, lines, errors
 
 
+def _cached_schedule_errors(draft: RequestDraft) -> list[str]:
+    """Validate page timing rules from the local permission snapshot only."""
+    import order_scheduling as scheduling_rules
+
+    roles = build_catalog().get("rolesByUser", {}).get(draft.requester_open_id) or ["销售"]
+    try:
+        scheduling_rules.calculate_dates(
+            draft.arrival_start,
+            draft.arrival_end,
+            draft.request_reason,
+            list(roles),
+            submitted=scheduling_rules.today(),
+        )
+    except Exception as exc:
+        return [str(exc)]
+    return []
+
+
 @lru_cache(maxsize=1)
 def _queue_client_and_table() -> tuple[Any, str]:
     import app as legacy
@@ -299,6 +317,8 @@ def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any])
 @api.post("/api/validate")
 def validate(draft: RequestDraft) -> dict[str, Any]:
     _, _, errors = _validate(draft, live=False)
+    if not errors:
+        errors.extend(_cached_schedule_errors(draft))
     return {"valid": not errors, "errors": errors}
 
 

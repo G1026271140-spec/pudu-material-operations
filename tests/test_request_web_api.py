@@ -108,3 +108,70 @@ def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypa
     assert observed["key"] == "stable-token"
     assert observed["payload"]["request_payload"]["accepted_roles"] == ["区域市场经理"]
     assert observed["payload"]["request_payload"]["accepted_date"] == "2026-09-08"
+
+
+def test_page_validation_enforces_cached_sales_lead_time(monkeypatch):
+    monkeypatch.setattr(
+        web_api,
+        "build_catalog",
+        lambda: {"rolesByUser": {"ou-sales": ["销售"]}},
+    )
+    monkeypatch.setattr(
+        web_api,
+        "_validate",
+        lambda _draft, *, live: ({}, [], []),
+    )
+    monkeypatch.setattr("order_scheduling.today", lambda: "2026-09-08")
+
+    response = TestClient(api).post(
+        "/api/validate",
+        json={
+            "title": "test",
+            "department": "市场部",
+            "requester": "销售用户",
+            "requester_open_id": "ou-sales",
+            "customer_name": "客户",
+            "country": "中国",
+            "recipient_info": "收件信息",
+            "material_usage": "测试",
+            "request_reason": "展会需求",
+            "arrival_start": "2026-09-10",
+            "arrival_end": "2026-09-10",
+            "lines": [{"product": "产品单页", "model": "T300", "language": "英语", "quantity": 1}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["valid"] is False
+    assert "至少提前7个自然日" in response.json()["errors"][0]
+
+
+def test_page_validation_keeps_manager_time_exemption(monkeypatch):
+    monkeypatch.setattr(
+        web_api,
+        "build_catalog",
+        lambda: {"rolesByUser": {"ou-manager": ["销售", "区域市场经理"]}},
+    )
+    monkeypatch.setattr(web_api, "_validate", lambda _draft, *, live: ({}, [], []))
+    monkeypatch.setattr("order_scheduling.today", lambda: "2026-09-08")
+
+    response = TestClient(api).post(
+        "/api/validate",
+        json={
+            "title": "test",
+            "department": "市场部",
+            "requester": "经理用户",
+            "requester_open_id": "ou-manager",
+            "customer_name": "客户",
+            "country": "中国",
+            "recipient_info": "收件信息",
+            "material_usage": "测试",
+            "request_reason": "展会需求",
+            "arrival_start": "2026-09-10",
+            "arrival_end": "2026-09-10",
+            "lines": [{"product": "产品单页", "model": "T300", "language": "英语", "quantity": 1}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"valid": True, "errors": []}
