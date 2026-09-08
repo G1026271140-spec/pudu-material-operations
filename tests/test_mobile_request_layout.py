@@ -50,6 +50,11 @@ class MobileRequestLayoutTests(unittest.TestCase):
         )[0]
         self.assertIn("request_estimated_total_rmb(lines, selection_context)", builder)
         self.assertIn('ui_text("预计总花费")', builder)
+        self.assertIn('class="pudu-request-cost-summary"', builder)
+        self.assertLess(
+            builder.index("render_compact_request_cart_panel(lines)"),
+            builder.index('st.container(key="request_catalog_grid")'),
+        )
 
     def test_phone_toolbar_supports_language_and_navigation(self) -> None:
         self.assertIn('key="request_mobile_toolbar"', SOURCE)

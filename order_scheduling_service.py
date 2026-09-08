@@ -262,10 +262,6 @@ class SchedulingService:
         desired = list(payload.get("lines") or [])
         if not desired:
             raise ValueError("申请须至少保留1条明细。")
-        reason = a.feishu_text(group["fields"], "申请原因")
-        quantity_errors = a.validate_agent_activity_line_quantities(reason, desired)
-        if quantity_errors:
-            raise ValueError("；".join(quantity_errors))
         note = str(payload.get("change_note") or "").strip()
         if not note:
             raise ValueError("请填写修改说明。")

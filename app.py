@@ -130,8 +130,6 @@ UNIT_PRICE_RMB_FIELD = "单价（人民币）"
 REQUEST_PRICE_SNAPSHOT_FIELD = "申请时单价（人民币）"
 REQUEST_LINE_SUBTOTAL_FIELD = "费用小计（人民币）"
 REQUEST_TOTAL_RMB_FIELD = "费用合计（人民币）"
-AGENT_ACTIVITY_REQUEST_REASON = "代理活动"
-AGENT_ACTIVITY_MAX_LINE_QUANTITY = 50
 GIFT_PROJECT_CATEGORY_LINK_FIELD = "物料品类关联"
 COMMERCIAL_INVOICE_NAME_FIELD = "商业发票产品名称"
 PACKING_LIST_PRODUCT_TYPE_FIELD = "装箱单产品类型"
@@ -1656,6 +1654,31 @@ def inject_global_styles() -> None:
         .pudu-specification-popover-marker,
         .pudu-gift-detail-drawer-marker {
             display: none;
+        }
+        .pudu-request-cost-summary {
+            display: flex;
+            align-items: baseline;
+            gap: 0.65rem;
+            margin: 0.45rem 0 0.55rem;
+            padding: 0.55rem 0.8rem;
+            border-left: 4px solid var(--pudu-teal);
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--pudu-ink);
+        }
+        .pudu-request-cost-summary span {
+            color: var(--pudu-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .pudu-request-cost-summary strong {
+            color: var(--pudu-navy);
+            font-size: 1.22rem;
+            line-height: 1;
+        }
+        .pudu-request-cost-summary small {
+            color: var(--pudu-muted);
+            font-size: 0.72rem;
         }
         .st-key-request_compact_cart button {
             border-color: #C9472D !important;
@@ -3778,19 +3801,6 @@ def request_lines_total_rmb(lines: list[dict[str, object]]) -> float:
 
 def format_rmb(value: object) -> str:
     return f"¥{float(value or 0):,.2f}"
-
-
-def validate_agent_activity_line_quantities(
-    request_reason: object,
-    lines: list[dict[str, object]],
-) -> list[str]:
-    if str(request_reason or "").strip() != AGENT_ACTIVITY_REQUEST_REASON:
-        return []
-    return [
-        f"第 {index} 条物料为代理活动申请，单一明细数量不能超过 {AGENT_ACTIVITY_MAX_LINE_QUANTITY}"
-        for index, line in enumerate(lines, start=1)
-        if int(line.get("quantity") or 0) > AGENT_ACTIVITY_MAX_LINE_QUANTITY
-    ]
 
 
 def material_price_sync_updates(
@@ -10131,11 +10141,6 @@ def submit_feishu_material_request(
     valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少填写一条数量大于 0 的物料明细。")
-    quantity_errors = validate_agent_activity_line_quantities(
-        request_payload.get("request_reason"), valid_lines
-    )
-    if quantity_errors:
-        raise RuntimeError("；".join(quantity_errors))
     submission_token = str(request_payload.get("submission_token") or "").strip()
     existing_submission = find_completed_submission(submission_token)
     if existing_submission is not None:
@@ -10423,12 +10428,6 @@ def enqueue_feishu_material_request(
     submission_token = str(request_payload.get("submission_token") or "").strip()
     if not submission_token:
         raise RuntimeError("申请提交幂等键不能为空。")
-    quantity_errors = validate_agent_activity_line_quantities(
-        request_payload.get("request_reason"),
-        [dict(line) for line in lines if isinstance(line, dict)],
-    )
-    if quantity_errors:
-        raise RuntimeError("；".join(quantity_errors))
     table_id = ensure_submission_queue_table(client)
     existing = find_task_by_idempotency_key(client, submission_token, table_id)
     if existing is not None:
@@ -11218,11 +11217,6 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     desired = [dict(item) for item in list(draft.get("lines") or []) if isinstance(item, dict)]
     if not desired:
         raise RuntimeError("申请必须至少保留 1 条物料明细。")
-    quantity_errors = validate_agent_activity_line_quantities(
-        request.get("request_reason"), desired
-    )
-    if quantity_errors:
-        raise RuntimeError("；".join(quantity_errors))
     material_by_id = {
         feishu_record_id(row): row for row in list(context.get("material_rows") or [])
     }
@@ -14636,13 +14630,6 @@ def validate_request_draft(
             errors.append(f"第 {index + 1} 条物料缺少品类、型号或语种")
         if int(line.get("quantity") or 0) <= 0:
             errors.append(f"第 {index + 1} 条物料数量必须大于 0")
-    errors.extend(
-        validate_agent_activity_line_quantities(
-            draft.get("request_reason"),
-            [dict(line) for line in lines if isinstance(line, dict)],
-        )
-    )
-
     return errors
 
 
@@ -14867,16 +14854,19 @@ def toggle_request_compact_cart() -> None:
     )
 
 
-def render_compact_request_cart(container: object, lines: list[dict[str, object]]) -> list[dict[str, object]]:
-    total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+def render_compact_request_cart_button(container: object, lines: list[dict[str, object]]) -> None:
     container.button(
         f"🛒 {len(lines)}",
         key="request_compact_cart",
         width="stretch",
         on_click=toggle_request_compact_cart,
     )
+
+
+def render_compact_request_cart_panel(lines: list[dict[str, object]]) -> list[dict[str, object]]:
     if not st.session_state.get("request_compact_cart_open", False):
         return lines
+    total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
     with st.container(border=True, key="request_compact_cart_panel"):
         st.markdown(
             '<span class="pudu-full-cart-popover-marker"></span>',
@@ -14965,8 +14955,8 @@ def render_request_material_builder(
         )
         category_image_paths = request_category_image_paths(request_cache_generated_at)
 
-        search_col, cart_col, price_col, preview_col = st.columns(
-            [4.7, 0.72, 1.25, 1.75],
+        search_col, cart_col, preview_col = st.columns(
+            [5.6, 0.72, 1.75],
             gap="small",
             vertical_alignment="bottom",
         )
@@ -14977,14 +14967,8 @@ def render_request_material_builder(
             icon=":material/search:",
             label_visibility="collapsed",
         )
-        lines = render_compact_request_cart(cart_col, lines)
+        render_compact_request_cart_button(cart_col, lines)
         estimated_total_rmb = request_estimated_total_rmb(lines, selection_context)
-        price_col.metric(
-            ui_text("预计总花费"),
-            f"¥{estimated_total_rmb:,.2f}",
-            help=ui_text("按当前缓存单价估算，自定义物料不计价，以最终审核为准"),
-            border=True,
-        )
         preview_clicked = bool(st.session_state.pop("request_preview_validation_pending", False))
         preview_col.button(
             "提交物料申请",
@@ -14997,6 +14981,17 @@ def render_request_material_builder(
         if st.session_state.pop("request_preview_requested", False):
             st.session_state["request_preview_validation_pending"] = True
             st.rerun(scope="app")
+        st.markdown(
+            f"""
+            <div class="pudu-request-cost-summary">
+                <span>{escape(ui_text("预计总花费"))}</span>
+                <strong>¥{estimated_total_rmb:,.2f}</strong>
+                <small>{escape(ui_text("按当前缓存单价估算，自定义物料不计价，以最终审核为准"))}</small>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        lines = render_compact_request_cart_panel(lines)
         filtered_products = filter_request_catalog_products(products, search_query)
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")
@@ -21147,9 +21142,6 @@ def render_request_inventory_review_page() -> None:
         f"品类、型号和语种来自页面缓存（{cache_data.get('generated_at') or '未知时间'}）。"
         "页面内调整不会写入后台，点击提交后才会一次性进入任务队列。"
     )
-    is_agent_activity = request.get("request_reason") == AGENT_ACTIVITY_REQUEST_REASON
-    if is_agent_activity:
-        st.info("该申请原因为代理活动，每一条物料明细数量上限为 50；超过后无法提交。")
     direct_confirm = st.button(
         "按原申请确认并提交",
         type="secondary",
@@ -21346,12 +21338,6 @@ def render_request_inventory_review_page() -> None:
     ]
     if invalid_rows:
         st.error("配货方案中存在无效物料，请重新选择。")
-        return
-    quantity_errors = validate_agent_activity_line_quantities(
-        request.get("request_reason"), rows
-    )
-    if quantity_errors:
-        st.error("；".join(quantity_errors))
         return
     if not change_note.strip():
         st.error("请填写配货调整说明。")

@@ -135,11 +135,6 @@ def request_schedule_inputs(app):
                               format="YYYY-MM-DD", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
-    if reason == app.AGENT_ACTIVITY_REQUEST_REASON:
-        st.info(
-            "Dealer activity requests allow up to 50 units per material line."
-            if en else "代理活动申请中，每一条物料明细的申领数量上限为 50；超过后无法提交。"
-        )
     requester_open_id = str(st.session_state.get("request_requester_open_id") or "").strip()
     regional_owner = any(
         requester_open_id and getattr(app, "requester_has_enabled_role", lambda *_: False)(requester_open_id, role)
@@ -167,9 +162,6 @@ def edit_dialog(app, group, catalog, operator):
                                       "quantity": l["quantity"], "remark": l["remark"]} for l in group["lines"]]
         draft = st.session_state[key]
         st.caption("品类、型号、语种联动选择；保存不会确认库存或修改实际发放数量。")
-        is_agent_activity = app.feishu_text(group["fields"], "申请原因") == app.AGENT_ACTIVITY_REQUEST_REASON
-        if is_agent_activity:
-            st.info("该申请原因为代理活动，每一条物料明细数量不得超过 50。")
         remove = None
         categories = sorted({v["category"] for v in catalog.values()})
         for line in draft:

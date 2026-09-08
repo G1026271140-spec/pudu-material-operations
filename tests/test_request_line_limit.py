@@ -7,28 +7,22 @@ import app
 
 
 class RequestLineLimitTests(unittest.TestCase):
-    def test_agent_activity_rejects_any_line_over_fifty(self) -> None:
-        errors = app.validate_request_draft(
-            {
-                "request_reason": "代理活动",
-                "lines": [
-                    {"product": "折页", "model": "PuduBot2", "language": "中文", "quantity": 51}
-                ],
-            }
-        )
-        self.assertTrue(any("单一明细数量不能超过 50" in error for error in errors))
+    def test_agent_activity_allows_a_line_over_fifty(self) -> None:
+        draft = {
+            "department": "市场部",
+            "requester": "申请人",
+            "customer_name": "客户",
+            "country": "国家",
+            "recipient_info": "收件信息",
+            "freight_payer": app.DEFAULT_FREIGHT_PAYER,
+            "material_usage": "代理活动",
+            "request_reason": "代理活动",
+            "lines": [
+                {"product": "折页", "model": "PuduBot2", "language": "中文", "quantity": 500}
+            ],
+        }
 
-    def test_non_agent_activity_does_not_apply_fifty_unit_limit(self) -> None:
-        errors = app.validate_agent_activity_line_quantities(
-            "展会需求", [{"quantity": 500}]
-        )
-        self.assertEqual(errors, [])
-
-    def test_agent_activity_allows_multiple_lines_at_fifty(self) -> None:
-        errors = app.validate_agent_activity_line_quantities(
-            "代理活动", [{"quantity": 50}, {"quantity": 50}]
-        )
-        self.assertEqual(errors, [])
+        self.assertEqual(app.validate_request_draft(draft), [])
 
     def test_submission_accepts_more_than_twenty_lines(self) -> None:
         lines = [
