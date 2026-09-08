@@ -302,7 +302,12 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
                 ) : (
                   <div className="placeholder">PUDU</div>
                 )}
-                <h3>{catalog.categoryLabels[product]?.[lang] || product}</h3>
+                <h3>
+                  {catalog.categoryLabels[product]?.[lang] ||
+                    (lang === "en" && product === "文化夹克"
+                      ? "Cultural Jacket"
+                      : product)}
+                </h3>
                 <button onClick={() => open(product)}>♧ {t.spec}</button>
               </article>
             ))}
