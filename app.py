@@ -14859,11 +14859,15 @@ def render_request_review() -> None:
 
 def render_compact_request_cart(container: object, lines: list[dict[str, object]]) -> list[dict[str, object]]:
     total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
-    with container.popover(
+    cart_popover = container.popover(
         f"🛒 {len(lines)}",
         key="request_compact_cart",
         width="stretch",
-    ):
+        on_change="rerun",
+    )
+    if not cart_popover.open:
+        return lines
+    with cart_popover:
         st.markdown(
             '<span class="pudu-full-cart-popover-marker"></span>',
             unsafe_allow_html=True,
@@ -14924,9 +14928,8 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
 
 
 def request_preview_full_rerun() -> None:
-    """Leave the material fragment only when the user requests final validation."""
+    """Record a preview request; callbacks must not call ``st.rerun`` directly."""
     st.session_state["request_preview_requested"] = True
-    st.rerun(scope="app")
 
 
 @st.fragment
@@ -14965,7 +14968,7 @@ def render_request_material_builder(
             label_visibility="collapsed",
         )
         lines = render_compact_request_cart(cart_col, lines)
-        preview_clicked = bool(st.session_state.pop("request_preview_requested", False))
+        preview_clicked = bool(st.session_state.pop("request_preview_validation_pending", False))
         preview_col.button(
             "提交物料申请",
             key="request_preview",
@@ -14974,6 +14977,9 @@ def render_request_material_builder(
             width="stretch",
             on_click=request_preview_full_rerun,
         )
+        if st.session_state.pop("request_preview_requested", False):
+            st.session_state["request_preview_validation_pending"] = True
+            st.rerun(scope="app")
         filtered_products = filter_request_catalog_products(products, search_query)
         if not filtered_products:
             st.info("没有找到匹配的物料，请更换关键词。")
@@ -15024,12 +15030,16 @@ def render_request_material_builder(
                         """,
                         unsafe_allow_html=True,
                     )
-                    with st.popover(
+                    specification_popover = st.popover(
                         "选择规格",
                         key=f"request_catalog_select_{index}_{normalize_option_label(catalog_product)}",
                         icon=":material/shopping_cart:",
                         width="stretch",
-                    ):
+                        on_change="rerun",
+                    )
+                    if not specification_popover.open:
+                        continue
+                    with specification_popover:
                         all_language_options = request_language_options_for_models(
                             selection_context,
                             catalog_product,
