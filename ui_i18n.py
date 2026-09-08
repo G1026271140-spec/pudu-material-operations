@@ -220,9 +220,9 @@ EN_DISPLAY_TEXT = {
     "申请物料清单": "Requested Materials",
     "选择申请物料": "Choose Materials",
     "查看购物车并提交申请": "View Cart & Submit Request",
-    "选择对应物料的规格并加入采购车，当前版本一次性最多采购20种物料。": (
-        "Choose the appropriate material specifications and add them to the cart. "
-        "The current version supports up to 20 material types per request."
+    "选择对应物料的规格并加入采购车，可按实际需求添加多种物料。": (
+        "Choose the appropriate material specifications and add as many material types "
+        "as the request needs."
     ),
     "搜索物料": "Search Materials",
     "输入品类名称搜索": "Search by material category",
@@ -1026,6 +1026,9 @@ EN_DISPLAY_TEXT = {
     "我已核对配货方案，并确认向申请人发送变更通知": "I reviewed the allocation plan and confirm sending a change notice to the applicant",
     "配货方案中存在无效物料，请重新选择。": "The allocation plan contains invalid materials. Select them again.",
     "配货方案必须至少保留一条物料明细。": "The allocation plan must retain at least one material line.",
+    "原申请总金额": "Original Request Total",
+    "当前配货总金额": "Current Allocation Total",
+    "该申请原因为代理活动，每一条物料明细数量上限为 50；超过后无法提交。": "This is a dealer activity request. Each material line is limited to 50 units; higher quantities cannot be submitted.",
     "缺少申请单标识，请从管理员库存确认卡片重新打开。": "The request identifier is missing. Reopen the page from the administrator inventory confirmation card.",
     "该申请已经完成库存核实，无需再次处理。": "Inventory for this request has already been verified. No further action is required.",
     "确认后才会保存至飞书，并向全部启用管理员发送修改卡片": "Changes will be saved to Feishu only after confirmation, and all enabled administrators will receive a change card",
@@ -1163,6 +1166,10 @@ _DYNAMIC_RULES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ..
             f"Customer: {match.group(1)}; Country: {match.group(2)}; "
             f"Applicant: {match.group(3)}; Department: {match.group(4)}"
         ),
+    ),
+    (
+        re.compile(r"^申请原因：(.*)$"),
+        lambda match: f"Request reason: {match.group(1)}",
     ),
     (
         re.compile(r"^物料用途：(.*)$"),

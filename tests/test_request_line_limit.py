@@ -1,14 +1,36 @@
 import unittest
+import json
+from pathlib import Path
 from unittest.mock import patch
 
 import app
 
 
 class RequestLineLimitTests(unittest.TestCase):
-    def test_request_line_limit_is_twenty(self) -> None:
-        self.assertEqual(app.MAX_REQUEST_LINE_COUNT, 20)
+    def test_agent_activity_rejects_any_line_over_fifty(self) -> None:
+        errors = app.validate_request_draft(
+            {
+                "request_reason": "代理活动",
+                "lines": [
+                    {"product": "折页", "model": "PuduBot2", "language": "中文", "quantity": 51}
+                ],
+            }
+        )
+        self.assertTrue(any("单一明细数量不能超过 50" in error for error in errors))
 
-    def test_submission_rejects_more_than_twenty_lines(self) -> None:
+    def test_non_agent_activity_does_not_apply_fifty_unit_limit(self) -> None:
+        errors = app.validate_agent_activity_line_quantities(
+            "展会需求", [{"quantity": 500}]
+        )
+        self.assertEqual(errors, [])
+
+    def test_agent_activity_allows_multiple_lines_at_fifty(self) -> None:
+        errors = app.validate_agent_activity_line_quantities(
+            "代理活动", [{"quantity": 50}, {"quantity": 50}]
+        )
+        self.assertEqual(errors, [])
+
+    def test_submission_accepts_more_than_twenty_lines(self) -> None:
         lines = [
             {
                 "product": f"product-{index}",
@@ -16,12 +38,36 @@ class RequestLineLimitTests(unittest.TestCase):
                 "language": "language",
                 "quantity": 1,
             }
-            for index in range(app.MAX_REQUEST_LINE_COUNT + 1)
+            for index in range(25)
         ]
 
-        with patch.object(app, "refresh_feishu_schema_cache"):
-            with self.assertRaisesRegex(RuntimeError, "最多可提交 20 条"):
-                app.submit_feishu_material_request({}, lines)
+        with (
+            patch.object(app, "refresh_feishu_schema_cache"),
+            patch.object(
+                app,
+                "find_completed_submission",
+                return_value=({"fields": {"申请单号": "REQ-1"}}, 25),
+            ),
+        ):
+            self.assertEqual(
+                app.submit_feishu_material_request({"submission_token": "token"}, lines),
+                ("REQ-1", 25, False),
+            )
+
+    def test_other_batch_safety_limits_remain_separate(self) -> None:
+        self.assertEqual(app.MAX_RESTOCK_LINE_COUNT, 20)
+        self.assertEqual(app.MAX_CULTURAL_REQUEST_LINE_COUNT, 20)
+
+    def test_no_ordinary_request_limit_remains_in_ui_or_editing_services(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        app_source = (root / "app.py").read_text(encoding="utf-8")
+        scheduling_page = (root / "order_scheduling_page.py").read_text(encoding="utf-8")
+        scheduling_service = (root / "order_scheduling_service.py").read_text(encoding="utf-8")
+        config = json.loads((root / "config/project_config.json").read_text(encoding="utf-8"))
+        self.assertNotIn("MAX_REQUEST_LINE_COUNT", app_source + scheduling_page + scheduling_service)
+        self.assertNotIn("max_request_line_count", config["runtime"])
+        self.assertNotIn("最多采购20种物料", app_source)
+        self.assertNotIn("超过采购车", app_source)
 
 
 if __name__ == "__main__":

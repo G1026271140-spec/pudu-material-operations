@@ -41,7 +41,6 @@
   },
   "runtime": {
     "data_cache_ttl_seconds": 30,
-    "max_request_line_count": 20,
     "inventory_auto_disable_days": 14,
     "default_low_stock_threshold": 100
   },

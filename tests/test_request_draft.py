@@ -114,7 +114,7 @@ class RequestDraftTests(unittest.TestCase):
         self.assertTrue(any("申请人" in error and "国家" in error for error in errors))
         self.assertTrue(any("至少加入一种" in error for error in errors))
 
-    def test_draft_rejects_more_than_twenty_materials(self) -> None:
+    def test_draft_accepts_more_than_twenty_materials(self) -> None:
         draft = valid_draft()
         draft["lines"] = [
             {
@@ -124,12 +124,12 @@ class RequestDraftTests(unittest.TestCase):
                 "quantity": 1,
                 "remark": "",
             }
-            for index in range(app.MAX_REQUEST_LINE_COUNT + 1)
+            for index in range(25)
         ]
 
         errors = app.validate_request_draft(draft)
 
-        self.assertTrue(any("最多可添加 20 种" in error for error in errors))
+        self.assertEqual(errors, [])
 
     def test_material_table_updates_quantity_remark_and_selection(self) -> None:
         lines = [

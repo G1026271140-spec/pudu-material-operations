@@ -473,6 +473,7 @@ class BotNotificationTests(unittest.TestCase):
             "customer_name": "示例客户",
             "country": "德国",
             "material_usage": "展会使用",
+            "request_reason": "代理活动",
         }
         lines = [
             {
@@ -480,6 +481,8 @@ class BotNotificationTests(unittest.TestCase):
                 "model": "BellaBot",
                 "language": "英语",
                 "quantity": 3,
+                "unit_price_rmb": 12.5,
+                "subtotal_rmb": 37.5,
             }
         ]
 
@@ -492,6 +495,8 @@ class BotNotificationTests(unittest.TestCase):
             text,
         )
         self.assertIn("来自海外销售部的销售甲的营销物料即将进入审批流程", text)
+        self.assertIn("申请原因：代理活动", text)
+        self.assertIn("申请总金额：¥37.50", text)
         self.assertNotIn("申请合计", text)
         self.assertNotIn("审批与发放页面", text)
 
@@ -505,6 +510,7 @@ class BotNotificationTests(unittest.TestCase):
             "recipient_info": "销售甲，12345，示例地址",
             "freight_payer": "普渡付款(PUDU)",
             "material_usage": "柏林展会",
+            "request_reason": "代理活动",
         }
         lines = [
             {
@@ -513,6 +519,8 @@ class BotNotificationTests(unittest.TestCase):
                 "language": "英语",
                 "quantity": 3,
                 "remark": "现场派发",
+                "unit_price_rmb": 12.5,
+                "subtotal_rmb": 37.5,
             }
         ]
 
@@ -556,6 +564,9 @@ class BotNotificationTests(unittest.TestCase):
             "销售甲，12345，示例地址",
             "普渡付款(PUDU)",
             "柏林展会",
+            "代理活动",
+            "申请总金额",
+            "¥37.50",
             f"产品折页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语",
             "申请 3｜实时库存 2｜库存不足，需要制作",
             "调整配货方案",

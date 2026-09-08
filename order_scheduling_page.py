@@ -135,6 +135,11 @@ def request_schedule_inputs(app):
                               format="YYYY-MM-DD", label_visibility="collapsed",
                               on_change=app.mark_request_form_dirty)
     dates = list(dates) if isinstance(dates, (tuple, list)) else [dates] if dates else []
+    if reason == app.AGENT_ACTIVITY_REQUEST_REASON:
+        st.info(
+            "Dealer activity requests allow up to 50 units per material line."
+            if en else "代理活动申请中，每一条物料明细的申领数量上限为 50；超过后无法提交。"
+        )
     requester_open_id = str(st.session_state.get("request_requester_open_id") or "").strip()
     regional_owner = any(
         requester_open_id and getattr(app, "requester_has_enabled_role", lambda *_: False)(requester_open_id, role)
@@ -162,6 +167,9 @@ def edit_dialog(app, group, catalog, operator):
                                       "quantity": l["quantity"], "remark": l["remark"]} for l in group["lines"]]
         draft = st.session_state[key]
         st.caption("品类、型号、语种联动选择；保存不会确认库存或修改实际发放数量。")
+        is_agent_activity = app.feishu_text(group["fields"], "申请原因") == app.AGENT_ACTIVITY_REQUEST_REASON
+        if is_agent_activity:
+            st.info("该申请原因为代理活动，每一条物料明细数量不得超过 50。")
         remove = None
         categories = sorted({v["category"] for v in catalog.values()})
         for line in draft:
@@ -192,12 +200,15 @@ def edit_dialog(app, group, catalog, operator):
         if remove:
             st.session_state[key] = [r for r in draft if r["uid"] != remove]
             st.rerun(scope="fragment")
-        if st.button("新增明细", disabled=len(draft) >= app.MAX_REQUEST_LINE_COUNT):
+        if st.button("新增明细"):
             draft.append({"uid": uuid.uuid4().hex, "id": "", "material_id": "", "quantity": 1, "remark": ""})
             st.rerun(scope="fragment")
         note = st.text_input("修改说明（必填）", key=key+"_note")
         st.warning("删除会移除该申请明细；后台会保留变更前后记录。已审批、已核实库存或已生成下单表的申请不能在此编辑。")
-        if st.button("保存明细修改", type="primary", disabled=not draft or not note or any(not l["material_id"] for l in draft)):
+        over_limit = is_agent_activity and any(int(line.get("quantity") or 0) > 50 for line in draft)
+        if over_limit:
+            st.error("代理活动的单一物料明细数量不能超过 50，请调整后再保存。")
+        if st.button("保存明细修改", type="primary", disabled=not draft or not note or over_limit or any(not l["material_id"] for l in draft)):
             enqueue(app, QUEUE_TASK_TYPE_ORDER_EDIT, {"request_id": group["id"], "expected_fingerprint": group["fingerprint"],
                     "operator_open_id": operator, "change_note": note, "lines": draft})
     render()

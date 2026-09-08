@@ -68,7 +68,7 @@ from ui_i18n import (
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.6.7"
+APP_VERSION = "V2.6.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -118,6 +118,8 @@ UNIT_PRICE_RMB_FIELD = "单价（人民币）"
 REQUEST_PRICE_SNAPSHOT_FIELD = "申请时单价（人民币）"
 REQUEST_LINE_SUBTOTAL_FIELD = "费用小计（人民币）"
 REQUEST_TOTAL_RMB_FIELD = "费用合计（人民币）"
+AGENT_ACTIVITY_REQUEST_REASON = "代理活动"
+AGENT_ACTIVITY_MAX_LINE_QUANTITY = 50
 GIFT_PROJECT_CATEGORY_LINK_FIELD = "物料品类关联"
 COMMERCIAL_INVOICE_NAME_FIELD = "商业发票产品名称"
 PACKING_LIST_PRODUCT_TYPE_FIELD = "装箱单产品类型"
@@ -489,7 +491,8 @@ TRANSACTION_HEADERS = [
 
 DATA_LOCK = threading.Lock()
 DATA_CACHE_TTL_SECONDS = int(get_setting("runtime.data_cache_ttl_seconds", 30))
-MAX_REQUEST_LINE_COUNT = int(get_setting("runtime.max_request_line_count", 20))
+MAX_RESTOCK_LINE_COUNT = 20
+MAX_CULTURAL_REQUEST_LINE_COUNT = 20
 ADMIN_MANAGEMENT_SECTIONS = frozenset({"物料管理"})
 MANAGEMENT_NAVIGATION_KEY = "management_section"
 MANAGEMENT_NAVIGATION_LOADING_KEY = "management_navigation_loading"
@@ -3747,6 +3750,35 @@ def request_material_unit_price_rmb(
 
 def request_line_subtotal_rmb(unit_price_rmb: object, quantity: object) -> float:
     return round(float(unit_price_rmb or 0) * int(quantity or 0), 2)
+
+
+def request_lines_total_rmb(lines: list[dict[str, object]]) -> float:
+    total = 0.0
+    for line in lines:
+        subtotal = float(line.get("subtotal_rmb") or 0)
+        if not subtotal:
+            subtotal = request_line_subtotal_rmb(
+                line.get("unit_price_rmb"), line.get("quantity")
+            )
+        total += subtotal
+    return round(total, 2)
+
+
+def format_rmb(value: object) -> str:
+    return f"¥{float(value or 0):,.2f}"
+
+
+def validate_agent_activity_line_quantities(
+    request_reason: object,
+    lines: list[dict[str, object]],
+) -> list[str]:
+    if str(request_reason or "").strip() != AGENT_ACTIVITY_REQUEST_REASON:
+        return []
+    return [
+        f"第 {index} 条物料为代理活动申请，单一明细数量不能超过 {AGENT_ACTIVITY_MAX_LINE_QUANTITY}"
+        for index, line in enumerate(lines, start=1)
+        if int(line.get("quantity") or 0) > AGENT_ACTIVITY_MAX_LINE_QUANTITY
+    ]
 
 
 def material_price_sync_updates(
@@ -7237,8 +7269,8 @@ def validate_restock_draft(draft: dict[str, object]) -> list[str]:
     if not lines:
         errors.append("请至少加入一种补库物料")
         return errors
-    if len(lines) > MAX_REQUEST_LINE_COUNT:
-        errors.append(f"一次补库最多可添加 {MAX_REQUEST_LINE_COUNT} 种物料")
+    if len(lines) > MAX_RESTOCK_LINE_COUNT:
+        errors.append(f"一次补库最多可添加 {MAX_RESTOCK_LINE_COUNT} 种物料")
     seen: set[tuple[str, str, str]] = set()
     for index, line in enumerate(lines, start=1):
         key = request_material_key(line)
@@ -7846,6 +7878,7 @@ def material_request_notification_text(
     lines: list[dict[str, object]],
 ) -> str:
     valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
+    total_rmb = request_lines_total_rmb(valid_lines)
     details = [
         (
             f"{index}. {str(line.get('product') or '-')} / "
@@ -7866,6 +7899,8 @@ def material_request_notification_text(
         f"申请部门：{str(request_payload.get('department') or '-')}",
         f"客户/国家：{str(request_payload.get('customer_name') or '-')} / {str(request_payload.get('country') or '-')}",
         f"物料用途：{str(request_payload.get('material_usage') or '-')}",
+        f"申请原因：{str(request_payload.get('request_reason') or '-')}",
+        f"申请总金额：{format_rmb(total_rmb)}",
         "",
         *details,
     ]
@@ -8029,6 +8064,7 @@ def material_request_notification_card(
     review_lines = [dict(line) for line in list(context.get("lines") or []) if isinstance(line, dict)]
     valid_lines = review_lines or [line for line in lines if int(line.get("quantity") or 0) > 0]
     total_quantity = sum(int(line.get("quantity") or 0) for line in valid_lines)
+    total_rmb = request_lines_total_rmb(valid_lines)
     application_fields: list[tuple[str, object]] = [
         ("申请单号", request_no),
         ("申请人", request_payload.get("requester")),
@@ -8037,6 +8073,8 @@ def material_request_notification_card(
         ("客户名称", request_payload.get("customer_name")),
         ("国家", request_payload.get("country")),
         ("运费承担者", request_payload.get("freight_payer")),
+        ("申请原因", request_payload.get("request_reason") or review_request.get("request_reason")),
+        ("申请总金额", format_rmb(total_rmb)),
         ("申请合计", f"{len(valid_lines)} 种，共 {total_quantity} 件"),
     ]
     header_title = "营销物料申请库存确认"
@@ -10081,8 +10119,11 @@ def submit_feishu_material_request(
     valid_lines = [item for item in lines if int(item.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少填写一条数量大于 0 的物料明细。")
-    if len(valid_lines) > MAX_REQUEST_LINE_COUNT:
-        raise RuntimeError(f"一次申请最多可提交 {MAX_REQUEST_LINE_COUNT} 条物料明细。")
+    quantity_errors = validate_agent_activity_line_quantities(
+        request_payload.get("request_reason"), valid_lines
+    )
+    if quantity_errors:
+        raise RuntimeError("；".join(quantity_errors))
     submission_token = str(request_payload.get("submission_token") or "").strip()
     existing_submission = find_completed_submission(submission_token)
     if existing_submission is not None:
@@ -10370,6 +10411,12 @@ def enqueue_feishu_material_request(
     submission_token = str(request_payload.get("submission_token") or "").strip()
     if not submission_token:
         raise RuntimeError("申请提交幂等键不能为空。")
+    quantity_errors = validate_agent_activity_line_quantities(
+        request_payload.get("request_reason"),
+        [dict(line) for line in lines if isinstance(line, dict)],
+    )
+    if quantity_errors:
+        raise RuntimeError("；".join(quantity_errors))
     table_id = ensure_submission_queue_table(client)
     existing = find_task_by_idempotency_key(client, submission_token, table_id)
     if existing is not None:
@@ -10569,6 +10616,9 @@ def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str
                 or note_values.get("运费承担者", ""),
                 "material_usage": feishu_text_any(fields, ["物料用途", "用途/活动", "用途|活动"])
                 or note_values.get("物料用途", ""),
+                "request_reason": feishu_text(fields, "申请原因")
+                or note_values.get("申请原因", ""),
+                "request_total_rmb": feishu_float(fields, REQUEST_TOTAL_RMB_FIELD),
                 "status": feishu_text(fields, "审批状态"),
                 "submitted_at": feishu_datetime_text(fields.get("提交时间", "")),
                 "approved_at": feishu_datetime_text(fields.get("审批时间", "")),
@@ -10879,6 +10929,7 @@ def cached_allocation_material_records(
                 "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
                 "language": feishu_text(fields, "语种") or NO_LANGUAGE_TEXT,
                 "quantity": feishu_int(fields, "当前库存"),
+                "unit_price_rmb": request_material_unit_price_rmb(fields),
             }
         )
     return records
@@ -10919,6 +10970,8 @@ def _request_review_line_summary(lines: list[dict[str, object]]) -> list[dict[st
             "language": str(line.get("language") or ""),
             "quantity": int(line.get("quantity") or 0),
             "remark": str(line.get("remark") or ""),
+            "unit_price_rmb": float(line.get("unit_price_rmb") or 0),
+            "subtotal_rmb": float(line.get("subtotal_rmb") or 0),
         }
         for line in lines
     ]
@@ -11151,8 +11204,13 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         raise RuntimeError("申请已被其他管理员修改，请刷新后重新操作。")
 
     desired = [dict(item) for item in list(draft.get("lines") or []) if isinstance(item, dict)]
-    if not desired or len(desired) > MAX_REQUEST_LINE_COUNT:
-        raise RuntimeError(f"申请必须保留 1 至 {MAX_REQUEST_LINE_COUNT} 条物料明细。")
+    if not desired:
+        raise RuntimeError("申请必须至少保留 1 条物料明细。")
+    quantity_errors = validate_agent_activity_line_quantities(
+        request.get("request_reason"), desired
+    )
+    if quantity_errors:
+        raise RuntimeError("；".join(quantity_errors))
     material_by_id = {
         feishu_record_id(row): row for row in list(context.get("material_rows") or [])
     }
@@ -14554,8 +14612,6 @@ def validate_request_draft(draft: dict[str, object]) -> list[str]:
     lines = list(draft.get("lines") or [])
     if not lines:
         errors.append("请至少加入一种申请物料")
-    elif len(lines) > MAX_REQUEST_LINE_COUNT:
-        errors.append(f"一次申请最多可添加 {MAX_REQUEST_LINE_COUNT} 种物料")
     for index, line in enumerate(lines):
         if not isinstance(line, dict):
             errors.append(f"第 {index + 1} 条物料明细无效")
@@ -14564,6 +14620,12 @@ def validate_request_draft(draft: dict[str, object]) -> list[str]:
             errors.append(f"第 {index + 1} 条物料缺少品类、型号或语种")
         if int(line.get("quantity") or 0) <= 0:
             errors.append(f"第 {index + 1} 条物料数量必须大于 0")
+    errors.extend(
+        validate_agent_activity_line_quantities(
+            draft.get("request_reason"),
+            [dict(line) for line in lines if isinstance(line, dict)],
+        )
+    )
 
     return errors
 
@@ -14860,7 +14922,7 @@ def render_request_material_builder(
         render_section_header(
             "02",
             "选择申请物料",
-            f"选择对应物料的规格并加入采购车，当前版本一次性最多采购{MAX_REQUEST_LINE_COUNT}种物料。",
+            "选择对应物料的规格并加入采购车，可按实际需求添加多种物料。",
         )
         if not products:
             st.error("当前没有可申请的物料品类，请先刷新数据或联系管理员。")
@@ -15129,36 +15191,25 @@ def render_request_material_builder(
                             if not selected_lines:
                                 st.warning("所选型号和语种之间没有有效的物料组合。")
                             else:
-                                existing_keys = {request_material_key(line) for line in lines}
-                                new_keys = {
-                                    request_material_key(line)
-                                    for line in selected_lines
-                                    if request_material_key(line) not in existing_keys
-                                }
-                                if len(lines) + len(new_keys) > MAX_REQUEST_LINE_COUNT:
-                                    st.warning(
-                                        f"本次选择会超过采购车 {MAX_REQUEST_LINE_COUNT} 种物料的上限。"
+                                next_lines = [dict(line) for line in lines]
+                                for selected_line in selected_lines:
+                                    next_lines, _ = add_request_material_to_cart(
+                                        next_lines,
+                                        selected_line,
                                     )
-                                else:
-                                    next_lines = [dict(line) for line in lines]
-                                    for selected_line in selected_lines:
-                                        next_lines, _ = add_request_material_to_cart(
-                                            next_lines,
-                                            selected_line,
+                                st.session_state["request_material_lines"] = next_lines
+                                st.session_state["request_material_table_version"] = (
+                                    int(
+                                        st.session_state.get(
+                                            "request_material_table_version",
+                                            0,
                                         )
-                                    st.session_state["request_material_lines"] = next_lines
-                                    st.session_state["request_material_table_version"] = (
-                                        int(
-                                            st.session_state.get(
-                                                "request_material_table_version",
-                                                0,
-                                            )
-                                        )
-                                        + 1
                                     )
-                                    mark_request_form_dirty()
-                                    st.session_state["request_cart_added_toast"] = True
-                                    st.rerun()
+                                    + 1
+                                )
+                                mark_request_form_dirty()
+                                st.session_state["request_cart_added_toast"] = True
+                                st.rerun()
 
         lines = get_request_material_lines()
     return lines, preview_clicked
@@ -15447,7 +15498,7 @@ def render_restock_material_builder(
         render_section_header(
             "02",
             "采购补库清单",
-            f"按品类定义逐条添加现有物料，最多 {MAX_REQUEST_LINE_COUNT} 种",
+            f"按品类定义逐条添加现有物料，最多 {MAX_RESTOCK_LINE_COUNT} 种",
         )
         if not products:
             st.error("当前没有可补库的物料，请先刷新数据或在品类管理中创建库存行。")
@@ -15553,7 +15604,7 @@ def render_restock_material_builder(
             key="restock_add_material",
             type="primary",
             icon=":material/save:" if editor_index is not None else ":material/add:",
-            disabled=editor_index is None and len(lines) >= MAX_REQUEST_LINE_COUNT,
+            disabled=editor_index is None and len(lines) >= MAX_RESTOCK_LINE_COUNT,
             width="stretch",
         )
         if editor_index is not None and action_col.button(
@@ -15611,7 +15662,7 @@ def render_restock_material_builder(
             f"""
             <div class="pudu-material-list-status">
                 <span>{escape(ui_text("采购补库清单"))}</span>
-                <strong>{len(lines)} / {MAX_REQUEST_LINE_COUNT}</strong>
+                <strong>{len(lines)} / {MAX_RESTOCK_LINE_COUNT}</strong>
             </div>
             """,
             unsafe_allow_html=True,
@@ -20483,8 +20534,8 @@ def submit_feishu_cultural_request(
     valid_lines = [dict(line) for line in lines if int(line.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少选择一条文化周边。")
-    if len(valid_lines) > MAX_REQUEST_LINE_COUNT:
-        raise RuntimeError(f"一次最多提交 {MAX_REQUEST_LINE_COUNT} 条文化周边明细。")
+    if len(valid_lines) > MAX_CULTURAL_REQUEST_LINE_COUNT:
+        raise RuntimeError(f"一次最多提交 {MAX_CULTURAL_REQUEST_LINE_COUNT} 条文化周边明细。")
     validate_cultural_request_quantity(valid_lines)
     culture_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
     category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
@@ -20981,11 +21032,16 @@ def render_request_inventory_review_page() -> None:
         st.success("该申请已经完成库存核实，无需再次处理。")
         return
 
-    summary_cols = st.columns(4)
+    original_total_rmb = request_lines_total_rmb(lines)
+    if not original_total_rmb:
+        original_total_rmb = float(request.get("request_total_rmb") or 0)
+    summary_cols = st.columns(5)
     summary_cols[0].metric("申请人", str(request.get("requester") or "-"))
     summary_cols[1].metric("申请部门", str(request.get("department") or "-"))
     summary_cols[2].metric("当前结论", str(context.get("result") or "-"))
     summary_cols[3].metric("变更次数", int(request.get("inventory_review_version") or 0))
+    summary_cols[4].metric("原申请总金额", format_rmb(original_total_rmb))
+    st.caption(f"申请原因：{request.get('request_reason') or '-'}")
     st.caption(f"物料用途：{request.get('material_usage') or '-'}")
     st.caption(f"收件人信息：{request.get('recipient_info') or '-'}")
 
@@ -21009,6 +21065,14 @@ def render_request_inventory_review_page() -> None:
         ): str(item.get("record_id") or "")
         for item in material_records
         if str(item.get("record_id") or "")
+    }
+    material_price_by_dimensions = {
+        (
+            str(item.get("category") or ""),
+            str(item.get("model") or NO_MODEL_TEXT),
+            str(item.get("language") or NO_LANGUAGE_TEXT),
+        ): float(item.get("unit_price_rmb") or 0)
+        for item in material_records
     }
     categories = unique_preserve(
         [str(item.get("category") or "") for item in material_records]
@@ -21036,6 +21100,9 @@ def render_request_inventory_review_page() -> None:
         f"品类、型号和语种来自页面缓存（{cache_data.get('generated_at') or '未知时间'}）。"
         "页面内调整不会写入后台，点击提交后才会一次性进入任务队列。"
     )
+    is_agent_activity = request.get("request_reason") == AGENT_ACTIVITY_REQUEST_REASON
+    if is_agent_activity:
+        st.info("该申请原因为代理活动，每一条物料明细数量上限为 50；超过后无法提交。")
     direct_confirm = st.button(
         "按原申请确认并提交",
         type="secondary",
@@ -21153,6 +21220,28 @@ def render_request_inventory_review_page() -> None:
             }
         )
     st.session_state[draft_key] = draft_rows
+    allocated_total_rmb = round(
+        sum(
+            material_price_by_dimensions.get(
+                (
+                    str(row.get("category") or ""),
+                    str(row.get("model") or NO_MODEL_TEXT),
+                    str(row.get("language") or NO_LANGUAGE_TEXT),
+                ),
+                0.0,
+            )
+            * int(row.get("quantity") or 0)
+            for row in draft_rows
+        ),
+        2,
+    )
+    amount_cols = st.columns(2)
+    amount_cols[0].metric("原申请总金额", format_rmb(original_total_rmb))
+    amount_cols[1].metric(
+        "当前配货总金额",
+        format_rmb(allocated_total_rmb),
+        delta=format_rmb(allocated_total_rmb - original_total_rmb),
+    )
     if remove_uid:
         st.session_state[draft_key] = [
             row for row in draft_rows if str(row.get("uid") or "") != remove_uid
@@ -21210,6 +21299,12 @@ def render_request_inventory_review_page() -> None:
     ]
     if invalid_rows:
         st.error("配货方案中存在无效物料，请重新选择。")
+        return
+    quantity_errors = validate_agent_activity_line_quantities(
+        request.get("request_reason"), rows
+    )
+    if quantity_errors:
+        st.error("；".join(quantity_errors))
         return
     if not change_note.strip():
         st.error("请填写配货调整说明。")
