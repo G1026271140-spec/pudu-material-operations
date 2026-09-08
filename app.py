@@ -9,7 +9,6 @@ import threading
 import time
 import unicodedata
 import uuid
-import sys
 from collections import Counter
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -63,6 +62,19 @@ from ui_i18n import (
     normalize_ui_language,
     translate_ui_text,
 )
+
+
+class _AppRuntimeProxy:
+    """Resolve app APIs from this script without relying on Streamlit's module name."""
+
+    def __getattr__(self, name: str) -> object:
+        try:
+            return globals()[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
+
+APP_RUNTIME = _AppRuntimeProxy()
 
 
 DEFAULT_PASSWORD = "376493"
@@ -6344,7 +6356,7 @@ def render_page_cache_refresh_button(page_key: str, container: object = st) -> N
     ):
         if page_key == "order_scheduling":
             from order_scheduling_page import start_refresh
-            start_refresh(sys.modules[__name__])
+            start_refresh(APP_RUNTIME)
             st.rerun()
         with fullscreen_data_sync("正在同步本页数据"):
             try:
@@ -10134,7 +10146,7 @@ def submit_feishu_material_request(
     if request_payload.get("scheduling_version") == 1:
         import order_scheduling as scheduling_rules
         from order_scheduling_service import SchedulingService
-        SchedulingService(sys.modules[__name__]).validate_schema()
+        SchedulingService(APP_RUNTIME).validate_schema()
         scheduling_fields = scheduling_rules.calculate_dates(
             request_payload.get("arrival_start"), request_payload.get("arrival_end"),
             str(request_payload.get("request_reason") or ""),
@@ -10431,7 +10443,7 @@ def enqueue_feishu_material_request(
     if request_payload.get("scheduling_version") == 1:
         import order_scheduling as scheduling_rules
         from order_scheduling_service import SchedulingService
-        service = SchedulingService(sys.modules[__name__])
+        service = SchedulingService(APP_RUNTIME)
         service.validate_schema()
         accepted_now = datetime.now(scheduling_rules.CHINA_TZ)
         roles = service.roles(request_payload.get("requester_open_id"))
@@ -11105,7 +11117,7 @@ def apply_inventory_allocation_schedule(
 
     generated = 0
     if order_plans and feishu_client() is not None:
-        service = SchedulingService(sys.modules[__name__])
+        service = SchedulingService(APP_RUNTIME)
         live_snapshot = service.snapshot(live=True)
         live_groups = service.grouped_requests(live_snapshot)
         if request_key in live_groups:
@@ -14590,7 +14602,7 @@ def validate_request_draft(draft: dict[str, object]) -> list[str]:
     if draft.get("scheduling_version") == 1:
         from order_scheduling_service import SchedulingService
         try:
-            SchedulingService(sys.modules[__name__]).request_dates(draft)
+            SchedulingService(APP_RUNTIME).request_dates(draft)
         except Exception as exc:
             errors.append(str(exc))
     missing = [
@@ -14911,6 +14923,13 @@ def render_compact_request_cart(container: object, lines: list[dict[str, object]
     return lines
 
 
+def request_preview_full_rerun() -> None:
+    """Leave the material fragment only when the user requests final validation."""
+    st.session_state["request_preview_requested"] = True
+    st.rerun(scope="app")
+
+
+@st.fragment
 def render_request_material_builder(
     selection_context: dict[str, object],
     products: list[str],
@@ -14946,12 +14965,14 @@ def render_request_material_builder(
             label_visibility="collapsed",
         )
         lines = render_compact_request_cart(cart_col, lines)
-        preview_clicked = preview_col.button(
+        preview_clicked = bool(st.session_state.pop("request_preview_requested", False))
+        preview_col.button(
             "提交物料申请",
             key="request_preview",
             type="primary",
             icon=":material/preview:",
             width="stretch",
+            on_click=request_preview_full_rerun,
         )
         filtered_products = filter_request_catalog_products(products, search_query)
         if not filtered_products:
@@ -15209,7 +15230,7 @@ def render_request_material_builder(
                                 )
                                 mark_request_form_dirty()
                                 st.session_state["request_cart_added_toast"] = True
-                                st.rerun()
+                                st.rerun(scope="fragment")
 
         lines = get_request_material_lines()
     return lines, preview_clicked
@@ -15312,7 +15333,7 @@ def render_change_form(show_title: bool = True) -> None:
 
         freight_payer = DEFAULT_FREIGHT_PAYER
         from order_scheduling_page import request_schedule_inputs
-        scheduling_inputs = request_schedule_inputs(sys.modules[__name__])
+        scheduling_inputs = request_schedule_inputs(APP_RUNTIME)
 
     lines, preview_clicked = render_request_material_builder(
         selection_context,
@@ -20939,7 +20960,7 @@ def render_management_page() -> None:
             render_gift_projects_page()
         elif material_section == "下单排期管理":
             from order_scheduling_page import render_order_scheduling_page
-            render_order_scheduling_page(sys.modules[__name__])
+            render_order_scheduling_page(APP_RUNTIME)
         else:
             render_shipping_template_page(load_feishu_category_records())
         return

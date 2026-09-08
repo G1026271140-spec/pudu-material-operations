@@ -28,6 +28,12 @@ class MobileRequestLayoutTests(unittest.TestCase):
         self.assertIn('key="request_business_section"', SOURCE)
         self.assertIn('key="request_material_section"', SOURCE)
 
+    def test_request_material_interactions_use_a_fragment(self) -> None:
+        builder = SOURCE.split("def render_request_material_builder", 1)[0]
+        self.assertTrue(builder.rstrip().endswith("@st.fragment"))
+        self.assertIn('st.rerun(scope="app")', SOURCE)
+        self.assertIn('st.rerun(scope="fragment")', SOURCE)
+
     def test_phone_toolbar_supports_language_and_navigation(self) -> None:
         self.assertIn('key="request_mobile_toolbar"', SOURCE)
         self.assertIn('key="request_mobile_ui_language"', SOURCE)

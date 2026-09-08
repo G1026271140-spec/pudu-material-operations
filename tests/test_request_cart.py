@@ -5,6 +5,21 @@ import app
 
 
 class RequestCartTests(unittest.TestCase):
+    def test_runtime_proxy_resolves_current_app_api_without_module_lookup(self) -> None:
+        self.assertIs(app.APP_RUNTIME.fresh_feishu_rows, app.fresh_feishu_rows)
+        self.assertEqual(app.APP_RUNTIME.LANGUAGE_EN, app.LANGUAGE_EN)
+
+    def test_request_preview_promotes_fragment_rerun_to_full_app(self) -> None:
+        state = {}
+        with (
+            patch.object(app.st, "session_state", state),
+            patch.object(app.st, "rerun") as rerun,
+        ):
+            app.request_preview_full_rerun()
+
+        self.assertTrue(state["request_preview_requested"])
+        rerun.assert_called_once_with(scope="app")
+
     def test_category_image_uses_cached_attachment_field(self) -> None:
         rows = [
             {
