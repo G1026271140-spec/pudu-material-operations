@@ -9,3 +9,13 @@ data/daily_issuance_notification_state.json
 data/daily_issuance_notifier.log
 streamlit.log
 streamlit.err.log
+extensions/material-automation/.git/
+extensions/material-automation/config.toml
+extensions/material-automation/logs/
+extensions/material-automation/state/
+extensions/material-automation/*.ndjson
+extensions/material-automation/*.manifest.json
+extensions/material-automation/feishu_wiki_auth.png
+extensions/material-automation/region_field_update.json
+extensions/material-automation/source_region_filter.json
+extensions/material-automation/translation_probe.json
