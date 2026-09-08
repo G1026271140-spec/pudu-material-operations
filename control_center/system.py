@@ -34,7 +34,7 @@ class TaskSpec:
 
 TASKS = (
     TaskSpec("web", "本地 Web 应用", "deployment.local_web.web_task_name", "%USERPROFILE%\\PuduMaterialWebRunner\\logs\\web.log", "scripts/install_local_web_app_task.ps1", "本地 Streamlit 服务"),
-    TaskSpec("tunnel", "Cloudflare Tunnel", "deployment.local_web.tunnel_task_name", "%USERPROFILE%\\PuduMaterialWebRunner\\logs\\tunnel.log", "scripts/install_local_web_app_task.ps1", "material.gaohongyuan.me 的 Named Tunnel"),
+    TaskSpec("tunnel", "Cloudflare Tunnel", "deployment.local_web.tunnel_task_name", "%USERPROFILE%\\PuduMaterialWebRunner\\logs\\tunnel.log", "scripts/install_local_web_app_task.ps1", "pudu-material-operations.gaohongyuan.me 的 Named Tunnel"),
     TaskSpec("submission", "提交 Worker", "submission_worker.task_name", "%LOCALAPPDATA%\\PuduSubmissionWorker\\logs\\worker.log", "scripts/install_submission_worker_task.ps1", "处理飞书后台任务队列"),
     TaskSpec("card", "飞书卡片 Worker", "card_worker.task_name", "%LOCALAPPDATA%\\PuduFeishuCardWorker\\logs\\worker.log", "scripts/install_feishu_card_worker_task.ps1", "接收飞书消息卡片事件"),
     TaskSpec("cache", "物料缓存", "cache_runner.task_name", "%LOCALAPPDATA%\\PuduMaterialCacheRunner\\logs\\latest.log", "scripts/install_local_cache_task.ps1", "生成并发布页面静态缓存"),

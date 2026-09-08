@@ -9,7 +9,7 @@
   },
   "deployment": {
     "streamlit_app_url": "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/",
-    "custom_domain": "https://material.gaohongyuan.me",
+    "custom_domain": "https://pudu-material-operations.gaohongyuan.me",
     "local_web": {
       "address": "127.0.0.1",
       "port": 8501,
