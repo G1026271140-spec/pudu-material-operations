@@ -24,7 +24,7 @@ function Test-RuntimeProcess([string]$Name) {
         "PUDU Material Web App" {
             return @($processes | Where-Object {
                 $_.Name -in @("python.exe", "pythonw.exe") -and
-                $_.CommandLine -match "streamlit\s+run\s+app\.py"
+                $_.CommandLine -match "uvicorn\s+request_web\.api:api"
             }).Count -gt 0
         }
         "PUDU Material Cloudflare Tunnel" {

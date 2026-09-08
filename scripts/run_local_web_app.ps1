@@ -92,22 +92,20 @@ try {
     }
 
     if ($SetupOnly) { Write-RunnerLog "Web runner setup completed."; exit 0 }
-    Write-RunnerLog "Starting Streamlit on 127.0.0.1:${Port}."
+    Write-RunnerLog "Starting PUDU Material Operations API and React frontend on 127.0.0.1:${Port}."
     Push-Location -LiteralPath $RepoPath
     $previousErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-        & $venvPython -m streamlit run app.py `
-            --server.address=127.0.0.1 `
-            --server.port=$Port `
-            --server.headless=true `
-            --browser.gatherUsageStats=false 2>&1 | ForEach-Object { Write-RunnerLog ([string]$_) }
+        & $venvPython -m uvicorn request_web.api:api `
+            --host 127.0.0.1 `
+            --port $Port 2>&1 | ForEach-Object { Write-RunnerLog ([string]$_) }
         $ExitCode = $LASTEXITCODE
     } finally {
         $ErrorActionPreference = $previousErrorActionPreference
         Pop-Location
     }
-    if ($ExitCode -ne 0) { throw "Streamlit exited with code $ExitCode." }
+    if ($ExitCode -ne 0) { throw "PUDU Material Operations web app exited with code $ExitCode." }
 } catch {
     $ExitCode = 1
     if ($LogPath) { Write-RunnerLog $_.Exception.Message "ERROR" }

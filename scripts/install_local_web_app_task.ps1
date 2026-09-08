@@ -94,14 +94,14 @@ $escapedRunnerRepoPath = [Regex]::Escape($RunnerRepoPath)
 $orphanedWebProcesses = Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" -ErrorAction SilentlyContinue |
     Where-Object {
         $_.CommandLine -match $escapedRunnerRepoPath -and
-        $_.CommandLine -match "streamlit\s+run\s+app\.py"
+        $_.CommandLine -match "(streamlit\s+run\s+app\.py|uvicorn\s+request_web\.api:api)"
     }
 foreach ($process in $orphanedWebProcesses) {
     Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
 }
 $webArgs = @("-RepoPath", ('"{0}"' -f $RunnerRepoPath), "-SecretsPath", ('"{0}"' -f $RunnerSecretsPath), "-LogDirectory", ('"{0}"' -f $LogDirectory), "-BootstrapPython", ('"{0}"' -f $bootstrapPython), "-Port", $Port) -join " "
 $webAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('//B //NoLogo "{0}" "{1}" {2}' -f $HiddenWrapper, $WebRunner, $webArgs) -WorkingDirectory $RunnerRoot
-Register-ScheduledTask -TaskName $WebTaskName -InputObject (New-ScheduledTask -Action $webAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the PUDU material Streamlit app on localhost only.") -Force | Out-Null
+Register-ScheduledTask -TaskName $WebTaskName -InputObject (New-ScheduledTask -Action $webAction -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the PUDU Material Operations web app on localhost only.") -Force | Out-Null
 Start-ScheduledTask -TaskName $WebTaskName
 
 if (-not $SkipTunnel) {
@@ -117,5 +117,5 @@ $tunnelArgs = @("-CloudflaredPath", ('"{0}"' -f $cloudflared), "-TokenFile", ('"
 
 Write-Host "Installed local web task: $WebTaskName" -ForegroundColor Green
 if (-not $SkipTunnel) { Write-Host "Installed Named Tunnel task: $TunnelTaskName" -ForegroundColor Green }
-Write-Host "Local health URL: http://127.0.0.1:${Port}/_stcore/health"
+Write-Host "Local health URL: http://127.0.0.1:${Port}/api/health"
 Write-Host "Logs: $LogDirectory"

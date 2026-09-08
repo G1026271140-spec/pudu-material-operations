@@ -1,4 +1,6 @@
 streamlit>=1.58
+fastapi>=0.116
+uvicorn>=0.35
 lark-oapi>=1.7.1
 pandas>=2.2
 openpyxl>=3.1
