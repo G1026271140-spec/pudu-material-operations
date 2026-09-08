@@ -318,3 +318,78 @@ def test_category_submit_preserves_target_value_rows_for_worker(monkeypatch):
     )
     assert response.status_code == 200
     assert observed["payload"]["sync_args"]["target_values_rows"][0]["values"]["quantity"] == 8
+
+
+def test_allocation_pending_requires_admin_and_returns_only_summary(monkeypatch):
+    context = {
+        "request": {
+            "record_id": "request-1", "request_no": "REQ-1", "requester": "申请人",
+            "department": "市场部", "request_reason": "展会需求", "status": "待审批",
+            "inventory_review_status": "待核实", "inventory_review_version": 2,
+        },
+        "lines": [{"record_id": "line-1"}], "result": "库存充足",
+        "material_rows": [{"large": "must-not-leak"}],
+    }
+    monkeypatch.setattr(legacy_app, "pending_inventory_review_contexts", lambda: [context])
+    monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [{"open_id": "ou-admin", "name": "管理员"}])
+
+    assert TestClient(api).get("/api/admin/allocation/pending").status_code == 401
+    response = admin_client().get("/api/admin/allocation/pending")
+
+    assert response.status_code == 200
+    assert response.json()["requests"][0]["requestNo"] == "REQ-1"
+    assert response.json()["requests"][0]["lineCount"] == 1
+    assert "material_rows" not in response.text
+
+
+def test_signed_card_allocation_context_keeps_live_request_and_cached_options(monkeypatch):
+    context = {
+        "request": {"record_id": "request-1", "request_no": "REQ-1", "inventory_review_version": 0},
+        "request_row": {"fields": {}},
+        "lines": [{"record_id": "line-1", "material_record_id": "mat-1", "quantity": 2}],
+        "result": "库存充足", "snapshot_at": "2026-09-08 12:00:00",
+        "material_rows": [{"record_id": "mat-1", "fields": {}}],
+    }
+    monkeypatch.setattr(legacy_app, "valid_request_review_access_token", lambda *args: True)
+    monkeypatch.setattr(legacy_app, "cached_enabled_admin_open_ids", lambda *args: ["ou-admin"])
+    web_api._PENDING_ALLOCATION_CACHE.update(loaded_at=0.0, contexts={})
+    monkeypatch.setattr(legacy_app, "request_inventory_review_context", lambda **_kwargs: context)
+    monkeypatch.setattr(legacy_app, "load_static_request_form_cache", lambda: {"generated_at": "cache-time"})
+    monkeypatch.setattr(legacy_app, "cached_allocation_material_records", lambda *args, **kwargs: [{"record_id": "mat-1", "category": "产品单页", "model": "T300", "language": "英语"}])
+    monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [])
+
+    response = TestClient(api).get(
+        "/api/allocation/request-1?operator=ou-admin&review_token=signed"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["signedCardAccess"] is True
+    assert response.json()["operatorOpenId"] == "ou-admin"
+    assert response.json()["materials"][0]["record_id"] == "mat-1"
+
+
+def test_allocation_edit_queues_existing_worker_payload(monkeypatch):
+    observed = {}
+    monkeypatch.setattr(legacy_app, "cached_enabled_admin_open_ids", lambda *args: ["ou-admin"])
+    monkeypatch.setattr(
+        web_api, "_enqueue_fast",
+        lambda task_type, key, payload: observed.update(task_type=task_type, key=key, payload=payload) or "task-allocation",
+    )
+    response = admin_client().post(
+        "/api/allocation/request-1/submit",
+        json={
+            "operation": "edit",
+            "draft": {
+                "expected_version": 3, "operator_open_id": "ou-admin", "ship_date": "2026-09-20",
+                "change_note": "调整型号", "lines": [
+                    {"line_record_id": "line-1", "material_record_id": "mat-2", "quantity": 4, "remark": "替换", "order_required": True}
+                ],
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["taskId"] == "task-allocation"
+    assert observed["task_type"] == "申请物料库存编辑"
+    assert observed["payload"]["draft"]["request_id"] == "request-1"
+    assert observed["payload"]["draft"]["lines"][0]["order_required"] is True

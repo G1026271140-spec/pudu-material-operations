@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import RequestPage from "./App";
 import CulturalPage from "./CulturalPage";
 import ManagementPage from "./ManagementPage";
+import AllocationWorkbench from "./AllocationWorkbench";
 import "./portal.css";
 
 type Lang = "zh" | "en";
@@ -15,7 +16,7 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     tools: "数据与系统工具",
-    version: "当前应用版本 V2.6.8",
+    version: "当前应用版本 V2.6.9",
     locked: "此功能暂未对外开放",
     password: "请输入管理员密码",
     unlock: "解锁",
@@ -29,7 +30,7 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     tools: "Data & System Tools",
-    version: "Current Version V2.6.8",
+    version: "Current Version V2.6.9",
     locked: "This feature is not publicly available",
     password: "Enter administrator password",
     unlock: "Unlock",
@@ -38,6 +39,8 @@ const text = {
 };
 
 export default function Portal() {
+  const params = new URLSearchParams(window.location.search);
+  const directAllocation = params.get("allocation") === "request" && Boolean(params.get("request_id"));
   const [lang, setLang] = useState<Lang>(() =>
     localStorage.getItem("pudu-lang") === "en" ? "en" : "zh",
   );
@@ -52,6 +55,9 @@ export default function Portal() {
       .then((body) => setUnlocked(Boolean(body.unlocked)))
       .catch(() => undefined);
   }, []);
+  if (directAllocation) {
+    return <AllocationWorkbench lang={lang} directRequestId={params.get("request_id") || ""} operator={params.get("operator") || ""} reviewToken={params.get("review_token") || ""} />;
+  }
   function changeLang(next: Lang) {
     localStorage.setItem("pudu-lang", next);
     setLang(next);

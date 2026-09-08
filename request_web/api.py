@@ -3,12 +3,13 @@ from __future__ import annotations
 import hashlib
 import json
 import secrets
+import time
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from fastapi import Cookie, Depends, FastAPI, HTTPException, Response
+from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -153,6 +154,7 @@ api.add_middleware(
 api.mount("/category-assets", StaticFiles(directory=ROOT / "assets" / "request_categories"), name="category-assets")
 api.mount("/app-assets", StaticFiles(directory=ROOT / "assets"), name="app-assets")
 _ADMIN_SESSIONS: set[str] = set()
+_PENDING_ALLOCATION_CACHE: dict[str, Any] = {"loaded_at": 0.0, "contexts": {}}
 
 
 @api.get("/api/health")
@@ -208,6 +210,26 @@ def require_admin(pudu_admin: str = Cookie(default="")) -> str:
     if not pudu_admin or pudu_admin not in _ADMIN_SESSIONS:
         raise HTTPException(status_code=401, detail="管理页面需要密码解锁。")
     return pudu_admin
+
+
+def _allocation_actor(
+    request_id: str,
+    operator: str = "",
+    review_token: str = "",
+    pudu_admin: str = "",
+) -> str:
+    """Authorize either a password session or the signed administrator card link."""
+    import app as legacy
+
+    signed = (
+        legacy.valid_request_review_access_token(request_id, operator, review_token)
+        and operator in legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args())
+    )
+    if signed:
+        return operator
+    if pudu_admin and pudu_admin in _ADMIN_SESSIONS:
+        return ""
+    raise HTTPException(status_code=401, detail="配货工作台需要管理员权限或有效的飞书卡片链接。")
 
 
 @api.get("/api/admin/status")
@@ -279,6 +301,152 @@ def _management_snapshot() -> dict[str, Any]:
 @api.get("/api/admin/management-catalog")
 def management_catalog(_: str = Depends(require_admin)) -> dict[str, Any]:
     return _management_snapshot()
+
+
+def _allocation_summary(context: dict[str, Any]) -> dict[str, Any]:
+    request = dict(context.get("request") or {})
+    return {
+        "requestId": str(request.get("record_id") or ""),
+        "requestNo": str(request.get("request_no") or ""),
+        "requester": str(request.get("requester") or ""),
+        "department": str(request.get("department") or ""),
+        "reason": str(request.get("request_reason") or ""),
+        "status": str(request.get("status") or ""),
+        "inventoryReviewStatus": str(request.get("inventory_review_status") or ""),
+        "inventoryReviewResult": str(context.get("result") or ""),
+        "inventoryReviewVersion": int(request.get("inventory_review_version") or 0),
+        "reminderAt": str(request.get("inventory_review_reminder_at") or ""),
+        "submittedAt": str(request.get("submitted_at") or ""),
+        "lineCount": len(list(context.get("lines") or [])),
+    }
+
+
+def _allocation_operators(legacy: Any) -> list[dict[str, Any]]:
+    enabled_ids = set(legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args()))
+    contacts = _json("contact_departments_cache.json")
+    return [
+        user for user in list(contacts.get("users") or [])
+        if str(user.get("open_id") or user.get("id") or "") in enabled_ids
+    ]
+
+
+@api.get("/api/admin/allocation/pending")
+def allocation_pending(_: str = Depends(require_admin)) -> dict[str, Any]:
+    import app as legacy
+
+    try:
+        contexts = legacy.pending_inventory_review_contexts()
+        _PENDING_ALLOCATION_CACHE["loaded_at"] = time.monotonic()
+        _PENDING_ALLOCATION_CACHE["contexts"] = {
+            str(dict(item.get("request") or {}).get("record_id") or ""): dict(item)
+            for item in contexts
+        }
+        return {
+            "requests": [_allocation_summary(dict(item)) for item in contexts],
+            "operators": _allocation_operators(legacy),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"未核实库存申请读取失败：{exc}") from exc
+
+
+@api.get("/api/allocation/{request_id}")
+def allocation_context(
+    request_id: str,
+    operator: str = Query(default=""),
+    review_token: str = Query(default=""),
+    pudu_admin: str = Cookie(default=""),
+) -> dict[str, Any]:
+    import app as legacy
+    from order_scheduling import SHIP_DATE, as_date
+
+    signed_operator = _allocation_actor(request_id, operator, review_token, pudu_admin)
+    try:
+        cached_contexts = dict(_PENDING_ALLOCATION_CACHE.get("contexts") or {})
+        cache_is_fresh = time.monotonic() - float(_PENDING_ALLOCATION_CACHE.get("loaded_at") or 0) <= 120
+        context = cached_contexts.get(request_id) if cache_is_fresh else None
+        if context is None:
+            context = legacy.request_inventory_review_context(request_id=request_id)
+        request = dict(context["request"])
+        lines = [dict(item) for item in list(context.get("lines") or [])]
+        current_ids = {str(item.get("material_record_id") or "") for item in lines}
+        materials = legacy.cached_allocation_material_records(
+            legacy.load_static_request_form_cache(),
+            list(context.get("material_rows") or []),
+            current_material_ids=current_ids,
+        )
+        ship_date = as_date(legacy.feishu_fields(context.get("request_row") or {}).get(SHIP_DATE))
+        return {
+            "request": request,
+            "lines": lines,
+            "result": context.get("result"),
+            "snapshotAt": context.get("snapshot_at"),
+            "shipDate": ship_date.isoformat() if ship_date else "",
+            "materials": materials,
+            "operatorOpenId": signed_operator,
+            "signedCardAccess": bool(signed_operator),
+            "operators": _allocation_operators(legacy),
+            "cacheGeneratedAt": legacy.load_static_request_form_cache().get("generated_at"),
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"申请单实时配货数据读取失败：{exc}") from exc
+
+
+@api.post("/api/allocation/{request_id}/submit")
+def allocation_submit(
+    request_id: str,
+    body: dict[str, Any],
+    operator: str = Query(default=""),
+    review_token: str = Query(default=""),
+    pudu_admin: str = Cookie(default=""),
+) -> dict[str, Any]:
+    import app as legacy
+    from submission_queue import (
+        QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+        QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    )
+
+    signed_operator = _allocation_actor(request_id, operator, review_token, pudu_admin)
+    draft = dict(body.get("draft") or {})
+    draft["request_id"] = request_id
+    if signed_operator:
+        draft["operator_open_id"] = signed_operator
+    operator_open_id = str(draft.get("operator_open_id") or "").strip()
+    if operator_open_id not in legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args()):
+        raise HTTPException(status_code=422, detail="请选择已启用的管理员作为本次配货操作人。")
+    operation = str(body.get("operation") or "")
+    if operation not in {"confirm", "edit"}:
+        raise HTTPException(status_code=422, detail="不支持的配货操作。")
+    if not str(draft.get("ship_date") or "").strip():
+        raise HTTPException(status_code=422, detail="请选择申请单发货日期。")
+    if operation == "edit":
+        if not str(draft.get("change_note") or "").strip():
+            raise HTTPException(status_code=422, detail="请填写配货调整说明。")
+        lines = [dict(item) for item in list(draft.get("lines") or []) if isinstance(item, dict)]
+        if not lines:
+            raise HTTPException(status_code=422, detail="配货方案必须至少保留一条物料明细。")
+        material_ids = [str(item.get("material_record_id") or "") for item in lines]
+        if any(not item for item in material_ids) or len(set(material_ids)) != len(material_ids):
+            raise HTTPException(status_code=422, detail="配货方案包含无效或重复物料。")
+        if any(int(item.get("quantity") or 0) <= 0 for item in lines):
+            raise HTTPException(status_code=422, detail="配货数量必须大于 0。")
+    task_type = (
+        QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM
+        if operation == "confirm"
+        else QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT
+    )
+    version = int(draft.get("expected_version") or 0)
+    serialized_lines = json.dumps(draft.get("lines") or [], ensure_ascii=False, sort_keys=True)
+    idempotency = (
+        f"request-inventory-{operation}:{request_id}:{version}:"
+        f"{hashlib.sha256(serialized_lines.encode('utf-8')).hexdigest()}:{draft.get('ship_date')}"
+    )
+    try:
+        task_id = _enqueue_fast(task_type, idempotency, {"draft": draft})
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"配货任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id}
 
 
 @api.post("/api/admin/restock/submit")
