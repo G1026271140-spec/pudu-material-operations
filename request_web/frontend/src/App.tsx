@@ -63,6 +63,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     [usage, setUsage] = useState(""),
     [reason, setReason] = useState(""),
     [date, setDate] = useState("");
+  const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
   const [selectedModels, setSelectedModels] = useState<string[]>([]),
     [selectedLanguages, setSelectedLanguages] = useState<string[]>([]),
     [qty, setQty] = useState(1),
@@ -229,7 +230,20 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     setError("");
   }
   function draft() {
+    const acceptedRoles = catalog?.rolesByUser?.[requesterId]?.length
+      ? catalog.rolesByUser[requesterId]
+      : ["销售"];
+    const acceptedNow = new Date();
+    const acceptedDate = new Date(
+      acceptedNow.getTime() - acceptedNow.getTimezoneOffset() * 60_000,
+    )
+      .toISOString()
+      .slice(0, 10);
     return {
+      submission_token: submissionToken,
+      accepted_roles: acceptedRoles,
+      accepted_date: acceptedDate,
+      accepted_at_ms: acceptedNow.getTime(),
       title: `${usage || "物料用途"}-${user?.name || "申请人"}-营销物料领取`,
       department,
       department_id: depId,

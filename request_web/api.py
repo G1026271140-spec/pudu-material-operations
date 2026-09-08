@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import secrets
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -112,6 +113,9 @@ class RequestDraft(BaseModel):
     material_usage: str
     submission_token: str = Field(default_factory=lambda: uuid4().hex)
     scheduling_version: int = 1
+    accepted_roles: list[str] = Field(default_factory=list)
+    accepted_date: str = ""
+    accepted_at_ms: int = 0
     request_reason: str
     arrival_start: str
     arrival_end: str
@@ -252,6 +256,46 @@ def _validate(draft: RequestDraft, *, live: bool) -> tuple[dict[str, Any], list[
     return data, lines, errors
 
 
+@lru_cache(maxsize=1)
+def _queue_client_and_table() -> tuple[Any, str]:
+    import app as legacy
+    from submission_queue import QUEUE_TABLE_NAME
+
+    client = legacy.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建后台申请任务。")
+    table = next((row for row in client.list_tables() if str(row.get("name") or "").strip() == QUEUE_TABLE_NAME), None)
+    table_id = str((table or {}).get("table_id") or "").strip()
+    if not table_id:
+        raise RuntimeError("未找到后台任务队列表。")
+    return client, table_id
+
+
+def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
+    from submission_queue import (
+        QUEUE_COMPLETION_UNFINISHED, QUEUE_FIELD_COMPLETION_STATUS,
+        QUEUE_FIELD_IDEMPOTENCY_KEY, QUEUE_FIELD_PAYLOAD, QUEUE_FIELD_RETRY_COUNT,
+        QUEUE_FIELD_STATUS, QUEUE_FIELD_SUBMITTED_AT, QUEUE_FIELD_TASK_ID,
+        QUEUE_FIELD_TASK_TYPE, QUEUE_PAYLOAD_INLINE_LIMIT, QUEUE_STATUS_PENDING,
+        timestamp_ms,
+    )
+
+    serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    if len(serialized) > QUEUE_PAYLOAD_INLINE_LIMIT:
+        raise RuntimeError("申请内容超过队列单条载荷限制，请减少明细后重试。")
+    client, table_id = _queue_client_and_table()
+    task_id = uuid4().hex
+    rows = client.batch_create_records(table_id, [{
+        QUEUE_FIELD_TASK_ID: task_id, QUEUE_FIELD_TASK_TYPE: task_type,
+        QUEUE_FIELD_IDEMPOTENCY_KEY: idempotency_key, QUEUE_FIELD_STATUS: QUEUE_STATUS_PENDING,
+        QUEUE_FIELD_PAYLOAD: serialized, QUEUE_FIELD_SUBMITTED_AT: timestamp_ms(),
+        QUEUE_FIELD_RETRY_COUNT: 0, QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
+    }])
+    if not rows:
+        raise RuntimeError("申请未能写入后台任务队列。")
+    return task_id
+
+
 @api.post("/api/validate")
 def validate(draft: RequestDraft) -> dict[str, Any]:
     _, _, errors = _validate(draft, live=False)
@@ -260,16 +304,17 @@ def validate(draft: RequestDraft) -> dict[str, Any]:
 
 @api.post("/api/submit")
 def submit(draft: RequestDraft) -> dict[str, Any]:
-    payload, lines, errors = _validate(draft, live=True)
+    payload, lines, errors = _validate(draft, live=False)
     if errors:
         raise HTTPException(status_code=422, detail=errors)
     try:
-        import app as legacy
+        from app import queued_material_request_payload
+        from submission_queue import QUEUE_TASK_TYPE_MATERIAL_REQUEST
 
-        task, created = legacy.enqueue_feishu_material_request(payload, lines)
+        task_id = _enqueue_fast(QUEUE_TASK_TYPE_MATERIAL_REQUEST, draft.submission_token, queued_material_request_payload(payload, lines))
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"申请未能进入后台队列：{exc}") from exc
-    return {"accepted": True, "created": created, "taskId": task.task_id, "status": task.status}
+    return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
 
 
 @api.post("/api/cultural-submit")
@@ -281,12 +326,13 @@ def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
 
         lines = [line.model_dump() for line in draft.lines]
         legacy.validate_cultural_request_quantity(lines)
-        task, created = legacy.enqueue_feishu_cultural_request(
-            {key: value for key, value in draft.model_dump().items() if key != "lines"}, lines
-        )
+        from submission_queue import QUEUE_TASK_TYPE_CULTURAL_REQUEST
+
+        request_payload = {key: value for key, value in draft.model_dump().items() if key != "lines"}
+        task_id = _enqueue_fast(QUEUE_TASK_TYPE_CULTURAL_REQUEST, draft.submission_token, legacy.queued_cultural_request_payload(request_payload, lines))
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {"accepted": True, "created": created, "taskId": task.task_id, "status": task.status}
+    return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
 
 
 if DIST.is_dir():

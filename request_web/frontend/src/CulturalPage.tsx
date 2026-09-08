@@ -110,6 +110,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     [review, setReview] = useState(false),
     [busy, setBusy] = useState(false),
     [done, setDone] = useState("");
+  const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
   useEffect(() => {
     fetch("/api/cultural-catalog")
       .then((r) => r.json())
@@ -202,6 +203,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
           requester_open_id: user.open_id,
           department,
           department_id: departmentId,
+          submission_token: submissionToken,
           lines,
         }),
       });
