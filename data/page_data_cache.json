@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-08 16:32:47",
+  "generated_at": "2026-09-09 10:32:45",
   "tables": {
     "物料品类": [
       {
@@ -30242,7 +30242,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -30261,7 +30261,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -31452,7 +31452,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -31471,7 +31471,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -34749,7 +34749,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -34768,7 +34768,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -45158,7 +45158,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -45177,7 +45177,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -45922,7 +45922,7 @@
           "物料品类": "公司产品手册",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -45941,7 +45941,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -46656,7 +46656,7 @@
           "物料品类": "公司产品手册",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -46675,7 +46675,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -76777,7 +76777,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -76796,7 +76796,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -78021,7 +78021,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -78040,7 +78040,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -79277,7 +79277,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -79296,7 +79296,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -79886,7 +79886,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -79905,7 +79905,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -107638,7 +107638,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -107657,7 +107657,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -108243,7 +108243,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -108262,7 +108262,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
@@ -108485,7 +108485,7 @@
           "物料品类": "产品单页(Product Flyer )",
           "物料申请单": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
               "text": null,
               "text_arr": [],
@@ -108504,7 +108504,7 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
               "text": null,
               "text_arr": [],
