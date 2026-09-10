@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-10 10:33:05",
+  "generated_at": "2026-09-10 15:45:35",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -1451,6 +1451,27 @@
           "product_line": "GR"
         },
         {
+          "model": "GT3",
+          "languages": [
+            "无需语种"
+          ],
+          "product_line": "Hulk"
+        },
+        {
+          "model": "GT5",
+          "languages": [
+            "无需语种"
+          ],
+          "product_line": "Hulk"
+        },
+        {
+          "model": "GT7",
+          "languages": [
+            "无需语种"
+          ],
+          "product_line": "Hulk"
+        },
+        {
           "model": "KettyBot Pro",
           "languages": [
             "无需语种"
@@ -1564,7 +1585,7 @@
       ]
     }
   ],
-  "combination_count": 672,
+  "combination_count": 675,
   "inventory_rows": [
     {
       "material_code": "MAT-0181",
@@ -6571,7 +6592,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT3",
       "language": "英语(English)",
-      "quantity": -40,
+      "quantity": 70,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6659,7 +6680,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT5",
       "language": "英语(English)",
-      "quantity": -40,
+      "quantity": 70,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6747,7 +6768,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT7",
       "language": "英语(English)",
-      "quantity": -40,
+      "quantity": 70,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6941,8 +6962,32 @@
       "language": "韩语(Korean)",
       "quantity": 0,
       "unit_price_rmb": 5.416
+    },
+    {
+      "material_code": "MAT-1399",
+      "product": "冰箱贴( Fridge Magnet)",
+      "model": "GT3",
+      "language": "无需语种",
+      "quantity": 0,
+      "unit_price_rmb": 13.54
+    },
+    {
+      "material_code": "MAT-1400",
+      "product": "冰箱贴( Fridge Magnet)",
+      "model": "GT5",
+      "language": "无需语种",
+      "quantity": 0,
+      "unit_price_rmb": 13.54
+    },
+    {
+      "material_code": "MAT-1401",
+      "product": "冰箱贴( Fridge Magnet)",
+      "model": "GT7",
+      "language": "无需语种",
+      "quantity": 0,
+      "unit_price_rmb": 13.54
     }
   ],
-  "row_count": 672,
+  "row_count": 675,
   "built_from": "page_data_static_snapshot"
 }
