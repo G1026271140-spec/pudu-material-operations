@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-08 10:32:40",
+  "generated_at": "2026-09-10 10:33:05",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -4411,7 +4411,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 40,
+      "quantity": 37,
       "unit_price_rmb": 13.54
     },
     {
@@ -4419,7 +4419,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "Bellabot pro",
       "language": "无需语种",
-      "quantity": 20,
+      "quantity": 17,
       "unit_price_rmb": 13.54
     },
     {
@@ -4435,7 +4435,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "T300",
       "language": "无需语种",
-      "quantity": 15,
+      "quantity": 12,
       "unit_price_rmb": 13.54
     },
     {
@@ -4443,7 +4443,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "MT1",
       "language": "无需语种",
-      "quantity": 80,
+      "quantity": 77,
       "unit_price_rmb": 13.54
     },
     {
@@ -4451,7 +4451,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BG1",
       "language": "无需语种",
-      "quantity": 50,
+      "quantity": 47,
       "unit_price_rmb": 13.54
     },
     {
@@ -4459,7 +4459,7 @@
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
       "language": "无需语种",
-      "quantity": 524,
+      "quantity": 521,
       "unit_price_rmb": 33.85
     },
     {
@@ -5275,7 +5275,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "猛犸MP2000",
       "language": "无需语种",
-      "quantity": 100,
+      "quantity": 97,
       "unit_price_rmb": 13.54
     },
     {
