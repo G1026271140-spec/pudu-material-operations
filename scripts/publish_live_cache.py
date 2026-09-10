@@ -25,8 +25,9 @@ def main() -> int:
     groups = tuple(GROUPS) if args.scope == "All" else (args.scope,)
     result = publish_cache(ROOT, target, groups, freshly_generated=args.freshly_generated)
     print(json.dumps(result, ensure_ascii=False), flush=True)
-    with urlopen(f"http://127.0.0.1:{int(web['port'])}/_stcore/health", timeout=10) as response:
-        if response.status != 200 or response.read().strip() != b"ok":
+    with urlopen(f"http://127.0.0.1:{int(web['port'])}/api/health", timeout=10) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+        if response.status != 200 or payload.get("status") != "ok":
             raise RuntimeError("缓存已同步，但正式应用健康检查未通过。")
     print("live_cache_published_and_web_healthy", flush=True)
     return 0

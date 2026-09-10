@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import app
@@ -7,6 +8,16 @@ import app
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
         self.assertEqual(app.APP_VERSION, "V2.7.0")
+
+    def test_runtime_health_checks_use_fastapi_endpoint(self):
+        root = Path(__file__).resolve().parents[1]
+        for relative_path in (
+            "scripts/publish_live_cache.py",
+            "scripts/run_control_center_release.ps1",
+        ):
+            source = (root / relative_path).read_text(encoding="utf-8-sig")
+            self.assertIn("/api/health", source)
+            self.assertNotIn("/_stcore/health", source)
 
     def test_submission_queue_module_version_matches_application(self) -> None:
         self.assertEqual(

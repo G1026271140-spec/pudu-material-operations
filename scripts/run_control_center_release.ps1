@@ -189,8 +189,8 @@ try {
     Set-Stage "运行状态与健康验证"
     $Config = Get-Content -LiteralPath (Join-Path $RepoPath "config\project_config.json") -Raw | ConvertFrom-Json
     $Port = [int]$Config.deployment.local_web.port
-    Wait-HttpHealth "http://127.0.0.1:$Port/_stcore/health"
-    Wait-HttpHealth "$($Config.deployment.custom_domain.TrimEnd('/'))/_stcore/health"
+    Wait-HttpHealth "http://127.0.0.1:$Port/api/health"
+    Wait-HttpHealth "$($Config.deployment.custom_domain.TrimEnd('/'))/api/health"
     foreach ($TaskName in @(
         $Config.deployment.local_web.web_task_name,
         $Config.deployment.local_web.tunnel_task_name,
