@@ -217,6 +217,43 @@ def test_management_catalog_requires_password_and_uses_cached_snapshot():
     assert payload["dimensions"]["model"]
     assert payload["dimensions"]["language"]
     assert payload["dimensions"]["region"]
+    assert len(payload["shipping"]["cartonPresets"]) == 8
+    assert "Flyers" in payload["shipping"]["packingTypes"]
+
+
+def test_shipping_invoice_preview_requires_admin_and_normalizes_country_name():
+    body = {"template_date": "2026-09-08", "address_code": "Thailand", "address": ""}
+    assert TestClient(api).post("/api/admin/shipping/invoice-preview", json=body).status_code == 401
+
+    response = admin_client().post("/api/admin/shipping/invoice-preview", json=body)
+
+    assert response.status_code == 200
+    assert response.json() == {"addressCode": "TH", "invoiceNumber": "2026-MKT-TH0908"}
+
+
+def test_shipping_generate_returns_immediate_workbook_download():
+    response = admin_client().post(
+        "/api/admin/shipping/generate",
+        json={
+            "template_date": "2026-09-08",
+            "address_code": "US",
+            "recipient": {"recipient_name": "Test User", "address": "United States"},
+            "lines": [{
+                "line_id": "cat-1", "invoice_name": "Flyer", "packing_name": "Flyer",
+                "packing_type": "Flyers", "quantity": 10, "unit_price": 1.2,
+                "customs_code": "4911101000", "product_model": "sample", "sku": "/",
+            }],
+            "cartons": [{
+                "carton_no": 1, "carton_quantity": 1, "net_weight": 5,
+                "gross_weight": 6, "length_cm": 44, "width_cm": 30, "height_cm": 13,
+            }],
+            "allocations": [{"carton_no": 1, "line_id": "cat-1", "quantity": 10}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.content.startswith(b"PK")
+    assert "2026-MKT-US0908_INV_PL.xlsx" in response.headers["content-disposition"]
 
 
 def test_management_restock_queues_existing_worker_payload(monkeypatch):

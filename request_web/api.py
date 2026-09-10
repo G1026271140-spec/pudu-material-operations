@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import secrets
 import time
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -11,7 +13,7 @@ from uuid import uuid4
 
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -300,7 +302,58 @@ def _management_snapshot() -> dict[str, Any]:
 
 @api.get("/api/admin/management-catalog")
 def management_catalog(_: str = Depends(require_admin)) -> dict[str, Any]:
-    return _management_snapshot()
+    snapshot = _management_snapshot()
+    from shipping_page import CARTON_PRESETS, PACKING_TYPE_OPTIONS
+
+    packing_types = list(PACKING_TYPE_OPTIONS)
+    for category in snapshot.get("categories", []):
+        value = str(category.get("packing_list_product_type") or "").strip()
+        if value and value not in packing_types:
+            packing_types.append(value)
+    snapshot["shipping"] = {
+        "cartonPresets": CARTON_PRESETS,
+        "packingTypes": packing_types,
+    }
+    return snapshot
+
+
+@api.post("/api/admin/shipping/invoice-preview")
+def shipping_invoice_preview(body: dict[str, Any], _: str = Depends(require_admin)) -> dict[str, str]:
+    from shipping_template import build_invoice_number, infer_address_code, normalize_address_code
+
+    raw_code = str(body.get("address_code") or "").strip()
+    normalized = normalize_address_code(raw_code) if raw_code else infer_address_code(str(body.get("address") or ""))
+    try:
+        invoice_number = build_invoice_number(date.fromisoformat(str(body.get("template_date") or "")), normalized)
+    except Exception:
+        invoice_number = ""
+    return {"addressCode": normalized, "invoiceNumber": invoice_number}
+
+
+@api.post("/api/admin/shipping/generate")
+def shipping_generate(body: dict[str, Any], _: str = Depends(require_admin)) -> StreamingResponse:
+    from shipping_template import Carton, CartonAllocation, ShippingLine, generate_shipping_workbook
+
+    try:
+        lines = [ShippingLine(**dict(item)) for item in list(body.get("lines") or [])]
+        cartons = [Carton(**dict(item)) for item in list(body.get("cartons") or [])]
+        allocations = [CartonAllocation(**dict(item)) for item in list(body.get("allocations") or [])]
+        invoice_number, workbook = generate_shipping_workbook(
+            template_date=date.fromisoformat(str(body.get("template_date") or "")),
+            address_code=str(body.get("address_code") or ""),
+            recipient=dict(body.get("recipient") or {}),
+            lines=lines,
+            cartons=cartons,
+            allocations=allocations,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    filename = f"{invoice_number}_INV_PL.xlsx"
+    return StreamingResponse(
+        io.BytesIO(workbook),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 def _allocation_summary(context: dict[str, Any]) -> dict[str, Any]:

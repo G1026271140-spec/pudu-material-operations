@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import AllocationWorkbench from "./AllocationWorkbench";
+import ShippingTemplatePage from "./ShippingTemplatePage";
 import "./management.css";
 
 type Lang = "zh" | "en";
@@ -43,7 +44,7 @@ async function post(url: string, body: unknown) {
 export default function ManagementPage({ lang }: { lang: Lang }) {
   const tr = (zh: string, en: string) => (lang === "zh" ? zh : en);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
-  const [tab, setTab] = useState<"allocation" | "restock" | "category" | Kind>("allocation");
+  const [tab, setTab] = useState<"allocation" | "shipping" | "restock" | "category" | Kind>("allocation");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
@@ -62,6 +63,7 @@ export default function ManagementPage({ lang }: { lang: Lang }) {
   if (!catalog) return <main className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</main>;
   const tabs = [
     ["allocation", tr("配货工作台", "Allocation")],
+    ["shipping", tr("发货模板", "Shipping Template")],
     ["restock", tr("采购补库", "Restock")],
     ["category", tr("品类管理", "Categories")],
     ["model", tr("型号管理", "Models")],
@@ -78,6 +80,7 @@ export default function ManagementPage({ lang }: { lang: Lang }) {
         <div className="management-tabs">{tabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} onClick={() => { setTab(key); setError(""); setSuccess(""); }}>{label}</button>)}</div>
         {success && <div className="success-banner">✓ {success}</div>}
         {tab === "allocation" && <AllocationWorkbench lang={lang} embedded />}
+        {tab === "shipping" && <ShippingTemplatePage catalog={catalog} lang={lang} />}
         {tab === "restock" && <Restock catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
         {tab === "category" && <CategoryManager catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
         {(["model", "language", "region"] as string[]).includes(tab) && <DimensionManager key={tab} kind={tab as Kind} catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
