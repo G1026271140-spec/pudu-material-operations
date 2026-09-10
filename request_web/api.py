@@ -171,25 +171,32 @@ def catalog() -> dict[str, Any]:
 
 @api.get("/api/cultural-catalog")
 def cultural_catalog() -> dict[str, Any]:
+    import app as legacy
+
     page = _json("page_data_cache.json")
     contacts = _json("contact_departments_cache.json")
     images = _image_index()
-    rows = page.get("tables", {}).get("文化周边管理库存", [])
-    combinations = []
-    for row in rows:
-        fields = row.get("fields", {})
-        combinations.append({
-            "product": _field_text(fields.get("物料品类")),
-            "model": _field_text(fields.get("产品型号")),
-            "region": _field_text(fields.get("战区管理")),
-            "stock": int(fields.get("当前库存") or 0),
-            "unitPriceRmb": float(fields.get("单价（人民币）") or 0),
-        })
+    tables = page.get("tables", {})
+    filtered = legacy.cultural_request_catalog(
+        list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, [])),
+        list(tables.get(legacy.CATEGORY_TABLE_NAME, [])),
+        list(tables.get(legacy.MODEL_TABLE_NAME, [])),
+    )
+    combinations = [
+        {
+            "product": row["product"],
+            "model": row["model"],
+            "region": row["region"],
+            "stock": int(row.get("stock") or 0),
+            "unitPriceRmb": float(row.get("unit_price_rmb") or 0),
+        }
+        for row in filtered["combinations"].values()
+    ]
     return {
         "generatedAt": page.get("generated_at"),
         "combinations": combinations,
         "images": images,
-        "categoryLabels": _json("request_form_cache.json").get("category_display_names", {}),
+        "categoryLabels": filtered["category_labels"],
         "users": contacts.get("users", []),
         "departments": contacts.get("departments", []),
         "maxTotalQuantity": 2,

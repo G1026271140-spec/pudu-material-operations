@@ -33,6 +33,39 @@ def test_workspace_excludes_gift_page_and_reads_cached_surfaces():
     assert "giftProjects" not in payload
 
 
+def test_cultural_catalog_applies_category_visibility_and_line_claimability(monkeypatch):
+    page = {
+        "generated_at": "2026-09-10 15:45:31",
+        "tables": {
+            "物料品类": [
+                {"record_id": "cat-visible", "fields": {"物料品类": "文化POLO衫", "品类定义": "文化周边", "是否在申领页显示": "是"}},
+                {"record_id": "cat-hidden", "fields": {"物料品类": "文化夹克", "品类定义": "文化周边", "是否在申领页显示": "否"}},
+            ],
+            "产品型号": [],
+            "文化周边管理库存": [
+                {"record_id": "visible", "fields": {"物料品类": "文化POLO衫", "产品型号": "M", "战区管理": "美洲战区", "当前库存": 3, "是否可以申领": "是"}},
+                {"record_id": "line-hidden", "fields": {"物料品类": "文化POLO衫", "产品型号": "L", "战区管理": "美洲战区", "当前库存": 2, "是否可以申领": "否"}},
+                {"record_id": "category-hidden", "fields": {"物料品类": "文化夹克", "产品型号": "M", "战区管理": "美洲战区", "当前库存": 4, "是否可以申领": "是"}},
+            ],
+        },
+    }
+
+    monkeypatch.setattr(
+        web_api,
+        "_json",
+        lambda name: {"users": [], "departments": []} if name == "contact_departments_cache.json" else page,
+    )
+    monkeypatch.setattr(web_api, "_image_index", lambda: {})
+
+    response = TestClient(api).get("/api/cultural-catalog")
+
+    assert response.status_code == 200
+    assert response.json()["combinations"] == [{
+        "product": "文化POLO衫", "model": "M", "region": "美洲战区",
+        "stock": 3, "unitPriceRmb": 0.0,
+    }]
+
+
 def test_fast_enqueue_performs_one_queue_write_without_readback(monkeypatch):
     class QueueClient:
         def __init__(self):
