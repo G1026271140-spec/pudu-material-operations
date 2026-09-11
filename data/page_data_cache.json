@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-11 10:32:29",
+  "generated_at": "2026-09-11 16:32:41",
   "tables": {
     "物料品类": [
       {
@@ -1093,9 +1093,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Product Flyer",
@@ -1177,9 +1177,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Product Brochure",
@@ -1263,9 +1263,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "IR(Industrial Product Line Brochure）",
@@ -1349,9 +1349,9 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "CR(Cleaning Product Line Brochure）",
@@ -1435,9 +1435,9 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "SR(Delivery Robot Product Brochure)",
@@ -1521,9 +1521,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "GR(Embodied AI Robot Product Brochure)",
@@ -2145,9 +2145,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Product Roll-Up",
@@ -2237,9 +2237,9 @@
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Plush Toy",
@@ -2254,8 +2254,8 @@
           "中文页面名称": "冰箱贴( 默认混发)",
           "产品型号数量": "20",
           "创建时间": "",
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类定义": "周边礼品",
           "商业发票产品名称": "Fridge Magnet",
@@ -2341,9 +2341,9 @@
               "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Fridge Magnet(Default to Mixed Shipping)",
@@ -2407,9 +2407,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Notebook Gift Box",
@@ -2491,9 +2491,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "PUDU logo bag",
@@ -2746,9 +2746,9 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Custom Fan",
@@ -2926,9 +2926,9 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A877%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A880%7D%7D"
             }
           ],
           "英文页面名称": "Full Product Series Fridge Magnet Set",
@@ -68930,15 +68930,17 @@
                 "recvsDRO8PFzUf",
                 "recvtbksKkH7J5",
                 "recvtbkQWIikl1",
-                "recvuw3E57a8a6"
+                "recvuw3E57a8a6",
+                "recvuTFZeozyZX"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260818-004,REQ-20260824-001,REQ-20260824-002,REQ-20260907-002",
+              "text": "REQ-20260818-004,REQ-20260824-001,REQ-20260824-002,REQ-20260907-002,REQ-20260911-001",
               "text_arr": [
                 "REQ-20260818-004",
                 "REQ-20260824-001",
                 "REQ-20260824-002",
-                "REQ-20260907-002"
+                "REQ-20260907-002",
+                "REQ-20260911-001"
               ],
               "type": "text"
             }
@@ -68968,10 +68970,11 @@
                 "recvtbkuooN7z2",
                 "recvtbkS87ao5F",
                 "recvtiFRsFJGtI",
-                "recvuw3IiNnWQq"
+                "recvuw3IiNnWQq",
+                "recvuTG25DO2xG"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260729-001-03,REQ-20260730-001-03,REQ-20260810-002-03,REQ-20260811-003-01,REQ-20260818-001-01,REQ-20260818-002-01,REQ-20260818-004-02,REQ-20260819-001-03,REQ-20260819-004-03,REQ-20260824-001-01,REQ-20260824-002-02,REQ-20260825-001-07,REQ-20260907-002-02",
+              "text": "REQ-20260729-001-03,REQ-20260730-001-03,REQ-20260810-002-03,REQ-20260811-003-01,REQ-20260818-001-01,REQ-20260818-002-01,REQ-20260818-004-02,REQ-20260819-001-03,REQ-20260819-004-03,REQ-20260824-001-01,REQ-20260824-002-02,REQ-20260825-001-07,REQ-20260907-002-02,REQ-20260911-001-01",
               "text_arr": [
                 "REQ-20260729-001-03",
                 "REQ-20260730-001-03",
@@ -68985,7 +68988,8 @@
                 "REQ-20260824-001-01",
                 "REQ-20260824-002-02",
                 "REQ-20260825-001-07",
-                "REQ-20260907-002-02"
+                "REQ-20260907-002-02",
+                "REQ-20260911-001-01"
               ],
               "type": "text"
             }
@@ -69095,13 +69099,15 @@
             {
               "record_ids": [
                 "recvswVdLLqj1I",
-                "recvuw3E57a8a6"
+                "recvuw3E57a8a6",
+                "recvuTFZeozyZX"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260817-002,REQ-20260907-002",
+              "text": "REQ-20260817-002,REQ-20260907-002,REQ-20260911-001",
               "text_arr": [
                 "REQ-20260817-002",
-                "REQ-20260907-002"
+                "REQ-20260907-002",
+                "REQ-20260911-001"
               ],
               "type": "text"
             }
@@ -69123,16 +69129,18 @@
                 "recvsgjrCsXtGc",
                 "recvswVfiv9tmz",
                 "recvtiFRsFEpUG",
-                "recvuw3IiNUUlR"
+                "recvuw3IiNUUlR",
+                "recvuTG25DGn77"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260729-001-02,REQ-20260814-004-02,REQ-20260817-002-01,REQ-20260825-001-08,REQ-20260907-002-03",
+              "text": "REQ-20260729-001-02,REQ-20260814-004-02,REQ-20260817-002-01,REQ-20260825-001-08,REQ-20260907-002-03,REQ-20260911-001-02",
               "text_arr": [
                 "REQ-20260729-001-02",
                 "REQ-20260814-004-02",
                 "REQ-20260817-002-01",
                 "REQ-20260825-001-08",
-                "REQ-20260907-002-03"
+                "REQ-20260907-002-03",
+                "REQ-20260911-001-02"
               ],
               "type": "text"
             }
@@ -70711,8 +70719,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -70866,8 +70874,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -70995,8 +71003,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -71120,8 +71128,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -71157,20 +71165,22 @@
                 "recvtcSnHdIglC",
                 "recvtyLpZeyjzw",
                 "recvuMqcbD2HTe",
-                "recvuNyDnBWQSM"
+                "recvuNyDnBWQSM",
+                "recvuSwp1qtVuO"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-06,issue:63F240DB-0E25-4207-907F-BEE65B802B01:REQ-20260828-004-02,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-03,",
+              "text": "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-06,issue:63F240DB-0E25-4207-907F-BEE65B802B01:REQ-20260828-004-02,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-03,,issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01",
               "text_arr": [
                 "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-06",
                 "issue:63F240DB-0E25-4207-907F-BEE65B802B01:REQ-20260828-004-02",
                 "issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-03",
-                ""
+                "",
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01"
               ],
               "type": "text"
             }
           ],
-          "当前库存": "37",
+          "当前库存": "27",
           "战区管理": [
             {
               "record_ids": null,
@@ -71287,8 +71297,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -71424,8 +71434,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -71489,14 +71499,10 @@
           "物料品类": "冰箱贴( Fridge Magnet)",
           "物料申请单": [
             {
-              "record_ids": [
-                "recvuOuSblyyee"
-              ],
+              "record_ids": [],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260910-001",
-              "text_arr": [
-                "REQ-20260910-001"
-              ],
+              "text": null,
+              "text_arr": [],
               "type": "text"
             }
           ],
@@ -71512,14 +71518,10 @@
           ],
           "申请明细": [
             {
-              "record_ids": [
-                "recvuOuTJf8Tvx"
-              ],
+              "record_ids": [],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260910-001-02",
-              "text_arr": [
-                "REQ-20260910-001-02"
-              ],
+              "text": null,
+              "text_arr": [],
               "type": "text"
             }
           ],
@@ -71557,8 +71559,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -71708,8 +71710,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -71743,18 +71745,20 @@
             {
               "record_ids": [
                 "recvtcSi2YibJA",
-                "recvuMqnpxFsBG"
+                "recvuMqnpxFsBG",
+                "recvuSwrIqcppu"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-04,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-07",
+              "text": "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-04,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-07,issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03",
               "text_arr": [
                 "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-04",
-                "issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-07"
+                "issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-07",
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03"
               ],
               "type": "text"
             }
           ],
-          "当前库存": "77",
+          "当前库存": "62",
           "战区管理": [
             {
               "record_ids": null,
@@ -71855,8 +71859,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -71976,8 +71980,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -72097,8 +72101,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -72218,8 +72222,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -72343,8 +72347,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -72379,19 +72383,21 @@
               "record_ids": [
                 "recvq5nONScD6G",
                 "recvtcSkU0M4aN",
-                "recvuMqhUlyg3L"
+                "recvuMqhUlyg3L",
+                "recvuSwuuOR9ii"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-05,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-05",
+              "text": ",issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-05,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-05,issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04",
               "text_arr": [
                 "",
                 "issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-05",
-                "issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-05"
+                "issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-05",
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04"
               ],
               "type": "text"
             }
           ],
-          "当前库存": "47",
+          "当前库存": "32",
           "战区管理": [
             {
               "record_ids": null,
@@ -72492,8 +72498,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "停用",
           "品类关联": [
             {
@@ -81226,8 +81232,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -81367,8 +81373,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -90395,8 +90401,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -118267,8 +118273,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -118300,14 +118306,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuSwwZz0PKQ"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
+              "text_arr": [
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05"
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "5",
           "战区管理": [
             {
               "record_ids": null,
@@ -118396,8 +118406,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -118436,7 +118446,7 @@
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "10",
           "战区管理": [
             {
               "record_ids": null,
@@ -118517,8 +118527,8 @@
               "type": "text"
             }
           ],
-          "单价（人民币）": 13.54,
-          "单价（美元）": "2",
+          "单价（人民币）": 1.354,
+          "单价（美元）": "0.2",
           "启用状态": "启用",
           "品类关联": [
             {
@@ -118557,7 +118567,7 @@
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "10",
           "战区管理": [
             {
               "record_ids": null,
@@ -128378,6 +128388,242 @@
         },
         "id": "recvuNyDnBCd7t",
         "record_id": "recvuNyDnBCd7t"
+      },
+      {
+        "fields": {
+          "产品型号": "PUDU CC1",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvuOuTJfY1YV"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260910-001-01",
+              "text_arr": [
+                "REQ-20260910-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01",
+          "原流水ID": null,
+          "发生时间": 1789096929767,
+          "变更前数量": "37",
+          "变更后数量": "27",
+          "备注": "AFD0A171-047D-472D-B76F-434CB65A32C6",
+          "幂等键": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khawM"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0821",
+              "text_arr": [
+                "MAT-0821"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvuSwp1qtVuO",
+        "record_id": "recvuSwp1qtVuO"
+      },
+      {
+        "fields": {
+          "产品型号": "MT1",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvuOuTJfB4oo"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260910-001-03",
+              "text_arr": [
+                "REQ-20260910-001-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03",
+          "原流水ID": null,
+          "发生时间": 1789096939888,
+          "变更前数量": "77",
+          "变更后数量": "62",
+          "备注": "AFD0A171-047D-472D-B76F-434CB65A32C6",
+          "幂等键": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03",
+          "库存变化": "-15",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "15",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khgNT"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0861",
+              "text_arr": [
+                "MAT-0861"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvuSwrIqcppu",
+        "record_id": "recvuSwrIqcppu"
+      },
+      {
+        "fields": {
+          "产品型号": "BG1",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvuOuTJfBLuz"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260910-001-04",
+              "text_arr": [
+                "REQ-20260910-001-04"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04",
+          "原流水ID": null,
+          "发生时间": 1789096950353,
+          "变更前数量": "47",
+          "变更后数量": "32",
+          "备注": "AFD0A171-047D-472D-B76F-434CB65A32C6",
+          "幂等键": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04",
+          "库存变化": "-15",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "15",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khsuk"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0921",
+              "text_arr": [
+                "MAT-0921"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvuSwuuOR9ii",
+        "record_id": "recvuSwuuOR9ii"
+      },
+      {
+        "fields": {
+          "产品型号": "GT3",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvuOuTJf0XeG"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260910-001-05",
+              "text_arr": [
+                "REQ-20260910-001-05"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
+          "原流水ID": null,
+          "发生时间": 1789096960377,
+          "变更前数量": "10",
+          "变更后数量": "5",
+          "备注": "AFD0A171-047D-472D-B76F-434CB65A32C6",
+          "幂等键": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
+          "库存变化": "-5",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "5",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvuNIDe3QGwd"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1399",
+              "text_arr": [
+                "MAT-1399"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvuSwwZz0PKQ",
+        "record_id": "recvuSwwZz0PKQ"
       }
     ],
     "物料申请单": [
@@ -131552,23 +131798,31 @@
       {
         "fields": {
           "业务类型": "物料领取",
-          "临时物料清理状态": null,
-          "发货单号及文字信息": null,
+          "临时物料清理状态": "已清理",
+          "发货单号及文字信息": "Emerson代拿",
           "国家": "saudi",
           "备注": "客户名称：trustone group\n国家：saudi\n收件人信息：和一粟 广东省深圳市 普渡科技有限公司\n运费承担者：普渡付款(PUDU)\n物料用途：FM展会需求，用于产品宣传\n申请人：汪奕帆",
-          "审批实例Code": null,
+          "审批实例Code": "AFD0A171-047D-472D-B76F-434CB65A32C6",
           "审批意见": null,
-          "审批时间": null,
-          "审批状态": "待审批",
+          "审批时间": 1789096922571,
+          "审批状态": "已发放",
           "客户名称": "trustone group",
           "市场负责人": null,
           "库存合适最后提醒时间": null,
-          "库存审查人": null,
-          "库存审查时间": null,
-          "库存审查状态": "待核实库存",
-          "库存审查结论": "部分库存不足",
-          "库存快照时间": 1789037458534,
-          "库存核实提醒状态": null,
+          "库存审查人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_7e8f16b1-b021-4228-9b36-0dde42e11bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "库存审查时间": 1789095829667,
+          "库存审查状态": "已核实库存",
+          "库存审查结论": "库存充足",
+          "库存快照时间": 1789095829667,
+          "库存核实提醒状态": "无需提醒",
           "库存流水": null,
           "库存确认消息ID": "[\"om_x100b651cf58980acc2739939ad3fe25\", \"om_x100b651cf59d00acdeb8e5651c32e9f\"]",
           "所属战区": null,
@@ -131579,28 +131833,26 @@
           "文化周边处理状态": null,
           "文化周边通知状态": null,
           "时间判定": "加急申请",
-          "是否发货": null,
+          "是否发货": true,
           "期望发放日期": null,
           "标题": "FM展会需求，用于产品宣传-汪奕帆-营销物料领取",
           "物料下单时间": 1788192000000,
           "物料使用时间": 1789574400000,
           "物料到货时间": 1788710400000,
-          "物料到货状态": null,
-          "物料发货时间": null,
+          "物料到货状态": "全部已到货",
+          "物料发货时间": 1789315200000,
           "物料明细": [
             {
               "record_ids": [
                 "rec27IsS6khsuk",
-                "rec27IsS6khdQO",
                 "recvuNIDe3QGwd",
                 "rec27IsS6khawM",
                 "rec27IsS6khgNT"
               ],
               "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0921,MAT-0841,MAT-1399,MAT-0821,MAT-0861",
+              "text": "MAT-0921,MAT-1399,MAT-0821,MAT-0861",
               "text_arr": [
                 "MAT-0921",
-                "MAT-0841",
                 "MAT-1399",
                 "MAT-0821",
                 "MAT-0861"
@@ -131608,7 +131860,7 @@
               "type": "text"
             }
           ],
-          "物料明细文字信息": null,
+          "物料明细文字信息": "01. 冰箱贴( Fridge Magnet) / 出尘CC1 / 无需语种 × 10\n02. 冰箱贴( Fridge Magnet) / MT1 / 无需语种 × 10\n03. 冰箱贴( Fridge Magnet) / BG1 / 无需语种 × 10\n04. 冰箱贴( Fridge Magnet) / GT3 / 无需语种 × 5",
           "物料用途": "FM展会需求，用于产品宣传",
           "用途|活动": "FM展会需求，用于产品宣传",
           "申请人": [
@@ -131625,22 +131877,20 @@
           ],
           "申请单号": "REQ-20260910-001",
           "申请原因": "展会需求",
-          "申请变更次数": "0",
+          "申请变更次数": "1",
           "申请时角色快照": "销售",
           "申请明细": [
             {
               "record_ids": [
                 "recvuOuTJfY1YV",
-                "recvuOuTJf8Tvx",
                 "recvuOuTJfB4oo",
                 "recvuOuTJfBLuz",
                 "recvuOuTJf0XeG"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260910-001-01,REQ-20260910-001-02,REQ-20260910-001-03,REQ-20260910-001-04,REQ-20260910-001-05",
+              "text": "REQ-20260910-001-01,REQ-20260910-001-03,REQ-20260910-001-04,REQ-20260910-001-05",
               "text_arr": [
                 "REQ-20260910-001-01",
-                "REQ-20260910-001-02",
                 "REQ-20260910-001-03",
                 "REQ-20260910-001-04",
                 "REQ-20260910-001-05"
@@ -131648,24 +131898,158 @@
               "type": "text"
             }
           ],
-          "申请物料更改信息说明": null,
-          "申请物料最后修改人": null,
-          "申请物料最后修改时间": null,
+          "申请物料更改信息说明": "SH1暂时没货，GT3数量不太多嘞",
+          "申请物料最后修改人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_7e8f16b1-b021-4228-9b36-0dde42e11bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "申请物料最后修改时间": 1789095829667,
           "申请类型": "普通物料申请",
           "申请部门|区域": "中东战队",
           "相关附件": null,
-          "管理员通知时间": 1789037493275,
+          "管理员通知时间": 1789095959620,
           "管理员通知状态": "已发送",
           "要求到达结束日期": 1789574400000,
           "要求达到开始日期": 1789574400000,
           "计划库存核实时间": null,
-          "费用合计（人民币）": "677",
+          "费用合计（人民币）": "473.9",
           "运费承担者": "普渡付款(PUDU)",
           "需要下单日期": null,
           "预计完成制作日期": 1788710400000
         },
         "id": "recvuOuSblyyee",
         "record_id": "recvuOuSblyyee"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "国家": "泰国",
+          "备注": "客户名称：泰国客户\n国家：泰国\n收件人信息：自取\n运费承担者：普渡付款(PUDU)\n物料用途：参访客户送礼\n申请人：曾沂",
+          "审批实例Code": "BE77C24C-3FCA-47DC-9C98-475F5E9BF08A",
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "泰国客户",
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_7e8f16b1-b021-4228-9b36-0dde42e11bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "库存审查时间": 1789114357608,
+          "库存审查状态": "已核实库存",
+          "库存审查结论": "部分库存不足",
+          "库存快照时间": 1789114357608,
+          "库存核实提醒状态": "无需提醒",
+          "库存流水": null,
+          "库存确认消息ID": "[\"om_x100b650f22cd88acdee327c71dc609f\", \"om_x100b650f22c144a4c4c8818aeeb428f\"]",
+          "所属战区": null,
+          "排期编辑版本": "0",
+          "提交幂等键": "7e54c04b92b04d57ac2a70259786dc58",
+          "提交时间": 1789113865344,
+          "收件人信息": "自取",
+          "文化周边处理状态": null,
+          "文化周边通知状态": null,
+          "时间判定": "时间豁免",
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "参访客户送礼-曾沂-营销物料领取",
+          "物料下单时间": 1787587200000,
+          "物料使用时间": 1789056000000,
+          "物料到货时间": 1788192000000,
+          "物料到货状态": "部分已到货",
+          "物料发货时间": 1789056000000,
+          "物料明细": [
+            {
+              "record_ids": [
+                "rec27IsS6kgyo0",
+                "rec27IsS6kgwK2"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0591,MAT-0581",
+              "text_arr": [
+                "MAT-0591",
+                "MAT-0581"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 公仔(Plush Toy) / 贝拉 Bella / 无需语种 × 3\n02. 公仔(Plush Toy) / 葫芦pro KettyBotPro / 无需语种 × 3",
+          "物料用途": "参访客户送礼",
+          "用途|活动": "参访客户送礼",
+          "申请人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_9e3908a4-6fb6-461f-8599-c0b5e204bcag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "helen.zeng@pudutech.com",
+              "en_name": "曾沂",
+              "id": "ou_77216e96686bdf254d56150466235ade",
+              "name": "曾沂"
+            }
+          ],
+          "申请人.部门": [
+            "亚太战区",
+            "新加坡战队",
+            "中东战队",
+            "泰国战队",
+            "马来战队"
+          ],
+          "申请单号": "REQ-20260911-001",
+          "申请原因": "客户来访",
+          "申请变更次数": "0",
+          "申请时角色快照": "销售",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvuTG25DO2xG",
+                "recvuTG25DGn77"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260911-001-01,REQ-20260911-001-02",
+              "text_arr": [
+                "REQ-20260911-001-01",
+                "REQ-20260911-001-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_7e8f16b1-b021-4228-9b36-0dde42e11bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "申请物料最后修改时间": 1789114357608,
+          "申请类型": "普通物料申请",
+          "申请部门|区域": "中东战队",
+          "相关附件": null,
+          "管理员通知时间": 1789114399664,
+          "管理员通知状态": "已发送",
+          "要求到达结束日期": 1789056000000,
+          "要求达到开始日期": 1789056000000,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "149.88",
+          "运费承担者": "普渡付款(PUDU)",
+          "需要下单日期": null,
+          "预计完成制作日期": 1788192000000
+        },
+        "id": "recvuTFZeozyZX",
+        "record_id": "recvuTFZeozyZX"
       }
     ],
     "申请明细": [
@@ -158826,7 +159210,7 @@
               "type": "text"
             }
           ],
-          "申请数量": "200",
+          "申请数量": "100",
           "申请时单价（人民币）": "0.4062",
           "缺货说明": null,
           "计划到仓日期": null,
@@ -160073,10 +160457,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01",
           "原申请数量": "10",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1789096929767",
           "品类": [
             {
               "record_ids": [
@@ -160093,7 +160477,7 @@
           "品类名称": "冰箱贴( Fridge Magnet)",
           "备注": null,
           "实际发放产品型号": "PUDU CC1",
-          "实际发放数量": "0",
+          "实际发放数量": "10",
           "实际发放物料品类": "冰箱贴( Fridge Magnet)",
           "实际发放物料编码": null,
           "实际发放语种": "无需语种",
@@ -160101,10 +160485,14 @@
           "库存审查时库存": "37",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuSwp1qtVuO"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01",
+              "text_arr": [
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-01"
+              ],
               "type": "text"
             }
           ],
@@ -160134,15 +160522,15 @@
             }
           ],
           "明细业务类型": null,
-          "明细变更说明": null,
-          "明细状态": "待审批",
+          "明细变更说明": "SH1暂时没货，GT3数量不太多嘞",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260910-001-01",
           "是否到货": null,
           "物料下单时间": 1788192000000,
           "物料使用时间": 1789574400000,
-          "物料到货时间": 1788710400000,
-          "物料到货状态": null,
-          "物料发货时间": null,
+          "物料到货时间": 1789056000000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789315200000,
           "物料编码": [
             {
               "record_ids": [
@@ -160186,139 +160574,6 @@
           "产品型号": [
             {
               "record_ids": [
-                "recvpTMOywomZb"
-              ],
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": "X016",
-              "text_arr": [
-                "X016"
-              ],
-              "type": "text"
-            }
-          ],
-          "产品型号名称": "SH1",
-          "出库流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "出库流水编号": null,
-          "原申请数量": "10",
-          "发放人": null,
-          "发放时间": null,
-          "品类": [
-            {
-              "record_ids": [
-                "rec27JD20Fj7u7"
-              ],
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": "011",
-              "text_arr": [
-                "011"
-              ],
-              "type": "text"
-            }
-          ],
-          "品类名称": "冰箱贴( Fridge Magnet)",
-          "备注": null,
-          "实际发放产品型号": "SH1",
-          "实际发放数量": "0",
-          "实际发放物料品类": "冰箱贴( Fridge Magnet)",
-          "实际发放物料编码": null,
-          "实际发放语种": "无需语种",
-          "审批通过数量": "10",
-          "库存审查时库存": "0",
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "库存满足状态": "库存不足，需要制作",
-          "所属申请单": [
-            {
-              "record_ids": [
-                "recvuOuSblyyee"
-              ],
-              "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260910-001",
-              "text_arr": [
-                "REQ-20260910-001"
-              ],
-              "type": "text"
-            }
-          ],
-          "提交时库存快照": "0",
-          "文化周边战区": null,
-          "文化周边物料": [
-            {
-              "record_ids": null,
-              "table_id": "tblu3wRpylTj6zJl",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "明细业务类型": null,
-          "明细变更说明": null,
-          "明细状态": "待审批",
-          "明细编号": "REQ-20260910-001-02",
-          "是否到货": null,
-          "物料下单时间": 1788192000000,
-          "物料使用时间": 1789574400000,
-          "物料到货时间": 1788710400000,
-          "物料到货状态": null,
-          "物料发货时间": null,
-          "物料编码": [
-            {
-              "record_ids": [
-                "rec27IsS6khdQO"
-              ],
-              "table_id": "tbl4UsiEmprnImIY",
-              "text": "MAT-0841",
-              "text_arr": [
-                "MAT-0841"
-              ],
-              "type": "text"
-            }
-          ],
-          "申请数量": "10",
-          "申请时单价（人民币）": "13.54",
-          "缺货说明": null,
-          "计划到仓日期": null,
-          "语种": [
-            {
-              "record_ids": [
-                "recvq4226jUOlN"
-              ],
-              "table_id": "tblYZ3XpkUkQWevb",
-              "text": "Y12",
-              "text_arr": [
-                "Y12"
-              ],
-              "type": "text"
-            }
-          ],
-          "语种名称": "无需语种",
-          "费用小计（人民币）": "135.4",
-          "附件": null
-        },
-        "id": "recvuOuTJf8Tvx",
-        "record_id": "recvuOuTJf8Tvx"
-      },
-      {
-        "fields": {
-          "下单表生成状态": null,
-          "产品型号": [
-            {
-              "record_ids": [
                 "recvpTMuyRcMbg"
               ],
               "table_id": "tbl233OjVUgT4cJ5",
@@ -160339,10 +160594,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03",
           "原申请数量": "10",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1789096939888",
           "品类": [
             {
               "record_ids": [
@@ -160359,18 +160614,22 @@
           "品类名称": "冰箱贴( Fridge Magnet)",
           "备注": null,
           "实际发放产品型号": "MT1",
-          "实际发放数量": "0",
+          "实际发放数量": "15",
           "实际发放物料品类": "冰箱贴( Fridge Magnet)",
           "实际发放物料编码": null,
           "实际发放语种": "无需语种",
-          "审批通过数量": "10",
+          "审批通过数量": "15",
           "库存审查时库存": "77",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuSwrIqcppu"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03",
+              "text_arr": [
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-03"
+              ],
               "type": "text"
             }
           ],
@@ -160400,15 +160659,15 @@
             }
           ],
           "明细业务类型": null,
-          "明细变更说明": null,
-          "明细状态": "待审批",
+          "明细变更说明": "SH1暂时没货，GT3数量不太多嘞",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260910-001-03",
           "是否到货": null,
           "物料下单时间": 1788192000000,
           "物料使用时间": 1789574400000,
-          "物料到货时间": 1788710400000,
-          "物料到货状态": null,
-          "物料发货时间": null,
+          "物料到货时间": 1789056000000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789315200000,
           "物料编码": [
             {
               "record_ids": [
@@ -160472,10 +160731,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04",
           "原申请数量": "10",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1789096950353",
           "品类": [
             {
               "record_ids": [
@@ -160492,18 +160751,22 @@
           "品类名称": "冰箱贴( Fridge Magnet)",
           "备注": null,
           "实际发放产品型号": "BG1",
-          "实际发放数量": "0",
+          "实际发放数量": "15",
           "实际发放物料品类": "冰箱贴( Fridge Magnet)",
           "实际发放物料编码": null,
           "实际发放语种": "无需语种",
-          "审批通过数量": "10",
+          "审批通过数量": "15",
           "库存审查时库存": "47",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuSwuuOR9ii"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04",
+              "text_arr": [
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-04"
+              ],
               "type": "text"
             }
           ],
@@ -160533,15 +160796,15 @@
             }
           ],
           "明细业务类型": null,
-          "明细变更说明": null,
-          "明细状态": "待审批",
+          "明细变更说明": "SH1暂时没货，GT3数量不太多嘞",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260910-001-04",
           "是否到货": null,
           "物料下单时间": 1788192000000,
           "物料使用时间": 1789574400000,
-          "物料到货时间": 1788710400000,
-          "物料到货状态": null,
-          "物料发货时间": null,
+          "物料到货时间": 1789056000000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789315200000,
           "物料编码": [
             {
               "record_ids": [
@@ -160605,10 +160868,10 @@
               "type": "text"
             }
           ],
-          "出库流水编号": null,
+          "出库流水编号": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
           "原申请数量": "10",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1789096960377",
           "品类": [
             {
               "record_ids": [
@@ -160625,22 +160888,26 @@
           "品类名称": "冰箱贴( Fridge Magnet)",
           "备注": null,
           "实际发放产品型号": "GT3",
-          "实际发放数量": "0",
+          "实际发放数量": "5",
           "实际发放物料品类": "冰箱贴( Fridge Magnet)",
           "实际发放物料编码": null,
           "实际发放语种": "无需语种",
-          "审批通过数量": "10",
-          "库存审查时库存": "0",
+          "审批通过数量": "5",
+          "库存审查时库存": "10",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvuSwwZz0PKQ"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
+              "text_arr": [
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05"
+              ],
               "type": "text"
             }
           ],
-          "库存满足状态": "库存不足，需要制作",
+          "库存满足状态": "库存充足",
           "所属申请单": [
             {
               "record_ids": [
@@ -160666,15 +160933,15 @@
             }
           ],
           "明细业务类型": null,
-          "明细变更说明": null,
-          "明细状态": "待审批",
+          "明细变更说明": "SH1暂时没货，GT3数量不太多嘞",
+          "明细状态": "已发放",
           "明细编号": "REQ-20260910-001-05",
           "是否到货": null,
           "物料下单时间": 1788192000000,
           "物料使用时间": 1789574400000,
-          "物料到货时间": 1788710400000,
-          "物料到货状态": null,
-          "物料发货时间": null,
+          "物料到货时间": 1789056000000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789315200000,
           "物料编码": [
             {
               "record_ids": [
@@ -160688,7 +160955,7 @@
               "type": "text"
             }
           ],
-          "申请数量": "10",
+          "申请数量": "5",
           "申请时单价（人民币）": "13.54",
           "缺货说明": null,
           "计划到仓日期": null,
@@ -160706,11 +160973,277 @@
             }
           ],
           "语种名称": "无需语种",
-          "费用小计（人民币）": "135.4",
+          "费用小计（人民币）": "67.7",
           "附件": null
         },
         "id": "recvuOuTJf0XeG",
         "record_id": "recvuOuTJf0XeG"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMfBhyYrT"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X002",
+              "text_arr": [
+                "X002"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "BellaBot",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "3",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7mw"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "010",
+              "text_arr": [
+                "010"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公仔(Plush Toy)",
+          "备注": null,
+          "实际发放产品型号": "BellaBot",
+          "实际发放数量": "3",
+          "实际发放物料品类": "公仔(Plush Toy)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "3",
+          "库存审查时库存": "268",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuTFZeozyZX"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260911-001",
+              "text_arr": [
+                "REQ-20260911-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "268",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260911-001-01",
+          "是否到货": null,
+          "物料下单时间": 1787587200000,
+          "物料使用时间": 1789056000000,
+          "物料到货时间": 1789056000000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1789056000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgwK2"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0581",
+              "text_arr": [
+                "MAT-0581"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "3",
+          "申请时单价（人民币）": "24.9813",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "74.94",
+          "附件": null
+        },
+        "id": "recvuTG25DO2xG",
+        "record_id": "recvuTG25DO2xG"
+      },
+      {
+        "fields": {
+          "下单表生成状态": "已生成",
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMuyR11Wh"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X010",
+              "text_arr": [
+                "X010"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "KettyBot Pro",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "3",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7mw"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "010",
+              "text_arr": [
+                "010"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公仔(Plush Toy)",
+          "备注": null,
+          "实际发放产品型号": "KettyBot Pro",
+          "实际发放数量": "3",
+          "实际发放物料品类": "公仔(Plush Toy)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "3",
+          "库存审查时库存": "0",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvuTFZeozyZX"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260911-001",
+              "text_arr": [
+                "REQ-20260911-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "0",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260911-001-02",
+          "是否到货": null,
+          "物料下单时间": 1787587200000,
+          "物料使用时间": 1789056000000,
+          "物料到货时间": 1789488000000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789056000000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgyo0"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0591",
+              "text_arr": [
+                "MAT-0591"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "3",
+          "申请时单价（人民币）": "24.9813",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "74.94",
+          "附件": null
+        },
+        "id": "recvuTG25DGn77",
+        "record_id": "recvuTG25DGn77"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -167309,6 +167842,27 @@
         },
         "id": "recvuOuVTtXdx3",
         "record_id": "recvuOuVTtXdx3"
+      },
+      {
+        "fields": {
+          "文化衫申领数量累计": null,
+          "是否启用": "是",
+          "用户编号": "38",
+          "用户账号": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_9e3908a4-6fb6-461f-8599-c0b5e204bcag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "helen.zeng@pudutech.com",
+              "en_name": "曾沂",
+              "id": "ou_77216e96686bdf254d56150466235ade",
+              "name": "曾沂"
+            }
+          ],
+          "角色": [
+            "销售"
+          ]
+        },
+        "id": "recvuTG6QBRWnR",
+        "record_id": "recvuTG6QBRWnR"
       }
     ],
     "物料下单批次": [
@@ -167453,6 +168007,32 @@
         },
         "id": "recvuw7omJ32ck",
         "record_id": "recvuw7omJ32ck"
+      },
+      {
+        "fields": {
+          "下单批次号": "PO-20260911-ALLOCATION",
+          "下单表文件": null,
+          "启用自动补库": true,
+          "批次备注": "配货工作台自动生成下单批次",
+          "批次状态": "已生成",
+          "物料下单时间": 1787587200000,
+          "物料使用时间": 1789056000000,
+          "物料到货时间": 1788192000000,
+          "物料发货时间": 1789056000000,
+          "生成人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_7e8f16b1-b021-4228-9b36-0dde42e11bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "gaohongyuan1@pudutech.com",
+              "en_name": "高鸿源",
+              "id": "ou_0f57acbd1f846f7e034a8ab954506b6d",
+              "name": "高鸿源"
+            }
+          ],
+          "生成幂等键": "allocation:recvuTFZeozyZX:0",
+          "生成时间": 1789114278086
+        },
+        "id": "recvuTHbISlu8A",
+        "record_id": "recvuTHbISlu8A"
       }
     ],
     "物料下单批次明细": [
@@ -170477,6 +171057,100 @@
         },
         "id": "recvuw7tIcYGZW",
         "record_id": "recvuw7tIcYGZW"
+      },
+      {
+        "fields": {
+          "下单数量": "3",
+          "关联库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联文化周边库存": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "关联物料": [
+            {
+              "record_ids": [
+                "rec27IsS6kgyo0"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0591",
+              "text_arr": [
+                "MAT-0591"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称快照": "公仔",
+          "型号或尺码快照": "KettyBot Pro",
+          "实际补库时间": null,
+          "战区快照": null,
+          "所属下单批次": [
+            {
+              "record_ids": [
+                "recvuTHbISlu8A"
+              ],
+              "table_id": "tbl0s6IFfjPsYIen",
+              "text": "PO-20260911-ALLOCATION",
+              "text_arr": [
+                "PO-20260911-ALLOCATION"
+              ],
+              "type": "text"
+            }
+          ],
+          "批次明细编号": "order:allocation:recvuTFZeozyZX:0:recvuTG25DGn77",
+          "明细备注快照": null,
+          "来源申请单": [
+            {
+              "record_ids": [
+                "recvuTFZeozyZX"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260911-001",
+              "text_arr": [
+                "REQ-20260911-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "来源申请明细": [
+            {
+              "record_ids": [
+                "recvuTG25DGn77"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260911-001-02",
+              "text_arr": [
+                "REQ-20260911-001-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料下单时间": 1787587200000,
+          "物料使用时间": 1789056000000,
+          "物料到货时间": 1788192000000,
+          "物料到货状态": "已下单",
+          "物料发货时间": 1789056000000,
+          "申请用途快照": "参访客户送礼",
+          "补库幂等建": "order:allocation:recvuTFZeozyZX:0:recvuTG25DGn77",
+          "补库异常说明": null,
+          "补库状态": "待补库",
+          "计划到仓日期": 1789488000000,
+          "语种快照": "无需语种"
+        },
+        "id": "recvuTHcfsmIpD",
+        "record_id": "recvuTHcfsmIpD"
       }
     ]
   },
@@ -170485,15 +171159,15 @@
     "产品型号": 41,
     "物料语种": 12,
     "物料主数据": 894,
-    "库存流水": 169,
-    "物料申请单": 27,
-    "申请明细": 219,
+    "库存流水": 173,
+    "物料申请单": 28,
+    "申请明细": 220,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 68,
     "战区管理": 10,
-    "用户权限表": 32,
-    "物料下单批次": 7,
-    "物料下单批次明细": 33
+    "用户权限表": 33,
+    "物料下单批次": 8,
+    "物料下单批次明细": 34
   },
   "gift_image_cache": {
     "directory": "assets/gift_projects",

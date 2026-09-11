@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-10 15:45:35",
+  "generated_at": "2026-09-11 16:32:56",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -4409,7 +4409,7 @@
       "model": "BellaBot",
       "language": "无需语种",
       "quantity": 10,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0771",
@@ -4417,7 +4417,7 @@
       "model": "KettyBot Pro",
       "language": "无需语种",
       "quantity": 0,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0781",
@@ -4425,15 +4425,15 @@
       "model": "PuduBot 2",
       "language": "无需语种",
       "quantity": 0,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0821",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 37,
-      "unit_price_rmb": 13.54
+      "quantity": 27,
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0831",
@@ -4441,7 +4441,7 @@
       "model": "Bellabot pro",
       "language": "无需语种",
       "quantity": 17,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0841",
@@ -4449,7 +4449,7 @@
       "model": "SH1",
       "language": "无需语种",
       "quantity": 0,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0851",
@@ -4457,23 +4457,23 @@
       "model": "T300",
       "language": "无需语种",
       "quantity": 12,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0861",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "MT1",
       "language": "无需语种",
-      "quantity": 77,
-      "unit_price_rmb": 13.54
+      "quantity": 62,
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0921",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BG1",
       "language": "无需语种",
-      "quantity": 47,
-      "unit_price_rmb": 13.54
+      "quantity": 32,
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-0941",
@@ -4793,7 +4793,7 @@
       "model": "D5",
       "language": "无需语种",
       "quantity": 0,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-1033",
@@ -4801,7 +4801,7 @@
       "model": "D7",
       "language": "无需语种",
       "quantity": 20,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-1034",
@@ -5297,7 +5297,7 @@
       "model": "猛犸MP2000",
       "language": "无需语种",
       "quantity": 97,
-      "unit_price_rmb": 13.54
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-1149",
@@ -6968,24 +6968,24 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT3",
       "language": "无需语种",
-      "quantity": 0,
-      "unit_price_rmb": 13.54
+      "quantity": 5,
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-1400",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT5",
       "language": "无需语种",
-      "quantity": 0,
-      "unit_price_rmb": 13.54
+      "quantity": 10,
+      "unit_price_rmb": 1.354
     },
     {
       "material_code": "MAT-1401",
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT7",
       "language": "无需语种",
-      "quantity": 0,
-      "unit_price_rmb": 13.54
+      "quantity": 10,
+      "unit_price_rmb": 1.354
     }
   ],
   "row_count": 675,
