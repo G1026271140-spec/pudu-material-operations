@@ -122,6 +122,7 @@ class FullscreenSyncTests(unittest.TestCase):
         self.assertFalse(session_state[app.FULLSCREEN_SYNC_IN_PROGRESS_KEY])
         overlay.empty.assert_called_once_with()
 
+
     def test_native_loading_spinner_is_not_a_fullscreen_mask(self) -> None:
         source = Path(app.__file__).read_text(encoding="utf-8")
         spinner_css = source.split('[data-testid="stSpinner"] {', 1)[1].split("}", 1)[0]
@@ -157,6 +158,30 @@ class FullscreenSyncTests(unittest.TestCase):
                 if any(term in message for term in forbidden_terms)
             ]
         )
+
+
+class CulturalMobileLayoutTests(unittest.TestCase):
+    def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:
+        source = (
+            Path(app.__file__).parent / "request_web/frontend/src/portal.css"
+        ).read_text(encoding="utf-8")
+
+        phone = source.split("@media (max-width: 600px)", 1)[1]
+        self.assertIn(".culture-cards", phone)
+        self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr))", phone)
+        self.assertIn(".culture-line", phone)
+        self.assertIn("min-height: 44px", phone)
+
+    def test_cultural_phone_modals_use_bottom_sheet_and_safe_area(self) -> None:
+        source = (
+            Path(app.__file__).parent / "request_web/frontend/src/portal.css"
+        ).read_text(encoding="utf-8")
+
+        phone = source.split("@media (max-width: 600px)", 1)[1]
+        self.assertIn(".cultural-page .overlay", phone)
+        self.assertIn("align-items: flex-end", phone)
+        self.assertIn("max-height: min(92dvh, 760px)", phone)
+        self.assertIn("env(safe-area-inset-bottom)", phone)
 
 
 class GiftProjectUpdateMonitorTests(unittest.TestCase):
