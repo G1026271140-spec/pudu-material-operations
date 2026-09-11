@@ -368,12 +368,12 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     );
   return (
     <>
-      <header>
+      <header className="request-page-header">
         <b>PUDU</b>
         <span>Material Operations</span>
         <em>物料申领</em>
       </header>
-      <main>
+      <main className="request-page">
         <section>
           <div className="section-title">
             <i>01</i>
@@ -654,8 +654,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
         )}
       </main>
       {active && (
-        <div className="overlay" onMouseDown={() => setActive(null)}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="overlay request-overlay" onMouseDown={() => setActive(null)}>
+          <div className="modal request-spec-modal" onMouseDown={(e) => e.stopPropagation()}>
             <button className="close" onClick={() => setActive(null)}>
               ×
             </button>
@@ -754,8 +754,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
         </div>
       )}
       {review && (
-        <div className="overlay">
-          <div className="modal review">
+        <div className="overlay request-overlay">
+          <div className="modal review request-review-modal">
             <button className="close" onClick={() => setReview(false)}>
               ×
             </button>

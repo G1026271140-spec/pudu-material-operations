@@ -160,6 +160,42 @@ class FullscreenSyncTests(unittest.TestCase):
         )
 
 
+class RequestReactMobileLayoutTests(unittest.TestCase):
+    def setUp(self) -> None:
+        root = Path(app.__file__).parent / "request_web/frontend/src"
+        self.css = (root / "styles.css").read_text(encoding="utf-8")
+        self.page = (root / "App.tsx").read_text(encoding="utf-8")
+
+    def test_request_page_has_scoped_phone_layout(self) -> None:
+        phone = self.css.split(
+            "/* Dedicated phone layout for the React material request page. */", 1
+        )[1]
+        self.assertIn('className="request-page"', self.page)
+        self.assertIn("@media (max-width: 600px)", phone)
+        self.assertIn(".request-page .grid3", phone)
+        self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr))", phone)
+        self.assertIn("bottom: max(8px, env(safe-area-inset-bottom))", phone)
+
+    def test_request_phone_spec_and_review_are_bottom_sheets(self) -> None:
+        phone = self.css.split(
+            "/* Dedicated phone layout for the React material request page. */", 1
+        )[1]
+        self.assertIn('className="modal request-spec-modal"', self.page)
+        self.assertIn('className="modal review request-review-modal"', self.page)
+        self.assertIn(".request-overlay", phone)
+        self.assertIn("align-items: flex-end", phone)
+        self.assertIn("max-height: min(94dvh, 820px)", phone)
+        self.assertIn("env(safe-area-inset-bottom)", phone)
+
+    def test_request_phone_cart_uses_card_rows(self) -> None:
+        phone = self.css.split(
+            "/* Dedicated phone layout for the React material request page. */", 1
+        )[1]
+        self.assertIn(".request-page .cartpanel tr", phone)
+        self.assertIn("display: grid", phone)
+        self.assertIn(".request-page .cartpanel thead", phone)
+
+
 class CulturalMobileLayoutTests(unittest.TestCase):
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:
         source = (

@@ -438,3 +438,368 @@ td input {
 .submit-overlay span { color: #627b8d; }
 .spinner { width: 44px; height: 44px; border: 4px solid #c9dce7; border-top-color: #14738d; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Dedicated phone layout for the React material request page. */
+@media (max-width: 600px) {
+  .request-page-header {
+    position: static;
+    height: auto;
+    min-height: 48px;
+    padding: 10px 12px;
+  }
+  .request-page-header b {
+    font-size: 20px;
+  }
+  .request-page-header em {
+    font-size: 13px;
+  }
+  .request-page {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px auto 0;
+    padding: 0 10px 96px;
+    overflow-x: hidden;
+  }
+  .request-page section {
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .request-page .section-title {
+    gap: 8px;
+  }
+  .request-page .section-title i {
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+  .request-page .section-title h2 {
+    font-size: 17px;
+  }
+  .request-page .section-title p {
+    margin: 3px 0 12px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .request-page .grid3,
+  .request-page .grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .request-page label {
+    min-width: 0;
+    font-size: 12px;
+  }
+  .request-page input,
+  .request-page select,
+  .request-page textarea,
+  .request-page button {
+    min-height: 44px;
+  }
+  .request-page input,
+  .request-page select,
+  .request-page textarea {
+    padding: 9px 10px;
+  }
+  .request-page textarea {
+    height: 84px;
+  }
+  .request-page .titlebar {
+    margin: 10px 0;
+    padding: 10px;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+  }
+  .request-page .titlebar b {
+    display: block;
+    margin: 5px 0 0;
+  }
+  .request-page .combo-menu {
+    position: fixed;
+    z-index: 120;
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    max-height: min(55dvh, 420px);
+    border-radius: 12px;
+  }
+  .request-page .combo-menu button {
+    min-height: 44px;
+  }
+  .request-page .section-head {
+    gap: 9px;
+  }
+  .request-page .metrics {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 11px;
+  }
+  .request-page .metrics span {
+    font-size: 12px;
+  }
+  .request-page .metrics strong {
+    font-size: 17px;
+  }
+  .request-page .toolbar {
+    position: sticky;
+    z-index: 7;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 7px;
+    margin: 0 -5px 10px;
+    padding: 7px;
+    border: 1px solid #cfdee7;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 24px rgba(18, 57, 82, 0.18);
+    backdrop-filter: blur(10px);
+  }
+  .request-page .toolbar > input {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+  .request-page .toolbar button {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 6px;
+    font-size: 12px;
+  }
+  .request-page .cartpanel {
+    margin: 0 0 10px;
+    padding: 9px;
+    overflow: visible;
+  }
+  .request-page .cartpanel table,
+  .request-page .cartpanel tbody,
+  .request-page .cartpanel tr,
+  .request-page .cartpanel td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .request-page .cartpanel thead {
+    display: none;
+  }
+  .request-page .cartpanel tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin-bottom: 9px;
+    padding: 10px;
+    border: 1px solid #d9e5eb;
+    border-radius: 9px;
+    background: #fff;
+  }
+  .request-page .cartpanel td {
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+  }
+  .request-page .cartpanel td:first-child {
+    grid-column: 1 / -1;
+    color: #123d59;
+    font-weight: 800;
+  }
+  .request-page .cartpanel td:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+  .request-page .cartpanel td:last-child {
+    grid-column: 1 / -1;
+  }
+  .request-page .cartpanel td:last-child button {
+    width: 100%;
+    border-color: #efb6aa;
+    color: #c54531;
+  }
+  .request-page .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 9px;
+  }
+  .request-page .cards article {
+    min-width: 0;
+    padding: 7px;
+  }
+  .request-page .cards article img,
+  .request-page .cards .placeholder {
+    height: auto;
+    aspect-ratio: 1.45;
+  }
+  .request-page .cards article small {
+    margin-top: 7px;
+    font-size: 10px;
+  }
+  .request-page .cards article h3 {
+    min-height: 35px;
+    margin: 3px 0 7px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .request-page .cards article button {
+    min-height: 42px;
+    padding: 8px 5px;
+    font-size: 12px;
+  }
+  .request-page .toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+  }
+  .request-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .request-overlay .modal {
+    width: 100%;
+    max-width: none;
+    max-height: min(94dvh, 820px);
+    margin: 0;
+    padding: 18px 14px calc(14px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+  }
+  .request-overlay .close {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    float: right;
+    width: 40px;
+    height: 40px;
+    margin: -8px -4px 0 5px;
+    border-radius: 50%;
+    background: #f0f5f8;
+  }
+  .request-overlay .modal > h2 {
+    margin: 2px 46px 7px 0;
+    font-size: 20px;
+  }
+  .request-overlay .modal > p {
+    margin: 0 0 12px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .request-spec-modal .selector {
+    padding: 10px;
+  }
+  .request-spec-modal .model-line-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .request-spec-modal .model-line-column,
+  .request-spec-modal .model-line {
+    gap: 8px;
+  }
+  .request-spec-modal .model-line {
+    padding: 9px;
+  }
+  .request-spec-modal .pills {
+    gap: 7px;
+  }
+  .request-spec-modal .pills button {
+    min-height: 40px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+  .request-spec-modal .selection-note {
+    margin-top: 10px;
+    padding: 9px 10px;
+    font-size: 11px;
+  }
+  .request-spec-modal .modalfoot {
+    display: grid;
+    grid-template-columns: 86px auto minmax(0, 1fr);
+    gap: 8px;
+    margin: 12px -14px -14px;
+    padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    bottom: calc(-14px - env(safe-area-inset-bottom));
+    border-top: 1px solid #dce7ed;
+  }
+  .request-spec-modal .presets {
+    align-self: end;
+    margin: 0 0 1px;
+  }
+  .request-spec-modal .presets button {
+    min-width: 40px;
+    min-height: 42px;
+    padding: 7px;
+  }
+  .request-spec-modal .modalfoot .primary {
+    grid-column: 1 / -1;
+    min-height: 46px;
+  }
+  .request-review-modal .reviewgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .request-review-modal .reviewgrid p {
+    padding: 9px;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+  }
+  .request-review-modal h3 {
+    font-size: 15px;
+  }
+  .request-review-modal table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .request-review-modal .reviewactions {
+    position: sticky;
+    bottom: calc(-14px - env(safe-area-inset-bottom));
+    margin: 14px -14px -14px;
+    padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid #dce7ed;
+  }
+  .request-review-modal .reviewactions button {
+    flex: 1;
+    min-height: 44px;
+  }
+  .submit-overlay {
+    padding: 20px;
+    text-align: center;
+  }
+  .submit-overlay strong {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .request-page .grid3,
+  .request-page .grid2,
+  .request-page .cards,
+  .request-review-modal .reviewgrid {
+    grid-template-columns: 1fr;
+  }
+  .request-spec-modal .modalfoot {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+  .request-spec-modal .presets {
+    justify-self: end;
+  }
+  .request-spec-modal .modalfoot label:last-of-type {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) and (max-height: 700px) {
+  .request-overlay .modal {
+    max-height: 97dvh;
+  }
+  .request-spec-modal .selector h4:not(:first-child) {
+    margin-top: 12px;
+  }
+  .request-spec-modal .pills button {
+    min-height: 36px;
+    padding: 5px 10px;
+  }
+}
