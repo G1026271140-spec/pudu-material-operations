@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-12 16:32:00",
+  "generated_at": "2026-09-13 16:32:19",
   "tables": {
     "物料品类": [
       {
@@ -72762,17 +72762,19 @@
                 "recvtbkQWIikl1",
                 "recvtngJU5s4Qq",
                 "recvtyFZsWHPaw",
-                "recvuuR296z4HT"
+                "recvuuR296z4HT",
+                "recvv4hiaLq0Oc"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260817-001,REQ-20260824-001,REQ-20260824-002,REQ-20260826-002,REQ-20260828-004,REQ-20260907-001",
+              "text": "REQ-20260817-001,REQ-20260824-001,REQ-20260824-002,REQ-20260826-002,REQ-20260828-004,REQ-20260907-001,REQ-20260913-001",
               "text_arr": [
                 "REQ-20260817-001",
                 "REQ-20260824-001",
                 "REQ-20260824-002",
                 "REQ-20260826-002",
                 "REQ-20260828-004",
-                "REQ-20260907-001"
+                "REQ-20260907-001",
+                "REQ-20260913-001"
               ],
               "type": "text"
             }
@@ -72805,10 +72807,11 @@
                 "recvtbkS874HOm",
                 "recvtngLbcj6g1",
                 "recvtyG0FuAOfC",
-                "recvuuR4siz8EI"
+                "recvuuR4siz8EI",
+                "recvv4hjdBVZZi"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260716-001-03,REQ-20260810-002-04,REQ-20260811-002-03,REQ-20260811-003-02,REQ-20260817-001-02,REQ-20260819-001-02,REQ-20260819-004-03,REQ-20260824-001-04,REQ-20260824-002-03,REQ-20260826-002-03,REQ-20260828-004-04,REQ-20260907-001-01",
+              "text": "REQ-20260716-001-03,REQ-20260810-002-04,REQ-20260811-002-03,REQ-20260811-003-02,REQ-20260817-001-02,REQ-20260819-001-02,REQ-20260819-004-03,REQ-20260824-001-04,REQ-20260824-002-03,REQ-20260826-002-03,REQ-20260828-004-04,REQ-20260907-001-01,REQ-20260913-001-01",
               "text_arr": [
                 "REQ-20260716-001-03",
                 "REQ-20260810-002-04",
@@ -72821,7 +72824,8 @@
                 "REQ-20260824-002-03",
                 "REQ-20260826-002-03",
                 "REQ-20260828-004-04",
-                "REQ-20260907-001-01"
+                "REQ-20260907-001-01",
+                "REQ-20260913-001-01"
               ],
               "type": "text"
             }
@@ -132883,6 +132887,124 @@
         },
         "id": "recvuTP7KkzSbb",
         "record_id": "recvuTP7KkzSbb"
+      },
+      {
+        "fields": {
+          "业务类型": "物料领取",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "国家": "德国",
+          "备注": "客户名称：Jebsen and Company Limited\n国家：德国\n收件人信息：Jebsen and Company Limited\nContact person: Victor Liu\nTel: +85229262247\nEmail: victorliu@jebsen.com\nAddress: 21/F, Hysan Place, 500 Hennessy Road, Causeway Bay, Hong Kong\n运费承担者：普渡付款(PUDU)\n物料用途：Jebsen and Company Limited为德国新签的代理，于9月8日来访深圳总部，申请物料用于客户接待，促进合作事宜。\n申请人：林晓",
+          "审批实例Code": "64C0CDCC-B436-4A1E-ACEA-A19D47C82D72",
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "Jebsen and Company Limited",
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "weiwei@pudutech.com",
+              "en_name": "魏薇",
+              "id": "ou_db9afe55f685d6227b25f267261ec3e8",
+              "name": "魏薇"
+            }
+          ],
+          "库存审查时间": 1789271883630,
+          "库存审查状态": "已核实库存",
+          "库存审查结论": "库存充足",
+          "库存快照时间": 1789271883630,
+          "库存核实提醒状态": "无需提醒",
+          "库存流水": null,
+          "库存确认消息ID": "[\"om_x100b6555e7c744a0c19208bcb41140d\", \"om_x100b6555e7db58a0c32363ab7aa3d96\"]",
+          "所属战区": null,
+          "排期编辑版本": "0",
+          "提交幂等键": "daedb832716a4e73a946ebcb5e8a1bec",
+          "提交时间": 1789270556154,
+          "收件人信息": "Jebsen and Company Limited\nContact person: Victor Liu\nTel: +85229262247\nEmail: victorliu@jebsen.com\nAddress: 21/F, Hysan Place, 500 Hennessy Road, Causeway Bay, Hong Kong",
+          "文化周边处理状态": null,
+          "文化周边通知状态": null,
+          "时间判定": "时间豁免",
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "Jebsen and Company Limited为德国新签的代理，于9月8日来访深圳总部，申请物料用于客户接待，促进合作事宜。-林晓-营销物料领取",
+          "物料下单时间": 1787846400000,
+          "物料使用时间": 1789228800000,
+          "物料到货时间": 1788364800000,
+          "物料到货状态": "全部已到货",
+          "物料发货时间": 1788796800000,
+          "物料明细": [
+            {
+              "record_ids": [
+                "rec27IsS6khvob"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0941",
+              "text_arr": [
+                "MAT-0941"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 笔记本礼盒(Notebook Gift Box) / 无需型号 / 无需语种 × 8",
+          "物料用途": "Jebsen and Company Limited为德国新签的代理，于9月8日来访深圳总部，申请物料用于客户接待，促进合作事宜。",
+          "用途|活动": "Jebsen and Company Limited为德国新签的代理，于9月8日来访深圳总部，申请物料用于客户接待，促进合作事宜。",
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015b_099e8ae6-593b-40e6-89d7-6b1c6e3708eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "alisa.lin@pudutech.com",
+              "en_name": "林晓",
+              "id": "ou_e572151ee0ef79f38c84f0408902a17f",
+              "name": "林晓"
+            }
+          ],
+          "申请人.部门": [
+            "德国CR业务组"
+          ],
+          "申请单号": "REQ-20260913-001",
+          "申请原因": "客户来访",
+          "申请变更次数": "0",
+          "申请时角色快照": "销售",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvv4hjdBVZZi"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260913-001-01",
+              "text_arr": [
+                "REQ-20260913-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_8b8c9f06-f117-4e76-aa81-050ac7c06d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "weiwei@pudutech.com",
+              "en_name": "魏薇",
+              "id": "ou_db9afe55f685d6227b25f267261ec3e8",
+              "name": "魏薇"
+            }
+          ],
+          "申请物料最后修改时间": 1789271883630,
+          "申请类型": "普通物料申请",
+          "申请部门|区域": "德国CR业务组",
+          "相关附件": null,
+          "管理员通知时间": 1789271904251,
+          "管理员通知状态": "已发送",
+          "要求到达结束日期": 1789228800000,
+          "要求达到开始日期": 1789228800000,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "270.8",
+          "运费承担者": "普渡付款(PUDU)",
+          "需要下单日期": null,
+          "预计完成制作日期": 1788364800000
+        },
+        "id": "recvv4hiaLq0Oc",
+        "record_id": "recvv4hiaLq0Oc"
       }
     ],
     "申请明细": [
@@ -162786,6 +162908,139 @@
         },
         "id": "recvuTP9HtfbYi",
         "record_id": "recvuTP9HtfbYi"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "出库流水编号": null,
+          "原申请数量": "8",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj7B4"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "012",
+              "text_arr": [
+                "012"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "笔记本礼盒(Notebook Gift Box)",
+          "备注": null,
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "8",
+          "实际发放物料品类": "笔记本礼盒(Notebook Gift Box)",
+          "实际发放物料编码": null,
+          "实际发放语种": "无需语种",
+          "审批通过数量": "8",
+          "库存审查时库存": "521",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvv4hiaLq0Oc"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260913-001",
+              "text_arr": [
+                "REQ-20260913-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "521",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20260913-001-01",
+          "是否到货": null,
+          "物料下单时间": 1787846400000,
+          "物料使用时间": 1789228800000,
+          "物料到货时间": 1789228800000,
+          "物料到货状态": "已到货",
+          "物料发货时间": 1788796800000,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khvob"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0941",
+              "text_arr": [
+                "MAT-0941"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "8",
+          "申请时单价（人民币）": "33.85",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq4226jUOlN"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y12",
+              "text_arr": [
+                "Y12"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "无需语种",
+          "费用小计（人民币）": "270.8",
+          "附件": null
+        },
+        "id": "recvv4hjdBVZZi",
+        "record_id": "recvv4hjdBVZZi"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -169426,6 +169681,27 @@
         },
         "id": "recvuTPclShHyE",
         "record_id": "recvuTPclShHyE"
+      },
+      {
+        "fields": {
+          "文化衫申领数量累计": null,
+          "是否启用": "是",
+          "用户编号": "40",
+          "用户账号": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015b_099e8ae6-593b-40e6-89d7-6b1c6e3708eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "alisa.lin@pudutech.com",
+              "en_name": "林晓",
+              "id": "ou_e572151ee0ef79f38c84f0408902a17f",
+              "name": "林晓"
+            }
+          ],
+          "角色": [
+            "销售"
+          ]
+        },
+        "id": "recvv4hkNEJAOj",
+        "record_id": "recvv4hkNEJAOj"
       }
     ],
     "物料下单批次": [
@@ -172759,12 +173035,12 @@
     "物料语种": 12,
     "物料主数据": 894,
     "库存流水": 184,
-    "物料申请单": 29,
-    "申请明细": 225,
+    "物料申请单": 30,
+    "申请明细": 226,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 68,
     "战区管理": 10,
-    "用户权限表": 34,
+    "用户权限表": 35,
     "物料下单批次": 8,
     "物料下单批次明细": 34
   },
