@@ -214,6 +214,28 @@ class RequestReactMobileLayoutTests(unittest.TestCase):
         self.assertIn('t("已加入采购车", "Added to cart")', self.page)
 
 
+class ReactInventoryOperationLayoutTests(unittest.TestCase):
+    def setUp(self) -> None:
+        root = Path(app.__file__).parent / "request_web/frontend/src"
+        self.page = (root / "ManagementPage.tsx").read_text(encoding="utf-8")
+        self.css = (root / "management.css").read_text(encoding="utf-8")
+
+    def test_restock_uses_category_cards_multi_select_and_mode_switch(self) -> None:
+        self.assertIn('useState<"restock" | "reduce">', self.page)
+        self.assertIn("restock-cards", self.page)
+        self.assertIn("restock-model-grid", self.page)
+        self.assertIn("selectedModels", self.page)
+        self.assertIn("selectedLanguages", self.page)
+        self.assertIn('mode === "reduce"', self.page)
+
+    def test_inventory_cards_and_modal_are_phone_responsive(self) -> None:
+        mobile = self.css.split("@media(max-width:700px)", 1)[1]
+        self.assertIn(".restock-cards", mobile)
+        self.assertIn("grid-template-columns:repeat(2,minmax(0,1fr))", mobile)
+        self.assertIn(".restock-model-grid", mobile)
+        self.assertIn(".restock-overlay", mobile)
+
+
 class ReactSidebarCollapseTests(unittest.TestCase):
     def setUp(self) -> None:
         root = Path(app.__file__).parent / "request_web/frontend/src"

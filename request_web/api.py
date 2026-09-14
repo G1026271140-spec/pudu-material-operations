@@ -290,6 +290,7 @@ def _management_snapshot() -> dict[str, Any]:
         "categories": categories,
         "inventory": inventory,
         "restockInventory": restock_inventory,
+        "restockImages": _image_index(),
         "culturalInventory": cultural,
         "dimensions": {
             "model": legacy.dimension_management_records("model", model_rows),
@@ -514,7 +515,7 @@ def management_restock_submit(
     draft: dict[str, Any], _: str = Depends(require_admin)
 ) -> dict[str, Any]:
     import app as legacy
-    from submission_queue import QUEUE_TASK_TYPE_RESTOCK
+    from submission_queue import QUEUE_TASK_TYPE_RESTOCK, QUEUE_TASK_TYPE_STOCK_REDUCTION
 
     errors = legacy.validate_restock_draft(draft)
     if errors:
@@ -525,9 +526,11 @@ def management_restock_submit(
         "submission_token": token,
         "restock_no": str(draft.get("restock_no") or legacy.build_restock_no(token)),
     }
+    mode = str(normalized.get("mode") or "restock")
+    task_type = QUEUE_TASK_TYPE_STOCK_REDUCTION if mode == "reduce" else QUEUE_TASK_TYPE_RESTOCK
     try:
         task_id = _enqueue_fast(
-            QUEUE_TASK_TYPE_RESTOCK,
+            task_type,
             str(normalized["restock_no"]),
             {"draft": normalized},
         )

@@ -129,6 +129,36 @@ class RestockTests(unittest.TestCase):
         self.assertIn("补库单 RST-20260721-ABC123", ledger_fields["备注"])
         self.assertIn("采购单号：PO-1001", ledger_fields["备注"])
 
+    def test_reduce_mode_allows_negative_inventory_and_writes_receive_ledger(self) -> None:
+        client = MagicMock()
+        draft = {**self.draft, "mode": "reduce"}
+        draft["lines"] = [{**self.draft["lines"][0], "quantity": 20}]
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "fresh_feishu_rows", side_effect=self.fresh_rows),
+            patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update_rows,
+            patch.object(app, "feishu_batch_create_records", return_value=[{"record_id": "ledger-1"}]) as create_rows,
+        ):
+            result = app.submit_inventory_restock(draft)
+
+        self.assertEqual(result[0]["before_quantity"], 12)
+        self.assertEqual(result[0]["after_quantity"], -8)
+        self.assertEqual(update_rows.call_args.args[1][0]["fields"]["当前库存"], -8)
+        ledger_fields = create_rows.call_args.args[1][0]
+        self.assertEqual(ledger_fields["流水类型"], app.ACTION_RECEIVE)
+        self.assertEqual(ledger_fields["变更后数量"], -8)
+        self.assertIn("减库单 RST-20260721-ABC123", ledger_fields["备注"])
+
+    def test_reduce_notification_uses_red_header_and_reduce_wording(self) -> None:
+        card = app.material_restock_notification_card(
+            {**self.draft, "mode": "reduce"},
+            [{**self.draft["lines"][0], "before_quantity": 12, "after_quantity": 4}],
+        )
+        serialized = json.dumps(card, ensure_ascii=False)
+        self.assertEqual(card["header"]["template"], "red")
+        self.assertIn("减库已完成", serialized)
+        self.assertIn("减库 8，库存 12 → 4", serialized)
+
     def test_restock_rolls_inventory_back_when_ledger_write_fails(self) -> None:
         client = MagicMock()
         update_rows = MagicMock(side_effect=[1, 1])

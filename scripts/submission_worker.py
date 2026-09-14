@@ -39,6 +39,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
     QUEUE_TASK_TYPE_RESTOCK,
+    QUEUE_TASK_TYPE_STOCK_REDUCTION,
     QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
     QUEUE_TASK_TYPE_TRANSACTION_REVERT,
     SubmissionTask,
@@ -81,6 +82,7 @@ SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_RESTOCK,
+    QUEUE_TASK_TYPE_STOCK_REDUCTION,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
@@ -384,7 +386,7 @@ def process_task(
         result = inventory_app.execute_cultural_material_management(dict(task.payload.get("draft") or {}))
         return dict(result)
     payload = dict(task.payload)
-    if task.task_type == QUEUE_TASK_TYPE_RESTOCK:
+    if task.task_type in {QUEUE_TASK_TYPE_RESTOCK, QUEUE_TASK_TYPE_STOCK_REDUCTION}:
         progress = dict(task.result)
         if not progress.get("write_done"):
             lines = inventory_app.submit_inventory_restock(dict(payload["draft"]))

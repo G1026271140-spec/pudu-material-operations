@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.3"
+APP_VERSION = "V2.7.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7285,11 +7285,14 @@ def build_restock_no(submission_token: object, occurred_at: datetime | None = No
 
 def validate_restock_draft(draft: dict[str, object]) -> list[str]:
     errors: list[str] = []
+    mode = str(draft.get("mode") or "restock")
+    if mode not in {"restock", "reduce"}:
+        errors.append("请选择补库或减库模式")
     if not str(draft.get("operator") or "").strip():
-        errors.append("请填写补库人")
+        errors.append("请填写操作人")
     lines = [line for line in list(draft.get("lines") or []) if isinstance(line, dict)]
     if not lines:
-        errors.append("请至少加入一种补库物料")
+        errors.append("请至少加入一种操作物料")
         return errors
     if len(lines) > MAX_RESTOCK_LINE_COUNT:
         errors.append(f"一次补库最多可添加 {MAX_RESTOCK_LINE_COUNT} 种物料")
@@ -7297,11 +7300,11 @@ def validate_restock_draft(draft: dict[str, object]) -> list[str]:
     for index, line in enumerate(lines, start=1):
         key = request_material_key(line)
         if not all(key):
-            errors.append(f"第 {index} 条补库明细缺少品类、型号或语种")
+            errors.append(f"第 {index} 条操作明细缺少品类、型号或语种")
         if int(line.get("quantity") or 0) <= 0:
-            errors.append(f"第 {index} 条补库数量必须大于 0")
+            errors.append(f"第 {index} 条{'减库' if mode == 'reduce' else '补库'}数量必须大于 0")
         if key in seen:
-            errors.append(f"第 {index} 条补库物料重复，请合并数量")
+            errors.append(f"第 {index} 条操作物料重复，请合并数量")
         seen.add(key)
     return errors
 
@@ -7468,6 +7471,9 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
     operator = str(draft.get("operator") or "").strip()
     purchase_order_no = str(draft.get("purchase_order_no") or "").strip()
     overall_note = str(draft.get("note") or "").strip()
+    mode = str(draft.get("mode") or "restock")
+    operation_label = "减库" if mode == "reduce" else "补库"
+    ledger_action = ACTION_RECEIVE if mode == "reduce" else ACTION_PURCHASE
     submission_token = str(draft.get("submission_token") or "").strip() or uuid.uuid4().hex
     occurred_at = datetime.now()
     prepared: list[dict[str, object]] = []
@@ -7480,13 +7486,13 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
         raw_row = raw_material_by_id.get(record_id, {})
         before_quantity = feishu_int(feishu_fields(raw_row), "当前库存")
         quantity = int(line.get("quantity") or 0)
-        after_quantity = before_quantity + quantity
+        after_quantity = before_quantity - quantity if mode == "reduce" else before_quantity + quantity
         line_note = str(line.get("remark") or "").strip()
-        note_parts = [f"补库单 {restock_no}", f"补库人：{operator}"]
+        note_parts = [f"{operation_label}单 {restock_no}", f"操作人：{operator}"]
         if purchase_order_no:
             note_parts.append(f"采购单号：{purchase_order_no}")
         if overall_note:
-            note_parts.append(f"补库说明：{overall_note}")
+            note_parts.append(f"{operation_label}说明：{overall_note}")
         if line_note:
             note_parts.append(f"明细备注：{line_note}")
         prepared.append(
@@ -7517,7 +7523,11 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
             "record_id": str(item["record_id"]),
             "fields": {
                 "当前库存": int(item["after_quantity"]),
-                "启用状态": STATUS_ACTIVE,
+                "启用状态": (
+                    str(item.get("before_status") or STATUS_ACTIVE)
+                    if mode == "reduce"
+                    else STATUS_ACTIVE
+                ),
             },
         }
         for item in prepared
@@ -7535,7 +7545,7 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
     ledger_fields = [
         build_feishu_ledger_fields(
             str(item["record_id"]),
-            ACTION_PURCHASE,
+            ledger_action,
             str(item["product"]),
             str(item["model"]),
             str(item["language"]),
@@ -9144,6 +9154,7 @@ def material_restock_notification_card(
     lines: list[dict[str, object]],
 ) -> dict[str, object]:
     total_quantity = sum(int(line.get("quantity") or 0) for line in lines)
+    operation_label = "减库" if str(draft.get("mode") or "restock") == "reduce" else "补库"
 
     def short_field(label: str, value: object) -> dict[str, object]:
         return {
@@ -9155,14 +9166,14 @@ def material_restock_notification_card(
         }
 
     elements: list[dict[str, object]] = [
-        {"tag": "markdown", "content": "**补库信息**"},
+        {"tag": "markdown", "content": f"**{operation_label}信息**"},
         {
             "tag": "div",
             "fields": [
-                short_field("补库单号", draft.get("restock_no")),
-                short_field("补库人", draft.get("operator")),
-                short_field("采购单号", draft.get("purchase_order_no") or "-"),
-                short_field("补库合计", f"{len(lines)} 种，共 {total_quantity} 件"),
+                short_field(f"{operation_label}单号", draft.get("restock_no")),
+                short_field("操作人", draft.get("operator")),
+                short_field("采购/业务单号", draft.get("purchase_order_no") or "-"),
+                short_field(f"{operation_label}合计", f"{len(lines)} 种，共 {total_quantity} 件"),
             ],
         },
     ]
@@ -9170,7 +9181,7 @@ def material_restock_notification_card(
     if note:
         elements.extend(
             [
-                {"tag": "markdown", "content": "**补库说明**"},
+                {"tag": "markdown", "content": f"**{operation_label}说明**"},
                 {
                     "tag": "div",
                     "text": {
@@ -9180,13 +9191,13 @@ def material_restock_notification_card(
                 },
             ]
         )
-    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**补库明细**"}])
+    elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": f"**{operation_label}明细**"}])
     for index, line in enumerate(lines, start=1):
         detail = (
             f"{index:02d}. {_feishu_card_plain_text(line.get('product'), max_length=300)} / "
             f"{_feishu_card_plain_text(request_model_display_label(line.get('model'), language=LANGUAGE_ZH), max_length=200)} / "
             f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)}\n"
-            f"补库 {int(line.get('quantity') or 0)}，库存 "
+            f"{operation_label} {int(line.get('quantity') or 0)}，库存 "
             f"{int(line.get('before_quantity') or 0)} → {int(line.get('after_quantity') or 0)}"
         )
         remark = str(line.get("remark") or "").strip()
@@ -9201,8 +9212,8 @@ def material_restock_notification_card(
     return {
         "config": {"wide_screen_mode": True},
         "header": {
-            "template": "green",
-            "title": {"tag": "plain_text", "content": "物料编辑通知｜采购补库已完成"},
+            "template": "red" if operation_label == "减库" else "green",
+            "title": {"tag": "plain_text", "content": f"物料编辑通知｜{operation_label}已完成"},
         },
         "elements": elements,
     }

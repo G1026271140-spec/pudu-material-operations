@@ -12,6 +12,7 @@ type Catalog = {
   categories: any[];
   inventory: any[];
   restockInventory: any[];
+  restockImages: Record<string, string>;
   culturalInventory: any[];
   dimensions: Record<Kind, any[]>;
   categoryDefinitions: string[];
@@ -96,51 +97,85 @@ function Section({ index, title, hint, children }: { index: string; title: strin
 }
 
 function Restock({ catalog, tr, setBusy, setError, setSuccess }: any) {
+  const [mode, setMode] = useState<"restock" | "reduce">("restock");
   const [operator, setOperator] = useState("");
   const [po, setPo] = useState("");
   const [note, setNote] = useState("");
-  const [definition, setDefinition] = useState(catalog.categoryDefinitions[0] || "");
-  const products = catalog.categories.filter((c: any) => c.category_definition === definition).map((c: any) => c.category);
-  const [product, setProduct] = useState(products[0] || "");
-  const scoped = catalog.restockInventory.filter((x: any) => x.category === product);
-  const models = unique(scoped.map((x: any) => x.model));
-  const [model, setModel] = useState(models[0] || catalog.noModelText);
-  const languages = unique(scoped.filter((x: any) => x.model === model).map((x: any) => x.language));
-  const [language, setLanguage] = useState(languages[0] || catalog.noLanguageText);
+  const [search, setSearch] = useState("");
+  const [activeProduct, setActiveProduct] = useState("");
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [remark, setRemark] = useState("");
   const [lines, setLines] = useState<any[]>([]);
   const [review, setReview] = useState(false);
-  function changeDefinition(value: string) { setDefinition(value); const p = catalog.categories.find((c: any) => c.category_definition === value)?.category || ""; setProduct(p); changeProduct(p); }
-  function changeProduct(value: string) { setProduct(value); const m = catalog.restockInventory.find((x: any) => x.category === value)?.model || catalog.noModelText; setModel(m); setLanguage(catalog.restockInventory.find((x: any) => x.category === value && x.model === m)?.language || catalog.noLanguageText); }
-  function changeModel(value: string) { setModel(value); setLanguage(catalog.restockInventory.find((x: any) => x.category === product && x.model === value)?.language || catalog.noLanguageText); }
-  function add() {
-    if (!product || !model || !language || quantity < 1) return setError(tr("请完整选择补库物料并填写数量。", "Select a valid material and quantity."));
-    const source = catalog.restockInventory.find((x: any) => x.category === product && x.model === model && x.language === language);
-    if (!source) return setError(tr("该品类、型号和语种的库存组合不存在。", "This material combination does not exist."));
-    const key = `${product}\0${model}\0${language}`;
-    if (lines.some((x) => x.key === key)) return setError(tr("该物料组合已在清单中，请直接修改原行。", "This combination is already in the list."));
-    setLines([...lines, { key, category_definition: definition, product, model, language, quantity, remark, snapshot_quantity: source.quantity }]);
+  const productOptions = unique(catalog.restockInventory.map((x: any) => x.category));
+  const visibleProducts = productOptions.filter((name: string) => name.toLowerCase().includes(search.toLowerCase()));
+  const scoped = catalog.restockInventory.filter((x: any) => x.category === activeProduct);
+  const models = unique(scoped.map((x: any) => x.model));
+  const languages = unique(scoped.filter((x: any) => !selectedModels.length || selectedModels.includes(x.model)).map((x: any) => x.language));
+  const modelMeta = (name: string) => catalog.dimensions.model.find((x: any) => x.name === name) || {};
+  const modelGroups = useMemo(() => {
+    const groups = new Map<string, string[]>();
+    models.forEach((name: string) => {
+      const line = String(modelMeta(name).product_line || tr("未分组", "Other"));
+      groups.set(line, [...(groups.get(line) || []), name]);
+    });
+    return [...groups.entries()];
+  }, [activeProduct]);
+  const toggle = (values: string[], value: string, setter: (next: string[]) => void) => setter(values.includes(value) ? values.filter(x => x !== value) : [...values, value]);
+  function openProduct(product: string) {
+    const options = catalog.restockInventory.filter((x: any) => x.category === product);
+    const nextModels = unique(options.map((x: any) => x.model));
+    const nextLanguages = unique(options.map((x: any) => x.language));
+    setActiveProduct(product);
+    setSelectedModels(nextModels.length === 1 ? nextModels : []);
+    setSelectedLanguages(nextLanguages.length === 1 ? nextLanguages : []);
     setQuantity(1); setRemark("");
   }
+  function add() {
+    if (!activeProduct || !selectedModels.length || !selectedLanguages.length || quantity < 1) return setError(tr("请选择型号、语种并填写数量。", "Select models, languages, and quantity."));
+    const options = scoped.filter((x: any) => selectedModels.includes(x.model) && selectedLanguages.includes(x.language));
+    if (!options.length) return setError(tr("所选型号和语种之间没有有效物料组合。", "No valid material combinations selected."));
+    if (lines.length + options.filter((x: any) => !lines.some((line: any) => line.key === `${x.category}\0${x.model}\0${x.language}`)).length > catalog.maxRestockLines) return setError(`${tr("清单最多添加", "The list supports at most")} ${catalog.maxRestockLines} ${tr("种物料", "materials")}`);
+    setLines((current: any[]) => {
+      const next = [...current];
+      options.forEach((source: any) => {
+        const key = `${source.category}\0${source.model}\0${source.language}`;
+        const index = next.findIndex(x => x.key === key);
+        const item = { key, category_definition: catalog.categories.find((c: any) => c.category === source.category)?.category_definition || "", product: source.category, model: source.model, language: source.language, quantity, remark, snapshot_quantity: source.quantity };
+        if (index >= 0) next[index] = { ...next[index], quantity: next[index].quantity + quantity, remark: remark || next[index].remark };
+        else next.push(item);
+      });
+      return next;
+    });
+    setActiveProduct("");
+    setSuccess(tr("已加入操作清单", "Added to inventory list"));
+  }
   async function submit() {
-    if (!operator.trim()) return setError(tr("请填写补库人。", "Enter the restock operator."));
-    if (!lines.length) return setError(tr("请至少加入一种补库物料。", "Add at least one material."));
+    const label = mode === "reduce" ? tr("减库", "Stock Reduction") : tr("补库", "Restock");
+    if (!operator.trim()) return setError(tr("请填写操作人。", "Enter the operator."));
+    if (!lines.length) return setError(`${tr("请至少加入一种", "Add at least one material for ")}${label}${tr("物料。", ".")}`);
     setBusy(true); setError("");
-    try { const data = await post("/api/admin/restock/submit", { operator, purchase_order_no: po, note, submission_token: token(), lines: lines.map(({ key, ...x }) => x) }); setSuccess(`${tr("采购补库任务已进入后台队列", "Restock task queued")}（${data.restockNo}）`); setReview(false); setLines([]); }
+    try { const data = await post("/api/admin/restock/submit", { mode, operator, purchase_order_no: po, note, submission_token: token(), lines: lines.map(({ key, ...x }) => x) }); setSuccess(`${label}${tr("任务已进入后台队列", " task queued")}（${data.restockNo}）`); setReview(false); setLines([]); }
     catch (e) { setError(e instanceof Error ? e.message : "提交失败"); } finally { setBusy(false); }
   }
   const total = lines.reduce((sum, x) => sum + Number(x.quantity), 0);
+  const modeLabel = mode === "reduce" ? tr("减库", "Stock Reduction") : tr("补库", "Restock");
   return <>
-    <Section index="01" title={tr("采购补库信息", "Restock Information")} hint={tr("填写补库基础信息并逐条添加采购物料", "Complete the information and add materials") }>
-      <div className="form-grid three"><label>{tr("补库人", "Operator")} *<input value={operator} onChange={e => setOperator(e.target.value)} /></label><label>{tr("采购单号", "Purchase Order")}<input value={po} onChange={e => setPo(e.target.value)} /></label><label>{tr("补库说明", "Notes")}<input value={note} onChange={e => setNote(e.target.value)} /></label></div>
+    <Section index="01" title={tr("库存操作信息", "Inventory Operation")} hint={tr("选择补库或减库；两种操作均通过后台队列写入库存流水", "Choose restock or reduction; both are processed by the background queue") }>
+      <div className="inventory-mode-switch"><button className={mode === "restock" ? "active" : ""} onClick={() => setMode("restock")}>＋ {tr("补库（增加库存）", "Restock (increase)")}</button><button className={mode === "reduce" ? "active reduce" : ""} onClick={() => setMode("reduce")}>－ {tr("减库（减少库存）", "Reduce (decrease)")}</button></div>
+      <div className="form-grid three"><label>{tr("操作人", "Operator")} *<input value={operator} onChange={e => setOperator(e.target.value)} /></label><label>{tr("采购/业务单号", "Reference No.")}<input value={po} onChange={e => setPo(e.target.value)} /></label><label>{tr("操作说明", "Notes")}<input value={note} onChange={e => setNote(e.target.value)} /></label></div>
     </Section>
-    <Section index="02" title={tr("采购补库清单", "Restock List")} hint={`${tr("按品类定义逐条添加现有物料，最多", "Add existing materials, maximum")} ${catalog.maxRestockLines}`}>
-      <div className="line-builder"><label>{tr("品类定义", "Definition")}<select value={definition} onChange={e => changeDefinition(e.target.value)}>{catalog.categoryDefinitions.map((x: string) => <option key={x}>{x}</option>)}</select></label><label>{tr("物料品类", "Category")}<select value={product} onChange={e => changeProduct(e.target.value)}>{products.map((x: string) => <option key={x}>{x}</option>)}</select></label><label>{tr("产品型号", "Model")}<select value={model} onChange={e => changeModel(e.target.value)}>{models.map((x: string) => <option key={x}>{x}</option>)}</select></label><label>{tr("语种", "Language")}<select value={language} onChange={e => setLanguage(e.target.value)}>{languages.map((x: string) => <option key={x}>{x}</option>)}</select></label><label>{tr("补库数量", "Quantity")}<input type="number" min="1" value={quantity} onChange={e => setQuantity(+e.target.value)} /></label><label>{tr("明细备注", "Remark")}<input value={remark} onChange={e => setRemark(e.target.value)} /></label><button className="primary" onClick={add} disabled={lines.length >= catalog.maxRestockLines}>＋ {tr("加入清单", "Add")}</button></div>
-      <DataTable tr={tr} rows={lines} columns={["category_definition", "product", "model", "language", "snapshot_quantity", "quantity", "remark"]} labels={[tr("品类定义","Definition"),tr("物料品类","Category"),tr("产品型号","Model"),tr("语种","Language"),tr("缓存库存","Cached Stock"),tr("补库数量","Quantity"),tr("备注","Remark")]} onDelete={(i: number) => setLines(lines.filter((_: any, j: number) => i !== j))} onQuantity={(i: number,v: number) => setLines(lines.map((x: any,j: number) => j === i ? {...x,quantity:v}:x))}/>
-      <div className="admin-actions"><span>{lines.length} {tr("种物料", "materials")} · {total} {tr("件", "items")}</span><button className="primary" onClick={() => lines.length ? setReview(true) : setError(tr("请先添加补库物料。","Add materials first."))}>{tr("预览补库", "Review Restock")}</button></div>
+    <Section index="02" title={`${modeLabel}${tr("物料清单", " Material List")}`} hint={`${tr("按品类卡片选择型号和语种，可同时多选；最多", "Select models and languages from category cards; maximum")} ${catalog.maxRestockLines}`}>
+      <div className="restock-toolbar"><input value={search} onChange={e => setSearch(e.target.value)} placeholder={tr("⌕ 输入品类名称搜索", "⌕ Search material categories")} /><strong>{lines.length} {tr("种", "types")} / {total} {tr("件", "items")}</strong><button className="primary" onClick={() => lines.length ? setReview(true) : setError(tr("请先添加操作物料。","Add materials first."))}>{tr("预览", "Review")}{modeLabel}</button></div>
+      {lines.length > 0 && (
+        <DataTable tr={tr} rows={lines} columns={["product", "model", "language", "snapshot_quantity", "quantity", "remark"]} labels={[tr("物料品类","Category"),tr("产品型号","Model"),tr("语种","Language"),tr("缓存库存","Cached Stock"),`${modeLabel}${tr("数量"," Qty")}`,tr("备注","Remark")]} onDelete={(i: number) => setLines(lines.filter((_: any, j: number) => i !== j))} onQuantity={(i: number,v: number) => setLines(lines.map((x: any,j: number) => j === i ? {...x,quantity:Math.max(1,v)}:x))}/>
+      )}
+      <div className="restock-cards">{visibleProducts.map((product: string) => { const category = catalog.categories.find((c: any) => c.category === product); return <article key={product}>{catalog.restockImages?.[product] ? <img src={catalog.restockImages[product]} /> : <div className="restock-placeholder">PUDU</div>}<small>{category?.category_definition || tr("物料品类","Material Category")}</small><h3>{product}</h3><button onClick={() => openProduct(product)}>🛒 {tr("选择规格", "Select Options")}</button></article>; })}</div>
     </Section>
-    {review && <Review tr={tr} title={tr("补库信息确认","Confirm Restock")} onClose={() => setReview(false)} onSubmit={submit}><p><b>{tr("补库人","Operator")}：</b>{operator}　<b>{tr("采购单号","PO")}：</b>{po || "-"}</p><DataTable tr={tr} rows={lines} columns={["product","model","language","snapshot_quantity","quantity"]} labels={[tr("物料品类","Category"),tr("产品型号","Model"),tr("语种","Language"),tr("当前库存","Current"),tr("补库数量","Quantity")]} /></Review>}
+    {activeProduct && <div className="overlay restock-overlay" onMouseDown={() => setActiveProduct("")}><div className="modal restock-spec-modal" onMouseDown={e => e.stopPropagation()}><button className="close" onClick={() => setActiveProduct("")}>×</button><h2>{activeProduct}</h2><p>{tr("可同时选择多个型号和多个语种加入操作清单。", "Select multiple models and languages to add to the list.")}</p><div className="restock-selector"><h4>{tr("产品型号", "Product Model")}</h4><div className="restock-model-grid">{modelGroups.map(([line, values]) => <div className="restock-model-line" key={line}><small>{line}</small><div className="restock-pills">{values.map((value: string) => <button className={selectedModels.includes(value) ? "chosen" : ""} onClick={() => toggle(selectedModels,value,setSelectedModels)} key={value}>{modelMeta(value).zh_page_name || value}</button>)}</div></div>)}</div><h4>{tr("语种", "Language")}</h4><div className="restock-pills">{languages.map((value: string) => <button className={selectedLanguages.includes(value) ? "chosen" : ""} onClick={() => toggle(selectedLanguages,value,setSelectedLanguages)} key={value}>{value}</button>)}</div></div><div className="restock-modal-foot"><label>{modeLabel}{tr("数量", " Quantity")}<input type="number" min="1" value={quantity} onChange={e => setQuantity(Math.max(1,+e.target.value))} /></label><label>{tr("备注", "Remark")}<input value={remark} onChange={e => setRemark(e.target.value)} placeholder={tr("可选","Optional")} /></label><button className="primary" onClick={add}>🛒 {tr("加入操作清单", "Add to List")}</button></div></div></div>}
+    {review && <Review tr={tr} title={`${modeLabel}${tr("信息确认"," Confirmation")}`} onClose={() => setReview(false)} onSubmit={submit}><p><b>{tr("操作人","Operator")}：</b>{operator}　<b>{tr("业务单号","Reference")}：</b>{po || "-"}</p>{mode === "reduce" && <div className="danger-box">{tr("减库允许产生负库存；提交后将按后台执行时的实时库存计算。", "Reduction may result in negative inventory; final values use live stock at execution time.")}</div>}<DataTable tr={tr} rows={lines.map((x:any) => ({...x,estimated_after: Number(x.snapshot_quantity) + (mode === "reduce" ? -Number(x.quantity) : Number(x.quantity))}))} columns={["product","model","language","snapshot_quantity","quantity","estimated_after"]} labels={[tr("物料品类","Category"),tr("产品型号","Model"),tr("语种","Language"),tr("当前缓存库存","Cached Stock"),`${modeLabel}${tr("数量"," Qty")}`,tr("预计操作后库存","Estimated After")]} /></Review>}
   </>;
 }
 

@@ -320,6 +320,24 @@ def test_management_restock_queues_existing_worker_payload(monkeypatch):
     assert observed["payload"]["draft"]["lines"][0]["quantity"] == 10
 
 
+def test_management_reduce_uses_distinct_queue_task_type(monkeypatch):
+    observed = {}
+    monkeypatch.setattr(legacy_app, "validate_restock_draft", lambda draft: [])
+    monkeypatch.setattr(legacy_app, "build_restock_no", lambda token: "RST-REDUCE")
+    monkeypatch.setattr(
+        web_api,
+        "_enqueue_fast",
+        lambda task_type, key, payload: observed.update(task_type=task_type, payload=payload) or "task-reduce",
+    )
+    response = admin_client().post(
+        "/api/admin/restock/submit",
+        json={"mode": "reduce", "operator": "管理员", "lines": [{"product": "产品单页", "model": "T300", "language": "英语", "quantity": 10}]},
+    )
+    assert response.status_code == 200
+    assert observed["task_type"] == "库存减库"
+    assert observed["payload"]["draft"]["mode"] == "reduce"
+
+
 def test_dimension_preview_builds_worker_changes_from_cached_associations(monkeypatch):
     snapshot = {
         "categories": [{"record_id": "cat-1", "category": "产品单页", "no_model": False, "no_language": False}],
