@@ -21,6 +21,8 @@ const text = {
     password: "请输入管理员密码",
     unlock: "解锁",
     wrong: "密码不正确",
+    collapse: "收起左侧导航",
+    expand: "展开左侧导航",
   },
   en: {
     app: "Marketing Materials System",
@@ -35,6 +37,8 @@ const text = {
     password: "Enter administrator password",
     unlock: "Unlock",
     wrong: "Incorrect password",
+    collapse: "Collapse sidebar",
+    expand: "Expand sidebar",
   },
 };
 
@@ -48,6 +52,9 @@ export default function Portal() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => localStorage.getItem("pudu-sidebar-collapsed") === "true",
+  );
   const t = text[lang];
   useEffect(() => {
     fetch("/api/admin/status")
@@ -61,6 +68,10 @@ export default function Portal() {
   function changeLang(next: Lang) {
     localStorage.setItem("pudu-lang", next);
     setLang(next);
+  }
+  function setCollapsed(collapsed: boolean) {
+    localStorage.setItem("pudu-sidebar-collapsed", String(collapsed));
+    setSidebarCollapsed(collapsed);
   }
   async function unlock() {
     setError("");
@@ -76,8 +87,17 @@ export default function Portal() {
     setUnlocked(true);
   }
   return (
-    <div className="portal">
+    <div className={`portal${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
       <aside className="sidebar">
+        <button
+          type="button"
+          className="sidebar-collapse"
+          aria-label={t.collapse}
+          title={t.collapse}
+          onClick={() => setCollapsed(true)}
+        >
+          «
+        </button>
         <div className="sidebar-brand">
           <img
             className="pudu-logo"
@@ -138,6 +158,15 @@ export default function Portal() {
           </div>
         </div>
       </aside>
+      <button
+        type="button"
+        className="sidebar-expand"
+        aria-label={t.expand}
+        title={t.expand}
+        onClick={() => setCollapsed(false)}
+      >
+        »
+      </button>
       <div className="portal-content">
         {page === "request" ? (
           <RequestPage lang={lang} />

@@ -196,6 +196,29 @@ class RequestReactMobileLayoutTests(unittest.TestCase):
         self.assertIn(".request-page .cartpanel thead", phone)
 
 
+class ReactSidebarCollapseTests(unittest.TestCase):
+    def setUp(self) -> None:
+        root = Path(app.__file__).parent / "request_web/frontend/src"
+        self.portal = (root / "Portal.tsx").read_text(encoding="utf-8")
+        self.css = (root / "portal.css").read_text(encoding="utf-8")
+
+    def test_desktop_sidebar_can_collapse_and_restores_preference(self) -> None:
+        self.assertIn('localStorage.getItem("pudu-sidebar-collapsed")', self.portal)
+        self.assertIn('localStorage.setItem("pudu-sidebar-collapsed"', self.portal)
+        self.assertIn("sidebar-collapsed", self.portal)
+        self.assertIn("sidebar-collapse", self.portal)
+        self.assertIn("sidebar-expand", self.portal)
+        self.assertIn(".portal.sidebar-collapsed .portal-content", self.css)
+        self.assertIn("margin-left: 0", self.css)
+
+    def test_phone_navigation_ignores_desktop_collapse_state(self) -> None:
+        mobile = self.css.split("@media (max-width: 900px)", 1)[1]
+        self.assertIn("transform: none !important", mobile)
+        self.assertIn(".sidebar-collapse", mobile)
+        self.assertIn(".sidebar-expand", mobile)
+        self.assertIn("display: none", mobile)
+
+
 class CulturalMobileLayoutTests(unittest.TestCase):
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:
         source = (
