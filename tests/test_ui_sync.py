@@ -218,6 +218,12 @@ class ReactSidebarCollapseTests(unittest.TestCase):
         self.assertIn(".sidebar-expand", mobile)
         self.assertIn("display: none", mobile)
 
+    def test_sidebar_brand_uses_larger_icons_and_single_line_titles(self) -> None:
+        brand = self.css.split(".sidebar-brand {", 1)[1].split(".sidebar-label", 1)[0]
+        self.assertIn("width: 100px", brand)
+        self.assertIn("width: 46px", brand)
+        self.assertGreaterEqual(brand.count("white-space: nowrap"), 2)
+
 
 class CulturalMobileLayoutTests(unittest.TestCase):
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:

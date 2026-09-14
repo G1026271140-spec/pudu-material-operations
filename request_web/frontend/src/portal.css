@@ -64,25 +64,27 @@
 }
 .sidebar-brand {
   display: grid;
-  grid-template-columns: 72px 36px;
+  grid-template-columns: minmax(0, 1fr) 48px;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 4px 8px 18px;
   border-bottom: 1px solid #d8e4eb;
 }
 .sidebar-brand .pudu-logo {
-  width: 72px;
-  max-height: 28px;
+  width: 100px;
+  max-width: 100%;
+  max-height: 40px;
   object-fit: contain;
 }
 .sidebar-brand .app-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
   object-fit: contain;
 }
 .sidebar-brand div {
   grid-column: 1 / -1;
+  min-width: 0;
 }
 .sidebar-brand strong,
 .sidebar-brand span {
@@ -91,11 +93,13 @@
 .sidebar-brand strong {
   font-size: 15px;
   color: #0b2b48;
+  white-space: nowrap;
 }
 .sidebar-brand span {
   margin-top: 3px;
   font-size: 11px;
   color: #738796;
+  white-space: nowrap;
 }
 .sidebar-label {
   margin: 18px 8px 7px;
@@ -320,8 +324,16 @@
     display: none;
   }
   .sidebar-brand {
-    grid-template-columns: 72px 36px 1fr;
+    grid-template-columns: 88px 42px minmax(0, 1fr);
     padding-bottom: 10px;
+  }
+  .sidebar-brand .pudu-logo {
+    width: 84px;
+    max-height: 34px;
+  }
+  .sidebar-brand .app-icon {
+    width: 40px;
+    height: 40px;
   }
   .sidebar-brand div {
     grid-column: auto;
@@ -382,6 +394,15 @@
   .sidebar-brand {
     grid-template-columns: 64px 30px minmax(0, 1fr);
     gap: 8px;
+  }
+  .sidebar-brand .pudu-logo {
+    width: 62px;
+    max-height: 26px;
+  }
+  .sidebar-brand .app-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
   }
   .sidebar-brand div strong {
     font-size: 14px;
