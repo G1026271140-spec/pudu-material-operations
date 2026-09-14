@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.1"
+APP_VERSION = "V2.7.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -9092,8 +9092,20 @@ def notify_enabled_admins_of_material_request(
                 review_context=review_context,
                 operator_open_id=operator_open_id,
             )
-            update_message(message_id, card)
-            message_ids.append(message_id)
+            try:
+                update_message(message_id, card)
+                message_ids.append(message_id)
+            except Exception as exc:
+                # Feishu only allows interactive messages to be updated for 14
+                # days.  A delayed allocation retry must replace an expired
+                # administrator card rather than fail the completed business
+                # write forever.  Preserve fail-closed behavior for every other
+                # update error.
+                if "230031" not in str(exc) or not operator_open_id:
+                    raise
+                message_ids.append(
+                    send_feishu_interactive_message(client, operator_open_id, card)
+                )
     else:
         for open_id in recipients:
             card = material_request_notification_card(

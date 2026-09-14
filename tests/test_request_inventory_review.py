@@ -7,6 +7,37 @@ import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_expired_admin_card_is_replaced_and_new_message_id_is_saved(self) -> None:
+        client = Mock()
+        client.update_interactive_message.side_effect = RuntimeError(
+            "Feishu HTTP 400: code 230031 Message has expired"
+        )
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "inventory_message_ids": ["old-message"],
+            }
+        }
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "material_request_notification_card", return_value={"card": True}),
+            patch.object(app, "send_feishu_interactive_message", return_value="new-message") as send,
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+        ):
+            count = app.notify_enabled_admins_of_material_request(
+                "REQ-1", {"request_no": "REQ-1"}, []
+            )
+
+        self.assertEqual(count, 1)
+        send.assert_called_once_with(client, "ou-admin", {"card": True})
+        self.assertEqual(
+            update_request.call_args.args[2]["库存确认消息ID"],
+            '["new-message"]',
+        )
+
     def test_allocation_retry_skips_lines_already_in_committed_order_batch(self) -> None:
         service = Mock()
         service.snapshot.return_value = {"snapshot": True}
