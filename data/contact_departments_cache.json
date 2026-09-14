@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-11 11:00:34",
+  "generated_at": "2026-09-14 11:01:28",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1772,10 +1772,10 @@
       "open_id": "ou_4d991ca93ea0d4820763ce4940298717",
       "name": "任君",
       "department_ids": [
-        "od-7366fcf482e4c8888cf056284375545d"
+        "od-89b909bd6f20be58d79447ab6849221e"
       ],
       "department_paths": [
-        "采购部"
+        "采购开发组"
       ]
     },
     {
@@ -2687,6 +2687,16 @@
       ]
     },
     {
+      "open_id": "ou_51b1766499d2c1ced25186c8b2f26c16",
+      "name": "凌凯",
+      "department_ids": [
+        "od-bb30508003376665ccf103b15439c5cf"
+      ],
+      "department_paths": [
+        "渠道管理组"
+      ]
+    },
+    {
       "open_id": "ou_04cee088679dffe72a6fd30b8118a2c2",
       "name": "凌晓峰",
       "department_ids": [
@@ -3363,6 +3373,16 @@
       ]
     },
     {
+      "open_id": "ou_109e0d1d68995eaf5abb8b95755e09e4",
+      "name": "刘昭欣",
+      "department_ids": [
+        "od-8c5ed2e15421f3b5d65be5fcf6da0124"
+      ],
+      "department_paths": [
+        "营销招聘组"
+      ]
+    },
+    {
       "open_id": "ou_ed6811b2037c0858f122ce6470725a44",
       "name": "刘杨锐",
       "department_ids": [
@@ -3656,16 +3676,6 @@
       ],
       "department_paths": [
         "桐乡仓储物流组"
-      ]
-    },
-    {
-      "open_id": "ou_b28f07f85b3168304dfeaa43be003eaa",
-      "name": "刘绍庭",
-      "department_ids": [
-        "od-c85ebe41cdf07b2290fc9e0cb0f334e8"
-      ],
-      "department_paths": [
-        "GRPBU机械组"
       ]
     },
     {
@@ -4710,6 +4720,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_ec73014b3e1f0ce53f911ef6171a50f7",
+      "name": "吴美良",
+      "department_ids": [
+        "od-7366fcf482e4c8888cf056284375545d"
+      ],
+      "department_paths": [
+        "采购部"
       ]
     },
     {
@@ -6189,6 +6209,16 @@
       ]
     },
     {
+      "open_id": "ou_7a01752b9e3ba8a16f81ef8d16664f5e",
+      "name": "季昊林",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
+      ]
+    },
+    {
       "open_id": "ou_4dda2b987507323645bc3b314dc507a2",
       "name": "季浩",
       "department_ids": [
@@ -6382,6 +6412,16 @@
       ],
       "department_paths": [
         "软件平台架构部"
+      ]
+    },
+    {
+      "open_id": "ou_9d9b632f326d2db01bce0fdfd637d011",
+      "name": "宋爱",
+      "department_ids": [
+        "od-88ca157a59730e7a40ef6b1cfc3e2a09"
+      ],
+      "department_paths": [
+        "质量代表组"
       ]
     },
     {
@@ -8377,6 +8417,16 @@
       ]
     },
     {
+      "open_id": "ou_4aab6965b8d8b2b3be66f524b61b5afb",
+      "name": "徐成亮",
+      "department_ids": [
+        "od-8e45a1055cf45a02f1c906e2c67e58af"
+      ],
+      "department_paths": [
+        "生产质量组"
+      ]
+    },
+    {
       "open_id": "ou_1ddbe0d199f60feb4ead665f2aa43f7d",
       "name": "徐晓琪",
       "department_ids": [
@@ -9153,13 +9203,11 @@
       "name": "曾飞",
       "department_ids": [
         "od-87008252685ec50922f3b015a8d6f2fc",
-        "od-8647dad561eae9e0be25174f4ce46116",
         "od-306e7e8186e4bfd316136d0dfc4f21b1",
         "od-b5d68400954d5ac54cf34c5602d46444"
       ],
       "department_paths": [
         "SE管理部",
-        "硬件平台部",
         "硬件平台部电机组",
         "通用互联团队"
       ]
@@ -10282,10 +10330,12 @@
       "open_id": "ou_0add79c11448e24bf3affa87dd7f0527",
       "name": "李杰",
       "department_ids": [
-        "od-fba6a8915868e0848e1b05c4746457db"
+        "od-fba6a8915868e0848e1b05c4746457db",
+        "od-7366fcf482e4c8888cf056284375545d"
       ],
       "department_paths": [
-        "采购执行组"
+        "采购执行组",
+        "采购部"
       ]
     },
     {
@@ -10346,6 +10396,16 @@
       ],
       "department_paths": [
         "IQC组"
+      ]
+    },
+    {
+      "open_id": "ou_ffc280f56a05415adad4edba74cd7c06",
+      "name": "李樑杰",
+      "department_ids": [
+        "od-57dfd9f076804c22848710a18d16c284"
+      ],
+      "department_paths": [
+        "美国KA组"
       ]
     },
     {
@@ -10542,6 +10602,16 @@
       ],
       "department_paths": [
         "X LAB"
+      ]
+    },
+    {
+      "open_id": "ou_5e50b84ad7d3b7dc6910280be01fbf9b",
+      "name": "李盈睿",
+      "department_ids": [
+        "od-abcc729db50f1e4d9cca6a501e9c266f"
+      ],
+      "department_paths": [
+        "拉美战队"
       ]
     },
     {
@@ -11511,6 +11581,16 @@
       ]
     },
     {
+      "open_id": "ou_cccd70a37ecdeb2393bec6a182a027c2",
+      "name": "杨雨萱",
+      "department_ids": [
+        "od-f610c7036dc1e1e4dd10f168c41a1d61"
+      ],
+      "department_paths": [
+        "服务代表组"
+      ]
+    },
+    {
       "open_id": "ou_6fe22a9fd3a67bc92fc7e7d3e0bc57a3",
       "name": "杨雪芳",
       "department_ids": [
@@ -11580,6 +11660,16 @@
       ],
       "department_paths": [
         "设计部"
+      ]
+    },
+    {
+      "open_id": "ou_46259373974caf24b38233cdef73f789",
+      "name": "林伟泽",
+      "department_ids": [
+        "od-abcc729db50f1e4d9cca6a501e9c266f"
+      ],
+      "department_paths": [
+        "拉美战队"
       ]
     },
     {
@@ -12071,6 +12161,16 @@
       ]
     },
     {
+      "open_id": "ou_8a0762fb343bc7b620b79a6d0223c713",
+      "name": "梁志斌",
+      "department_ids": [
+        "od-e36195829136c279cc43ba7cf98790d8"
+      ],
+      "department_paths": [
+        "亚太服务部"
+      ]
+    },
+    {
       "open_id": "ou_841e2e8d13eaa3d59a5ca0bacb642707",
       "name": "梁春贵",
       "department_ids": [
@@ -12374,6 +12474,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_11ce41720fe17534b9c0e27c0242920d",
+      "name": "段少钦",
+      "department_ids": [
+        "od-25d320a49e945efe59e2b6cf41f9ba93"
+      ],
+      "department_paths": [
+        "GRPBU算法组"
       ]
     },
     {
@@ -12936,6 +13046,16 @@
       ],
       "department_paths": [
         "M LAB"
+      ]
+    },
+    {
+      "open_id": "ou_96b5de4bbd51744f665d60a0fadeda18",
+      "name": "温纵",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
       ]
     },
     {
@@ -13526,6 +13646,16 @@
       ],
       "department_paths": [
         "AI Infra部"
+      ]
+    },
+    {
+      "open_id": "ou_14395250569ede5ed0bacc4d646c2f9e",
+      "name": "王增",
+      "department_ids": [
+        "od-8647dad561eae9e0be25174f4ce46116"
+      ],
+      "department_paths": [
+        "硬件平台部"
       ]
     },
     {
@@ -15891,16 +16021,6 @@
       ]
     },
     {
-      "open_id": "ou_84271748889403e5954a119138920dd7",
-      "name": "胡曦然",
-      "department_ids": [
-        "od-30db39571d65087f1a2b2b228a26f2fa"
-      ],
-      "department_paths": [
-        "生命周期工具链团队"
-      ]
-    },
-    {
       "open_id": "ou_dda2f9b476c7d973e0206b5f3b514863",
       "name": "胡桉桧",
       "department_ids": [
@@ -16720,6 +16840,16 @@
       ],
       "department_paths": [
         "业务运营平台团队"
+      ]
+    },
+    {
+      "open_id": "ou_59b4c6d6811bda5c7c5f7ef6ab17543b",
+      "name": "蔡春富",
+      "department_ids": [
+        "od-2f3b4aa135c682dcf06b79b2f1f75642"
+      ],
+      "department_paths": [
+        "通用导航及底盘团队"
       ]
     },
     {
@@ -18111,16 +18241,6 @@
       ]
     },
     {
-      "open_id": "ou_3603f0b95271e4dd5234718a59d92e24",
-      "name": "邓金如",
-      "department_ids": [
-        "od-9487cd1b780367a333bae909869435fb"
-      ],
-      "department_paths": [
-        "海外商务交付组"
-      ]
-    },
-    {
       "open_id": "ou_c991e5ad91071e86c6d51880a6ba9eaf",
       "name": "邓锦榕",
       "department_ids": [
@@ -18250,16 +18370,6 @@
       ],
       "department_paths": [
         "SQM组"
-      ]
-    },
-    {
-      "open_id": "ou_d66271ecc2111c68557e7e3a10ff583f",
-      "name": "郑传好",
-      "department_ids": [
-        "od-9ad23d5284430da79278f14ad7fbadd6"
-      ],
-      "department_paths": [
-        "CRPBU算法组"
       ]
     },
     {
@@ -19019,6 +19129,16 @@
       ]
     },
     {
+      "open_id": "ou_7abc859c5bb7711ec7f27f56eca4d6ef",
+      "name": "钱骏",
+      "department_ids": [
+        "od-306e7e8186e4bfd316136d0dfc4f21b1"
+      ],
+      "department_paths": [
+        "硬件平台部电机组"
+      ]
+    },
+    {
       "open_id": "ou_0aca91e1849ecfd1cb83e8bfb79b327d",
       "name": "银钧",
       "department_ids": [
@@ -19455,6 +19575,16 @@
       ]
     },
     {
+      "open_id": "ou_e2261716aca679b3e78d732d83a95c8f",
+      "name": "陈小军",
+      "department_ids": [
+        "od-e9be822e07696582ef8c156ffbc06d39"
+      ],
+      "department_paths": [
+        "GRPBU硬件组"
+      ]
+    },
+    {
       "open_id": "ou_a6bc7d2b70fbae295c1b0f9c4de30787",
       "name": "陈小强",
       "department_ids": [
@@ -19581,16 +19711,6 @@
       ]
     },
     {
-      "open_id": "ou_8fa87450bfb03656f200e97aafc57416",
-      "name": "陈新羽",
-      "department_ids": [
-        "od-bb30508003376665ccf103b15439c5cf"
-      ],
-      "department_paths": [
-        "渠道管理组"
-      ]
-    },
-    {
       "open_id": "ou_38baad6f7c50e8088ccf02af84fb3319",
       "name": "陈新龙",
       "department_ids": [
@@ -19598,6 +19718,16 @@
       ],
       "department_paths": [
         "服务代表组"
+      ]
+    },
+    {
+      "open_id": "ou_c4d3bc609d07b9c194270483f8431eef",
+      "name": "陈旭",
+      "department_ids": [
+        "od-8f3a4c538a65e3c3396660a2d4e21445"
+      ],
+      "department_paths": [
+        "建湖仓储物流组"
       ]
     },
     {
@@ -19628,6 +19758,16 @@
       ],
       "department_paths": [
         "区域市场组"
+      ]
+    },
+    {
+      "open_id": "ou_d01470f32dca6cacdbcc1a124b29c784",
+      "name": "陈晓燕",
+      "department_ids": [
+        "od-247c1809ab3a0fde82c875ffa05e7de9"
+      ],
+      "department_paths": [
+        "马来战队"
       ]
     },
     {
@@ -20068,6 +20208,16 @@
       ],
       "department_paths": [
         "桐乡仓储物流组"
+      ]
+    },
+    {
+      "open_id": "ou_1667e5e3f818a3d11574c943751d4e3d",
+      "name": "陈轶君",
+      "department_ids": [
+        "od-6daa61e0fad320b53db9d267fff19727"
+      ],
+      "department_paths": [
+        "AI Infra部"
       ]
     },
     {
@@ -20692,6 +20842,16 @@
       ],
       "department_paths": [
         "CRPBU软件组"
+      ]
+    },
+    {
+      "open_id": "ou_65d42cbc5d7b46b66514ca7bd6547e90",
+      "name": "马杰",
+      "department_ids": [
+        "od-8f3a4c538a65e3c3396660a2d4e21445"
+      ],
+      "department_paths": [
+        "建湖仓储物流组"
       ]
     },
     {
@@ -21335,16 +21495,6 @@
       ]
     },
     {
-      "open_id": "ou_a8902e5db885ee532661e9ce85914cf0",
-      "name": "黄国辉",
-      "department_ids": [
-        "od-257bc9cc6263635875bc1b11aac10705"
-      ],
-      "department_paths": [
-        "数字化组"
-      ]
-    },
-    {
       "open_id": "ou_2e1b87ad0d0a8914174b9cb7dec1214b",
       "name": "黄圣宇",
       "department_ids": [
@@ -21562,6 +21712,16 @@
       "department_paths": [
         "日本CR业务组",
         "日本战队"
+      ]
+    },
+    {
+      "open_id": "ou_04419abcf9ffef87ccd72f0ed1767214",
+      "name": "黄梓建",
+      "department_ids": [
+        "od-6daa61e0fad320b53db9d267fff19727"
+      ],
+      "department_paths": [
+        "AI Infra部"
       ]
     },
     {
@@ -21981,5 +22141,5 @@
       ]
     }
   ],
-  "user_count": 2034
+  "user_count": 2050
 }
