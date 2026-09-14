@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.2"
+APP_VERSION = "V2.7.3"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -9083,8 +9083,11 @@ def notify_enabled_admins_of_material_request(
     message_ids: list[str] = []
     update_message = getattr(client, "update_interactive_message", None)
     if existing_message_ids and callable(update_message):
-        for index, message_id in enumerate(existing_message_ids):
-            operator_open_id = recipients[index] if index < len(recipients) else ""
+        # The enabled-admin list can shrink after the original card delivery.
+        # Refresh exactly one card per current recipient; surplus historical
+        # message IDs have no current recipient and must not block recovery.
+        for index, operator_open_id in enumerate(recipients):
+            message_id = existing_message_ids[index] if index < len(existing_message_ids) else ""
             card = material_request_notification_card(
                 request_no,
                 request_payload,
@@ -9093,6 +9096,8 @@ def notify_enabled_admins_of_material_request(
                 operator_open_id=operator_open_id,
             )
             try:
+                if not message_id:
+                    raise LookupError("missing historical message id")
                 update_message(message_id, card)
                 message_ids.append(message_id)
             except Exception as exc:
@@ -9101,7 +9106,7 @@ def notify_enabled_admins_of_material_request(
                 # administrator card rather than fail the completed business
                 # write forever.  Preserve fail-closed behavior for every other
                 # update error.
-                if "230031" not in str(exc) or not operator_open_id:
+                if "230031" not in str(exc) and not isinstance(exc, LookupError):
                     raise
                 message_ids.append(
                     send_feishu_interactive_message(client, operator_open_id, card)

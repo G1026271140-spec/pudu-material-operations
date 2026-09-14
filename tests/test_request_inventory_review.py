@@ -15,7 +15,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
         context = {
             "request": {
                 "record_id": "request-1",
-                "inventory_message_ids": ["old-message"],
+                "inventory_message_ids": ["old-message", "orphaned-old-message"],
             }
         }
         with (
