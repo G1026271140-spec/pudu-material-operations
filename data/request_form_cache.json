@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-12 16:32:04",
+  "generated_at": "2026-09-14 16:27:50",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -4384,7 +4384,7 @@
       "product": "公仔(Plush Toy)",
       "model": "BellaBot",
       "language": "无需语种",
-      "quantity": 265,
+      "quantity": 815,
       "unit_price_rmb": 24.9813
     },
     {
@@ -4392,7 +4392,7 @@
       "product": "公仔(Plush Toy)",
       "model": "KettyBot Pro",
       "language": "无需语种",
-      "quantity": 17,
+      "quantity": 467,
       "unit_price_rmb": 24.9813
     },
     {
@@ -4400,7 +4400,7 @@
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 142,
+      "quantity": 692,
       "unit_price_rmb": 24.9813
     },
     {
