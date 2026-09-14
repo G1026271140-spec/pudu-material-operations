@@ -171,7 +171,7 @@ class RequestReactMobileLayoutTests(unittest.TestCase):
             "/* Dedicated phone layout for the React material request page. */", 1
         )[1]
         self.assertIn('className="request-page"', self.page)
-        self.assertIn("@media (max-width: 600px)", phone)
+        self.assertIn("@media (max-width: 850px)", phone)
         self.assertIn(".request-page .grid3", phone)
         self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr))", phone)
         self.assertIn("bottom: max(8px, env(safe-area-inset-bottom))", phone)
@@ -194,6 +194,24 @@ class RequestReactMobileLayoutTests(unittest.TestCase):
         self.assertIn(".request-page .cartpanel tr", phone)
         self.assertIn("display: grid", phone)
         self.assertIn(".request-page .cartpanel thead", phone)
+
+    def test_request_phone_cards_and_product_lines_use_two_columns(self) -> None:
+        phone = self.css.split(
+            "/* Dedicated phone layout for the React material request page. */", 1
+        )[1]
+        self.assertIn(".request-page .cards", phone)
+        self.assertIn("aspect-ratio: 1.72", phone)
+        self.assertIn(".request-spec-modal .model-line-grid", phone)
+        self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr))", phone)
+        self.assertIn(".request-spec-modal .model-line-column", phone)
+        self.assertIn("display: contents", phone)
+        narrow = phone.split("@media (max-width: 380px)", 1)[1]
+        self.assertNotIn(".request-page .cards,", narrow)
+
+    def test_add_to_cart_shows_bilingual_red_notice(self) -> None:
+        self.assertIn("cartNotice", self.page)
+        self.assertIn('className="toast cart-added-toast"', self.page)
+        self.assertIn('t("已加入采购车", "Added to cart")', self.page)
 
 
 class ReactSidebarCollapseTests(unittest.TestCase):

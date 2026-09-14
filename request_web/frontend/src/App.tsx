@@ -51,6 +51,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     [search, setSearch] = useState("");
   const [active, setActive] = useState<Product | null>(null),
     [cartOpen, setCartOpen] = useState(false),
+    [cartNotice, setCartNotice] = useState(false),
     [review, setReview] = useState(false),
     [busy, setBusy] = useState(false),
     [done, setDone] = useState("");
@@ -78,6 +79,11 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
       .then(setCatalog)
       .catch((e) => setError(e.message));
   }, []);
+  useEffect(() => {
+    if (!cartNotice) return;
+    const timer = window.setTimeout(() => setCartNotice(false), 2400);
+    return () => window.clearTimeout(timer);
+  }, [cartNotice]);
   const user = catalog?.users.find((u) => u.open_id === requesterId);
   const depId = user?.department_ids?.[0] || "";
   const dep = catalog?.departments.find((d) => d.department_id === depId);
@@ -228,6 +234,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     });
     setActive(null);
     setError("");
+    setCartNotice(true);
   }
   function draft() {
     const acceptedRoles = catalog?.rolesByUser?.[requesterId]?.length
@@ -650,6 +657,15 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
         {error && (
           <div className="toast" onClick={() => setError("")}>
             {error} ×
+          </div>
+        )}
+        {cartNotice && !error && (
+          <div
+            className="toast cart-added-toast"
+            role="status"
+            onClick={() => setCartNotice(false)}
+          >
+            🛒 {t("已加入采购车", "Added to cart")} ×
           </div>
         )}
       </main>

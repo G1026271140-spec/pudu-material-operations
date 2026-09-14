@@ -440,7 +440,7 @@ td input {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Dedicated phone layout for the React material request page. */
-@media (max-width: 600px) {
+@media (max-width: 850px) {
   .request-page-header {
     position: static;
     height: auto;
@@ -624,27 +624,28 @@ td input {
   }
   .request-page .cards article {
     min-width: 0;
-    padding: 7px;
+    padding: 6px;
   }
   .request-page .cards article img,
   .request-page .cards .placeholder {
     height: auto;
-    aspect-ratio: 1.45;
+    aspect-ratio: 1.72;
+    object-fit: cover;
   }
   .request-page .cards article small {
-    margin-top: 7px;
-    font-size: 10px;
+    margin-top: 5px;
+    font-size: 9px;
   }
   .request-page .cards article h3 {
-    min-height: 35px;
-    margin: 3px 0 7px;
-    font-size: 13px;
-    line-height: 1.35;
+    min-height: 30px;
+    margin: 2px 0 5px;
+    font-size: 12px;
+    line-height: 1.25;
   }
   .request-page .cards article button {
-    min-height: 42px;
-    padding: 8px 5px;
-    font-size: 12px;
+    min-height: 36px;
+    padding: 6px 4px;
+    font-size: 11px;
   }
   .request-page .toast {
     top: 10px;
@@ -689,23 +690,28 @@ td input {
     padding: 10px;
   }
   .request-spec-modal .model-line-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
-  .request-spec-modal .model-line-column,
-  .request-spec-modal .model-line {
-    gap: 8px;
+  .request-spec-modal .model-line-column {
+    display: contents;
   }
   .request-spec-modal .model-line {
-    padding: 9px;
+    min-width: 0;
+    padding: 6px;
+  }
+  .request-spec-modal .model-line > small {
+    margin-bottom: 5px;
+    font-size: 10px;
   }
   .request-spec-modal .pills {
-    gap: 7px;
+    gap: 4px;
   }
   .request-spec-modal .pills button {
-    min-height: 40px;
-    padding: 7px 12px;
-    font-size: 12px;
+    min-height: 30px;
+    padding: 4px 7px;
+    font-size: 10px;
+    line-height: 1.2;
   }
   .request-spec-modal .selection-note {
     margin-top: 10px;
@@ -776,7 +782,6 @@ td input {
 @media (max-width: 380px) {
   .request-page .grid3,
   .request-page .grid2,
-  .request-page .cards,
   .request-review-modal .reviewgrid {
     grid-template-columns: 1fr;
   }
