@@ -7,6 +7,33 @@ import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def test_allocation_retry_skips_lines_already_in_committed_order_batch(self) -> None:
+        service = Mock()
+        service.snapshot.return_value = {"snapshot": True}
+        service.grouped_requests.return_value = {
+            "request-1": {
+                "fingerprint": "fp-1",
+                "lines": [
+                    {"id": "line-1", "fields": {"下单表生成状态": "已生成"}}
+                ],
+            }
+        }
+        with (
+            patch.object(app, "feishu_has_field", return_value=False),
+            patch.object(app, "feishu_client", return_value=Mock()),
+            patch("order_scheduling_service.SchedulingService", return_value=service),
+        ):
+            result = app.apply_inventory_allocation_schedule(
+                "request-1",
+                [{"line_id": "line-1", "order_required": True}],
+                "ou-admin",
+                "allocation:request-1:0",
+                validated_line_ids={"line-1"},
+            )
+
+        self.assertEqual(result["generated_order_lines"], 0)
+        service.record_schedule.assert_not_called()
+
     def test_final_material_detail_text_lists_verified_lines(self) -> None:
         detail = app.request_material_detail_text(
             [

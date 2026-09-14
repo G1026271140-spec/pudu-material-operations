@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.0"
+APP_VERSION = "V2.7.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -11060,7 +11060,7 @@ def apply_inventory_allocation_schedule(
     validated_line_ids: set[str] | None = None,
 ) -> dict[str, object]:
     """Persist per-line order decisions made in the inventory workbench."""
-    from order_scheduling import ARRIVAL_DATE, FULFILLMENT_STATUS, date_ms, today
+    from order_scheduling import ARRIVAL_DATE, FULFILLMENT_STATUS, GENERATED, date_ms, today
     from order_scheduling_service import SchedulingService
 
     request_key = str(request_id or "").strip()
@@ -11120,24 +11120,40 @@ def apply_inventory_allocation_schedule(
         live_snapshot = service.snapshot(live=True)
         live_groups = service.grouped_requests(live_snapshot)
         if request_key in live_groups:
-            selections = [
-                {
-                    "request_id": request_key,
-                    "line_id": str(item["line_id"]),
-                    "planned_date": planned_day.isoformat(),
-                    "confirmed_arrived": False,
-                }
-                for item in order_plans
-            ]
-            payload = {
-                "operator_open_id": operator,
-                "generation_key": generation_key,
-                "selections": selections,
-                "fingerprints": {request_key: live_groups[request_key]["fingerprint"]},
-                "note": "配货工作台自动生成下单批次",
+            already_generated_line_ids = {
+                str(item.get("id") or "")
+                for item in list(live_groups[request_key].get("lines") or [])
+                if feishu_text(dict(item.get("fields") or {}), GENERATED) == "已生成"
             }
-            service.record_schedule(payload, {}, lambda _progress: None)
-            generated = len(order_plans)
+            pending_order_plans = [
+                item
+                for item in order_plans
+                if str(item.get("line_id") or "") not in already_generated_line_ids
+            ]
+            # A retry may arrive after the allocation edit was persisted while
+            # every requested order line already belongs to an earlier committed
+            # batch.  Treat those lines as satisfied instead of trying to create
+            # a duplicate batch; genuinely new order lines still use the normal
+            # fail-closed scheduling path below.
+            if pending_order_plans:
+                selections = [
+                    {
+                        "request_id": request_key,
+                        "line_id": str(item["line_id"]),
+                        "planned_date": planned_day.isoformat(),
+                        "confirmed_arrived": False,
+                    }
+                    for item in pending_order_plans
+                ]
+                payload = {
+                    "operator_open_id": operator,
+                    "generation_key": generation_key,
+                    "selections": selections,
+                    "fingerprints": {request_key: live_groups[request_key]["fingerprint"]},
+                    "note": "配货工作台自动生成下单批次",
+                }
+                service.record_schedule(payload, {}, lambda _progress: None)
+                generated = len(pending_order_plans)
 
     request_status = "全部已到货" if no_order_plans and not order_plans else "部分已到货" if no_order_plans else "待下单"
     request_updates: dict[str, object] = {}
