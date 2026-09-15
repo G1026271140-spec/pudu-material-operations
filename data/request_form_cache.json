@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-15 10:34:31",
+  "generated_at": "2026-09-15 16:32:52",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2936,7 +2936,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 615,
+      "quantity": 610,
       "unit_price_rmb": 5.416
     },
     {
@@ -5288,7 +5288,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -50,
       "unit_price_rmb": 5.416
     },
     {
