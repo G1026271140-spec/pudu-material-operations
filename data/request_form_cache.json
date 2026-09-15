@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-14 16:27:50",
+  "generated_at": "2026-09-15 10:34:31",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2936,7 +2936,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 415,
+      "quantity": 615,
       "unit_price_rmb": 5.416
     },
     {
@@ -4752,7 +4752,7 @@
       "product": "配送线产品手册SR(Delivery Robot Product Brochure)",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 250,
+      "quantity": 450,
       "unit_price_rmb": 5.416
     },
     {
