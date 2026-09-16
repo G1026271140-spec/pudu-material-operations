@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.4"
+APP_VERSION = "V2.7.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8102,6 +8102,12 @@ def material_request_notification_card(
         ("申请人", request_payload.get("requester")),
         ("申请部门", request_payload.get("department")),
         ("标题", request_payload.get("title")),
+        (
+            "物料使用时间",
+            review_request.get("material_usage_time")
+            or request_payload.get("material_usage_time")
+            or "-",
+        ),
         ("客户名称", request_payload.get("customer_name")),
         ("国家", request_payload.get("country")),
         ("运费承担者", request_payload.get("freight_payer")),
@@ -10655,6 +10661,9 @@ def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str
                 or note_values.get("运费承担者", ""),
                 "material_usage": feishu_text_any(fields, ["物料用途", "用途/活动", "用途|活动"])
                 or note_values.get("物料用途", ""),
+                "material_usage_time": feishu_datetime_text(
+                    fields.get("物料使用时间", "")
+                ),
                 "request_reason": feishu_text(fields, "申请原因")
                 or note_values.get("申请原因", ""),
                 "request_total_rmb": feishu_float(fields, REQUEST_TOTAL_RMB_FIELD),
@@ -11206,18 +11215,11 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         raise RuntimeError("申请物料更改信息说明不能为空。")
     context = request_inventory_review_context(request_id=request_id)
     request = dict(context["request"])
-    if str(request.get("status") or "") != REQUEST_STATUS_PENDING:
-        raise RuntimeError("只有待审批申请可以修改。")
     current_version = int(request.get("inventory_review_version") or 0)
     recovering_notifications = (
         current_version == expected_version + 1
         and str(request.get("inventory_change_note") or "") == change_note
     )
-    if (
-        str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED
-        and not recovering_notifications
-    ):
-        raise RuntimeError("该申请已经完成库存核实，不能继续修改。")
     if recovering_notifications:
         generation_key = str(draft.get("generation_key") or f"allocation:{request_id}:{expected_version}")
         allocation_plans = [
@@ -11255,9 +11257,6 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             "result": context["result"],
             "recovered_notifications": True,
         }
-    if current_version != expected_version:
-        raise RuntimeError("申请已被其他管理员修改，请刷新后重新操作。")
-
     desired = [dict(item) for item in list(draft.get("lines") or []) if isinstance(item, dict)]
     if not desired:
         raise RuntimeError("申请必须至少保留 1 条物料明细。")
@@ -11280,10 +11279,12 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             raise RuntimeError("同一物料不能在申请中重复出现。")
         if material_id not in material_by_id or quantity <= 0:
             raise RuntimeError("申请明细包含无效物料或数量。")
-        if line_record_id and (
-            line_record_id not in valid_line_ids or line_record_id in seen_line_ids
-        ):
-            raise RuntimeError("申请明细包含无效或重复的原始记录标识。")
+        # A queued task is the authoritative target state. Administrators may
+        # edit or delete a line in Base while the task is waiting; an obsolete
+        # source id must therefore fall back to matching/creating the desired
+        # material instead of making the task fail.
+        if line_record_id not in valid_line_ids or line_record_id in seen_line_ids:
+            line_record_id = ""
         seen.add(material_id)
         if line_record_id:
             seen_line_ids.add(line_record_id)
@@ -11427,7 +11428,10 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     if removed_ids:
         feishu_batch_delete_record_ids(REQUEST_LINE_TABLE_NAME, removed_ids)
 
-    new_version = expected_version + 1
+    # Preserve monotonic audit versions without treating a manual Base edit as
+    # an optimistic-lock failure. The queued draft still overwrites the live
+    # business fields below.
+    new_version = max(current_version, expected_version) + 1
     result = request_inventory_review_result(prepared)
     now = datetime.now()
     request_updates: dict[str, object] = {
@@ -11530,8 +11534,8 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     already_confirmed = (
         str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED
     )
-    if not already_confirmed and int(request.get("inventory_review_version") or 0) != expected_version:
-        raise RuntimeError("申请已发生修改，请查看最新卡片后再确认。")
+    # The queued confirmation is authoritative. Manual edits made after enqueue
+    # must not turn a valid background write into an optimistic-lock failure.
     line_updates = [
         {
             "record_id": str(line.get("record_id") or ""),

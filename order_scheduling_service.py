@@ -146,7 +146,16 @@ class SchedulingService:
             group["fingerprint"] = rules.fingerprint({"fields": group["fields"], "lines": sorted(group["lines"], key=lambda r: r["id"])})
         return groups
 
-    def check_group(self, group, expected=None, *, editing=False, generation_key="", check_fingerprint=True):
+    def check_group(
+        self,
+        group,
+        expected=None,
+        *,
+        editing=False,
+        generation_key="",
+        check_fingerprint=True,
+        authoritative=False,
+    ):
         a = self.app
         if not group:
             raise ValueError("申请单不存在，或不是普通物料申请。")
@@ -156,10 +165,10 @@ class SchedulingService:
             raise ValueError("该申请单已有明细生成过下单表，不能重复生成或直接覆盖明细。")
         if group.get("reserved_keys", set()) - {generation_key}:
             raise ValueError("此申请有未完成的下单批次，请先恢复原任务，不能另建批次或覆盖明细。")
-        if group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成", "审批拒绝"}:
+        if not authoritative and group["status"] in {"已撤回", "已驳回", "已拒绝", "已取消", "已发放", "已完成", "审批拒绝"}:
             raise ValueError("申请已撤回、驳回或发放，不能执行此操作。")
-        if editing and (group["status"] != a.REQUEST_STATUS_PENDING or
-                        a.feishu_text(group["fields"], "库存审查状态") != a.INVENTORY_REVIEW_PENDING):
+        if not authoritative and editing and (group["status"] != a.REQUEST_STATUS_PENDING or
+                                               a.feishu_text(group["fields"], "库存审查状态") != a.INVENTORY_REVIEW_PENDING):
             raise ValueError("只允许编辑待审批、尚未完成库存核实的申请；已锁定申请保留现有处理流程。")
         if any(a.feishu_int(line["fields"], "实际发放数量") > 0 or
                a.feishu_link_ids(line["fields"], "出库流水") for line in group["lines"]):
@@ -258,7 +267,15 @@ class SchedulingService:
             raise RuntimeError("排期编辑曾中断，请先核对申请明细和变更记录；为避免重复增删，不自动重放。")
         snapshot = self.snapshot(live=True)
         group = self.grouped_requests(snapshot).get(payload.get("request_id"))
-        self.check_group(group, editing=True, check_fingerprint=False)
+        # Once queued, the payload is the authoritative target state. Manual
+        # edits to status/version fields must not invalidate the background
+        # write; irreversible issue-ledger safeguards below remain enforced.
+        self.check_group(
+            group,
+            editing=True,
+            check_fingerprint=False,
+            authoritative=True,
+        )
         desired = list(payload.get("lines") or [])
         if not desired:
             raise ValueError("申请须至少保留1条明细。")
@@ -270,8 +287,8 @@ class SchedulingService:
         seen_ids, seen_materials, prepared = set(), set(), []
         for line in desired:
             lid, mid, qty = line.get("id", ""), line.get("material_id"), line.get("quantity")
-            if lid and (lid not in current or lid in seen_ids):
-                raise ValueError("申请明细归属错误或重复。")
+            if lid not in current or lid in seen_ids:
+                lid = ""
             if mid not in catalog or mid in seen_materials:
                 raise ValueError("物料组合不存在或重复，请刷新目录并合并同规格数量。")
             if isinstance(qty, bool) or not isinstance(qty, int) or qty < 1 or qty > 1_000_000:

@@ -750,6 +750,71 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertEqual(request_fields["库存审查人"], [{"id": "ou_admin"}])
         self.assertEqual(request_fields["库存审查时间"], 123456)
 
+    def test_queued_edit_overwrites_manual_review_status_and_version(self) -> None:
+        context = {
+            "request": {
+                "request_no": "REQ-1",
+                "status": "已完成",
+                "inventory_review_status": app.INVENTORY_REVIEW_CONFIRMED,
+                "inventory_review_version": 7,
+                "inventory_change_note": "后台人工备注",
+            },
+            "lines": [{
+                "record_id": "line-manually-replaced",
+                "line_no": "REQ-1-01",
+                "material_record_id": "mat-old",
+                "product": "产品单页",
+                "model": "D7",
+                "language": "英语",
+                "quantity": 2,
+                "remark": "",
+            }],
+            "material_rows": [{
+                "record_id": "mat-new",
+                "fields": {
+                    "物料品类": "产品单页",
+                    "产品型号": "T300",
+                    "语种": "英语",
+                    "当前库存": 8,
+                },
+            }],
+        }
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_has_field", return_value=True),
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
+            patch.object(app, "feishu_batch_create_records") as create_records,
+            patch.object(app, "feishu_batch_delete_record_ids"),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+            patch.object(app, "ensure_request_change_record_fields"),
+            patch.object(app, "fresh_feishu_rows", return_value=[]),
+            patch.object(app, "notify_requester_of_inventory_edit"),
+            patch.object(app, "notify_enabled_admins_of_material_request"),
+        ):
+            result = app.execute_request_inventory_edit({
+                "request_id": "request-1",
+                "expected_version": 0,
+                "operator_open_id": "ou_admin",
+                "change_note": "以队列目标覆盖",
+                "lines": [{
+                    "line_record_id": "line-deleted-by-admin",
+                    "material_record_id": "mat-new",
+                    "quantity": 4,
+                    "remark": "队列值",
+                }],
+            })
+
+        self.assertEqual(result["version"], 8)
+        update_lines.assert_not_called()
+        created_line = next(
+            call.args[1][0]
+            for call in create_records.call_args_list
+            if call.args[0] == app.REQUEST_LINE_TABLE_NAME
+        )
+        self.assertEqual(created_line["申请数量"], 4)
+        self.assertEqual(update_request.call_args.args[2]["申请变更次数"], "8")
+
     def test_allocation_replacement_updates_the_same_detail_record(self) -> None:
         context = {
             "request": {

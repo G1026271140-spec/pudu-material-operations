@@ -294,6 +294,26 @@ def test_edit_rejects_approved_or_unauthorized(svc):
         svc.check_group(group, group["fingerprint"], editing=True)
 
 
+def test_queued_edit_overwrites_manual_status_change(svc):
+    request_fields = svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]
+    request_fields["审批状态"] = "已完成"
+    request_fields["库存审查状态"] = "已核实库存"
+    svc.edit({
+        "operator_open_id": "ou_admin",
+        "request_id": "req",
+        "change_note": "按队列草稿覆盖",
+        "lines": [{
+            "id": "line0",
+            "material_id": "mat",
+            "quantity": 25,
+            "remark": "队列目标值",
+        }],
+    }, {}, lambda _: None)
+    line_fields = svc.app.data[app.REQUEST_LINE_TABLE_NAME][0]["fields"]
+    assert line_fields["申请数量"] == 25
+    assert line_fields["备注"] == "队列目标值"
+
+
 def test_export_aggregation_keeps_different_production_remarks_separate():
     line = {"category": "单页", "model": "M", "language": "英语", "quantity": 20, "usage": "活动", "remark": "纸张A"}
     result = r.aggregate_export_rows([line, line, {**line, "remark": "纸张B"}])
