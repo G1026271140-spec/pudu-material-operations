@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.5"
+APP_VERSION = "V2.7.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8083,6 +8083,86 @@ def _feishu_material_detail_elements(
     ]
 
 
+def _feishu_inventory_review_table(
+    lines: list[dict[str, object]],
+) -> dict[str, object]:
+    """Build one paginated table so large requests stay below card element limits."""
+    rows: list[dict[str, object]] = []
+    for index, line in enumerate(lines, start=1):
+        requested = int(line.get("quantity") or 0)
+        current_stock = int(line.get("current_stock") or line.get("stock_snapshot") or 0)
+        status = (
+            INVENTORY_RESULT_SUFFICIENT
+            if current_stock > 0 and current_stock >= requested
+            else "库存不足，需要制作"
+        )
+        specification = (
+            f"{line.get('product') or '-'} / "
+            f"{request_model_display_label(line.get('model'), language=LANGUAGE_ZH)} / "
+            f"{line.get('language') or NO_LANGUAGE_TEXT}"
+        )
+        remark = str(line.get("remark") or "").strip()
+        if remark:
+            specification += f"\n备注：{_feishu_card_plain_text(remark, max_length=300)}"
+        rows.append(
+            {
+                "sequence": index,
+                "specification": specification,
+                "requested": requested,
+                "stock": current_stock,
+                "result": status,
+            }
+        )
+    return {
+        "tag": "table",
+        "page_size": 10,
+        "row_height": "auto",
+        "row_max_height": "96px",
+        "freeze_first_column": True,
+        "header_style": {
+            "background_style": "grey",
+            "bold": True,
+            "lines": 1,
+        },
+        "columns": [
+            {
+                "name": "sequence",
+                "display_name": "序号",
+                "data_type": "number",
+                "width": "60px",
+                "horizontal_align": "center",
+            },
+            {
+                "name": "specification",
+                "display_name": "物料规格（品类 / 型号 / 语种）",
+                "data_type": "text",
+                "width": "auto",
+            },
+            {
+                "name": "requested",
+                "display_name": "申请数",
+                "data_type": "number",
+                "width": "80px",
+                "horizontal_align": "right",
+            },
+            {
+                "name": "stock",
+                "display_name": "实时库存",
+                "data_type": "number",
+                "width": "90px",
+                "horizontal_align": "right",
+            },
+            {
+                "name": "result",
+                "display_name": "库存结果",
+                "data_type": "text",
+                "width": "140px",
+            },
+        ],
+        "rows": rows,
+    }
+
+
 def material_request_notification_card(
     request_no: str,
     request_payload: dict[str, object],
@@ -8120,23 +8200,6 @@ def material_request_notification_card(
     review_status = str(review_request.get("inventory_review_status") or INVENTORY_REVIEW_PENDING)
     review_status_display = review_status
     snapshot_at = str(context.get("snapshot_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    inventory_elements: list[dict[str, object]] = []
-    for index, line in enumerate(valid_lines, start=1):
-        current_stock = int(line.get("current_stock") or line.get("stock_snapshot") or 0)
-        requested = int(line.get("quantity") or 0)
-        status = (
-            INVENTORY_RESULT_SUFFICIENT
-            if current_stock > 0 and current_stock >= requested
-            else "库存不足，需要制作"
-        )
-        inventory_elements.append(
-            _feishu_card_text_element(
-                f"{index:02d}. {line.get('product') or '-'} / {request_model_display_label(line.get('model'), language=LANGUAGE_ZH)} / "
-                f"{line.get('language') or NO_LANGUAGE_TEXT}\n"
-                f"申请 {requested}｜实时库存 {current_stock}｜{status}",
-                lines=4,
-            )
-        )
     elements = [
         _feishu_notification_section(
             "库存审查",
@@ -8173,12 +8236,13 @@ def material_request_notification_card(
             [_feishu_card_text_element(request_payload.get("material_usage"), lines=6)],
             color="orange",
         ),
-        _feishu_notification_section(
-            "物料明细与实时库存",
-            inventory_elements,
-            color="orange",
-            last=True,
-        ),
+        {
+            "tag": "markdown",
+            "content": "**物料明细与实时库存**",
+            "text_size": "heading-4",
+            "margin": "0px 0px 8px 0px",
+        },
+        _feishu_inventory_review_table(valid_lines),
     ]
     request_id = str(review_request.get("record_id") or "")
     if request_id and review_status != INVENTORY_REVIEW_CONFIRMED:
@@ -8320,7 +8384,7 @@ def material_request_notification_card(
         "schema": "2.0",
         "config": {
             "update_multi": True,
-            "width_mode": "default",
+            "width_mode": "fill",
             "summary": {"content": header_title},
         },
         "header": {

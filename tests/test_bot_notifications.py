@@ -571,7 +571,7 @@ class BotNotificationTests(unittest.TestCase):
             "物料使用时间",
             "2026-09-30 00:00:00",
             f"产品折页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语",
-            "申请 3｜实时库存 2｜库存不足，需要制作",
+            "库存不足，需要制作",
             "调整配货方案",
             "按原申请确认",
             "驳回申请",
@@ -589,6 +589,17 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn('"action": "confirm_request_inventory"', serialized)
         self.assertIn('"tag": "button"', serialized)
         self.assertNotIn('"tag": "action"', serialized)
+        self.assertEqual(card["config"]["width_mode"], "fill")
+        inventory_table = next(
+            element
+            for element in card["body"]["elements"]
+            if element.get("tag") == "table"
+        )
+        self.assertEqual(inventory_table["page_size"], 10)
+        self.assertEqual(len(inventory_table["rows"]), 1)
+        self.assertEqual(inventory_table["rows"][0]["requested"], 3)
+        self.assertEqual(inventory_table["rows"][0]["stock"], 2)
+        self.assertIn("现场派发", inventory_table["rows"][0]["specification"])
         confirm_form = next(
             element
             for element in card["body"]["elements"]
@@ -615,6 +626,44 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(first_field["elements"][0]["text"]["text_color"], "grey-500")
         self.assertEqual(first_field["elements"][1]["text"]["text_size"], "normal")
         self.assertEqual(field_grid["columns"][0]["vertical_spacing"], "16px")
+
+    def test_large_admin_notification_uses_one_paginated_inventory_table(self) -> None:
+        lines = [
+            {
+                "product": f"物料品类 {index}",
+                "model": "T300",
+                "language": "英语",
+                "quantity": index,
+                "current_stock": index - 1,
+            }
+            for index in range(1, 46)
+        ]
+
+        card = app.material_request_notification_card(
+            "REQ-LARGE",
+            {"requester": "销售甲", "department": "海外销售部"},
+            lines,
+            review_context={
+                "request": {
+                    "record_id": "request-large",
+                    "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                    "inventory_review_version": 0,
+                },
+                "lines": lines,
+                "result": app.INVENTORY_RESULT_INSUFFICIENT,
+                "snapshot_at": "2026-09-17 10:00:00",
+            },
+        )
+
+        tables = [
+            element
+            for element in card["body"]["elements"]
+            if element.get("tag") == "table"
+        ]
+        self.assertEqual(len(tables), 1)
+        self.assertEqual(len(tables[0]["rows"]), 45)
+        self.assertEqual(tables[0]["page_size"], 10)
+        self.assertLess(len(card["body"]["elements"]), 12)
 
     def test_confirmed_inventory_card_hides_all_actions(self) -> None:
         payload = {"requester": "销售甲", "department": "海外销售部"}
