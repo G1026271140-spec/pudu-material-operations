@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-17 16:31:47",
+  "generated_at": "2026-09-17 18:07:23",
   "tables": {
     "物料品类": [
       {
@@ -1113,9 +1113,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Product Flyer",
@@ -1197,9 +1197,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Product Brochure",
@@ -1283,9 +1283,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "IR(Industrial Product Line Brochure）",
@@ -1369,9 +1369,9 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "CR(Cleaning Product Line Brochure）",
@@ -1455,9 +1455,9 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "SR(Delivery Robot Product Brochure)",
@@ -1541,9 +1541,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "GR(Embodied AI Robot Product Brochure)",
@@ -2165,9 +2165,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Product Roll-Up",
@@ -2257,9 +2257,9 @@
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Plush Toy",
@@ -2361,9 +2361,9 @@
               "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Fridge Magnet(Default to Mixed Shipping)",
@@ -2427,9 +2427,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Notebook Gift Box",
@@ -2511,9 +2511,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "PUDU logo bag",
@@ -2766,9 +2766,9 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Custom Fan",
@@ -2946,9 +2946,9 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A882%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A883%7D%7D"
             }
           ],
           "英文页面名称": "Full Product Series Fridge Magnet Set",
@@ -3512,7 +3512,7 @@
               "type": "text"
             }
           ],
-          "是否在申领页显示": "否",
+          "是否在申领页显示": "是",
           "是否无需型号": "否",
           "是否无需语种": "是",
           "海关编码": "6201409000",
@@ -72099,7 +72099,7 @@
           ],
           "单价（人民币）": 1.354,
           "单价（美元）": "0.2",
-          "启用状态": "停用",
+          "启用状态": "启用",
           "品类关联": [
             {
               "record_ids": [
@@ -72130,14 +72130,18 @@
           "库存归零时间": "2026-07-21 17:16:19",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvvsVq365JAJ"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "0",
+          "当前库存": "100",
           "战区管理": [
             {
               "record_ids": null,
@@ -82206,17 +82210,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvvlWnfGiw29"
+                "recvvlWnfGiw29",
+                "recvvsVq3650Cs"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "issue:4DD0E23D-6F31-4D81-80F5-533E30820D60:REQ-20260916-003-08",
+              "text": "issue:4DD0E23D-6F31-4D81-80F5-533E30820D60:REQ-20260916-003-08,",
               "text_arr": [
-                "issue:4DD0E23D-6F31-4D81-80F5-533E30820D60:REQ-20260916-003-08"
+                "issue:4DD0E23D-6F31-4D81-80F5-533E30820D60:REQ-20260916-003-08",
+                ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "12",
+          "当前库存": "112",
           "战区管理": [
             {
               "record_ids": null,
@@ -119270,17 +119276,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvuSwwZz0PKQ"
+                "recvuSwwZz0PKQ",
+                "recvvsVq36NtvX"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
+              "text": "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05,",
               "text_arr": [
-                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05"
+                "issue:AFD0A171-047D-472D-B76F-434CB65A32C6:REQ-20260910-001-05",
+                ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "5",
+          "当前库存": "105",
           "战区管理": [
             {
               "record_ids": null,
@@ -119414,14 +119422,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvvsVq36czFk"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "10",
+          "当前库存": "110",
           "战区管理": [
             {
               "record_ids": null,
@@ -119551,14 +119563,18 @@
           "库存归零时间": null,
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvvsVq3650fK"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "10",
+          "当前库存": "110",
           "战区管理": [
             {
               "record_ids": null,
@@ -132591,6 +132607,281 @@
         },
         "id": "recvvmriZ0qcdY",
         "record_id": "recvvmriZ0qcdY"
+      },
+      {
+        "fields": {
+          "产品型号": "D7",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1789634839664,
+          "变更前数量": "12",
+          "变更后数量": "112",
+          "备注": "补库单 RST-20260917-10E220；操作人：高鸿源；补库说明：9.17采购",
+          "幂等键": "restock:10e22010dfb246ad8b0b6a1d4fe6937c:1",
+          "库存变化": "100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvq5oeJM08uE"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1033",
+              "text_arr": [
+                "MAT-1033"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvvsVq3650Cs",
+        "record_id": "recvvsVq3650Cs"
+      },
+      {
+        "fields": {
+          "产品型号": "GT3",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1789634839664,
+          "变更前数量": "5",
+          "变更后数量": "105",
+          "备注": "补库单 RST-20260917-10E220；操作人：高鸿源；补库说明：9.17采购",
+          "幂等键": "restock:10e22010dfb246ad8b0b6a1d4fe6937c:2",
+          "库存变化": "100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvuNIDe3QGwd"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1399",
+              "text_arr": [
+                "MAT-1399"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvvsVq36NtvX",
+        "record_id": "recvvsVq36NtvX"
+      },
+      {
+        "fields": {
+          "产品型号": "GT5",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1789634839664,
+          "变更前数量": "10",
+          "变更后数量": "110",
+          "备注": "补库单 RST-20260917-10E220；操作人：高鸿源；补库说明：9.17采购",
+          "幂等键": "restock:10e22010dfb246ad8b0b6a1d4fe6937c:3",
+          "库存变化": "100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvuNIDe3zYzd"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1400",
+              "text_arr": [
+                "MAT-1400"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvvsVq36czFk",
+        "record_id": "recvvsVq36czFk"
+      },
+      {
+        "fields": {
+          "产品型号": "GT7",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1789634839664,
+          "变更前数量": "10",
+          "变更后数量": "110",
+          "备注": "补库单 RST-20260917-10E220；操作人：高鸿源；补库说明：9.17采购",
+          "幂等键": "restock:10e22010dfb246ad8b0b6a1d4fe6937c:4",
+          "库存变化": "100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvuNIDe33sil"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1401",
+              "text_arr": [
+                "MAT-1401"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvvsVq3650fK",
+        "record_id": "recvvsVq3650fK"
+      },
+      {
+        "fields": {
+          "产品型号": "SH1",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1789634839664,
+          "变更前数量": "0",
+          "变更后数量": "100",
+          "备注": "补库单 RST-20260917-10E220；操作人：高鸿源；补库说明：9.17采购",
+          "幂等键": "restock:10e22010dfb246ad8b0b6a1d4fe6937c:5",
+          "库存变化": "100",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "100",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料采购（增加库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khdQO"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0841",
+              "text_arr": [
+                "MAT-0841"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvvsVq365JAJ",
+        "record_id": "recvvsVq365JAJ"
       }
     ],
     "物料申请单": [
@@ -186505,7 +186796,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0007",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -186576,7 +186867,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0008",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -187803,7 +188094,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0025",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -187874,7 +188165,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0026",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -188450,7 +188741,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0034",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -188521,7 +188812,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0035",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -188876,7 +189167,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0040",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -188947,7 +189238,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0041",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -189523,7 +189814,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0049",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -189594,7 +189885,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0050",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化POLO衫",
           "物料品类关联": [
             {
@@ -189807,7 +190098,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0053",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -189878,7 +190169,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0054",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190162,7 +190453,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0058",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190233,7 +190524,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0059",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190375,7 +190666,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0061",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190446,7 +190737,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0062",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190517,7 +190808,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0063",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190588,7 +190879,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0064",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190730,7 +191021,7 @@
           ],
           "战区管理": "电商（国内）",
           "文化周边编码": "CUL-0066",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190801,7 +191092,7 @@
           ],
           "战区管理": "电商（海外）",
           "文化周边编码": "CUL-0067",
-          "是否可以申领": "否",
+          "是否可以申领": "是",
           "物料品类": "文化夹克",
           "物料品类关联": [
             {
@@ -190828,65 +191119,6 @@
         },
         "id": "recvtnXxjyghoZ",
         "record_id": "recvtnXxjyghoZ"
-      },
-      {
-        "fields": {
-          "产品型号": null,
-          "产品型号关联": [
-            {
-              "record_ids": null,
-              "table_id": "tbl233OjVUgT4cJ5",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "单价（人民币）": null,
-          "备注": null,
-          "库存流水": [
-            {
-              "record_ids": null,
-              "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "当前库存": null,
-          "战区关联": [
-            {
-              "record_ids": null,
-              "table_id": "tblFEKwM1kw9QZAx",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "战区管理": null,
-          "文化周边编码": null,
-          "是否可以申领": "否",
-          "物料品类": null,
-          "物料品类关联": [
-            {
-              "record_ids": null,
-              "table_id": "tbl45q6s50SzEnFI",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ],
-          "申请明细": [
-            {
-              "record_ids": null,
-              "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
-              "type": "text"
-            }
-          ]
-        },
-        "id": "recvuNJ7fS1ftZ",
-        "record_id": "recvuNJ7fS1ftZ"
       }
     ],
     "战区管理": [
@@ -198748,11 +198980,11 @@
     "产品型号": 42,
     "物料语种": 12,
     "物料主数据": 904,
-    "库存流水": 203,
+    "库存流水": 208,
     "物料申请单": 41,
     "申请明细": 381,
     "项目周边礼品物料筹备详情list": 13,
-    "文化周边管理库存": 68,
+    "文化周边管理库存": 67,
     "战区管理": 10,
     "用户权限表": 39,
     "物料下单批次": 18,

@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-17 16:31:52",
+  "generated_at": "2026-09-17 18:07:26",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -30,6 +30,7 @@
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
     "文化POLO衫",
+    "文化夹克",
     "PUDU定制眼镜"
   ],
   "configured_language_products": [
@@ -44,7 +45,8 @@
     "冰箱贴( Fridge Magnet)",
     "笔记本礼盒(Notebook Gift Box)",
     "普渡logo无纺布手提袋(PUDU logo bag)",
-    "文化POLO衫"
+    "文化POLO衫",
+    "文化夹克"
   ],
   "models": [
     "2XL",
@@ -350,6 +352,10 @@
     "文化POLO衫": {
       "zh": "文化POLO衫",
       "en": "Cultural Polo Shirt"
+    },
+    "文化夹克": {
+      "zh": "文化夹克",
+      "en": "Cultural Jacket"
     }
   },
   "languages": [
@@ -4453,7 +4459,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "SH1",
       "language": "无需语种",
-      "quantity": 0,
+      "quantity": 100,
       "unit_price_rmb": 1.354
     },
     {
@@ -4805,7 +4811,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D7",
       "language": "无需语种",
-      "quantity": 12,
+      "quantity": 112,
       "unit_price_rmb": 1.354
     },
     {
@@ -6973,7 +6979,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT3",
       "language": "无需语种",
-      "quantity": 5,
+      "quantity": 105,
       "unit_price_rmb": 1.354
     },
     {
@@ -6981,7 +6987,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT5",
       "language": "无需语种",
-      "quantity": 10,
+      "quantity": 110,
       "unit_price_rmb": 1.354
     },
     {
@@ -6989,7 +6995,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT7",
       "language": "无需语种",
-      "quantity": 10,
+      "quantity": 110,
       "unit_price_rmb": 1.354
     }
   ],
