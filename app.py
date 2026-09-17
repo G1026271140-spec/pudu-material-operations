@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.6"
+APP_VERSION = "V2.7.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8129,7 +8129,7 @@ def _feishu_inventory_review_table(
                 "name": "sequence",
                 "display_name": "序号",
                 "data_type": "number",
-                "width": "60px",
+                "width": "80px",
                 "horizontal_align": "center",
             },
             {

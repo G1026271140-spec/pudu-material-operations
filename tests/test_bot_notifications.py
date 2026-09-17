@@ -600,6 +600,7 @@ class BotNotificationTests(unittest.TestCase):
         self.assertEqual(inventory_table["rows"][0]["requested"], 3)
         self.assertEqual(inventory_table["rows"][0]["stock"], 2)
         self.assertIn("现场派发", inventory_table["rows"][0]["specification"])
+        self.assertEqual(inventory_table["columns"][0]["width"], "80px")
         confirm_form = next(
             element
             for element in card["body"]["elements"]
