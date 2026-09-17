@@ -9,6 +9,7 @@ type Option = {
   stock: number;
   unitPriceRmb: number;
   source?: "standard" | "cultural";
+  adminOnly?: boolean;
 };
 type Product = {
   name: string;
@@ -128,7 +129,9 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
         );
         setError("已移除仅限已启用管理员申领的物料品类");
       }
-      if (active?.adminOnly) setActive(null);
+      if (active?.adminOnly || active?.options.some((option) => option.adminOnly)) {
+        setActive(null);
+      }
     }
     setRequesterId(u.open_id);
     setRequesterQuery(u.name);
@@ -139,13 +142,26 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
   const isAdminRequester = Boolean(
     requesterId && catalog?.rolesByUser?.[requesterId]?.includes("管理员"),
   );
+  const adminProductMap = new Map(
+    (catalog?.adminProducts || []).map((product) => [product.name, product]),
+  );
+  const baseProductNames = new Set(
+    (catalog?.products || []).map((product) => product.name),
+  );
   const baseProducts =
-    catalog?.products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()),
-    ) || [];
+    catalog?.products
+      .map((product) => {
+        const administratorProduct = adminProductMap.get(product.name);
+        return isAdminRequester && administratorProduct
+          ? { ...product, options: administratorProduct.options }
+          : product;
+      })
+      .filter((p) => p.name.toLowerCase().includes(search.toLowerCase())) || [];
   const adminProducts = isAdminRequester
-    ? (catalog?.adminProducts || []).filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()),
+    ? (catalog?.adminProducts || []).filter(
+        (p) =>
+          !baseProductNames.has(p.name) &&
+          p.name.toLowerCase().includes(search.toLowerCase()),
       )
     : [];
   const models = useMemo(
@@ -299,7 +315,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
           inventory_status: o.stock >= qty ? "库存充足" : "库存不足",
           unitPriceRmb: o.unitPriceRmb,
           source: o.source || active.source || "standard",
-          admin_only: Boolean(active.adminOnly),
+          admin_only: Boolean(o.adminOnly || active.adminOnly),
         };
         if (i >= 0) next[i] = { ...next[i], quantity: next[i].quantity + qty };
         else next.push(line);

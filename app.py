@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.9"
+APP_VERSION = "V2.8.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -10263,7 +10263,7 @@ def build_request_material_index(
     material_rows: list[dict],
     category_rows: list[dict],
     *,
-    include_hidden_enabled: bool = False,
+    include_all_for_admin: bool = False,
 ) -> dict[tuple[str, str, str], dict]:
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
     allowed_category_keys = {
@@ -10272,10 +10272,7 @@ def build_request_material_index(
         if feishu_text(feishu_fields(row), "物料品类")
         and (
             feishu_request_page_visible(feishu_fields(row))
-            or (
-                include_hidden_enabled
-                and feishu_text(feishu_fields(row), "启用状态") == STATUS_ACTIVE
-            )
+            or include_all_for_admin
         )
     }
     return {
@@ -10289,16 +10286,12 @@ def build_request_material_index(
             active_only=False,
         )
         if (
-            include_hidden_enabled
+            include_all_for_admin
             or feishu_request_page_visible(
                 feishu_fields(raw_material_by_id[str(record["record_id"])])
             )
         )
         and normalize_category_match_key(record["category"]) in allowed_category_keys
-        and (
-            not include_hidden_enabled
-            or str(record.get("status") or STATUS_ACTIVE) == STATUS_ACTIVE
-        )
     }
 
 
@@ -10378,7 +10371,7 @@ def submit_feishu_material_request(
     material_index = build_request_material_index(
         material_rows,
         category_rows,
-        include_hidden_enabled=(
+        include_all_for_admin=(
             "管理员" in set(request_payload.get("accepted_roles") or [])
         ),
     )
@@ -20206,6 +20199,8 @@ def cultural_request_catalog(
     cultural_rows: list[dict] | None = None,
     category_rows: list[dict] | None = None,
     model_rows: list[dict] | None = None,
+    *,
+    include_all_categories_for_admin: bool = False,
 ) -> dict[str, object]:
     """Build the culture-only category/model/region catalog from page cache."""
     culture = list(cultural_rows if cultural_rows is not None else feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
@@ -20217,7 +20212,7 @@ def cultural_request_catalog(
         fields = feishu_fields(row)
         if feishu_text(fields, "品类定义") != CATEGORY_DEFINITION_CULTURAL:
             continue
-        if not feishu_request_page_visible(fields):
+        if not include_all_categories_for_admin and not feishu_request_page_visible(fields):
             continue
         name = feishu_text(fields, "物料品类").strip()
         if not name:
@@ -20450,7 +20445,10 @@ def queued_cultural_request_payload(
         "version": 1,
         "request_payload": {
             key: request_payload.get(key)
-            for key in ("requester", "requester_open_id", "department", "department_id", "submission_token")
+            for key in (
+                "requester", "requester_open_id", "department", "department_id",
+                "submission_token", "administrator_override",
+            )
         },
         "lines": [
             {
@@ -20536,7 +20534,12 @@ def notify_cultural_request(
                 request_no, requester, lines, applicant=True, admin_open_ids=admins
             ),
         )
-    catalog = cultural_request_catalog(fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
+    catalog = cultural_request_catalog(
+        fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME),
+        include_all_categories_for_admin=bool(
+            request_payload.get("administrator_override")
+        ),
+    )
     combinations = dict(catalog.get("combinations") or {})
     admin_lines: list[dict[str, object]] = []
     for line in lines:
@@ -20796,10 +20799,16 @@ def submit_feishu_cultural_request(
     if len(valid_lines) > MAX_CULTURAL_REQUEST_LINE_COUNT:
         raise RuntimeError(f"一次最多提交 {MAX_CULTURAL_REQUEST_LINE_COUNT} 条文化周边明细。")
     validate_cultural_request_quantity(valid_lines)
+    administrator_override = bool(request_payload.get("administrator_override"))
     culture_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
     category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
-    catalog = cultural_request_catalog(culture_rows, category_rows, model_rows)
+    catalog = cultural_request_catalog(
+        culture_rows,
+        category_rows,
+        model_rows,
+        include_all_categories_for_admin=administrator_override,
+    )
     combinations = dict(catalog["combinations"])
     prepared: list[dict[str, object]] = []
     seen: set[tuple[str, str, str]] = set()

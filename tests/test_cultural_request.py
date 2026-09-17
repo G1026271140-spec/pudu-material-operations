@@ -94,6 +94,14 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertEqual(catalog["combinations"][("文化POLO衫", "M", "美洲战区")]["stock"], 8)
         self.assertNotIn(("文化夹克", "M", "美洲战区"), catalog["combinations"])
 
+        admin_catalog = app.cultural_request_catalog(
+            culture,
+            categories,
+            models,
+            include_all_categories_for_admin=True,
+        )
+        self.assertIn(("文化夹克", "M", "美洲战区"), admin_catalog["combinations"])
+
     def test_catalog_hides_combination_marked_not_claimable(self) -> None:
         categories = [{"record_id": "cat1", "fields": {"物料品类": "文化POLO衫", "品类定义": "文化周边", "是否在申领页显示": "是"}}]
         culture = [
@@ -126,6 +134,12 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertEqual(queue.QUEUE_TASK_TYPE_CULTURAL_REQUEST, "文化周边申领")
         self.assertEqual(payload["lines"][0]["region"], "欧洲战区")
         self.assertEqual(payload["lines"][0]["quantity"], 2)
+
+        override_payload = app.queued_cultural_request_payload(
+            {"requester": "管理员", "requester_open_id": "ou_admin", "submission_token": "token", "administrator_override": True},
+            [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 1}],
+        )
+        self.assertTrue(override_payload["request_payload"]["administrator_override"])
 
     def test_applicant_card_mentions_enabled_admins(self) -> None:
         card = app._cultural_request_card(

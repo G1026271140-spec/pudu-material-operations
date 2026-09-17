@@ -85,6 +85,12 @@ def build_catalog() -> dict[str, Any]:
     base_product_keys = {
         legacy.normalize_category_match_key(name) for name in base_product_names
     }
+    base_option_keys = {
+        legacy.request_material_match_key(
+            row.get("product"), row.get("model"), row.get("language")
+        )
+        for row in cache.get("inventory_rows", [])
+    }
 
     tables = page.get("tables", {})
     category_rows = list(tables.get(legacy.CATEGORY_TABLE_NAME, []))
@@ -99,7 +105,7 @@ def build_catalog() -> dict[str, Any]:
     for row in category_rows:
         fields = legacy.feishu_fields(row)
         name = legacy.feishu_text(fields, "物料品类").strip()
-        if not name or legacy.feishu_text(fields, "启用状态") != legacy.STATUS_ACTIVE:
+        if not name:
             continue
         key = legacy.normalize_category_match_key(name)
         category_meta[key] = {
@@ -124,11 +130,13 @@ def build_catalog() -> dict[str, Any]:
 
     admin_options: dict[str, list[dict[str, Any]]] = {}
     for item in legacy.feishu_inventory_records_from_rows(
-        material_rows, category_rows, active_only=True
+        material_rows, category_rows, active_only=False
     ):
         product = str(item.get("category") or "").strip()
         product_key = legacy.normalize_category_match_key(product)
-        if not product or product_key in base_product_keys or product_key not in category_meta:
+        if not product or product_key not in category_meta:
+            continue
+        if category_meta[product_key].get("definition") == legacy.CATEGORY_DEFINITION_CULTURAL:
             continue
         raw_fields = legacy.feishu_fields(
             raw_material_by_id.get(str(item.get("record_id") or ""), {})
@@ -146,11 +154,14 @@ def build_catalog() -> dict[str, Any]:
                     raw_fields, category_price_rmb.get(product_key, 0.0)
                 ),
                 "source": "standard",
+                "adminOnly": legacy.request_material_match_key(
+                    product, model, item.get("language") or legacy.NO_LANGUAGE_TEXT
+                ) not in base_option_keys,
             }
         )
 
     cultural_options: dict[str, list[dict[str, Any]]] = {}
-    enabled_cultural = {
+    admin_cultural_categories = {
         meta["name"]: meta
         for meta in category_meta.values()
         if meta.get("definition") == legacy.CATEGORY_DEFINITION_CULTURAL
@@ -158,7 +169,7 @@ def build_catalog() -> dict[str, Any]:
     for row in cultural_rows:
         fields = legacy.feishu_fields(row)
         product = legacy.feishu_text(fields, "物料品类").strip()
-        if product not in enabled_cultural:
+        if product not in admin_cultural_categories:
             continue
         if legacy.feishu_text(fields, legacy.CULTURAL_CLAIMABLE_FIELD).strip() != legacy.CULTURAL_CLAIMABLE_YES:
             continue
@@ -176,6 +187,7 @@ def build_catalog() -> dict[str, Any]:
                 "stock": legacy.feishu_int(fields, "当前库存"),
                 "unitPriceRmb": legacy.feishu_float(fields, "单价（人民币）"),
                 "source": "cultural",
+                "adminOnly": True,
             }
         )
 
@@ -189,11 +201,11 @@ def build_catalog() -> dict[str, Any]:
                 "image": images.get(product),
                 "options": options,
                 "source": "standard",
-                "adminOnly": True,
+                "adminOnly": legacy.normalize_category_match_key(product) not in base_product_keys,
             }
         )
     for product, options in cultural_options.items():
-        meta = enabled_cultural[product]
+        meta = admin_cultural_categories[product]
         admin_products.append(
             {
                 "name": product,
@@ -835,7 +847,7 @@ def _cached_schedule_errors(draft: RequestDraft) -> list[str]:
 
 def _request_line_groups(
     draft: RequestDraft,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str], list[str]]:
     """Split the unified cart into the two existing inventory pipelines."""
     import app as legacy
 
@@ -848,6 +860,7 @@ def _request_line_groups(
     admin_products = {
         legacy.normalize_category_match_key(item.get("name"))
         for item in catalog.get("adminProducts", [])
+        if item.get("adminOnly")
     }
     standard: list[dict[str, Any]] = []
     cultural: list[dict[str, Any]] = []
@@ -882,7 +895,7 @@ def _request_line_groups(
                 errors.append(f"物料品类未启用或不在当前目录中：{line.get('product')}")
                 continue
             standard.append(line)
-    return standard, cultural, list(dict.fromkeys(errors))
+    return standard, cultural, list(dict.fromkeys(errors)), sorted(roles)
 
 
 @lru_cache(maxsize=1)
@@ -976,7 +989,7 @@ def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any])
 @api.post("/api/validate")
 def validate(draft: RequestDraft) -> dict[str, Any]:
     _, _, errors = _validate(draft, live=False)
-    _, cultural_lines, access_errors = _request_line_groups(draft)
+    _, cultural_lines, access_errors, _ = _request_line_groups(draft)
     errors.extend(access_errors)
     if cultural_lines:
         try:
@@ -993,7 +1006,8 @@ def validate(draft: RequestDraft) -> dict[str, Any]:
 @api.post("/api/submit")
 def submit(draft: RequestDraft) -> dict[str, Any]:
     payload, lines, errors = _validate(draft, live=False)
-    standard_lines, cultural_lines, access_errors = _request_line_groups(draft)
+    standard_lines, cultural_lines, access_errors, cached_roles = _request_line_groups(draft)
+    payload["accepted_roles"] = list(cached_roles)
     errors.extend(access_errors)
     if cultural_lines:
         try:
@@ -1038,6 +1052,7 @@ def submit(draft: RequestDraft) -> dict[str, Any]:
                 "department": payload.get("department"),
                 "department_id": payload.get("department_id"),
                 "submission_token": cultural_key,
+                "administrator_override": True,
             }
             task_ids.append(
                 _enqueue_fast(

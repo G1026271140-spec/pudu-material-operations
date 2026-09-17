@@ -19,7 +19,57 @@ def test_catalog_uses_local_snapshot_and_exposes_all_products():
     assert any(
         product["source"] == "cultural" for product in catalog["adminProducts"]
     )
-    assert all(product["adminOnly"] for product in catalog["adminProducts"])
+    assert any(not product["adminOnly"] for product in catalog["adminProducts"])
+
+
+def test_admin_catalog_ignores_category_and_material_status_and_visibility(monkeypatch):
+    cache = {
+        "generated_at": "2026-09-17",
+        "products": ["基础品类"],
+        "inventory_rows": [{
+            "product": "基础品类", "material_code": "MAT-1", "model": "M1",
+            "language": "中文", "quantity": 3, "unit_price_rmb": 1,
+        }],
+        "model_product_lines": {}, "model_display_names": {},
+        "category_display_names": {},
+    }
+    page = {"tables": {
+        "用户权限表": [],
+        "物料品类": [
+            {"record_id": "cat-base", "fields": {"物料品类": "基础品类", "品类定义": "印刷物料", "启用状态": "启用", "是否在申领页显示": "是"}},
+            {"record_id": "cat-off", "fields": {"物料品类": "停用品类", "品类定义": "印刷物料", "启用状态": "停用", "是否在申领页显示": "否"}},
+            {"record_id": "cat-culture", "fields": {"物料品类": "停用文化周边", "品类定义": "文化周边", "启用状态": "停用", "是否在申领页显示": "否"}},
+        ],
+        legacy_app.MATERIAL_TABLE_NAME: [
+            {"record_id": "mat-base", "fields": {"物料编码": "MAT-1", "物料品类": "基础品类", "产品型号": "M1", "语种": "中文", "当前库存": 3, "启用状态": "启用", "是否在申领页显示": "是"}},
+            {"record_id": "mat-hidden", "fields": {"物料编码": "MAT-2", "物料品类": "基础品类", "产品型号": "M2", "语种": "英文", "当前库存": 2, "启用状态": "停用", "是否在申领页显示": "否"}},
+            {"record_id": "mat-off", "fields": {"物料编码": "MAT-3", "物料品类": "停用品类", "产品型号": "M3", "语种": "英文", "当前库存": 1, "启用状态": "停用", "是否在申领页显示": "否"}},
+        ],
+        "文化周边管理库存": [
+            {"record_id": "culture-off", "fields": {"物料品类": "停用文化周边", "产品型号": "L", "战区管理": "美洲战区", "当前库存": 4, "是否可以申领": "是"}},
+        ],
+        "产品型号": [],
+    }}
+
+    def fake_json(name):
+        if name == "request_form_cache.json":
+            return cache
+        if name == "contact_departments_cache.json":
+            return {"users": [], "departments": []}
+        return page
+
+    monkeypatch.setattr(web_api, "_json", fake_json)
+    monkeypatch.setattr(web_api, "_image_index", lambda: {})
+
+    catalog = build_catalog()
+    by_name = {product["name"]: product for product in catalog["adminProducts"]}
+
+    assert [product["name"] for product in catalog["products"]] == ["基础品类"]
+    assert {option["model"] for option in by_name["基础品类"]["options"]} == {"M1", "M2"}
+    assert by_name["基础品类"]["adminOnly"] is False
+    assert next(option for option in by_name["基础品类"]["options"] if option["model"] == "M2")["adminOnly"] is True
+    assert by_name["停用品类"]["adminOnly"] is True
+    assert by_name["停用文化周边"]["source"] == "cultural"
 
 
 def test_health_endpoint():
@@ -149,6 +199,15 @@ def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypa
     monkeypatch.setattr(web_api, "_validate", fake_validate)
     monkeypatch.setattr(web_api, "_enqueue_fast", fake_enqueue)
     monkeypatch.setattr(
+        web_api,
+        "build_catalog",
+        lambda: {
+            "rolesByUser": {"ou-test": ["区域市场经理"]},
+            "products": [{"name": "产品单页"}],
+            "adminProducts": [],
+        },
+    )
+    monkeypatch.setattr(
         legacy_app,
         "queued_material_request_payload",
         lambda request_payload, request_lines: {
@@ -209,6 +268,7 @@ def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
     assert [item[1] for item in observed] == ["mixed-token:standard", "mixed-token:cultural"]
     assert observed[0][2]["lines"][0]["product"] == "产品单页"
     assert observed[1][2]["lines"][0]["region"] == "美洲战区"
+    assert observed[1][2]["request_payload"]["administrator_override"] is True
 
 
 def test_admin_only_category_is_rejected_for_non_admin(monkeypatch):

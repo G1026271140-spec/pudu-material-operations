@@ -414,6 +414,15 @@ class MaterialActivationTests(unittest.TestCase):
             "material-cr-zh",
         )
 
+        category_rows[0]["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = "否"
+        material_rows[0]["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = "否"
+        self.assertEqual(
+            app.build_request_material_index(
+                material_rows, category_rows, include_all_for_admin=True
+            )[lookup_key]["record_id"],
+            "material-cr-zh",
+        )
+
     def test_request_inventory_requires_explicit_request_page_visibility(self) -> None:
         visible = material_row("1", "显示品类", app.STATUS_INACTIVE)
         visible["fields"][app.REQUEST_PAGE_VISIBILITY_FIELD] = app.REQUEST_PAGE_VISIBLE_VALUE
