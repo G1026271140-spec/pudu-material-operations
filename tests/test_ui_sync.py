@@ -293,6 +293,13 @@ class ReactSidebarCollapseTests(unittest.TestCase):
         self.assertIn("width: 46px", brand)
         self.assertGreaterEqual(brand.count("white-space: nowrap"), 2)
 
+    def test_cultural_request_has_a_shareable_direct_route(self) -> None:
+        self.assertIn('path === "/cultural"', self.portal)
+        self.assertIn('section === "cultural_request"', self.portal)
+        self.assertIn('return "/cultural"', self.portal)
+        self.assertIn('window.history.pushState', self.portal)
+        self.assertIn('window.addEventListener("popstate"', self.portal)
+
 
 class CulturalMobileLayoutTests(unittest.TestCase):
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:

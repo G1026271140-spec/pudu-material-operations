@@ -78,6 +78,12 @@ def test_health_endpoint():
     assert response.json() == {"status": "ok"}
 
 
+def test_cultural_direct_route_serves_the_spa():
+    response = TestClient(api).get("/cultural")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+
+
 def test_workspace_excludes_gift_page_and_reads_cached_surfaces():
     payload = TestClient(api).get("/api/workspace").json()
     assert payload["inventory"]

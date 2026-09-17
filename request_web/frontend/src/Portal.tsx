@@ -6,6 +6,25 @@ import AllocationWorkbench from "./AllocationWorkbench";
 import "./portal.css";
 
 type Lang = "zh" | "en";
+type PortalPage = "request" | "cultural" | "management";
+
+function pageFromLocation(): PortalPage {
+  const path = window.location.pathname.replace(/\/+$/, "").toLowerCase();
+  const section = new URLSearchParams(window.location.search).get("section");
+  if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
+    return "cultural";
+  }
+  if (path === "/management" || section === "management") {
+    return "management";
+  }
+  return "request";
+}
+
+function pagePath(page: PortalPage): string {
+  if (page === "cultural") return "/cultural";
+  if (page === "management") return "/management";
+  return "/";
+}
 
 const text = {
   zh: {
@@ -16,7 +35,7 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     tools: "数据与系统工具",
-    version: "当前应用版本 V2.8.1",
+    version: "当前应用版本 V2.8.2",
     locked: "此功能暂未对外开放",
     password: "请输入管理员密码",
     unlock: "解锁",
@@ -32,7 +51,7 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     tools: "Data & System Tools",
-    version: "Current Version V2.8.1",
+    version: "Current Version V2.8.2",
     locked: "This feature is not publicly available",
     password: "Enter administrator password",
     unlock: "Unlock",
@@ -48,7 +67,7 @@ export default function Portal() {
   const [lang, setLang] = useState<Lang>(() =>
     localStorage.getItem("pudu-lang") === "en" ? "en" : "zh",
   );
-  const [page, setPage] = useState("request");
+  const [page, setPage] = useState<PortalPage>(pageFromLocation);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
@@ -62,6 +81,11 @@ export default function Portal() {
       .then((body) => setUnlocked(Boolean(body.unlocked)))
       .catch(() => undefined);
   }, []);
+  useEffect(() => {
+    const handlePopState = () => setPage(pageFromLocation());
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
   if (directAllocation) {
     return <AllocationWorkbench lang={lang} directRequestId={params.get("request_id") || ""} operator={params.get("operator") || ""} reviewToken={params.get("review_token") || ""} />;
   }
@@ -72,6 +96,14 @@ export default function Portal() {
   function setCollapsed(collapsed: boolean) {
     localStorage.setItem("pudu-sidebar-collapsed", String(collapsed));
     setSidebarCollapsed(collapsed);
+  }
+  function navigate(next: PortalPage) {
+    const url = new URL(window.location.href);
+    url.pathname = pagePath(next);
+    url.searchParams.delete("section");
+    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
   async function unlock() {
     setError("");
@@ -129,21 +161,21 @@ export default function Portal() {
         <nav>
           <button
             className={page === "request" ? "active" : ""}
-            onClick={() => setPage("request")}
+            onClick={() => navigate("request")}
           >
             <span>☷</span>
             {t.request}
           </button>
           <button
             className={page === "cultural" ? "active" : ""}
-            onClick={() => setPage("cultural")}
+            onClick={() => navigate("cultural")}
           >
             <span>♧</span>
             {t.cultural}
           </button>
           <button
             className={page === "management" ? "active" : ""}
-            onClick={() => setPage("management")}
+            onClick={() => navigate("management")}
           >
             <span>▣</span>
             {t.management}

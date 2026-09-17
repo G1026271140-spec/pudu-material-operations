@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-17 18:07:23",
+  "generated_at": "2026-09-17 20:49:46",
   "tables": {
     "物料品类": [
       {
@@ -132882,6 +132882,65 @@
         },
         "id": "recvvsVq365JAJ",
         "record_id": "recvvsVq365JAJ"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvvtzGqZm3kf"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260917-002-01",
+              "text_arr": [
+                "REQ-20260917-002-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "10",
+          "变更后数量": "8",
+          "备注": "文化周边申领 REQ-20260917-002：文化POLO衫 / L / 欧洲战区",
+          "幂等键": "cultural-request:2c09ae4d8116402ca5f4025c6c33ab96:1",
+          "库存变化": "-2",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "-2",
+          "文化周边战区快照": "欧洲战区",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyDafi"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0023",
+              "text_arr": [
+                "CUL-0023"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "recvvtzGXHZsme",
+        "record_id": "recvvtzGXHZsme"
       }
     ],
     "物料申请单": [
@@ -138430,6 +138489,105 @@
         },
         "id": "recvvslIWEZR8d",
         "record_id": "recvvslIWEZR8d"
+      },
+      {
+        "fields": {
+          "业务类型": "文化周边申领",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "国家": null,
+          "备注": null,
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "无需审批",
+          "客户名称": null,
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": null,
+          "库存审查结论": null,
+          "库存快照时间": null,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": null,
+          "所属战区": "欧洲战区",
+          "排期编辑版本": null,
+          "提交幂等键": "2c09ae4d8116402ca5f4025c6c33ab96",
+          "提交时间": 1789644429894,
+          "收件人信息": null,
+          "文化周边处理状态": "已发放",
+          "文化周边通知状态": "待发送",
+          "时间判定": null,
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "刘云鹏-文化周边申领",
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 文化POLO衫 / L / 欧洲战区 × 2",
+          "物料用途": null,
+          "用途|活动": null,
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_bc594534-cca0-46d9-b14c-f4e7cd39545g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "alioth.liu@pudutech.com",
+              "en_name": "刘云鹏",
+              "id": "ou_a8d514f5ddcb7f944deaab31273057f0",
+              "name": "刘云鹏"
+            }
+          ],
+          "申请人.部门": [
+            "X LAB",
+            "欧洲服务A组"
+          ],
+          "申请单号": "REQ-20260917-002",
+          "申请原因": null,
+          "申请变更次数": null,
+          "申请时角色快照": null,
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvvtzGqZm3kf"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260917-002-01",
+              "text_arr": [
+                "REQ-20260917-002-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "文化周边申请",
+          "申请部门|区域": null,
+          "相关附件": null,
+          "管理员通知时间": 1789644431484,
+          "管理员通知状态": null,
+          "要求到达结束日期": null,
+          "要求达到开始日期": null,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "156",
+          "运费承担者": null,
+          "需要下单日期": null,
+          "预计完成制作日期": null
+        },
+        "id": "recvvtzEpSx1ms",
+        "record_id": "recvvtzEpSx1ms"
       }
     ],
     "申请明细": [
@@ -185686,6 +185844,130 @@
         },
         "id": "recvvslKuWYthe",
         "record_id": "recvvslKuWYthe"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvtnWRaQETZG"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X037",
+              "text_arr": [
+                "X037"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "L",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "recvtnWQU3ylzA"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "035",
+              "text_arr": [
+                "035"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "文化POLO衫",
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "2",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "2",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": [
+                "recvvtzGXHZsme"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvvtzEpSx1ms"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20260917-002",
+              "text_arr": [
+                "REQ-20260917-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": "欧洲战区",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyDafi"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0023",
+              "text_arr": [
+                "CUL-0023"
+              ],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "文化周边",
+          "明细变更说明": null,
+          "明细状态": "已发放",
+          "明细编号": "REQ-20260917-002-01",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "2",
+          "申请时单价（人民币）": "78",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": "156",
+          "附件": null
+        },
+        "id": "recvvtzGqZm3kf",
+        "record_id": "recvvtzGqZm3kf"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -187929,14 +188211,18 @@
           "备注": "初始库存来自 2026 展会服装需求收集表；重复组合已合并需求数量。",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvvtzGXHZsme"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "10",
+          "当前库存": "8",
           "战区关联": [
             {
               "record_ids": [
@@ -187969,10 +188255,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvvtzGqZm3kf"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20260917-002-01",
+              "text_arr": [
+                "REQ-20260917-002-01"
+              ],
               "type": "text"
             }
           ]
@@ -192372,6 +192662,27 @@
         },
         "id": "recvvlNjOnvci2",
         "record_id": "recvvlNjOnvci2"
+      },
+      {
+        "fields": {
+          "文化衫申领数量累计": "2",
+          "是否启用": "是",
+          "用户编号": "45",
+          "用户账号": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_bc594534-cca0-46d9-b14c-f4e7cd39545g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "alioth.liu@pudutech.com",
+              "en_name": "刘云鹏",
+              "id": "ou_a8d514f5ddcb7f944deaab31273057f0",
+              "name": "刘云鹏"
+            }
+          ],
+          "角色": [
+            "销售"
+          ]
+        },
+        "id": "recvvtztSgeeMO",
+        "record_id": "recvvtztSgeeMO"
       }
     ],
     "物料下单批次": [
@@ -198980,13 +199291,13 @@
     "产品型号": 42,
     "物料语种": 12,
     "物料主数据": 904,
-    "库存流水": 208,
-    "物料申请单": 41,
-    "申请明细": 381,
+    "库存流水": 209,
+    "物料申请单": 42,
+    "申请明细": 382,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "战区管理": 10,
-    "用户权限表": 39,
+    "用户权限表": 40,
     "物料下单批次": 18,
     "物料下单批次明细": 66
   },
