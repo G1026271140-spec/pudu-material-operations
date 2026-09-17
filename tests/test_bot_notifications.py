@@ -721,6 +721,7 @@ class BotNotificationTests(unittest.TestCase):
         with (
             patch.object(app, "feishu_client", return_value=client),
             patch.object(app, "enabled_sales_open_ids", return_value=["ou_sales"]),
+            patch.object(app, "enabled_admin_open_ids", return_value=[]),
             patch.object(app, "sales_request_received_notification_card", return_value=card),
         ):
             count = app.notify_sales_request_received("REQ-1", payload, [])
@@ -732,11 +733,24 @@ class BotNotificationTests(unittest.TestCase):
         with (
             patch.object(app, "feishu_client", return_value=client),
             patch.object(app, "enabled_sales_open_ids", return_value=["ou_other_sales"]),
+            patch.object(app, "enabled_admin_open_ids", return_value=[]),
         ):
             count = app.notify_sales_request_received("REQ-1", payload, [])
 
         self.assertEqual(count, 0)
         client.send_interactive_message.assert_not_called()
+
+    def test_request_received_notification_also_goes_to_enabled_admin_applicant(self) -> None:
+        client = Mock()
+        payload = {"requester_open_id": "ou_admin"}
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_sales_open_ids", return_value=[]),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou_admin"]),
+        ):
+            count = app.notify_sales_request_received("REQ-ADMIN", payload, [])
+        self.assertEqual(count, 1)
+        client.send_interactive_message.assert_called_once()
 
     def test_foreign_applicant_receives_english_request_card(self) -> None:
         payload = {
@@ -789,10 +803,14 @@ class BotNotificationTests(unittest.TestCase):
         self.assertIn("物料明细", json.dumps(body_elements[0], ensure_ascii=False))
         self.assertIn("申请信息", json.dumps(body_elements[1], ensure_ascii=False))
         self.assertLess(serialized.index("物料明细"), serialized.index("申请信息"))
-        self.assertIn(
-            f"产品单页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语 × 1",
-            serialized,
+        detail_table = next(
+            element
+            for element in body_elements[0]["columns"][0]["elements"]
+            if element.get("tag") == "table"
         )
+        self.assertEqual(detail_table["rows"][0]["quantity"], 1)
+        self.assertIn("产品单页", detail_table["rows"][0]["specification"])
+        self.assertIn("英语", detail_table["rows"][0]["specification"])
         self.assertNotIn("申请合计", serialized)
         self.assertNotIn("修改或撤回本条申请", serialized)
         self.assertNotIn("open_request_editor", serialized)

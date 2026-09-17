@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.7.8"
+APP_VERSION = "V2.7.9"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8163,6 +8163,102 @@ def _feishu_inventory_review_table(
     }
 
 
+def _feishu_requester_material_table(
+    lines: list[dict[str, object]], *, english: bool = False
+) -> dict[str, object]:
+    """Render compact request details as one paginated element.
+
+    Keeping every line inside a single table avoids the card element-count
+    failures caused by one markdown block per requested material.
+    """
+    rows: list[dict[str, object]] = []
+    for index, line in enumerate(lines, start=1):
+        product = str(line.get("product") or "-")
+        model = request_model_display_label(
+            line.get("model"), language=LANGUAGE_EN if english else LANGUAGE_ZH
+        )
+        dimension = str(
+            line.get("language") or line.get("region") or NO_LANGUAGE_TEXT
+        )
+        if english:
+            product = english_material_notification_label(product)
+            dimension = english_material_notification_label(dimension)
+        specification = f"{product} / {model} / {dimension}"
+        remark = str(line.get("remark") or "").strip()
+        if remark:
+            specification += (
+                f"\n{'Remark' if english else '备注'}："
+                f"{_feishu_card_plain_text(remark, max_length=300)}"
+            )
+        rows.append(
+            {
+                "sequence": index,
+                "specification": specification,
+                "quantity": int(line.get("quantity") or 0),
+                "remaining_stock": (
+                    int(line.get("remaining_stock"))
+                    if line.get("remaining_stock") is not None
+                    else None
+                ),
+            }
+        )
+    has_remaining_stock = any(
+        row.get("remaining_stock") is not None for row in rows
+    )
+    return {
+        "tag": "table",
+        "page_size": 10,
+        "row_height": "auto",
+        "row_max_height": "96px",
+        "freeze_first_column": True,
+        "header_style": {
+            "background_style": "grey",
+            "bold": True,
+            "lines": 1,
+        },
+        "columns": [
+            {
+                "name": "sequence",
+                "display_name": "No." if english else "序号",
+                "data_type": "number",
+                "width": "72px",
+                "horizontal_align": "center",
+            },
+            {
+                "name": "specification",
+                "display_name": (
+                    "Material / Model / Language or Region"
+                    if english
+                    else "物料 / 型号 / 语种或战区"
+                ),
+                "data_type": "text",
+                "width": "auto",
+            },
+            {
+                "name": "quantity",
+                "display_name": "Qty" if english else "数量",
+                "data_type": "number",
+                "width": "80px",
+                "horizontal_align": "right",
+            },
+            *(
+                [
+                    {
+                        "name": "remaining_stock",
+                        "display_name": "Remaining" if english else "领取后库存",
+                        "data_type": "number",
+                        "width": "100px",
+                        "horizontal_align": "right",
+                    }
+                ]
+                if has_remaining_stock
+                else []
+            ),
+        ],
+        "rows": rows,
+    }
+
+
 def material_request_notification_card(
     request_no: str,
     request_payload: dict[str, object],
@@ -10116,7 +10212,7 @@ def sales_request_received_notification_card(
             "elements": [
                 _feishu_notification_section(
                     detail_title,
-                    _feishu_material_detail_elements(lines, english=english),
+                    [_feishu_requester_material_table(lines, english=english)],
                     color="blue",
                     focus=True,
                 ),
@@ -10137,7 +10233,8 @@ def notify_sales_request_received(
     lines: list[dict[str, object]],
 ) -> int:
     requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
-    if not requester_open_id or requester_open_id not in set(enabled_sales_open_ids()):
+    eligible_requesters = set(enabled_sales_open_ids()) | set(enabled_admin_open_ids())
+    if not requester_open_id or requester_open_id not in eligible_requesters:
         return 0
     client = feishu_client()
     if client is None:
@@ -10165,13 +10262,21 @@ def request_material_match_key(
 def build_request_material_index(
     material_rows: list[dict],
     category_rows: list[dict],
+    *,
+    include_hidden_enabled: bool = False,
 ) -> dict[tuple[str, str, str], dict]:
     raw_material_by_id = {feishu_record_id(row): row for row in material_rows}
-    visible_category_keys = {
+    allowed_category_keys = {
         normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类"))
         for row in category_rows
         if feishu_text(feishu_fields(row), "物料品类")
-        and feishu_request_page_visible(feishu_fields(row))
+        and (
+            feishu_request_page_visible(feishu_fields(row))
+            or (
+                include_hidden_enabled
+                and feishu_text(feishu_fields(row), "启用状态") == STATUS_ACTIVE
+            )
+        )
     }
     return {
         request_material_match_key(
@@ -10183,10 +10288,17 @@ def build_request_material_index(
             material_rows,
             active_only=False,
         )
-        if feishu_request_page_visible(
-            feishu_fields(raw_material_by_id[str(record["record_id"])])
+        if (
+            include_hidden_enabled
+            or feishu_request_page_visible(
+                feishu_fields(raw_material_by_id[str(record["record_id"])])
+            )
         )
-        and normalize_category_match_key(record["category"]) in visible_category_keys
+        and normalize_category_match_key(record["category"]) in allowed_category_keys
+        and (
+            not include_hidden_enabled
+            or str(record.get("status") or STATUS_ACTIVE) == STATUS_ACTIVE
+        )
     }
 
 
@@ -10266,6 +10378,9 @@ def submit_feishu_material_request(
     material_index = build_request_material_index(
         material_rows,
         category_rows,
+        include_hidden_enabled=(
+            "管理员" in set(request_payload.get("accepted_roles") or [])
+        ),
     )
     category_price_rmb = {
         normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")): feishu_float(
@@ -20377,17 +20492,6 @@ def _cultural_request_card(
     applicant: bool,
     admin_open_ids: list[str] | None = None,
 ) -> dict[str, object]:
-    details = "\n".join(
-        (
-            f"{index:02d}. {line['product']} / {line['model']} / {line['region']} "
-            f"× {int(line['quantity'])}"
-            + (
-                f"｜领取后剩余库存：{int(line['remaining_stock'])}"
-                if not applicant and line.get("remaining_stock") is not None else ""
-            )
-        )
-        for index, line in enumerate(lines, start=1)
-    )
     title = "文化周边需求已提交" if applicant else "文化周边申领通知"
     admin_mentions = " ".join(
         f"<at id={open_id}></at>" for open_id in list(admin_open_ids or []) if open_id
@@ -20406,7 +20510,8 @@ def _cultural_request_card(
             "elements": [
                 {"tag": "markdown", "content": lead},
                 {"tag": "hr"},
-                {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请明细**\n{details}"},
+                {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请明细**"},
+                _feishu_requester_material_table(lines),
             ],
         },
     }

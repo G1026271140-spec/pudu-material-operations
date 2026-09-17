@@ -8,12 +8,15 @@ type Option = {
   language: string;
   stock: number;
   unitPriceRmb: number;
+  source?: "standard" | "cultural";
 };
 type Product = {
   name: string;
   nameDisplay?: { zh?: string; en?: string };
   image?: string;
   options: Option[];
+  source?: "standard" | "cultural";
+  adminOnly?: boolean;
 };
 type User = {
   open_id: string;
@@ -25,6 +28,7 @@ type Department = { department_id: string; name: string; path: string };
 type Catalog = {
   generatedAt: string;
   products: Product[];
+  adminProducts: Product[];
   users: User[];
   departments: Department[];
   rolesByUser: Record<string, string[]>;
@@ -39,6 +43,9 @@ type Line = {
   current_stock: number;
   inventory_status: string;
   unitPriceRmb: number;
+  is_custom_material?: boolean;
+  source?: "standard" | "cultural";
+  admin_only?: boolean;
 };
 
 const clean = (value: string) =>
@@ -67,6 +74,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
   const [selectedModels, setSelectedModels] = useState<string[]>([]),
     [selectedLanguages, setSelectedLanguages] = useState<string[]>([]),
+    [customMaterial, setCustomMaterial] = useState(false),
+    [customDescription, setCustomDescription] = useState(""),
     [qty, setQty] = useState(1),
     [remark, setRemark] = useState(""),
     [lines, setLines] = useState<Line[]>([]);
@@ -104,16 +113,41 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
   const requesterLabel = (u: User) =>
     `${u.name}${u.department_paths?.length ? ` · ${u.department_paths.join("、")}` : ""}`;
   function chooseRequester(u: User) {
+    const nextIsAdmin = (catalog?.rolesByUser?.[u.open_id] || []).includes(
+      "管理员",
+    );
+    if (!nextIsAdmin) {
+      const removed = lines.some(
+        (line) => line.admin_only || line.source === "cultural",
+      );
+      if (removed) {
+        setLines((current) =>
+          current.filter(
+            (line) => !line.admin_only && line.source !== "cultural",
+          ),
+        );
+        setError("已移除仅限已启用管理员申领的物料品类");
+      }
+      if (active?.adminOnly) setActive(null);
+    }
     setRequesterId(u.open_id);
     setRequesterQuery(u.name);
     setRequesterOpen(false);
   }
   const total = lines.reduce((s, l) => s + l.quantity * l.unitPriceRmb, 0),
     count = lines.reduce((s, l) => s + l.quantity, 0);
-  const products =
+  const isAdminRequester = Boolean(
+    requesterId && catalog?.rolesByUser?.[requesterId]?.includes("管理员"),
+  );
+  const baseProducts =
     catalog?.products.filter((p) =>
       p.name.toLowerCase().includes(search.toLowerCase()),
     ) || [];
+  const adminProducts = isAdminRequester
+    ? (catalog?.adminProducts || []).filter((p) =>
+        p.name.toLowerCase().includes(search.toLowerCase()),
+      )
+    : [];
   const models = useMemo(
     () => [...new Set(active?.options.map((o) => o.model || "无需型号") || [])],
     [active],
@@ -184,6 +218,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     setSelectedLanguages(ls.length === 1 ? ls : []);
     setQty(1);
     setRemark("");
+    setCustomMaterial(false);
+    setCustomDescription("");
   }
   const toggle = (
     list: string[],
@@ -195,6 +231,42 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     );
   function add() {
     if (!active) return;
+    if (customMaterial) {
+      const description = customDescription.trim();
+      if (!description) {
+        setError("请填写临时物料的名称或规格说明");
+        return;
+      }
+      const customLine: Line = {
+        product: description,
+        model: description,
+        language: description,
+        quantity: qty,
+        remark,
+        current_stock: 0,
+        inventory_status: "库存不足，需要制作",
+        unitPriceRmb: 0,
+        is_custom_material: true,
+        source: "standard",
+        admin_only: Boolean(active.adminOnly),
+      };
+      setLines((prev) => {
+        const index = prev.findIndex(
+          (line) =>
+            line.is_custom_material && line.product === customLine.product,
+        );
+        if (index < 0) return [...prev, customLine];
+        return prev.map((line, lineIndex) =>
+          lineIndex === index
+            ? { ...line, quantity: line.quantity + qty, remark }
+            : line,
+        );
+      });
+      setActive(null);
+      setError("");
+      setCartNotice(true);
+      return;
+    }
     if (!selectedModels.length || !selectedLanguages.length) {
       setError("请先选择产品型号和语种");
       return;
@@ -226,6 +298,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
           current_stock: o.stock,
           inventory_status: o.stock >= qty ? "库存充足" : "库存不足",
           unitPriceRmb: o.unitPriceRmb,
+          source: o.source || active.source || "standard",
+          admin_only: Boolean(active.adminOnly),
         };
         if (i >= 0) next[i] = { ...next[i], quantity: next[i].quantity + qty };
         else next.push(line);
@@ -348,7 +422,10 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
       });
       const body = await r.json();
       if (!r.ok) throw Error(errorMessage(body.detail, "提交失败"));
-      setDone(`申请已进入后台队列（任务 ${body.taskId}）`);
+      const taskIds = Array.isArray(body.taskIds) ? body.taskIds : [body.taskId];
+      setDone(
+        `申请已进入后台队列（${taskIds.length} 个任务：${taskIds.join("、")}）`,
+      );
       setReview(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "提交失败");
@@ -532,8 +609,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                 <h2>{t("选择申请物料", "Select Materials")}</h2>
                 <p>
                   {t(
-                    "11 个规格弹层已随页面一次加载完成",
-                    "All 11 option panels are preloaded",
+                    `${catalog.products.length + adminProducts.length} 个规格弹层已随页面一次加载完成`,
+                    `${catalog.products.length + adminProducts.length} option panels are preloaded`,
                   )}
                 </p>
               </div>
@@ -578,7 +655,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                     <tr>
                       <th>{t("品类", "Category")}</th>
                       <th>{t("型号", "Model")}</th>
-                      <th>{t("语种", "Language")}</th>
+                      <th>{t("语种/战区", "Language / Region")}</th>
                       <th>{t("数量", "Quantity")}</th>
                       <th>{t("备注", "Remarks")}</th>
                       <th></th>
@@ -587,7 +664,14 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                   <tbody>
                     {lines.map((l, i) => (
                       <tr key={`${l.product}${l.model}${l.language}`}>
-                        <td>{clean(l.product)}</td>
+                        <td>
+                          {clean(l.product)}
+                          {l.is_custom_material && (
+                            <small className="temporary-badge">
+                              {t("临时物料", "Temporary")}
+                            </small>
+                          )}
+                        </td>
                         <td>{l.model}</td>
                         <td>{l.language}</td>
                         <td>
@@ -638,7 +722,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
             </div>
           )}
           <div className="cards">
-            {products.map((p) => (
+            {baseProducts.map((p) => (
               <article key={p.name}>
                 {p.image ? (
                   <img src={p.image} />
@@ -653,6 +737,39 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
               </article>
             ))}
           </div>
+          {isAdminRequester && adminProducts.length > 0 && (
+            <>
+              <div className="admin-category-divider">
+                <b>{t("管理员可申领品类", "Administrator Categories")}</b>
+                <span>
+                  {t(
+                    "仅在选择已启用管理员为申请人时显示",
+                    "Shown only for enabled administrator applicants",
+                  )}
+                </span>
+              </div>
+              <div className="cards admin-category-cards">
+                {adminProducts.map((p) => (
+                  <article key={p.name}>
+                    {p.image ? (
+                      <img src={p.image} />
+                    ) : (
+                      <div className="placeholder">PUDU</div>
+                    )}
+                    <small>
+                      {p.source === "cultural"
+                        ? t("文化周边", "Cultural Merchandise")
+                        : t("管理员品类", "Administrator Category")}
+                    </small>
+                    <h3>{p.nameDisplay?.[lang] || clean(p.name)}</h3>
+                    <button onClick={() => open(p)}>
+                      🛒 {t("选择规格", "Select Options")}
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
         </section>
         {error && (
           <div className="toast" onClick={() => setError("")}>
@@ -682,6 +799,48 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                 "Select one or more models and languages to add to the cart.",
               )}
             </p>
+            <label className="custom-material-toggle">
+              <input
+                type="checkbox"
+                checked={customMaterial}
+                onChange={(event) => {
+                  setCustomMaterial(event.target.checked);
+                  if (event.target.checked) {
+                    setSelectedModels([]);
+                    setSelectedLanguages([]);
+                  }
+                }}
+              />
+              <span>
+                <b>
+                  {t(
+                    "没找到想要的物料？请点击左侧方框",
+                    "Can't find the material? Select this box",
+                  )}
+                </b>
+                <small>
+                  {t(
+                    "临时物料将进入下单与自动补货流程，发放完成后自动清理",
+                    "Temporary materials enter ordering and auto-restock, then are cleaned up after issuance",
+                  )}
+                </small>
+              </span>
+            </label>
+            {customMaterial ? (
+              <div className="custom-material-panel">
+                <label>
+                  {t("临时物料名称或规格说明", "Temporary material description")} *
+                  <textarea
+                    value={customDescription}
+                    onChange={(event) => setCustomDescription(event.target.value)}
+                    placeholder={t(
+                      "请完整填写物料名称、规格、颜色等制作信息",
+                      "Describe the material, specification, colour and production details",
+                    )}
+                  />
+                </label>
+              </div>
+            ) : (
             <div className="selector">
               <h4>{t("产品型号", "Product Model")}</h4>
               <div className={modelGroups.length > 1 ? "model-line-grid" : ""}>
@@ -710,7 +869,11 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                   </div>
                 ))}
               </div>
-              <h4>{t("语种", "Language")}</h4>
+              <h4>
+                {active.source === "cultural"
+                  ? t("战区", "Region")
+                  : t("语种", "Language")}
+              </h4>
               <div className="pills">
                 {languages.map((language) => (
                   <button
@@ -727,7 +890,8 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                 ))}
               </div>
             </div>
-            <div className="selection-note">
+            )}
+            {!customMaterial && <div className="selection-note">
               已选 {selectedModels.length} 个型号、{selectedLanguages.length}{" "}
               个语种，将加入{" "}
               {
@@ -738,7 +902,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                 ).length
               }{" "}
               条有效明细
-            </div>
+            </div>}
             <div className="modalfoot">
               <label>
                 {t("自定义数量", "Quantity")}

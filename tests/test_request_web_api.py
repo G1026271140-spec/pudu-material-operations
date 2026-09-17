@@ -16,6 +16,10 @@ def test_catalog_uses_local_snapshot_and_exposes_all_products():
     assert len(catalog["users"]) > 100
     assert catalog["rolesByUser"]
     assert all(product["options"] for product in catalog["products"])
+    assert any(
+        product["source"] == "cultural" for product in catalog["adminProducts"]
+    )
+    assert all(product["adminOnly"] for product in catalog["adminProducts"])
 
 
 def test_health_endpoint():
@@ -164,6 +168,73 @@ def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypa
     assert observed["key"] == "stable-token"
     assert observed["payload"]["request_payload"]["accepted_roles"] == ["区域市场经理"]
     assert observed["payload"]["request_payload"]["accepted_date"] == "2026-09-08"
+
+
+def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
+    observed = []
+    payload = {
+        "title": "test", "department": "市场部", "department_id": "od-test",
+        "requester": "管理员", "requester_open_id": "ou-admin",
+        "customer_name": "客户", "country": "中国", "recipient_info": "收件信息",
+        "freight_payer": "PUDU", "material_usage": "测试", "submission_token": "mixed-token",
+        "scheduling_version": 1, "accepted_roles": ["管理员"], "accepted_date": "2026-09-17",
+        "accepted_at_ms": 1789574400000, "request_reason": "其他",
+        "arrival_start": "2026-09-20", "arrival_end": "2026-09-20",
+    }
+    lines = [
+        {"product": "产品单页", "model": "T300", "language": "英语", "quantity": 1},
+        {"product": "文化POLO衫", "model": "M", "language": "美洲战区", "quantity": 1,
+         "source": "cultural", "admin_only": True},
+    ]
+    monkeypatch.setattr(web_api, "_validate", lambda _draft, *, live: (payload, lines, []))
+    monkeypatch.setattr(
+        web_api,
+        "build_catalog",
+        lambda: {
+            "rolesByUser": {"ou-admin": ["管理员"]},
+            "products": [{"name": "产品单页"}],
+            "adminProducts": [{"name": "文化POLO衫"}],
+        },
+    )
+    monkeypatch.setattr(
+        web_api,
+        "_enqueue_fast",
+        lambda task_type, key, queued: observed.append((task_type, key, queued)) or f"task-{len(observed)}",
+    )
+
+    response = TestClient(api).post("/api/submit", json={**payload, "lines": lines})
+
+    assert response.status_code == 200
+    assert response.json()["taskIds"] == ["task-1", "task-2"]
+    assert [item[1] for item in observed] == ["mixed-token:standard", "mixed-token:cultural"]
+    assert observed[0][2]["lines"][0]["product"] == "产品单页"
+    assert observed[1][2]["lines"][0]["region"] == "美洲战区"
+
+
+def test_admin_only_category_is_rejected_for_non_admin(monkeypatch):
+    monkeypatch.setattr(web_api, "_validate", lambda _draft, *, live: ({}, [], []))
+    monkeypatch.setattr(
+        web_api,
+        "build_catalog",
+        lambda: {
+            "rolesByUser": {"ou-sales": ["销售"]},
+            "products": [{"name": "产品单页"}],
+            "adminProducts": [{"name": "文化POLO衫"}],
+        },
+    )
+    response = TestClient(api).post(
+        "/api/validate",
+        json={
+            "title": "test", "department": "市场部", "requester": "销售", "requester_open_id": "ou-sales",
+            "customer_name": "客户", "country": "中国", "recipient_info": "收件信息",
+            "material_usage": "测试", "request_reason": "其他", "arrival_start": "2026-09-20",
+            "arrival_end": "2026-09-20", "lines": [{"product": "文化POLO衫", "model": "M",
+            "language": "美洲战区", "quantity": 1, "source": "cultural", "admin_only": True}],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["valid"] is False
+    assert "已启用的管理员" in response.json()["errors"][0]
 
 
 def test_page_validation_enforces_cached_sales_lead_time(monkeypatch):

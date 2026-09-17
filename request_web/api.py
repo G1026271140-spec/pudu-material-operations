@@ -46,6 +46,8 @@ def _image_index() -> dict[str, str]:
 
 
 def build_catalog() -> dict[str, Any]:
+    import app as legacy
+
     cache = _json("request_form_cache.json")
     contacts = _json("contact_departments_cache.json")
     images = _image_index()
@@ -79,12 +81,136 @@ def build_catalog() -> dict[str, Any]:
                 "unitPriceRmb": float(row.get("unit_price_rmb") or 0),
             }
         )
+    base_product_names = list(cache.get("products", []))
+    base_product_keys = {
+        legacy.normalize_category_match_key(name) for name in base_product_names
+    }
+
+    tables = page.get("tables", {})
+    category_rows = list(tables.get(legacy.CATEGORY_TABLE_NAME, []))
+    material_rows = list(tables.get(legacy.MATERIAL_TABLE_NAME, []))
+    cultural_rows = list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, []))
+    model_rows = list(tables.get(legacy.MODEL_TABLE_NAME, []))
+    raw_material_by_id = {
+        legacy.feishu_record_id(row): row for row in material_rows
+    }
+    category_meta: dict[str, dict[str, Any]] = {}
+    category_price_rmb: dict[str, float] = {}
+    for row in category_rows:
+        fields = legacy.feishu_fields(row)
+        name = legacy.feishu_text(fields, "物料品类").strip()
+        if not name or legacy.feishu_text(fields, "启用状态") != legacy.STATUS_ACTIVE:
+            continue
+        key = legacy.normalize_category_match_key(name)
+        category_meta[key] = {
+            "name": name,
+            "definition": legacy.feishu_text(fields, "品类定义"),
+            "display": {
+                "zh": legacy.feishu_text(fields, "中文页面名称") or name,
+                "en": legacy.feishu_text(fields, "英文页面名称") or name,
+            },
+        }
+        category_price_rmb[key] = legacy.feishu_float(fields, legacy.UNIT_PRICE_RMB_FIELD)
+
+    model_meta: dict[str, dict[str, str]] = {}
+    for row in model_rows:
+        fields = legacy.feishu_fields(row)
+        name = legacy.feishu_text(fields, "产品型号").strip()
+        if name:
+            model_meta[name] = {
+                "display": legacy.feishu_text(fields, "中文页面名称") or name,
+                "line": legacy.feishu_text(fields, "产品线"),
+            }
+
+    admin_options: dict[str, list[dict[str, Any]]] = {}
+    for item in legacy.feishu_inventory_records_from_rows(
+        material_rows, category_rows, active_only=True
+    ):
+        product = str(item.get("category") or "").strip()
+        product_key = legacy.normalize_category_match_key(product)
+        if not product or product_key in base_product_keys or product_key not in category_meta:
+            continue
+        raw_fields = legacy.feishu_fields(
+            raw_material_by_id.get(str(item.get("record_id") or ""), {})
+        )
+        model = str(item.get("model") or legacy.NO_MODEL_TEXT)
+        admin_options.setdefault(product, []).append(
+            {
+                "materialCode": item.get("material_code", ""),
+                "model": model,
+                "modelDisplay": model_meta.get(model, {}).get("display", model),
+                "productLine": model_meta.get(model, {}).get("line", ""),
+                "language": item.get("language") or legacy.NO_LANGUAGE_TEXT,
+                "stock": int(item.get("quantity") or 0),
+                "unitPriceRmb": legacy.request_material_unit_price_rmb(
+                    raw_fields, category_price_rmb.get(product_key, 0.0)
+                ),
+                "source": "standard",
+            }
+        )
+
+    cultural_options: dict[str, list[dict[str, Any]]] = {}
+    enabled_cultural = {
+        meta["name"]: meta
+        for meta in category_meta.values()
+        if meta.get("definition") == legacy.CATEGORY_DEFINITION_CULTURAL
+    }
+    for row in cultural_rows:
+        fields = legacy.feishu_fields(row)
+        product = legacy.feishu_text(fields, "物料品类").strip()
+        if product not in enabled_cultural:
+            continue
+        if legacy.feishu_text(fields, legacy.CULTURAL_CLAIMABLE_FIELD).strip() != legacy.CULTURAL_CLAIMABLE_YES:
+            continue
+        model = legacy.feishu_text(fields, "产品型号").strip()
+        region = legacy.feishu_text(fields, "战区管理").strip()
+        if not model or not region:
+            continue
+        cultural_options.setdefault(product, []).append(
+            {
+                "materialCode": legacy.feishu_text(fields, "文化周边编码"),
+                "model": model,
+                "modelDisplay": model_meta.get(model, {}).get("display", model),
+                "productLine": model_meta.get(model, {}).get("line", ""),
+                "language": region,
+                "stock": legacy.feishu_int(fields, "当前库存"),
+                "unitPriceRmb": legacy.feishu_float(fields, "单价（人民币）"),
+                "source": "cultural",
+            }
+        )
+
+    admin_products: list[dict[str, Any]] = []
+    for product, options in admin_options.items():
+        meta = category_meta[legacy.normalize_category_match_key(product)]
+        admin_products.append(
+            {
+                "name": product,
+                "nameDisplay": meta["display"],
+                "image": images.get(product),
+                "options": options,
+                "source": "standard",
+                "adminOnly": True,
+            }
+        )
+    for product, options in cultural_options.items():
+        meta = enabled_cultural[product]
+        admin_products.append(
+            {
+                "name": product,
+                "nameDisplay": meta["display"],
+                "image": images.get(product),
+                "options": options,
+                "source": "cultural",
+                "adminOnly": True,
+            }
+        )
     return {
         "generatedAt": cache.get("generated_at"),
         "products": [
             {"name": name, "nameDisplay": category_display_names.get(name, {}), "image": images.get(name), "options": combinations.get(name, [])}
             for name in cache.get("products", [])
         ],
+        "adminProducts": admin_products,
         "users": contacts.get("users", []),
         "departments": contacts.get("departments", []),
         "rolesByUser": roles_by_user,
@@ -101,6 +227,8 @@ class MaterialLine(BaseModel):
     current_stock: int = 0
     inventory_status: str = ""
     is_custom_material: bool = False
+    source: str = "standard"
+    admin_only: bool = False
 
 
 class RequestDraft(BaseModel):
@@ -705,6 +833,58 @@ def _cached_schedule_errors(draft: RequestDraft) -> list[str]:
     return []
 
 
+def _request_line_groups(
+    draft: RequestDraft,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    """Split the unified cart into the two existing inventory pipelines."""
+    import app as legacy
+
+    catalog = build_catalog()
+    roles = set(catalog.get("rolesByUser", {}).get(draft.requester_open_id) or [])
+    base_products = {
+        legacy.normalize_category_match_key(item.get("name"))
+        for item in catalog.get("products", [])
+    }
+    admin_products = {
+        legacy.normalize_category_match_key(item.get("name"))
+        for item in catalog.get("adminProducts", [])
+    }
+    standard: list[dict[str, Any]] = []
+    cultural: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for line_model in draft.lines:
+        line = line_model.model_dump()
+        product_key = legacy.normalize_category_match_key(line.get("product"))
+        source = str(line.get("source") or "standard").strip().lower()
+        is_admin_only = bool(line.get("admin_only")) or product_key in admin_products
+        if source == "cultural" or is_admin_only:
+            if "管理员" not in roles:
+                errors.append("只有用户权限表中已启用的管理员可以申领管理员专用品类。")
+                continue
+        if source == "cultural" and not line.get("is_custom_material"):
+            cultural.append(
+                {
+                    "product": line["product"],
+                    "model": line["model"],
+                    "region": line["language"],
+                    "quantity": line["quantity"],
+                    "remark": line.get("remark", ""),
+                }
+            )
+        else:
+            if (
+                (base_products or admin_products)
+                and
+                not line.get("is_custom_material")
+                and product_key not in base_products
+                and product_key not in admin_products
+            ):
+                errors.append(f"物料品类未启用或不在当前目录中：{line.get('product')}")
+                continue
+            standard.append(line)
+    return standard, cultural, list(dict.fromkeys(errors))
+
+
 @lru_cache(maxsize=1)
 def _queue_client_and_table() -> tuple[Any, str, str]:
     import app as legacy
@@ -796,24 +976,87 @@ def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any])
 @api.post("/api/validate")
 def validate(draft: RequestDraft) -> dict[str, Any]:
     _, _, errors = _validate(draft, live=False)
+    _, cultural_lines, access_errors = _request_line_groups(draft)
+    errors.extend(access_errors)
+    if cultural_lines:
+        try:
+            import app as legacy
+
+            legacy.validate_cultural_request_quantity(cultural_lines)
+        except Exception as exc:
+            errors.append(str(exc))
     if not errors:
         errors.extend(_cached_schedule_errors(draft))
-    return {"valid": not errors, "errors": errors}
+    return {"valid": not errors, "errors": list(dict.fromkeys(errors))}
 
 
 @api.post("/api/submit")
 def submit(draft: RequestDraft) -> dict[str, Any]:
     payload, lines, errors = _validate(draft, live=False)
-    if errors:
-        raise HTTPException(status_code=422, detail=errors)
-    try:
-        from app import queued_material_request_payload
-        from submission_queue import QUEUE_TASK_TYPE_MATERIAL_REQUEST
+    standard_lines, cultural_lines, access_errors = _request_line_groups(draft)
+    errors.extend(access_errors)
+    if cultural_lines:
+        try:
+            import app as legacy
 
-        task_id = _enqueue_fast(QUEUE_TASK_TYPE_MATERIAL_REQUEST, draft.submission_token, queued_material_request_payload(payload, lines))
+            legacy.validate_cultural_request_quantity(cultural_lines)
+        except Exception as exc:
+            errors.append(str(exc))
+    if errors:
+        raise HTTPException(status_code=422, detail=list(dict.fromkeys(errors)))
+    try:
+        import app as legacy
+        from submission_queue import (
+            QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+            QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+        )
+
+        task_ids: list[str] = []
+        mixed = bool(standard_lines and cultural_lines)
+        if standard_lines:
+            standard_key = (
+                f"{draft.submission_token}:standard" if mixed else draft.submission_token
+            )
+            standard_payload = dict(payload)
+            standard_payload["submission_token"] = standard_key
+            task_ids.append(
+                _enqueue_fast(
+                    QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+                    standard_key,
+                    legacy.queued_material_request_payload(
+                        standard_payload, standard_lines
+                    ),
+                )
+            )
+        if cultural_lines:
+            cultural_key = (
+                f"{draft.submission_token}:cultural" if mixed else draft.submission_token
+            )
+            cultural_payload = {
+                "requester": payload.get("requester"),
+                "requester_open_id": payload.get("requester_open_id"),
+                "department": payload.get("department"),
+                "department_id": payload.get("department_id"),
+                "submission_token": cultural_key,
+            }
+            task_ids.append(
+                _enqueue_fast(
+                    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+                    cultural_key,
+                    legacy.queued_cultural_request_payload(
+                        cultural_payload, cultural_lines
+                    ),
+                )
+            )
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"申请未能进入后台队列：{exc}") from exc
-    return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
+    return {
+        "accepted": True,
+        "created": True,
+        "taskId": task_ids[0],
+        "taskIds": task_ids,
+        "status": "待处理",
+    }
 
 
 @api.post("/api/cultural-submit")

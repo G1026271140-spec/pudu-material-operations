@@ -200,6 +200,27 @@ article h3 {
 article button {
   margin-top: auto;
 }
+.admin-category-divider {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 14px 2px 0;
+  border-top: 1px solid #cbdde5;
+}
+.admin-category-divider b { color: #0b5f72; }
+.admin-category-divider span { color: #718797; font-size: 13px; }
+.admin-category-cards article { border-color: #b9d6d2; }
+.temporary-badge {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #fff0ec;
+  color: #c94531;
+  font-size: 11px;
+  font-weight: 700;
+}
 .cartpanel {
   background: #f8fbfd;
   border: 1px solid #d6e3ea;
@@ -396,6 +417,33 @@ td input {
   padding: 16px;
   background: #fbfdfe;
 }
+.custom-material-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid #f0c8bf;
+  border-radius: 10px;
+  background: #fff8f6;
+  cursor: pointer;
+}
+.custom-material-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  flex: 0 0 auto;
+}
+.custom-material-toggle span { display: grid; gap: 3px; }
+.custom-material-toggle b { color: #c94531; }
+.custom-material-toggle small { color: #718797; font-weight: 400; }
+.custom-material-panel {
+  padding: 14px;
+  border: 1px solid #d1dfe7;
+  border-radius: 12px;
+  background: #fbfdfe;
+}
+.custom-material-panel textarea { min-height: 94px; }
 .selector h4 { margin: 4px 0 10px; }
 .selector h4:not(:first-child) { margin-top: 22px; }
 .pills { display: flex; flex-wrap: wrap; gap: 9px; }
@@ -769,6 +817,14 @@ td input {
   .request-review-modal .reviewactions button {
     flex: 1;
     min-height: 44px;
+  }
+  .request-page .admin-category-divider {
+    display: grid;
+    gap: 3px;
+    margin-top: 16px;
+  }
+  .request-spec-modal .custom-material-toggle {
+    padding: 10px;
   }
   .submit-overlay {
     padding: 20px;

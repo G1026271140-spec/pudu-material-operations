@@ -150,8 +150,10 @@ class CulturalRequestTests(unittest.TestCase):
             }],
             applicant=False,
         )
-        details = card["body"]["elements"][2]["content"]
-        self.assertIn("领取后剩余库存：-1", details)
+        details = card["body"]["elements"][3]
+        self.assertEqual(details["tag"], "table")
+        self.assertEqual(details["rows"][0]["remaining_stock"], -1)
+        self.assertIn("领取后库存", [item["display_name"] for item in details["columns"]])
 
     def test_request_page_does_not_show_stock_caption(self) -> None:
         source = open(app.__file__, encoding="utf-8").read()
