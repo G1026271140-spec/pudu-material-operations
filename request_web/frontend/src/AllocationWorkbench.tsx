@@ -14,6 +14,10 @@ const unique = (values: string[]) => [...new Set(values.filter(Boolean))];
 const money = (value: number) => `¥${Number(value || 0).toFixed(2)}`;
 const detail = (value: unknown, fallback: string) =>
   Array.isArray(value) ? value.join("；") : typeof value === "string" ? value : fallback;
+const isPrintMaterial = (material: any) =>
+  material?.category_definition === "印刷物料";
+const defaultOrderRequired = (material: any, quantity: number) =>
+  isPrintMaterial(material) && Number(material?.quantity || 0) < Number(quantity || 0);
 
 async function jsonFetch(url: string, options?: RequestInit) {
   const response = await fetch(url, options);
@@ -73,7 +77,9 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         language: line.language || "无需语种",
         quantity: Math.max(1, Number(line.quantity || 1)),
         remark: line.remark || "",
-        order_required: Number(line.current_stock || 0) < Number(line.quantity || 0),
+        order_required:
+          line.category_definition === "印刷物料" &&
+          Number(line.current_stock || 0) < Number(line.quantity || 0),
       })));
     } catch (e) { setError(e instanceof Error ? e.message : "读取失败"); setContext(null); }
     finally { setLoading(false); }
@@ -96,6 +102,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       if (key === "model" && chosen) next.language = chosen.language;
       const exact = materials.find((x: any) => x.category === next.category && x.model === next.model && x.language === next.language);
       next.material_record_id = exact?.record_id || "";
+      next.order_required = defaultOrderRequired(exact, Number(next.quantity));
       return next;
     }));
   }
@@ -103,7 +110,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   function addRow() {
     const first = materials[0];
     if (!first) return setError(tr("物料目录为空，无法新增明细。", "The material catalog is empty."));
-    setRows([...rows, { uid: crypto.randomUUID(), line_record_id: "", material_record_id: first.record_id, category: first.category, model: first.model, language: first.language, quantity: 1, remark: "", order_required: false }]);
+    setRows([...rows, { uid: crypto.randomUUID(), line_record_id: "", material_record_id: first.record_id, category: first.category, model: first.model, language: first.language, quantity: 1, remark: "", order_required: defaultOrderRequired(first, 1) }]);
   }
 
   function validate(mode: "confirm" | "edit") {
@@ -171,7 +178,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
           const models = unique(materials.filter((x: any) => x.category === row.category).map((x: any) => x.model));
           const languages = unique(materials.filter((x: any) => x.category === row.category && x.model === row.model).map((x: any) => x.language));
           const material = materialById[row.material_record_id] || {};
-          return <article key={row.uid}><div className="line-index">{String(index + 1).padStart(2, "0")}</div><div className="line-fields"><label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, quantity: Math.max(1, Number(e.target.value))} : x))}/></label><label>{tr("是否下单", "Order Required")}<select value={row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: e.target.value === "yes"} : x))}><option value="yes">{tr("需要下单", "Order")}</option><option value="no">{tr("无需下单", "No Order")}</option></select></label><label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label></div><div className="stock-info"><span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span><span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span><button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button></div></article>;
+          const canOrder = isPrintMaterial(material);
+          return <article key={row.uid}><div className="line-index">{String(index + 1).padStart(2, "0")}</div><div className="line-fields"><label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => { const quantity = Math.max(1, Number(e.target.value)); setRows(rows.map((x, i) => i === index ? {...x, quantity, order_required: canOrder ? x.order_required : false} : x)); }}/></label><label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: canOrder && e.target.value === "yes"} : x))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label><label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label></div><div className="stock-info"><span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span><span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span><button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button></div></article>;
         })}</div>
         <button className="add-allocation-line" onClick={addRow}>＋ {tr("新增明细", "Add Line")}</button>
         <div className="amount-comparison"><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span><span>{tr("当前配货总金额", "Allocation Total")}<b>{money(currentTotal)}</b><em className={currentTotal - originalTotal < 0 ? "negative" : ""}>{currentTotal - originalTotal >= 0 ? "+" : ""}{money(currentTotal - originalTotal)}</em></span></div>

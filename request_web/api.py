@@ -574,6 +574,7 @@ def allocation_context(
             legacy.load_static_request_form_cache(),
             list(context.get("material_rows") or []),
             current_material_ids=current_ids,
+            category_rows=list(context.get("category_rows") or []),
         )
         ship_date = as_date(legacy.feishu_fields(context.get("request_row") or {}).get(SHIP_DATE))
         return {

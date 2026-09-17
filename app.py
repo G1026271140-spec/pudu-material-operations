@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.0"
+APP_VERSION = "V2.8.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8839,9 +8839,11 @@ def pending_inventory_review_contexts() -> list[dict[str, object]]:
     contexts: list[dict[str, object]] = []
     request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
     material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     all_lines = load_feishu_request_line_records(
         fresh_feishu_rows(REQUEST_LINE_TABLE_NAME),
         material_rows,
+        category_rows,
     )
     snapshot_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     for row in request_rows:
@@ -8865,6 +8867,7 @@ def pending_inventory_review_contexts() -> list[dict[str, object]]:
                 "result": request_inventory_review_result(lines),
                 "snapshot_at": snapshot_at,
                 "material_rows": material_rows,
+                "category_rows": category_rows,
             }
         )
     return contexts
@@ -10863,9 +10866,17 @@ def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str
 def load_feishu_request_line_records(
     rows: list[dict] | None = None,
     material_rows: list[dict] | None = None,
+    category_rows: list[dict] | None = None,
 ) -> list[dict[str, object]]:
     source_material_rows = material_rows if material_rows is not None else feishu_material_rows()
     material_by_id = {feishu_record_id(row): row for row in source_material_rows}
+    source_category_rows = category_rows if category_rows is not None else feishu_category_rows()
+    category_definition_by_key = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")):
+            feishu_text(feishu_fields(row), "品类定义") or UNDEFINED_CATEGORY_DEFINITION
+        for row in source_category_rows
+        if feishu_text(feishu_fields(row), "物料品类").strip()
+    }
     records: list[dict[str, object]] = []
     source_rows = rows if rows is not None else feishu_rows(REQUEST_LINE_TABLE_NAME)
     for row in source_rows:
@@ -10903,6 +10914,10 @@ def load_feishu_request_line_records(
                 "request_no": feishu_text_any(fields, ["申请单号", "所属申请单", "申请单"]),
                 "material_record_id": material_ids[0] if material_ids else "",
                 "product": product,
+                "category_definition": category_definition_by_key.get(
+                    normalize_category_match_key(product),
+                    UNDEFINED_CATEGORY_DEFINITION,
+                ),
                 "model": model,
                 "language": language,
                 "actual_product": actual_product,
@@ -11051,7 +11066,8 @@ def request_inventory_review_page_context(request_id: str) -> dict[str, object]:
         }
     )
     material_rows = feishu_rows(MATERIAL_TABLE_NAME)
-    lines = load_feishu_request_line_records(line_rows, material_rows)
+    category_rows = feishu_rows(CATEGORY_TABLE_NAME)
+    lines = load_feishu_request_line_records(line_rows, material_rows, category_rows)
     for line in lines:
         stock = int(line.get("current_stock") or 0)
         quantity = int(line.get("quantity") or 0)
@@ -11067,6 +11083,7 @@ def request_inventory_review_page_context(request_id: str) -> dict[str, object]:
         "result": request_inventory_review_result(lines),
         "snapshot_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "material_rows": material_rows,
+        "category_rows": category_rows,
     }
 
 
@@ -11099,9 +11116,11 @@ def request_inventory_review_context(
         }
     )
     material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     all_lines = load_feishu_request_line_records(
         fresh_feishu_rows(REQUEST_LINE_TABLE_NAME),
         material_rows,
+        category_rows,
     )
     lines = request_lines_for_request(request, all_lines)
     for line in lines:
@@ -11119,6 +11138,7 @@ def request_inventory_review_context(
         "result": request_inventory_review_result(lines),
         "snapshot_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "material_rows": material_rows,
+        "category_rows": category_rows,
     }
 
 
@@ -11127,6 +11147,7 @@ def cached_allocation_material_records(
     material_rows: list[dict],
     *,
     current_material_ids: set[str] | None = None,
+    category_rows: list[dict] | None = None,
 ) -> list[dict[str, object]]:
     cached_codes = {
         str(item.get("material_code") or "").strip()
@@ -11134,6 +11155,12 @@ def cached_allocation_material_records(
         if isinstance(item, dict) and str(item.get("material_code") or "").strip()
     }
     current_ids = set(current_material_ids or set())
+    category_definition_by_key = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")):
+            feishu_text(feishu_fields(row), "品类定义") or UNDEFINED_CATEGORY_DEFINITION
+        for row in list(category_rows if category_rows is not None else feishu_category_rows())
+        if feishu_text(feishu_fields(row), "物料品类").strip()
+    }
     records: list[dict[str, object]] = []
     for row in material_rows:
         record_id = feishu_record_id(row)
@@ -11146,6 +11173,10 @@ def cached_allocation_material_records(
                 "record_id": record_id,
                 "material_code": material_code,
                 "category": feishu_text(fields, "物料品类"),
+                "category_definition": category_definition_by_key.get(
+                    normalize_category_match_key(feishu_text(fields, "物料品类")),
+                    UNDEFINED_CATEGORY_DEFINITION,
+                ),
                 "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
                 "language": feishu_text(fields, "语种") or NO_LANGUAGE_TEXT,
                 "quantity": feishu_int(fields, "当前库存"),
@@ -11260,6 +11291,17 @@ def sync_request_ship_date_to_schedule(request_id: str, ship_date: object) -> in
     return updates
 
 
+def allocation_line_requires_order(
+    category_definition: object,
+    requested: object,
+) -> bool:
+    """Only printed materials may enter ordering and five-day auto-restock."""
+    return (
+        str(category_definition or "").strip() == CATEGORY_DEFINITION_PRINT
+        and requested is True
+    )
+
+
 def apply_inventory_allocation_schedule(
     request_id: str,
     line_plans: list[dict[str, object]],
@@ -11291,8 +11333,18 @@ def apply_inventory_allocation_schedule(
             raise RuntimeError("配货明细已发生变化，请刷新申请单后重新提交。")
     elif not line_ids <= {str(value) for value in validated_line_ids}:
         raise RuntimeError("配货明细校验不完整，请刷新申请单后重新提交。")
-    order_plans = [item for item in line_plans if item.get("order_required") is True]
-    no_order_plans = [item for item in line_plans if item.get("order_required") is not True]
+    normalized_plans = [
+        {
+            **item,
+            "order_required": allocation_line_requires_order(
+                item.get("category_definition"),
+                item.get("order_required"),
+            ),
+        }
+        for item in line_plans
+    ]
+    order_plans = [item for item in normalized_plans if item["order_required"]]
+    no_order_plans = [item for item in normalized_plans if not item["order_required"]]
     line_updates: list[dict[str, object]] = []
     for item in no_order_plans:
         fields: dict[str, object] = {}
@@ -11394,8 +11446,19 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     )
     if recovering_notifications:
         generation_key = str(draft.get("generation_key") or f"allocation:{request_id}:{expected_version}")
+        category_definition_by_line_id = {
+            str(item.get("record_id") or ""): item.get("category_definition")
+            for item in list(context.get("lines") or [])
+        }
         allocation_plans = [
-            {"line_id": str(item.get("line_record_id") or ""), "order_required": item.get("order_required") is True}
+            {
+                "line_id": str(item.get("line_record_id") or ""),
+                "category_definition": category_definition_by_line_id.get(
+                    str(item.get("line_record_id") or ""),
+                    UNDEFINED_CATEGORY_DEFINITION,
+                ),
+                "order_required": item.get("order_required") is True,
+            }
             for item in list(draft.get("lines") or [])
             if str(item.get("line_record_id") or "")
         ]
@@ -11435,6 +11498,12 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     material_by_id = {
         feishu_record_id(row): row for row in list(context.get("material_rows") or [])
     }
+    category_definition_by_key = {
+        normalize_category_match_key(feishu_text(feishu_fields(row), "物料品类")):
+            feishu_text(feishu_fields(row), "品类定义") or UNDEFINED_CATEGORY_DEFINITION
+        for row in list(context.get("category_rows") or [])
+        if feishu_text(feishu_fields(row), "物料品类").strip()
+    }
     seen: set[str] = set()
     seen_line_ids: set[str] = set()
     valid_line_ids = {
@@ -11461,6 +11530,11 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         if line_record_id:
             seen_line_ids.add(line_record_id)
         material_fields = feishu_fields(material_by_id[material_id])
+        product = feishu_text(material_fields, "物料品类")
+        category_definition = category_definition_by_key.get(
+            normalize_category_match_key(product),
+            UNDEFINED_CATEGORY_DEFINITION,
+        )
         existing_line = next(
             (
                 line
@@ -11478,16 +11552,18 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             {
                 "line_record_id": line_record_id,
                 "material_record_id": material_id,
-                "product": feishu_text(material_fields, "物料品类"),
+                "product": product,
+                "category_definition": category_definition,
                 "model": feishu_text(material_fields, "产品型号") or NO_MODEL_TEXT,
                 "language": feishu_text(material_fields, "语种"),
                 "quantity": quantity,
                 "remark": str(item.get("remark") or "").strip(),
                 "current_stock": feishu_int(material_fields, "当前库存"),
-                "order_required": (
-                    item.get("order_required")
+                "order_required": allocation_line_requires_order(
+                    category_definition,
+                    item.get("order_required") is True
                     if "order_required" in item
-                    else feishu_int(material_fields, "当前库存") < quantity
+                    else feishu_int(material_fields, "当前库存") < quantity,
                 ),
                 "unit_price_rmb": unit_price_rmb,
                 "subtotal_rmb": request_line_subtotal_rmb(unit_price_rmb, quantity),
@@ -11661,6 +11737,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         if line_id:
             allocation_plans.append({
                 "line_id": line_id,
+                "category_definition": item.get("category_definition"),
                 "order_required": item.get("order_required") is True,
             })
     allocation_result = apply_inventory_allocation_schedule(
@@ -11739,7 +11816,11 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     allocation_plans = [
         {
             "line_id": str(line.get("record_id") or ""),
-            "order_required": int(line.get("current_stock") or 0) < int(line.get("quantity") or 0),
+            "category_definition": line.get("category_definition"),
+            "order_required": allocation_line_requires_order(
+                line.get("category_definition"),
+                int(line.get("current_stock") or 0) < int(line.get("quantity") or 0),
+            ),
         }
         for line in list(context["lines"])
         if str(line.get("record_id") or "")

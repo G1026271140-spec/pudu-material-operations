@@ -56,7 +56,11 @@ class RequestInventoryReviewTests(unittest.TestCase):
         ):
             result = app.apply_inventory_allocation_schedule(
                 "request-1",
-                [{"line_id": "line-1", "order_required": True}],
+                [{
+                    "line_id": "line-1",
+                    "category_definition": app.CATEGORY_DEFINITION_PRINT,
+                    "order_required": True,
+                }],
                 "ou-admin",
                 "allocation:request-1:0",
                 validated_line_ids={"line-1"},
@@ -64,6 +68,45 @@ class RequestInventoryReviewTests(unittest.TestCase):
 
         self.assertEqual(result["generated_order_lines"], 0)
         service.record_schedule.assert_not_called()
+
+    def test_only_printed_materials_can_enter_order_and_auto_restock(self) -> None:
+        service = Mock()
+        with (
+            patch.object(app, "feishu_has_field", return_value=False),
+            patch.object(app, "feishu_client", return_value=Mock()),
+            patch("order_scheduling_service.SchedulingService", return_value=service),
+        ):
+            result = app.apply_inventory_allocation_schedule(
+                "request-1",
+                [
+                    {
+                        "line_id": "gift-line",
+                        "category_definition": app.CATEGORY_DEFINITION_GIFT,
+                        "order_required": True,
+                    },
+                    {
+                        "line_id": "culture-line",
+                        "category_definition": app.CATEGORY_DEFINITION_CULTURAL,
+                        "order_required": True,
+                    },
+                ],
+                "ou-admin",
+                "allocation:request-1:0",
+                validated_line_ids={"gift-line", "culture-line"},
+            )
+
+        self.assertEqual(result["generated_order_lines"], 0)
+        self.assertEqual(result["arrived_without_order_lines"], 2)
+        service.record_schedule.assert_not_called()
+        self.assertTrue(
+            app.allocation_line_requires_order(app.CATEGORY_DEFINITION_PRINT, True)
+        )
+        self.assertFalse(
+            app.allocation_line_requires_order(app.CATEGORY_DEFINITION_GIFT, True)
+        )
+        self.assertFalse(
+            app.allocation_line_requires_order(app.CATEGORY_DEFINITION_CULTURAL, True)
+        )
 
     def test_final_material_detail_text_lists_verified_lines(self) -> None:
         detail = app.request_material_detail_text(
@@ -203,10 +246,16 @@ class RequestInventoryReviewTests(unittest.TestCase):
             cache,
             material_rows,
             current_material_ids={"mat-current"},
+            category_rows=[
+                {"record_id": "cat-print", "fields": {"物料品类": "产品单页", "品类定义": app.CATEGORY_DEFINITION_PRINT}},
+                {"record_id": "cat-old", "fields": {"物料品类": "旧物料", "品类定义": app.CATEGORY_DEFINITION_GIFT}},
+            ],
         )
 
         self.assertEqual([record["record_id"] for record in records], ["mat-1", "mat-current"])
         self.assertEqual(records[0]["quantity"], 4)
+        self.assertEqual(records[0]["category_definition"], app.CATEGORY_DEFINITION_PRINT)
+        self.assertEqual(records[1]["category_definition"], app.CATEGORY_DEFINITION_GIFT)
 
     def test_requester_inventory_edit_notification_is_structured_card(self) -> None:
         client = Mock()

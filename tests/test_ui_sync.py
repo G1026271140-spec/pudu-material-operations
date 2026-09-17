@@ -228,6 +228,19 @@ class ReactInventoryOperationLayoutTests(unittest.TestCase):
         self.assertIn("selectedLanguages", self.page)
         self.assertIn('mode === "reduce"', self.page)
 
+
+class ReactAllocationOrderRulesTests(unittest.TestCase):
+    def setUp(self) -> None:
+        root = Path(app.__file__).parent / "request_web/frontend/src"
+        self.allocation = (root / "AllocationWorkbench.tsx").read_text(encoding="utf-8")
+        self.page = (root / "ManagementPage.tsx").read_text(encoding="utf-8")
+        self.css = (root / "management.css").read_text(encoding="utf-8")
+
+    def test_only_printed_materials_offer_ordering(self) -> None:
+        self.assertIn('material?.category_definition === "印刷物料"', self.allocation)
+        self.assertIn('disabled={!canOrder}', self.allocation)
+        self.assertIn('canOrder && <option value="yes">', self.allocation)
+
     def test_inventory_cards_and_modal_are_phone_responsive(self) -> None:
         mobile = self.css.split("@media(max-width:700px)", 1)[1]
         self.assertIn(".restock-cards", mobile)
