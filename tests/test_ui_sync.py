@@ -235,6 +235,22 @@ class ReactInventoryOperationLayoutTests(unittest.TestCase):
         self.assertIn(".restock-model-grid", mobile)
         self.assertIn(".restock-overlay", mobile)
 
+    def test_shipping_schedule_embeds_live_feishu_view_and_edit_link(self) -> None:
+        root = Path(app.__file__).parent / "request_web/frontend/src"
+        schedule = (root / "ShippingSchedulePage.tsx").read_text(encoding="utf-8")
+        self.assertIn("shrcn7T5KaZ9FHiA7BJxppjpGTe", schedule)
+        self.assertIn("G7vbwubTbiagPokSvAiceK8AnZc?table=blkFyA0zYCNs7BsW", schedule)
+        self.assertIn('tr("发货编辑", "Edit Shipping")', schedule)
+        self.assertIn("<iframe", schedule)
+        self.assertIn('target="_blank"', schedule)
+
+    def test_shipping_schedule_is_available_and_phone_responsive(self) -> None:
+        self.assertIn('["schedule", tr("发货排期", "Shipping Schedule")]', self.page)
+        self.assertIn('tab === "schedule"', self.page)
+        mobile = self.css.split("@media(max-width:700px)", 1)[1]
+        self.assertIn(".shipping-schedule-actions", mobile)
+        self.assertIn("height:72dvh", mobile)
+
 
 class ReactSidebarCollapseTests(unittest.TestCase):
     def setUp(self) -> None:
