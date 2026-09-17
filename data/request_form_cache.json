@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-16 16:32:37",
+  "generated_at": "2026-09-17 16:31:52",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -70,6 +70,7 @@
     "GT5",
     "GT7",
     "Hulk",
+    "HULK集合（三折页）",
     "KettyBot Pro",
     "L",
     "M",
@@ -295,6 +296,10 @@
     "GT7": {
       "zh": "GT7",
       "en": "GT7"
+    },
+    "HULK集合（三折页）": {
+      "zh": "HULK集合（三折页）",
+      "en": "HULK集合（三折页）"
     }
   },
   "category_display_names": {
