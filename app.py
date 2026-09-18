@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.4"
+APP_VERSION = "V2.8.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8190,18 +8190,14 @@ def _feishu_requester_material_table(
                 f"\n{'Remark' if english else '备注'}："
                 f"{_feishu_card_plain_text(remark, max_length=300)}"
             )
-        rows.append(
-            {
-                "sequence": index,
-                "specification": specification,
-                "quantity": int(line.get("quantity") or 0),
-                "remaining_stock": (
-                    int(line.get("remaining_stock"))
-                    if line.get("remaining_stock") is not None
-                    else None
-                ),
-            }
-        )
+        row: dict[str, object] = {
+            "sequence": index,
+            "specification": specification,
+            "quantity": int(line.get("quantity") or 0),
+        }
+        if line.get("remaining_stock") is not None:
+            row["remaining_stock"] = int(line.get("remaining_stock"))
+        rows.append(row)
     has_remaining_stock = any(
         row.get("remaining_stock") is not None for row in rows
     )

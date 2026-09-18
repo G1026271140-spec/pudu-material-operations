@@ -183,6 +183,11 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertIn("<at id=ou_admin_1></at>", content)
         self.assertIn("<at id=ou_admin_2></at>", content)
         self.assertNotIn("@管理员", content)
+        details = card["body"]["elements"][3]
+        self.assertNotIn("remaining_stock", details["rows"][0])
+        self.assertNotIn(
+            "remaining_stock", [column["name"] for column in details["columns"]]
+        )
 
     def test_admin_card_shows_stock_after_claim(self) -> None:
         card = app._cultural_request_card(
