@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-17 20:49:51",
+  "generated_at": "2026-09-18 14:09:25",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2123,7 +2123,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "PUDU CC1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 15,
+      "quantity": -35,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2283,7 +2283,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "SH1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 670,
+      "quantity": 620,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2363,7 +2363,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1890,
+      "quantity": 1790,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2443,7 +2443,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 30,
+      "quantity": -90,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2523,7 +2523,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1100,
+      "quantity": 950,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2603,7 +2603,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "简中(Simplified Chinese)",
-      "quantity": 650,
+      "quantity": 550,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2683,7 +2683,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Vac",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1270,
+      "quantity": 1250,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2763,7 +2763,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
       "language": "简中(Simplified Chinese)",
-      "quantity": 550,
+      "quantity": 400,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2795,7 +2795,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1150,
+      "quantity": 1000,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2867,7 +2867,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1000,
+      "quantity": 950,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2947,7 +2947,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 610,
+      "quantity": 360,
       "unit_price_rmb": 5.416
     },
     {
@@ -3099,7 +3099,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -150,
       "unit_price_rmb": 5.416
     },
     {
@@ -3571,7 +3571,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -2,
       "unit_price_rmb": 74.47
     },
     {
@@ -3891,7 +3891,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -2,
       "unit_price_rmb": 74.47
     },
     {
@@ -3971,7 +3971,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "MT1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
@@ -4051,7 +4051,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -2,
       "unit_price_rmb": 74.47
     },
     {
@@ -4291,7 +4291,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "MT1 Max",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
@@ -4507,7 +4507,7 @@
       "product": "普渡logo无纺布手提袋(PUDU logo bag)",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -20,
       "unit_price_rmb": 1.0155
     },
     {
@@ -4555,7 +4555,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "D5",
       "language": "简中(Simplified Chinese)",
-      "quantity": 650,
+      "quantity": 600,
       "unit_price_rmb": 0.4062
     },
     {
@@ -5251,7 +5251,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "简中(Simplified Chinese)",
-      "quantity": 500,
+      "quantity": 400,
       "unit_price_rmb": 0.4062
     },
     {
@@ -5299,7 +5299,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 50,
+      "quantity": -100,
       "unit_price_rmb": 5.416
     },
     {
@@ -5835,7 +5835,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "猛犸MP2000",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -2,
       "unit_price_rmb": 74.47
     },
     {
@@ -6131,7 +6131,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T150",
       "language": "简中(Simplified Chinese)",
-      "quantity": 200,
+      "quantity": 100,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6219,7 +6219,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "T150",
       "language": "简中(Simplified Chinese)",
-      "quantity": 0,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
