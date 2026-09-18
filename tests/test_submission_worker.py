@@ -201,8 +201,69 @@ class SubmissionWorkerTests(unittest.TestCase):
 
         submit.assert_called_once()
         update_quota.assert_called_once_with("rec-permission", 2, 0)
-        self.assertEqual(call_order[:2], ["reserve", "write"])
+        self.assertEqual(call_order[:2], ["write", "reserve"])
         self.assertTrue(result["quota_reserved"])
+        self.assertTrue(result["quota_updated"])
+
+    def test_cultural_request_write_failure_does_not_consume_quota(self) -> None:
+        task = cultural_request_task()
+        with (
+            patch.object(
+                worker.inventory_app,
+                "cultural_request_quota_snapshot",
+                return_value={
+                    "allowed": True,
+                    "current_quantity": 0,
+                    "requested_quantity": 1,
+                    "target_quantity": 1,
+                    "current_jacket_quantity": 0,
+                    "requested_jacket_quantity": 0,
+                    "target_jacket_quantity": 0,
+                    "quota_label": "文化衫",
+                    "quota_limit": 2,
+                    "permission_record_id": "rec-permission",
+                },
+            ),
+            patch.object(
+                worker.inventory_app,
+                "submit_feishu_cultural_request",
+                side_effect=RuntimeError("未找到文化周边库存组合"),
+            ),
+            patch.object(
+                worker.inventory_app,
+                "update_cultural_request_cumulative_quantity",
+            ) as update_quota,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "未找到文化周边库存组合"):
+                worker.process_cultural_request(task)
+
+        update_quota.assert_not_called()
+
+    def test_cultural_request_resumes_quota_after_checkpointed_write(self) -> None:
+        task = cultural_request_task({
+            "quota_checked": True,
+            "quota_allowed": True,
+            "quota_target_quantity": 1,
+            "quota_target_jacket_quantity": 0,
+            "quota_permission_record_id": "rec-permission",
+            "write_done": True,
+            "request_no": "REQ-1",
+        })
+        with (
+            patch.object(worker.inventory_app, "submit_feishu_cultural_request") as submit,
+            patch.object(
+                worker.inventory_app,
+                "update_cultural_request_cumulative_quantity",
+            ) as update_quota,
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "cultural_request_notification_targets", return_value=[]),
+            patch.object(worker.inventory_app, "submission_token_rows", return_value=[{"record_id": "rec-request"}]),
+            patch.object(worker.inventory_app, "feishu_update_record_fields"),
+        ):
+            result = worker.process_cultural_request(task)
+
+        submit.assert_not_called()
+        update_quota.assert_called_once_with("rec-permission", 1, 0)
         self.assertTrue(result["quota_updated"])
 
     def test_cultural_notification_failure_retries_without_marking_done(self) -> None:

@@ -335,20 +335,6 @@ def process_cultural_request(
         save_progress()
         return progress
 
-    if not progress.get("quota_reserved") and not progress.get("quota_updated"):
-        inventory_app.update_cultural_request_cumulative_quantity(
-            str(progress.get("quota_permission_record_id") or ""),
-            int(progress.get("quota_target_quantity") or 0),
-            (
-                int(progress["quota_target_jacket_quantity"])
-                if "quota_target_jacket_quantity" in progress
-                else None
-            ),
-        )
-        progress["quota_reserved"] = True
-        progress["quota_updated"] = True
-        save_progress()
-
     if not progress.get("write_done"):
         request_no, line_count, created_new = inventory_app.submit_feishu_cultural_request(
             request_payload, lines
@@ -361,6 +347,25 @@ def process_cultural_request(
                 "created_new_request": created_new,
             }
         )
+        save_progress()
+
+    # The business write performs the authoritative live inventory validation.
+    # Only consume the applicant's cumulative quota after that write succeeds.
+    # If the write fails (for example because a cached option has sold out), the
+    # task can retry without leaving a quota reservation behind.  A retry after
+    # a successful idempotent write also resumes here safely from its checkpoint.
+    if not progress.get("quota_reserved") and not progress.get("quota_updated"):
+        inventory_app.update_cultural_request_cumulative_quantity(
+            str(progress.get("quota_permission_record_id") or ""),
+            int(progress.get("quota_target_quantity") or 0),
+            (
+                int(progress["quota_target_jacket_quantity"])
+                if "quota_target_jacket_quantity" in progress
+                else None
+            ),
+        )
+        progress["quota_reserved"] = True
+        progress["quota_updated"] = True
         save_progress()
     if not progress.get("notification_done"):
         client = inventory_app.feishu_client()
