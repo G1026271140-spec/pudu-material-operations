@@ -1,7 +1,9 @@
 import importlib
 import json
+from pathlib import Path
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 import app as legacy_app
@@ -77,6 +79,76 @@ def test_health_endpoint():
     response = TestClient(api).get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def _write_live_cache_pointer(
+    root: Path, generation: str, *, page_value: str, asset_value: bytes
+) -> None:
+    (root / "app.py").write_text('APP_VERSION = "V2.8.5"\n', encoding="utf-8")
+    (root / "live_cache.py").write_text("# marker\n", encoding="utf-8")
+    generation_root = root / "work" / "live-cache" / generation
+    (generation_root / "data").mkdir(parents=True, exist_ok=True)
+    (generation_root / "assets" / "request_categories").mkdir(
+        parents=True, exist_ok=True
+    )
+    (generation_root / "data" / "page_data_cache.json").write_text(
+        json.dumps({"value": page_value}), encoding="utf-8"
+    )
+    (generation_root / "assets" / "request_categories" / "test.webp").write_bytes(
+        asset_value
+    )
+    pointer = {
+        "schema_version": 1,
+        "revision": generation,
+        "groups": {
+            "Material": {
+                "generation": generation,
+                "version": "V2.8.5",
+                "generated_at": "2026-09-18 12:00:00",
+                "files": {"data/page_data_cache.json": "unused"},
+            },
+            "Warehouse": {
+                "generation": generation,
+                "version": "V2.8.5",
+                "generated_at": "2026-09-18 12:00:00",
+                "files": {"assets/request_categories/test.webp": "unused"},
+            },
+        },
+    }
+    pointer_path = root / "work" / "live-cache" / "current.json"
+    pointer_path.parent.mkdir(parents=True, exist_ok=True)
+    pointer_path.write_text(json.dumps(pointer), encoding="utf-8")
+
+
+def test_fastapi_switches_to_new_live_cache_without_restart(tmp_path, monkeypatch):
+    root = tmp_path / "web"
+    (root / "data").mkdir(parents=True)
+    (root / "assets" / "request_categories").mkdir(parents=True)
+    (root / "data" / "page_data_cache.json").write_text(
+        json.dumps({"value": "root"}), encoding="utf-8"
+    )
+    (root / "assets" / "request_categories" / "test.webp").write_bytes(b"root")
+    monkeypatch.setattr(web_api, "ROOT", root)
+
+    first_generation = "1" * 32
+    _write_live_cache_pointer(root, first_generation, page_value="first", asset_value=b"first")
+    assert web_api._json("page_data_cache.json")["value"] == "first"
+    assert Path(web_api._asset_file("request_categories/test.webp").path) == (
+        root / "work" / "live-cache" / first_generation / "assets" / "request_categories" / "test.webp"
+    )
+
+    second_generation = "2" * 32
+    _write_live_cache_pointer(
+        root, second_generation, page_value="second", asset_value=b"second"
+    )
+    assert web_api._json("page_data_cache.json")["value"] == "second"
+    assert Path(web_api._asset_file("request_categories/test.webp").path).read_bytes() == b"second"
+
+
+def test_fastapi_cache_asset_rejects_path_escape(tmp_path, monkeypatch):
+    monkeypatch.setattr(web_api, "ROOT", tmp_path)
+    with pytest.raises(HTTPException):
+        web_api._asset_file("../outside.txt")
 
 
 @pytest.mark.parametrize("path", [

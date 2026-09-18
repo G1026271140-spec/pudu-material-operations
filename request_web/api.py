@@ -17,14 +17,26 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from live_cache import resolve_cache_path
+
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
 DIST = ROOT / "request_web" / "frontend" / "dist"
 
 
 def _json(name: str) -> dict[str, Any]:
-    return json.loads((DATA / name).read_text(encoding="utf-8"))
+    path = resolve_cache_path(ROOT, f"data/{name}")
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def _asset_file(relative: str) -> FileResponse:
+    try:
+        path = resolve_cache_path(ROOT, f"assets/{relative}")
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="资源不存在") from exc
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="资源不存在")
+    return FileResponse(path)
 
 
 def _image_index() -> dict[str, str]:
@@ -40,7 +52,9 @@ def _image_index() -> dict[str, str]:
         if not token:
             continue
         filename = hashlib.sha256(token.encode()).hexdigest()[:20] + ".webp"
-        if (ROOT / "assets" / "request_categories" / filename).is_file():
+        if resolve_cache_path(
+            ROOT, f"assets/request_categories/{filename}"
+        ).is_file():
             result[product] = f"/category-assets/{filename}"
     return result
 
@@ -293,8 +307,14 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-api.mount("/category-assets", StaticFiles(directory=ROOT / "assets" / "request_categories"), name="category-assets")
-api.mount("/app-assets", StaticFiles(directory=ROOT / "assets"), name="app-assets")
+@api.get("/category-assets/{filename:path}")
+def category_asset(filename: str) -> FileResponse:
+    return _asset_file(f"request_categories/{filename}")
+
+
+@api.get("/app-assets/{filename:path}")
+def app_asset(filename: str) -> FileResponse:
+    return _asset_file(filename)
 _ADMIN_SESSIONS: set[str] = set()
 _PENDING_ALLOCATION_CACHE: dict[str, Any] = {"loaded_at": 0.0, "contexts": {}}
 
