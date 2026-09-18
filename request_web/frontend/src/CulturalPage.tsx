@@ -21,7 +21,8 @@ type Catalog = {
   categoryLabels: Record<string, { zh?: string; en?: string }>;
   users: User[];
   departments: Department[];
-  maxTotalQuantity: number;
+  maxCulturalShirtQuantity: number;
+  maxJacketQuantity: number;
 };
 type Line = {
   product: string;
@@ -43,7 +44,7 @@ const c = {
     department: "申请部门",
     choose: "选择文化周边",
     chooseHint:
-      "选择品类、尺码和战区并加入申领车，每位申请人每次最多申领 2 件。",
+      "选择品类、尺码和战区并加入申领车；文化衫每人累计最多 2 件，文化夹克每人累计最多 1 件。",
     spec: "选择规格",
     size: "尺码",
     region: "战区",
@@ -73,7 +74,7 @@ const c = {
     department: "Department",
     choose: "Select Merchandise",
     chooseHint:
-      "Choose a product, size and region. Each applicant may request up to 2 items.",
+      "Choose a product, size and region. Each applicant may claim up to 2 shirts and 1 jacket cumulatively.",
     spec: "Select Options",
     size: "Size",
     region: "Region",
@@ -148,6 +149,10 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     ),
   ];
   const total = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const jacketTotal = lines
+    .filter((line) => line.product === "文化夹克")
+    .reduce((sum, line) => sum + line.quantity, 0);
+  const culturalShirtTotal = total - jacketTotal;
   function open(product: string) {
     const scoped =
       catalog?.combinations.filter((x) => x.product === product) || [];
@@ -162,11 +167,20 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
       return setError(
         lang === "zh" ? "请选择尺码和战区。" : "Select a size and region.",
       );
-    if (total + quantity > 2)
+    const isJacket = active === "文化夹克";
+    const bucketTotal = isJacket ? jacketTotal : culturalShirtTotal;
+    const bucketLimit = isJacket
+      ? catalog?.maxJacketQuantity || 1
+      : catalog?.maxCulturalShirtQuantity || 2;
+    if (bucketTotal + quantity > bucketLimit)
       return setError(
         lang === "zh"
-          ? "每位申请人每次最多申领 2 件文化周边。"
-          : "Each applicant may request up to 2 items.",
+          ? isJacket
+            ? "每位申请人累计最多申领 1 件文化夹克。"
+            : "每位申请人累计最多申领 2 件文化衫。"
+          : isJacket
+            ? "Each applicant may claim up to 1 jacket."
+            : "Each applicant may claim up to 2 shirts.",
       );
     const key = `${active}\0${model}\0${region}`;
     setLines((old) => {
@@ -331,12 +345,25 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
                 <input
                   type="number"
                   min="1"
-                  max="2"
+                  max={line.product === "文化夹克" ? catalog.maxJacketQuantity : catalog.maxCulturalShirtQuantity}
                   value={line.quantity}
                   onChange={(e) =>
                     setLines(
                       lines.map((x, j) =>
-                        j === i ? { ...x, quantity: +e.target.value } : x,
+                        j === i
+                          ? {
+                              ...x,
+                              quantity: Math.max(
+                                1,
+                                Math.min(
+                                  x.product === "文化夹克"
+                                    ? catalog.maxJacketQuantity
+                                    : catalog.maxCulturalShirtQuantity,
+                                  +e.target.value || 1,
+                                ),
+                              ),
+                            }
+                          : x,
                       ),
                     )
                   }
@@ -414,9 +441,21 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
                 <input
                   type="number"
                   min="1"
-                  max="2"
+                  max={active === "文化夹克" ? catalog.maxJacketQuantity : catalog.maxCulturalShirtQuantity}
                   value={quantity}
-                  onChange={(e) => setQuantity(+e.target.value)}
+                  onChange={(e) =>
+                    setQuantity(
+                      Math.max(
+                        1,
+                        Math.min(
+                          active === "文化夹克"
+                            ? catalog.maxJacketQuantity
+                            : catalog.maxCulturalShirtQuantity,
+                          +e.target.value || 1,
+                        ),
+                      ),
+                    )
+                  }
                 />
               </label>
               <label>

@@ -133,6 +133,8 @@ def test_cultural_catalog_applies_category_visibility_and_line_claimability(monk
     response = TestClient(api).get("/api/cultural-catalog")
 
     assert response.status_code == 200
+    assert response.json()["maxCulturalShirtQuantity"] == 2
+    assert response.json()["maxJacketQuantity"] == 1
     assert response.json()["combinations"] == [{
         "product": "文化POLO衫", "model": "M", "region": "美洲战区",
         "stock": 3, "unitPriceRmb": 0.0,

@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.3"
+APP_VERSION = "V2.8.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8221,7 +8221,7 @@ def _feishu_requester_material_table(
                 "name": "sequence",
                 "display_name": "No." if english else "序号",
                 "data_type": "number",
-                "width": "72px",
+                "width": "80px",
                 "horizontal_align": "center",
             },
             {
@@ -20429,6 +20429,9 @@ def cultural_request_display_category(product: object, catalog: dict[str, object
 CULTURAL_SIZE_ORDER = ("S", "M", "L", "XL", "2XL", "3XL", "4XL", "6XL")
 CULTURAL_REQUEST_MAX_TOTAL_QUANTITY = 2
 CULTURAL_REQUEST_CUMULATIVE_FIELD = "文化衫申领数量累计"
+CULTURAL_JACKET_CATEGORY = "文化夹克"
+CULTURAL_JACKET_MAX_TOTAL_QUANTITY = 1
+CULTURAL_JACKET_CUMULATIVE_FIELD = "文化夹克申领数量累计"
 
 
 def cultural_size_sort_key(value: object) -> tuple[int, str]:
@@ -20440,31 +20443,78 @@ def cultural_size_sort_key(value: object) -> tuple[int, str]:
 
 
 def validate_cultural_request_quantity(lines: list[dict[str, object]]) -> int:
-    total_quantity = sum(
+    jacket_quantity = sum(
         max(0, int(line.get("quantity") or 0))
         for line in lines
         if isinstance(line, dict)
+        and str(line.get("product") or "").strip() == CULTURAL_JACKET_CATEGORY
     )
-    if total_quantity > CULTURAL_REQUEST_MAX_TOTAL_QUANTITY:
+    cultural_shirt_quantity = sum(
+        max(0, int(line.get("quantity") or 0))
+        for line in lines
+        if isinstance(line, dict)
+        and str(line.get("product") or "").strip() != CULTURAL_JACKET_CATEGORY
+    )
+    if jacket_quantity > CULTURAL_JACKET_MAX_TOTAL_QUANTITY:
+        raise RuntimeError("每位申请人累计最多申领 1 件文化夹克。")
+    if cultural_shirt_quantity > CULTURAL_REQUEST_MAX_TOTAL_QUANTITY:
         raise RuntimeError(
-            f"每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件文化周边。"
+            f"每位申请人累计最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件文化衫。"
         )
-    return total_quantity
+    return cultural_shirt_quantity + jacket_quantity
+
+
+def ensure_cultural_request_quota_fields() -> None:
+    """Ensure independent cumulative counters exist for shirts and jackets."""
+    refresh_feishu_schema_cache()
+    required = (
+        CULTURAL_REQUEST_CUMULATIVE_FIELD,
+        CULTURAL_JACKET_CUMULATIVE_FIELD,
+    )
+    missing = [
+        field_name
+        for field_name in required
+        if not feishu_has_field(USER_PERMISSION_TABLE_NAME, field_name)
+    ]
+    if not missing:
+        return
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建文化周边申领额度字段。")
+    table_id = feishu_table_id(USER_PERMISSION_TABLE_NAME)
+    for field_name in missing:
+        client.create_field(table_id, field_name, 2)
+    refresh_feishu_schema_cache()
+    still_missing = [
+        field_name
+        for field_name in required
+        if not feishu_has_field(USER_PERMISSION_TABLE_NAME, field_name)
+    ]
+    if still_missing:
+        raise RuntimeError(f"用户权限表申领额度字段创建失败：{'、'.join(still_missing)}")
 
 
 def cultural_request_quota_snapshot(
     request_payload: dict[str, object], lines: list[dict[str, object]]
 ) -> dict[str, object]:
-    requested_quantity = validate_cultural_request_quantity(lines)
+    validate_cultural_request_quantity(lines)
+    requested_jacket_quantity = sum(
+        max(0, int(line.get("quantity") or 0))
+        for line in lines
+        if isinstance(line, dict)
+        and str(line.get("product") or "").strip() == CULTURAL_JACKET_CATEGORY
+    )
+    requested_quantity = sum(
+        max(0, int(line.get("quantity") or 0))
+        for line in lines
+        if isinstance(line, dict)
+        and str(line.get("product") or "").strip() != CULTURAL_JACKET_CATEGORY
+    )
     requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
     if not requester_open_id.startswith("ou_"):
         raise RuntimeError("申请人未关联有效的飞书账号，无法核对文化周边申领额度。")
     ensure_requester_sales_permission(request_payload)
-    refresh_feishu_schema_cache()
-    if not feishu_has_field(USER_PERMISSION_TABLE_NAME, CULTURAL_REQUEST_CUMULATIVE_FIELD):
-        raise RuntimeError(
-            f"用户权限表缺少字段“{CULTURAL_REQUEST_CUMULATIVE_FIELD}”，无法核对申领额度。"
-        )
+    ensure_cultural_request_quota_fields()
     permission_row = next(
         (
             row
@@ -20479,25 +20529,45 @@ def cultural_request_quota_snapshot(
     current_quantity = feishu_int(
         feishu_fields(permission_row), CULTURAL_REQUEST_CUMULATIVE_FIELD
     )
+    current_jacket_quantity = feishu_int(
+        feishu_fields(permission_row), CULTURAL_JACKET_CUMULATIVE_FIELD
+    )
     target_quantity = current_quantity + requested_quantity
+    target_jacket_quantity = current_jacket_quantity + requested_jacket_quantity
+    shirt_allowed = target_quantity <= CULTURAL_REQUEST_MAX_TOTAL_QUANTITY
+    jacket_allowed = target_jacket_quantity <= CULTURAL_JACKET_MAX_TOTAL_QUANTITY
     return {
         "permission_record_id": feishu_record_id(permission_row),
         "current_quantity": current_quantity,
         "requested_quantity": requested_quantity,
         "target_quantity": target_quantity,
-        "allowed": target_quantity <= CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
+        "current_jacket_quantity": current_jacket_quantity,
+        "requested_jacket_quantity": requested_jacket_quantity,
+        "target_jacket_quantity": target_jacket_quantity,
+        "allowed": shirt_allowed and jacket_allowed,
+        "quota_label": "文化夹克" if not jacket_allowed else "文化衫",
+        "quota_limit": (
+            CULTURAL_JACKET_MAX_TOTAL_QUANTITY
+            if not jacket_allowed
+            else CULTURAL_REQUEST_MAX_TOTAL_QUANTITY
+        ),
     }
 
 
 def update_cultural_request_cumulative_quantity(
-    permission_record_id: str, target_quantity: int
+    permission_record_id: str,
+    target_quantity: int,
+    target_jacket_quantity: int | None = None,
 ) -> None:
     if not str(permission_record_id or "").strip():
         raise RuntimeError("用户权限记录缺少记录 ID，无法更新文化周边累计数量。")
+    fields = {CULTURAL_REQUEST_CUMULATIVE_FIELD: int(target_quantity)}
+    if target_jacket_quantity is not None:
+        fields[CULTURAL_JACKET_CUMULATIVE_FIELD] = int(target_jacket_quantity)
     feishu_update_record_fields(
         USER_PERMISSION_TABLE_NAME,
         str(permission_record_id),
-        {CULTURAL_REQUEST_CUMULATIVE_FIELD: int(target_quantity)},
+        fields,
     )
 
 
@@ -20596,25 +20666,24 @@ def _cultural_request_card(
     }
 
 
-def notify_cultural_request(
+def cultural_request_notification_targets(
     request_no: str,
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
-) -> dict[str, int]:
-    client = feishu_client()
-    if client is None:
-        raise RuntimeError("飞书未配置，无法发送文化周边通知。")
+) -> list[dict[str, object]]:
     admins = enabled_admin_open_ids()
     requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
     requester = str(request_payload.get("requester") or "申请人")
+    targets: list[dict[str, object]] = []
     if requester_open_id:
-        send_feishu_interactive_message(
-            client,
-            requester_open_id,
-            _cultural_request_card(
+        targets.append({
+            "key": f"applicant:{requester_open_id}",
+            "audience": "applicant",
+            "recipient_id": requester_open_id,
+            "card": _cultural_request_card(
                 request_no, requester, lines, applicant=True, admin_open_ids=admins
             ),
-        )
+        })
     catalog = cultural_request_catalog(
         fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME),
         include_all_categories_for_admin=bool(
@@ -20634,12 +20703,34 @@ def notify_cultural_request(
             normalized["remaining_stock"] = int(item.get("stock") or 0)
         admin_lines.append(normalized)
     for open_id in admins:
+        targets.append({
+            "key": f"admin:{open_id}",
+            "audience": "admins",
+            "recipient_id": open_id,
+            "card": _cultural_request_card(
+                request_no, requester, admin_lines, applicant=False
+            ),
+        })
+    return targets
+
+
+def notify_cultural_request(
+    request_no: str,
+    request_payload: dict[str, object],
+    lines: list[dict[str, object]],
+) -> dict[str, int]:
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送文化周边通知。")
+    counts = {"applicant": 0, "admins": 0}
+    for target in cultural_request_notification_targets(request_no, request_payload, lines):
         send_feishu_interactive_message(
             client,
-            open_id,
-            _cultural_request_card(request_no, requester, admin_lines, applicant=False),
+            str(target["recipient_id"]),
+            dict(target["card"]),
         )
-    return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
+        counts[str(target["audience"])] += 1
+    return counts
 
 
 def _cultural_request_rejection_card(
@@ -20649,12 +20740,14 @@ def _cultural_request_rejection_card(
     *,
     applicant: bool,
     admin_open_ids: list[str] | None = None,
+    quota_label: str = "文化衫",
+    quota_limit: int = CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
 ) -> dict[str, object]:
     admins = [str(value) for value in list(admin_open_ids or []) if str(value).strip()]
     admin_mentions = " ".join(f"<at id={open_id}></at>" for open_id in admins)
     reason = (
         f"本次申请 {requested_quantity} 件，历史累计已申领 {current_quantity} 件，"
-        f"提交后将超过每人累计最多 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件的限制。"
+        f"提交后将超过每人累计最多 {quota_limit} 件{quota_label}的限制。"
     )
     if applicant:
         lead = (
@@ -20685,6 +20778,9 @@ def notify_cultural_request_rejected(
     request_payload: dict[str, object],
     current_quantity: int,
     requested_quantity: int,
+    *,
+    quota_label: str = "文化衫",
+    quota_limit: int = CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
 ) -> dict[str, int]:
     client = feishu_client()
     if client is None:
@@ -20702,6 +20798,8 @@ def notify_cultural_request_rejected(
                 requested_quantity,
                 applicant=True,
                 admin_open_ids=admins,
+                quota_label=quota_label,
+                quota_limit=quota_limit,
             ),
         )
     for open_id in admins:
@@ -20713,6 +20811,8 @@ def notify_cultural_request_rejected(
                 current_quantity,
                 requested_quantity,
                 applicant=False,
+                quota_label=quota_label,
+                quota_limit=quota_limit,
             ),
         )
     return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
@@ -21086,7 +21186,7 @@ def render_cultural_request_page() -> None:
         render_section_header(
             "02",
             "选择文化周边",
-            f"选择品类、尺码和战区并加入申领车，每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件。",
+            "选择品类、尺码和战区并加入申领车；文化衫每人累计最多 2 件，文化夹克每人累计最多 1 件。",
         )
         if not products:
             st.error("当前没有文化周边库存数据，请先更新文化周边页面缓存。")
@@ -21118,7 +21218,12 @@ def render_cultural_request_page() -> None:
                         unsafe_allow_html=True,
                     )
                     selected_region = st.pills("战区", valid_regions, key=f"cultural_region_{index}", selection_mode="single", default=valid_regions[0] if valid_regions else None, width="stretch", label_visibility="collapsed")
-                    quantity = st.number_input("数量", min_value=1, max_value=CULTURAL_REQUEST_MAX_TOTAL_QUANTITY, step=1, value=1, key=f"cultural_quantity_{index}")
+                    line_limit = (
+                        CULTURAL_JACKET_MAX_TOTAL_QUANTITY
+                        if product == CULTURAL_JACKET_CATEGORY
+                        else CULTURAL_REQUEST_MAX_TOTAL_QUANTITY
+                    )
+                    quantity = st.number_input("数量", min_value=1, max_value=line_limit, step=1, value=1, key=f"cultural_quantity_{index}")
                     remark = st.text_input("备注", key=f"cultural_remark_{index}")
                     if st.button("加入申领车", key=f"cultural_add_{index}", type="primary", width="stretch"):
                         if not selected_model or not selected_region:
@@ -21126,11 +21231,16 @@ def render_cultural_request_page() -> None:
                         else:
                             key = (product, str(selected_model), str(selected_region))
                             existing = next((line for line in lines if (line["product"], line["model"], line["region"]) == key), None)
-                            requested_total = sum(int(line.get("quantity") or 0) for line in lines) + int(quantity)
-                            if requested_total > CULTURAL_REQUEST_MAX_TOTAL_QUANTITY:
-                                st.warning(
-                                    f"每位申请人每次最多申领 {CULTURAL_REQUEST_MAX_TOTAL_QUANTITY} 件文化周边。"
-                                )
+                            candidate_lines = [dict(line) for line in lines]
+                            candidate_existing = next((line for line in candidate_lines if (line["product"], line["model"], line["region"]) == key), None)
+                            if candidate_existing:
+                                candidate_existing["quantity"] = int(candidate_existing["quantity"]) + int(quantity)
+                            else:
+                                candidate_lines.append({"product": product, "model": selected_model, "region": selected_region, "quantity": int(quantity), "remark": remark})
+                            try:
+                                validate_cultural_request_quantity(candidate_lines)
+                            except RuntimeError as exc:
+                                st.warning(str(exc))
                                 return
                             if existing:
                                 existing["quantity"] = int(existing["quantity"]) + int(quantity)

@@ -339,7 +339,8 @@ def cultural_catalog() -> dict[str, Any]:
         "categoryLabels": filtered["category_labels"],
         "users": contacts.get("users", []),
         "departments": contacts.get("departments", []),
-        "maxTotalQuantity": 2,
+        "maxCulturalShirtQuantity": legacy.CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
+        "maxJacketQuantity": legacy.CULTURAL_JACKET_MAX_TOTAL_QUANTITY,
     }
 
 

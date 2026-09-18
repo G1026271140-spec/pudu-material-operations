@@ -298,6 +298,11 @@ def process_cultural_request(
                 "quota_current_quantity": int(quota["current_quantity"]),
                 "quota_requested_quantity": int(quota["requested_quantity"]),
                 "quota_target_quantity": int(quota["target_quantity"]),
+                "quota_current_jacket_quantity": int(quota["current_jacket_quantity"]),
+                "quota_requested_jacket_quantity": int(quota["requested_jacket_quantity"]),
+                "quota_target_jacket_quantity": int(quota["target_jacket_quantity"]),
+                "quota_label": str(quota["quota_label"]),
+                "quota_limit": int(quota["quota_limit"]),
                 "quota_permission_record_id": str(quota["permission_record_id"]),
             }
         )
@@ -308,8 +313,20 @@ def process_cultural_request(
             progress["rejection_notification_counts"] = (
                 inventory_app.notify_cultural_request_rejected(
                     request_payload,
-                    int(progress.get("quota_current_quantity") or 0),
-                    int(progress.get("quota_requested_quantity") or 0),
+                    int(
+                        progress.get("quota_current_jacket_quantity")
+                        if progress.get("quota_label") == "文化夹克"
+                        else progress.get("quota_current_quantity")
+                        or 0
+                    ),
+                    int(
+                        progress.get("quota_requested_jacket_quantity")
+                        if progress.get("quota_label") == "文化夹克"
+                        else progress.get("quota_requested_quantity")
+                        or 0
+                    ),
+                    quota_label=str(progress.get("quota_label") or "文化衫"),
+                    quota_limit=int(progress.get("quota_limit") or 2),
                 )
             )
             progress["rejection_notification_done"] = True
@@ -322,6 +339,11 @@ def process_cultural_request(
         inventory_app.update_cultural_request_cumulative_quantity(
             str(progress.get("quota_permission_record_id") or ""),
             int(progress.get("quota_target_quantity") or 0),
+            (
+                int(progress["quota_target_jacket_quantity"])
+                if "quota_target_jacket_quantity" in progress
+                else None
+            ),
         )
         progress["quota_reserved"] = True
         progress["quota_updated"] = True
@@ -341,21 +363,38 @@ def process_cultural_request(
         )
         save_progress()
     if not progress.get("notification_done"):
-        try:
-            counts = inventory_app.notify_cultural_request(
-                str(progress.get("request_no") or ""), request_payload, lines
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送文化周边通知。")
+        targets = inventory_app.cultural_request_notification_targets(
+            str(progress.get("request_no") or ""), request_payload, lines
+        )
+        sent_keys = {
+            str(value) for value in list(progress.get("notification_sent_keys") or [])
+        }
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys:
+                continue
+            inventory_app.send_feishu_interactive_message(
+                client,
+                str(target["recipient_id"]),
+                dict(target["card"]),
             )
-            progress["notification_counts"] = counts
-            inventory_app.feishu_update_record_fields(
-                inventory_app.REQUEST_TABLE_NAME,
-                inventory_app.feishu_record_id(
-                    inventory_app.submission_token_rows(token)[0]
-                ),
-                {"文化周边通知状态": "已发送"},
-            )
-        except Exception as exc:
-            warnings.append(f"文化周边通知发送失败：{exc}")
-            progress["notification_counts"] = {"applicant": 0, "admins": 0}
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            save_progress()
+        progress["notification_counts"] = {
+            "applicant": sum(1 for target in targets if target["audience"] == "applicant"),
+            "admins": sum(1 for target in targets if target["audience"] == "admins"),
+        }
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            inventory_app.feishu_record_id(
+                inventory_app.submission_token_rows(token)[0]
+            ),
+            {"文化周边通知状态": "已发送"},
+        )
         progress["notification_done"] = True
         save_progress()
     return progress

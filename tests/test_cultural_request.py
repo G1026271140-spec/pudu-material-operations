@@ -6,16 +6,23 @@ import submission_queue as queue
 
 
 class CulturalRequestTests(unittest.TestCase):
-    def test_cultural_request_total_quantity_is_limited_to_two(self) -> None:
+    def test_cultural_shirts_and_jacket_have_independent_limits(self) -> None:
         self.assertEqual(
             app.validate_cultural_request_quantity(
-                [{"quantity": 1}, {"quantity": 1}]
+                [
+                    {"product": "文化POLO衫", "quantity": 2},
+                    {"product": "文化夹克", "quantity": 1},
+                ]
             ),
-            2,
+            3,
         )
-        with self.assertRaisesRegex(RuntimeError, "最多申领 2 件"):
+        with self.assertRaisesRegex(RuntimeError, "最多申领 2 件文化衫"):
             app.validate_cultural_request_quantity(
-                [{"quantity": 2}, {"quantity": 1}]
+                [{"product": "文化POLO衫", "quantity": 3}]
+            )
+        with self.assertRaisesRegex(RuntimeError, "最多申领 1 件文化夹克"):
+            app.validate_cultural_request_quantity(
+                [{"product": "文化夹克", "quantity": 2}]
             )
 
     def test_cultural_request_quota_uses_open_id_and_cumulative_quantity(self) -> None:
@@ -25,22 +32,45 @@ class CulturalRequestTests(unittest.TestCase):
                 "fields": {
                     "用户账号": [{"id": "ou_requester"}],
                     "文化衫申领数量累计": 1,
+                    "文化夹克申领数量累计": 0,
                 },
             }
         ]
         with (
             patch.object(app, "ensure_requester_sales_permission", return_value="existing"),
-            patch.object(app, "refresh_feishu_schema_cache"),
-            patch.object(app, "feishu_has_field", return_value=True),
+            patch.object(app, "ensure_cultural_request_quota_fields"),
             patch.object(app, "fresh_feishu_rows", return_value=permission_rows),
         ):
             quota = app.cultural_request_quota_snapshot(
-                {"requester_open_id": "ou_requester"}, [{"quantity": 2}]
+                {"requester_open_id": "ou_requester"},
+                [{"product": "文化POLO衫", "quantity": 2}],
             )
 
         self.assertEqual(quota["current_quantity"], 1)
         self.assertEqual(quota["target_quantity"], 3)
         self.assertFalse(quota["allowed"])
+
+    def test_jacket_quota_is_cumulative_and_independent(self) -> None:
+        permission_rows = [{
+            "record_id": "rec-permission",
+            "fields": {
+                "用户账号": [{"id": "ou_requester"}],
+                "文化衫申领数量累计": 0,
+                "文化夹克申领数量累计": 1,
+            },
+        }]
+        with (
+            patch.object(app, "ensure_requester_sales_permission", return_value="existing"),
+            patch.object(app, "ensure_cultural_request_quota_fields"),
+            patch.object(app, "fresh_feishu_rows", return_value=permission_rows),
+        ):
+            quota = app.cultural_request_quota_snapshot(
+                {"requester_open_id": "ou_requester"},
+                [{"product": "文化夹克", "quantity": 1}],
+            )
+        self.assertFalse(quota["allowed"])
+        self.assertEqual(quota["quota_label"], "文化夹克")
+        self.assertEqual(quota["quota_limit"], 1)
 
     def test_rejection_card_explains_limit_and_mentions_admin(self) -> None:
         card = app._cultural_request_rejection_card(
@@ -129,11 +159,11 @@ class CulturalRequestTests(unittest.TestCase):
     def test_queue_payload_keeps_cultural_dimensions(self) -> None:
         payload = app.queued_cultural_request_payload(
             {"requester": "申请人", "requester_open_id": "ou_test", "submission_token": "token"},
-            [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 2, "remark": "test"}],
+            [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 1, "remark": "test"}],
         )
         self.assertEqual(queue.QUEUE_TASK_TYPE_CULTURAL_REQUEST, "文化周边申领")
         self.assertEqual(payload["lines"][0]["region"], "欧洲战区")
-        self.assertEqual(payload["lines"][0]["quantity"], 2)
+        self.assertEqual(payload["lines"][0]["quantity"], 1)
 
         override_payload = app.queued_cultural_request_payload(
             {"requester": "管理员", "requester_open_id": "ou_admin", "submission_token": "token", "administrator_override": True},
@@ -145,7 +175,7 @@ class CulturalRequestTests(unittest.TestCase):
         card = app._cultural_request_card(
             "REQ-1",
             "申请人",
-            [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 2}],
+            [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 1}],
             applicant=True,
             admin_open_ids=["ou_admin_1", "ou_admin_2"],
         )
@@ -166,6 +196,7 @@ class CulturalRequestTests(unittest.TestCase):
         )
         details = card["body"]["elements"][3]
         self.assertEqual(details["tag"], "table")
+        self.assertEqual(details["columns"][0]["width"], "80px")
         self.assertEqual(details["rows"][0]["remaining_stock"], -1)
         self.assertIn("领取后库存", [item["display_name"] for item in details["columns"]])
 

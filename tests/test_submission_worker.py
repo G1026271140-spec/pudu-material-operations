@@ -149,6 +149,11 @@ class SubmissionWorkerTests(unittest.TestCase):
                     "current_quantity": 2,
                     "requested_quantity": 1,
                     "target_quantity": 3,
+                    "current_jacket_quantity": 0,
+                    "requested_jacket_quantity": 0,
+                    "target_jacket_quantity": 0,
+                    "quota_label": "文化衫",
+                    "quota_limit": 2,
                     "permission_record_id": "rec-permission",
                 },
             ),
@@ -176,22 +181,80 @@ class SubmissionWorkerTests(unittest.TestCase):
                     "current_quantity": 1,
                     "requested_quantity": 1,
                     "target_quantity": 2,
+                    "current_jacket_quantity": 0,
+                    "requested_jacket_quantity": 0,
+                    "target_jacket_quantity": 0,
+                    "quota_label": "文化衫",
+                    "quota_limit": 2,
                     "permission_record_id": "rec-permission",
                 },
             ),
             patch.object(worker.inventory_app, "submit_feishu_cultural_request", side_effect=lambda *args: (call_order.append("write") or ("REQ-1", 1, True))) as submit,
             patch.object(worker.inventory_app, "update_cultural_request_cumulative_quantity", side_effect=lambda *args: call_order.append("reserve")) as update_quota,
-            patch.object(worker.inventory_app, "notify_cultural_request", return_value={"applicant": 1, "admins": 1}),
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "cultural_request_notification_targets", return_value=[]),
+            patch.object(worker.inventory_app, "send_feishu_interactive_message"),
             patch.object(worker.inventory_app, "submission_token_rows", return_value=[{"record_id": "rec-request"}]),
             patch.object(worker.inventory_app, "feishu_update_record_fields"),
         ):
             result = worker.process_cultural_request(task)
 
         submit.assert_called_once()
-        update_quota.assert_called_once_with("rec-permission", 2)
+        update_quota.assert_called_once_with("rec-permission", 2, 0)
         self.assertEqual(call_order[:2], ["reserve", "write"])
         self.assertTrue(result["quota_reserved"])
         self.assertTrue(result["quota_updated"])
+
+    def test_cultural_notification_failure_retries_without_marking_done(self) -> None:
+        task = cultural_request_task({
+            "quota_checked": True,
+            "quota_allowed": True,
+            "quota_reserved": True,
+            "quota_updated": True,
+            "write_done": True,
+            "request_no": "REQ-1",
+        })
+        targets = [{
+            "key": "applicant:ou_sales",
+            "audience": "applicant",
+            "recipient_id": "ou_sales",
+            "card": {"schema": "2.0"},
+        }]
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "cultural_request_notification_targets", return_value=targets),
+            patch.object(worker.inventory_app, "send_feishu_interactive_message", side_effect=RuntimeError("send failed")),
+            patch.object(worker.inventory_app, "feishu_update_record_fields") as update,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "send failed"):
+                worker.process_cultural_request(task)
+        update.assert_not_called()
+
+    def test_cultural_notification_resume_skips_already_sent_recipient(self) -> None:
+        task = cultural_request_task({
+            "quota_checked": True,
+            "quota_allowed": True,
+            "quota_reserved": True,
+            "quota_updated": True,
+            "write_done": True,
+            "request_no": "REQ-1",
+            "notification_sent_keys": ["applicant:ou_sales"],
+        })
+        targets = [
+            {"key": "applicant:ou_sales", "audience": "applicant", "recipient_id": "ou_sales", "card": {}},
+            {"key": "admin:ou_admin", "audience": "admins", "recipient_id": "ou_admin", "card": {}},
+        ]
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "cultural_request_notification_targets", return_value=targets),
+            patch.object(worker.inventory_app, "send_feishu_interactive_message") as send,
+            patch.object(worker.inventory_app, "submission_token_rows", return_value=[{"record_id": "rec-request"}]),
+            patch.object(worker.inventory_app, "feishu_update_record_fields"),
+        ):
+            result = worker.process_cultural_request(task)
+        send.assert_called_once()
+        self.assertEqual(send.call_args.args[1], "ou_admin")
+        self.assertTrue(result["notification_done"])
 
     def test_approval_writeback_success_notifies_and_completes(self) -> None:
         task = category_task(
