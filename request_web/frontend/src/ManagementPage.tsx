@@ -8,6 +8,7 @@ import "./management.css";
 type Lang = "zh" | "en";
 type Operation = "create" | "edit" | "delete";
 type Kind = "model" | "language" | "region";
+export type ManagementTab = "allocation" | "schedule" | "shipping" | "restock" | "category" | Kind;
 type Catalog = {
   generatedAt: string;
   categories: any[];
@@ -43,10 +44,18 @@ async function post(url: string, body: unknown) {
   return data;
 }
 
-export default function ManagementPage({ lang }: { lang: Lang }) {
+export default function ManagementPage({
+  lang,
+  initialTab = "allocation",
+  onTabChange,
+}: {
+  lang: Lang;
+  initialTab?: ManagementTab;
+  onTabChange?: (tab: ManagementTab) => void;
+}) {
   const tr = (zh: string, en: string) => (lang === "zh" ? zh : en);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
-  const [tab, setTab] = useState<"allocation" | "schedule" | "shipping" | "restock" | "category" | Kind>("allocation");
+  const [tab, setTab] = useState<ManagementTab>(initialTab);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
@@ -62,6 +71,13 @@ export default function ManagementPage({ lang }: { lang: Lang }) {
       .catch((e) => setError(e.message));
   };
   useEffect(load, []);
+  useEffect(() => setTab(initialTab), [initialTab]);
+  function selectTab(next: ManagementTab) {
+    setTab(next);
+    setError("");
+    setSuccess("");
+    onTabChange?.(next);
+  }
   if (!catalog) return <main className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</main>;
   const tabs = [
     ["allocation", tr("配货工作台", "Allocation")],
@@ -80,7 +96,7 @@ export default function ManagementPage({ lang }: { lang: Lang }) {
         <button onClick={load}>↻ {tr("刷新本页数据", "Refresh page data")}</button>
       </div>
       <div className="management-body">
-        <div className="management-tabs">{tabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} onClick={() => { setTab(key); setError(""); setSuccess(""); }}>{label}</button>)}</div>
+        <div className="management-tabs">{tabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} onClick={() => selectTab(key)}>{label}</button>)}</div>
         {success && <div className="success-banner">✓ {success}</div>}
         {tab === "allocation" && <AllocationWorkbench lang={lang} embedded />}
         {tab === "schedule" && <ShippingSchedulePage lang={lang} />}

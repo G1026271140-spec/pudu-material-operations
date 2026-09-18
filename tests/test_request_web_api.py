@@ -1,6 +1,7 @@
 import importlib
 import json
 
+import pytest
 from fastapi.testclient import TestClient
 
 import app as legacy_app
@@ -78,8 +79,20 @@ def test_health_endpoint():
     assert response.json() == {"status": "ok"}
 
 
-def test_cultural_direct_route_serves_the_spa():
-    response = TestClient(api).get("/cultural")
+@pytest.mark.parametrize("path", [
+    "/request",
+    "/cultural",
+    "/management/allocation",
+    "/management/shipping-schedule",
+    "/management/shipping-template",
+    "/management/restock",
+    "/management/categories",
+    "/management/models",
+    "/management/languages",
+    "/management/regions",
+])
+def test_direct_route_serves_the_spa(path):
+    response = TestClient(api).get(path)
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
 

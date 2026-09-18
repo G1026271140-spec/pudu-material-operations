@@ -2,19 +2,42 @@ import { useEffect, useState } from "react";
 import RequestPage from "./App";
 import CulturalPage from "./CulturalPage";
 import ManagementPage from "./ManagementPage";
+import type { ManagementTab } from "./ManagementPage";
 import AllocationWorkbench from "./AllocationWorkbench";
 import "./portal.css";
 
 type Lang = "zh" | "en";
 type PortalPage = "request" | "cultural" | "management";
 
+const managementPaths: Record<ManagementTab, string> = {
+  allocation: "/management/allocation",
+  schedule: "/management/shipping-schedule",
+  shipping: "/management/shipping-template",
+  restock: "/management/restock",
+  category: "/management/categories",
+  model: "/management/models",
+  language: "/management/languages",
+  region: "/management/regions",
+};
+
+function normalizedPath(): string {
+  return window.location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+}
+
+function managementTabFromLocation(): ManagementTab {
+  const path = normalizedPath();
+  const match = (Object.entries(managementPaths) as [ManagementTab, string][])
+    .find(([, route]) => route === path);
+  return match?.[0] || "allocation";
+}
+
 function pageFromLocation(): PortalPage {
-  const path = window.location.pathname.replace(/\/+$/, "").toLowerCase();
+  const path = normalizedPath();
   const section = new URLSearchParams(window.location.search).get("section");
   if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
     return "cultural";
   }
-  if (path === "/management" || section === "management") {
+  if (path === "/management" || path.startsWith("/management/") || section === "management") {
     return "management";
   }
   return "request";
@@ -22,8 +45,8 @@ function pageFromLocation(): PortalPage {
 
 function pagePath(page: PortalPage): string {
   if (page === "cultural") return "/cultural";
-  if (page === "management") return "/management";
-  return "/";
+  if (page === "management") return managementPaths.allocation;
+  return "/request";
 }
 
 const text = {
@@ -35,7 +58,7 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     tools: "数据与系统工具",
-    version: "当前应用版本 V2.8.2",
+    version: "当前应用版本 V2.8.3",
     locked: "此功能暂未对外开放",
     password: "请输入管理员密码",
     unlock: "解锁",
@@ -51,7 +74,7 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     tools: "Data & System Tools",
-    version: "Current Version V2.8.2",
+    version: "Current Version V2.8.3",
     locked: "This feature is not publicly available",
     password: "Enter administrator password",
     unlock: "Unlock",
@@ -68,6 +91,7 @@ export default function Portal() {
     localStorage.getItem("pudu-lang") === "en" ? "en" : "zh",
   );
   const [page, setPage] = useState<PortalPage>(pageFromLocation);
+  const [managementTab, setManagementTab] = useState<ManagementTab>(managementTabFromLocation);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
@@ -82,7 +106,10 @@ export default function Portal() {
       .catch(() => undefined);
   }, []);
   useEffect(() => {
-    const handlePopState = () => setPage(pageFromLocation());
+    const handlePopState = () => {
+      setPage(pageFromLocation());
+      setManagementTab(managementTabFromLocation());
+    };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
@@ -103,6 +130,16 @@ export default function Portal() {
     url.searchParams.delete("section");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setPage(next);
+    if (next === "management") setManagementTab("allocation");
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+  function navigateManagementTab(next: ManagementTab) {
+    const url = new URL(window.location.href);
+    url.pathname = managementPaths[next];
+    url.searchParams.delete("section");
+    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setPage("management");
+    setManagementTab(next);
     window.scrollTo({ top: 0, behavior: "auto" });
   }
   async function unlock() {
@@ -205,7 +242,11 @@ export default function Portal() {
         ) : page === "cultural" ? (
           <CulturalPage lang={lang} />
         ) : unlocked ? (
-          <ManagementPage lang={lang} />
+          <ManagementPage
+            lang={lang}
+            initialTab={managementTab}
+            onTabChange={navigateManagementTab}
+          />
         ) : (
           <main className="locked-page">
             <img src="/app-assets/app-icon.png" alt="" />

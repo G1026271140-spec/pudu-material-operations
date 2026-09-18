@@ -300,6 +300,31 @@ class ReactSidebarCollapseTests(unittest.TestCase):
         self.assertIn('window.history.pushState', self.portal)
         self.assertIn('window.addEventListener("popstate"', self.portal)
 
+    def test_every_visible_page_has_a_shareable_direct_route(self) -> None:
+        expected_routes = [
+            "/request",
+            "/cultural",
+            "/management/allocation",
+            "/management/shipping-schedule",
+            "/management/shipping-template",
+            "/management/restock",
+            "/management/categories",
+            "/management/models",
+            "/management/languages",
+            "/management/regions",
+        ]
+        for route in expected_routes:
+            with self.subTest(route=route):
+                self.assertIn(f'"{route}"', self.portal)
+
+        management = (
+            Path(app.__file__).parent / "request_web/frontend/src/ManagementPage.tsx"
+        ).read_text(encoding="utf-8")
+        self.assertIn("initialTab?: ManagementTab", management)
+        self.assertIn("onTabChange?: (tab: ManagementTab) => void", management)
+        self.assertIn("onTabChange?.(next)", management)
+        self.assertIn("setManagementTab(managementTabFromLocation())", self.portal)
+
 
 class CulturalMobileLayoutTests(unittest.TestCase):
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:
