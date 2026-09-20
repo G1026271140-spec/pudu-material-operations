@@ -19,6 +19,7 @@ def test_catalog_uses_local_snapshot_and_exposes_all_products():
     assert len(catalog["users"]) > 100
     assert catalog["rolesByUser"]
     assert all(product["options"] for product in catalog["products"])
+    assert all(product["categoryDefinition"] for product in catalog["products"])
     assert any(
         product["source"] == "cultural" for product in catalog["adminProducts"]
     )
@@ -72,7 +73,9 @@ def test_admin_catalog_ignores_category_and_material_status_and_visibility(monke
     assert by_name["基础品类"]["adminOnly"] is False
     assert next(option for option in by_name["基础品类"]["options"] if option["model"] == "M2")["adminOnly"] is True
     assert by_name["停用品类"]["adminOnly"] is True
+    assert by_name["停用品类"]["categoryDefinition"] == "印刷物料"
     assert by_name["停用文化周边"]["source"] == "cultural"
+    assert by_name["停用文化周边"]["categoryDefinition"] == "文化周边"
 
 
 def test_health_endpoint():

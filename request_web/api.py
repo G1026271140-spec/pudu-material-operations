@@ -212,6 +212,7 @@ def build_catalog() -> dict[str, Any]:
             {
                 "name": product,
                 "nameDisplay": meta["display"],
+                "categoryDefinition": meta["definition"],
                 "image": images.get(product),
                 "options": options,
                 "source": "standard",
@@ -224,6 +225,7 @@ def build_catalog() -> dict[str, Any]:
             {
                 "name": product,
                 "nameDisplay": meta["display"],
+                "categoryDefinition": meta["definition"],
                 "image": images.get(product),
                 "options": options,
                 "source": "cultural",
@@ -233,7 +235,15 @@ def build_catalog() -> dict[str, Any]:
     return {
         "generatedAt": cache.get("generated_at"),
         "products": [
-            {"name": name, "nameDisplay": category_display_names.get(name, {}), "image": images.get(name), "options": combinations.get(name, [])}
+            {
+                "name": name,
+                "nameDisplay": category_display_names.get(name, {}),
+                "categoryDefinition": category_meta.get(
+                    legacy.normalize_category_match_key(name), {}
+                ).get("definition", ""),
+                "image": images.get(name),
+                "options": combinations.get(name, []),
+            }
             for name in cache.get("products", [])
         ],
         "adminProducts": admin_products,

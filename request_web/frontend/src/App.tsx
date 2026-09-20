@@ -14,6 +14,7 @@ type Option = {
 type Product = {
   name: string;
   nameDisplay?: { zh?: string; en?: string };
+  categoryDefinition?: string;
   image?: string;
   options: Option[];
   source?: "standard" | "cultural";
@@ -164,6 +165,35 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
           p.name.toLowerCase().includes(search.toLowerCase()),
       )
     : [];
+  const visibleProducts = isAdminRequester
+    ? [...baseProducts, ...adminProducts]
+    : baseProducts;
+  const definitionOrder = ["印刷物料", "周边礼品", "文化周边"];
+  const productGroups = [
+    ...definitionOrder,
+    ...[
+      ...new Set(
+        visibleProducts.map(
+          (product) => product.categoryDefinition || "其他物料",
+        ),
+      ),
+    ].filter((definition) => !definitionOrder.includes(definition)),
+  ]
+    .map((definition) => ({
+      definition,
+      products: visibleProducts.filter(
+        (product) =>
+          (product.categoryDefinition || "其他物料") === definition,
+      ),
+    }))
+    .filter((group) => group.products.length > 0);
+  const definitionLabel = (definition: string) =>
+    ({
+      印刷物料: t("印刷物料", "Printed Materials"),
+      周边礼品: t("周边礼品", "Giveaways"),
+      文化周边: t("文化周边", "Cultural Merchandise"),
+      其他物料: t("其他物料", "Other Materials"),
+    })[definition] || definition;
   const models = useMemo(
     () => [...new Set(active?.options.map((o) => o.model || "无需型号") || [])],
     [active],
@@ -737,55 +767,34 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
               )}
             </div>
           )}
-          <div className="cards">
-            {baseProducts.map((p) => (
-              <article key={p.name}>
-                {p.image ? (
-                  <img src={p.image} />
-                ) : (
-                  <div className="placeholder">PUDU</div>
-                )}
-                <small>{t("物料品类", "Material Category")}</small>
-                <h3>{p.nameDisplay?.[lang] || clean(p.name)}</h3>
-                <button onClick={() => open(p)}>
-                  🛒 {t("选择规格", "Select Options")}
-                </button>
-              </article>
+          <div className="request-category-groups">
+            {productGroups.map((group) => (
+              <div className="request-category-group" key={group.definition}>
+                <div className="request-category-heading">
+                  <h3>{definitionLabel(group.definition)}</h3>
+                  <span>
+                    {group.products.length} {t("个品类", "categories")}
+                  </span>
+                </div>
+                <div className="cards">
+                  {group.products.map((p) => (
+                    <article key={p.name}>
+                      {p.image ? (
+                        <img src={p.image} />
+                      ) : (
+                        <div className="placeholder">PUDU</div>
+                      )}
+                      <small>{t("物料品类", "Material Category")}</small>
+                      <h3>{p.nameDisplay?.[lang] || clean(p.name)}</h3>
+                      <button onClick={() => open(p)}>
+                        🛒 {t("选择规格", "Select Options")}
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-          {isAdminRequester && adminProducts.length > 0 && (
-            <>
-              <div className="admin-category-divider">
-                <b>{t("管理员可申领品类", "Administrator Categories")}</b>
-                <span>
-                  {t(
-                    "仅在选择已启用管理员为申请人时显示",
-                    "Shown only for enabled administrator applicants",
-                  )}
-                </span>
-              </div>
-              <div className="cards admin-category-cards">
-                {adminProducts.map((p) => (
-                  <article key={p.name}>
-                    {p.image ? (
-                      <img src={p.image} />
-                    ) : (
-                      <div className="placeholder">PUDU</div>
-                    )}
-                    <small>
-                      {p.source === "cultural"
-                        ? t("文化周边", "Cultural Merchandise")
-                        : t("管理员品类", "Administrator Category")}
-                    </small>
-                    <h3>{p.nameDisplay?.[lang] || clean(p.name)}</h3>
-                    <button onClick={() => open(p)}>
-                      🛒 {t("选择规格", "Select Options")}
-                    </button>
-                  </article>
-                ))}
-              </div>
-            </>
-          )}
         </section>
         {error && (
           <div className="toast" onClick={() => setError("")}>

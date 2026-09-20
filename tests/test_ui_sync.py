@@ -213,6 +213,14 @@ class RequestReactMobileLayoutTests(unittest.TestCase):
         self.assertIn('className="toast cart-added-toast"', self.page)
         self.assertIn('t("已加入采购车", "Added to cart")', self.page)
 
+    def test_material_categories_are_grouped_by_definition_in_six_columns(self) -> None:
+        self.assertIn('const definitionOrder = ["印刷物料", "周边礼品", "文化周边"]', self.page)
+        self.assertIn("const productGroups", self.page)
+        self.assertIn('className="request-category-groups"', self.page)
+        self.assertIn('className="request-category-group"', self.page)
+        self.assertIn("[...baseProducts, ...adminProducts]", self.page)
+        self.assertIn("grid-template-columns: repeat(6, minmax(0, 1fr))", self.css)
+
 
 class ReactInventoryOperationLayoutTests(unittest.TestCase):
     def setUp(self) -> None:
