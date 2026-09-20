@@ -142,6 +142,18 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertIn(("文化POLO衫", "M", "美洲战区"), catalog["combinations"])
         self.assertNotIn(("文化POLO衫", "L", "美洲战区"), catalog["combinations"])
 
+        persistence_catalog = app.cultural_request_catalog(
+            culture,
+            categories,
+            [],
+            include_all_categories_for_admin=True,
+            include_unclaimable_combinations=True,
+        )
+        self.assertIn(
+            ("文化POLO衫", "L", "美洲战区"),
+            persistence_catalog["combinations"],
+        )
+
     def test_claimability_sync_initializes_blank_positive_stock_and_forces_nonpositive_to_no(self) -> None:
         rows = [
             {"record_id": "zero", "fields": {"当前库存": 0, "是否可以申领": "是"}},

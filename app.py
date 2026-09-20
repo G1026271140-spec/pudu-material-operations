@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.8"
+APP_VERSION = "V2.8.9"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20369,6 +20369,7 @@ def cultural_request_catalog(
     model_rows: list[dict] | None = None,
     *,
     include_all_categories_for_admin: bool = False,
+    include_unclaimable_combinations: bool = False,
 ) -> dict[str, object]:
     """Build the culture-only category/model/region catalog from page cache."""
     culture = list(cultural_rows if cultural_rows is not None else feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
@@ -20398,7 +20399,11 @@ def cultural_request_catalog(
     combinations: dict[tuple[str, str, str], dict[str, object]] = {}
     for row in culture:
         fields = feishu_fields(row)
-        if feishu_text(fields, CULTURAL_CLAIMABLE_FIELD).strip() != CULTURAL_CLAIMABLE_YES:
+        if (
+            not include_unclaimable_combinations
+            and feishu_text(fields, CULTURAL_CLAIMABLE_FIELD).strip()
+            != CULTURAL_CLAIMABLE_YES
+        ):
             continue
         product = feishu_text(fields, "物料品类").strip()
         model = feishu_text(fields, "产品型号").strip()
@@ -21092,7 +21097,6 @@ def submit_feishu_cultural_request(
     if len(valid_lines) > MAX_CULTURAL_REQUEST_LINE_COUNT:
         raise RuntimeError(f"一次最多提交 {MAX_CULTURAL_REQUEST_LINE_COUNT} 条文化周边明细。")
     validate_cultural_request_quantity(valid_lines)
-    administrator_override = bool(request_payload.get("administrator_override"))
     culture_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
     category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
     model_rows = fresh_feishu_rows(MODEL_TABLE_NAME)
@@ -21100,7 +21104,12 @@ def submit_feishu_cultural_request(
         culture_rows,
         category_rows,
         model_rows,
-        include_all_categories_for_admin=administrator_override,
+        # Page validation decides which combinations can be selected.  Once a
+        # queue task has been accepted, persist that exact snapshot even if a
+        # concurrent request drives stock to zero and the live claimability
+        # flag flips to "否" before the Worker reaches it.
+        include_all_categories_for_admin=True,
+        include_unclaimable_combinations=True,
     )
     combinations = dict(catalog["combinations"])
     prepared: list[dict[str, object]] = []
