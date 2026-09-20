@@ -327,6 +327,22 @@ class ReactSidebarCollapseTests(unittest.TestCase):
 
 
 class CulturalMobileLayoutTests(unittest.TestCase):
+    def test_jacket_selection_requires_red_confirmation(self) -> None:
+        page = (
+            Path(app.__file__).parent
+            / "request_web/frontend/src/CulturalPage.tsx"
+        ).read_text(encoding="utf-8")
+        styles = (
+            Path(app.__file__).parent / "request_web/frontend/src/portal.css"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("区域销售请咨询企业文化组申领文化夹克", page)
+        self.assertIn('if (product === "文化夹克")', page)
+        self.assertIn('role="alertdialog"', page)
+        self.assertIn('open("文化夹克")', page)
+        self.assertIn(".jacket-notice", styles)
+        self.assertIn("background: #c9372c", styles)
+
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:
         source = (
             Path(app.__file__).parent / "request_web/frontend/src/portal.css"

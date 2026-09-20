@@ -61,6 +61,10 @@ const c = {
     success: "提交成功",
     successHint: "申请已进入后台队列",
     empty: "当前没有文化周边库存数据。",
+    jacketNoticeTitle: "文化夹克申领提示",
+    jacketNotice: "区域销售请咨询企业文化组申领文化夹克",
+    jacketNoticeCancel: "取消",
+    jacketNoticeConfirm: "我已知晓，继续申领",
   },
   en: {
     title: "Cultural Merchandise Request",
@@ -92,6 +96,11 @@ const c = {
     success: "Submitted",
     successHint: "The request has entered the background queue",
     empty: "No cultural merchandise inventory is available.",
+    jacketNoticeTitle: "Cultural Jacket Notice",
+    jacketNotice:
+      "Regional sales colleagues should contact the Corporate Culture Team to request a cultural jacket.",
+    jacketNoticeCancel: "Cancel",
+    jacketNoticeConfirm: "Understood, Continue",
   },
 };
 
@@ -109,6 +118,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     [remark, setRemark] = useState("");
   const [lines, setLines] = useState<Line[]>([]),
     [review, setReview] = useState(false),
+    [jacketNotice, setJacketNotice] = useState(false),
     [busy, setBusy] = useState(false),
     [done, setDone] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
@@ -161,6 +171,13 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     setRegion(scoped[0]?.region || "");
     setQuantity(1);
     setRemark("");
+  }
+  function requestOpen(product: string) {
+    if (product === "文化夹克") {
+      setJacketNotice(true);
+      return;
+    }
+    open(product);
   }
   function add() {
     if (!active || !model || !region)
@@ -324,7 +341,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
                       ? "Cultural Jacket"
                       : product)}
                 </h3>
-                <button onClick={() => open(product)}>♧ {t.spec}</button>
+                <button onClick={() => requestOpen(product)}>♧ {t.spec}</button>
               </article>
             ))}
           </div>
@@ -394,6 +411,45 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
       {error && (
         <div className="toast" onClick={() => setError("")}>
           {error} ×
+        </div>
+      )}
+      {jacketNotice && (
+        <div
+          className="overlay jacket-notice-overlay"
+          onMouseDown={() => setJacketNotice(false)}
+        >
+          <div
+            className="modal jacket-notice"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="jacket-notice-title"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close"
+              aria-label={t.jacketNoticeCancel}
+              onClick={() => setJacketNotice(false)}
+            >
+              ×
+            </button>
+            <div className="jacket-notice-mark" aria-hidden="true">!</div>
+            <h2 id="jacket-notice-title">{t.jacketNoticeTitle}</h2>
+            <p>{t.jacketNotice}</p>
+            <div className="jacket-notice-actions">
+              <button onClick={() => setJacketNotice(false)}>
+                {t.jacketNoticeCancel}
+              </button>
+              <button
+                className="jacket-notice-confirm"
+                onClick={() => {
+                  setJacketNotice(false);
+                  open("文化夹克");
+                }}
+              >
+                {t.jacketNoticeConfirm}
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {active && (

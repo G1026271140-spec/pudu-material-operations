@@ -313,6 +313,60 @@
 .cultural-modal {
   max-width: 820px;
 }
+.jacket-notice {
+  width: min(460px, calc(100vw - 32px));
+  border-top: 5px solid #c9372c;
+  text-align: center;
+}
+.jacket-notice-mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  margin: 2px auto 13px;
+  place-items: center;
+  border-radius: 50%;
+  background: #c9372c;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 850;
+  line-height: 1;
+}
+.jacket-notice h2 {
+  margin: 0 40px 10px;
+  color: #9f241c;
+}
+.jacket-notice p {
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid #f0b8b3;
+  border-radius: 8px;
+  background: #fff1f0;
+  color: #82251f;
+  font-weight: 750;
+  line-height: 1.6;
+}
+.jacket-notice-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+.jacket-notice-actions button {
+  min-height: 44px;
+  border: 1px solid #c8d7e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #294b64;
+  font-weight: 750;
+}
+.jacket-notice-actions .jacket-notice-confirm {
+  border-color: #c9372c;
+  background: #c9372c;
+  color: #fff;
+}
+.jacket-notice-actions button:active {
+  transform: translateY(1px);
+}
 @media (max-width: 900px) {
   .sidebar {
     position: static;
@@ -559,6 +613,18 @@
   }
   .cultural-page .modal h4 {
     margin: 15px 0 9px;
+  }
+  .cultural-page .jacket-notice {
+    padding-top: 20px;
+  }
+  .cultural-page .jacket-notice h2 {
+    margin-right: 44px;
+  }
+  .cultural-page .jacket-notice-actions {
+    grid-template-columns: 1fr;
+  }
+  .cultural-page .jacket-notice-actions button {
+    min-height: 46px;
   }
   .cultural-page .pills {
     gap: 7px;
