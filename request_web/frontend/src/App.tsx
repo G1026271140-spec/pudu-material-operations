@@ -392,7 +392,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     if (!requesterId || !user)
       errors.push("请选择有效的申请人，才能核对申请时效权限");
     if (!reason)
-      errors.push("请选择申请原因：代理活动、展会需求、客户来访或其他");
+      errors.push("请选择申请原因：代理商支持、展会需求、客户来访或其他");
     if (!date) errors.push("请选择完整的要求到达日期");
     else {
       const today = new Date();
@@ -573,7 +573,9 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
               />
             </label>
             <label>
-              {t("客户名称", "Customer Name")} *
+              {reason === "代理商支持"
+                ? t("代理商名称", "Distributor Name")
+                : t("客户名称", "Customer Name")} *
               <input
                 value={customer}
                 onChange={(e) => setCustomer(e.target.value)}
@@ -626,7 +628,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                       ? x
                       : (
                           {
-                            代理活动: "Partner Event",
+                            代理商支持: "Distributor Support",
                             展会需求: "Exhibition",
                             客户来访: "Customer Visit",
                             其他: "Other",
@@ -975,7 +977,9 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                 <b>{department}</b>
               </p>
               <p>
-                {t("客户名称", "Customer")}
+                {reason === "代理商支持"
+                  ? t("代理商名称", "Distributor")
+                  : t("客户名称", "Customer")}
                 <b>{customer}</b>
               </p>
               <p>

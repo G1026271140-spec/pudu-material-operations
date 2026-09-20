@@ -250,7 +250,7 @@ def build_catalog() -> dict[str, Any]:
         "users": contacts.get("users", []),
         "departments": contacts.get("departments", []),
         "rolesByUser": roles_by_user,
-        "reasons": ["代理活动", "展会需求", "客户来访", "其他"],
+        "reasons": ["代理商支持", "展会需求", "客户来访", "其他"],
     }
 
 
@@ -1038,6 +1038,11 @@ def validate(draft: RequestDraft) -> dict[str, Any]:
 @api.post("/api/submit")
 def submit(draft: RequestDraft) -> dict[str, Any]:
     payload, lines, errors = _validate(draft, live=False)
+    import order_scheduling as scheduling_rules
+
+    payload["request_reason"] = scheduling_rules.normalize_reason(
+        payload.get("request_reason")
+    )
     standard_lines, cultural_lines, access_errors, cached_roles = _request_line_groups(draft)
     payload["accepted_roles"] = list(cached_roles)
     errors.extend(access_errors)

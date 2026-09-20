@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.11"
+APP_VERSION = "V2.8.12"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7706,9 +7706,18 @@ def material_lookup_by_key() -> dict[tuple[str, str, str], dict]:
     return feishu_inventory_index()
 
 
+def request_customer_display_label(request_payload: dict[str, object]) -> str:
+    return (
+        "代理商名称"
+        if str(request_payload.get("request_reason") or "").strip()
+        in {"代理商支持", "代理活动"}
+        else "客户名称"
+    )
+
+
 def request_note_text(request_payload: dict[str, object]) -> str:
     parts = [
-        ("客户名称", request_payload.get("customer_name")),
+        (request_customer_display_label(request_payload), request_payload.get("customer_name")),
         ("国家", request_payload.get("country")),
         ("收件人信息", request_payload.get("recipient_info")),
         ("运费承担者", request_payload.get("freight_payer")),
@@ -7813,7 +7822,7 @@ def ensure_order_scheduling_fields() -> None:
         DETAIL_TABLE: ((USAGE_DATE, 5, None), (ORDER_DATE, 5, None), (ARRIVAL_DATE, 5, None),
                        (SHIP_DATE, 5, None)),
     }
-    request_reason_options = [{"name": value} for value in ("代理活动", "展会需求", "客户来访", "其他")]
+    request_reason_options = [{"name": value} for value in ("代理商支持", "展会需求", "客户来访", "其他")]
     for table, fields in required.items():
         table_id = feishu_table_id(table)
         live_field_rows = client.list_fields(table_id)
@@ -7829,13 +7838,18 @@ def ensure_order_scheduling_fields() -> None:
                     str(option.get("name") or "")
                     for option in dict(reason_field.get("property") or {}).get("options", [])
                 }
-                if "其他" not in current_options:
+                if "代理商支持" not in current_options:
+                    retained_legacy_options = [
+                        {"name": option}
+                        for option in sorted(current_options - {item["name"] for item in request_reason_options})
+                        if option
+                    ]
                     client.update_field(
                         table_id,
                         str(reason_field.get("field_id") or ""),
                         "申请原因",
                         3,
-                        {"options": request_reason_options},
+                        {"options": request_reason_options + retained_legacy_options},
                     )
     refresh_feishu_schema_cache()
 
@@ -7929,7 +7943,7 @@ def material_request_notification_text(
         f"申请单号：{request_no}",
         f"申请人：{str(request_payload.get('requester') or '-')}",
         f"申请部门：{str(request_payload.get('department') or '-')}",
-        f"客户/国家：{str(request_payload.get('customer_name') or '-')} / {str(request_payload.get('country') or '-')}",
+        f"{request_customer_display_label(request_payload)}/国家：{str(request_payload.get('customer_name') or '-')} / {str(request_payload.get('country') or '-')}",
         f"物料用途：{str(request_payload.get('material_usage') or '-')}",
         f"申请原因：{str(request_payload.get('request_reason') or '-')}",
         f"申请总金额：{format_rmb(total_rmb)}",
@@ -8299,7 +8313,7 @@ def material_request_notification_card(
             or request_payload.get("material_usage_time")
             or "-",
         ),
-        ("客户名称", request_payload.get("customer_name")),
+        (request_customer_display_label(request_payload), request_payload.get("customer_name")),
         ("国家", request_payload.get("country")),
         ("运费承担者", request_payload.get("freight_payer")),
         ("申请原因", request_payload.get("request_reason") or review_request.get("request_reason")),
@@ -10451,6 +10465,10 @@ def submit_feishu_material_request(
             list(request_payload.get("accepted_roles") or ["销售"]),
             submitted=request_payload.get("accepted_date") or scheduling_rules.today(),
         )
+        request_payload = {
+            **request_payload,
+            "request_reason": scheduling_fields["申请原因"],
+        }
 
     # The queue may run immediately after a category/inventory task. Always
     # validate submissions against live Feishu rows instead of the static page
@@ -10669,6 +10687,15 @@ def queued_material_request_payload(
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
 ) -> dict[str, object]:
+    if request_payload.get("scheduling_version") == 1:
+        import order_scheduling as scheduling_rules
+
+        request_payload = {
+            **request_payload,
+            "request_reason": scheduling_rules.normalize_reason(
+                request_payload.get("request_reason")
+            ),
+        }
     queued_request = {
         key: request_payload.get(key)
         for key in (
@@ -10742,9 +10769,10 @@ def enqueue_feishu_material_request(
         service.validate_schema()
         accepted_now = datetime.now(scheduling_rules.CHINA_TZ)
         roles = service.roles(request_payload.get("requester_open_id"))
-        scheduling_rules.calculate_dates(request_payload.get("arrival_start"), request_payload.get("arrival_end"),
+        scheduling_fields = scheduling_rules.calculate_dates(request_payload.get("arrival_start"), request_payload.get("arrival_end"),
             str(request_payload.get("request_reason") or ""), roles, submitted=accepted_now.date())
-        request_payload = {**request_payload, "accepted_roles": roles,
+        request_payload = {**request_payload, "request_reason": scheduling_fields["申请原因"],
+                           "accepted_roles": roles,
                            "accepted_date": accepted_now.date().isoformat(),
                            "accepted_at_ms": int(accepted_now.timestamp() * 1000)}
     payload = queued_material_request_payload(request_payload, lines)
@@ -14985,6 +15013,7 @@ def validate_request_draft(
     include_live_schedule_validation: bool = True,
 ) -> list[str]:
     errors: list[str] = []
+    customer_label = request_customer_display_label(draft)
     if include_live_schedule_validation and draft.get("scheduling_version") == 1:
         from order_scheduling_service import SchedulingService
         try:
@@ -14996,7 +15025,7 @@ def validate_request_draft(
         for label, value in [
             ("申请部门", draft.get("department")),
             ("申请人", draft.get("requester")),
-            ("客户名称", draft.get("customer_name")),
+            (customer_label, draft.get("customer_name")),
             ("国家", draft.get("country")),
             ("收件人信息", draft.get("recipient_info")),
             ("运费的承担者", draft.get("freight_payer")),
@@ -15045,7 +15074,9 @@ def restore_request_form_from_draft(draft: dict[str, object]) -> None:
     st.session_state["request_requester_manual"] = draft.get("requester", "")
     if draft.get("scheduling_version") == 1:
         import order_scheduling as scheduling_rules
-        st.session_state["request_schedule_reason"] = draft.get("request_reason") or None
+        st.session_state["request_schedule_reason"] = scheduling_rules.normalize_reason(
+            draft.get("request_reason")
+        ) or None
         st.session_state["request_schedule_dates"] = tuple(
             scheduling_rules.as_date(draft.get(k)) for k in ("arrival_start", "arrival_end")
             if draft.get(k)
@@ -15148,7 +15179,12 @@ def render_request_review() -> None:
         overview_cols = st.columns(4)
         render_request_review_field(overview_cols[0], "申请人", draft.get("requester"))
         render_request_review_field(overview_cols[1], "申请部门", draft.get("department"))
-        render_request_review_field(overview_cols[2], "客户名称", draft.get("customer_name"))
+        customer_label = (
+            "代理商名称"
+            if draft.get("request_reason") == "代理商支持"
+            else "客户名称"
+        )
+        render_request_review_field(overview_cols[2], customer_label, draft.get("customer_name"))
         render_request_review_field(overview_cols[3], "国家", draft.get("country"))
         detail_cols = st.columns([1.2, 1, 1.4])
         render_request_review_field(detail_cols[0], "物料用途", draft.get("material_usage"))
@@ -15680,9 +15716,14 @@ def render_change_form(show_title: bool = True) -> None:
         department, department_id, requester, requester_open_id = render_request_contact_fields(
             top_cols[0]
         )
-        required_field_label(top_cols[1], "客户名称")
+        customer_label = (
+            "代理商名称"
+            if st.session_state.get("request_schedule_reason") == "代理商支持"
+            else "客户名称"
+        )
+        required_field_label(top_cols[1], customer_label)
         customer_name = top_cols[1].text_input(
-            "客户名称",
+            customer_label,
             key="request_customer_name",
             label_visibility="collapsed",
             on_change=mark_request_form_dirty,

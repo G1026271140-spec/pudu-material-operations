@@ -15,6 +15,8 @@ web_api = importlib.import_module("request_web.api")
 
 def test_catalog_uses_local_snapshot_and_exposes_all_products():
     catalog = build_catalog()
+    assert "代理商支持" in catalog["reasons"]
+    assert "代理活动" not in catalog["reasons"]
     assert len(catalog["products"]) == 11
     assert len(catalog["users"]) > 100
     assert catalog["rolesByUser"]

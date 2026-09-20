@@ -13,7 +13,7 @@ from order_scheduling_service import SchedulingService
 def test_sales_boundaries(days, expected):
     start = date(2026, 9, 3)
     result = r.calculate_dates(start + timedelta(days=days), start + timedelta(days=days + 3),
-                               "代理活动", ["销售"], submitted=start)
+                               "代理商支持", ["销售"], submitted=start)
     assert result[r.TIME_CLASS] == expected
     assert r.as_date(result[r.ORDER_DATE]) == r.order_workday(start + timedelta(days=days - 15))
     assert r.as_date(result[r.READY_DATE]) == start + timedelta(days=days - 10)
@@ -28,7 +28,7 @@ def test_sales_reject_short_dates(days):
 
 @pytest.mark.parametrize("roles,reason", [(["销售"], "客户来访"), (["区域市场经理"], "展会需求"),
                                         (["区域市场负责人"], "展会需求"),
-                                        (["销售", "区域市场经理"], "代理活动")])
+                                        (["销售", "区域市场经理"], "代理商支持")])
 def test_exemptions(roles, reason):
     assert r.calculate_dates("2026-09-03", "2026-09-03", reason, roles, submitted="2026-09-03")[r.TIME_CLASS] == "时间豁免"
     with pytest.raises(ValueError):
@@ -47,10 +47,19 @@ def test_order_schedule_filters_use_review_exclusion_not_order_filter():
 
 
 def test_invalid_dates_and_unknown_reason():
-    for start, end, reason in [(None, None, "代理活动"), ("2026-10-02", "2026-10-01", "代理活动"),
+    for start, end, reason in [(None, None, "代理商支持"), ("2026-10-02", "2026-10-01", "代理商支持"),
                                ("2026-10-01", "2026-10-02", "")]:
         with pytest.raises(ValueError):
             r.calculate_dates(start, end, reason, ["销售"], submitted="2026-09-03")
+
+
+def test_request_reason_enum_and_legacy_alias_are_canonicalized():
+    assert "代理商支持" in r.REASONS
+    assert "代理活动" not in r.REASONS
+    result = r.calculate_dates(
+        "2026-09-18", "2026-09-18", "代理活动", ["销售"], submitted="2026-09-03"
+    )
+    assert result["申请原因"] == "代理商支持"
 
 
 def test_midnight_timezone_and_receipt_guard():
@@ -359,7 +368,7 @@ def test_date_edit_retains_submission_role_snapshot(svc):
     group = svc.grouped_requests(svc.snapshot())["req"]
     with pytest.raises(ValueError, match="至少提前7"):
         svc.plan({"operator_open_id": "ou_admin", "action": "request_dates", "request_id": "req",
-            "expected_fingerprint": group["fingerprint"], "request_reason": "代理活动",
+            "expected_fingerprint": group["fingerprint"], "request_reason": "代理商支持",
             "arrival_start": "2026-09-05", "arrival_end": "2026-09-05"}, {}, lambda _: None)
     svc.roles.assert_not_called()
 
@@ -401,7 +410,7 @@ def test_request_dates_syncs_all_schedule_dates_to_lines_details_and_batches(svc
     svc.app.data[r.DETAIL_TABLE] = [record("detail-1", **{"来源申请单": ["req"], "所属下单批次": ["batch-1"]})]
     svc.app.data[r.BATCH_TABLE] = [record("batch-1")]
     svc.plan({"operator_open_id": "ou_admin", "action": "request_dates", "request_id": "req",
-              "request_reason": "代理活动", "arrival_start": "2026-09-20", "arrival_end": "2026-09-22"}, {}, lambda _: None)
+              "request_reason": "代理商支持", "arrival_start": "2026-09-20", "arrival_end": "2026-09-22"}, {}, lambda _: None)
     request_fields = svc.app.data[app.REQUEST_TABLE_NAME][0]["fields"]
     for table, index in ((app.REQUEST_LINE_TABLE_NAME, 0), (r.DETAIL_TABLE, 0), (r.BATCH_TABLE, 0)):
         fields = svc.app.data[table][index]["fields"]
@@ -422,7 +431,7 @@ def test_request_date_widgets_default_empty_and_accept_single_date(monkeypatch):
     assert not ui.exception
     assert ui.selectbox[0].value is None
     assert not ui.date_input[0].value
-    ui.selectbox[0].set_value("代理活动")
+    ui.selectbox[0].set_value("代理商支持")
     ui.date_input[0].set_value(date(2026, 10, 1)).run()
     assert not ui.exception
     assert ui.date_input[0].value == date(2026, 10, 1)

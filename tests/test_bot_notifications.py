@@ -548,7 +548,7 @@ class BotNotificationTests(unittest.TestCase):
             "customer_name": "示例客户",
             "country": "德国",
             "material_usage": "展会使用",
-            "request_reason": "代理活动",
+            "request_reason": "代理商支持",
         }
         lines = [
             {
@@ -570,7 +570,8 @@ class BotNotificationTests(unittest.TestCase):
             text,
         )
         self.assertIn("来自海外销售部的销售甲的营销物料即将进入审批流程", text)
-        self.assertIn("申请原因：代理活动", text)
+        self.assertIn("申请原因：代理商支持", text)
+        self.assertIn("代理商名称/国家：示例客户 / 德国", text)
         self.assertIn("申请总金额：¥37.50", text)
         self.assertNotIn("申请合计", text)
         self.assertNotIn("审批与发放页面", text)
@@ -585,7 +586,7 @@ class BotNotificationTests(unittest.TestCase):
             "recipient_info": "销售甲，12345，示例地址",
             "freight_payer": "普渡付款(PUDU)",
             "material_usage": "柏林展会",
-            "request_reason": "代理活动",
+            "request_reason": "代理商支持",
         }
         lines = [
             {
@@ -640,7 +641,7 @@ class BotNotificationTests(unittest.TestCase):
             "销售甲，12345，示例地址",
             "普渡付款(PUDU)",
             "柏林展会",
-            "代理活动",
+            "代理商支持",
             "申请总金额",
             "¥37.50",
             "物料使用时间",

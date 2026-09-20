@@ -122,7 +122,7 @@ def request_schedule_inputs(app):
     """Normal-material form only. Values are ISO strings for durable queue payloads."""
     en = app.get_ui_language() == app.LANGUAGE_EN
     cols = st.columns([1, 1.5], gap="small")
-    reasons_en = {"代理活动": "Dealer activity", "展会需求": "Exhibition", "客户来访": "Customer visit", "其他": "Other"}
+    reasons_en = {"代理商支持": "Distributor Support", "展会需求": "Exhibition", "客户来访": "Customer visit", "其他": "Other"}
     app.required_field_label(cols[0], "Request reason" if en else "申请原因")
     app.required_field_label(cols[1], "Material usage time" if en else "物料使用时间")
     reason = cols[0].selectbox("Request reason *" if en else "申请原因 *", rules.REASONS,
@@ -197,10 +197,7 @@ def edit_dialog(app, group, catalog, operator):
             st.rerun(scope="fragment")
         note = st.text_input("修改说明（必填）", key=key+"_note")
         st.warning("删除会移除该申请明细；后台会保留变更前后记录。已审批、已核实库存或已生成下单表的申请不能在此编辑。")
-        over_limit = is_agent_activity and any(int(line.get("quantity") or 0) > 50 for line in draft)
-        if over_limit:
-            st.error("代理活动的单一物料明细数量不能超过 50，请调整后再保存。")
-        if st.button("保存明细修改", type="primary", disabled=not draft or not note or over_limit or any(not l["material_id"] for l in draft)):
+        if st.button("保存明细修改", type="primary", disabled=not draft or not note or any(not l["material_id"] for l in draft)):
             enqueue(app, QUEUE_TASK_TYPE_ORDER_EDIT, {"request_id": group["id"], "expected_fingerprint": group["fingerprint"],
                     "operator_open_id": operator, "change_note": note, "lines": draft})
     render()
@@ -210,8 +207,9 @@ def dates_dialog(app, group, operator):
     @st.dialog(f"补充／调整排期 · {group['request_no']}")
     def render():
         f = group["fields"]
+        saved_reason = rules.normalize_reason(f.get("申请原因"))
         reason = st.selectbox("申请原因", rules.REASONS,
-                              index=rules.REASONS.index(f["申请原因"]) if f.get("申请原因") in rules.REASONS else None)
+                              index=rules.REASONS.index(saved_reason) if saved_reason in rules.REASONS else None)
         start = rules.as_date(f.get(rules.ARRIVAL_START))
         end = rules.as_date(f.get(rules.ARRIVAL_END))
         dates = st.date_input("物料使用时间", value=start or end, format="YYYY-MM-DD")
