@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.7"
+APP_VERSION = "V2.8.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8052,37 +8052,6 @@ def _feishu_notification_section(
     }
 
 
-def _feishu_material_detail_elements(
-    lines: list[dict[str, object]],
-    *,
-    english: bool = False,
-) -> list[dict[str, object]]:
-    valid_lines = [line for line in lines if int(line.get("quantity") or 0) > 0]
-    elements: list[dict[str, object]] = []
-    for index, line in enumerate(valid_lines, start=1):
-        label = english_material_notification_label if english else lambda value: str(value or "-")
-        detail = (
-            f"{index:02d}. {label(line.get('product'))} / "
-            f"{label(request_model_display_label(line.get('model'), language=LANGUAGE_EN if english else LANGUAGE_ZH))} / "
-            f"{label(line.get('language') or NO_LANGUAGE_TEXT)} "
-            f"× {int(line.get('quantity') or 0)}"
-        )
-        remark = str(line.get("remark") or "").strip()
-        if remark:
-            remark_label = "Remark" if english else "备注"
-            detail += f"\n{remark_label}: {_feishu_card_plain_text(remark, max_length=500)}"
-        elements.append(_feishu_card_text_element(detail, max_length=1200, lines=6))
-    if elements:
-        return elements
-    return [
-        _feishu_card_text_element(
-            "No material details" if english else "暂无物料明细",
-            text_color="grey-500",
-            lines=2,
-        )
-    ]
-
-
 def _feishu_inventory_review_table(
     lines: list[dict[str, object]],
 ) -> dict[str, object]:
@@ -8252,6 +8221,56 @@ def _feishu_requester_material_table(
             ),
         ],
         "rows": rows,
+    }
+
+
+def _feishu_notification_table(
+    columns: list[dict[str, object]],
+    rows: list[dict[str, object]],
+    *,
+    page_size: int = 10,
+    freeze_first_column: bool = True,
+) -> dict[str, object]:
+    """Build the shared paginated table used by material-detail notifications."""
+    return {
+        "tag": "table",
+        "page_size": page_size,
+        "row_height": "auto",
+        "row_max_height": "96px",
+        "freeze_first_column": freeze_first_column,
+        "header_style": {
+            "background_style": "grey",
+            "bold": True,
+            "lines": 1,
+        },
+        "columns": columns,
+        "rows": rows,
+    }
+
+
+def _feishu_notification_card_v2(
+    title: str,
+    template: str,
+    elements: list[dict[str, object]],
+) -> dict[str, object]:
+    """Wrap notification elements in the card 2.0 schema required by tables."""
+    return {
+        "schema": "2.0",
+        "config": {
+            "update_multi": True,
+            "width_mode": "fill",
+            "summary": {"content": title},
+        },
+        "header": {
+            "template": template,
+            "title": {"tag": "plain_text", "content": title},
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 20px 12px",
+            "vertical_spacing": "10px",
+            "elements": elements,
+        },
     }
 
 
@@ -9156,20 +9175,6 @@ def notify_requester_of_inventory_edit(
     else:
         contact_text += "the material administrator." if english else "物料管理员。"
 
-    def line_elements(lines: list[dict[str, object]]) -> list[dict[str, object]]:
-        elements: list[dict[str, object]] = []
-        for index, item in enumerate(lines, start=1):
-            content = (
-                f"{index:02d}. {item.get('product') or '-'} / "
-                f"{request_model_display_label(item.get('model'), language=LANGUAGE_ZH)} / "
-                f"{item.get('language') or NO_LANGUAGE_TEXT} "
-                f"× {int(item.get('quantity') or 0)}"
-            )
-            elements.append(_feishu_card_text_element(content, lines=4))
-        return elements or [
-            _feishu_card_text_element("None" if english else "无", text_color="grey-500")
-        ]
-
     title = (
         "Marketing material request updated"
         if english
@@ -9208,12 +9213,12 @@ def notify_requester_of_inventory_edit(
             "elements": [
                 _feishu_notification_section(
                     "Before change" if english else "修改前",
-                    line_elements(before_lines),
+                    [_feishu_requester_material_table(before_lines, english=english)],
                     color="grey",
                 ),
                 _feishu_notification_section(
                     "After change" if english else "修改后",
-                    line_elements(after_lines),
+                    [_feishu_requester_material_table(after_lines, english=english)],
                     color="green",
                     focus=True,
                 ),
@@ -9357,31 +9362,44 @@ def material_restock_notification_card(
             ]
         )
     elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": f"**{operation_label}明细**"}])
+    rows: list[dict[str, object]] = []
     for index, line in enumerate(lines, start=1):
-        detail = (
-            f"{index:02d}. {_feishu_card_plain_text(line.get('product'), max_length=300)} / "
+        specification = (
+            f"{_feishu_card_plain_text(line.get('product'), max_length=300)} / "
             f"{_feishu_card_plain_text(request_model_display_label(line.get('model'), language=LANGUAGE_ZH), max_length=200)} / "
-            f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)}\n"
-            f"{operation_label} {int(line.get('quantity') or 0)}，库存 "
-            f"{int(line.get('before_quantity') or 0)} → {int(line.get('after_quantity') or 0)}"
+            f"{_feishu_card_plain_text(line.get('language') or NO_LANGUAGE_TEXT, max_length=200)}"
         )
         remark = str(line.get("remark") or "").strip()
-        if remark:
-            detail += f"\n备注：{_feishu_card_plain_text(remark, max_length=500)}"
-        elements.append(
+        rows.append(
             {
-                "tag": "div",
-                "text": {"tag": "plain_text", "content": detail},
+                "sequence": index,
+                "specification": specification,
+                "quantity": int(line.get("quantity") or 0),
+                "inventory_change": (
+                    f"{int(line.get('before_quantity') or 0)} → "
+                    f"{int(line.get('after_quantity') or 0)}"
+                ),
+                "remark": _feishu_card_plain_text(remark, max_length=500) or "-",
             }
         )
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {
-            "template": "red" if operation_label == "减库" else "green",
-            "title": {"tag": "plain_text", "content": f"物料编辑通知｜{operation_label}已完成"},
-        },
-        "elements": elements,
-    }
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "specification", "display_name": "物料 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "quantity", "display_name": operation_label + "数", "data_type": "number", "width": "86px", "horizontal_align": "right"},
+                {"name": "inventory_change", "display_name": "库存变化", "data_type": "text", "width": "120px"},
+                {"name": "remark", "display_name": "备注", "data_type": "text", "width": "160px"},
+            ],
+            rows,
+        )
+    )
+    title = f"物料编辑通知｜{operation_label}已完成"
+    return _feishu_notification_card_v2(
+        title,
+        "red" if operation_label == "减库" else "green",
+        elements,
+    )
 
 
 def notify_enabled_admins_of_restock(
@@ -9425,22 +9443,33 @@ def approval_writeback_notification_card(
         {"tag": "markdown", "content": "**物料及库存变更结果**"},
     ]
     displayed_lines = issued_lines if succeeded else lines
+    rows: list[dict[str, object]] = []
     for index, line in enumerate(displayed_lines[:40], start=1):
-        elements.append(
+        rows.append(
             {
-                "tag": "div",
-                "text": {
-                    "tag": "plain_text",
-                    "content": (
-                        f"{index:02d}. {line.get('actual_product') or line.get('product') or '-'} / "
-                        f"{line.get('actual_model') or line.get('model') or NO_MODEL_TEXT} / "
-                        f"{line.get('actual_language') or line.get('language') or NO_LANGUAGE_TEXT} "
-                        f"× {int(line.get('actual_issue_qty') or 0)}；"
-                        f"状态 {line.get('status') or '-'}；当前库存 {int(line.get('current_stock') or 0)}"
-                    ),
-                },
+                "sequence": index,
+                "specification": (
+                    f"{line.get('actual_product') or line.get('product') or '-'} / "
+                    f"{line.get('actual_model') or line.get('model') or NO_MODEL_TEXT} / "
+                    f"{line.get('actual_language') or line.get('language') or NO_LANGUAGE_TEXT}"
+                ),
+                "issued_quantity": int(line.get("actual_issue_qty") or 0),
+                "status": str(line.get("status") or "-"),
+                "current_stock": int(line.get("current_stock") or 0),
             }
         )
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "specification", "display_name": "物料 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "issued_quantity", "display_name": "实际发放", "data_type": "number", "width": "96px", "horizontal_align": "right"},
+                {"name": "status", "display_name": "状态", "data_type": "text", "width": "100px"},
+                {"name": "current_stock", "display_name": "当前库存", "data_type": "number", "width": "96px", "horizontal_align": "right"},
+            ],
+            rows,
+        )
+    )
     if len(displayed_lines) > 40:
         elements.append(
             {"tag": "markdown", "content": f"另有 **{len(displayed_lines) - 40}** 条，请在物料系统中查看。"}
@@ -9455,17 +9484,12 @@ def approval_writeback_notification_card(
     elements.append(
         {"tag": "div", "text": {"tag": "plain_text", "content": f"审批实例：{instance_code}"}}
     )
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {
-            "template": "green" if succeeded else "red",
-            "title": {
-                "tag": "plain_text",
-                "content": "营销物料申请回写完成" if succeeded else "营销物料申请回写异常",
-            },
-        },
-        "elements": elements,
-    }
+    title = "营销物料申请回写完成" if succeeded else "营销物料申请回写异常"
+    return _feishu_notification_card_v2(
+        title,
+        "green" if succeeded else "red",
+        elements,
+    )
 
 
 def notify_enabled_admins_of_approval_writeback(
@@ -9579,22 +9603,42 @@ def dimension_management_notification_card(
         )})
     elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**关联物料变更明细**"}])
     rows = dimension_change_dataframe(changes).to_dict("records") if changes else []
-    for index, row in enumerate(rows[:40], start=1):
-        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
-            f"{index:02d}. [{row.get('操作')}] {row.get('物料编码')} | "
-            f"{row.get('物料品类')} / {row.get('产品型号')} / "
-            f"{row.get('战区') if kind == 'region' else row.get('语种')}\n"
-            f"库存：{row.get('库存数量')}；状态：{row.get('启用状态')}；申领页显示：{row.get('申领页显示')}"
-        )}})
-    if not rows:
-        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "关联物料主数据没有变化。"}})
+    table_rows = [
+        {
+            "sequence": index,
+            "operation": str(row.get("操作") or "-"),
+            "material_code": str(row.get("物料编码") or "-"),
+            "specification": (
+                f"{row.get('物料品类') or '-'} / {row.get('产品型号') or '-'} / "
+                f"{row.get('战区') if kind == 'region' else row.get('语种')}"
+            ),
+            "quantity": int(row.get("库存数量") or 0),
+            "status": str(row.get("启用状态") or "-"),
+            "request_visible": str(row.get("申领页显示") or "-"),
+        }
+        for index, row in enumerate(rows[:40], start=1)
+    ]
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "operation", "display_name": "操作", "data_type": "text", "width": "84px"},
+                {"name": "material_code", "display_name": "物料编码", "data_type": "text", "width": "130px"},
+                {"name": "specification", "display_name": "品类 / 型号 / 语种或战区", "data_type": "text", "width": "auto"},
+                {"name": "quantity", "display_name": "库存", "data_type": "number", "width": "80px", "horizontal_align": "right"},
+                {"name": "status", "display_name": "状态", "data_type": "text", "width": "80px"},
+                {"name": "request_visible", "display_name": "申领页", "data_type": "text", "width": "90px"},
+            ],
+            table_rows,
+        )
+    )
     if len(rows) > 40:
         elements.append({"tag": "markdown", "content": f"另有 **{len(rows) - 40}** 条变更，请在物料管理中查看。"})
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {"template": "blue", "title": {"tag": "plain_text", "content": f"物料编辑通知｜{label}管理已完成"}},
-        "elements": elements,
-    }
+    return _feishu_notification_card_v2(
+        f"物料编辑通知｜{label}管理已完成",
+        "blue",
+        elements,
+    )
 
 
 def notify_enabled_admins_of_dimension_management(
@@ -9743,21 +9787,41 @@ def category_edit_notification_card(
     if not changed_base_fields:
         elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "品类基础信息无变化。"}})
     elements.extend([{"tag": "hr"}, {"tag": "markdown", "content": "**物料主数据变更明细**"}])
-    for index, row in enumerate(changed_rows[:40], start=1):
-        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": (
-            f"{index:02d}. [{row['操作']}] {row['产品型号']} / {row['语种']}\n"
-            f"库存：{row['库存变化']}；单价：{row['单价变化']}；状态：{row['状态变化']}；"
-            f"申领页显示：{row['申领页显示变化']}；海关编码：{row['海关编码变化']}"
-        )}})
-    if not changed_rows:
-        elements.append({"tag": "div", "text": {"tag": "plain_text", "content": "库存组合明细无字段变化。"}})
+    table_rows = [
+        {
+            "sequence": index,
+            "operation": str(row["操作"]),
+            "specification": f"{row['产品型号']} / {row['语种']}",
+            "inventory_change": str(row["库存变化"]),
+            "unit_price_change": str(row["单价变化"]),
+            "status_change": str(row["状态变化"]),
+            "visibility_change": str(row["申领页显示变化"]),
+            "customs_change": str(row["海关编码变化"]),
+        }
+        for index, row in enumerate(changed_rows[:40], start=1)
+    ]
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "operation", "display_name": "操作", "data_type": "text", "width": "90px"},
+                {"name": "specification", "display_name": "型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "inventory_change", "display_name": "库存变化", "data_type": "text", "width": "120px"},
+                {"name": "unit_price_change", "display_name": "单价变化", "data_type": "text", "width": "120px"},
+                {"name": "status_change", "display_name": "状态变化", "data_type": "text", "width": "120px"},
+                {"name": "visibility_change", "display_name": "申领页显示", "data_type": "text", "width": "130px"},
+                {"name": "customs_change", "display_name": "海关编码", "data_type": "text", "width": "150px"},
+            ],
+            table_rows,
+        )
+    )
     if len(changed_rows) > 40:
         elements.append({"tag": "markdown", "content": f"另有 **{len(changed_rows) - 40}** 条修改，请在品类管理中查看。"})
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {"template": "blue", "title": {"tag": "plain_text", "content": "物料编辑通知｜品类修改已完成"}},
-        "elements": elements,
-    }
+    return _feishu_notification_card_v2(
+        "物料编辑通知｜品类修改已完成",
+        "blue",
+        elements,
+    )
 
 
 def is_feishu_recipient_unavailable_error(exc: Exception) -> bool:
@@ -9829,35 +9893,47 @@ def category_create_notification_card(
         {"tag": "hr"},
         {"tag": "markdown", "content": "**新增库存组合明细**"},
     ]
-    for index, target in enumerate(targets[:40], start=1):
-        elements.append({
-            "tag": "div",
-            "text": {
-                "tag": "plain_text",
-                "content": (
-                    f"{index:02d}. {_feishu_card_plain_text(target.get('model') or NO_MODEL_TEXT)} / "
-                    f"{_feishu_card_plain_text(target.get('language') or NO_LANGUAGE_TEXT)}\n"
-                    f"库存：{int(target.get('quantity') or 0)}；"
-                    f"单价：{float(target.get('unit_price') or 0):g}；"
-                    f"状态：{_feishu_card_plain_text(target.get('status'))}；"
-                    f"申领页显示：{_feishu_card_plain_text(normalize_request_page_visibility(target.get('request_visible')))}；"
-                    f"海关编码：{_feishu_card_plain_text(target.get('customs_code'))}"
-                ),
-            },
-        })
+    table_rows = [
+        {
+            "sequence": index,
+            "specification": (
+                f"{_feishu_card_plain_text(target.get('model') or NO_MODEL_TEXT)} / "
+                f"{_feishu_card_plain_text(target.get('language') or NO_LANGUAGE_TEXT)}"
+            ),
+            "quantity": int(target.get("quantity") or 0),
+            "unit_price": float(target.get("unit_price") or 0),
+            "status": _feishu_card_plain_text(target.get("status")),
+            "request_visible": _feishu_card_plain_text(
+                normalize_request_page_visibility(target.get("request_visible"))
+            ),
+            "customs_code": _feishu_card_plain_text(target.get("customs_code")) or "-",
+        }
+        for index, target in enumerate(targets[:40], start=1)
+    ]
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "specification", "display_name": "型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "quantity", "display_name": "初始库存", "data_type": "number", "width": "100px", "horizontal_align": "right"},
+                {"name": "unit_price", "display_name": "单价", "data_type": "number", "width": "84px", "horizontal_align": "right"},
+                {"name": "status", "display_name": "状态", "data_type": "text", "width": "84px"},
+                {"name": "request_visible", "display_name": "申领页", "data_type": "text", "width": "90px"},
+                {"name": "customs_code", "display_name": "海关编码", "data_type": "text", "width": "150px"},
+            ],
+            table_rows,
+        )
+    )
     if len(targets) > 40:
         elements.append({
             "tag": "markdown",
             "content": f"另有 **{len(targets) - 40}** 条新增组合，请在品类管理中查看。",
         })
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {
-            "template": "green",
-            "title": {"tag": "plain_text", "content": "物料编辑通知｜新物料品类已创建"},
-        },
-        "elements": elements,
-    }
+    return _feishu_notification_card_v2(
+        "物料编辑通知｜新物料品类已创建",
+        "green",
+        elements,
+    )
 
 
 def notify_enabled_admins_of_category_create(
@@ -9898,40 +9974,45 @@ def category_delete_notification_card(draft: dict[str, object]) -> dict[str, obj
         {"tag": "hr"},
         {"tag": "markdown", "content": "**删除明细**"},
     ]
-    for index, row in enumerate(rows[:40], start=1):
-        elements.append(
-            {
-                "tag": "div",
-                "text": {
-                    "tag": "plain_text",
-                    "content": (
-                        f"{index:02d}. {_feishu_card_plain_text(row.get('material_code') or '-')} | "
-                        f"{_feishu_card_plain_text(row.get('category'))} / "
-                        f"{_feishu_card_plain_text(row.get('model') or NO_MODEL_TEXT)} / "
-                        f"{_feishu_card_plain_text(row.get('language') or NO_LANGUAGE_TEXT)}\n"
-                        f"库存：{int(row.get('quantity') or 0)}；"
-                        f"状态：{_feishu_card_plain_text(normalize_enabled_status(row.get('status')))}；"
-                        f"申领页显示：{_feishu_card_plain_text(normalize_request_page_visibility(row.get('request_visible')))}"
-                    ),
-                },
-            }
+    table_rows = [
+        {
+            "sequence": index,
+            "material_code": _feishu_card_plain_text(row.get("material_code") or "-"),
+            "specification": (
+                f"{_feishu_card_plain_text(row.get('category'))} / "
+                f"{_feishu_card_plain_text(row.get('model') or NO_MODEL_TEXT)} / "
+                f"{_feishu_card_plain_text(row.get('language') or NO_LANGUAGE_TEXT)}"
+            ),
+            "quantity": int(row.get("quantity") or 0),
+            "status": _feishu_card_plain_text(normalize_enabled_status(row.get("status"))),
+            "request_visible": _feishu_card_plain_text(
+                normalize_request_page_visibility(row.get("request_visible"))
+            ),
+        }
+        for index, row in enumerate(rows[:40], start=1)
+    ]
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "material_code", "display_name": "物料编码", "data_type": "text", "width": "130px"},
+                {"name": "specification", "display_name": "品类 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "quantity", "display_name": "库存", "data_type": "number", "width": "80px", "horizontal_align": "right"},
+                {"name": "status", "display_name": "状态", "data_type": "text", "width": "84px"},
+                {"name": "request_visible", "display_name": "申领页", "data_type": "text", "width": "90px"},
+            ],
+            table_rows,
         )
-    if not rows:
-        elements.append(
-            {"tag": "div", "text": {"tag": "plain_text", "content": "所选品类没有物料行。"}}
-        )
+    )
     if len(rows) > 40:
         elements.append(
             {"tag": "markdown", "content": f"另有 **{len(rows) - 40}** 条删除明细。"}
         )
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {
-            "template": "red",
-            "title": {"tag": "plain_text", "content": "物料编辑通知｜物料删除已完成"},
-        },
-        "elements": elements,
-    }
+    return _feishu_notification_card_v2(
+        "物料编辑通知｜物料删除已完成",
+        "red",
+        elements,
+    )
 
 
 def notify_enabled_admins_of_category_delete(draft: dict[str, object]) -> int:
@@ -9983,20 +10064,33 @@ def inventory_auto_disable_notification_card(
         {"tag": "hr"},
         {"tag": "markdown", "content": "**停用明细**"},
     ]
+    table_rows: list[dict[str, object]] = []
     for index, row in enumerate(visible_rows, start=1):
-        detail = (
-            f"{index:02d}. {_feishu_card_plain_text(row.get('material_code'), max_length=100)} | "
-            f"{_feishu_card_plain_text(row.get('product'), max_length=250)} / "
-            f"{_feishu_card_plain_text(row.get('model') or NO_MODEL_TEXT, max_length=160)} / "
-            f"{_feishu_card_plain_text(row.get('language') or NO_LANGUAGE_TEXT, max_length=160)}\n"
-            f"库存：0；归零计时：{_feishu_card_plain_text(row.get('zero_since'), max_length=100)}"
-        )
-        elements.append(
+        table_rows.append(
             {
-                "tag": "div",
-                "text": {"tag": "plain_text", "content": detail},
+                "sequence": index,
+                "material_code": _feishu_card_plain_text(row.get("material_code"), max_length=100),
+                "specification": (
+                    f"{_feishu_card_plain_text(row.get('product'), max_length=250)} / "
+                    f"{_feishu_card_plain_text(row.get('model') or NO_MODEL_TEXT, max_length=160)} / "
+                    f"{_feishu_card_plain_text(row.get('language') or NO_LANGUAGE_TEXT, max_length=160)}"
+                ),
+                "quantity": 0,
+                "zero_since": _feishu_card_plain_text(row.get("zero_since"), max_length=100),
             }
         )
+    elements.append(
+        _feishu_notification_table(
+            [
+                {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
+                {"name": "material_code", "display_name": "物料编码", "data_type": "text", "width": "130px"},
+                {"name": "specification", "display_name": "品类 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "quantity", "display_name": "库存", "data_type": "number", "width": "80px", "horizontal_align": "right"},
+                {"name": "zero_since", "display_name": "归零计时", "data_type": "text", "width": "160px"},
+            ],
+            table_rows,
+        )
+    )
     if len(rows) > len(visible_rows):
         elements.append(
             {
@@ -10004,14 +10098,11 @@ def inventory_auto_disable_notification_card(
                 "content": f"另有 **{len(rows) - len(visible_rows)}** 条，请在物料主数据中查看。",
             }
         )
-    return {
-        "config": {"wide_screen_mode": True},
-        "header": {
-            "template": "red",
-            "title": {"tag": "plain_text", "content": "零库存行已自动停用"},
-        },
-        "elements": elements,
-    }
+    return _feishu_notification_card_v2(
+        "零库存行已自动停用",
+        "red",
+        elements,
+    )
 
 
 def notify_enabled_admins_of_inventory_auto_disable(
@@ -20821,6 +20912,36 @@ def _cultural_dimension_record_id(table_name: str, field_name: str, value: str) 
     return ""
 
 
+def cultural_management_notification_card(
+    action: str,
+    product: str,
+    model: str,
+    region: str,
+) -> dict[str, object]:
+    return _feishu_notification_card_v2(
+        "文化周边数据变更通知",
+        "blue",
+        [
+            {"tag": "markdown", "content": "**变更明细**"},
+            _feishu_notification_table(
+                [
+                    {"name": "operation", "display_name": "操作", "data_type": "text", "width": "90px"},
+                    {"name": "product", "display_name": "品类", "data_type": "text", "width": "auto"},
+                    {"name": "model", "display_name": "型号", "data_type": "text", "width": "140px"},
+                    {"name": "region", "display_name": "战区", "data_type": "text", "width": "150px"},
+                ],
+                [{
+                    "operation": action,
+                    "product": product or "-",
+                    "model": model or "-",
+                    "region": region or "-",
+                }],
+                freeze_first_column=False,
+            ),
+        ],
+    )
+
+
 def execute_cultural_material_management(draft: dict[str, object]) -> dict[str, object]:
     """Create, edit, or delete one culture inventory combination from the Worker."""
     refresh_feishu_schema_cache()
@@ -20881,12 +21002,7 @@ def execute_cultural_material_management(draft: dict[str, object]) -> dict[str, 
             raise RuntimeError(f"不支持的文化周边管理操作：{action}")
     client = feishu_client()
     if client is not None:
-        detail = f"操作：{action}\n品类：{product or '-'}\n型号：{model or '-'}\n战区：{region or '-'}"
-        card = {
-            "schema": "2.0",
-            "header": {"template": "blue", "title": {"tag": "plain_text", "content": "文化周边数据变更通知"}},
-            "body": {"elements": [{"tag": "markdown", "content": detail}]},
-        }
+        card = cultural_management_notification_card(action, product, model, region)
         for open_id in enabled_admin_open_ids():
             send_feishu_interactive_message(client, open_id, card)
     return result

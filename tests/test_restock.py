@@ -157,7 +157,13 @@ class RestockTests(unittest.TestCase):
         serialized = json.dumps(card, ensure_ascii=False)
         self.assertEqual(card["header"]["template"], "red")
         self.assertIn("减库已完成", serialized)
-        self.assertIn("减库 8，库存 12 → 4", serialized)
+        self.assertEqual(card["schema"], "2.0")
+        detail_table = next(
+            element for element in card["body"]["elements"]
+            if element.get("tag") == "table"
+        )
+        self.assertEqual(detail_table["rows"][0]["quantity"], 8)
+        self.assertEqual(detail_table["rows"][0]["inventory_change"], "12 → 4")
 
     def test_restock_rolls_inventory_back_when_ledger_write_fails(self) -> None:
         client = MagicMock()
@@ -243,10 +249,15 @@ class RestockTests(unittest.TestCase):
             "PO-1001",
             "展会备货",
             f"产品折页 / {app.request_model_display_label('BellaBot', language=app.LANGUAGE_ZH)} / 英语",
-            "补库 8，库存 12 → 20",
             "第一批",
         ):
             self.assertIn(expected, serialized)
+        detail_table = next(
+            element for element in card["body"]["elements"]
+            if element.get("tag") == "table"
+        )
+        self.assertEqual(detail_table["rows"][0]["quantity"], 8)
+        self.assertEqual(detail_table["rows"][0]["inventory_change"], "12 → 20")
 
     def test_restock_notification_goes_to_every_enabled_admin(self) -> None:
         client = MagicMock()

@@ -9,7 +9,80 @@ import app
 from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 
 
+def elements_with_tag(value: object, tag: str) -> list[dict[str, object]]:
+    matches: list[dict[str, object]] = []
+    if isinstance(value, dict):
+        if value.get("tag") == tag:
+            matches.append(value)
+        for child in value.values():
+            matches.extend(elements_with_tag(child, tag))
+    elif isinstance(value, list):
+        for child in value:
+            matches.extend(elements_with_tag(child, tag))
+    return matches
+
+
 class BotNotificationTests(unittest.TestCase):
+    def test_all_material_detail_notification_cards_use_tables(self) -> None:
+        material_line = {
+            "product": "产品单页",
+            "model": "T300",
+            "language": "英语",
+            "quantity": 2,
+        }
+        cards = [
+            app.material_restock_notification_card(
+                {"mode": "restock", "restock_no": "RST-1", "operator": "管理员"},
+                [{**material_line, "before_quantity": 1, "after_quantity": 3}],
+            ),
+            app.approval_writeback_notification_card(
+                "REQ-1",
+                "APPROVAL-1",
+                [{**material_line, "actual_issue_qty": 2, "status": "已发放", "current_stock": 8}],
+                succeeded=True,
+            ),
+            app.dimension_management_notification_card(
+                {
+                    "kind": "model",
+                    "operation": "edit",
+                    "name": "T300",
+                    "changes": [{
+                        "action": "update",
+                        "material_code": "MAT-1",
+                        "category": "产品单页",
+                        "model": "T300",
+                        "language": "英语",
+                        "quantity": 8,
+                        "status": app.STATUS_ACTIVE,
+                        "request_visible": app.REQUEST_PAGE_VISIBLE_VALUE,
+                    }],
+                },
+                {},
+            ),
+            app.category_create_notification_card(
+                {"product": "产品单页"},
+                {"targets": [{**material_line, "unit_price": 1, "status": app.STATUS_ACTIVE}]},
+            ),
+            app.category_delete_notification_card(
+                {"records": [{**material_line, "material_code": "MAT-1", "category": "产品单页"}]}
+            ),
+            app.inventory_auto_disable_notification_card(
+                [{**material_line, "material_code": "MAT-1", "zero_since": "2026-09-01"}],
+                "2026-09-20",
+            ),
+            app._cultural_request_card(
+                "CUL-1", "申请人", [{"product": "夹克", "model": "XL", "region": "中国", "quantity": 1}], applicant=True
+            ),
+            app.cultural_management_notification_card("edit", "夹克", "XL", "中国"),
+        ]
+
+        for card in cards:
+            with self.subTest(title=card["header"]["title"]["content"]):
+                self.assertEqual(card["schema"], "2.0")
+                tables = elements_with_tag(card, "table")
+                self.assertGreaterEqual(len(tables), 1)
+                self.assertGreaterEqual(len(tables[0]["rows"]), 1)
+
     def test_category_edit_card_is_wide_and_contains_change_details(self) -> None:
         draft = {
             "old_product": "旧冰箱贴",
@@ -40,7 +113,8 @@ class BotNotificationTests(unittest.TestCase):
         card = app.category_edit_notification_card(draft, result)
         serialized = json.dumps(card, ensure_ascii=False)
 
-        self.assertTrue(card["config"]["wide_screen_mode"])
+        self.assertEqual(card["schema"], "2.0")
+        self.assertEqual(card["config"]["width_mode"], "fill")
         self.assertEqual(card["header"]["template"], "blue")
         for expected in (
             "旧冰箱贴",
@@ -48,7 +122,7 @@ class BotNotificationTests(unittest.TestCase):
             "BellaBot / 英语",
             "10 → 15",
             "1.5 → 2",
-            "申领页显示：否 → 是",
+            "否 → 是",
             "中文页面名称：旧中文名 → 新中文名",
             "英文页面名称：Old English Name → New English Name",
         ):
@@ -157,14 +231,14 @@ class BotNotificationTests(unittest.TestCase):
         card = app.category_create_notification_card(draft, result)
         serialized = json.dumps(card, ensure_ascii=False)
 
-        self.assertTrue(card["config"]["wide_screen_mode"])
+        self.assertEqual(card["schema"], "2.0")
+        self.assertEqual(card["config"]["width_mode"], "fill")
         self.assertEqual(card["header"]["template"], "green")
         self.assertEqual(card["header"]["title"]["content"], "物料编辑通知｜新物料品类已创建")
         for expected in (
             "新品类", "2026-07-27 18:00:00", "库存组合 2 条",
-            "初始库存 25 件", "M1 / 英语", "库存：20", "单价：1.5",
-            "海关编码：4911101000", "M1 / 日语", "状态：停用",
-            "品类在申领页显示", "申领页显示：否",
+            "初始库存 25 件", "M1 / 英语", "4911101000", "M1 / 日语", "停用",
+            "品类在申领页显示", "申领页",
             "新品类中文", "New Category",
         ):
             self.assertIn(expected, serialized)
@@ -203,14 +277,15 @@ class BotNotificationTests(unittest.TestCase):
         card = app.category_delete_notification_card(draft)
         serialized = json.dumps(card, ensure_ascii=False)
 
-        self.assertTrue(card["config"]["wide_screen_mode"])
+        self.assertEqual(card["schema"], "2.0")
+        self.assertEqual(card["config"]["width_mode"], "fill")
         self.assertEqual(card["header"]["template"], "red")
         for expected in (
             "删除物料行",
             "MAT-0001",
             "产品单页 / BellaBot / 韩语(Korean)",
-            "库存：0",
-            "状态：启用",
+            "库存",
+            "启用",
         ):
             self.assertIn(expected, serialized)
 

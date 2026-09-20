@@ -297,6 +297,19 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertIn("如有疑问或其他需求，请联系", serialized)
         self.assertIn("<at id=ou_admin_1></at>", serialized)
         self.assertIn("<at id=ou_admin_2></at>", serialized)
+        tables = []
+        pending = [card]
+        while pending:
+            value = pending.pop()
+            if isinstance(value, dict):
+                if value.get("tag") == "table":
+                    tables.append(value)
+                pending.extend(value.values())
+            elif isinstance(value, list):
+                pending.extend(value)
+        self.assertEqual(len(tables), 2)
+        self.assertEqual(tables[0]["rows"][0]["quantity"], 1)
+        self.assertEqual(tables[1]["rows"][0]["quantity"], 1)
         contact_element = card["body"]["elements"][-1]
         self.assertEqual(set(contact_element), {"tag", "content"})
         client.send_text_message.assert_not_called()
