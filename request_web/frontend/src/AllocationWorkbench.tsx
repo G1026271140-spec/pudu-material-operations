@@ -39,9 +39,11 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [ack, setAck] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [confirmMode, setConfirmMode] = useState<"confirm" | "edit" | "">("");
+  const [orderPreview, setOrderPreview] = useState<any>(null);
   const signedQuery = `operator=${encodeURIComponent(operator)}&review_token=${encodeURIComponent(reviewToken)}`;
 
   useEffect(() => {
@@ -126,14 +128,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     return "";
   }
 
-  function openConfirm(mode: "confirm" | "edit") {
-    const message = validate(mode);
-    if (message) return setError(message);
-    setConfirmMode(mode);
-  }
-
-  async function submit() {
-    const mode = confirmMode as "confirm" | "edit";
+  function allocationDraft(mode: "confirm" | "edit") {
     const version = Number(context.request.inventory_review_version || 0);
     const draft: any = {
       request_id: requestId,
@@ -147,12 +142,52 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       draft.before_lines = (context.lines || []).map((x: any) => ({ record_id: x.record_id || "", material_record_id: x.material_record_id || "", product: x.product || "", model: x.model || "", language: x.language || "", quantity: Number(x.quantity || 0), remark: x.remark || "", unit_price_rmb: Number(x.unit_price_rmb || 0), subtotal_rmb: Number(x.subtotal_rmb || 0) }));
       draft.lines = rows.map(x => ({ line_record_id: x.line_record_id, material_record_id: x.material_record_id, quantity: Number(x.quantity), remark: x.remark || "", order_required: x.order_required === true }));
     }
+    return draft;
+  }
+
+  async function openConfirm(mode: "confirm" | "edit") {
+    const message = validate(mode);
+    if (message) return setError(message);
+    setPreviewing(true); setError("");
+    try {
+      const suffix = directRequestId ? `?${signedQuery}` : "";
+      const draft = allocationDraft(mode);
+      const preview = await jsonFetch(`/api/allocation/${encodeURIComponent(requestId)}/order-preview${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
+      setOrderPreview(preview);
+      setConfirmMode(mode);
+    } catch (e) { setError(e instanceof Error ? e.message : "下单信息预览失败"); }
+    finally { setPreviewing(false); }
+  }
+
+  async function submit() {
+    const mode = confirmMode as "confirm" | "edit";
+    const draft = allocationDraft(mode);
     setSubmitting(true); setError("");
     try {
       const suffix = directRequestId ? `?${signedQuery}` : "";
+      let workbook: Blob | null = null;
+      if (orderPreview?.workbookAvailable) {
+        const workbookResponse = await fetch(`/api/allocation/${encodeURIComponent(requestId)}/order-workbook${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
+        if (!workbookResponse.ok) {
+          const failure = await workbookResponse.json().catch(() => ({}));
+          throw Error(detail(failure.detail, "下单表生成失败"));
+        }
+        workbook = await workbookResponse.blob();
+      }
       const body = await jsonFetch(`/api/allocation/${encodeURIComponent(requestId)}/submit${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
+      if (workbook) {
+        const url = URL.createObjectURL(workbook);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = orderPreview.workbookFilename || `物料下单表-${request.request_no || requestId}.xlsx`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
       setSuccess(`${tr("配货任务已进入后台队列", "Allocation task queued")}（${body.taskId}）`);
       setConfirmMode("");
+      setOrderPreview(null);
     } catch (e) { setError(e instanceof Error ? e.message : "提交失败"); }
     finally { setSubmitting(false); }
   }
@@ -172,14 +207,14 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     {request.inventory_review_status === "已核实库存" ? <div className="allocation-success">✓ {tr("该申请已经完成库存核实，无需再次处理。", "This request has already completed inventory review.")}</div> : <>
       <section className="request-overview"><div className="allocation-title"><b>{request.request_no || "-"}</b><span>{tr("实时库存更新于", "Live stock updated at")} {context.snapshotAt}</span></div><div className="allocation-metrics"><span>{tr("申请人", "Requester")}<b>{request.requester || "-"}</b></span><span>{tr("申请部门", "Department")}<b>{request.department || "-"}</b></span><span>{tr("当前结论", "Current Result")}<b>{context.result || "-"}</b></span><span>{tr("变更次数", "Changes")}<b>{request.inventory_review_version || 0}</b></span><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span></div><div className="request-notes"><p><b>{tr("申请原因", "Reason")}：</b>{request.request_reason || "-"}</p><p><b>{tr("物料用途", "Usage")}：</b>{request.material_usage || "-"}</p><p><b>{tr("收件人信息", "Recipient")}：</b>{request.recipient_info || "-"}</p></div></section>
       <section className="allocation-form"><div className="allocation-control"><label>{tr("申请单发货日期", "Shipping Date")} *<input type="date" value={shipDate} onChange={e => setShipDate(e.target.value)}/></label>{!context.signedCardAccess && <label>{tr("本次配货操作人", "Allocation Operator")} *<select value={operatorId} onChange={e => setOperatorId(e.target.value)}><option value="">{tr("请选择管理员", "Select administrator")}</option>{operators.map(x => <option key={x.open_id} value={x.open_id}>{x.name} · {(x.department_paths || []).join(" / ")}</option>)}</select></label>}</div>
-        <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`)}</p></div><button className="confirm-original" onClick={() => openConfirm("confirm")}>✓ {tr("按原申请确认并提交", "Confirm Original Request")}</button></div>
+        <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`)}</p></div><button className="confirm-original" onClick={() => openConfirm("confirm")}>✓ {tr("按原申请确认配货方案", "Review Original Allocation")}</button></div>
         <div className="allocation-lines">{rows.map((row, index) => {
           const categories = unique(materials.map((x: any) => x.category));
           const models = unique(materials.filter((x: any) => x.category === row.category).map((x: any) => x.model));
           const languages = unique(materials.filter((x: any) => x.category === row.category && x.model === row.model).map((x: any) => x.language));
           const material = materialById[row.material_record_id] || {};
           const canOrder = isPrintMaterial(material);
-          return <article key={row.uid}><div className="line-index">{String(index + 1).padStart(2, "0")}</div><div className="line-fields"><label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => { const quantity = Math.max(1, Number(e.target.value)); setRows(rows.map((x, i) => i === index ? {...x, quantity, order_required: canOrder ? x.order_required : false} : x)); }}/></label><label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: canOrder && e.target.value === "yes"} : x))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label><label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label></div><div className="stock-info"><span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span><span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span><button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button></div></article>;
+          return <article key={row.uid}><div className="line-index">{String(index + 1).padStart(2, "0")}</div><div className="line-fields"><label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => { const quantity = Math.max(1, Number(e.target.value)); setRows(rows.map((x, i) => i === index ? {...x, quantity, order_required: canOrder ? x.order_required : false} : x)); }}/></label><label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: canOrder && e.target.value === "yes"} : x))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label><label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label></div><div className="stock-info"><span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span><span>{tr("在途库存", "In Transit")}<b>{Number(material.in_transit_quantity || 0)}</b></span><span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span><button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button></div></article>;
         })}</div>
         <button className="add-allocation-line" onClick={addRow}>＋ {tr("新增明细", "Add Line")}</button>
         <div className="amount-comparison"><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span><span>{tr("当前配货总金额", "Allocation Total")}<b>{money(currentTotal)}</b><em className={currentTotal - originalTotal < 0 ? "negative" : ""}>{currentTotal - originalTotal >= 0 ? "+" : ""}{money(currentTotal - originalTotal)}</em></span></div>
@@ -188,7 +223,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         <button className="submit-allocation" disabled={!ack} onClick={() => openConfirm("edit")}>{tr("提交配货方案", "Submit Allocation Plan")}</button>
       </section>
     </>}
-    {confirmMode && <div className="allocation-modal-backdrop" onMouseDown={() => setConfirmMode("")}><div className="allocation-modal" onMouseDown={e => e.stopPropagation()}><button className="close" onClick={() => setConfirmMode("")}>×</button><h2>{confirmMode === "confirm" ? tr("确认按原申请配货", "Confirm Original Allocation") : tr("确认提交调整后的配货方案", "Confirm Adjusted Allocation")}</h2><p><b>{request.request_no}</b> · {request.requester} · {shipDate}</p><div className="modal-summary"><span>{tr("配货明细", "Lines")}<b>{confirmMode === "confirm" ? context.lines.length : rows.length}</b></span><span>{tr("配货金额", "Total")}<b>{money(confirmMode === "confirm" ? originalTotal : currentTotal)}</b></span></div>{confirmMode === "edit" && <p className="note-preview">{changeNote}</p>}<div className="modal-actions"><button onClick={() => setConfirmMode("")}>{tr("返回修改", "Back")}</button><button className="primary" onClick={submit}>{tr("确认提交", "Confirm Submit")}</button></div></div></div>}
-    {submitting && <div className="allocation-submit-overlay"><i/><b>{tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
+    {confirmMode && orderPreview && <div className="allocation-modal-backdrop" onMouseDown={() => { setConfirmMode(""); setOrderPreview(null); }}><div className="allocation-modal order-confirm-modal" onMouseDown={e => e.stopPropagation()}><button className="close" onClick={() => { setConfirmMode(""); setOrderPreview(null); }}>×</button><h2>{tr("确认配货与下单信息", "Confirm Allocation and Order")}</h2><p><b>{request.request_no}</b> · {request.requester} · {shipDate}</p><div className="modal-summary"><span>{tr("配货明细", "Allocation Lines")}<b>{confirmMode === "confirm" ? context.lines.length : rows.length}</b></span><span>{tr("需要下单", "Order Lines")}<b>{orderPreview.lineCount}</b></span><span>{tr("下单总数量", "Order Quantity")}<b>{orderPreview.totalQuantity}</b></span></div><div className="order-confirm-section"><h3>{tr("需要下单的印刷物料汇总", "Printed Materials to Order")}</h3>{orderPreview.lines.length ? <div className="order-confirm-table-wrap"><table className="order-confirm-table"><thead><tr><th>{tr("类型", "Type")}</th><th>{tr("物料名称", "Material")}</th><th>{tr("语种", "Language")}</th><th>{tr("数量", "Quantity")}</th><th>{tr("用途", "Purpose")}</th></tr></thead><tbody>{orderPreview.lines.map((line: any, index: number) => <tr key={`${line.category}-${line.model}-${line.language}-${index}`}><td>{line.category}</td><td>{line.model}</td><td>{line.language}</td><td>{line.quantity}</td><td>{line.usage || "-"}</td></tr>)}</tbody></table></div> : <div className="order-confirm-empty">{tr("本次配货没有需要下单的印刷物料，不会生成下单表。", "No printed materials require ordering; no order workbook will be generated.")}</div>}</div>{confirmMode === "edit" && <p className="note-preview">{changeNote}</p>}<p className="order-confirm-hint">{orderPreview.workbookAvailable ? tr("再次确认后，配货任务将写入后台队列，并立即下载物料下单表。", "Final confirmation queues the allocation and downloads the order workbook.") : tr("再次确认后，配货任务将写入后台队列。", "Final confirmation queues the allocation.")}</p><div className="modal-actions"><button onClick={() => { setConfirmMode(""); setOrderPreview(null); }}>{tr("返回修改", "Back")}</button><button className="primary" onClick={submit}>{orderPreview.workbookAvailable ? tr("确认写入并下载下单表", "Confirm and Download") : tr("确认写入配货方案", "Confirm Allocation")}</button></div></div></div>}
+    {(previewing || submitting) && <div className="allocation-submit-overlay"><i/><b>{previewing ? tr("正在汇总下单信息……", "Preparing order summary…") : tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{previewing ? tr("正在核对实时申请明细与下单表模板", "Checking live lines and the order template") : tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
   </main>;
 }

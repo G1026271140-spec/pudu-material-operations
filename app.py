@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.17"
+APP_VERSION = "V2.9.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -11085,6 +11085,7 @@ def load_feishu_request_line_records(
                 "unit_price_rmb": feishu_float(fields, REQUEST_PRICE_SNAPSHOT_FIELD),
                 "subtotal_rmb": feishu_float(fields, REQUEST_LINE_SUBTOTAL_FIELD),
                 "current_stock": feishu_int(material_fields, "当前库存"),
+                "in_transit_stock": feishu_int(material_fields, "在途库存"),
                 "approved_qty": approved_qty,
                 "actual_issue_qty": actual_qty,
                 "status": feishu_text(fields, "明细状态") or REQUEST_LINE_STATUS_PENDING,
@@ -11334,6 +11335,7 @@ def cached_allocation_material_records(
                 "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
                 "language": feishu_text(fields, "语种") or NO_LANGUAGE_TEXT,
                 "quantity": feishu_int(fields, "当前库存"),
+                "in_transit_quantity": feishu_int(fields, "在途库存"),
                 "unit_price_rmb": request_material_unit_price_rmb(fields),
             }
         )
@@ -12220,6 +12222,7 @@ def parse_feishu_inventory_record(
     if not material_code or not category:
         return None
     quantity = feishu_int(fields, "当前库存")
+    in_transit_quantity = feishu_int(fields, "在途库存")
     unit_price = feishu_float_any(fields, list(UNIT_PRICE_FIELD_CANDIDATES))
     return {
         "record_id": feishu_record_id(row),
@@ -12228,6 +12231,7 @@ def parse_feishu_inventory_record(
         "model": feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
         "language": feishu_text(fields, "语种"),
         "quantity": quantity,
+        "in_transit_quantity": in_transit_quantity,
         "unit_price": unit_price,
         "total_value": quantity * unit_price,
         "remark": feishu_text(fields, "备注"),

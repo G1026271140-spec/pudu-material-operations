@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-21 11:00:34",
+  "generated_at": "2026-09-21 18:05:35",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -3132,6 +3132,16 @@
       ],
       "department_paths": [
         "欧洲OR业务部"
+      ]
+    },
+    {
+      "open_id": "ou_477f491b4f2cc1ec411f140d671a9778",
+      "name": "刘家驹",
+      "department_ids": [
+        "od-89f44bfe9d5e17bb4cb4e3f13fa6b8d6"
+      ],
+      "department_paths": [
+        "美洲服务部"
       ]
     },
     {
@@ -6831,16 +6841,6 @@
       ]
     },
     {
-      "open_id": "ou_1bcbfe2eb0a07c9e69c3809d8c6a4d82",
-      "name": "廖家华",
-      "department_ids": [
-        "od-8f3a4c538a65e3c3396660a2d4e21445"
-      ],
-      "department_paths": [
-        "建湖仓储物流组"
-      ]
-    },
-    {
       "open_id": "ou_4b35eb684c53c15b0e6605d8660a84e3",
       "name": "廖家鸣",
       "department_ids": [
@@ -8876,9 +8876,11 @@
       "open_id": "ou_a8ca3ca8a1dd8f63d02a4fc4063882e4",
       "name": "易佳宇",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-5d441daa075643882e57dc112e94aa3c"
       ],
       "department_paths": [
+        "X LAB",
         "X LAB测试组"
       ]
     },
@@ -13056,10 +13058,10 @@
       "open_id": "ou_c2bba1a29a6429ceeae6fde29c1c8f23",
       "name": "洪梁",
       "department_ids": [
-        "od-c66cd8d7e00d195dfb1a1ef9f337409e"
+        "od-8acc8c6a8b3d1c152f32b2f8a4c8d63e"
       ],
       "department_paths": [
-        "NPI组"
+        "PE组"
       ]
     },
     {
@@ -14655,6 +14657,16 @@
       ]
     },
     {
+      "open_id": "ou_5913607228e6ae08a8c988cafee45c3a",
+      "name": "王霜",
+      "department_ids": [
+        "od-be83c4809822eaf7aa5bba4c4e8f3eba"
+      ],
+      "department_paths": [
+        "桐乡仓储物流组"
+      ]
+    },
+    {
       "open_id": "ou_7ae70d06b7926b25a4f169c6ca6d9b70",
       "name": "王顺东",
       "department_ids": [
@@ -15344,6 +15356,16 @@
       ],
       "department_paths": [
         "非营销招聘组"
+      ]
+    },
+    {
+      "open_id": "ou_22bbc7b9cdd9456a4e794108ad08b8c4",
+      "name": "粟成强",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
       ]
     },
     {
@@ -16214,10 +16236,10 @@
       "open_id": "ou_9f6ce105d8e3973d9db5ecab85c22baa",
       "name": "胡翔翔",
       "department_ids": [
-        "od-057136d1f73860bc2ea5a9fb1a421adf"
+        "od-8acc8c6a8b3d1c152f32b2f8a4c8d63e"
       ],
       "department_paths": [
-        "工程部"
+        "PE组"
       ]
     },
     {
@@ -16757,6 +16779,16 @@
       ]
     },
     {
+      "open_id": "ou_6d2b813b265ba18d6e1f8f7ec9c4c18d",
+      "name": "蒋杨",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_4a7008e7d917cced721b688de4bc30df",
       "name": "蒋毅",
       "department_ids": [
@@ -16809,6 +16841,16 @@
     {
       "open_id": "ou_77ced77b6ae99bbb08ef6bc989956348",
       "name": "蒋顺河",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_033e43ef5677f66cea2c522a4641a544",
+      "name": "蒋龙",
       "department_ids": [
         "od-7c4c394d59fe1b9f14e3629e853dea7c"
       ],
@@ -18971,16 +19013,6 @@
       ]
     },
     {
-      "open_id": "ou_f80beecaa1ca51ed74985ae00548f100",
-      "name": "金俊成",
-      "department_ids": [
-        "od-2f3b4aa135c682dcf06b79b2f1f75642"
-      ],
-      "department_paths": [
-        "通用导航及底盘团队"
-      ]
-    },
-    {
       "open_id": "ou_054e69f94cf60d41221ce97d1f26ea7e",
       "name": "金寅泰",
       "department_ids": [
@@ -19650,10 +19682,10 @@
       "open_id": "ou_475bf7ab8524436cc100e70017963224",
       "name": "陈增聪",
       "department_ids": [
-        "od-057136d1f73860bc2ea5a9fb1a421adf"
+        "od-c66cd8d7e00d195dfb1a1ef9f337409e"
       ],
       "department_paths": [
-        "工程部"
+        "NPI组"
       ]
     },
     {
@@ -21276,9 +21308,11 @@
       "open_id": "ou_0e5eb77c313489d20a27584518b6e2c3",
       "name": "高翔",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-5d441daa075643882e57dc112e94aa3c"
       ],
       "department_paths": [
+        "X LAB",
         "X LAB测试组"
       ]
     },
@@ -22269,5 +22303,5 @@
       ]
     }
   ],
-  "user_count": 2059
+  "user_count": 2062
 }

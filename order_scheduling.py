@@ -25,6 +25,7 @@ FULFILLMENT_OPTIONS = ("待安排", "已下单", "制作中", "已发货", "已�
 TIME_CLASS = "时间判定"
 RESTOCK_KEY = "补库幂等建"
 GENERATED = "下单表生成状态"
+IN_TRANSIT_STOCK = "在途库存"
 
 
 def today() -> date:
@@ -129,6 +130,9 @@ def aggregate_export_rows(lines: list[dict]) -> list[list]:
 
 # Explicit contracts: new schema failures disable only this module, never create fields.
 SCHEMA = {
+    "物料主数据": {
+        IN_TRANSIT_STOCK: (2, None),
+    },
     "物料申请单": {
         "申请原因": (3, REASONS), ARRIVAL_START: (5, None), ARRIVAL_END: (5, None),
         USAGE_DATE: (5, None), ORDER_DATE: (5, None), ARRIVAL_DATE: (5, None),

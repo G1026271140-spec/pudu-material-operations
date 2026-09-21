@@ -103,7 +103,7 @@ class FakeApp:
         self.data[app.REQUEST_LINE_TABLE_NAME] = [record(f"line{i}", 所属申请单=["req"], 物料编码=["mat"],
             申请数量=20, 实际发放数量=0, 明细状态="待审批", 明细编号=f"REQ-1-{i}", 品类名称="旧名", 语种名称="英语", 备注="") for i in range(2)]
         self.data[app.MATERIAL_TABLE_NAME] = [record("mat", 物料品类="内部品类", 产品型号="M1", 语种="英语",
-                                                     品类关联=["cat"], 当前库存=10, 启用状态="启用")]
+                                                     品类关联=["cat"], 当前库存=10, 在途库存=0, 启用状态="启用")]
         self.data[app.CATEGORY_TABLE_NAME] = [record("cat", 物料品类="内部品类", 中文页面名称="最新中文名", **{app.UNIT_PRICE_RMB_FIELD: 2.0})]
         self.data[r.BATCH_TABLE] = []
         self.data[r.DETAIL_TABLE] = []
@@ -212,11 +212,13 @@ def test_generate_selected_only_then_exclude_whole_request_and_retry_no_duplicat
     assert "下单表文件" not in r.SCHEMA[r.BATCH_TABLE]
     assert len(svc.app.data[r.DETAIL_TABLE]) == 1
     assert svc.app.data[r.DETAIL_TABLE][0]["fields"]["下单数量"] == 20
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] == 20
     assert svc.app.data[app.REQUEST_LINE_TABLE_NAME][1]["fields"].get(r.GENERATED) is None
     assert svc.grouped_requests(svc.snapshot())["req"]["generated"]
     svc.generate(payload, {}, lambda _: None)
     assert len(svc.app.data[r.BATCH_TABLE]) == len(svc.app.data[r.DETAIL_TABLE]) == 1
     assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 10
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] == 20
     with pytest.raises(ValueError):
         svc.generate({**payload, "generation_key": "other-key"}, {}, lambda _: None)
 
@@ -251,15 +253,44 @@ def test_due_guard_past_at_generation_requires_confirmation(svc):
     assert svc.due_details(svc.snapshot()) == []
 
 
+def test_in_transit_is_recomputed_from_all_active_order_details(svc):
+    add_due(svc)
+    svc.app.data[r.DETAIL_TABLE].append(record(
+        "detail-2", 所属下单批次=["batch"], 关联物料=["mat"],
+        补库状态="补库异常", 下单数量=7,
+    ))
+    svc.app.data[r.DETAIL_TABLE].append(record(
+        "detail-cancelled", 所属下单批次=["batch"], 关联物料=["mat"],
+        补库状态="已取消", 下单数量=99,
+    ))
+    svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] = 999
+    svc.sync_in_transit_stock(svc.snapshot())
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] == 27
+
+
 def test_restock_exactly_once_and_never_issue(svc):
     add_due(svc)
+    svc.sync_in_transit_stock(svc.snapshot())
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] == 20
     progress = svc.restock({"detail_id": "detail"}, {}, lambda _: None)
     assert progress["write_done"]
     assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 30
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] == 0
     assert len(svc.app.data[app.LEDGER_TABLE_NAME]) == 1
     svc.restock({"detail_id": "detail"}, {}, lambda _: None)
     assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 30
     assert all(row["fields"]["实际发放数量"] == 0 for row in svc.app.data[app.REQUEST_LINE_TABLE_NAME])
+
+
+def test_canceling_order_removes_in_transit_without_inventory_ledger(svc):
+    add_due(svc)
+    svc.sync_in_transit_stock(svc.snapshot())
+    svc.plan({"operator_open_id": "ou_admin", "action": "fulfillment_update",
+              "detail_id": "detail", "status": "已取消"}, {}, lambda _: None)
+    assert svc.app.data[r.DETAIL_TABLE][0]["fields"]["补库状态"] == "已取消"
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"][r.IN_TRANSIT_STOCK] == 0
+    assert svc.app.data[app.MATERIAL_TABLE_NAME][0]["fields"]["当前库存"] == 10
+    assert svc.app.data[app.LEDGER_TABLE_NAME] == []
 
 
 def test_uncertain_stock_write_fails_closed_even_on_retries(svc):

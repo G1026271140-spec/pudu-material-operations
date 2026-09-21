@@ -9,6 +9,7 @@ from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 from uuid import uuid4
 
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Response
@@ -164,6 +165,7 @@ def build_catalog() -> dict[str, Any]:
                 "productLine": model_meta.get(model, {}).get("line", ""),
                 "language": item.get("language") or legacy.NO_LANGUAGE_TEXT,
                 "stock": int(item.get("quantity") or 0),
+                "inTransitStock": int(item.get("in_transit_quantity") or 0),
                 "unitPriceRmb": legacy.request_material_unit_price_rmb(
                     raw_fields, category_price_rmb.get(product_key, 0.0)
                 ),
@@ -626,6 +628,173 @@ def allocation_context(
         raise HTTPException(status_code=503, detail=f"申请单实时配货数据读取失败：{exc}") from exc
 
 
+def _allocation_order_preview(request_id: str, operation: str, draft: dict[str, Any]) -> dict[str, Any]:
+    """Build the exact supplier-order rows without performing any Base writes."""
+    import app as legacy
+    from order_scheduling import aggregate_export_rows
+    from order_scheduling_export import build_order_workbook
+
+    context = legacy.request_inventory_review_context(request_id=request_id)
+    request = dict(context.get("request") or {})
+    usage = str(request.get("material_usage") or "")
+    category_rows = list(context.get("category_rows") or [])
+    category_meta = {
+        legacy.normalize_category_match_key(legacy.feishu_text(legacy.feishu_fields(row), "物料品类")): {
+            "display": legacy.feishu_text(legacy.feishu_fields(row), "中文页面名称")
+            or legacy.feishu_text(legacy.feishu_fields(row), "物料品类"),
+            "definition": legacy.feishu_text(legacy.feishu_fields(row), "品类定义")
+            or legacy.UNDEFINED_CATEGORY_DEFINITION,
+        }
+        for row in category_rows
+    }
+    lines: list[dict[str, Any]] = []
+    if operation == "confirm":
+        for item in list(context.get("lines") or []):
+            definition = str(item.get("category_definition") or "")
+            required = legacy.allocation_line_requires_order(
+                definition,
+                int(item.get("current_stock") or 0) < int(item.get("quantity") or 0),
+            )
+            if not required:
+                continue
+            product = str(item.get("product") or "")
+            meta = category_meta.get(legacy.normalize_category_match_key(product), {})
+            lines.append({
+                "category": meta.get("display") or product,
+                "model": str(item.get("model") or legacy.NO_MODEL_TEXT),
+                "language": str(item.get("language") or legacy.NO_LANGUAGE_TEXT),
+                "quantity": int(item.get("quantity") or 0),
+                "usage": usage,
+                "remark": str(item.get("remark") or ""),
+            })
+    elif operation == "edit":
+        material_by_id = {
+            legacy.feishu_record_id(row): row for row in list(context.get("material_rows") or [])
+        }
+        for item in [dict(value) for value in list(draft.get("lines") or []) if isinstance(value, dict)]:
+            material_id = str(item.get("material_record_id") or "")
+            material = material_by_id.get(material_id)
+            if material is None:
+                raise ValueError("配货方案包含已删除或无效的物料，请刷新后重新选择。")
+            fields = legacy.feishu_fields(material)
+            product = legacy.feishu_text(fields, "物料品类")
+            meta = category_meta.get(legacy.normalize_category_match_key(product), {})
+            definition = str(meta.get("definition") or legacy.UNDEFINED_CATEGORY_DEFINITION)
+            if not legacy.allocation_line_requires_order(definition, item.get("order_required") is True):
+                continue
+            quantity = int(item.get("quantity") or 0)
+            if quantity <= 0:
+                raise ValueError("配货数量必须大于 0。")
+            lines.append({
+                "category": meta.get("display") or product,
+                "model": legacy.feishu_text(fields, "产品型号") or legacy.NO_MODEL_TEXT,
+                "language": legacy.feishu_text(fields, "语种") or legacy.NO_LANGUAGE_TEXT,
+                "quantity": quantity,
+                "usage": usage,
+                "remark": str(item.get("remark") or ""),
+            })
+    else:
+        raise ValueError("不支持的配货操作。")
+
+    aggregated = aggregate_export_rows(lines) if lines else []
+    if lines:
+        # Validate the approved template before the operator reaches the final action.
+        build_order_workbook(lines)
+    request_no = str(request.get("request_no") or request_id)
+    return {
+        "requestNo": request_no,
+        "lines": [
+            {"category": row[0], "model": row[1], "language": row[2], "quantity": row[3], "usage": row[4]}
+            for row in aggregated
+        ],
+        "lineCount": len(aggregated),
+        "totalQuantity": sum(int(row[3]) for row in aggregated),
+        "workbookAvailable": bool(lines),
+        "workbookFilename": f"物料下单表-{request_no}.xlsx",
+    }
+
+
+def _authorize_allocation_preview(
+    request_id: str,
+    body: dict[str, Any],
+    operator: str,
+    review_token: str,
+    pudu_admin: str,
+) -> tuple[str, dict[str, Any]]:
+    import app as legacy
+
+    signed_operator = _allocation_actor(request_id, operator, review_token, pudu_admin)
+    draft = dict(body.get("draft") or {})
+    draft["request_id"] = request_id
+    if signed_operator:
+        draft["operator_open_id"] = signed_operator
+    operator_open_id = str(draft.get("operator_open_id") or "").strip()
+    if operator_open_id not in legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args()):
+        raise HTTPException(status_code=422, detail="请选择已启用的管理员作为本次配货操作人。")
+    operation = str(body.get("operation") or "")
+    if operation not in {"confirm", "edit"}:
+        raise HTTPException(status_code=422, detail="不支持的配货操作。")
+    return operation, draft
+
+
+@api.post("/api/allocation/{request_id}/order-preview")
+def allocation_order_preview(
+    request_id: str,
+    body: dict[str, Any],
+    operator: str = Query(default=""),
+    review_token: str = Query(default=""),
+    pudu_admin: str = Cookie(default=""),
+) -> dict[str, Any]:
+    operation, draft = _authorize_allocation_preview(
+        request_id, body, operator, review_token, pudu_admin
+    )
+    try:
+        return _allocation_order_preview(request_id, operation, draft)
+    except (ValueError, TypeError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@api.post("/api/allocation/{request_id}/order-workbook")
+def allocation_order_workbook(
+    request_id: str,
+    body: dict[str, Any],
+    operator: str = Query(default=""),
+    review_token: str = Query(default=""),
+    pudu_admin: str = Cookie(default=""),
+) -> StreamingResponse:
+    from order_scheduling_export import build_order_workbook
+
+    operation, draft = _authorize_allocation_preview(
+        request_id, body, operator, review_token, pudu_admin
+    )
+    try:
+        preview = _allocation_order_preview(request_id, operation, draft)
+        if not preview["workbookAvailable"]:
+            raise ValueError("本次配货没有需要下单的印刷物料，无需生成下单表。")
+        lines = [
+            {
+                "category": row["category"], "model": row["model"],
+                "language": row["language"], "quantity": int(row["quantity"]),
+                "usage": row["usage"], "remark": "",
+            }
+            for row in preview["lines"]
+        ]
+        workbook = build_order_workbook(lines)
+    except (ValueError, TypeError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    filename = str(preview["workbookFilename"])
+    ascii_filename = f"material-order-{preview['requestNo']}.xlsx"
+    return StreamingResponse(
+        io.BytesIO(workbook),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{ascii_filename}"; filename*=UTF-8\'\'{quote(filename)}'
+            )
+        },
+    )
+
+
 @api.post("/api/allocation/{request_id}/submit")
 def allocation_submit(
     request_id: str,
@@ -814,9 +983,17 @@ def _field_text(value: Any) -> str:
 
 @api.get("/api/workspace")
 def workspace() -> dict[str, Any]:
+    import app as legacy
+
     request_cache = _json("request_form_cache.json")
     page = _json("page_data_cache.json")
     tables = page.get("tables", {})
+    in_transit_by_code = {
+        _field_text(row.get("fields", {}).get("物料编码")): legacy.feishu_int(
+            row.get("fields", {}), "在途库存"
+        )
+        for row in tables.get("物料主数据", [])
+    }
 
     def rows(table: str, fields: list[str]) -> list[dict[str, Any]]:
         result = []
@@ -830,6 +1007,7 @@ def workspace() -> dict[str, Any]:
             "物料编码": row.get("material_code", ""), "物料品类": row.get("product", ""),
             "产品型号": row.get("model", ""), "语种": row.get("language", ""),
             "库存数量": int(row.get("quantity") or 0), "单价（人民币）": float(row.get("unit_price_rmb") or 0),
+            "在途库存": in_transit_by_code.get(str(row.get("material_code") or ""), 0),
             "库存价值": round(int(row.get("quantity") or 0) * float(row.get("unit_price_rmb") or 0), 2),
         }
         for row in request_cache.get("inventory_rows", [])

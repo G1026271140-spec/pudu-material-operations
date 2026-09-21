@@ -255,6 +255,42 @@ class SchedulingService:
     def refresh(self):
         self.app.refresh_page_cache_tables(self.tables)
 
+    def in_transit_totals(self, snapshot):
+        """Derive ordered-but-not-stocked quantities from durable order details."""
+        a = self.app
+        batches = self.index(snapshot[rules.BATCH_TABLE])
+        totals = {}
+        for row in snapshot[rules.DETAIL_TABLE]:
+            fields = a.feishu_fields(row)
+            if a.feishu_text(fields, "补库状态") not in {"待补库", "补库异常"}:
+                continue
+            batch_ids = a.feishu_link_ids(fields, "所属下单批次")
+            material_ids = a.feishu_link_ids(fields, "关联物料")
+            if len(batch_ids) != 1 or len(material_ids) != 1:
+                continue
+            batch_fields = a.feishu_fields(batches.get(batch_ids[0], {}))
+            if a.feishu_text(batch_fields, "批次状态") != "已生成":
+                continue
+            quantity = a.feishu_int(fields, "下单数量")
+            if quantity > 0:
+                material_id = material_ids[0]
+                totals[material_id] = totals.get(material_id, 0) + quantity
+        return totals
+
+    def sync_in_transit_stock(self, snapshot=None):
+        """Overwrite the material mirror from order details; never delta-update it."""
+        a = self.app
+        snapshot = snapshot or self.snapshot(live=True)
+        totals = self.in_transit_totals(snapshot)
+        updated = 0
+        for row in snapshot[a.MATERIAL_TABLE_NAME]:
+            material_id = a.feishu_record_id(row)
+            target = totals.get(material_id, 0)
+            if a.feishu_int(a.feishu_fields(row), rules.IN_TRANSIT_STOCK) != target:
+                self.write(a.MATERIAL_TABLE_NAME, material_id, {rules.IN_TRANSIT_STOCK: target})
+                updated += 1
+        return updated
+
     def edit(self, payload, progress, checkpoint):
         """Fail closed after an uncertain write; do not replay a partial multi-record edit."""
         a = self.app
@@ -416,6 +452,7 @@ class SchedulingService:
                 if bid in a.feishu_link_ids(f, "所属下单批次"):
                     for lid in a.feishu_link_ids(f, "来源申请明细"):
                         self.write(a.REQUEST_LINE_TABLE_NAME, lid, {rules.GENERATED: "已生成"})
+            self.sync_in_transit_stock()
             progress.update(write_done=True, batch_id=bid)
             checkpoint(dict(progress))
             self.refresh()
@@ -499,6 +536,7 @@ class SchedulingService:
         self.write(rules.BATCH_TABLE, bid, {"批次状态": "已生成", "启用自动补库": True})
         for item in prepared:
             self.write(a.REQUEST_LINE_TABLE_NAME, item["line_id"], {rules.GENERATED: "已生成"})
+        self.sync_in_transit_stock()
         progress.update(write_done=True, batch_id=bid)
         checkpoint(dict(progress))
         self.refresh()
@@ -540,6 +578,9 @@ class SchedulingService:
     def enqueue_due(self):
         from submission_queue import QUEUE_TASK_TYPE_ORDER_RESTOCK, QUEUE_STATUS_COMPLETED, find_task_by_idempotency_key
         snapshot = self.snapshot(live=True)
+        # The due scanner is also the reconciliation loop for manual Base edits
+        # to quantities, cancellation state, or batch status.
+        self.sync_in_transit_stock(snapshot)
         count = 0
         for row in self.due_details(snapshot):
             key = self.app.feishu_text(self.app.feishu_fields(row), rules.RESTOCK_KEY)
@@ -678,6 +719,11 @@ class SchedulingService:
             if status not in allowed:
                 raise ValueError("无效的物料到货状态。")
             fields = {rules.FULFILLMENT_STATUS: status}
+            restock_status = a.feishu_text(f, "补库状态")
+            if status == "已取消" and restock_status not in {"已补库", "补库中"}:
+                fields["补库状态"] = "已取消"
+            elif status != "已取消" and restock_status == "已取消":
+                fields["补库状态"] = "待补库"
             if payload.get("ship_date"):
                 fields[rules.SHIP_DATE] = rules.date_ms(payload["ship_date"])
             if payload.get("arrival_date"):
@@ -694,6 +740,7 @@ class SchedulingService:
                 statuses = {a.feishu_text(line, rules.FULFILLMENT_STATUS) for line in lines}
                 if statuses and statuses <= {"已到货", "已完成", "无需下单", "已取消"}:
                     self.write(a.REQUEST_TABLE_NAME, request_ids[0], {rules.FULFILLMENT_STATUS: "全部已到货"})
+            self.sync_in_transit_stock()
         elif action == "fulfillment_bulk_update":
             detail_index = self.index(snapshot[rules.DETAIL_TABLE])
             line_index = self.index(snapshot[a.REQUEST_LINE_TABLE_NAME])
@@ -708,6 +755,12 @@ class SchedulingService:
                     continue
                 status = str(payload.get("status") or "")
                 fields = {rules.FULFILLMENT_STATUS: status}
+                if table == rules.DETAIL_TABLE:
+                    restock_status = a.feishu_text(f, "补库状态")
+                    if status == "已取消" and restock_status not in {"已补库", "补库中"}:
+                        fields["补库状态"] = "已取消"
+                    elif status != "已取消" and restock_status == "已取消":
+                        fields["补库状态"] = "待补库"
                 if payload.get("ship_date"):
                     fields[rules.SHIP_DATE] = rules.date_ms(payload["ship_date"])
                 if payload.get("arrival_date"):
@@ -716,6 +769,7 @@ class SchedulingService:
                     if rules.ARRIVAL_DATE in a.feishu_table_fields(table):
                         fields[rules.ARRIVAL_DATE] = arrival_value
                 self.write(table, detail_id, fields)
+            self.sync_in_transit_stock()
         else:
             raise ValueError("未知排期操作。")
         progress["write_done"] = True
@@ -733,6 +787,7 @@ class SchedulingService:
             raise ValueError("下单批次明细不存在。")
         f = a.feishu_fields(row)
         if a.feishu_text(f, "补库状态") == "已补库":
+            self.sync_in_transit_stock(snapshot)
             return {**progress, "write_done": True, "detail_id": rid}
         key = a.feishu_text(f, rules.RESTOCK_KEY)
         if not key:
@@ -789,6 +844,7 @@ class SchedulingService:
             "补库状态": "已补库", "实际补库时间": int(datetime.now(rules.CHINA_TZ).timestamp() * 1000),
             "关联库存流水": [a.feishu_record_id(ledgers[0])], "补库异常说明": "",
         })
+        self.sync_in_transit_stock()
         progress.update(write_done=True, detail_id=rid)
         checkpoint(dict(progress))
         a.refresh_page_cache_tables((a.MATERIAL_TABLE_NAME, a.LEDGER_TABLE_NAME, rules.BATCH_TABLE, rules.DETAIL_TABLE))

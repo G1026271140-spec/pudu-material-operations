@@ -215,6 +215,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
                     "产品型号": "D7",
                     "语种": "英语",
                     "当前库存": 4,
+                    "在途库存": 12,
                     "启用状态": "启用",
                     "申领页显示": "是",
                 },
@@ -254,6 +255,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
 
         self.assertEqual([record["record_id"] for record in records], ["mat-1", "mat-current"])
         self.assertEqual(records[0]["quantity"], 4)
+        self.assertEqual(records[0]["in_transit_quantity"], 12)
         self.assertEqual(records[0]["category_definition"], app.CATEGORY_DEFINITION_PRINT)
         self.assertEqual(records[1]["category_definition"], app.CATEGORY_DEFINITION_GIFT)
 

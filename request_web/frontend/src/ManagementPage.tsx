@@ -162,7 +162,7 @@ function Restock({ catalog, tr, setBusy, setError, setSuccess }: any) {
       options.forEach((source: any) => {
         const key = `${source.category}\0${source.model}\0${source.language}`;
         const index = next.findIndex(x => x.key === key);
-        const item = { key, category_definition: catalog.categories.find((c: any) => c.category === source.category)?.category_definition || "", product: source.category, model: source.model, language: source.language, quantity, remark, snapshot_quantity: source.quantity };
+        const item = { key, category_definition: catalog.categories.find((c: any) => c.category === source.category)?.category_definition || "", product: source.category, model: source.model, language: source.language, quantity, remark, snapshot_quantity: source.quantity, snapshot_in_transit: source.in_transit_quantity || 0 };
         if (index >= 0) next[index] = { ...next[index], quantity: next[index].quantity + quantity, remark: remark || next[index].remark };
         else next.push(item);
       });
@@ -189,7 +189,7 @@ function Restock({ catalog, tr, setBusy, setError, setSuccess }: any) {
     <Section index="02" title={`${modeLabel}${tr("物料清单", " Material List")}`} hint={`${tr("按品类卡片选择型号和语种，可同时多选；最多", "Select models and languages from category cards; maximum")} ${catalog.maxRestockLines}`}>
       <div className="restock-toolbar"><input value={search} onChange={e => setSearch(e.target.value)} placeholder={tr("⌕ 输入品类名称搜索", "⌕ Search material categories")} /><strong>{lines.length} {tr("种", "types")} / {total} {tr("件", "items")}</strong><button className="primary" onClick={() => lines.length ? setReview(true) : setError(tr("请先添加操作物料。","Add materials first."))}>{tr("预览", "Review")}{modeLabel}</button></div>
       {lines.length > 0 && (
-        <DataTable tr={tr} rows={lines} columns={["product", "model", "language", "snapshot_quantity", "quantity", "remark"]} labels={[tr("物料品类","Category"),tr("产品型号","Model"),tr("语种","Language"),tr("缓存库存","Cached Stock"),`${modeLabel}${tr("数量"," Qty")}`,tr("备注","Remark")]} onDelete={(i: number) => setLines(lines.filter((_: any, j: number) => i !== j))} onQuantity={(i: number,v: number) => setLines(lines.map((x: any,j: number) => j === i ? {...x,quantity:Math.max(1,v)}:x))}/>
+        <DataTable tr={tr} rows={lines} columns={["product", "model", "language", "snapshot_quantity", "snapshot_in_transit", "quantity", "remark"]} labels={[tr("物料品类","Category"),tr("产品型号","Model"),tr("语种","Language"),tr("缓存库存","Cached Stock"),tr("在途库存","In Transit"),`${modeLabel}${tr("数量"," Qty")}`,tr("备注","Remark")]} onDelete={(i: number) => setLines(lines.filter((_: any, j: number) => i !== j))} onQuantity={(i: number,v: number) => setLines(lines.map((x: any,j: number) => j === i ? {...x,quantity:Math.max(1,v)}:x))}/>
       )}
       <div className="restock-cards">{visibleProducts.map((product: string) => { const category = catalog.categories.find((c: any) => c.category === product); return <article key={product}>{catalog.restockImages?.[product] ? <img src={catalog.restockImages[product]} /> : <div className="restock-placeholder">PUDU</div>}<small>{category?.category_definition || tr("物料品类","Material Category")}</small><h3>{product}</h3><button onClick={() => openProduct(product)}>🛒 {tr("选择规格", "Select Options")}</button></article>; })}</div>
     </Section>
