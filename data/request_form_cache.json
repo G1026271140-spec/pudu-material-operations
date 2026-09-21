@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-20 17:54:04",
+  "generated_at": "2026-09-21 10:32:46",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2964,7 +2964,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 50,
+      "quantity": 70,
       "unit_price_rmb": 5.416
     },
     {
@@ -3036,7 +3036,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 50,
+      "quantity": 100,
       "unit_price_rmb": 5.416
     },
     {
@@ -3100,7 +3100,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": -150,
+      "quantity": -100,
       "unit_price_rmb": 5.416
     },
     {
@@ -4428,7 +4428,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "KettyBot Pro",
       "language": "无需语种",
-      "quantity": -5,
+      "quantity": 0,
       "unit_price_rmb": 1.354
     },
     {
@@ -4436,7 +4436,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "PuduBot 2",
       "language": "无需语种",
-      "quantity": -5,
+      "quantity": 0,
       "unit_price_rmb": 1.354
     },
     {
@@ -4460,7 +4460,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "SH1",
       "language": "无需语种",
-      "quantity": 95,
+      "quantity": 100,
       "unit_price_rmb": 1.354
     },
     {
@@ -4804,7 +4804,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
       "language": "无需语种",
-      "quantity": -13,
+      "quantity": 0,
       "unit_price_rmb": 1.354
     },
     {
