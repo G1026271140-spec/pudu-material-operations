@@ -344,7 +344,14 @@ class CulturalMobileLayoutTests(unittest.TestCase):
             Path(app.__file__).parent / "request_web/frontend/src/portal.css"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("区域销售请咨询企业文化组申领文化夹克", page)
+        self.assertIn(
+            "技术岗同学如参加展会可申领polo，市场部暂无夹克库存哦，请勿申领~",
+            page,
+        )
+        self.assertIn(
+            "Technical colleagues attending exhibitions may request a polo shirt.",
+            page,
+        )
         self.assertIn('if (product === "文化夹克")', page)
         self.assertIn('role="alertdialog"', page)
         self.assertIn('open("文化夹克")', page)
