@@ -308,8 +308,13 @@ class RequestInventoryReviewTests(unittest.TestCase):
             elif isinstance(value, list):
                 pending.extend(value)
         self.assertEqual(len(tables), 2)
-        self.assertEqual(tables[0]["rows"][0]["quantity"], 1)
-        self.assertEqual(tables[1]["rows"][0]["quantity"], 1)
+        for table in tables:
+            quantity_key = next(
+                column["name"]
+                for column in table["columns"]
+                if column["display_name"] == "数量"
+            )
+            self.assertEqual(table["rows"][0][quantity_key], 1)
         contact_element = card["body"]["elements"][-1]
         self.assertEqual(set(contact_element), {"tag", "content"})
         client.send_text_message.assert_not_called()

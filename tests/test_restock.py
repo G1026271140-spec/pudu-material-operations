@@ -162,8 +162,12 @@ class RestockTests(unittest.TestCase):
             element for element in card["body"]["elements"]
             if element.get("tag") == "table"
         )
-        self.assertEqual(detail_table["rows"][0]["quantity"], 8)
-        self.assertEqual(detail_table["rows"][0]["inventory_change"], "12 → 4")
+        keys_by_title = {
+            column["display_name"]: column["name"]
+            for column in detail_table["columns"]
+        }
+        self.assertEqual(detail_table["rows"][0][keys_by_title["减库数"]], 8)
+        self.assertEqual(detail_table["rows"][0][keys_by_title["库存变化"]], "12 → 4")
 
     def test_restock_rolls_inventory_back_when_ledger_write_fails(self) -> None:
         client = MagicMock()
@@ -256,8 +260,12 @@ class RestockTests(unittest.TestCase):
             element for element in card["body"]["elements"]
             if element.get("tag") == "table"
         )
-        self.assertEqual(detail_table["rows"][0]["quantity"], 8)
-        self.assertEqual(detail_table["rows"][0]["inventory_change"], "12 → 20")
+        keys_by_title = {
+            column["display_name"]: column["name"]
+            for column in detail_table["columns"]
+        }
+        self.assertEqual(detail_table["rows"][0][keys_by_title["补库数"]], 8)
+        self.assertEqual(detail_table["rows"][0][keys_by_title["库存变化"]], "12 → 20")
 
     def test_restock_notification_goes_to_every_enabled_admin(self) -> None:
         client = MagicMock()

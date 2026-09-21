@@ -23,7 +23,7 @@ def elements_with_tag(value: object, tag: str) -> list[dict[str, object]]:
 
 
 class BotNotificationTests(unittest.TestCase):
-    def test_notification_tables_do_not_use_unsupported_auto_column_width(self) -> None:
+    def test_notification_tables_do_not_use_automatic_column_width(self) -> None:
         self.assertNotIn('"width": "auto"', inspect.getsource(app))
 
     def test_all_material_detail_notification_cards_use_tables(self) -> None:
@@ -80,6 +80,7 @@ class BotNotificationTests(unittest.TestCase):
         ]
 
         for card in cards:
+            card = app._feishu_normalize_card_tables(card)
             with self.subTest(title=card["header"]["title"]["content"]):
                 self.assertEqual(card["schema"], "2.0")
                 tables = elements_with_tag(card, "table")
@@ -88,6 +89,14 @@ class BotNotificationTests(unittest.TestCase):
                 for table in tables:
                     self.assertTrue(
                         all(column.get("width") != "auto" for column in table["columns"])
+                    )
+                    expected_names = [f"c{index}" for index in range(len(table["columns"]))]
+                    self.assertEqual(
+                        [column["name"] for column in table["columns"]],
+                        expected_names,
+                    )
+                    self.assertTrue(
+                        all(set(row).issubset(expected_names) for row in table["rows"])
                     )
 
     def test_category_edit_card_is_wide_and_contains_change_details(self) -> None:

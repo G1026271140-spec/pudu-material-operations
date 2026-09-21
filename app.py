@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.13"
+APP_VERSION = "V2.8.14"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8260,12 +8260,49 @@ def _feishu_notification_table(
     }
 
 
+def _feishu_normalize_card_tables(value: object) -> object:
+    """Use short table column keys accepted by Feishu's card parser."""
+    if isinstance(value, list):
+        return [_feishu_normalize_card_tables(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    normalized = {
+        key: _feishu_normalize_card_tables(item)
+        for key, item in value.items()
+    }
+    if normalized.get("tag") != "table":
+        return normalized
+    columns = [
+        dict(column)
+        for column in list(normalized.get("columns") or [])
+        if isinstance(column, dict)
+    ]
+    key_map: dict[str, str] = {}
+    for index, column in enumerate(columns):
+        original_name = str(column.get("name") or "")
+        safe_name = f"c{index}"
+        if original_name:
+            key_map[original_name] = safe_name
+        column["name"] = safe_name
+    normalized["columns"] = columns
+    normalized["rows"] = [
+        {
+            key_map.get(str(key), str(key)): item
+            for key, item in row.items()
+        }
+        for row in list(normalized.get("rows") or [])
+        if isinstance(row, dict)
+    ]
+    return normalized
+
+
 def _feishu_notification_card_v2(
     title: str,
     template: str,
     elements: list[dict[str, object]],
 ) -> dict[str, object]:
     """Wrap notification elements in the card 2.0 schema required by tables."""
+    safe_elements = _feishu_normalize_card_tables(elements)
     return {
         "schema": "2.0",
         "config": {
@@ -8281,7 +8318,7 @@ def _feishu_notification_card_v2(
             "direction": "vertical",
             "padding": "12px 12px 20px 12px",
             "vertical_spacing": "10px",
-            "elements": elements,
+            "elements": safe_elements,
         },
     }
 
@@ -9139,11 +9176,12 @@ def send_feishu_interactive_message(
 ) -> str:
     if not card:
         raise FeishuBitableError("Feishu interactive card cannot be empty.")
+    safe_card = _feishu_normalize_card_tables(card)
     return _send_feishu_message_compat(
         client,
         receive_id,
         "interactive",
-        card,
+        safe_card,
     )
 
 
