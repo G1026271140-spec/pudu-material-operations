@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-21 10:32:46",
+  "generated_at": "2026-09-21 14:49:33",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -339,8 +339,8 @@
       "en": "Plush Toy"
     },
     "冰箱贴( Fridge Magnet)": {
-      "zh": "冰箱贴( 默认混发)",
-      "en": "Fridge Magnet(Default to Mixed Shipping)"
+      "zh": "冰箱贴",
+      "en": "Fridge Magnet"
     },
     "笔记本礼盒(Notebook Gift Box)": {
       "zh": "笔记本礼盒",
@@ -2012,7 +2012,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "法语(French)",
-      "quantity": 150,
+      "quantity": 0,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2324,7 +2324,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "法语(French)",
-      "quantity": 1000,
+      "quantity": 900,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2404,7 +2404,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "法语(French)",
-      "quantity": 330,
+      "quantity": 230,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2484,7 +2484,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "法语(French)",
-      "quantity": 330,
+      "quantity": 80,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2564,7 +2564,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "法语(French)",
-      "quantity": 500,
+      "quantity": 400,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2644,7 +2644,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Vac",
       "language": "法语(French)",
-      "quantity": 350,
+      "quantity": 100,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2724,7 +2724,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
       "language": "法语(French)",
-      "quantity": 200,
+      "quantity": -50,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2828,7 +2828,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "法语(French)",
-      "quantity": 150,
+      "quantity": 0,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2908,7 +2908,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "法语(French)",
-      "quantity": 50,
+      "quantity": -100,
       "unit_price_rmb": 5.416
     },
     {
@@ -2988,7 +2988,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "法语(French)",
-      "quantity": 100,
+      "quantity": 0,
       "unit_price_rmb": 5.416
     },
     {
@@ -4396,7 +4396,7 @@
       "product": "公仔(Plush Toy)",
       "model": "BellaBot",
       "language": "无需语种",
-      "quantity": 791,
+      "quantity": 771,
       "unit_price_rmb": 24.9813
     },
     {
@@ -4404,7 +4404,7 @@
       "product": "公仔(Plush Toy)",
       "model": "KettyBot Pro",
       "language": "无需语种",
-      "quantity": 446,
+      "quantity": 426,
       "unit_price_rmb": 24.9813
     },
     {
@@ -4412,7 +4412,7 @@
       "product": "公仔(Plush Toy)",
       "model": "PUDU CC1",
       "language": "无需语种",
-      "quantity": 668,
+      "quantity": 628,
       "unit_price_rmb": 24.9813
     },
     {
@@ -4468,7 +4468,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "T300",
       "language": "无需语种",
-      "quantity": 89,
+      "quantity": -61,
       "unit_price_rmb": 1.354
     },
     {
@@ -4492,7 +4492,7 @@
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
       "language": "无需语种",
-      "quantity": 499,
+      "quantity": 479,
       "unit_price_rmb": 33.85
     },
     {
@@ -4500,7 +4500,7 @@
       "product": "普渡logo无纺布手提袋(PUDU logo bag)",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 4433,
+      "quantity": 4333,
       "unit_price_rmb": 1.0155
     },
     {
@@ -5244,7 +5244,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "法语(French)",
-      "quantity": 200,
+      "quantity": -150,
       "unit_price_rmb": 0.4062
     },
     {
