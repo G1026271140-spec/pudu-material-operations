@@ -25,6 +25,7 @@ def elements_with_tag(value: object, tag: str) -> list[dict[str, object]]:
 class BotNotificationTests(unittest.TestCase):
     def test_notification_tables_do_not_use_automatic_column_width(self) -> None:
         self.assertNotIn('"width": "auto"', inspect.getsource(app))
+        self.assertNotIn('"width": "72px"', inspect.getsource(app))
 
     def test_all_material_detail_notification_cards_use_tables(self) -> None:
         material_line = {
@@ -90,6 +91,11 @@ class BotNotificationTests(unittest.TestCase):
                     self.assertTrue(
                         all(column.get("width") != "auto" for column in table["columns"])
                     )
+                    for column in table["columns"]:
+                        width = str(column.get("width") or "")
+                        if width.endswith("px"):
+                            self.assertGreaterEqual(int(width[:-2]), 80)
+                            self.assertLessEqual(int(width[:-2]), 600)
                     expected_names = [f"c{index}" for index in range(len(table["columns"]))]
                     self.assertEqual(
                         [column["name"] for column in table["columns"]],
