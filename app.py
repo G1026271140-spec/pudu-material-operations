@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.8.12"
+APP_VERSION = "V2.8.13"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8119,7 +8119,6 @@ def _feishu_inventory_review_table(
                 "name": "specification",
                 "display_name": "物料规格（品类 / 型号 / 语种）",
                 "data_type": "text",
-                "width": "auto",
             },
             {
                 "name": "requested",
@@ -8211,7 +8210,6 @@ def _feishu_requester_material_table(
                     else "物料 / 型号 / 语种或战区"
                 ),
                 "data_type": "text",
-                "width": "auto",
             },
             {
                 "name": "quantity",
@@ -9400,7 +9398,7 @@ def material_restock_notification_card(
         _feishu_notification_table(
             [
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
-                {"name": "specification", "display_name": "物料 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "物料 / 型号 / 语种", "data_type": "text"},
                 {"name": "quantity", "display_name": operation_label + "数", "data_type": "number", "width": "86px", "horizontal_align": "right"},
                 {"name": "inventory_change", "display_name": "库存变化", "data_type": "text", "width": "120px"},
                 {"name": "remark", "display_name": "备注", "data_type": "text", "width": "160px"},
@@ -9476,7 +9474,7 @@ def approval_writeback_notification_card(
         _feishu_notification_table(
             [
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
-                {"name": "specification", "display_name": "物料 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "物料 / 型号 / 语种", "data_type": "text"},
                 {"name": "issued_quantity", "display_name": "实际发放", "data_type": "number", "width": "96px", "horizontal_align": "right"},
                 {"name": "status", "display_name": "状态", "data_type": "text", "width": "100px"},
                 {"name": "current_stock", "display_name": "当前库存", "data_type": "number", "width": "96px", "horizontal_align": "right"},
@@ -9638,7 +9636,7 @@ def dimension_management_notification_card(
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
                 {"name": "operation", "display_name": "操作", "data_type": "text", "width": "84px"},
                 {"name": "material_code", "display_name": "物料编码", "data_type": "text", "width": "130px"},
-                {"name": "specification", "display_name": "品类 / 型号 / 语种或战区", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "品类 / 型号 / 语种或战区", "data_type": "text"},
                 {"name": "quantity", "display_name": "库存", "data_type": "number", "width": "80px", "horizontal_align": "right"},
                 {"name": "status", "display_name": "状态", "data_type": "text", "width": "80px"},
                 {"name": "request_visible", "display_name": "申领页", "data_type": "text", "width": "90px"},
@@ -9819,7 +9817,7 @@ def category_edit_notification_card(
             [
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
                 {"name": "operation", "display_name": "操作", "data_type": "text", "width": "90px"},
-                {"name": "specification", "display_name": "型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "型号 / 语种", "data_type": "text"},
                 {"name": "inventory_change", "display_name": "库存变化", "data_type": "text", "width": "120px"},
                 {"name": "unit_price_change", "display_name": "单价变化", "data_type": "text", "width": "120px"},
                 {"name": "status_change", "display_name": "状态变化", "data_type": "text", "width": "120px"},
@@ -9928,7 +9926,7 @@ def category_create_notification_card(
         _feishu_notification_table(
             [
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
-                {"name": "specification", "display_name": "型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "型号 / 语种", "data_type": "text"},
                 {"name": "quantity", "display_name": "初始库存", "data_type": "number", "width": "100px", "horizontal_align": "right"},
                 {"name": "unit_price", "display_name": "单价", "data_type": "number", "width": "84px", "horizontal_align": "right"},
                 {"name": "status", "display_name": "状态", "data_type": "text", "width": "84px"},
@@ -10010,7 +10008,7 @@ def category_delete_notification_card(draft: dict[str, object]) -> dict[str, obj
             [
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
                 {"name": "material_code", "display_name": "物料编码", "data_type": "text", "width": "130px"},
-                {"name": "specification", "display_name": "品类 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "品类 / 型号 / 语种", "data_type": "text"},
                 {"name": "quantity", "display_name": "库存", "data_type": "number", "width": "80px", "horizontal_align": "right"},
                 {"name": "status", "display_name": "状态", "data_type": "text", "width": "84px"},
                 {"name": "request_visible", "display_name": "申领页", "data_type": "text", "width": "90px"},
@@ -10098,7 +10096,7 @@ def inventory_auto_disable_notification_card(
             [
                 {"name": "sequence", "display_name": "序号", "data_type": "number", "width": "72px", "horizontal_align": "center"},
                 {"name": "material_code", "display_name": "物料编码", "data_type": "text", "width": "130px"},
-                {"name": "specification", "display_name": "品类 / 型号 / 语种", "data_type": "text", "width": "auto"},
+                {"name": "specification", "display_name": "品类 / 型号 / 语种", "data_type": "text"},
                 {"name": "quantity", "display_name": "库存", "data_type": "number", "width": "80px", "horizontal_align": "right"},
                 {"name": "zero_since", "display_name": "归零计时", "data_type": "text", "width": "160px"},
             ],
@@ -20972,7 +20970,7 @@ def cultural_management_notification_card(
             _feishu_notification_table(
                 [
                     {"name": "operation", "display_name": "操作", "data_type": "text", "width": "90px"},
-                    {"name": "product", "display_name": "品类", "data_type": "text", "width": "auto"},
+                    {"name": "product", "display_name": "品类", "data_type": "text"},
                     {"name": "model", "display_name": "型号", "data_type": "text", "width": "140px"},
                     {"name": "region", "display_name": "战区", "data_type": "text", "width": "150px"},
                 ],

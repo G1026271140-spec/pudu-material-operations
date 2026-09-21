@@ -23,6 +23,9 @@ def elements_with_tag(value: object, tag: str) -> list[dict[str, object]]:
 
 
 class BotNotificationTests(unittest.TestCase):
+    def test_notification_tables_do_not_use_unsupported_auto_column_width(self) -> None:
+        self.assertNotIn('"width": "auto"', inspect.getsource(app))
+
     def test_all_material_detail_notification_cards_use_tables(self) -> None:
         material_line = {
             "product": "产品单页",
@@ -82,6 +85,10 @@ class BotNotificationTests(unittest.TestCase):
                 tables = elements_with_tag(card, "table")
                 self.assertGreaterEqual(len(tables), 1)
                 self.assertGreaterEqual(len(tables[0]["rows"]), 1)
+                for table in tables:
+                    self.assertTrue(
+                        all(column.get("width") != "auto" for column in table["columns"])
+                    )
 
     def test_category_edit_card_is_wide_and_contains_change_details(self) -> None:
         draft = {
