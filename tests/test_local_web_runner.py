@@ -47,6 +47,12 @@ class LocalWebRunnerTests(unittest.TestCase):
         card = (ROOT / "scripts" / "install_feishu_card_worker_task.ps1").read_text(encoding="utf-8")
         self.assertIn("-Hidden", card)
 
+    def test_material_cache_generators_retry_transient_failures(self) -> None:
+        runner = (ROOT / "scripts" / "run_local_cache_refresh.ps1").read_text(encoding="utf-8")
+        self.assertIn("function Invoke-CheckedCommandWithRetry", runner)
+        self.assertIn("[int]$MaxAttempts = 3", runner)
+        self.assertIn("Invoke-CheckedCommandWithRetry $venvPython @($generator)", runner)
+
     def test_request_quantity_controls_are_compact_and_no_200_preset(self) -> None:
         source = (ROOT / "app.py").read_text(encoding="utf-8")
         self.assertIn("[20, 50]", source)

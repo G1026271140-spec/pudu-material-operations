@@ -692,6 +692,11 @@ class FeishuBitableClient:
                     time.sleep(0.5 * (attempt + 1))
                     continue
                 raise FeishuBitableError(f"Feishu HTTP {exc.code}: {text}") from exc
+            except (TimeoutError, error.URLError, ConnectionError) as exc:
+                if read_only and attempt < attempts - 1:
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                raise FeishuBitableError(f"Feishu network error: {exc}") from exc
 
             code = data.get("code")
             if code == 0:

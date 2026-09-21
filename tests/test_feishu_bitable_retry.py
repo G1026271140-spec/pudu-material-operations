@@ -56,6 +56,31 @@ class FeishuBitableRetryTests(unittest.TestCase):
         urlopen.assert_called_once()
         sleep.assert_not_called()
 
+    def test_get_retries_timeout_then_succeeds(self) -> None:
+        with (
+            patch(
+                "feishu_bitable.request.urlopen",
+                side_effect=[TimeoutError("temporary timeout"), self.response(b'{"code":0,"data":{}}')],
+            ) as urlopen,
+            patch("feishu_bitable.time.sleep") as sleep,
+        ):
+            result = self.client._request("GET", "/test")
+
+        self.assertEqual(result["code"], 0)
+        self.assertEqual(urlopen.call_count, 2)
+        sleep.assert_called_once_with(0.5)
+
+    def test_post_does_not_retry_timeout(self) -> None:
+        with (
+            patch("feishu_bitable.request.urlopen", side_effect=TimeoutError("temporary timeout")) as urlopen,
+            patch("feishu_bitable.time.sleep") as sleep,
+        ):
+            with self.assertRaisesRegex(FeishuBitableError, "Feishu network error"):
+                self.client._request("POST", "/test", payload={"value": 1})
+
+        urlopen.assert_called_once()
+        sleep.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

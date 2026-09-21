@@ -85,6 +85,35 @@ function Invoke-CheckedCommand {
     return $output
 }
 
+function Invoke-CheckedCommandWithRetry {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+        [ValidateRange(1, 5)]
+        [int]$MaxAttempts = 3,
+        [ValidateRange(1, 30)]
+        [int]$BaseDelaySeconds = 2
+    )
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        try {
+            return Invoke-CheckedCommand $FilePath $Arguments
+        } catch {
+            if ($attempt -ge $MaxAttempts) {
+                throw
+            }
+            $delaySeconds = $BaseDelaySeconds * $attempt
+            Write-RunnerLog (
+                "Command attempt {0}/{1} failed; retrying in {2} seconds. {3}" -f `
+                    $attempt, $MaxAttempts, $delaySeconds, $_.Exception.Message
+            ) "WARN"
+            Start-Sleep -Seconds $delaySeconds
+        }
+    }
+}
+
 function Write-RunnerStatus {
     param(
         [Parameter(Mandatory = $true)]
@@ -207,7 +236,7 @@ try {
         }
         Write-RunnerLog "Running $CacheScope cache generators."
         foreach ($generator in $generators) {
-            Invoke-CheckedCommand $venvPython @($generator) | Out-Null
+            Invoke-CheckedCommandWithRetry $venvPython @($generator) | Out-Null
         }
         Invoke-CheckedCommand $venvPython (@("scripts/preserve_unchanged_cache_files.py") + $CacheFiles) | Out-Null
         if ($CacheScope -eq "Material") {
