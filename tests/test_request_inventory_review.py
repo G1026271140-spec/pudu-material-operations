@@ -317,6 +317,11 @@ class RequestInventoryReviewTests(unittest.TestCase):
                 if column["display_name"] == "数量"
             )
             self.assertEqual(table["rows"][0][quantity_key], 1)
+        self.assertIs(card["body"]["elements"][1], tables[1])
+        self.assertIs(card["body"]["elements"][3], tables[0])
+        for element in card["body"]["elements"]:
+            if isinstance(element, dict) and element.get("tag") == "column_set":
+                self.assertNotIn("'tag': 'table'", str(element))
         contact_element = card["body"]["elements"][-1]
         self.assertEqual(set(contact_element), {"tag", "content"})
         client.send_text_message.assert_not_called()

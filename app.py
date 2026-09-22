@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.9.1"
+APP_VERSION = "V2.9.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -9276,17 +9276,28 @@ def notify_requester_of_inventory_edit(
             "padding": "12px 12px 20px 12px",
             "vertical_spacing": "12px",
             "elements": [
-                _feishu_notification_section(
-                    "Before change" if english else "修改前",
-                    [_feishu_requester_material_table(before_lines, english=english)],
-                    color="grey",
-                ),
-                _feishu_notification_section(
-                    "After change" if english else "修改后",
-                    [_feishu_requester_material_table(after_lines, english=english)],
-                    color="green",
-                    focus=True,
-                ),
+                # Feishu Card JSON 2.0 does not allow a table to be nested in
+                # a column/column_set.  Keep material tables as direct body
+                # children so requester/admin notifications remain valid.
+                {
+                    "tag": "markdown",
+                    "content": (
+                        "**<font color='grey'>Before change</font>**"
+                        if english
+                        else "**<font color='grey'>修改前</font>**"
+                    ),
+                },
+                _feishu_requester_material_table(before_lines, english=english),
+                {
+                    "tag": "markdown",
+                    "content": (
+                        "**<font color='green'>After change</font>**"
+                        if english
+                        else "**<font color='green'>修改后</font>**"
+                    ),
+                    "text_size": "heading-4",
+                },
+                _feishu_requester_material_table(after_lines, english=english),
                 _feishu_notification_section(
                     "Change explanation" if english else "申请物料更改信息说明",
                     [_feishu_card_text_element(change_note, lines=6)],
