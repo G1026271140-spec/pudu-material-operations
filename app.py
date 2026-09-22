@@ -80,7 +80,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.9.0"
+APP_VERSION = "V2.9.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8958,6 +8958,15 @@ def notify_enabled_admins_of_inventory_review_reminder(
     recipients = enabled_admin_open_ids()
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
+    # Keep every live card id for this request.  A reminder is an additional
+    # entry point, not a replacement for the original inventory-review card;
+    # otherwise the final confirmation can only refresh the latest reminder
+    # while earlier administrator cards remain actionable and stale.
+    existing_message_ids = [
+        str(value)
+        for value in list(request.get("inventory_message_ids") or [])
+        if str(value).strip()
+    ]
     message_ids: list[str] = []
     for open_id in recipients:
         card = material_request_notification_card(
@@ -8974,7 +8983,10 @@ def notify_enabled_admins_of_inventory_review_reminder(
         }
         message_ids.append(send_feishu_interactive_message(client, open_id, card))
     updates: dict[str, object] = {
-        "库存确认消息ID": json.dumps(message_ids, ensure_ascii=False),
+        "库存确认消息ID": json.dumps(
+            unique_preserve([*existing_message_ids, *message_ids]),
+            ensure_ascii=False,
+        ),
         "管理员通知状态": "已发送",
         "管理员通知时间": feishu_datetime_value(
             REQUEST_TABLE_NAME, "管理员通知时间", datetime.now()
@@ -9316,11 +9328,14 @@ def notify_enabled_admins_of_material_request(
     message_ids: list[str] = []
     update_message = getattr(client, "update_interactive_message", None)
     if existing_message_ids and callable(update_message):
-        # The enabled-admin list can shrink after the original card delivery.
-        # Refresh exactly one card per current recipient; surplus historical
-        # message IDs have no current recipient and must not block recovery.
-        for index, operator_open_id in enumerate(recipients):
-            message_id = existing_message_ids[index] if index < len(existing_message_ids) else ""
+        # A request can have an original card plus one or more reminder cards.
+        # Refresh every stored message instead of only the first card for each
+        # current administrator.  Notification batches are written in the same
+        # recipient order, so modulo restores the recipient-specific signed
+        # action link for historical batches as well.
+        recipients_with_live_card: set[str] = set()
+        for index, message_id in enumerate(existing_message_ids):
+            operator_open_id = recipients[index % len(recipients)]
             card = material_request_notification_card(
                 request_no,
                 request_payload,
@@ -9333,17 +9348,29 @@ def notify_enabled_admins_of_material_request(
                     raise LookupError("missing historical message id")
                 update_message(message_id, card)
                 message_ids.append(message_id)
+                recipients_with_live_card.add(operator_open_id)
             except Exception as exc:
                 # Feishu only allows interactive messages to be updated for 14
-                # days.  A delayed allocation retry must replace an expired
-                # administrator card rather than fail the completed business
-                # write forever.  Preserve fail-closed behavior for every other
-                # update error.
+                # days.  Drop an expired historical card here and create at
+                # most one replacement per current recipient below.  Preserve
+                # fail-closed behavior for every other update error so the
+                # background task can retry the card refresh independently of
+                # the already committed business write.
                 if "230031" not in str(exc) and not isinstance(exc, LookupError):
                     raise
-                message_ids.append(
-                    send_feishu_interactive_message(client, operator_open_id, card)
-                )
+        for operator_open_id in recipients:
+            if operator_open_id in recipients_with_live_card:
+                continue
+            card = material_request_notification_card(
+                request_no,
+                request_payload,
+                lines,
+                review_context=review_context,
+                operator_open_id=operator_open_id,
+            )
+            message_ids.append(
+                send_feishu_interactive_message(client, operator_open_id, card)
+            )
     else:
         for open_id in recipients:
             card = material_request_notification_card(
@@ -12000,10 +12027,17 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
                 {SHIP_DATE: date_ms(ship_date)},
             )
             sync_request_ship_date_to_schedule(request_id, ship_date)
+        notification_count = notify_enabled_admins_of_material_request(
+            str(request.get("request_no") or ""),
+            request,
+            list(context.get("lines") or []),
+        )
         return {
             "request_no": request.get("request_no"),
             "already_confirmed": True,
             "repaired_line_count": updated_line_count,
+            "recovered_notifications": True,
+            "notification_count": notification_count,
         }
     now = datetime.now()
     request_updates: dict[str, object] = {

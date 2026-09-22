@@ -287,7 +287,14 @@ def process_card_action_async(
             }
             if str(form_value.get("ship_date") or "").strip():
                 draft["ship_date"] = str(form_value["ship_date"]).strip()
-            inventory_app.execute_request_inventory_confirm(draft)
+            inventory_app.enqueue_feishu_background_write(
+                inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+                {"draft": draft},
+                idempotency_key=(
+                    f"request-inventory-card-confirm:{request_id}:{version}:"
+                    f"{str(draft.get('ship_date') or '')}"
+                ),
+            )
             return
         if action_key == "reject_request_inventory":
             result = inventory_app.execute_request_inventory_reject(

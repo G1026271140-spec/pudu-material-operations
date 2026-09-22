@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-21 14:49:33",
+  "generated_at": "2026-09-22 11:53:54",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2300,7 +2300,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "英语(English)",
-      "quantity": 2200,
+      "quantity": 2150,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2444,7 +2444,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "简中(Simplified Chinese)",
-      "quantity": -90,
+      "quantity": -40,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2540,7 +2540,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "英语(English)",
-      "quantity": 2100,
+      "quantity": 2050,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2964,7 +2964,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 70,
+      "quantity": 20,
       "unit_price_rmb": 5.416
     },
     {
@@ -3036,7 +3036,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 100,
+      "quantity": 50,
       "unit_price_rmb": 5.416
     },
     {
@@ -3572,7 +3572,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": -2,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
@@ -3892,7 +3892,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": -2,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
@@ -4052,7 +4052,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": -2,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
@@ -4292,7 +4292,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "MT1 Max",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -4508,7 +4508,7 @@
       "product": "普渡logo无纺布手提袋(PUDU logo bag)",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": -20,
+      "quantity": 0,
       "unit_price_rmb": 1.0155
     },
     {
@@ -4804,7 +4804,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
       "language": "无需语种",
-      "quantity": 0,
+      "quantity": 97,
       "unit_price_rmb": 1.354
     },
     {
@@ -4812,7 +4812,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D7",
       "language": "无需语种",
-      "quantity": 97,
+      "quantity": 0,
       "unit_price_rmb": 1.354
     },
     {
@@ -5268,7 +5268,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "英语(English)",
-      "quantity": 500,
+      "quantity": 450,
       "unit_price_rmb": 0.4062
     },
     {
@@ -5836,7 +5836,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "猛犸MP2000",
       "language": "简中(Simplified Chinese)",
-      "quantity": -2,
+      "quantity": -1,
       "unit_price_rmb": 74.47
     },
     {
@@ -6220,7 +6220,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "T150",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -6572,7 +6572,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT3",
       "language": "日语(Japanese)",
-      "quantity": 0,
+      "quantity": 1000,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6604,7 +6604,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT3",
       "language": "英语(English)",
-      "quantity": 20,
+      "quantity": 520,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6692,7 +6692,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT5",
       "language": "英语(English)",
-      "quantity": 20,
+      "quantity": 520,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6780,7 +6780,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT7",
       "language": "英语(English)",
-      "quantity": 20,
+      "quantity": 520,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6980,7 +6980,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT3",
       "language": "无需语种",
-      "quantity": 105,
+      "quantity": 171,
       "unit_price_rmb": 1.354
     },
     {
@@ -6988,7 +6988,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT5",
       "language": "无需语种",
-      "quantity": 100,
+      "quantity": 166,
       "unit_price_rmb": 1.354
     },
     {
@@ -6996,7 +6996,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT7",
       "language": "无需语种",
-      "quantity": 110,
+      "quantity": 176,
       "unit_price_rmb": 1.354
     }
   ],

@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-21 18:05:35",
+  "generated_at": "2026-09-22 11:54:22",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -6427,16 +6427,6 @@
       ]
     },
     {
-      "open_id": "ou_d8c6cdd54bf747b09fac2238d565929f",
-      "name": "宋文雅",
-      "department_ids": [
-        "od-d90d38def427cf71640b80459d6b5118"
-      ],
-      "department_paths": [
-        "M LAB"
-      ]
-    },
-    {
       "open_id": "ou_c34a3328dc7276b7d8cb3c20217d2d0b",
       "name": "宋昕",
       "department_ids": [
@@ -9194,16 +9184,6 @@
       ],
       "department_paths": [
         "欧洲服务B组"
-      ]
-    },
-    {
-      "open_id": "ou_e6bfd507e8a0683622114252b9e574c5",
-      "name": "曾嘉怡",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
       ]
     },
     {
@@ -19013,6 +18993,16 @@
       ]
     },
     {
+      "open_id": "ou_40e15144cfa21c01049e618d4ca68989",
+      "name": "金勤虎",
+      "department_ids": [
+        "od-7c4c394d59fe1b9f14e3629e853dea7c"
+      ],
+      "department_paths": [
+        "桐乡生产组"
+      ]
+    },
+    {
       "open_id": "ou_054e69f94cf60d41221ce97d1f26ea7e",
       "name": "金寅泰",
       "department_ids": [
@@ -22303,5 +22293,5 @@
       ]
     }
   ],
-  "user_count": 2062
+  "user_count": 2061
 }

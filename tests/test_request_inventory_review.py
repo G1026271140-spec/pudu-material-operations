@@ -586,7 +586,11 @@ class RequestInventoryReviewTests(unittest.TestCase):
             patch.object(app, "request_inventory_review_context", return_value=context),
             patch.object(app, "feishu_batch_update_record_fields", return_value=1) as update_lines,
             patch.object(app, "feishu_update_record_fields") as update_request,
-            patch.object(app, "notify_enabled_admins_of_material_request") as notify,
+            patch.object(
+                app,
+                "notify_enabled_admins_of_material_request",
+                return_value=1,
+            ) as notify,
         ):
             result = app.execute_request_inventory_confirm(
                 {
@@ -601,8 +605,84 @@ class RequestInventoryReviewTests(unittest.TestCase):
         )
         self.assertTrue(result["already_confirmed"])
         self.assertEqual(result["repaired_line_count"], 1)
+        self.assertTrue(result["recovered_notifications"])
+        self.assertEqual(result["notification_count"], 1)
         update_request.assert_not_called()
-        notify.assert_not_called()
+        notify.assert_called_once_with("REQ-1", context["request"], context["lines"])
+
+    def test_inventory_reminder_preserves_original_card_ids(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "status": app.REQUEST_STATUS_PENDING,
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_message_ids": ["original-admin-1", "original-admin-2"],
+            },
+            "lines": [],
+        }
+        client = Mock()
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-1", "ou-2"]),
+            patch.object(
+                app,
+                "material_request_notification_card",
+                return_value={
+                    "header": {"title": {"content": ""}},
+                },
+            ),
+            patch.object(
+                app,
+                "send_feishu_interactive_message",
+                side_effect=["reminder-admin-1", "reminder-admin-2"],
+            ),
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_update_record_fields") as update_request,
+        ):
+            count = app.notify_enabled_admins_of_inventory_review_reminder(
+                "request-1",
+                mark_scheduled_reminder=False,
+            )
+
+        self.assertEqual(count, 2)
+        saved = update_request.call_args.args[2]["库存确认消息ID"]
+        self.assertEqual(
+            saved,
+            '["original-admin-1", "original-admin-2", "reminder-admin-1", "reminder-admin-2"]',
+        )
+
+    def test_confirmation_refreshes_all_historical_inventory_cards(self) -> None:
+        client = Mock()
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "inventory_message_ids": ["original-1", "original-2", "reminder-1", "reminder-2"],
+            }
+        }
+        with (
+            patch.object(app, "feishu_client", return_value=client),
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-1", "ou-2"]),
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "material_request_notification_card", return_value={"card": True}) as card,
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_update_record_fields"),
+        ):
+            count = app.notify_enabled_admins_of_material_request(
+                "REQ-1", {"request_no": "REQ-1"}, []
+            )
+
+        self.assertEqual(count, 2)
+        self.assertEqual(client.update_interactive_message.call_count, 4)
+        self.assertEqual(
+            [call.args[0] for call in client.update_interactive_message.call_args_list],
+            ["original-1", "original-2", "reminder-1", "reminder-2"],
+        )
+        self.assertEqual(
+            [call.kwargs["operator_open_id"] for call in card.call_args_list],
+            ["ou-1", "ou-2", "ou-1", "ou-2"],
+        )
 
     def test_reject_deletes_request_lines_and_notifies_requester(self) -> None:
         context = {

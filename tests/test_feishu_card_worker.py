@@ -114,7 +114,7 @@ class FeishuCardWorkerTests(unittest.TestCase):
         self.assertEqual(kwargs["value"]["version"], "2")
         thread.start.assert_called_once_with()
 
-    def test_inventory_confirm_executes_directly_without_queue_write(self) -> None:
+    def test_inventory_confirm_enters_retryable_background_queue(self) -> None:
         with (
             patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
             patch.object(worker.inventory_app, "execute_request_inventory_confirm") as confirm,
@@ -129,14 +129,18 @@ class FeishuCardWorkerTests(unittest.TestCase):
                 message_id="om-card-1",
             )
 
-        confirm.assert_called_once_with(
+        confirm.assert_not_called()
+        enqueue.assert_called_once_with(
+            worker.inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
             {
-                "request_id": "request-1",
-                "expected_version": 2,
-                "operator_open_id": "ou-admin",
-            }
+                "draft": {
+                    "request_id": "request-1",
+                    "expected_version": 2,
+                    "operator_open_id": "ou-admin",
+                }
+            },
+            idempotency_key="request-inventory-card-confirm:request-1:2:",
         )
-        enqueue.assert_not_called()
 
     def test_inventory_reject_deletes_request_and_updates_card(self) -> None:
         client = Mock()
