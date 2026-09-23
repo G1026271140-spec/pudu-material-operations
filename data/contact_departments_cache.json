@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-22 11:54:22",
+  "generated_at": "2026-09-23 11:00:50",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -9207,6 +9207,16 @@
       ]
     },
     {
+      "open_id": "ou_959eaf38e68ed2fecb4522db8deba9a9",
+      "name": "曾子金",
+      "department_ids": [
+        "od-74945021b666e12d9329ee192162b7b2"
+      ],
+      "department_paths": [
+        "日本服务组"
+      ]
+    },
+    {
       "open_id": "ou_75ef65455d4b52c59831960745590746",
       "name": "曾文祥",
       "department_ids": [
@@ -10628,16 +10638,6 @@
       ],
       "department_paths": [
         "东莞仓储物流组"
-      ]
-    },
-    {
-      "open_id": "ou_04d63a0a2e5b26e07f2f377fa266ab3a",
-      "name": "李煜东",
-      "department_ids": [
-        "od-25d320a49e945efe59e2b6cf41f9ba93"
-      ],
-      "department_paths": [
-        "GRPBU算法组"
       ]
     },
     {
@@ -13262,12 +13262,10 @@
       "open_id": "ou_77cb9bf1042928208c2bedb442f3bd08",
       "name": "潘亮机",
       "department_ids": [
-        "od-74945021b666e12d9329ee192162b7b2",
         "od-71f0011e42e86e57d97ce7df9e16bac3",
         "od-74a3d5ba2d4fa6622ac439f050cf5921"
       ],
       "department_paths": [
-        "日本服务组",
         "欧洲服务A组",
         "欧洲服务部"
       ]
@@ -19421,6 +19419,16 @@
       ]
     },
     {
+      "open_id": "ou_d91146b5fa12edd50fcaef983ca6cef9",
+      "name": "陆昊",
+      "department_ids": [
+        "od-09b287eb66dba5205dda08947ffa61e3"
+      ],
+      "department_paths": [
+        "SRPBU应用软件组"
+      ]
+    },
+    {
       "open_id": "ou_1f047183d470840d32ada8929bb7ee0d",
       "name": "陆柯",
       "department_ids": [
@@ -20434,6 +20442,16 @@
       ],
       "department_paths": [
         "硬件平台部"
+      ]
+    },
+    {
+      "open_id": "ou_26b02a68ca9984bd56e13a7239dcbcb7",
+      "name": "陈青",
+      "department_ids": [
+        "od-37c6236c5a825b772186d202361170a7"
+      ],
+      "department_paths": [
+        "物料计划组"
       ]
     },
     {
@@ -22293,5 +22311,5 @@
       ]
     }
   ],
-  "user_count": 2061
+  "user_count": 2063
 }
