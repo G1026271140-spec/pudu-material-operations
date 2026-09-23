@@ -249,6 +249,15 @@ class ReactAllocationOrderRulesTests(unittest.TestCase):
         self.assertIn('disabled={!canOrder}', self.allocation)
         self.assertIn('canOrder && <option value="yes">', self.allocation)
 
+    def test_pending_request_list_uses_tab_session_cache(self) -> None:
+        self.assertIn('PENDING_SESSION_CACHE_KEY', self.allocation)
+        self.assertIn('window.sessionStorage.getItem', self.allocation)
+        self.assertIn('window.sessionStorage.setItem', self.allocation)
+        self.assertIn('async function loadPending(forceRefresh = false)', self.allocation)
+        self.assertIn('onClick={() => loadPending(true)}', self.allocation)
+        self.assertIn('removePendingRequestFromSessionCache(requestId)', self.allocation)
+        self.assertIn('current.filter(item => item.requestId !== requestId)', self.allocation)
+
     def test_inventory_cards_and_modal_are_phone_responsive(self) -> None:
         mobile = self.css.split("@media(max-width:700px)", 1)[1]
         self.assertIn(".restock-cards", mobile)

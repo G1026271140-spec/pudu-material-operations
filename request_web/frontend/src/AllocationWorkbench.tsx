@@ -18,6 +18,46 @@ const isPrintMaterial = (material: any) =>
   material?.category_definition === "印刷物料";
 const defaultOrderRequired = (material: any, quantity: number) =>
   isPrintMaterial(material) && Number(material?.quantity || 0) < Number(quantity || 0);
+const PENDING_SESSION_CACHE_KEY = "pudu-allocation-pending-session-v1";
+
+type PendingSessionCache = {
+  requests: any[];
+  operators: any[];
+  cachedAt: string;
+};
+
+function readPendingSessionCache(): PendingSessionCache | null {
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_SESSION_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (!Array.isArray(cached?.requests) || !Array.isArray(cached?.operators)) return null;
+    return {
+      requests: cached.requests,
+      operators: cached.operators,
+      cachedAt: typeof cached.cachedAt === "string" ? cached.cachedAt : "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writePendingSessionCache(cache: PendingSessionCache) {
+  try {
+    window.sessionStorage.setItem(PENDING_SESSION_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // Session storage can be unavailable. Live reads remain the fallback.
+  }
+}
+
+function removePendingRequestFromSessionCache(requestId: string) {
+  const cached = readPendingSessionCache();
+  if (!cached) return;
+  writePendingSessionCache({
+    ...cached,
+    requests: cached.requests.filter(item => item.requestId !== requestId),
+  });
+}
 
 async function jsonFetch(url: string, options?: RequestInit) {
   const response = await fetch(url, options);
@@ -44,6 +84,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [success, setSuccess] = useState("");
   const [confirmMode, setConfirmMode] = useState<"confirm" | "edit" | "">("");
   const [orderPreview, setOrderPreview] = useState<any>(null);
+  const [pendingCachedAt, setPendingCachedAt] = useState("");
   const signedQuery = `operator=${encodeURIComponent(operator)}&review_token=${encodeURIComponent(reviewToken)}`;
 
   useEffect(() => {
@@ -51,12 +92,31 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     else loadPending();
   }, [directRequestId]);
 
-  async function loadPending() {
+  function applyPending(body: PendingSessionCache) {
+    setPending(body.requests || []);
+    setOperators(body.operators || []);
+    setPendingCachedAt(body.cachedAt || "");
+    if (!operatorId && body.operators?.length) setOperatorId(body.operators[0].open_id);
+  }
+
+  async function loadPending(forceRefresh = false) {
     setLoading(true); setError("");
     try {
+      if (!forceRefresh) {
+        const cached = readPendingSessionCache();
+        if (cached) {
+          applyPending(cached);
+          return;
+        }
+      }
       const body = await jsonFetch("/api/admin/allocation/pending");
-      setPending(body.requests || []); setOperators(body.operators || []);
-      if (!operatorId && body.operators?.length) setOperatorId(body.operators[0].open_id);
+      const cache = {
+        requests: body.requests || [],
+        operators: body.operators || [],
+        cachedAt: new Date().toISOString(),
+      };
+      writePendingSessionCache(cache);
+      applyPending(cache);
     } catch (e) { setError(e instanceof Error ? e.message : "读取失败"); }
     finally { setLoading(false); }
   }
@@ -186,6 +246,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
       setSuccess(`${tr("配货任务已进入后台队列", "Allocation task queued")}（${body.taskId}）`);
+      removePendingRequestFromSessionCache(requestId);
+      setPending(current => current.filter(item => item.requestId !== requestId));
       setConfirmMode("");
       setOrderPreview(null);
     } catch (e) { setError(e instanceof Error ? e.message : "提交失败"); }
@@ -194,7 +256,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
   if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}><div className="allocation-loading"><i/><b>{tr("正在抓取实时申请与库存数据，请稍候……", "Loading live request and inventory data…")}</b></div></main>;
   if (!requestId || !context) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p></div><button onClick={loadPending}>↻ {tr("刷新实时申请单", "Refresh live requests")}</button></header>
+    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{tr("当前列表已临时保存在本标签页，关闭标签页后自动清除。", "This list is cached in this tab and clears when the tab closes.")}</p>}</div><button onClick={() => loadPending(true)}>↻ {tr("刷新实时申请单", "Refresh live requests")}</button></header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">✓ {tr("当前没有等待库存核实的普通物料申请。", "There are no material requests waiting for inventory review.")}</div>}</section>
   </main>;
