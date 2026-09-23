@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from scripts import submission_worker as worker
 from submission_queue import (
@@ -9,6 +9,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
@@ -103,6 +104,53 @@ def cultural_request_task(result: dict | None = None) -> SubmissionTask:
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_cultural_reject_reverses_business_write_then_updates_cards(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+            {"draft": {"request_no": "REQ-1", "operator_open_id": "ou-admin"}},
+        )
+        client = Mock()
+        targets = [{
+            "key": "admin:ou-admin",
+            "audience": "admins",
+            "recipient_id": "ou-admin",
+            "message_id": "om-card-1",
+            "card": {"schema": "2.0"},
+        }]
+        checkpoints: list[dict] = []
+        with (
+            patch.object(
+                worker.inventory_app,
+                "execute_cultural_request_rejection",
+                return_value={"request_no": "REQ-1", "rejected": True},
+            ) as reject,
+            patch.object(worker.inventory_app, "feishu_client", return_value=client),
+            patch.object(
+                worker.inventory_app,
+                "cultural_request_rejection_targets",
+                return_value=targets,
+            ),
+            patch.object(
+                worker.inventory_app,
+                "cultural_request_context",
+                return_value={"request": {"record_id": "request-1"}, "lines": []},
+            ),
+            patch.object(worker.inventory_app, "feishu_update_record_fields") as update,
+        ):
+            result = worker.process_cultural_request_reject(task, checkpoints.append)
+
+        reject.assert_called_once_with(task.payload["draft"])
+        client.update_interactive_message.assert_called_once_with(
+            "om-card-1", {"schema": "2.0"}
+        )
+        update.assert_called_once_with(
+            worker.inventory_app.REQUEST_TABLE_NAME,
+            "request-1",
+            {"文化周边通知状态": "驳回已通知"},
+        )
+        self.assertTrue(result["write_done"])
+        self.assertTrue(result["notification_done"])
+
     def test_inventory_review_reminder_task_sends_current_card(self) -> None:
         task = category_task(
             QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,

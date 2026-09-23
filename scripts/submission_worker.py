@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import socket
@@ -29,6 +30,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
@@ -80,6 +82,7 @@ SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_ORDER_RESTOCK,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_STOCK_REDUCTION,
@@ -377,17 +380,25 @@ def process_cultural_request(
         sent_keys = {
             str(value) for value in list(progress.get("notification_sent_keys") or [])
         }
+        message_ids = {
+            str(key): str(value)
+            for key, value in dict(progress.get("notification_message_ids") or {}).items()
+            if str(key).strip() and str(value).strip()
+        }
         for target in targets:
             target_key = str(target["key"])
             if target_key in sent_keys:
                 continue
-            inventory_app.send_feishu_interactive_message(
+            message_id = inventory_app.send_feishu_interactive_message(
                 client,
                 str(target["recipient_id"]),
                 dict(target["card"]),
             )
+            if str(message_id or "").strip():
+                message_ids[target_key] = str(message_id)
             sent_keys.add(target_key)
             progress["notification_sent_keys"] = sorted(sent_keys)
+            progress["notification_message_ids"] = dict(message_ids)
             save_progress()
         progress["notification_counts"] = {
             "applicant": sum(1 for target in targets if target["audience"] == "applicant"),
@@ -398,9 +409,72 @@ def process_cultural_request(
             inventory_app.feishu_record_id(
                 inventory_app.submission_token_rows(token)[0]
             ),
-            {"文化周边通知状态": "已发送"},
+            {
+                "文化周边通知状态": "已发送",
+                inventory_app.CULTURAL_REQUEST_MESSAGE_IDS_FIELD: json.dumps(
+                    message_ids, ensure_ascii=False, separators=(",", ":")
+                ),
+            },
         )
         progress["notification_done"] = True
+        save_progress()
+    return progress
+
+
+def process_cultural_request_reject(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    draft = dict(task.payload.get("draft") or {})
+    progress = dict(task.result)
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("write_done"):
+        result = inventory_app.execute_cultural_request_rejection(draft)
+        progress.update({"write_done": True, **dict(result)})
+        save_progress()
+    request_no = str(progress.get("request_no") or draft.get("request_no") or "")
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送文化周边驳回通知。")
+        targets = inventory_app.cultural_request_rejection_targets(request_no)
+        sent_keys = {
+            str(value) for value in list(progress.get("notification_sent_keys") or [])
+        }
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys:
+                continue
+            message_id = str(target.get("message_id") or "")
+            card = dict(target["card"])
+            if message_id:
+                try:
+                    client.update_interactive_message(message_id, card)
+                except Exception as exc:
+                    if "230031" not in str(exc):
+                        raise
+                    inventory_app.send_feishu_interactive_message(
+                        client, str(target["recipient_id"]), card
+                    )
+            else:
+                inventory_app.send_feishu_interactive_message(
+                    client, str(target["recipient_id"]), card
+                )
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            save_progress()
+        context = inventory_app.cultural_request_context(request_no)
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            str(dict(context["request"]).get("record_id") or ""),
+            {"文化周边通知状态": "驳回已通知"},
+        )
+        progress["notification_done"] = True
+        progress["notification_count"] = len(targets)
         save_progress()
     return progress
 
@@ -426,6 +500,8 @@ def process_task(
         return process_material_request(task, checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST:
         return process_cultural_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT:
+        return process_cultural_request_reject(task, checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT:
         result = inventory_app.execute_cultural_material_management(dict(task.payload.get("draft") or {}))
         return dict(result)

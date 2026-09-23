@@ -217,6 +217,97 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertEqual(details["rows"][0]["remaining_stock"], -1)
         self.assertIn("领取后库存", [item["display_name"] for item in details["columns"]])
 
+    def test_only_admin_cultural_card_has_manual_reject_button(self) -> None:
+        lines = [{
+            "product": "文化POLO衫",
+            "model": "M",
+            "region": "美洲战区",
+            "quantity": 1,
+        }]
+        admin_card = app._cultural_request_card(
+            "REQ-1", "申请人", lines, applicant=False
+        )
+        applicant_card = app._cultural_request_card(
+            "REQ-1", "申请人", lines, applicant=True
+        )
+
+        reject_button = admin_card["body"]["elements"][-1]
+        self.assertEqual(reject_button["tag"], "button")
+        self.assertEqual(reject_button["type"], "danger_filled")
+        self.assertEqual(
+            reject_button["value"],
+            {"action": "reject_cultural_request", "request_no": "REQ-1"},
+        )
+        self.assertNotIn("reject_cultural_request", str(applicant_card))
+
+    def test_cultural_request_rejection_restores_inventory_and_marks_lines(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "request_no": "REQ-1",
+                "requester": "申请人",
+                "requester_open_id": "ou-user",
+                "status": app.CULTURAL_REQUEST_STATUS_ISSUED,
+            },
+            "lines": [{
+                "record_id": "line-1",
+                "product": "文化POLO衫",
+                "model": "M",
+                "region": "美洲战区",
+                "quantity": 2,
+                "culture_record_ids": ["culture-1"],
+            }],
+        }
+        culture_rows = [{"record_id": "culture-1", "fields": {"当前库存": 0}}]
+
+        def fresh_rows(table_name: str) -> list[dict]:
+            if table_name == app.CULTURAL_MATERIAL_TABLE_NAME:
+                return culture_rows
+            if table_name == app.LEDGER_TABLE_NAME:
+                return []
+            return []
+
+        with (
+            patch.object(app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(app, "ensure_cultural_request_workflow_fields"),
+            patch.object(app, "cultural_request_context", return_value=context),
+            patch.object(app, "fresh_feishu_rows", side_effect=fresh_rows),
+            patch.object(app, "feishu_create_record", return_value={"record_id": "ledger-1"}) as create,
+            patch.object(app, "feishu_update_record_fields") as update,
+            patch.object(app, "feishu_datetime_value", return_value=123),
+            patch.object(
+                app,
+                "recalculate_cultural_request_quota",
+                return_value={"shirt_quantity": 0, "jacket_quantity": 0},
+            ) as quota,
+        ):
+            result = app.execute_cultural_request_rejection({
+                "request_no": "REQ-1",
+                "operator_open_id": "ou-admin",
+            })
+
+        self.assertTrue(result["rejected"])
+        self.assertEqual(result["restored_quantity"], 2)
+        self.assertEqual(create.call_args.args[0], app.LEDGER_TABLE_NAME)
+        self.assertEqual(create.call_args.args[1]["库存变化"], 2)
+        self.assertIn(
+            (
+                app.CULTURAL_MATERIAL_TABLE_NAME,
+                "culture-1",
+                {"当前库存": 2, app.CULTURAL_CLAIMABLE_FIELD: app.CULTURAL_CLAIMABLE_YES},
+            ),
+            [call.args for call in update.call_args_list],
+        )
+        self.assertIn(
+            (
+                app.REQUEST_LINE_TABLE_NAME,
+                "line-1",
+                {"审批通过数量": 0, "实际发放数量": 0, "明细状态": "已驳回"},
+            ),
+            [call.args for call in update.call_args_list],
+        )
+        quota.assert_called_once_with("ou-user")
+
     def test_request_page_does_not_show_stock_caption(self) -> None:
         source = open(app.__file__, encoding="utf-8").read()
         self.assertNotIn("当前库存：{int(selected_item['stock'])}（允许负库存）", source)

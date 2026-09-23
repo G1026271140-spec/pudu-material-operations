@@ -38,6 +38,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
@@ -80,7 +81,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.9.2"
+APP_VERSION = "V2.9.3"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20653,6 +20654,10 @@ CULTURAL_REQUEST_CUMULATIVE_FIELD = "文化衫申领数量累计"
 CULTURAL_JACKET_CATEGORY = "文化夹克"
 CULTURAL_JACKET_MAX_TOTAL_QUANTITY = 1
 CULTURAL_JACKET_CUMULATIVE_FIELD = "文化夹克申领数量累计"
+CULTURAL_REQUEST_MESSAGE_IDS_FIELD = "文化周边消息ID"
+CULTURAL_REQUEST_STATUS_ISSUED = "已发放"
+CULTURAL_REQUEST_STATUS_REJECTING = "驳回处理中"
+CULTURAL_REQUEST_STATUS_REJECTED = "已驳回"
 
 
 def cultural_size_sort_key(value: object) -> tuple[int, str]:
@@ -20713,6 +20718,24 @@ def ensure_cultural_request_quota_fields() -> None:
     ]
     if still_missing:
         raise RuntimeError(f"用户权限表申领额度字段创建失败：{'、'.join(still_missing)}")
+
+
+def ensure_cultural_request_workflow_fields() -> None:
+    """Ensure request-card tracking needed by the manual reject workflow."""
+    refresh_feishu_schema_cache()
+    if feishu_has_field(REQUEST_TABLE_NAME, CULTURAL_REQUEST_MESSAGE_IDS_FIELD):
+        return
+    client = feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建文化周边卡片追踪字段。")
+    client.create_field(
+        feishu_table_id(REQUEST_TABLE_NAME),
+        CULTURAL_REQUEST_MESSAGE_IDS_FIELD,
+        1,
+    )
+    refresh_feishu_schema_cache()
+    if not feishu_has_field(REQUEST_TABLE_NAME, CULTURAL_REQUEST_MESSAGE_IDS_FIELD):
+        raise RuntimeError("文化周边卡片追踪字段创建失败。")
 
 
 def cultural_request_quota_snapshot(
@@ -20870,6 +20893,32 @@ def _cultural_request_card(
         f"您的（文化周边）需求已提交，请找{admin_mentions or '已启用的管理员'}进行申领。"
         if applicant else f"{requester} 提交了文化周边申领，请安排发放。"
     )
+    elements: list[dict[str, object]] = [
+        {"tag": "markdown", "content": lead},
+        {"tag": "hr"},
+        {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请明细**"},
+        _feishu_requester_material_table(lines),
+    ]
+    if not applicant:
+        elements.append(
+            {
+                "tag": "button",
+                "text": {"tag": "plain_text", "content": "驳回申领"},
+                "type": "danger_filled",
+                "width": "fill",
+                "value": {
+                    "action": "reject_cultural_request",
+                    "request_no": request_no,
+                },
+                "confirm": {
+                    "title": {"tag": "plain_text", "content": "确认驳回文化周边申领"},
+                    "text": {
+                        "tag": "plain_text",
+                        "content": "驳回后将恢复库存和申请额度，并通知申请人。",
+                    },
+                },
+            }
+        )
     return {
         "schema": "2.0",
         "config": {"update_multi": True, "width_mode": "default", "summary": {"content": title}},
@@ -20877,12 +20926,7 @@ def _cultural_request_card(
         "body": {
             "direction": "vertical",
             "padding": "12px 12px 16px 12px",
-            "elements": [
-                {"tag": "markdown", "content": lead},
-                {"tag": "hr"},
-                {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请明细**"},
-                _feishu_requester_material_table(lines),
-            ],
+            "elements": elements,
         },
     }
 
@@ -21037,6 +21081,336 @@ def notify_cultural_request_rejected(
             ),
         )
     return {"applicant": 1 if requester_open_id else 0, "admins": len(admins)}
+
+
+def _cultural_request_message_ids(fields: dict[str, object]) -> dict[str, str]:
+    raw = feishu_text(fields, CULTURAL_REQUEST_MESSAGE_IDS_FIELD).strip()
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except (TypeError, ValueError):
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    return {
+        str(key): str(value)
+        for key, value in parsed.items()
+        if str(key).strip() and str(value).strip()
+    }
+
+
+def cultural_request_context(request_no: str) -> dict[str, object]:
+    normalized_no = str(request_no or "").strip()
+    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
+    request_row = next(
+        (
+            row
+            for row in request_rows
+            if feishu_text(feishu_fields(row), "申请单号").strip() == normalized_no
+        ),
+        None,
+    )
+    if request_row is None:
+        raise RuntimeError("未找到文化周边申请单，请刷新卡片后重试。")
+    request_fields = feishu_fields(request_row)
+    if (
+        feishu_text(request_fields, "业务类型").strip() != "文化周边申领"
+        and feishu_text(request_fields, "申请类型").strip() != "文化周边申请"
+    ):
+        raise RuntimeError("该申请单不是文化周边申领，不能执行驳回。")
+    request_id = feishu_record_id(request_row)
+    requester_open_ids = feishu_person_open_ids(
+        request_fields, ["申请人", "申请人姓名"]
+    )
+    line_rows: list[dict[str, object]] = []
+    for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME):
+        fields = feishu_fields(row)
+        linked_requests = feishu_link_ids_any(fields, ["所属申请单", "申请单"])
+        if (
+            request_id not in linked_requests
+            and feishu_text(fields, "申请单号").strip() != normalized_no
+        ):
+            continue
+        if feishu_text(fields, "明细业务类型").strip() != "文化周边":
+            continue
+        line_rows.append(
+            {
+                "record_id": feishu_record_id(row),
+                "product": feishu_text(fields, "品类名称"),
+                "model": feishu_text(fields, "产品型号名称"),
+                "region": feishu_text(fields, "文化周边战区"),
+                "quantity": feishu_int(fields, "申请数量"),
+                "culture_record_ids": feishu_link_ids_any(
+                    fields, ["文化周边物料"]
+                ),
+            }
+        )
+    if not line_rows:
+        raise RuntimeError("文化周边申请单没有可驳回的申请明细。")
+    return {
+        "request": {
+            "record_id": request_id,
+            "request_no": normalized_no,
+            "requester": request_applicant_text(request_fields) or "申请人",
+            "requester_open_id": requester_open_ids[0] if requester_open_ids else "",
+            "status": feishu_text(request_fields, "文化周边处理状态"),
+            "message_ids": _cultural_request_message_ids(request_fields),
+        },
+        "lines": line_rows,
+    }
+
+
+def recalculate_cultural_request_quota(requester_open_id: str) -> dict[str, int]:
+    """Rebuild quota counters from non-rejected cultural requests."""
+    normalized_open_id = str(requester_open_id or "").strip()
+    if not normalized_open_id.startswith("ou_"):
+        raise RuntimeError("申请人未关联有效的飞书账号，无法恢复文化周边额度。")
+    ensure_cultural_request_quota_fields()
+    active_request_ids: set[str] = set()
+    active_request_nos: set[str] = set()
+    for row in fresh_feishu_rows(REQUEST_TABLE_NAME):
+        fields = feishu_fields(row)
+        if (
+            feishu_text(fields, "业务类型").strip() != "文化周边申领"
+            and feishu_text(fields, "申请类型").strip() != "文化周边申请"
+        ):
+            continue
+        if feishu_text(fields, "文化周边处理状态").strip() != CULTURAL_REQUEST_STATUS_ISSUED:
+            continue
+        if normalized_open_id not in feishu_person_open_ids(
+            fields, ["申请人", "申请人姓名"]
+        ):
+            continue
+        record_id = feishu_record_id(row)
+        request_no = feishu_text(fields, "申请单号").strip()
+        if record_id:
+            active_request_ids.add(record_id)
+        if request_no:
+            active_request_nos.add(request_no)
+    shirt_quantity = 0
+    jacket_quantity = 0
+    for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME):
+        fields = feishu_fields(row)
+        if feishu_text(fields, "明细业务类型").strip() != "文化周边":
+            continue
+        request_ids = set(feishu_link_ids_any(fields, ["所属申请单", "申请单"]))
+        request_no = feishu_text(fields, "申请单号").strip()
+        if not (request_ids & active_request_ids or request_no in active_request_nos):
+            continue
+        quantity = max(0, feishu_int(fields, "申请数量"))
+        if feishu_text(fields, "品类名称").strip() == CULTURAL_JACKET_CATEGORY:
+            jacket_quantity += quantity
+        else:
+            shirt_quantity += quantity
+    permission_row = next(
+        (
+            row
+            for row in fresh_feishu_rows(USER_PERMISSION_TABLE_NAME)
+            if normalized_open_id
+            in feishu_person_open_ids(feishu_fields(row), ["用户账号", "用户", "成员"])
+        ),
+        None,
+    )
+    permission_record_id = feishu_record_id(permission_row or {})
+    if not permission_record_id:
+        raise RuntimeError("未找到申请人的用户权限记录，无法恢复文化周边额度。")
+    update_cultural_request_cumulative_quantity(
+        permission_record_id,
+        shirt_quantity,
+        jacket_quantity,
+    )
+    return {"shirt_quantity": shirt_quantity, "jacket_quantity": jacket_quantity}
+
+
+def execute_cultural_request_rejection(draft: dict[str, object]) -> dict[str, object]:
+    request_no = str(draft.get("request_no") or "").strip()
+    operator_open_id = str(draft.get("operator_open_id") or "").strip()
+    if operator_open_id not in enabled_admin_open_ids():
+        raise PermissionError("只有已启用管理员可以驳回文化周边申领。")
+    ensure_cultural_request_workflow_fields()
+    context = cultural_request_context(request_no)
+    request = dict(context["request"])
+    status = str(request.get("status") or "").strip()
+    if status == CULTURAL_REQUEST_STATUS_REJECTED:
+        return {
+            "request_no": request_no,
+            "requester": request.get("requester"),
+            "already_rejected": True,
+            "rejected": True,
+        }
+    if status not in {
+        CULTURAL_REQUEST_STATUS_ISSUED,
+        CULTURAL_REQUEST_STATUS_REJECTING,
+    }:
+        raise RuntimeError("只有已发放的文化周边申请可以驳回。")
+    request_id = str(request.get("record_id") or "")
+    if status == CULTURAL_REQUEST_STATUS_ISSUED:
+        feishu_update_record_fields(
+            REQUEST_TABLE_NAME,
+            request_id,
+            {"文化周边处理状态": CULTURAL_REQUEST_STATUS_REJECTING},
+        )
+
+    culture_rows = fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME)
+    culture_by_id = {feishu_record_id(row): row for row in culture_rows}
+    ledger_rows = fresh_feishu_rows(LEDGER_TABLE_NAME)
+    ledger_by_key = {
+        feishu_text(feishu_fields(row), "幂等键"): row for row in ledger_rows
+    }
+    restored_quantity = 0
+    for line in list(context.get("lines") or []):
+        line_record_id = str(line.get("record_id") or "")
+        culture_ids = [
+            str(value) for value in list(line.get("culture_record_ids") or []) if str(value)
+        ]
+        if not line_record_id or not culture_ids:
+            raise RuntimeError("文化周边申请明细缺少库存关联，无法驳回。")
+        culture_id = culture_ids[0]
+        culture_row = culture_by_id.get(culture_id)
+        if culture_row is None:
+            raise RuntimeError("文化周边库存记录不存在，无法驳回。")
+        quantity = max(0, int(line.get("quantity") or 0))
+        ledger_key = f"cultural-reject:{request_no}:{line_record_id}"
+        existing_ledger = ledger_by_key.get(ledger_key)
+        if existing_ledger is not None:
+            before_reversal_stock = feishu_int(
+                feishu_fields(existing_ledger),
+                "变更前数量",
+                feishu_int(feishu_fields(culture_row), "当前库存"),
+            )
+            after_stock = feishu_int(
+                feishu_fields(existing_ledger),
+                "变更后数量",
+                feishu_int(feishu_fields(culture_row), "当前库存") + quantity,
+            )
+        else:
+            current_stock = feishu_int(feishu_fields(culture_row), "当前库存")
+            before_reversal_stock = current_stock
+            after_stock = current_stock + quantity
+            created_ledger = feishu_create_record(
+                LEDGER_TABLE_NAME,
+                {
+                    "操作": ACTION_PURCHASE,
+                    "数量": quantity,
+                    "库存变化": quantity,
+                    "变更前数量": current_stock,
+                    "变更后数量": after_stock,
+                    "幂等键": ledger_key,
+                    "流水业务类型": "文化周边申领驳回",
+                    "文化周边战区快照": str(line.get("region") or ""),
+                    "文化周边物料": [culture_id],
+                    "关联明细": [line_record_id],
+                    "备注": (
+                        f"文化周边申领驳回 {request_no}：{line.get('product')} / "
+                        f"{line.get('model')} / {line.get('region')}"
+                    ),
+                    "时间": feishu_datetime_value(LEDGER_TABLE_NAME, "时间", datetime.now()),
+                },
+            )
+            ledger_by_key[ledger_key] = created_ledger
+        restored_stock_fields = cultural_stock_fields(after_stock)
+        if before_reversal_stock <= 0 < after_stock:
+            restored_stock_fields[CULTURAL_CLAIMABLE_FIELD] = CULTURAL_CLAIMABLE_YES
+        feishu_update_record_fields(
+            CULTURAL_MATERIAL_TABLE_NAME,
+            culture_id,
+            restored_stock_fields,
+        )
+        feishu_update_record_fields(
+            REQUEST_LINE_TABLE_NAME,
+            line_record_id,
+            {
+                "审批通过数量": 0,
+                "实际发放数量": 0,
+                "明细状态": CULTURAL_REQUEST_STATUS_REJECTED,
+            },
+        )
+        restored_quantity += quantity
+
+    quota = recalculate_cultural_request_quota(str(request.get("requester_open_id") or ""))
+    feishu_update_record_fields(
+        REQUEST_TABLE_NAME,
+        request_id,
+        {
+            "文化周边处理状态": CULTURAL_REQUEST_STATUS_REJECTED,
+            "文化周边通知状态": "驳回待通知",
+        },
+    )
+    return {
+        "request_no": request_no,
+        "requester": request.get("requester"),
+        "restored_quantity": restored_quantity,
+        "quota": quota,
+        "rejected": True,
+    }
+
+
+def _cultural_manual_rejection_card(
+    request_no: str,
+    requester: str,
+    lines: list[dict[str, object]],
+    *,
+    applicant: bool,
+) -> dict[str, object]:
+    title = "文化周边申领已驳回"
+    lead = (
+        "您的文化周边申领已被管理员驳回，相关库存和申领额度已经恢复。"
+        if applicant
+        else f"{requester or '申请人'} 的文化周边申领已驳回，相关库存和申领额度已经恢复。"
+    )
+    return {
+        "schema": "2.0",
+        "config": {"update_multi": True, "width_mode": "default", "summary": {"content": title}},
+        "header": {
+            "template": "red",
+            "title": {"tag": "plain_text", "content": title},
+            "subtitle": {"tag": "plain_text", "content": request_no or "-"},
+        },
+        "body": {
+            "direction": "vertical",
+            "padding": "12px 12px 16px 12px",
+            "elements": [
+                {"tag": "markdown", "content": lead},
+                {"tag": "hr"},
+                {"tag": "markdown", "content": "**已驳回明细**"},
+                _feishu_requester_material_table(lines),
+            ],
+        },
+    }
+
+
+def cultural_request_rejection_targets(request_no: str) -> list[dict[str, object]]:
+    context = cultural_request_context(request_no)
+    request = dict(context["request"])
+    lines = [dict(line) for line in list(context.get("lines") or [])]
+    message_ids = dict(request.get("message_ids") or {})
+    targets: list[dict[str, object]] = []
+    requester_open_id = str(request.get("requester_open_id") or "")
+    requester = str(request.get("requester") or "申请人")
+    if requester_open_id:
+        key = f"applicant:{requester_open_id}"
+        targets.append({
+            "key": key,
+            "audience": "applicant",
+            "recipient_id": requester_open_id,
+            "message_id": str(message_ids.get(key) or ""),
+            "card": _cultural_manual_rejection_card(
+                request_no, requester, lines, applicant=True
+            ),
+        })
+    for open_id in enabled_admin_open_ids():
+        key = f"admin:{open_id}"
+        targets.append({
+            "key": key,
+            "audience": "admins",
+            "recipient_id": open_id,
+            "message_id": str(message_ids.get(key) or ""),
+            "card": _cultural_manual_rejection_card(
+                request_no, requester, lines, applicant=False
+            ),
+        })
+    return targets
 
 
 def _cultural_dimension_record_id(table_name: str, field_name: str, value: str) -> str:
@@ -21219,6 +21593,7 @@ def submit_feishu_cultural_request(
 ) -> tuple[str, int, bool]:
     """Persist a culture request and idempotently apply its stock movements."""
     refresh_feishu_schema_cache()
+    ensure_cultural_request_workflow_fields()
     token = str(request_payload.get("submission_token") or "").strip()
     valid_lines = [dict(line) for line in lines if int(line.get("quantity") or 0) > 0]
     if not valid_lines:
@@ -21283,7 +21658,7 @@ def submit_feishu_cultural_request(
             "业务类型": "文化周边申领",
             "申请类型": "文化周边申请",
             "审批状态": "无需审批",
-            "文化周边处理状态": "已发放",
+            "文化周边处理状态": CULTURAL_REQUEST_STATUS_ISSUED,
             "文化周边通知状态": "待发送",
             "物料明细文字信息": detail_text,
             "所属战区": request_regions,

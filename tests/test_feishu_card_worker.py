@@ -193,6 +193,46 @@ class FeishuCardWorkerTests(unittest.TestCase):
         )
         thread.start.assert_called_once_with()
 
+    def test_cultural_reject_enters_retryable_background_queue(self) -> None:
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "enqueue_feishu_background_write") as enqueue,
+        ):
+            worker.process_card_action_async(
+                action_key="reject_cultural_request",
+                action_name="",
+                value={"request_no": "REQ-1"},
+                form_value={},
+                operator_open_id="ou-admin",
+                message_id="om-card-1",
+            )
+
+        enqueue.assert_called_once_with(
+            worker.inventory_app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+            {"draft": {"request_no": "REQ-1", "operator_open_id": "ou-admin"}},
+            idempotency_key="cultural-request-reject:REQ-1",
+        )
+
+    def test_cultural_reject_callback_is_supported(self) -> None:
+        thread = Mock()
+        event = SimpleNamespace(
+            action=SimpleNamespace(
+                name="",
+                value={"action": "reject_cultural_request", "request_no": "REQ-1"},
+            ),
+            operator=SimpleNamespace(open_id="ou-admin"),
+            context=SimpleNamespace(open_message_id="om-card-1"),
+        )
+        with patch.object(worker.threading, "Thread", return_value=thread) as thread_class:
+            response = worker.handle_card_action(SimpleNamespace(event=event))
+
+        self.assertEqual(response.toast.type, "success")
+        self.assertEqual(
+            thread_class.call_args.kwargs["kwargs"]["action_key"],
+            "reject_cultural_request",
+        )
+        thread.start.assert_called_once_with()
+
     def test_reminder_schedule_form_submission_is_accepted(self) -> None:
         thread = Mock()
         event = SimpleNamespace(
