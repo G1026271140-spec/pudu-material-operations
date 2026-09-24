@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$ShortcutName = "PUDU Material Operations 部署启动器.lnk")
+param([string]$ShortcutName = "PUDU Material Operations Setup.lnk")
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
