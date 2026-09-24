@@ -122,8 +122,29 @@ def _deploy_files(
     return install_root, env
 
 
+def _windows_powershell_environment(env: dict[str, str]) -> dict[str, str]:
+    # Windows PowerShell can inherit PowerShell 7 module locations when it is
+    # started by Python.  In that case it may load an incompatible copy of
+    # Microsoft.PowerShell.Security and commands such as Get-Acl disappear.
+    # Give powershell.exe only its native module roots for task installation.
+    env = env.copy()
+    user_profile = Path(env.get("USERPROFILE", str(Path.home())))
+    program_files = Path(env.get("ProgramFiles", r"C:\Program Files"))
+    system_root = Path(env.get("SystemRoot", r"C:\Windows"))
+    env["PSModulePath"] = os.pathsep.join(
+        str(path)
+        for path in (
+            user_profile / "Documents" / "WindowsPowerShell" / "Modules",
+            program_files / "WindowsPowerShell" / "Modules",
+            system_root / "System32" / "WindowsPowerShell" / "v1.0" / "Modules",
+        )
+    )
+    return env
+
+
 def _install_tasks(root: Path, config: DeploymentConfig, env: dict[str, str], progress: Progress) -> None:
     repo_url = f"https://github.com/{config.repository}.git"
+    env = _windows_powershell_environment(env)
     common = ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File"]
     commands = [
         ("本地 Web 与 Tunnel", root / "scripts" / "install_local_web_app_task.ps1", ["-SourceRepoPath", str(root), "-RepositoryUrl", repo_url, "-Branch", config.branch, "-Port", str(config.port), "-TunnelToken", config.cloudflare_tunnel_token]),

@@ -8,7 +8,7 @@ import pytest
 from deployment_launcher.bundle import export_bundle, import_bundle
 from deployment_launcher.cloudflare import CloudflareError, configure_cloudflare, manual_instructions
 from deployment_launcher.models import CloudflareMode, DeploymentConfig, DeploymentMode, normalize_hostname
-from deployment_launcher.plan import build_plan
+from deployment_launcher.plan import _windows_powershell_environment, build_plan
 from deployment_launcher.prerequisites import PREREQUISITES, _is_compatible
 from deployment_launcher.release import bump_release_version_files, next_patch_version
 
@@ -101,6 +101,20 @@ def test_python_prerequisite_requires_exact_312(monkeypatch: pytest.MonkeyPatch,
     assert _is_compatible(python_item, executable) is False
     Result.stdout = "3.12\n"
     assert _is_compatible(python_item, executable) is True
+
+
+def test_task_installer_uses_only_windows_powershell_module_roots() -> None:
+    env = _windows_powershell_environment(
+        {
+            "USERPROFILE": r"C:\Users\deployer",
+            "ProgramFiles": r"C:\Program Files",
+            "SystemRoot": r"C:\Windows",
+            "PSModulePath": r"C:\Program Files\PowerShell\Modules",
+        }
+    )
+    module_paths = env["PSModulePath"].split(";")
+    assert all("WindowsPowerShell" in path for path in module_paths)
+    assert r"C:\Program Files\PowerShell\Modules" not in module_paths
 
 
 class FakeCloudflare:
