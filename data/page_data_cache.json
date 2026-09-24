@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-09-24 10:33:02",
+  "generated_at": "2026-09-24 16:32:21",
   "tables": {
     "物料品类": [
       {
@@ -1113,9 +1113,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Product Flyer",
@@ -1197,9 +1197,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Product Brochure",
@@ -1283,9 +1283,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "IR(Industrial Product Line Brochure）",
@@ -1369,9 +1369,9 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "CR(Cleaning Product Line Brochure）",
@@ -1455,9 +1455,9 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "SR(Delivery Robot Product Brochure)",
@@ -1541,9 +1541,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "GR(Embodied AI Robot Product Brochure)",
@@ -2165,9 +2165,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Product Roll-Up",
@@ -2257,9 +2257,9 @@
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Plush Toy",
@@ -2358,12 +2358,12 @@
           "物料品类编码": "011",
           "申领页图片": [
             {
-              "file_token": "Yj8ObTl8loWDAHxwpyCchgwNn1e",
-              "name": "fridge-magnet.webp",
-              "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Yj8ObTl8loWDAHxwpyCchgwNn1e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
-              "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Yj8ObTl8loWDAHxwpyCchgwNn1e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "file_token": "PrfzbCbZsoxkSPxGC5fcmGATnwf",
+              "name": "冰箱贴.png",
+              "size": 989881,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PrfzbCbZsoxkSPxGC5fcmGATnwf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PrfzbCbZsoxkSPxGC5fcmGATnwf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Fridge Magnet",
@@ -2427,9 +2427,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Notebook Gift Box",
@@ -2511,9 +2511,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "PUDU logo bag",
@@ -2766,9 +2766,9 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Custom Fan",
@@ -2827,7 +2827,16 @@
           ],
           "物料品类": "伴手礼礼包盒（纸袋）",
           "物料品类编码": "018",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh",
+              "name": "蓝色礼品纸袋.jpg",
+              "size": 162427,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Gift Set Packaging Box (Paper Bag)",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -2884,7 +2893,16 @@
           ],
           "物料品类": "定制帽子",
           "物料品类编码": "020",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "T4YJbxqU0oQqWDx5PidcixZcnYb",
+              "name": "帽子.jpg",
+              "size": 165184,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=T4YJbxqU0oQqWDx5PidcixZcnYb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/T4YJbxqU0oQqWDx5PidcixZcnYb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Custom Cap",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -2946,9 +2964,9 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A909%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
             }
           ],
           "英文页面名称": "Full Product Series Fridge Magnet Set",
@@ -3007,7 +3025,16 @@
           ],
           "物料品类": "定制高尔夫球",
           "物料品类编码": "022",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "D1Pabnroyof4ENxcWnKcSovonMe",
+              "name": "高尔夫球.jpg",
+              "size": 73384,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=D1Pabnroyof4ENxcWnKcSovonMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/D1Pabnroyof4ENxcWnKcSovonMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Custom Golf Ball",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -3121,7 +3148,16 @@
           ],
           "物料品类": "嘉宾胸牌/臂贴",
           "物料品类编码": "024",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "YP7Zbe2yGoIQV3xWx44cnd8PnIg",
+              "name": "胸牌.jpg",
+              "size": 130438,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YP7Zbe2yGoIQV3xWx44cnd8PnIg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YP7Zbe2yGoIQV3xWx44cnd8PnIg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Guest Badge / Arm Sticker",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -3235,7 +3271,16 @@
           ],
           "物料品类": "代理商颁奖牌",
           "物料品类编码": "026",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "ZsgnbsnMiouFx6xkiYmcjvFJnJg",
+              "name": "奖牌.png",
+              "size": 480548,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZsgnbsnMiouFx6xkiYmcjvFJnJg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZsgnbsnMiouFx6xkiYmcjvFJnJg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Distributor Award Plaque",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -3292,7 +3337,16 @@
           ],
           "物料品类": "PUDU定制眼镜",
           "物料品类编码": "033",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "QvV9bp80vokKbdxZANKcsLbFneQ",
+              "name": "墨镜.jpg",
+              "size": 527066,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QvV9bp80vokKbdxZANKcsLbFneQ&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QvV9bp80vokKbdxZANKcsLbFneQ/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Pudu Glasses",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -3650,7 +3704,16 @@
           ],
           "物料品类": "金属手动开瓶器",
           "物料品类编码": "039",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "AabWbFsP6oe1DZxfaJBctY1anHg",
+              "name": "开瓶器.jpg",
+              "size": 8044284,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AabWbFsP6oe1DZxfaJBctY1anHg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/jpeg",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AabWbFsP6oe1DZxfaJBctY1anHg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Metal Bottle Opener",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -3711,7 +3774,16 @@
           ],
           "物料品类": "塑料钥匙扣",
           "物料品类编码": "040",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "LpIebh0l7ofCozxS5AVcCi0znZc",
+              "name": "企业微信截图_17103081711454.png",
+              "size": 1018135,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LpIebh0l7ofCozxS5AVcCi0znZc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LpIebh0l7ofCozxS5AVcCi0znZc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Plastic Keychain",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -3768,7 +3840,16 @@
           ],
           "物料品类": "PVC贴纸",
           "物料品类编码": "041",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "IM2UbGQNGoPa7SxaOTJchiwZnDH",
+              "name": "贴纸.webp",
+              "size": 16580,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IM2UbGQNGoPa7SxaOTJchiwZnDH&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IM2UbGQNGoPa7SxaOTJchiwZnDH/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A920%7D%7D"
+            }
+          ],
           "英文页面名称": "Printed Self-Adhesive PVC Stickers",
           "装箱单产品类型": "Give aways",
           "语种数量": "1"
@@ -146867,6 +146948,7 @@
     "物料申请单": [
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -146975,6 +147057,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147083,6 +147166,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147199,6 +147283,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147319,6 +147404,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147447,6 +147533,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147591,6 +147678,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147743,6 +147831,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -147887,6 +147976,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -148007,6 +148097,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": "SF0213688125571，四箱",
@@ -148147,6 +148238,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -148247,6 +148339,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -148347,6 +148440,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -148447,6 +148541,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -148579,6 +148674,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -148675,7 +148771,7 @@
           "用途|活动": "今年10月的上海工博会展会参加 申请物料支持",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhujunlin@pudutech.com",
               "en_name": "朱俊霖",
               "id": "ou_3d0a5c13b260d3112c7502a975d618fa",
@@ -148763,6 +148859,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -148863,6 +148960,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -148915,7 +149013,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wei.chen@pudutech.com",
               "en_name": "陈伟民",
               "id": "ou_76bf5766224974adb0e5691eea343e8a",
@@ -148963,6 +149061,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -149063,6 +149162,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -149187,6 +149287,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -149311,6 +149412,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -149431,6 +149533,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -149531,6 +149634,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "SF0212608026725",
@@ -149651,6 +149755,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "SF0215497786051，一箱",
@@ -149719,7 +149824,7 @@
           "用途|活动": "参加groundfest 展会",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_0124cdc5-83e4-4138-801a-fc84b2613cdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_0124cdc5-83e4-4138-801a-fc84b2613cdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "max.jin@pudutech.com",
               "en_name": "金晨日",
               "id": "ou_f07be57c2a44f7df014455835ccc254b",
@@ -149779,6 +149884,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "客户拜访",
@@ -149923,6 +150029,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "DHL单号4928861033，三箱，CR手册没有文件，全产品手册发了150",
@@ -150095,6 +150202,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "Emerson代拿",
@@ -150227,6 +150335,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "客户拜访",
@@ -150355,6 +150464,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "DHL单号4929823662，一箱",
@@ -150363,9 +150473,9 @@
               "file_token": "B4KPbUis2ol6mAx60GscrkOAnPf",
               "name": "img_v3_0215o_5f903d93-7262-490d-9226-96fbbc4f765g_MIDDLE_WEBP.webp",
               "size": 34138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             }
           ],
           "国家": "加拿大",
@@ -150502,6 +150612,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": "客户拜访",
@@ -150622,6 +150733,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "DHL单号4180809220 ，共2箱",
@@ -150630,17 +150742,17 @@
               "file_token": "SY75b088Poue8wxEA6Yc8fq5nOd",
               "name": "FR2.jpg",
               "size": 236138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             },
             {
               "file_token": "VD6SbQOdJoUaawxow1ecUvY4nOe",
               "name": "FR1.jpg",
               "size": 213041,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             }
           ],
           "国家": "法国",
@@ -150799,6 +150911,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "DHL单号4180808111",
@@ -150807,25 +150920,25 @@
               "file_token": "BsEIbEOddoV50UxzdSAcw3GUn3c",
               "name": "AU2.jpg",
               "size": 277944,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             },
             {
               "file_token": "IBrdbtvqZof487xfZ3UcxRj5nUR",
               "name": "AU3.jpg",
               "size": 183728,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             },
             {
               "file_token": "PcjebbZ5po6FjpxceMecT1bvnbc",
               "name": "AU1.jpg",
               "size": 289081,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             }
           ],
           "国家": "澳洲ISSA展会物料",
@@ -151044,6 +151157,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "客户拜访已拿",
@@ -151164,6 +151278,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -151300,6 +151415,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -151436,6 +151552,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -151568,6 +151685,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "客户拜访已拿",
@@ -151650,7 +151768,7 @@
           "用途|活动": "一带一路拜访活动",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "tanya.mo@pudutech.com",
               "en_name": "莫礎甄",
               "id": "ou_8111ebac46f6c93ef4f54610bd46b6be",
@@ -151724,6 +151842,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -151920,6 +152039,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -152198,6 +152318,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": "DHL单号：4929870120，一箱",
@@ -152206,9 +152327,9 @@
               "file_token": "EJ2SbWO2PounMjxQqUqcg7tgn3e",
               "name": "20260922-095550.jpg",
               "size": 272478,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1423%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
             }
           ],
           "国家": "智利",
@@ -152391,6 +152512,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -152555,6 +152677,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -152656,6 +152779,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -152758,6 +152882,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -152858,6 +152983,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -152958,6 +153084,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153060,6 +153187,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153158,6 +153286,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153258,6 +153387,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153360,6 +153490,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153467,6 +153598,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153519,7 +153651,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "seno.shi@pudutech.com",
               "en_name": "石逸夫",
               "id": "ou_9262ac4dfe2bc655d4309379a1690a82",
@@ -153567,6 +153699,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153667,6 +153800,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153799,6 +153933,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -153901,6 +154036,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -154001,6 +154137,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -154145,6 +154282,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -154257,6 +154395,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -154393,6 +154532,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
@@ -154457,7 +154597,7 @@
           "用途|活动": "参加中海物业系下仟蚁集采现场入库签约活动产品手册，实际领料为9月22日",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_4cb06003-edfe-416e-b7ea-45eca296d11g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_4cb06003-edfe-416e-b7ea-45eca296d11g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "rendenghui@pudutech.com",
               "en_name": "任登辉",
               "id": "ou_19824ba033d59446e60d186caf2ad9a4",
@@ -154513,10 +154653,29 @@
       },
       {
         "fields": {
+          "INV/PL": [
+            {
+              "file_token": "QdbabNoySokBM1xVCG3cQiTsnrg",
+              "name": "2026-MKT-CZ0924_INV_PL.xlsx",
+              "size": 34231,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
+              "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
+            }
+          ],
           "业务类型": "物料领取",
           "临时物料清理状态": null,
-          "发货单号及文字信息": null,
-          "发货图片": null,
+          "发货单号及文字信息": "捷克MSV营销物料DHL单号：4930337683，一共六箱",
+          "发货图片": [
+            {
+              "file_token": "AwJEbPUigoIYnPxT2axccI09nvg",
+              "name": "img_v3_0215r_71e3d283-4f50-432f-a689-b6dbaa24f26g_MIDDLE_WEBP.webp",
+              "size": 63888,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D",
+              "type": "image/webp",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1434%7D%7D"
+            }
+          ],
           "国家": "捷克MSV工业展物料",
           "备注": "客户名称：捷克MSV工业展物料\n国家：捷克MSV工业展物料\n收件人信息：捷克MSV工业展物料\n运费承担者：普渡付款(PUDU)\n物料用途：捷克MSV工业展物料\n申请人：高鸿源",
           "审批实例Code": "54ADA5D7-EC64-4ED2-A575-9AAA2C3D0AFC",
@@ -154701,6 +154860,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": "待清理",
           "发货单号及文字信息": null,
@@ -154925,6 +155085,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "文化周边申领",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -155025,6 +155186,7 @@
       },
       {
         "fields": {
+          "INV/PL": null,
           "业务类型": "物料领取",
           "临时物料清理状态": null,
           "发货单号及文字信息": null,
@@ -220872,7 +221034,7 @@
           "用户编号": "5",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_967c2f9c-0301-4988-b752-48dd6b229c0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_967c2f9c-0301-4988-b752-48dd6b229c0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "masisheng@pudutech.com",
               "en_name": "马嗣胜",
               "id": "ou_7e981af73e92d90e602a64b31d78fd50",
@@ -221160,7 +221322,7 @@
           "用户编号": "22",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhujunlin@pudutech.com",
               "en_name": "朱俊霖",
               "id": "ou_3d0a5c13b260d3112c7502a975d618fa",
@@ -221204,7 +221366,7 @@
           "用户编号": "24",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wei.chen@pudutech.com",
               "en_name": "陈伟民",
               "id": "ou_76bf5766224974adb0e5691eea343e8a",
@@ -221382,7 +221544,7 @@
           "用户编号": "33",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_0124cdc5-83e4-4138-801a-fc84b2613cdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_0124cdc5-83e4-4138-801a-fc84b2613cdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "max.jin@pudutech.com",
               "en_name": "金晨日",
               "id": "ou_f07be57c2a44f7df014455835ccc254b",
@@ -221580,7 +221742,7 @@
           "用户编号": "42",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "tanya.mo@pudutech.com",
               "en_name": "莫礎甄",
               "id": "ou_8111ebac46f6c93ef4f54610bd46b6be",
@@ -221822,7 +221984,7 @@
           "用户编号": "53",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "seno.shi@pudutech.com",
               "en_name": "石逸夫",
               "id": "ou_9262ac4dfe2bc655d4309379a1690a82",
@@ -221910,7 +222072,7 @@
           "用户编号": "57",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_4cb06003-edfe-416e-b7ea-45eca296d11g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_4cb06003-edfe-416e-b7ea-45eca296d11g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "rendenghui@pudutech.com",
               "en_name": "任登辉",
               "id": "ou_19824ba033d59446e60d186caf2ad9a4",
