@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-22 16:32:43",
+  "generated_at": "2026-09-24 10:33:09",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -6604,7 +6604,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT3",
       "language": "英语(English)",
-      "quantity": 520,
+      "quantity": 0,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6692,7 +6692,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT5",
       "language": "英语(English)",
-      "quantity": 520,
+      "quantity": 0,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6780,7 +6780,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT7",
       "language": "英语(English)",
-      "quantity": 520,
+      "quantity": 0,
       "unit_price_rmb": 0.4062
     },
     {
