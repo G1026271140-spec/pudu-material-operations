@@ -9,7 +9,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from control_center.release import bump_release_version_files
+from deployment_launcher.release import bump_release_version_files
 
 
 def main() -> None:

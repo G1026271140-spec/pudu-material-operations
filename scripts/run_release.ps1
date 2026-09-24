@@ -3,9 +3,6 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$RepoPath,
 
-    [Parameter(Mandatory = $true)]
-    [int]$ControlCenterPid,
-
     [string]$CommitMessage = "",
 
     [Parameter(Mandatory = $true)]
@@ -26,7 +23,7 @@ $StatusPath = Join-Path $LogDirectory "latest-status.json"
 $Mutex = $null
 $HasMutex = $false
 $NewVersion = ""
-$ReleaseStage = "等待控制程序退出"
+$ReleaseStage = "等待发布预检"
 $ExitCode = 0
 
 function Write-ReleaseLog([string]$Message, [string]$Level = "INFO") {
@@ -85,24 +82,9 @@ function Wait-HttpHealth([string]$Url, [int]$Attempts = 60) {
     throw "Health check failed: $Url; $LastError"
 }
 
-function Stop-And-Wait-For-ControlCenter {
-    $Process = Get-Process -Id $ControlCenterPid -ErrorAction SilentlyContinue
-    if ($null -ne $Process) {
-        Write-ReleaseLog "Waiting for control center process $ControlCenterPid to close."
-        $Process.WaitForExit(30000) | Out-Null
-    }
-    for ($Attempt = 1; $Attempt -le 30; $Attempt++) {
-        $Remaining = @(Get-Process -Name "Marketing materials Control" -ErrorAction SilentlyContinue)
-        if ($Remaining.Count -eq 0) { return }
-        Start-Sleep -Seconds 1
-    }
-    throw "Marketing materials Control did not close; release cannot replace the EXE."
-}
-
 try {
     New-Item -ItemType File -Force -Path $LogPath | Out-Null
     Set-ReleaseStatus "running" "版本刷新任务已启动。"
-    if (-not $PreflightOnly) { Stop-And-Wait-For-ControlCenter }
     Push-Location -LiteralPath $RepoPath
 
     Set-Stage "发布预检"
@@ -142,10 +124,10 @@ try {
     Set-Stage "刷新全部页面缓存"
     Invoke-Checked "powershell.exe" @(
         "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File",
-        (Join-Path $RepoPath "scripts\run_control_center_manual_tool.ps1"),
+        (Join-Path $RepoPath "scripts\run_maintenance_tool.ps1"),
         "-Tool", "AllCaches", "-RepoPath", $RepoPath,
         "-SecretsPath", (Join-Path $RepoPath ".streamlit\secrets.toml"),
-        "-LogDirectory", (Join-Path $RepoPath "work\control_center\manual-tools"),
+        "-LogDirectory", (Join-Path $RepoPath "work\maintenance-tools"),
         "-MutexAlreadyHeld", "-SkipLivePublication"
     ) | Out-Null
     $Python = Join-Path $RepoPath ".venv\Scripts\python.exe"
@@ -158,9 +140,9 @@ try {
     Invoke-Checked $Python @("scripts/validate_request_form_cache.py") | Out-Null
     Invoke-Checked $Python @("scripts/validate_warehouse_location_cache.py") | Out-Null
 
-    Set-Stage "重新打包控制程序"
-    Invoke-Checked "powershell.exe" @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $RepoPath "scripts\build_control_center_app.ps1")) | Out-Null
-    $ExeVersion = (Get-Item -LiteralPath (Join-Path $RepoPath "Marketing materials Control.exe")).VersionInfo.ProductVersion
+    Set-Stage "重新打包部署启动器"
+    Invoke-Checked "powershell.exe" @("-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $RepoPath "scripts\build_deployment_launcher.ps1")) | Out-Null
+    $ExeVersion = (Get-Item -LiteralPath (Join-Path $RepoPath "PUDU Material Operations Setup.exe")).VersionInfo.ProductVersion
     if ($ExeVersion -ne $NewVersion) { throw "Packaged EXE version mismatch: expected $NewVersion, got $ExeVersion" }
 
     Set-Stage "提交并推送 GitHub"
@@ -180,10 +162,10 @@ try {
     Set-Stage "同步并重启运行组件"
     Invoke-Checked "powershell.exe" @(
         "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File",
-        (Join-Path $RepoPath "scripts\run_control_center_manual_tool.ps1"),
+        (Join-Path $RepoPath "scripts\run_maintenance_tool.ps1"),
         "-Tool", "SyncAllRuntimes", "-RepoPath", $RepoPath,
         "-SecretsPath", (Join-Path $RepoPath ".streamlit\secrets.toml"),
-        "-LogDirectory", (Join-Path $RepoPath "work\control_center\manual-tools")
+        "-LogDirectory", (Join-Path $RepoPath "work\maintenance-tools")
     ) | Out-Null
 
     Set-Stage "运行状态与健康验证"
@@ -226,10 +208,6 @@ try {
     Pop-Location -ErrorAction SilentlyContinue
     if ($HasMutex) { $Mutex.ReleaseMutex() }
     if ($null -ne $Mutex) { $Mutex.Dispose() }
-    $ControlCenter = Join-Path $RepoPath "Marketing materials Control.exe"
-    if ((-not $DoNotReopen) -and (Test-Path -LiteralPath $ControlCenter)) {
-        Start-Process -FilePath $ControlCenter -WorkingDirectory $RepoPath
-    }
 }
 
 exit $ExitCode

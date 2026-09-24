@@ -121,7 +121,7 @@ try {
             Invoke-Checked $Node @("scripts/wake_streamlit_app.mjs", "--url", "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/", "--log", "work/streamlit-wake.log", "--profile", "work/streamlit-wake-edge-profile", "--timeout-ms", "150000")
         }
         "SyncAllRuntimes" {
-            $SyncCode = "from control_center.system import TASK_BY_KEY, synchronize_task_group; [print(synchronize_task_group(TASK_BY_KEY[key])) for key in ('web','submission','card','cache')]"
+            $SyncCode = "from pathlib import Path; from deployment_launcher.runtime import synchronize_current_runtimes; synchronize_current_runtimes(Path.cwd())"
             Invoke-Checked $script:Python @("-c", $SyncCode)
         }
     }

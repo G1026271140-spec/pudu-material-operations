@@ -30,21 +30,21 @@ cd "$env:USERPROFILE\Desktop\营销物料管理系统"
 
 `run_app.ps1` 会自动寻找可用端口。如果 `8501` 被占用，会自动尝试 `8502`、`8503` 等端口。
 
-## 本地配置与运行控制台
+## 一键部署与迁移
 
-项目内置原生 Windows 配置控制台，用于集中管理飞书 Base 与审批、密码/App Secret/Token、GitHub 与部署、本地端口、后台队列、Worker 电脑节点、缓存计划任务和运行日志：
+项目内置原生 Windows 部署启动器，用于迁移接管或准备备用节点。启动器会自动安装 Git、Python 3.12 和 cloudflared，再配置飞书、域名、本地端口、后台 Worker 与缓存计划任务：
 
 ```powershell
-.\scripts\run_control_center.ps1
+.\scripts\run_deployment_launcher.ps1
 ```
 
 首次使用可创建桌面快捷方式：
 
 ```powershell
-.\scripts\install_control_center_shortcut.ps1
+.\scripts\install_deployment_launcher_shortcut.ps1
 ```
 
-非敏感配置保存在随版本更新的 `config/project_config.json`；敏感项仍保存在 Git 忽略的 `.streamlit/secrets.toml`。每条配置在控制台内都会说明本机保存位置、对应平台入口和修改后的生效范围。完整说明见 `docs/control_center.md`。
+新电脑可通过部署启动器一键安装 Git、Python 3.12 和 cloudflared，并继续配置 Web、Tunnel、后台 Worker 与缓存任务。敏感项保存在 Git 忽略的 `.streamlit/secrets.toml`。完整说明见 `docs/deployment_launcher.md`。
 
 如果第一次运行时还没有安装依赖：
 
@@ -64,7 +64,6 @@ cd "$env:USERPROFILE\Desktop\营销物料管理系统"
 ```toml
 INVENTORY_VIEW_PASSWORD = "replace-with-a-strong-password"
 APPROVAL_VIEW_PASSWORD = "replace-with-a-strong-password"
-CONTROL_CENTER_MASTER_PASSWORD = "replace-with-a-strong-local-password"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"

@@ -7,13 +7,13 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V2.9.4")
+        self.assertEqual(app.APP_VERSION, "V2.9.5")
 
     def test_runtime_health_checks_use_fastapi_endpoint(self):
         root = Path(__file__).resolve().parents[1]
         for relative_path in (
             "scripts/publish_live_cache.py",
-            "scripts/run_control_center_release.ps1",
+            "scripts/run_release.ps1",
         ):
             source = (root / relative_path).read_text(encoding="utf-8-sig")
             self.assertIn("/api/health", source)

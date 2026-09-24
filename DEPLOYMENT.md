@@ -27,7 +27,6 @@ http://服务器IP:端口/?view=inventory
 ```toml
 INVENTORY_VIEW_PASSWORD = "replace-with-a-strong-password"
 APPROVAL_VIEW_PASSWORD = "replace-with-a-strong-password"
-CONTROL_CENTER_MASTER_PASSWORD = "replace-with-a-strong-local-password"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
