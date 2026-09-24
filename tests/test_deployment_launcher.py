@@ -192,3 +192,11 @@ def test_build_script_embeds_project_payload_and_new_launcher() -> None:
     assert "project.zip" in script
     assert "PUDU Material Operations Setup" in script
     assert "--add-data" in script
+
+
+def test_card_worker_installer_stops_stale_worker_processes() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = (root / "scripts" / "install_feishu_card_worker_task.ps1").read_text(encoding="utf-8-sig")
+    assert "Get-CimInstance Win32_Process" in script
+    assert "$escapedWorker" in script
+    assert "Stop-Process -Id $process.ProcessId" in script
