@@ -9,7 +9,7 @@ from deployment_launcher.bundle import export_bundle, import_bundle
 from deployment_launcher.cloudflare import CloudflareError, configure_cloudflare, manual_instructions
 from deployment_launcher.models import CloudflareMode, DeploymentConfig, DeploymentMode, normalize_hostname
 from deployment_launcher.plan import build_plan
-from deployment_launcher.prerequisites import PREREQUISITES
+from deployment_launcher.prerequisites import PREREQUISITES, _is_compatible
 from deployment_launcher.release import bump_release_version_files, next_patch_version
 
 
@@ -86,6 +86,21 @@ def test_required_prerequisites_are_installed_by_winget() -> None:
         "python": "Python.Python.3.12",
         "cloudflared": "Cloudflare.cloudflared",
     }
+
+
+def test_python_prerequisite_requires_exact_312(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    python_item = next(item for item in PREREQUISITES if item.key == "python")
+    executable = tmp_path / "python.exe"
+    executable.write_bytes(b"placeholder")
+
+    class Result:
+        returncode = 0
+        stdout = "3.14\n"
+
+    monkeypatch.setattr("deployment_launcher.prerequisites._run", lambda *_args, **_kwargs: Result())
+    assert _is_compatible(python_item, executable) is False
+    Result.stdout = "3.12\n"
+    assert _is_compatible(python_item, executable) is True
 
 
 class FakeCloudflare:

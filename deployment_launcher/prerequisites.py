@@ -44,9 +44,19 @@ def _candidate_paths(item: Prerequisite) -> list[Path]:
 def find_prerequisite(item: Prerequisite) -> Path | None:
     for command in item.commands:
         found = shutil.which(command)
-        if found:
+        if found and _is_compatible(item, Path(found)):
             return Path(found)
-    return next((path for path in _candidate_paths(item) if path.exists()), None)
+    return next((path for path in _candidate_paths(item) if path.exists() and _is_compatible(item, path)), None)
+
+
+def _is_compatible(item: Prerequisite, path: Path) -> bool:
+    if item.key != "python":
+        return True
+    try:
+        result = _run([str(path), "-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"], timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0 and result.stdout.strip() == "3.12"
 
 
 def _run(command: list[str], timeout: int = 1200) -> subprocess.CompletedProcess[str]:
