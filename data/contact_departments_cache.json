@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-23 11:00:50",
+  "generated_at": "2026-09-28 11:00:23",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1208,16 +1208,6 @@
       ],
       "department_paths": [
         "中东战队"
-      ]
-    },
-    {
-      "open_id": "ou_7844fbb1494fb5582680df89c2b05d41",
-      "name": "Edwin",
-      "department_ids": [
-        "od-7da7ed6e2f8d4014969d997e7b4faf36"
-      ],
-      "department_paths": [
-        "财经中心"
       ]
     },
     {
@@ -2592,6 +2582,16 @@
       ],
       "department_paths": [
         "GRPBU算法组"
+      ]
+    },
+    {
+      "open_id": "ou_7844fbb1494fb5582680df89c2b05d41",
+      "name": "冯冠豪",
+      "department_ids": [
+        "od-7da7ed6e2f8d4014969d997e7b4faf36"
+      ],
+      "department_paths": [
+        "财经中心"
       ]
     },
     {
@@ -4013,6 +4013,16 @@
       ]
     },
     {
+      "open_id": "ou_21abc657d2e8552bf8fa8a1cca3f7dec",
+      "name": "卜晓玻",
+      "department_ids": [
+        "od-e0a6dbed43b62c85d21f33fa9bb21aff"
+      ],
+      "department_paths": [
+        "CRPBU软件组"
+      ]
+    },
+    {
       "open_id": "ou_40e5d921c935a25084f52f0097057236",
       "name": "卞伏成",
       "department_ids": [
@@ -4510,6 +4520,16 @@
       ],
       "department_paths": [
         "美洲服务部"
+      ]
+    },
+    {
+      "open_id": "ou_08f4a18551b39c6931eb474a056bfb9f",
+      "name": "吴少华",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
       ]
     },
     {
@@ -9651,6 +9671,16 @@
       ]
     },
     {
+      "open_id": "ou_b5a7311d2bedd3147046555958674b11",
+      "name": "朱锦德",
+      "department_ids": [
+        "od-1e491b60e74980792615bf38114130df"
+      ],
+      "department_paths": [
+        "业务运营平台团队"
+      ]
+    },
+    {
       "open_id": "ou_d993073031d4bc39060e68d6347b63d5",
       "name": "朱雪",
       "department_ids": [
@@ -11577,6 +11607,16 @@
       ]
     },
     {
+      "open_id": "ou_c040c39352ebaf50d0b2131d2a16ac28",
+      "name": "杨琇郦",
+      "department_ids": [
+        "od-4afe3cc3320dde9749a14f0c32c4ad13"
+      ],
+      "department_paths": [
+        "国内商务交付组"
+      ]
+    },
+    {
       "open_id": "ou_bf0101cce33ef69373ab46c7a1eb8db0",
       "name": "杨磊",
       "department_ids": [
@@ -11945,6 +11985,16 @@
       ]
     },
     {
+      "open_id": "ou_dd48bf3115ff4aa1272e636d40a0bf9f",
+      "name": "林洪兴",
+      "department_ids": [
+        "od-4460d5aedeb32b282f1fd1cf0fc5c8eb"
+      ],
+      "department_paths": [
+        "GRPBU软件组"
+      ]
+    },
+    {
       "open_id": "ou_b3e438215462c3a77e3ee6e7dc66c998",
       "name": "林淑茵",
       "department_ids": [
@@ -12188,6 +12238,16 @@
       ],
       "department_paths": [
         "九江生产组"
+      ]
+    },
+    {
+      "open_id": "ou_26007089d09ad4ea7e65037d59fea238",
+      "name": "桑子豪",
+      "department_ids": [
+        "od-c66cd8d7e00d195dfb1a1ef9f337409e"
+      ],
+      "department_paths": [
+        "NPI组"
       ]
     },
     {
@@ -13216,6 +13276,16 @@
       ],
       "department_paths": [
         "亚太服务部"
+      ]
+    },
+    {
+      "open_id": "ou_b4ee775312a2062c1e8ce2332f66bbc3",
+      "name": "游绍师",
+      "department_ids": [
+        "od-b17d75858b35d6e9f37ecbac8012b60d"
+      ],
+      "department_paths": [
+        "机械平台部"
       ]
     },
     {
@@ -14575,16 +14645,6 @@
       ]
     },
     {
-      "open_id": "ou_cf3460bc6a4f3630ce590f1a0c242b2a",
-      "name": "王金涛",
-      "department_ids": [
-        "od-8882285166a5e51389b4bc0f32a66dac"
-      ],
-      "department_paths": [
-        "CR业务部"
-      ]
-    },
-    {
       "open_id": "ou_fadd4011c54cd927484e9dc94d61d97d",
       "name": "王鑫",
       "department_ids": [
@@ -15057,6 +15117,16 @@
       ]
     },
     {
+      "open_id": "ou_3d8eeeaed8a7c86111235ba08f177b3f",
+      "name": "祝千岚",
+      "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e"
+      ],
+      "department_paths": [
+        "X LAB"
+      ]
+    },
+    {
       "open_id": "ou_800aca201a3d14645d01d421e8f1ea34",
       "name": "祝岩松",
       "department_ids": [
@@ -15083,11 +15153,13 @@
       "name": "禤小兵",
       "department_ids": [
         "od-2ef0ed2a9652dcc4a1e137f9cb141c5d",
-        "od-d90d38def427cf71640b80459d6b5118"
+        "od-d90d38def427cf71640b80459d6b5118",
+        "od-378c31db8e26cd113be254dc2df6f2b4"
       ],
       "department_paths": [
         "IRPBU",
-        "M LAB"
+        "M LAB",
+        "集成供应链中心"
       ]
     },
     {
@@ -15791,6 +15863,16 @@
       ]
     },
     {
+      "open_id": "ou_ac818270a7afa92f69dab74681f18835",
+      "name": "肖俊杰",
+      "department_ids": [
+        "od-d90d38def427cf71640b80459d6b5118"
+      ],
+      "department_paths": [
+        "M LAB"
+      ]
+    },
+    {
       "open_id": "ou_4165f595eae2dd42811d1e235d5e0d6d",
       "name": "肖兆春",
       "department_ids": [
@@ -15955,11 +16037,13 @@
       "name": "肖萌萌",
       "department_ids": [
         "od-62d305b24a1a254ea505354e9a4d4897",
-        "od-6a1072bf3977d7f847b93e394d868b6e"
+        "od-6a1072bf3977d7f847b93e394d868b6e",
+        "od-2215f5418e37914d077f58727c5490e3"
       ],
       "department_paths": [
         "PDT管理部",
-        "SRPBU"
+        "SRPBU",
+        "项目成员挂靠"
       ]
     },
     {
@@ -16652,16 +16736,6 @@
       ],
       "department_paths": [
         "SR测试组"
-      ]
-    },
-    {
-      "open_id": "ou_50d2d0bd8001db628cea9e9d53fcfef7",
-      "name": "董步金",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
       ]
     },
     {
@@ -17623,6 +17697,16 @@
       ]
     },
     {
+      "open_id": "ou_4b1d98001c000d7787c536f60fcceb41",
+      "name": "谢超",
+      "department_ids": [
+        "od-97e18f1878ac641c9dff9ae3c69d4b1c"
+      ],
+      "department_paths": [
+        "计划部"
+      ]
+    },
+    {
       "open_id": "ou_208cb96078382e3b7752edd4161f204d",
       "name": "谢进辉",
       "department_ids": [
@@ -17989,6 +18073,16 @@
       ]
     },
     {
+      "open_id": "ou_326a2de8b0c6d46d7dfad11a63dd7de0",
+      "name": "赵宏莹",
+      "department_ids": [
+        "od-75d6b33abad414680ad52fde19e35e5a"
+      ],
+      "department_paths": [
+        "收入成本核算组"
+      ]
+    },
+    {
       "open_id": "ou_bfd57e7b943abd8e2649a4271ef26a10",
       "name": "赵志敏",
       "department_ids": [
@@ -18224,7 +18318,6 @@
       "department_ids": [
         "od-57835fdb64fd69a83b124af6f2d26cba",
         "od-264e0d6ec3e739c33ad5d32c3908108e",
-        "od-97e18f1878ac641c9dff9ae3c69d4b1c",
         "od-378c31db8e26cd113be254dc2df6f2b4",
         "od-afbc99967b2a7e0da04bf386f98ccaba",
         "od-2215f5418e37914d077f58727c5490e3"
@@ -18232,7 +18325,6 @@
       "department_paths": [
         "PBG",
         "X LAB",
-        "计划部",
         "集成供应链中心",
         "需求计划组",
         "项目成员挂靠"
@@ -19640,10 +19732,12 @@
       "open_id": "ou_80e21efc1cfebbe52d03fc926989ad19",
       "name": "陈友兴",
       "department_ids": [
-        "od-f1200e9f28462c091e27df1f34a2b754"
+        "od-f1200e9f28462c091e27df1f34a2b754",
+        "od-378c31db8e26cd113be254dc2df6f2b4"
       ],
       "department_paths": [
-        "业务运营部"
+        "业务运营部",
+        "集成供应链中心"
       ]
     },
     {
@@ -20289,6 +20383,16 @@
       ]
     },
     {
+      "open_id": "ou_68f39ce48a6d145013b391c3db0e2d63",
+      "name": "陈立勋",
+      "department_ids": [
+        "od-8e45a1055cf45a02f1c906e2c67e58af"
+      ],
+      "department_paths": [
+        "生产质量组"
+      ]
+    },
+    {
       "open_id": "ou_007059394a02cab24c8dda6e8c4750cf",
       "name": "陈美",
       "department_ids": [
@@ -20756,6 +20860,16 @@
       ],
       "department_paths": [
         "建湖品控组"
+      ]
+    },
+    {
+      "open_id": "ou_52774f20f2a7c181b7a152a553bf3681",
+      "name": "韦金汕",
+      "department_ids": [
+        "od-89b909bd6f20be58d79447ab6849221e"
+      ],
+      "department_paths": [
+        "采购开发组"
       ]
     },
     {
@@ -22311,5 +22425,5 @@
       ]
     }
   ],
-  "user_count": 2063
+  "user_count": 2074
 }
