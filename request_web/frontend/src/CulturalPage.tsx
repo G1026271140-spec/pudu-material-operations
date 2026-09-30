@@ -63,8 +63,13 @@ const c = {
     empty: "当前没有文化周边库存数据。",
     jacketNoticeTitle: "文化夹克申领提示",
     jacketNotice: "技术岗同学如参加展会可申领polo，市场部暂无夹克库存哦，请勿申领~",
+    poloNoticeTitle: "文化POLO衫申领提示",
+    poloNotice: "销售同学可直接联系刘如蓓领取适合自己尺码的polo",
     jacketNoticeCancel: "取消",
     jacketNoticeConfirm: "我已知晓，继续申领",
+    viewSizeChart: "查看尺码表",
+    sizeChartHint: "点击图片可放大，手机端可左右滑动查看完整尺码表。",
+    sizeChartClose: "关闭尺码表",
   },
   en: {
     title: "Cultural Merchandise Request",
@@ -99,9 +104,23 @@ const c = {
     jacketNoticeTitle: "Cultural Jacket Notice",
     jacketNotice:
       "Technical colleagues attending exhibitions may request a polo shirt. Marketing currently has no jacket inventory, so please do not request one.",
+    poloNoticeTitle: "Cultural Polo Shirt Notice",
+    poloNotice:
+      "Sales colleagues can contact Liu Rubei directly to collect a polo shirt in a suitable size.",
     jacketNoticeCancel: "Cancel",
     jacketNoticeConfirm: "Understood, Continue",
+    viewSizeChart: "View Size Chart",
+    sizeChartHint:
+      "Tap the image to enlarge it. Swipe horizontally on mobile to view the full chart.",
+    sizeChartClose: "Close size chart",
   },
+};
+
+const CULTURAL_POLO = "文化POLO衫";
+const CULTURAL_JACKET = "文化夹克";
+const SIZE_CHARTS: Record<string, string> = {
+  [CULTURAL_POLO]: "/app-assets/cultural-polo-size-chart.jpg",
+  [CULTURAL_JACKET]: "/app-assets/cultural-jacket-size-chart.jpg",
 };
 
 export default function CulturalPage({ lang }: { lang: Lang }) {
@@ -118,7 +137,9 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     [remark, setRemark] = useState("");
   const [lines, setLines] = useState<Line[]>([]),
     [review, setReview] = useState(false),
-    [jacketNotice, setJacketNotice] = useState(false),
+    [productNotice, setProductNotice] = useState<string | null>(null),
+    [sizeChartProduct, setSizeChartProduct] = useState<string | null>(null),
+    [sizeChartZoomed, setSizeChartZoomed] = useState(false),
     [busy, setBusy] = useState(false),
     [done, setDone] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
@@ -173,11 +194,15 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     setRemark("");
   }
   function requestOpen(product: string) {
-    if (product === "文化夹克") {
-      setJacketNotice(true);
+    if (product === CULTURAL_JACKET || product === CULTURAL_POLO) {
+      setProductNotice(product);
       return;
     }
     open(product);
+  }
+  function closeSizeChart() {
+    setSizeChartProduct(null);
+    setSizeChartZoomed(false);
   }
   function add() {
     if (!active || !model || !region)
@@ -413,10 +438,10 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
           {error} ×
         </div>
       )}
-      {jacketNotice && (
+      {productNotice && (
         <div
           className="overlay jacket-notice-overlay"
-          onMouseDown={() => setJacketNotice(false)}
+          onMouseDown={() => setProductNotice(null)}
         >
           <div
             className="modal jacket-notice"
@@ -428,22 +453,31 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
             <button
               className="close"
               aria-label={t.jacketNoticeCancel}
-              onClick={() => setJacketNotice(false)}
+              onClick={() => setProductNotice(null)}
             >
               ×
             </button>
             <div className="jacket-notice-mark" aria-hidden="true">!</div>
-            <h2 id="jacket-notice-title">{t.jacketNoticeTitle}</h2>
-            <p>{t.jacketNotice}</p>
+            <h2 id="jacket-notice-title">
+              {productNotice === CULTURAL_JACKET
+                ? t.jacketNoticeTitle
+                : t.poloNoticeTitle}
+            </h2>
+            <p>
+              {productNotice === CULTURAL_JACKET
+                ? t.jacketNotice
+                : t.poloNotice}
+            </p>
             <div className="jacket-notice-actions">
-              <button onClick={() => setJacketNotice(false)}>
+              <button onClick={() => setProductNotice(null)}>
                 {t.jacketNoticeCancel}
               </button>
               <button
                 className="jacket-notice-confirm"
                 onClick={() => {
-                  setJacketNotice(false);
-                  open("文化夹克");
+                  const product = productNotice;
+                  setProductNotice(null);
+                  if (product) open(product);
                 }}
               >
                 {t.jacketNoticeConfirm}
@@ -452,7 +486,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
           </div>
         </div>
       )}
-      {active && (
+      {active && !sizeChartProduct && (
         <div className="overlay" onMouseDown={() => setActive(null)}>
           <div
             className="modal cultural-modal"
@@ -462,6 +496,15 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
               ×
             </button>
             <h2>{active}</h2>
+            {SIZE_CHARTS[active] && (
+              <button
+                type="button"
+                className="size-chart-trigger"
+                onClick={() => setSizeChartProduct(active)}
+              >
+                {t.viewSizeChart}
+              </button>
+            )}
             <h4>{t.size}</h4>
             <div className="pills">
               {models.map((x) => (
@@ -523,6 +566,51 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
               </label>
               <button className="primary" onClick={add}>
                 {t.add}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {sizeChartProduct && SIZE_CHARTS[sizeChartProduct] && (
+        <div className="overlay size-chart-overlay" onMouseDown={closeSizeChart}>
+          <div
+            className="modal size-chart-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="size-chart-title"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close"
+              aria-label={t.sizeChartClose}
+              onClick={closeSizeChart}
+            >
+              ×
+            </button>
+            <h2 id="size-chart-title">
+              {lang === "zh"
+                ? `${sizeChartProduct}尺码表`
+                : sizeChartProduct === CULTURAL_JACKET
+                  ? "Cultural Jacket Size Chart"
+                  : "Cultural Polo Shirt Size Chart"}
+            </h2>
+            <p className="size-chart-hint">{t.sizeChartHint}</p>
+            <div className="size-chart-scroll">
+              <button
+                type="button"
+                className="size-chart-image-button"
+                onClick={() => setSizeChartZoomed((value) => !value)}
+                aria-label={t.viewSizeChart}
+              >
+                <img
+                  className={sizeChartZoomed ? "zoomed" : ""}
+                  src={SIZE_CHARTS[sizeChartProduct]}
+                  alt={
+                    lang === "zh"
+                      ? `${sizeChartProduct}尺码表`
+                      : "Size chart"
+                  }
+                />
               </button>
             </div>
           </div>

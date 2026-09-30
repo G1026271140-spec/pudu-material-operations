@@ -361,11 +361,30 @@ class CulturalMobileLayoutTests(unittest.TestCase):
             "Technical colleagues attending exhibitions may request a polo shirt.",
             page,
         )
-        self.assertIn('if (product === "文化夹克")', page)
+        self.assertIn('product === CULTURAL_JACKET || product === CULTURAL_POLO', page)
         self.assertIn('role="alertdialog"', page)
-        self.assertIn('open("文化夹克")', page)
+        self.assertIn("if (product) open(product)", page)
         self.assertIn(".jacket-notice", styles)
         self.assertIn("background: #c9372c", styles)
+
+    def test_polo_selection_requires_notice_and_both_products_have_size_charts(self) -> None:
+        root = Path(app.__file__).parent
+        page = (root / "request_web/frontend/src/CulturalPage.tsx").read_text(
+            encoding="utf-8"
+        )
+        styles = (root / "request_web/frontend/src/portal.css").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("销售同学可直接联系刘如蓓领取适合自己尺码的polo", page)
+        self.assertIn('product === CULTURAL_JACKET || product === CULTURAL_POLO', page)
+        self.assertIn('"/app-assets/cultural-polo-size-chart.jpg"', page)
+        self.assertIn('"/app-assets/cultural-jacket-size-chart.jpg"', page)
+        self.assertIn("size-chart-trigger", page)
+        self.assertIn("size-chart-overlay", styles)
+        self.assertIn("-webkit-overflow-scrolling: touch", styles)
+        self.assertTrue((root / "assets/cultural-polo-size-chart.jpg").is_file())
+        self.assertTrue((root / "assets/cultural-jacket-size-chart.jpg").is_file())
 
     def test_cultural_page_has_phone_card_and_cart_layout(self) -> None:
         source = (

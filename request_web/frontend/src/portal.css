@@ -313,6 +313,61 @@
 .cultural-modal {
   max-width: 820px;
 }
+.size-chart-trigger {
+  min-height: 40px;
+  margin: -4px 0 4px;
+  padding: 9px 14px;
+  border: 1px solid #17868a;
+  border-radius: 7px;
+  background: #edf8f7;
+  color: #086f73;
+  font-weight: 750;
+  cursor: pointer;
+}
+.size-chart-trigger:active {
+  transform: translateY(1px);
+}
+.size-chart-overlay {
+  z-index: 170;
+}
+.size-chart-modal {
+  width: min(1120px, calc(100vw - 40px));
+  max-height: 92dvh;
+  overflow: hidden;
+}
+.size-chart-modal h2 {
+  margin: 0 44px 5px 0;
+}
+.size-chart-hint {
+  margin: 0 0 12px;
+  color: #587489;
+  font-size: 13px;
+}
+.size-chart-scroll {
+  max-height: calc(92dvh - 130px);
+  overflow: auto;
+  border: 1px solid #c8d9e3;
+  border-radius: 8px;
+  background: #f7fafc;
+}
+.size-chart-image-button {
+  display: block;
+  min-width: 100%;
+  padding: 0;
+  border: 0;
+  background: #fff;
+  cursor: zoom-in;
+}
+.size-chart-image-button img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.size-chart-image-button img.zoomed {
+  width: 1304px;
+  max-width: none;
+  cursor: zoom-out;
+}
 .jacket-notice {
   width: min(460px, calc(100vw - 32px));
   border-top: 5px solid #c9372c;
@@ -625,6 +680,32 @@
   }
   .cultural-page .jacket-notice-actions button {
     min-height: 46px;
+  }
+  .cultural-page .size-chart-trigger {
+    width: 100%;
+    margin: 0 0 2px;
+  }
+  .cultural-page .size-chart-modal {
+    display: flex;
+    max-height: 94dvh;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .cultural-page .size-chart-modal h2 {
+    flex: 0 0 auto;
+  }
+  .cultural-page .size-chart-hint {
+    flex: 0 0 auto;
+    font-size: 12px;
+  }
+  .cultural-page .size-chart-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cultural-page .size-chart-image-button img.zoomed {
+    width: 1000px;
   }
   .cultural-page .pills {
     gap: 7px;
