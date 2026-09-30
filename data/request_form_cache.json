@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-30 10:31:43",
+  "generated_at": "2026-09-30 16:31:52",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -6604,7 +6604,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT3",
       "language": "英语(English)",
-      "quantity": 0,
+      "quantity": 50,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6692,7 +6692,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT5",
       "language": "英语(English)",
-      "quantity": 0,
+      "quantity": 30,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6780,7 +6780,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "GT7",
       "language": "英语(English)",
-      "quantity": 0,
+      "quantity": 20,
       "unit_price_rmb": 0.4062
     },
     {
@@ -6980,7 +6980,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT3",
       "language": "无需语种",
-      "quantity": 170,
+      "quantity": 10,
       "unit_price_rmb": 1.354
     },
     {
@@ -6988,7 +6988,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT5",
       "language": "无需语种",
-      "quantity": 160,
+      "quantity": 12,
       "unit_price_rmb": 1.354
     },
     {
@@ -6996,7 +6996,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT7",
       "language": "无需语种",
-      "quantity": 175,
+      "quantity": 0,
       "unit_price_rmb": 1.354
     }
   ],
