@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-09-28 16:31:59",
+  "generated_at": "2026-09-30 10:31:43",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2124,7 +2124,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "PUDU CC1",
       "language": "简中(Simplified Chinese)",
-      "quantity": -35,
+      "quantity": 165,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2364,7 +2364,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1790,
+      "quantity": 1990,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2444,7 +2444,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1",
       "language": "简中(Simplified Chinese)",
-      "quantity": -40,
+      "quantity": 160,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2524,7 +2524,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1150,
+      "quantity": 1350,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2604,7 +2604,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T600",
       "language": "简中(Simplified Chinese)",
-      "quantity": 750,
+      "quantity": 950,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2764,7 +2764,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
       "language": "简中(Simplified Chinese)",
-      "quantity": 400,
+      "quantity": 600,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2796,7 +2796,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": 1000,
+      "quantity": 1200,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2948,7 +2948,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 540,
+      "quantity": 690,
       "unit_price_rmb": 5.416
     },
     {
@@ -3100,7 +3100,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": -100,
+      "quantity": -50,
       "unit_price_rmb": 5.416
     },
     {
@@ -3572,7 +3572,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "BG1",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -3892,7 +3892,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "T300",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -3972,7 +3972,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "MT1",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -4052,7 +4052,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "CC1 PRO",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -5252,7 +5252,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "简中(Simplified Chinese)",
-      "quantity": 400,
+      "quantity": 600,
       "unit_price_rmb": 0.4062
     },
     {
@@ -5300,7 +5300,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": -100,
+      "quantity": 0,
       "unit_price_rmb": 5.416
     },
     {
@@ -5836,7 +5836,7 @@
       "product": "产品易拉宝(Product Roll-Up)",
       "model": "猛犸MP2000",
       "language": "简中(Simplified Chinese)",
-      "quantity": -1,
+      "quantity": 0,
       "unit_price_rmb": 74.47
     },
     {
@@ -6132,7 +6132,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "T150",
       "language": "简中(Simplified Chinese)",
-      "quantity": 100,
+      "quantity": 300,
       "unit_price_rmb": 0.4062
     },
     {
