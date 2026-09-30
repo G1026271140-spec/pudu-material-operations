@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-28 11:00:23",
+  "generated_at": "2026-09-30 11:00:21",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1188,6 +1188,16 @@
       ],
       "department_paths": [
         "中东战队"
+      ]
+    },
+    {
+      "open_id": "ou_43a32c9d4b6d5bee93d6d105697b29e2",
+      "name": "Annus Akhtar",
+      "department_ids": [
+        "od-e36195829136c279cc43ba7cf98790d8"
+      ],
+      "department_paths": [
+        "亚太服务部"
       ]
     },
     {
@@ -4553,16 +4563,6 @@
       ]
     },
     {
-      "open_id": "ou_d331f82b76a9f87382b7288e38fa29d4",
-      "name": "吴彬兆",
-      "department_ids": [
-        "od-92c711fd0693c9bd3c68ea056b019247"
-      ],
-      "department_paths": [
-        "英爱战队"
-      ]
-    },
-    {
       "open_id": "ou_1023f7b3a485e19b6cde0a1a505f748f",
       "name": "吴志鹏",
       "department_ids": [
@@ -5725,16 +5725,6 @@
       ]
     },
     {
-      "open_id": "ou_332fa02a98b3e3a51708836f415721ec",
-      "name": "夏晓丽",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_0e4cbc08ad41221cebd5515feadc575f",
       "name": "夏菁",
       "department_ids": [
@@ -5996,16 +5986,6 @@
       ],
       "department_paths": [
         "设计部"
-      ]
-    },
-    {
-      "open_id": "ou_3ddbb92cdc0c76dcfdbaea8597e3cac2",
-      "name": "孔祥昊",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
       ]
     },
     {
@@ -15309,16 +15289,6 @@
       ]
     },
     {
-      "open_id": "ou_86e4ff2a4ee15db7a977bceeeca69497",
-      "name": "程熠城",
-      "department_ids": [
-        "od-b923d4dec22c875151839fc86bc30809"
-      ],
-      "department_paths": [
-        "九江生产组"
-      ]
-    },
-    {
       "open_id": "ou_b86e01ff21f37d15ff7eb05a8cc04d4a",
       "name": "程玉梅",
       "department_ids": [
@@ -16971,16 +16941,6 @@
       ]
     },
     {
-      "open_id": "ou_238d2afcd046ad718645ca52183ff944",
-      "name": "蔡博闻",
-      "department_ids": [
-        "od-c05de3b34dd820522367206a8074bcc9"
-      ],
-      "department_paths": [
-        "SQE组"
-      ]
-    },
-    {
       "open_id": "ou_df7d32cf87dc0eb60692f1cdbb1de9f9",
       "name": "蔡奕聪",
       "department_ids": [
@@ -17654,6 +17614,16 @@
       ],
       "department_paths": [
         "亚太服务部"
+      ]
+    },
+    {
+      "open_id": "ou_74c652885c47f5983650770f7af3e06b",
+      "name": "谢标鸿",
+      "department_ids": [
+        "od-c66cd8d7e00d195dfb1a1ef9f337409e"
+      ],
+      "department_paths": [
+        "NPI组"
       ]
     },
     {
@@ -19943,6 +19913,16 @@
       ]
     },
     {
+      "open_id": "ou_bbec808db67e57cd5657ff15da08d4c0",
+      "name": "陈扬帆",
+      "department_ids": [
+        "od-74945021b666e12d9329ee192162b7b2"
+      ],
+      "department_paths": [
+        "日本服务组"
+      ]
+    },
+    {
       "open_id": "ou_11e9059ab6d78d7e18522890d7628210",
       "name": "陈捷丹",
       "department_ids": [
@@ -21613,16 +21593,6 @@
       ]
     },
     {
-      "open_id": "ou_0b33ea8ea40cf4679244e83d1772fb22",
-      "name": "麦雄日",
-      "department_ids": [
-        "od-d90d38def427cf71640b80459d6b5118"
-      ],
-      "department_paths": [
-        "M LAB"
-      ]
-    },
-    {
       "open_id": "ou_0de0ac5fda32af6dd4f830589f31f449",
       "name": "麻清雪",
       "department_ids": [
@@ -22425,5 +22395,5 @@
       ]
     }
   ],
-  "user_count": 2074
+  "user_count": 2071
 }
