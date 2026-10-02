@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-09-30 11:00:21",
+  "generated_at": "2026-10-02 11:00:19",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -161,6 +161,12 @@
       "department_id": "od-4460d5aedeb32b282f1fd1cf0fc5c8eb",
       "name": "GRPBU软件组",
       "path": "GRPBU软件组",
+      "parent_department_id": ""
+    },
+    {
+      "department_id": "od-e2c8be81d4c0c0dfbf35afb1fd4af5a7",
+      "name": "GR业务部",
+      "path": "GR业务部",
       "parent_department_id": ""
     },
     {
@@ -1178,7 +1184,7 @@
       "parent_department_id": ""
     }
   ],
-  "row_count": 195,
+  "row_count": 196,
   "users": [
     {
       "open_id": "ou_050624eb0b61caa9754a4f8de5454040",
@@ -1270,6 +1276,16 @@
       "department_paths": [
         "X LAB",
         "美英OR业务部"
+      ]
+    },
+    {
+      "open_id": "ou_2c65e2fa4b8d3a3c4b4d622d115d0630",
+      "name": "Jonathon Philip Collett",
+      "department_ids": [
+        "od-92c711fd0693c9bd3c68ea056b019247"
+      ],
+      "department_paths": [
+        "英爱战队"
       ]
     },
     {
@@ -1749,26 +1765,6 @@
       ]
     },
     {
-      "open_id": "ou_4f013eae8dd4395cc13b2d175a790ac8",
-      "name": "仲泠萱",
-      "department_ids": [
-        "od-c85ebe41cdf07b2290fc9e0cb0f334e8"
-      ],
-      "department_paths": [
-        "GRPBU机械组"
-      ]
-    },
-    {
-      "open_id": "ou_5738671d036156fb959eeb89ad092866",
-      "name": "仵江浩",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
-      ]
-    },
-    {
       "open_id": "ou_abd7fa9394da3c694786bd0fdf64de14",
       "name": "任义龙",
       "department_ids": [
@@ -1896,16 +1892,6 @@
       ],
       "department_paths": [
         "桐乡综合组"
-      ]
-    },
-    {
-      "open_id": "ou_d4a2f0b5a7a21428dbd81fee044b5264",
-      "name": "任铮",
-      "department_ids": [
-        "od-9487cd1b780367a333bae909869435fb"
-      ],
-      "department_paths": [
-        "海外商务交付组"
       ]
     },
     {
@@ -2120,16 +2106,6 @@
       ],
       "department_paths": [
         "HRBP部"
-      ]
-    },
-    {
-      "open_id": "ou_4d57343d04cb299de63507d10a362181",
-      "name": "何有琴",
-      "department_ids": [
-        "od-b0816b5d910e69d441d8dbffb9253f35"
-      ],
-      "department_paths": [
-        "设计部"
       ]
     },
     {
@@ -2892,10 +2868,10 @@
       "open_id": "ou_e535e3880920bc400cad7d65aaf78ed8",
       "name": "刘云霄",
       "department_ids": [
-        "od-8f0949a277d53ce4c0ddc39fa86e583c"
+        "od-e2c8be81d4c0c0dfbf35afb1fd4af5a7"
       ],
       "department_paths": [
-        "KA业务部"
+        "GR业务部"
       ]
     },
     {
@@ -6905,10 +6881,12 @@
       "name": "廖黎明",
       "department_ids": [
         "od-402266e5a325283450f7a37c968e0cd8",
+        "od-8f0949a277d53ce4c0ddc39fa86e583c",
         "od-bb94a48101961959a04cbb38fc67a2aa"
       ],
       "department_paths": [
         "HMT战队",
+        "KA业务部",
         "大中华战区"
       ]
     },
@@ -7104,16 +7082,6 @@
       ],
       "department_paths": [
         "法务部"
-      ]
-    },
-    {
-      "open_id": "ou_623b38013f1441db7a2b6c2d4027fa6f",
-      "name": "张和超",
-      "department_ids": [
-        "od-2f3b4aa135c682dcf06b79b2f1f75642"
-      ],
-      "department_paths": [
-        "通用导航及底盘团队"
       ]
     },
     {
@@ -7634,10 +7602,10 @@
       "open_id": "ou_19ead2ad35480ebd0a7e80d578681a45",
       "name": "张河",
       "department_ids": [
-        "od-8f0949a277d53ce4c0ddc39fa86e583c"
+        "od-72e44aa01224d9f0fb674858f50c11c6"
       ],
       "department_paths": [
-        "KA业务部"
+        "SR2D业务部"
       ]
     },
     {
@@ -9029,16 +8997,6 @@
       ]
     },
     {
-      "open_id": "ou_02f1cb4fa37ecdfb44be75e3a1a946bc",
-      "name": "曹浥晨",
-      "department_ids": [
-        "od-74945021b666e12d9329ee192162b7b2"
-      ],
-      "department_paths": [
-        "日本服务组"
-      ]
-    },
-    {
       "open_id": "ou_ea10e67e5534f0a85d80705fdf7f4eac",
       "name": "曹玉峰",
       "department_ids": [
@@ -9628,16 +9586,6 @@
       ],
       "department_paths": [
         "CRPBU机械组"
-      ]
-    },
-    {
-      "open_id": "ou_9dc95542dec4ba239b89c1f4b09cb985",
-      "name": "朱达兵",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
       ]
     },
     {
@@ -11729,16 +11677,6 @@
       ]
     },
     {
-      "open_id": "ou_cccd70a37ecdeb2393bec6a182a027c2",
-      "name": "杨雨萱",
-      "department_ids": [
-        "od-972f78adf8ab5ea18ac15dad3bb8a97d"
-      ],
-      "department_paths": [
-        "CR服务代表组"
-      ]
-    },
-    {
       "open_id": "ou_6fe22a9fd3a67bc92fc7e7d3e0bc57a3",
       "name": "杨雪芳",
       "department_ids": [
@@ -11788,6 +11726,16 @@
       ],
       "department_paths": [
         "机械平台部"
+      ]
+    },
+    {
+      "open_id": "ou_a819f9125496f3cf9a57c006e9c61888",
+      "name": "松井重憲",
+      "department_ids": [
+        "od-01209160411537594767149219156c03"
+      ],
+      "department_paths": [
+        "日本战队"
       ]
     },
     {
@@ -12928,10 +12876,10 @@
       "open_id": "ou_14939a5fd7ea9cdedc33c8aeb06cde0a",
       "name": "汪洪纲",
       "department_ids": [
-        "od-ecf2a9c63443b1c26699dcec07008209"
+        "od-f610c7036dc1e1e4dd10f168c41a1d61"
       ],
       "department_paths": [
-        "项目交付组"
+        "服务代表组"
       ]
     },
     {
@@ -13668,10 +13616,10 @@
       "open_id": "ou_0c1e29add47f342ffeb1dc1304fb86ad",
       "name": "王众",
       "department_ids": [
-        "od-8f0949a277d53ce4c0ddc39fa86e583c"
+        "od-e2c8be81d4c0c0dfbf35afb1fd4af5a7"
       ],
       "department_paths": [
-        "KA业务部"
+        "GR业务部"
       ]
     },
     {
@@ -13904,16 +13852,6 @@
       ],
       "department_paths": [
         "九江生产组"
-      ]
-    },
-    {
-      "open_id": "ou_81c31dc199e619a848a3e8acfad4f536",
-      "name": "王家怡",
-      "department_ids": [
-        "od-9487cd1b780367a333bae909869435fb"
-      ],
-      "department_paths": [
-        "海外商务交付组"
       ]
     },
     {
@@ -14765,16 +14703,6 @@
       ]
     },
     {
-      "open_id": "ou_8a6c78155c786b7b1feaeb15744cc902",
-      "name": "甘苒菏",
-      "department_ids": [
-        "od-a2c548735f75b8570dd50a401976f71f"
-      ],
-      "department_paths": [
-        "韩国战队"
-      ]
-    },
-    {
       "open_id": "ou_997339eb17cab1d485367cb3ef58f54b",
       "name": "田云辉",
       "department_ids": [
@@ -14978,10 +14906,10 @@
       "open_id": "ou_ca623a5d762e260f97bf76e6b1d9f6e1",
       "name": "石少麟",
       "department_ids": [
-        "od-8f0949a277d53ce4c0ddc39fa86e583c"
+        "od-e2c8be81d4c0c0dfbf35afb1fd4af5a7"
       ],
       "department_paths": [
-        "KA业务部"
+        "GR业务部"
       ]
     },
     {
@@ -16298,10 +16226,10 @@
       "open_id": "ou_31b44ffd562d3081f41ff9ab63e84b01",
       "name": "胡莹",
       "department_ids": [
-        "od-8f0949a277d53ce4c0ddc39fa86e583c"
+        "od-e2c8be81d4c0c0dfbf35afb1fd4af5a7"
       ],
       "department_paths": [
-        "KA业务部"
+        "GR业务部"
       ]
     },
     {
@@ -17152,16 +17080,6 @@
       ],
       "department_paths": [
         "SQM组"
-      ]
-    },
-    {
-      "open_id": "ou_94bd65f87ea9ddf324874cd2a5f331c6",
-      "name": "袁丁",
-      "department_ids": [
-        "od-b5594223b60818b552a17a06fc341b13"
-      ],
-      "department_paths": [
-        "桐乡品控组"
       ]
     },
     {
@@ -20186,10 +20104,10 @@
       "open_id": "ou_c187318e96661ade6aba5ee7c79e13b8",
       "name": "陈泽权",
       "department_ids": [
-        "od-8f0949a277d53ce4c0ddc39fa86e583c"
+        "od-8882285166a5e51389b4bc0f32a66dac"
       ],
       "department_paths": [
-        "KA业务部"
+        "CR业务部"
       ]
     },
     {
@@ -21260,10 +21178,12 @@
       "open_id": "ou_02edff2ad6f7c326b809df87655d03da",
       "name": "高国栋",
       "department_ids": [
-        "od-f610c7036dc1e1e4dd10f168c41a1d61"
+        "od-f610c7036dc1e1e4dd10f168c41a1d61",
+        "od-2215f5418e37914d077f58727c5490e3"
       ],
       "department_paths": [
-        "服务代表组"
+        "服务代表组",
+        "项目成员挂靠"
       ]
     },
     {
@@ -22395,5 +22315,5 @@
       ]
     }
   ],
-  "user_count": 2071
+  "user_count": 2062
 }
