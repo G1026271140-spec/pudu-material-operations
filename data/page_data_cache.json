@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-02 10:31:09",
+  "generated_at": "2026-10-03 10:31:39",
   "tables": {
     "物料品类": [
       {
@@ -161412,7 +161412,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_1fa999ee-64a4-43b9-8982-816455fe2afg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00164_efe1d0a6-b4b1-4325-a9f0-5c7648ed05bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "alonso.huang@pudutech.com",
               "en_name": "黄思另",
               "id": "ou_290b2983688dc657c0710a1bd9b69bfc",
@@ -233100,7 +233100,7 @@
           "用户编号": "66",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00158_1fa999ee-64a4-43b9-8982-816455fe2afg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00164_efe1d0a6-b4b1-4325-a9f0-5c7648ed05bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "alonso.huang@pudutech.com",
               "en_name": "黄思另",
               "id": "ou_290b2983688dc657c0710a1bd9b69bfc",
