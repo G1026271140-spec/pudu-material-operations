@@ -81,7 +81,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V2.9.7"
+APP_VERSION = "V2.9.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -204,7 +204,7 @@ REQUEST_MANUAL_PRODUCT_ORDER = (
     "配送线产品手册DR",
     "具身线产品手册ER",
 )
-GITHUB_REPOSITORY = str(get_setting("project.github_repository", "G1026271140-spec/pudu-material-inventory"))
+GITHUB_REPOSITORY = str(get_setting("project.github_repository", "G1026271140-spec/pudu-material-operations"))
 GITHUB_CACHE_WORKFLOW_FILE = str(get_setting("project.cache_workflow_file", "refresh-static-cache.yml"))
 GITHUB_CACHE_WORKFLOW_URL = (
     f"https://github.com/{GITHUB_REPOSITORY}/actions/workflows/{GITHUB_CACHE_WORKFLOW_FILE}"
@@ -3523,7 +3523,7 @@ def trigger_github_cache_refresh() -> None:
             "Authorization": f"Bearer {token}",
             "X-GitHub-Api-Version": "2022-11-28",
             "Content-Type": "application/json",
-            "User-Agent": "pudu-material-inventory",
+            "User-Agent": "pudu-material-operations",
         },
     )
     try:

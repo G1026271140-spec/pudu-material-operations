@@ -46,6 +46,8 @@ cd "$env:USERPROFILE\Desktop\营销物料管理系统"
 
 新电脑可通过部署启动器一键安装 Git、Python 3.12 和 cloudflared，并继续配置 Web、Tunnel、后台 Worker 与缓存任务。敏感项保存在 Git 忽略的 `.streamlit/secrets.toml`。完整说明见 `docs/deployment_launcher.md`。
 
+React 前端、FastAPI、本机 Web Runner、Cloudflare Tunnel 与公网域名之间的完整关系见 [`docs/frontend-and-tunnel-architecture.md`](docs/frontend-and-tunnel-architecture.md)。
+
 如果第一次运行时还没有安装依赖：
 
 ```powershell

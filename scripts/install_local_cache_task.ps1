@@ -2,7 +2,7 @@
 param(
     [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduMaterialCacheRunner"),
-    [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
+    [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-operations.git",
     [string]$Branch = "master",
     [string]$TaskName = "PUDU Material Cache Refresh",
     [string]$ContactTaskName = "PUDU Contact Cache Refresh",

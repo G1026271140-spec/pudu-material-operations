@@ -2,7 +2,7 @@
 param(
     [string]$SourceRepoPath = "",
     [string]$RunnerRoot = (Join-Path $env:LOCALAPPDATA "PuduSubmissionWorker"),
-    [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-inventory.git",
+    [string]$RepositoryUrl = "https://github.com/G1026271140-spec/pudu-material-operations.git",
     [string]$Branch = "master",
     [string]$TaskName = "PUDU Submission Worker",
     [ValidateRange(1, 10000)]

@@ -47,7 +47,7 @@ class DeploymentConfig:
     mode: DeploymentMode = DeploymentMode.TAKEOVER
     install_root: str = str(Path.home() / "PuduMaterialOperations")
     source: str = "manual"
-    repository: str = "G1026271140-spec/pudu-material-inventory"
+    repository: str = "G1026271140-spec/pudu-material-operations"
     branch: str = "master"
     hostname: str = "pudu-material-operations.gaohongyuan.me"
     port: int = 8501

@@ -3,7 +3,7 @@
   "project": {
     "display_name": "PUDU 营销物料管理系统",
     "github_account": "G1026271140-spec",
-    "github_repository": "G1026271140-spec/pudu-material-inventory",
+    "github_repository": "G1026271140-spec/pudu-material-operations",
     "github_branch": "master",
     "cache_workflow_file": "refresh-static-cache.yml"
   },
