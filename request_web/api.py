@@ -319,6 +319,26 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@api.middleware("http")
+async def frontend_cache_policy(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    content_type = response.headers.get("content-type", "")
+    if path.startswith("/assets/"):
+        response.headers["Cache-Control"] = (
+            "public, max-age=31536000, immutable"
+            if response.status_code == 200
+            else "no-store"
+        )
+    elif content_type.startswith("text/html"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 @api.get("/category-assets/{filename:path}")
 def category_asset(filename: str) -> FileResponse:
     return _asset_file(f"request_categories/{filename}")
@@ -1308,6 +1328,7 @@ def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
 
 
 if DIST.is_dir():
+    api.mount("/assets", StaticFiles(directory=DIST / "assets"), name="frontend-assets")
     api.mount("/static", StaticFiles(directory=DIST / "assets"), name="request-static")
 
     @api.get("/{path:path}")

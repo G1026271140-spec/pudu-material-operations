@@ -28,6 +28,22 @@ def test_catalog_uses_local_snapshot_and_exposes_all_products():
     assert any(not product["adminOnly"] for product in catalog["adminProducts"])
 
 
+def test_frontend_html_is_not_cached_across_releases():
+    response = TestClient(api).get("/request")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert response.headers["cache-control"] == "no-store, no-cache, must-revalidate"
+
+
+def test_missing_hashed_asset_returns_404_instead_of_spa_html():
+    response = TestClient(api).get("/assets/index-stale-release.js")
+
+    assert response.status_code == 404
+    assert not response.headers["content-type"].startswith("text/html")
+    assert response.headers["cache-control"] == "no-store"
+
+
 def test_admin_catalog_ignores_category_and_material_status_and_visibility(monkeypatch):
     cache = {
         "generated_at": "2026-09-17",
