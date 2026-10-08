@@ -457,15 +457,16 @@ def render_request_dates_fixture():
 
 def test_request_date_widgets_default_empty_and_accept_single_date(monkeypatch):
     from streamlit.testing.v1 import AppTest
+    selected_date = date.today() + timedelta(days=1)
     monkeypatch.setattr(app, "get_ui_language", lambda: app.LANGUAGE_ZH)
     ui = AppTest.from_function(render_request_dates_fixture, default_timeout=10).run()
     assert not ui.exception
     assert ui.selectbox[0].value is None
     assert not ui.date_input[0].value
     ui.selectbox[0].set_value("代理商支持")
-    ui.date_input[0].set_value(date(2026, 10, 1)).run()
+    ui.date_input[0].set_value(selected_date).run()
     assert not ui.exception
-    assert ui.date_input[0].value == date(2026, 10, 1)
+    assert ui.date_input[0].value == selected_date
 
 
 def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):

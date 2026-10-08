@@ -258,6 +258,12 @@ class ReactAllocationOrderRulesTests(unittest.TestCase):
         self.assertIn('removePendingRequestFromSessionCache(requestId)', self.allocation)
         self.assertIn('current.filter(item => item.requestId !== requestId)', self.allocation)
 
+    def test_queued_allocation_uses_the_shared_red_popup(self) -> None:
+        self.assertIn('className="allocation-toast allocation-task-toast"', self.allocation)
+        self.assertIn('role="status"', self.allocation)
+        self.assertIn('aria-label={tr("关闭提示", "Close notification")}', self.allocation)
+        self.assertNotIn('{success && <div className="allocation-success">', self.allocation)
+
     def test_inventory_cards_and_modal_are_phone_responsive(self) -> None:
         mobile = self.css.split("@media(max-width:700px)", 1)[1]
         self.assertIn(".restock-cards", mobile)
