@@ -76,6 +76,58 @@ class MaterialAutomationTests(unittest.TestCase):
             self.assertEqual(automation.run_once(), 0)
             automation._process_source.assert_not_called()
 
+    def test_attachment_field_keeps_partial_success_at_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            automation = MaterialAutomation(self.make_settings(root), Mock())
+            automation.client = Mock()
+
+            def update_record(_record_id, fields):
+                tokens = [item["file_token"] for item in fields["images"]]
+                if len(tokens) > 3:
+                    raise AutomationError("飞书 API 1254069: AttachFieldConvFail")
+
+            automation.client.update_record.side_effect = update_record
+            committed, limited = automation._write_attachment_field_best_effort(
+                "rec-1", "images", ["old-1"], ["new-1", "new-2", "new-3", "new-4"], batch_size=20,
+            )
+
+            self.assertEqual(committed, ["old-1", "new-1", "new-2"])
+            self.assertTrue(limited)
+
+    def test_attachment_field_reraises_unrelated_api_errors(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            automation = MaterialAutomation(self.make_settings(root), Mock())
+            automation.client = Mock()
+            automation.client.update_record.side_effect = AutomationError("permission denied")
+
+            with self.assertRaisesRegex(AutomationError, "permission denied"):
+                automation._write_attachment_field_best_effort("rec-1", "images", [], ["new-1"])
+
+    def test_direct_image_is_written_without_archive_deletion(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "photo.jpg"
+            source.write_bytes(b"image")
+            automation = MaterialAutomation(self.make_settings(root), Mock())
+            automation.client = Mock()
+            automation.client.upload_attachment.return_value = "uploaded-image"
+            automation.state.data = {"version": 1, "initialized": True, "sources": {}}
+
+            with patch("material_automation.safe_delete_archive") as delete_archive:
+                automation._process_source(
+                    "rec-image",
+                    {"images": [], "videos": []},
+                    {"file_token": "source-image", "name": "photo.jpg"},
+                )
+
+            delete_archive.assert_not_called()
+            automation.client.update_record.assert_called_once_with(
+                "rec-image", {"images": [{"file_token": "uploaded-image"}]},
+            )
+            self.assertEqual(automation.state.data["sources"]["source-image"]["status"], "complete")
+
     def test_archive_matching_ignores_spaces_and_underscores(self) -> None:
         self.assertEqual(archive_match_key("2026 MT1 Max 素材.zip"), archive_match_key("2026_MT1_Max_素材.zip"))
 

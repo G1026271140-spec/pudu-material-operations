@@ -675,6 +675,55 @@ class MaterialAutomation:
         folder.mkdir(parents=True, exist_ok=True)
         return folder
 
+    def _write_attachment_field_best_effort(
+        self,
+        record_id: str,
+        field_name: str,
+        existing_tokens: list[str],
+        new_tokens: list[str],
+        batch_size: int = 20,
+    ) -> tuple[list[str], bool]:
+        """Write as many attachments as the Base field accepts, preserving partial success."""
+        committed = merge_tokens(existing_tokens, [])
+        pending = [token for token in merge_tokens([], new_tokens) if token not in committed]
+        limit_reached = False
+        while pending:
+            chunk = pending[:batch_size]
+            candidate = merge_tokens(committed, chunk)
+            try:
+                self.client.update_record(
+                    record_id,
+                    {field_name: [{"file_token": token} for token in candidate]},
+                )
+                committed = candidate
+                pending = pending[len(chunk):]
+                continue
+            except AutomationError as exc:
+                if "AttachFieldConvFail" not in str(exc):
+                    raise
+
+            # The batch crossed the attachment-field limit. Add items one at a
+            # time so any remaining capacity is still used.
+            for token in chunk:
+                candidate = merge_tokens(committed, [token])
+                try:
+                    self.client.update_record(
+                        record_id,
+                        {field_name: [{"file_token": item} for item in candidate]},
+                    )
+                    committed = candidate
+                except AutomationError as exc:
+                    if "AttachFieldConvFail" not in str(exc):
+                        raise
+                    limit_reached = True
+                    self.logger.warning(
+                        "记录 %s 的字段“%s”已达到附件上限，保留已成功写入的 %d 个附件。",
+                        record_id, field_name, len(committed),
+                    )
+                    return committed, limit_reached
+            pending = pending[len(chunk):]
+        return committed, limit_reached
+
     def _process_source(self, record_id: str, fields: dict[str, Any], attachment: dict[str, Any]) -> None:
         file_token = str(attachment["file_token"])
         file_name = sanitize_component(attachment.get("name"), f"{file_token}.zip", 180)
@@ -721,29 +770,45 @@ class MaterialAutomation:
                     self.state.save()
                 new_tokens[category].append(uploaded_token)
 
-            updates: dict[str, Any] = {}
-            if new_tokens["image"]:
-                tokens = merge_tokens(attachment_tokens(fields.get(self.settings.image_field)), new_tokens["image"])
-                updates[self.settings.image_field] = [{"file_token": token} for token in tokens]
-            if new_tokens["video"]:
-                tokens = merge_tokens(attachment_tokens(fields.get(self.settings.video_field)), new_tokens["video"])
-                updates[self.settings.video_field] = [{"file_token": token} for token in tokens]
-            if updates:
-                self.client.update_record(record_id, updates)
-                fields.update(updates)
-            if self.settings.delete_archive_after_success and (new_tokens["image"] or new_tokens["video"]):
+            written_counts: dict[str, int] = {"image": 0, "video": 0}
+            limits_reached: dict[str, bool] = {"image": False, "video": False}
+            output_fields = {
+                "image": self.settings.image_field,
+                "video": self.settings.video_field,
+            }
+            for category, field_name in output_fields.items():
+                if not new_tokens[category]:
+                    continue
+                existing_tokens = attachment_tokens(fields.get(field_name))
+                committed_tokens, limit_reached = self._write_attachment_field_best_effort(
+                    record_id, field_name, existing_tokens, new_tokens[category],
+                )
+                written_counts[category] = max(0, len(committed_tokens) - len(existing_tokens))
+                limits_reached[category] = limit_reached
+                fields[field_name] = [{"file_token": token} for token in committed_tokens]
+
+            is_archive = archive_path.suffix.lower() in {".zip", ".rar", ".7z"}
+            if self.settings.delete_archive_after_success and is_archive and (written_counts["image"] or written_counts["video"]):
                 if safe_delete_archive(archive_path, self.settings.download_root):
                     source_state["archive_deleted_at"] = int(time.time())
                     source_state["archive_path"] = str(archive_path)
                     self.logger.info("飞书回写成功，已删除本地压缩包：%s", archive_path)
             source_state.update({
-                "status": "complete", "image_count": len(new_tokens["image"]),
-                "video_count": len(new_tokens["video"]), "completed_at": int(time.time()),
+                "status": "complete", "image_count": written_counts["image"],
+                "video_count": written_counts["video"], "completed_at": int(time.time()),
                 "updated_at": int(time.time()),
             })
+            if limits_reached["image"] or limits_reached["video"]:
+                source_state["attachment_limit_reached"] = True
+                source_state["unwritten_image_count"] = max(0, len(new_tokens["image"]) - written_counts["image"])
+                source_state["unwritten_video_count"] = max(0, len(new_tokens["video"]) - written_counts["video"])
+            else:
+                source_state.pop("attachment_limit_reached", None)
+                source_state.pop("unwritten_image_count", None)
+                source_state.pop("unwritten_video_count", None)
             source_state.pop("error", None)
             self.state.save()
-            self.logger.info("处理成功：%s，图片 %d 个，视频 %d 个。", file_name, len(new_tokens["image"]), len(new_tokens["video"]))
+            self.logger.info("处理成功：%s，写入图片 %d 个、视频 %d 个。", file_name, written_counts["image"], written_counts["video"])
         except Exception as exc:
             source_state.update({"status": "error", "error": str(exc), "updated_at": int(time.time())})
             self.state.save()
