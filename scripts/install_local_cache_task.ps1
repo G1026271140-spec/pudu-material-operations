@@ -77,7 +77,15 @@ $acl.SetAccessRule(
 Set-Acl -LiteralPath $RunnerSecretsPath -AclObject $acl
 
 $git = (Get-Command git -ErrorAction Stop).Source
-if (-not (Test-Path -LiteralPath (Join-Path $RunnerRepoPath ".git"))) {
+if (Test-Path -LiteralPath (Join-Path $RunnerRepoPath ".git")) {
+    & $git -C $RunnerRepoPath remote get-url origin *> $null
+    if ($LASTEXITCODE -eq 0) {
+        & $git -C $RunnerRepoPath remote set-url origin $RepositoryUrl
+    } else {
+        & $git -C $RunnerRepoPath remote add origin $RepositoryUrl
+    }
+    if ($LASTEXITCODE -ne 0) { throw "Unable to update the cache Runner Git origin." }
+} else {
     if (Test-Path -LiteralPath $RunnerRepoPath) {
         throw "Runner repository path exists but is not a Git repository: $RunnerRepoPath"
     }
