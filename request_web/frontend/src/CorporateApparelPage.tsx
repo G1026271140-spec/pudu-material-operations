@@ -108,11 +108,11 @@ export default function CorporateApparelPage() {
     <main className="corporate-page">
       <header className="corporate-header">
         <img src="/app-assets/pudu-logo-blue.png" alt="PUDU" />
-        <div><small>PUDU 企业文化</small><h1>企业文化衫领取</h1><p>选择申请人、服装品类和尺码，提交后由系统登记领取数量。</p></div>
+        <div><h1>企业文化衫领取</h1></div>
       </header>
 
       <section className="corporate-section">
-        <div className="corporate-title"><i>01</i><div><h2>申请人信息</h2><p>首次使用的申请人会自动登记为销售权限。</p></div></div>
+        <div className="corporate-title"><i>01</i><div><h2>申请人信息</h2></div></div>
         <div className="corporate-contact">
           <label>申请人 *
             <div className="corporate-combo">
@@ -126,7 +126,7 @@ export default function CorporateApparelPage() {
       </section>
 
       <section className="corporate-section">
-        <div className="corporate-title"><i>02</i><div><h2>选择企业文化衫</h2><p>POLO 和夹克与文化周边申领共用个人领取上限；其余品类每人最多 1 件。</p></div></div>
+        <div className="corporate-title"><i>02</i><div><h2>选择企业文化衫</h2></div></div>
         <div className="corporate-cards">
           {catalog.products.map((product) => {
             const available = catalog.items.filter((item) => item.product === product).reduce((sum, item) => sum + Math.max(0, item.available), 0);
