@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import CategoryCarousel from "./CategoryCarousel";
 
 type Lang = "zh" | "en";
 type User = {
@@ -17,7 +18,7 @@ type Combination = {
 };
 type Catalog = {
   combinations: Combination[];
-  images: Record<string, string>;
+  images: Record<string, string[]>;
   categoryLabels: Record<string, { zh?: string; en?: string }>;
   users: User[];
   departments: Department[];
@@ -355,8 +356,14 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
           <div className="culture-cards">
             {products.map((product) => (
               <article key={product}>
-                {catalog.images[product] ? (
-                  <img src={catalog.images[product]} />
+                {catalog.images[product]?.length ? (
+                  <CategoryCarousel
+                    images={catalog.images[product]}
+                    alt={catalog.categoryLabels[product]?.[lang] || product}
+                    previousLabel={lang === "zh" ? "查看上一张图片" : "View previous image"}
+                    nextLabel={lang === "zh" ? "查看下一张图片" : "View next image"}
+                    imageLabel={lang === "zh" ? "图片" : "Image"}
+                  />
                 ) : (
                   <div className="placeholder">PUDU</div>
                 )}

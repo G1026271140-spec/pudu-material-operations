@@ -22,10 +22,40 @@ def test_catalog_uses_local_snapshot_and_exposes_all_products():
     assert catalog["rolesByUser"]
     assert all(product["options"] for product in catalog["products"])
     assert all(product["categoryDefinition"] for product in catalog["products"])
+    assert all(isinstance(product["images"], list) for product in catalog["products"])
     assert any(
         product["source"] == "cultural" for product in catalog["adminProducts"]
     )
     assert any(not product["adminOnly"] for product in catalog["adminProducts"])
+
+
+def test_image_index_returns_every_cached_category_image(tmp_path, monkeypatch):
+    attachments = [
+        {"file_token": "image-one"},
+        {"file_token": "image-two"},
+        {"file_token": "image-one"},
+    ]
+    monkeypatch.setattr(web_api, "ROOT", tmp_path)
+    monkeypatch.setattr(
+        web_api,
+        "_json",
+        lambda _name: {
+            "tables": {
+                "物料品类": [
+                    {"fields": {"物料品类": "多图品类", "申领页图片": attachments}}
+                ]
+            }
+        },
+    )
+    expected = []
+    for token in ("image-one", "image-two"):
+        filename = web_api.hashlib.sha256(token.encode()).hexdigest()[:20] + ".webp"
+        path = tmp_path / "assets" / "request_categories" / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(token.encode())
+        expected.append(f"/category-assets/{filename}")
+
+    assert web_api._image_index() == {"多图品类": expected}
 
 
 def test_frontend_html_is_not_cached_across_releases():

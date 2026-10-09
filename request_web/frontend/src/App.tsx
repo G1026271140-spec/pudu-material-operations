@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import CategoryCarousel from "./CategoryCarousel";
 
 type Option = {
   materialCode: string;
@@ -16,6 +17,7 @@ type Product = {
   nameDisplay?: { zh?: string; en?: string };
   categoryDefinition?: string;
   image?: string;
+  images?: string[];
   options: Option[];
   source?: "standard" | "cultural";
   adminOnly?: boolean;
@@ -781,8 +783,14 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                 <div className="cards">
                   {group.products.map((p) => (
                     <article key={p.name}>
-                      {p.image ? (
-                        <img src={p.image} />
+                      {(p.images?.length || p.image) ? (
+                        <CategoryCarousel
+                          images={p.images?.length ? p.images : [p.image!]}
+                          alt={p.nameDisplay?.[lang] || clean(p.name)}
+                          previousLabel={t("查看上一张图片", "View previous image")}
+                          nextLabel={t("查看下一张图片", "View next image")}
+                          imageLabel={t("图片", "Image")}
+                        />
                       ) : (
                         <div className="placeholder">PUDU</div>
                       )}

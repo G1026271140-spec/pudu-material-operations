@@ -207,6 +207,78 @@ article img,
   border-radius: 8px;
   background: #dce8ed;
 }
+.category-carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #dce8ed;
+  touch-action: pan-y;
+}
+.category-carousel > img {
+  display: block;
+  user-select: none;
+}
+.category-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  width: 30px;
+  height: 38px;
+  margin: 0;
+  padding: 0;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid rgb(255 255 255 / 0.72);
+  border-radius: 8px;
+  background: rgb(9 47 70 / 0.74);
+  color: #fff;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+.category-carousel-arrow:hover,
+.category-carousel-arrow:focus-visible {
+  background: rgb(9 47 70 / 0.92);
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+.category-carousel-arrow:active {
+  transform: translateY(calc(-50% + 1px));
+}
+.category-carousel-arrow.previous {
+  left: 7px;
+}
+.category-carousel-arrow.next {
+  right: 7px;
+}
+.category-carousel-pages {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  left: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.category-carousel-pages button {
+  width: 7px;
+  min-width: 7px;
+  height: 7px;
+  min-height: 7px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.9);
+  border-radius: 50%;
+  background: rgb(9 47 70 / 0.5);
+  box-shadow: 0 1px 3px rgb(9 47 70 / 0.24);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.category-carousel-pages button.active {
+  background: #fff;
+}
 .placeholder {
   display: grid;
   place-items: center;
@@ -696,6 +768,11 @@ td input {
     height: auto;
     aspect-ratio: 1.72;
     object-fit: cover;
+  }
+  .request-page .category-carousel-arrow {
+    width: 26px;
+    height: 34px;
+    font-size: 21px;
   }
   .request-page .cards article small {
     margin-top: 5px;

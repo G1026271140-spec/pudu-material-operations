@@ -40,23 +40,31 @@ def _asset_file(relative: str) -> FileResponse:
     return FileResponse(path)
 
 
-def _image_index() -> dict[str, str]:
+def _image_index() -> dict[str, list[str]]:
     page = _json("page_data_cache.json")
-    result: dict[str, str] = {}
+    result: dict[str, list[str]] = {}
     for row in page.get("tables", {}).get("物料品类", []):
         fields = row.get("fields", {})
         product = str(fields.get("物料品类") or "").strip()
         attachments = fields.get("申领页图片") or []
         if not product or not attachments:
             continue
-        token = str(attachments[0].get("file_token") or "")
-        if not token:
-            continue
-        filename = hashlib.sha256(token.encode()).hexdigest()[:20] + ".webp"
-        if resolve_cache_path(
-            ROOT, f"assets/request_categories/{filename}"
-        ).is_file():
-            result[product] = f"/category-assets/{filename}"
+        images: list[str] = []
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+            token = str(attachment.get("file_token") or "").strip()
+            if not token:
+                continue
+            filename = hashlib.sha256(token.encode()).hexdigest()[:20] + ".webp"
+            if resolve_cache_path(
+                ROOT, f"assets/request_categories/{filename}"
+            ).is_file():
+                path = f"/category-assets/{filename}"
+                if path not in images:
+                    images.append(path)
+        if images:
+            result[product] = images
     return result
 
 
@@ -215,7 +223,8 @@ def build_catalog() -> dict[str, Any]:
                 "name": product,
                 "nameDisplay": meta["display"],
                 "categoryDefinition": meta["definition"],
-                "image": images.get(product),
+                "image": (images.get(product) or [None])[0],
+                "images": images.get(product, []),
                 "options": options,
                 "source": "standard",
                 "adminOnly": legacy.normalize_category_match_key(product) not in base_product_keys,
@@ -228,7 +237,8 @@ def build_catalog() -> dict[str, Any]:
                 "name": product,
                 "nameDisplay": meta["display"],
                 "categoryDefinition": meta["definition"],
-                "image": images.get(product),
+                "image": (images.get(product) or [None])[0],
+                "images": images.get(product, []),
                 "options": options,
                 "source": "cultural",
                 "adminOnly": True,
@@ -243,7 +253,8 @@ def build_catalog() -> dict[str, Any]:
                 "categoryDefinition": category_meta.get(
                     legacy.normalize_category_match_key(name), {}
                 ).get("definition", ""),
-                "image": images.get(name),
+                "image": (images.get(name) or [None])[0],
+                "images": images.get(name, []),
                 "options": combinations.get(name, []),
             }
             for name in cache.get("products", [])
