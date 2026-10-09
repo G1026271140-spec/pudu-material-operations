@@ -27,9 +27,9 @@ $CacheFiles = @(switch ($CacheScope) {
     default { @("data/page_data_cache.json", "data/request_form_cache.json") }
 })
 $CacheDirectories = @(switch ($CacheScope) {
-    "Warehouse" { @("assets/warehouse_locations", "assets/request_categories") }
+    "Warehouse" { @("assets/warehouse_locations") }
     "Contacts" { @() }
-    default { @("assets/gift_projects") }
+    default { @("assets/gift_projects", "assets/request_categories") }
 })
 $CachePaths = $CacheFiles + $CacheDirectories
 $MutexName = "Local\PuduMaterialCacheRefresh"
@@ -223,10 +223,7 @@ try {
         $generators = switch ($CacheScope) {
             "Contacts" { @("scripts/generate_contact_departments_cache.py") }
             "Warehouse" {
-                @(
-                    "scripts/generate_warehouse_location_cache.py",
-                    "scripts/generate_request_category_image_cache.py"
-                )
+                @("scripts/generate_warehouse_location_cache.py")
             }
             default {
                 Write-RunnerLog "Synchronizing newly added request-page product models."

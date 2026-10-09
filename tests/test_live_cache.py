@@ -8,6 +8,11 @@ import pytest
 import live_cache
 
 
+def test_request_category_images_belong_to_material_publication() -> None:
+    assert "assets/request_categories" in live_cache.GROUPS["Material"]
+    assert "assets/request_categories" not in live_cache.GROUPS["Warehouse"]
+
+
 def write(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data), encoding="utf-8")

@@ -9,7 +9,10 @@ from unittest.mock import patch
 from PIL import Image
 
 import app
-from scripts.generate_page_data_cache import sync_gift_image_cache
+from scripts.generate_page_data_cache import (
+    sync_gift_image_cache,
+    sync_request_category_image_cache,
+)
 from scripts.validate_page_data_cache import validate_page_data_cache
 
 
@@ -148,6 +151,38 @@ class GiftImageCacheTests(unittest.TestCase):
                     require_cached_gift_images=True,
                     cache_root=Path(temp_dir),
                 )
+
+    def test_request_category_images_refresh_with_material_cache(self) -> None:
+        cache = self.cache()
+        cache["tables"][app.CATEGORY_TABLE_NAME][0]["fields"][
+            app.REQUEST_CATEGORY_IMAGE_FIELD
+        ] = [
+            {
+                "file_token": "category-image-v2",
+                "name": "category.png",
+                "type": "image/png",
+            }
+        ]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            image_dir = root / "assets" / "request_categories"
+            with patch.object(
+                app,
+                "load_feishu_attachment",
+                return_value=self.png_bytes(),
+            ) as loader:
+                stats = sync_request_category_image_cache(
+                    cache,
+                    image_dir=image_dir,
+                    cache_root=root,
+                )
+
+            attachment = cache["tables"][app.CATEGORY_TABLE_NAME][0]["fields"][
+                app.REQUEST_CATEGORY_IMAGE_FIELD
+            ][0]
+            self.assertEqual(stats["downloaded_count"], 1)
+            self.assertTrue((root / attachment["cached_path"]).is_file())
+            loader.assert_called_once_with("category-image-v2", "")
 
 
 if __name__ == "__main__":

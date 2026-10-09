@@ -14,9 +14,14 @@ from pathlib import Path
 
 PUBLICATION_DIR = Path("work/live-cache")
 GROUPS = {
-    "Material": ("data/page_data_cache.json", "data/request_form_cache.json", "assets/gift_projects"),
+    "Material": (
+        "data/page_data_cache.json",
+        "data/request_form_cache.json",
+        "assets/gift_projects",
+        "assets/request_categories",
+    ),
     "Contacts": ("data/contact_departments_cache.json",),
-    "Warehouse": ("data/warehouse_location_cache.json", "assets/warehouse_locations", "assets/request_categories"),
+    "Warehouse": ("data/warehouse_location_cache.json", "assets/warehouse_locations"),
 }
 
 

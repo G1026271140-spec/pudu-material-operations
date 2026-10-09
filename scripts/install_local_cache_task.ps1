@@ -201,7 +201,7 @@ $warehouseShortcut = $shell.CreateShortcut($warehouseShortcutPath)
 $warehouseShortcut.TargetPath = $powershellPath
 $warehouseShortcut.Arguments = $warehouseArguments
 $warehouseShortcut.WorkingDirectory = $RunnerRoot
-$warehouseShortcut.Description = "Refresh PUDU warehouse location, warehouse images, and request category images"
+$warehouseShortcut.Description = "Refresh PUDU warehouse locations and warehouse images"
 $warehouseShortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,238"
 $warehouseShortcut.Save()
 

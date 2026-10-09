@@ -212,6 +212,7 @@ def main() -> int:
         return 1
     try:
         image_stats = sync_gift_image_cache(cache)
+        request_image_stats = sync_request_category_image_cache(cache)
         stats = validate_page_data_cache(
             cache,
             require_data=True,
@@ -235,6 +236,9 @@ def main() -> int:
         f"gift_images={image_stats['image_count']}",
         f"downloaded={image_stats['downloaded_count']}",
         f"deleted={image_stats['deleted_count']}",
+        f"request_category_images={request_image_stats['image_count']}",
+        f"request_category_downloaded={request_image_stats['downloaded_count']}",
+        f"request_category_deleted={request_image_stats['deleted_count']}",
         f"gift_link_updates={link_stats['written_count']}",
         f"cultural_claimability_updates={claimability_stats['updated_count']}",
     )

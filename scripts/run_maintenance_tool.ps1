@@ -83,7 +83,6 @@ function Invoke-ContactCache {
 
 function Invoke-WarehouseCache {
     Invoke-Checked $script:Python @("scripts/generate_warehouse_location_cache.py")
-    Invoke-Checked $script:Python @("scripts/generate_request_category_image_cache.py")
     Invoke-Checked $script:Python @("scripts/preserve_unchanged_cache_files.py", "data/warehouse_location_cache.json")
     Invoke-Checked $script:Python @("scripts/validate_warehouse_location_cache.py")
 }
