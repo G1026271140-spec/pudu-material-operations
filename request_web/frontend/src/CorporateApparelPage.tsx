@@ -14,8 +14,58 @@ type Item = {
 };
 type Catalog = { products: string[]; items: Item[]; users: User[]; departments: Department[] };
 type Line = { product: string; size: string; quantity: number };
+type Lang = "zh" | "en";
+
+const productLabels: Record<string, string> = {
+  "T恤-黑色（短袖）": "T-Shirt - Black (Short Sleeve)",
+  "休闲商务POLO-黑色（短袖）": "Casual Business Polo - Black (Short Sleeve)",
+  "休闲商务夹克-黑色（长袖）": "Casual Business Jacket - Black (Long Sleeve)",
+  "商务衬衫-黑色（长袖）": "Business Shirt - Black (Long Sleeve)",
+  "冲锋衣-黑色": "Windbreaker - Black",
+};
+
+const copy = {
+  zh: {
+    title: "企业文化衫领取", person: "申请人信息", applicant: "申请人",
+    applicantPlaceholder: "输入姓名或下拉选择", department: "申请部门",
+    departmentPlaceholder: "选择申请人后自动显示", choose: "选择企业文化衫",
+    category: "企业文化衫", available: (value: number) => `可领取 ${value} 件`,
+    noStock: "暂无库存", selectSize: "选择尺码", cart: "领取清单",
+    itemUnit: "件", remove: "删除", submit: "提交领取申请", chooseSize: "请选择尺码",
+    remaining: (value: number) => `余 ${value}`, add: "加入领取清单",
+    confirm: "确认领取信息", noDepartment: "未填写部门", back: "返回修改",
+    submitting: "正在提交…", confirmSubmit: "确认提交", success: "提交成功",
+    queued: (taskId: string) => `申请已进入后台队列（${taskId}）`, loading: "正在加载…",
+    previousImage: "上一张", nextImage: "下一张", image: "图片",
+    loadFailed: "页面数据加载失败", selectApplicant: "请选择申请人。",
+    selectOne: "请至少选择一件企业文化衫。", selectAvailableSize: "请选择有库存的尺码。",
+    sizeUnavailable: "该尺码当前已无可领取库存。",
+    duplicate: "每个品类每次只能选择一个尺码；如需更换，请先删除清单中的品类。",
+    submitFailed: "提交失败",
+  },
+  en: {
+    title: "Corporate Apparel Collection", person: "Applicant Information", applicant: "Applicant",
+    applicantPlaceholder: "Type a name or choose from the list", department: "Department",
+    departmentPlaceholder: "Shown after selecting an applicant", choose: "Select Corporate Apparel",
+    category: "Corporate Apparel", available: (value: number) => `${value} available`,
+    noStock: "Out of stock", selectSize: "Select Size", cart: "Collection List",
+    itemUnit: "item(s)", remove: "Remove", submit: "Submit Collection Request", chooseSize: "Select a size",
+    remaining: (value: number) => `${value} left`, add: "Add to List",
+    confirm: "Confirm Collection Details", noDepartment: "No department", back: "Back to Edit",
+    submitting: "Submitting…", confirmSubmit: "Confirm Submission", success: "Submitted",
+    queued: (taskId: string) => `Your request has entered the background queue (${taskId})`, loading: "Loading…",
+    previousImage: "Previous image", nextImage: "Next image", image: "Image",
+    loadFailed: "Failed to load page data", selectApplicant: "Select an applicant.",
+    selectOne: "Select at least one apparel item.", selectAvailableSize: "Select an available size.",
+    sizeUnavailable: "This size is no longer available.",
+    duplicate: "Only one size can be selected per category. Remove the current item before choosing another size.",
+    submitFailed: "Submission failed",
+  },
+};
 
 export default function CorporateApparelPage() {
+  const [lang, setLang] = useState<Lang>(() => localStorage.getItem("pudu-lang") === "en" ? "en" : "zh");
+  const t = copy[lang];
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
@@ -30,14 +80,15 @@ export default function CorporateApparelPage() {
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
 
   useEffect(() => {
+    const loadInEnglish = localStorage.getItem("pudu-lang") === "en";
     fetch("/api/corporate-apparel-catalog")
       .then(async (response) => {
         const body = await response.json();
-        if (!response.ok) throw Error(body.detail || "页面数据加载失败");
+        if (!response.ok) throw Error(loadInEnglish ? copy.en.loadFailed : body.detail || copy.zh.loadFailed);
         return body;
       })
       .then(setCatalog)
-      .catch((reason) => setError(reason instanceof Error ? reason.message : "页面数据加载失败"));
+      .catch((reason) => setError(reason instanceof Error ? reason.message : loadInEnglish ? copy.en.loadFailed : copy.zh.loadFailed));
   }, []);
 
   const user = catalog?.users.find((item) => item.open_id === requesterId);
@@ -63,19 +114,29 @@ export default function CorporateApparelPage() {
     setError("");
   }
 
+  function changeLang(next: Lang) {
+    localStorage.setItem("pudu-lang", next);
+    setLang(next);
+    setError("");
+  }
+
+  function productLabel(product: string) {
+    return lang === "en" ? productLabels[product] || product : product;
+  }
+
   function add() {
-    if (!active || !size) return setError("请选择有库存的尺码。");
+    if (!active || !size) return setError(t.selectAvailableSize);
     const selected = activeItems.find((item) => item.size === size);
-    if (!selected || selected.available < 1) return setError("该尺码当前已无可领取库存。");
+    if (!selected || selected.available < 1) return setError(t.sizeUnavailable);
     const already = lines.find((line) => line.product === active);
-    if (already) return setError("每个品类每次只能选择一个尺码；如需更换，请先删除清单中的品类。");
+    if (already) return setError(t.duplicate);
     setLines((current) => [...current, { product: active, size, quantity: 1 }]);
     setActive("");
   }
 
   async function submit() {
-    if (!user) return setError("请选择申请人。");
-    if (!lines.length) return setError("请至少选择一件企业文化衫。");
+    if (!user) return setError(t.selectApplicant);
+    if (!lines.length) return setError(t.selectOne);
     setBusy(true);
     setError("");
     try {
@@ -92,58 +153,63 @@ export default function CorporateApparelPage() {
         }),
       });
       const body = await response.json();
-      if (!response.ok) throw Error(body.detail || "提交失败");
-      setDone(`申请已进入后台队列（${body.taskId}）`);
+      if (!response.ok) throw Error(lang === "zh" ? body.detail || t.submitFailed : t.submitFailed);
+      setDone(String(body.taskId || ""));
       setReview(false);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "提交失败");
+      setError(reason instanceof Error ? reason.message : t.submitFailed);
     } finally {
       setBusy(false);
     }
   }
 
-  if (!catalog) return <main className="corporate-loading">{error || "正在加载…"}</main>;
-  if (done) return <main className="corporate-success"><div>✓</div><h1>提交成功</h1><p>{done}</p></main>;
+  if (!catalog) return <main className="corporate-loading">{error || t.loading}</main>;
+  if (done) return <main className="corporate-success"><div>✓</div><h1>{t.success}</h1><p>{t.queued(done)}</p></main>;
   return (
     <main className="corporate-page">
       <header className="corporate-header">
         <img src="/app-assets/pudu-logo-blue.png" alt="PUDU" />
-        <div><h1>企业文化衫领取</h1></div>
+        <div className="corporate-header-title"><h1>{t.title}</h1></div>
+        <div className="corporate-language-switch" role="group" aria-label="Language / 语言">
+          <span className={lang === "en" ? "is-en" : ""} aria-hidden="true" />
+          <button type="button" className={lang === "zh" ? "active" : ""} onClick={() => changeLang("zh")}>中文</button>
+          <button type="button" className={lang === "en" ? "active" : ""} onClick={() => changeLang("en")}>English</button>
+        </div>
       </header>
 
       <section className="corporate-section">
-        <div className="corporate-title"><i>01</i><div><h2>申请人信息</h2></div></div>
+        <div className="corporate-title"><i>01</i><div><h2>{t.person}</h2></div></div>
         <div className="corporate-contact">
-          <label>申请人 *
+          <label>{t.applicant} *
             <div className="corporate-combo">
-              <input value={query} placeholder="输入姓名或下拉选择" onFocus={() => setMenu(true)} onChange={(event) => { setQuery(event.target.value); setRequesterId(""); setMenu(true); }} />
+              <input value={query} placeholder={t.applicantPlaceholder} onFocus={() => setMenu(true)} onChange={(event) => { setQuery(event.target.value); setRequesterId(""); setMenu(true); }} />
               <button type="button" onClick={() => setMenu(!menu)}>⌄</button>
               {menu && <div>{users.map((item) => <button type="button" key={item.open_id} onClick={() => { setRequesterId(item.open_id); setQuery(item.name); setMenu(false); }}>{item.name} · {item.department_paths?.join("、")}</button>)}</div>}
             </div>
           </label>
-          <label>申请部门<input value={department} readOnly placeholder="选择申请人后自动显示" /></label>
+          <label>{t.department}<input value={department} readOnly placeholder={t.departmentPlaceholder} /></label>
         </div>
       </section>
 
       <section className="corporate-section">
-        <div className="corporate-title"><i>02</i><div><h2>选择企业文化衫</h2></div></div>
+        <div className="corporate-title"><i>02</i><div><h2>{t.choose}</h2></div></div>
         <div className="corporate-cards">
           {catalog.products.map((product) => {
             const available = catalog.items.filter((item) => item.product === product).reduce((sum, item) => sum + Math.max(0, item.available), 0);
             return <article key={product}>
-              {productImages(product).length ? <CategoryCarousel images={productImages(product)} alt={product} previousLabel="上一张" nextLabel="下一张" imageLabel="图片" /> : <div className="corporate-placeholder">PUDU</div>}
-              <div className="corporate-card-copy"><small>企业文化衫</small><h3>{product}</h3><span>{available > 0 ? `可领取 ${available} 件` : "暂无库存"}</span></div>
-              <button type="button" disabled={available <= 0} onClick={() => open(product)}>选择尺码</button>
+              {productImages(product).length ? <CategoryCarousel images={productImages(product)} alt={productLabel(product)} previousLabel={t.previousImage} nextLabel={t.nextImage} imageLabel={t.image} /> : <div className="corporate-placeholder">PUDU</div>}
+              <div className="corporate-card-copy"><small>{t.category}</small><h3>{productLabel(product)}</h3><span>{available > 0 ? t.available(available) : t.noStock}</span></div>
+              <button type="button" disabled={available <= 0} onClick={() => open(product)}>{t.selectSize}</button>
             </article>;
           })}
         </div>
-        {lines.length > 0 && <div className="corporate-cart"><h3>领取清单 · {lines.length} 件</h3>{lines.map((line) => <div key={line.product}><span>{line.product}</span><b>{line.size}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product))}>删除</button></div>)}</div>}
-        <button type="button" className="corporate-submit" disabled={!lines.length} onClick={() => { setError(""); setReview(true); }}>提交领取申请</button>
+        {lines.length > 0 && <div className="corporate-cart"><h3>{t.cart} · {lines.length} {t.itemUnit}</h3>{lines.map((line) => <div key={line.product}><span>{productLabel(line.product)}</span><b>{line.size}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product))}>{t.remove}</button></div>)}</div>}
+        <button type="button" className="corporate-submit" disabled={!lines.length} onClick={() => { setError(""); setReview(true); }}>{t.submit}</button>
       </section>
 
       {error && <div className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></div>}
-      {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{active}</h2><p>请选择尺码</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => setSize(item.size)}><b>{item.size}</b><span>余 {item.available}</span></button>)}</div><button type="button" className="corporate-primary" onClick={add}>加入领取清单</button></div></div>}
-      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>确认领取信息</h2><p>{user?.name} · {department || "未填写部门"}</p>{lines.map((line) => <div className="corporate-review-line" key={line.product}><span>{line.product}</span><b>{line.size} × 1</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>返回修改</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? "正在提交…" : "确认提交"}</button></div></div></div>}
+      {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => setSize(item.size)}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div><button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
+      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p>{lines.map((line) => <div className="corporate-review-line" key={line.product}><span>{productLabel(line.product)}</span><b>{line.size} × 1</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
     </main>
   );
 }
