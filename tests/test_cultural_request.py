@@ -1,4 +1,5 @@
 import unittest
+import base64
 from unittest.mock import MagicMock, patch
 
 import app
@@ -6,6 +7,31 @@ import submission_queue as queue
 
 
 class CulturalRequestTests(unittest.TestCase):
+    def test_corporate_apparel_source_record_id_decodes_sync_source_id(self) -> None:
+        encoded = base64.b64encode(
+            b"7694548691520179411:recvexample123:checksum:1"
+        ).decode("ascii")
+
+        self.assertEqual(
+            app.corporate_apparel_source_record_id(encoded),
+            "recvexample123",
+        )
+        self.assertEqual(app.corporate_apparel_source_record_id("invalid"), "")
+
+    def test_corporate_apparel_redeemed_updates_writable_source_table(self) -> None:
+        source_client = MagicMock()
+        with patch.object(app, "corporate_apparel_source_client", return_value=source_client):
+            app.update_corporate_apparel_source_redeemed(
+                {"source_record_id": "recvsource"},
+                3,
+            )
+
+        source_client.update_record.assert_called_once_with(
+            app.CORPORATE_APPAREL_SOURCE_TABLE_ID,
+            "recvsource",
+            {"系统兑换数量": 3},
+        )
+
     def test_corporate_apparel_cached_quota_combines_polo_sizes(self) -> None:
         permission_rows = [{
             "record_id": "permission-1",

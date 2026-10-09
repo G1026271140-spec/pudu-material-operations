@@ -335,6 +335,7 @@ class CorporateApparelDraft(BaseModel):
     requester_open_id: str
     department: str = ""
     department_id: str = ""
+    material_usage: str = Field(min_length=1, max_length=500)
     submission_token: str = Field(default_factory=lambda: uuid4().hex)
     lines: list[CorporateApparelLine]
 
@@ -1389,11 +1390,16 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="请选择申请人。")
     if not draft.lines:
         raise HTTPException(status_code=422, detail="请至少选择一件企业文化衫。")
+    usage = draft.material_usage.strip()
+    fixed_reasons = {"销售标配", "入职", "出差", "特殊情况按需申请，需补OA"}
+    if usage not in fixed_reasons and not (usage.startswith("参展：") and usage.removeprefix("参展：").strip()):
+        raise HTTPException(status_code=422, detail="请选择有效的申请事由；参展时必须填写活动名称。")
     try:
         import app as legacy
         from submission_queue import QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
 
         payload = draft.model_dump()
+        payload["material_usage"] = usage
         lines = list(payload.pop("lines"))
         page = _json("page_data_cache.json")
         permission_rows = list(

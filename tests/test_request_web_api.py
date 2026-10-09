@@ -416,6 +416,46 @@ def test_cultural_submit_requires_and_queues_material_usage(monkeypatch):
     assert observed["payload"]["request_payload"]["material_usage"] == "上海展会"
 
 
+def test_corporate_apparel_submit_requires_reason_and_exhibition_name(monkeypatch):
+    observed = {}
+    monkeypatch.setattr(
+        web_api,
+        "_enqueue_fast",
+        lambda task_type, key, payload: observed.update(payload=payload) or "task-apparel",
+    )
+    monkeypatch.setattr(
+        web_api,
+        "_json",
+        lambda _name: {"tables": {legacy_app.USER_PERMISSION_TABLE_NAME: []}},
+    )
+    monkeypatch.setattr(
+        legacy_app,
+        "validate_corporate_apparel_cached_quota",
+        lambda *_args, **_kwargs: [],
+    )
+    payload = {
+        "requester": "测试用户",
+        "requester_open_id": "ou-test",
+        "department": "市场部",
+        "submission_token": "apparel-token",
+        "lines": [{"product": "T恤-黑色（短袖）", "size": "M", "quantity": 1}],
+    }
+
+    missing = TestClient(api).post("/api/corporate-apparel-submit", json=payload)
+    no_event = TestClient(api).post(
+        "/api/corporate-apparel-submit", json={**payload, "material_usage": "参展："}
+    )
+    accepted = TestClient(api).post(
+        "/api/corporate-apparel-submit",
+        json={**payload, "material_usage": "参展：广交会"},
+    )
+
+    assert missing.status_code == 422
+    assert no_event.status_code == 422
+    assert accepted.status_code == 200
+    assert observed["payload"]["request_payload"]["material_usage"] == "参展：广交会"
+
+
 def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
     observed = []
     payload = {

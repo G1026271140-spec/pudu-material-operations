@@ -16,6 +16,16 @@ type Catalog = { products: string[]; items: Item[]; users: User[]; departments: 
 type Line = { product: string; size: string; quantity: number };
 type Lang = "zh" | "en";
 
+const reasonValues = ["销售标配", "入职", "出差", "参展", "特殊情况按需申请，需补OA"] as const;
+type Reason = typeof reasonValues[number] | "";
+const reasonLabels: Record<Exclude<Reason, "">, string> = {
+  "销售标配": "Standard Sales Kit",
+  "入职": "New Hire",
+  "出差": "Business Trip",
+  "参展": "Exhibition",
+  "特殊情况按需申请，需补OA": "Special Request (OA Required)",
+};
+
 const poloProduct = "休闲商务POLO-黑色（短袖）";
 const perProductLimits: Record<string, number> = {
   [poloProduct]: 2,
@@ -37,6 +47,8 @@ const copy = {
   zh: {
     title: "企业文化衫领取", person: "申请人信息", applicant: "申请人",
     applicantPlaceholder: "输入姓名或下拉选择", department: "申请部门",
+    reason: "申请事由", reasonPlaceholder: "请选择申请事由", eventName: "活动名称",
+    eventPlaceholder: "请填写参加的活动名称",
     departmentPlaceholder: "选择申请人后自动显示", choose: "选择企业文化衫",
     category: "企业文化衫", available: (value: number) => `可领取 ${value} 件`,
     noStock: "暂无库存", selectSize: "选择尺码", cart: "领取清单",
@@ -47,6 +59,7 @@ const copy = {
     queued: (taskId: string) => `申请已进入后台队列（${taskId}）`, loading: "正在加载…",
     previousImage: "上一张", nextImage: "下一张", image: "图片",
     loadFailed: "页面数据加载失败", selectApplicant: "请选择申请人。",
+    selectReason: "请选择申请事由。", eventRequired: "选择“参展”时，请填写参加的活动名称。",
     selectOne: "请至少选择一件企业文化衫。", selectAvailableSize: "请选择有库存的尺码。",
     sizeUnavailable: "该尺码当前已无可领取库存。",
     quantityInvalid: "请输入有效的领取数量。",
@@ -56,6 +69,8 @@ const copy = {
   en: {
     title: "Corporate Apparel Collection", person: "Applicant Information", applicant: "Applicant",
     applicantPlaceholder: "Type a name or choose from the list", department: "Department",
+    reason: "Reason for Request", reasonPlaceholder: "Select a reason", eventName: "Event Name",
+    eventPlaceholder: "Enter the exhibition or event name",
     departmentPlaceholder: "Shown after selecting an applicant", choose: "Select Corporate Apparel",
     category: "Corporate Apparel", available: (value: number) => `${value} available`,
     noStock: "Out of stock", selectSize: "Select Size", cart: "Collection List",
@@ -66,6 +81,7 @@ const copy = {
     queued: (taskId: string) => `Your request has entered the background queue (${taskId})`, loading: "Loading…",
     previousImage: "Previous image", nextImage: "Next image", image: "Image",
     loadFailed: "Failed to load page data", selectApplicant: "Select an applicant.",
+    selectReason: "Select a reason for the request.", eventRequired: "Enter the event name when Exhibition is selected.",
     selectOne: "Select at least one apparel item.", selectAvailableSize: "Select an available size.",
     sizeUnavailable: "This size is no longer available.",
     quantityInvalid: "Enter a valid quantity.",
@@ -81,6 +97,8 @@ export default function CorporateApparelPage() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [requesterId, setRequesterId] = useState("");
+  const [reason, setReason] = useState<Reason>("");
+  const [eventName, setEventName] = useState("");
   const [menu, setMenu] = useState(false);
   const [active, setActive] = useState("");
   const [size, setSize] = useState("");
@@ -137,6 +155,14 @@ export default function CorporateApparelPage() {
     return lang === "en" ? productLabels[product] || product : product;
   }
 
+  function reasonLabel(value: Exclude<Reason, "">) {
+    return lang === "en" ? reasonLabels[value] : value;
+  }
+
+  function materialUsage() {
+    return reason === "参展" ? `参展：${eventName.trim()}` : reason;
+  }
+
   function add() {
     if (!active || !size) return setError(t.selectAvailableSize);
     const selected = activeItems.find((item) => item.size === size);
@@ -155,6 +181,8 @@ export default function CorporateApparelPage() {
 
   async function submit() {
     if (!user) return setError(t.selectApplicant);
+    if (!reason) return setError(t.selectReason);
+    if (reason === "参展" && !eventName.trim()) return setError(t.eventRequired);
     if (!lines.length) return setError(t.selectOne);
     setBusy(true);
     setError("");
@@ -167,6 +195,7 @@ export default function CorporateApparelPage() {
           requester_open_id: user.open_id,
           department,
           department_id: departmentId,
+          material_usage: materialUsage(),
           submission_token: submissionToken,
           lines,
         }),
@@ -207,6 +236,8 @@ export default function CorporateApparelPage() {
             </div>
           </label>
           <label>{t.department}<input value={department} readOnly placeholder={t.departmentPlaceholder} /></label>
+          <label>{t.reason} *<select value={reason} onChange={(event) => { setReason(event.target.value as Reason); if (event.target.value !== "参展") setEventName(""); }}><option value="">{t.reasonPlaceholder}</option>{reasonValues.map((value) => <option value={value} key={value}>{reasonLabel(value)}</option>)}</select></label>
+          {reason === "参展" && <label>{t.eventName} *<input value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder={t.eventPlaceholder} /></label>}
         </div>
       </section>
 
@@ -228,7 +259,7 @@ export default function CorporateApparelPage() {
 
       {error && <div className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></div>}
       {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => { setSize(item.size); setQuantity(1); }}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div>{active === poloProduct && <label className="corporate-quantity">{t.quantity}<input type="number" inputMode="numeric" min={1} max={Math.min(2, activeItems.find((item) => item.size === size)?.available || 1)} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>}<button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
-      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p>{lines.map((line) => <div className="corporate-review-line" key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
+      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p><p><b>{t.reason}：</b>{materialUsage()}</p>{lines.map((line) => <div className="corporate-review-line" key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
     </main>
   );
 }

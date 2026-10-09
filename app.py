@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import hashlib
 import hmac
@@ -83,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.0.6"
+APP_VERSION = "V3.0.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -120,6 +121,9 @@ GIFT_PROJECT_TABLE_NAME = str(get_setting("feishu.tables.gift_project", "项目�
 CULTURAL_MATERIAL_TABLE_NAME = str(get_setting("feishu.tables.cultural_material", "文化周边管理库存"))
 CORPORATE_APPAREL_TABLE_NAME = str(
     get_setting("feishu.tables.corporate_apparel", "文化周边编码及库存数量")
+)
+CORPORATE_APPAREL_SOURCE_TABLE_ID = str(
+    get_setting("feishu.tables.corporate_apparel_source_table_id", "tbledtC3RafsHNh0")
 )
 CULTURAL_CLAIMABLE_FIELD = "是否可以申领"
 CULTURAL_CLAIMABLE_YES = "是"
@@ -3569,6 +3573,21 @@ def feishu_approval_writeback_config_args() -> tuple[str, str]:
 
 def feishu_bitable_app_token() -> str:
     return get_secret_value("FEISHU_BITABLE_APP_TOKEN")
+
+
+def corporate_apparel_source_app_token() -> str:
+    """Return the writable administrative Base token behind the synced table."""
+    return get_secret_value("FEISHU_CORPORATE_APPAREL_SOURCE_APP_TOKEN")
+
+
+def corporate_apparel_source_client() -> FeishuBitableClient:
+    app_token = corporate_apparel_source_app_token()
+    if not app_token:
+        raise RuntimeError(
+            "企业文化衫行政源表尚未完成应用授权：请将‘营销物料管理’应用添加为源表协作者，"
+            "并配置 FEISHU_CORPORATE_APPAREL_SOURCE_APP_TOKEN。"
+        )
+    return get_feishu_bitable_client(feishu_app_id(), feishu_app_secret(), app_token)
 
 
 def feishu_bitable_web_url(table_name: str) -> str:
@@ -20686,6 +20705,47 @@ CORPORATE_APPAREL_QUOTA_FIELDS = {
 CORPORATE_APPAREL_LINE_MARKER = "企业文化衫库存记录ID"
 
 
+def corporate_apparel_source_record_id(source_id: object) -> str:
+    """Extract the writable source record id from a connector-sync SourceID."""
+    encoded = str(source_id or "").strip()
+    if not encoded:
+        return ""
+    try:
+        decoded = base64.b64decode(encoded + "=" * (-len(encoded) % 4)).decode("utf-8")
+    except (ValueError, UnicodeDecodeError):
+        return ""
+    return next((part for part in decoded.split(":") if part.startswith("rec")), "")
+
+
+def corporate_apparel_source_record_id_for_sync_record(sync_record_id: str) -> str:
+    normalized = str(sync_record_id or "").strip()
+    if not normalized:
+        return ""
+    source_row = next(
+        (
+            row for row in fresh_feishu_rows(CORPORATE_APPAREL_TABLE_NAME)
+            if feishu_record_id(row) == normalized
+        ),
+        None,
+    )
+    return corporate_apparel_source_record_id(feishu_fields(source_row or {}).get("SourceID"))
+
+
+def update_corporate_apparel_source_redeemed(item: dict[str, object], target: int) -> None:
+    source_record_id = str(item.get("source_record_id") or "").strip()
+    if not source_record_id:
+        source_record_id = corporate_apparel_source_record_id_for_sync_record(
+            str(item.get("record_id") or "")
+        )
+    if not source_record_id:
+        raise RuntimeError("企业文化衫同步记录缺少可写入的行政源记录 ID。")
+    corporate_apparel_source_client().update_record(
+        CORPORATE_APPAREL_SOURCE_TABLE_ID,
+        source_record_id,
+        {"系统兑换数量": int(target)},
+    )
+
+
 def corporate_apparel_catalog(rows: list[dict] | None = None) -> dict[str, object]:
     """Return the five claimable corporate-apparel styles from the shared source."""
     source_rows = list(
@@ -20712,6 +20772,7 @@ def corporate_apparel_catalog(rows: list[dict] | None = None) -> dict[str, objec
         items.append(
             {
                 "record_id": record_id,
+                "source_record_id": corporate_apparel_source_record_id(fields.get("SourceID")),
                 "product": product,
                 "source_style": source_style,
                 "size": size,
@@ -20885,7 +20946,7 @@ def queued_corporate_apparel_request_payload(
         "version": 1,
         "request_payload": {
             key: request_payload.get(key)
-            for key in ("requester", "requester_open_id", "department", "department_id", "submission_token")
+            for key in ("requester", "requester_open_id", "department", "department_id", "material_usage", "submission_token")
         },
         "lines": [
             {
@@ -20905,6 +20966,19 @@ def submit_feishu_corporate_apparel_request(
     ensure_cultural_request_workflow_fields()
     token = str(request_payload.get("submission_token") or "").strip()
     items = [dict(item) for item in list(plan.get("items") or [])]
+    source_client = corporate_apparel_source_client()
+    source_fields = {
+        str(field.get("field_name") or "")
+        for field in source_client.list_fields(CORPORATE_APPAREL_SOURCE_TABLE_ID)
+    }
+    if "系统兑换数量" not in source_fields:
+        raise RuntimeError("行政源表缺少‘系统兑换数量’字段，无法登记企业文化衫领取。")
+    for item in items:
+        if not (
+            str(item.get("source_record_id") or "").strip()
+            or corporate_apparel_source_record_id_for_sync_record(str(item.get("record_id") or ""))
+        ):
+            raise RuntimeError("企业文化衫同步记录缺少可写入的行政源记录 ID。")
     detail_text = "\n".join(
         f"{index:02d}. {item['product']} / {item['size']} × {int(item['quantity'])}"
         for index, item in enumerate(items, start=1)
@@ -20927,6 +21001,7 @@ def submit_feishu_corporate_apparel_request(
             "审批状态": "无需审批",
             "文化周边处理状态": CULTURAL_REQUEST_STATUS_ISSUED,
             "文化周边通知状态": "待发送",
+            "物料用途": str(request_payload.get("material_usage") or "").strip(),
             "物料明细文字信息": detail_text,
             "提交时间": feishu_datetime_value(REQUEST_TABLE_NAME, "提交时间", datetime.now()),
             "提交幂等键": token,
@@ -20963,10 +21038,8 @@ def submit_feishu_corporate_apparel_request(
                     "所属申请单": [request_record_id],
                 },
             )
-        feishu_update_record_fields(
-            CORPORATE_APPAREL_TABLE_NAME,
-            str(item["record_id"]),
-            {"系统兑换数量": int(item["target_system_redeemed"])},
+        update_corporate_apparel_source_redeemed(
+            item, int(item["target_system_redeemed"])
         )
     quota_fields = {
         str(item["field"]): int(item["target"])
@@ -20981,7 +21054,8 @@ def submit_feishu_corporate_apparel_request(
 
 
 def _corporate_apparel_card(
-    request_no: str, requester: str, lines: list[dict[str, object]], *, applicant: bool
+    request_no: str, requester: str, lines: list[dict[str, object]], *, applicant: bool,
+    material_usage: str = "",
 ) -> dict[str, object]:
     title = "企业文化衫领取已提交" if applicant else "企业文化衫领取通知"
     table_lines = [
@@ -20990,7 +21064,7 @@ def _corporate_apparel_card(
     ]
     elements: list[dict[str, object]] = [
         {"tag": "markdown", "content": "您的领取申请已登记。" if applicant else f"{requester} 提交了企业文化衫领取申请。"},
-        {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**领取明细**"},
+        {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请事由**：{material_usage or '未填写'}\n\n**领取明细**"},
         _feishu_requester_material_table(table_lines),
     ]
     if not applicant:
@@ -21020,17 +21094,18 @@ def corporate_apparel_notification_targets(
 ) -> list[dict[str, object]]:
     requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
     requester = str(request_payload.get("requester") or "申请人")
+    material_usage = str(request_payload.get("material_usage") or "").strip()
     targets: list[dict[str, object]] = []
     if requester_open_id:
         targets.append({
             "key": f"applicant:{requester_open_id}", "audience": "applicant",
             "recipient_id": requester_open_id,
-            "card": _corporate_apparel_card(request_no, requester, lines, applicant=True),
+            "card": _corporate_apparel_card(request_no, requester, lines, applicant=True, material_usage=material_usage),
         })
     for open_id in enabled_role_open_ids("HR"):
         targets.append({
             "key": f"hr:{open_id}", "audience": "hr", "recipient_id": open_id,
-            "card": _corporate_apparel_card(request_no, requester, lines, applicant=False),
+            "card": _corporate_apparel_card(request_no, requester, lines, applicant=False, material_usage=material_usage),
         })
     return targets
 
@@ -21148,10 +21223,8 @@ def execute_corporate_apparel_rejection(plan: dict[str, object]) -> dict[str, ob
     )
     for item in list(plan.get("stock_targets") or []):
         line = dict(item)
-        feishu_update_record_fields(
-            CORPORATE_APPAREL_TABLE_NAME,
-            str(line.get("record_id") or ""),
-            {"系统兑换数量": int(line.get("target_system_redeemed") or 0)},
+        update_corporate_apparel_source_redeemed(
+            line, int(line.get("target_system_redeemed") or 0)
         )
         feishu_update_record_fields(
             REQUEST_LINE_TABLE_NAME,

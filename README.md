@@ -69,11 +69,14 @@ APPROVAL_VIEW_PASSWORD = "replace-with-a-strong-password"
 FEISHU_APP_ID = "cli_xxx"
 FEISHU_APP_SECRET = "你的 app secret"
 FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
+FEISHU_CORPORATE_APPAREL_SOURCE_APP_TOKEN = "行政文化衫源表对应 Base 的 app_token"
 FEISHU_APPROVAL_WRITEBACK_APP_ID = "cli_xxx"
 FEISHU_APPROVAL_WRITEBACK_APP_SECRET = "审批回写应用的 app secret"
 GITHUB_CACHE_REFRESH_TOKEN = "GitHub repository_dispatch token"
 CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
 ```
+
+企业文化衫页面从主 Base 中的“文化周边编码及库存数量”同步表读取目录和库存，提交及驳回时通过上述独立源表 token 写入行政源表的“系统兑换数量”。“营销物料管理”应用必须对行政源表有编辑权限；源表的表 ID 配置在 `config/project_config.json` 的 `feishu.tables.corporate_apparel_source_table_id`。
 
 应用会按表名自动发现以下飞书多维表格：
 

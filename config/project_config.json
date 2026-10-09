@@ -32,6 +32,8 @@
       "user_permission": "用户权限表",
       "gift_project": "项目周边礼品物料筹备详情list",
       "cultural_material": "文化周边管理库存",
+      "corporate_apparel": "文化周边编码及库存数量",
+      "corporate_apparel_source_table_id": "tbledtC3RafsHNh0",
       "region": "战区管理",
       "queue": "后台任务队列",
       "queue_payload": "后台任务载荷",
