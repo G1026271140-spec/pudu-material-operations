@@ -6,6 +6,39 @@ import submission_queue as queue
 
 
 class CulturalRequestTests(unittest.TestCase):
+    def test_corporate_apparel_cached_quota_combines_polo_sizes(self) -> None:
+        permission_rows = [{
+            "record_id": "permission-1",
+            "fields": {
+                "用户账号": [{"id": "ou_requester"}],
+                "POLO申领数量累计": 1,
+            },
+        }]
+
+        with self.assertRaisesRegex(RuntimeError, "当前已领取 1 件.*本次最多还能领取 1 件"):
+            app.validate_corporate_apparel_cached_quota(
+                "ou_requester",
+                [
+                    {"product": "休闲商务POLO-黑色（短袖）", "size": "M", "quantity": 1},
+                    {"product": "休闲商务POLO-黑色（短袖）", "size": "L", "quantity": 1},
+                ],
+                permission_rows,
+            )
+
+    def test_corporate_apparel_cached_quota_allows_two_polo_items_for_new_user(self) -> None:
+        snapshots = app.validate_corporate_apparel_cached_quota(
+            "ou_new",
+            [
+                {"product": "休闲商务POLO-黑色（短袖）", "size": "M", "quantity": 1},
+                {"product": "休闲商务POLO-黑色（短袖）", "size": "L", "quantity": 1},
+            ],
+            [],
+        )
+
+        self.assertEqual(snapshots[0]["requested"], 2)
+        self.assertEqual(snapshots[0]["target"], 2)
+        self.assertEqual(snapshots[0]["limit"], 2)
+
     def test_cultural_shirts_and_jacket_have_independent_limits(self) -> None:
         self.assertEqual(
             app.validate_cultural_request_quantity(

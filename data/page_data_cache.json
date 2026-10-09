@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-09 15:24:05",
+  "generated_at": "2026-10-09 16:08:08",
   "tables": {
     "物料品类": [
       {
@@ -1113,9 +1113,9 @@
               "file_token": "X6hibG60LoA6HExcaXecmpSan0g",
               "name": "product-flyer.webp",
               "size": 35808,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=X6hibG60LoA6HExcaXecmpSan0g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/X6hibG60LoA6HExcaXecmpSan0g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/19615fa100f7ddbb90ff.webp"
             }
           ],
@@ -1198,9 +1198,9 @@
               "file_token": "Ydgxbfz8aoPIQyx9g3NciG6CnGz",
               "name": "brand-brochure.webp",
               "size": 29400,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Ydgxbfz8aoPIQyx9g3NciG6CnGz&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Ydgxbfz8aoPIQyx9g3NciG6CnGz/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/442c36589e8f9268a0f9.webp"
             }
           ],
@@ -1285,9 +1285,9 @@
               "file_token": "Bq05bVTN9oFYzCx1S7Bc8mU0nud",
               "name": "industrial-brochure.webp",
               "size": 16100,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Bq05bVTN9oFYzCx1S7Bc8mU0nud&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Bq05bVTN9oFYzCx1S7Bc8mU0nud/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/2a4077ad7c35106ae372.webp"
             }
           ],
@@ -1372,9 +1372,9 @@
               "file_token": "Nx2FbUnbYooTTBx9wtQci1HPn2g",
               "name": "cleaning-brochure.webp",
               "size": 19568,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Nx2FbUnbYooTTBx9wtQci1HPn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Nx2FbUnbYooTTBx9wtQci1HPn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/0e04ce20f707dd1ac149.webp"
             }
           ],
@@ -1459,9 +1459,9 @@
               "file_token": "DtXKbuNSvo99BwxhI4qcxRuynyd",
               "name": "delivery-brochure.webp",
               "size": 16016,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=DtXKbuNSvo99BwxhI4qcxRuynyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/DtXKbuNSvo99BwxhI4qcxRuynyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/6ed2f69436ccd1389129.webp"
             }
           ],
@@ -1546,9 +1546,9 @@
               "file_token": "MGSnbCXZ0owyPVxpxsScmiennMe",
               "name": "embodied-brochure.webp",
               "size": 22140,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MGSnbCXZ0owyPVxpxsScmiennMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MGSnbCXZ0owyPVxpxsScmiennMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/8fd678f0615ad493a461.webp"
             }
           ],
@@ -2171,9 +2171,9 @@
               "file_token": "G24abHjPEoOdwbxgQHRc5QRcn2g",
               "name": "product-roll-up.webp",
               "size": 25712,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=G24abHjPEoOdwbxgQHRc5QRcn2g&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/G24abHjPEoOdwbxgQHRc5QRcn2g/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/0030c698db7f456f3038.webp"
             }
           ],
@@ -2264,18 +2264,18 @@
               "file_token": "FZAzbv0VfoWz0uxtTlAchlUDnee",
               "name": "玩偶.jpg",
               "size": 558977,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FZAzbv0VfoWz0uxtTlAchlUDnee&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FZAzbv0VfoWz0uxtTlAchlUDnee&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FZAzbv0VfoWz0uxtTlAchlUDnee/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FZAzbv0VfoWz0uxtTlAchlUDnee/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/ac5dd4daecf4825c24ce.webp"
             },
             {
               "file_token": "NZAYbGvKloY74OxG5UScjPbDnue",
               "name": "plush-toy.webp",
               "size": 34864,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=NZAYbGvKloY74OxG5UScjPbDnue&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/NZAYbGvKloY74OxG5UScjPbDnue/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/994375a5892b61f171f7.webp"
             }
           ],
@@ -2378,9 +2378,9 @@
               "file_token": "PrfzbCbZsoxkSPxGC5fcmGATnwf",
               "name": "冰箱贴.png",
               "size": 989881,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PrfzbCbZsoxkSPxGC5fcmGATnwf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PrfzbCbZsoxkSPxGC5fcmGATnwf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PrfzbCbZsoxkSPxGC5fcmGATnwf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PrfzbCbZsoxkSPxGC5fcmGATnwf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/2f7ab13579df7579f5e3.webp"
             }
           ],
@@ -2445,9 +2445,9 @@
               "file_token": "E5ZybQrxzo3bcrxWB7NcHaQFnWf",
               "name": "notebook-gift-box.webp",
               "size": 18904,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=E5ZybQrxzo3bcrxWB7NcHaQFnWf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/E5ZybQrxzo3bcrxWB7NcHaQFnWf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/8f104ee12bce4deda2a7.webp"
             }
           ],
@@ -2530,9 +2530,9 @@
               "file_token": "YtwnbFMC2oSlgExrBzScBB4fnch",
               "name": "pudu-logo-bag.webp",
               "size": 38258,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YtwnbFMC2oSlgExrBzScBB4fnch&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YtwnbFMC2oSlgExrBzScBB4fnch/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/38543eeb8ee3133cda99.webp"
             }
           ],
@@ -2597,9 +2597,9 @@
               "file_token": "KLf7bpBO9o8iOBxSC4PcQVKJnMf",
               "name": "书包.jpg",
               "size": 330066,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KLf7bpBO9o8iOBxSC4PcQVKJnMf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KLf7bpBO9o8iOBxSC4PcQVKJnMf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KLf7bpBO9o8iOBxSC4PcQVKJnMf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KLf7bpBO9o8iOBxSC4PcQVKJnMf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/87ec695197a8eb7b07b8.webp"
             }
           ],
@@ -2682,9 +2682,9 @@
               "file_token": "C2mJbwb0So1lGIx9bODcvtbNnWc",
               "name": "高级手提袋.jpg",
               "size": 229898,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=C2mJbwb0So1lGIx9bODcvtbNnWc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=C2mJbwb0So1lGIx9bODcvtbNnWc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/C2mJbwb0So1lGIx9bODcvtbNnWc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/C2mJbwb0So1lGIx9bODcvtbNnWc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/91c0830cfc484f343ecf.webp"
             }
           ],
@@ -2806,9 +2806,9 @@
               "file_token": "VPijbox9hoEJ95xHQzZciWJbnjb",
               "name": "fan.webp",
               "size": 12450,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VPijbox9hoEJ95xHQzZciWJbnjb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VPijbox9hoEJ95xHQzZciWJbnjb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/cd3c1485812e3303df11.webp"
             }
           ],
@@ -2873,9 +2873,9 @@
               "file_token": "Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh",
               "name": "蓝色礼品纸袋.jpg",
               "size": 162427,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Jy7tb0Q7ZoIJVbx9TzrcuuSGnCh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/e58cf5d7bc2396613060.webp"
             }
           ],
@@ -2940,9 +2940,9 @@
               "file_token": "T4YJbxqU0oQqWDx5PidcixZcnYb",
               "name": "帽子.jpg",
               "size": 165184,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=T4YJbxqU0oQqWDx5PidcixZcnYb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=T4YJbxqU0oQqWDx5PidcixZcnYb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/T4YJbxqU0oQqWDx5PidcixZcnYb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/T4YJbxqU0oQqWDx5PidcixZcnYb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/100cf5ebdd80e336c41d.webp"
             }
           ],
@@ -3007,9 +3007,9 @@
               "file_token": "WLXibLSqGoQES6xeBFlcloLknnd",
               "name": "fridge-magnet.webp",
               "size": 30544,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WLXibLSqGoQES6xeBFlcloLknnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WLXibLSqGoQES6xeBFlcloLknnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/9d265f85838c614ea378.webp"
             }
           ],
@@ -3074,18 +3074,18 @@
               "file_token": "Kc3gbeuF7ofCQZxkg9lcRRdVn0e",
               "name": "单个高尔夫球.jpg",
               "size": 283588,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kc3gbeuF7ofCQZxkg9lcRRdVn0e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kc3gbeuF7ofCQZxkg9lcRRdVn0e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kc3gbeuF7ofCQZxkg9lcRRdVn0e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kc3gbeuF7ofCQZxkg9lcRRdVn0e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/7632762608adb64746c0.webp"
             },
             {
               "file_token": "D1Pabnroyof4ENxcWnKcSovonMe",
               "name": "高尔夫球.jpg",
               "size": 73384,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=D1Pabnroyof4ENxcWnKcSovonMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=D1Pabnroyof4ENxcWnKcSovonMe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/D1Pabnroyof4ENxcWnKcSovonMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/D1Pabnroyof4ENxcWnKcSovonMe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/2b8242be0cfd32891804.webp"
             }
           ],
@@ -3207,9 +3207,9 @@
               "file_token": "YP7Zbe2yGoIQV3xWx44cnd8PnIg",
               "name": "胸牌.jpg",
               "size": 130438,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YP7Zbe2yGoIQV3xWx44cnd8PnIg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YP7Zbe2yGoIQV3xWx44cnd8PnIg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YP7Zbe2yGoIQV3xWx44cnd8PnIg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YP7Zbe2yGoIQV3xWx44cnd8PnIg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/421b9419575f0f5697d5.webp"
             }
           ],
@@ -3274,9 +3274,9 @@
               "file_token": "TRuvb5h0ToroRvxiLQccY0d1nrc",
               "name": "工作牌.jpg",
               "size": 352319,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=TRuvb5h0ToroRvxiLQccY0d1nrc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=TRuvb5h0ToroRvxiLQccY0d1nrc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/TRuvb5h0ToroRvxiLQccY0d1nrc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/TRuvb5h0ToroRvxiLQccY0d1nrc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/42da4b4defbaa7657a5d.webp"
             }
           ],
@@ -3341,9 +3341,9 @@
               "file_token": "ZsgnbsnMiouFx6xkiYmcjvFJnJg",
               "name": "奖牌.png",
               "size": 480548,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZsgnbsnMiouFx6xkiYmcjvFJnJg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZsgnbsnMiouFx6xkiYmcjvFJnJg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZsgnbsnMiouFx6xkiYmcjvFJnJg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZsgnbsnMiouFx6xkiYmcjvFJnJg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/64a18f79bed28bd71bb6.webp"
             }
           ],
@@ -3408,9 +3408,9 @@
               "file_token": "QvV9bp80vokKbdxZANKcsLbFneQ",
               "name": "墨镜.jpg",
               "size": 527066,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QvV9bp80vokKbdxZANKcsLbFneQ&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QvV9bp80vokKbdxZANKcsLbFneQ&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QvV9bp80vokKbdxZANKcsLbFneQ/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QvV9bp80vokKbdxZANKcsLbFneQ/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/e3eae134108abaedb423.webp"
             }
           ],
@@ -3570,7 +3570,17 @@
           ],
           "物料品类": "文化POLO衫",
           "物料品类编码": "035",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
+              "name": "稿定设计-4.png",
+              "size": 1754937,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
+              "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
+            }
+          ],
           "英文页面名称": "Cultural Polo Shirt",
           "装箱单产品类型": "Give aways",
           "语种数量": null
@@ -3657,7 +3667,17 @@
           ],
           "物料品类": "文化夹克",
           "物料品类编码": "036",
-          "申领页图片": null,
+          "申领页图片": [
+            {
+              "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
+              "name": "稿定设计-2.png",
+              "size": 1827582,
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
+              "type": "image/png",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
+              "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
+            }
+          ],
           "英文页面名称": "Cultural Jacket",
           "装箱单产品类型": "Give aways",
           "语种数量": null
@@ -3776,9 +3796,9 @@
               "file_token": "AabWbFsP6oe1DZxfaJBctY1anHg",
               "name": "开瓶器.jpg",
               "size": 8044284,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AabWbFsP6oe1DZxfaJBctY1anHg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AabWbFsP6oe1DZxfaJBctY1anHg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AabWbFsP6oe1DZxfaJBctY1anHg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AabWbFsP6oe1DZxfaJBctY1anHg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/b589368bc503ef2cd0a7.webp"
             }
           ],
@@ -3847,9 +3867,9 @@
               "file_token": "LpIebh0l7ofCozxS5AVcCi0znZc",
               "name": "企业微信截图_17103081711454.png",
               "size": 1018135,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LpIebh0l7ofCozxS5AVcCi0znZc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LpIebh0l7ofCozxS5AVcCi0znZc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LpIebh0l7ofCozxS5AVcCi0znZc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LpIebh0l7ofCozxS5AVcCi0znZc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/47a3bc96b89d5205a673.webp"
             }
           ],
@@ -3914,9 +3934,9 @@
               "file_token": "IM2UbGQNGoPa7SxaOTJchiwZnDH",
               "name": "贴纸.webp",
               "size": 16580,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IM2UbGQNGoPa7SxaOTJchiwZnDH&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IM2UbGQNGoPa7SxaOTJchiwZnDH&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IM2UbGQNGoPa7SxaOTJchiwZnDH/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A925%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IM2UbGQNGoPa7SxaOTJchiwZnDH/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl45q6s50SzEnFI%22%2C%22rev%22%3A928%7D%7D",
               "cached_path": "assets/request_categories/fbf88c387bf9b174e574.webp"
             }
           ],
@@ -153374,6 +153394,124 @@
         },
         "id": "recvxxdquhc35C",
         "record_id": "recvxxdquhc35C"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvwGQI6Knbuw"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20260930-003-01",
+              "text_arr": [
+                "REQ-20260930-003-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "10",
+          "变更后数量": "12",
+          "备注": "文化周边申领驳回 REQ-20260930-003：文化POLO衫 / M / 美洲战区",
+          "幂等键": "cultural-reject:REQ-20260930-003:recvwGQI6Knbuw",
+          "库存变化": "2",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "2",
+          "文化周边战区快照": "美洲战区",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyNzKp"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0036",
+              "text_arr": [
+                "CUL-0036"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边申领驳回",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "recvxxg3JJV2hb",
+        "record_id": "recvxxg3JJV2hb"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvxxmThIPZHD"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261009-006-01",
+              "text_arr": [
+                "REQ-20261009-006-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "2",
+          "变更后数量": "1",
+          "备注": "文化周边申领 REQ-20261009-006：文化夹克 / 2XL / 品牌&市场营销内部",
+          "幂等键": "cultural-request:a9bb66b2e3f940dd81948527da4751a9:1",
+          "库存变化": "-1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "-1",
+          "文化周边战区快照": "品牌&市场营销内部",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyfXhJ"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0052",
+              "text_arr": [
+                "CUL-0052"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "recvxxmTXj0hzO",
+        "record_id": "recvxxmTXj0hzO"
       }
     ],
     "物料申请单": [
@@ -156904,9 +157042,9 @@
               "file_token": "B4KPbUis2ol6mAx60GscrkOAnPf",
               "name": "img_v3_0215o_5f903d93-7262-490d-9226-96fbbc4f765g_MIDDLE_WEBP.webp",
               "size": 34138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "国家": "加拿大",
@@ -157173,17 +157311,17 @@
               "file_token": "SY75b088Poue8wxEA6Yc8fq5nOd",
               "name": "FR2.jpg",
               "size": 236138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             },
             {
               "file_token": "VD6SbQOdJoUaawxow1ecUvY4nOe",
               "name": "FR1.jpg",
               "size": 213041,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "国家": "法国",
@@ -157351,25 +157489,25 @@
               "file_token": "BsEIbEOddoV50UxzdSAcw3GUn3c",
               "name": "AU2.jpg",
               "size": 277944,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             },
             {
               "file_token": "IBrdbtvqZof487xfZ3UcxRj5nUR",
               "name": "AU3.jpg",
               "size": 183728,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             },
             {
               "file_token": "PcjebbZ5po6FjpxceMecT1bvnbc",
               "name": "AU1.jpg",
               "size": 289081,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "国家": "澳洲ISSA展会物料",
@@ -158770,9 +158908,9 @@
               "file_token": "EJ2SbWO2PounMjxQqUqcg7tgn3e",
               "name": "20260922-095550.jpg",
               "size": 272478,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "国家": "智利",
@@ -161117,9 +161255,9 @@
               "file_token": "QdbabNoySokBM1xVCG3cQiTsnrg",
               "name": "2026-MKT-CZ0924_INV_PL.xlsx",
               "size": 34231,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "业务类型": "物料领取",
@@ -161130,9 +161268,9 @@
               "file_token": "AwJEbPUigoIYnPxT2axccI09nvg",
               "name": "img_v3_0215r_71e3d283-4f50-432f-a689-b6dbaa24f26g_MIDDLE_WEBP.webp",
               "size": 63888,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "国家": "捷克MSV工业展物料",
@@ -161654,9 +161792,9 @@
               "file_token": "MpO9bdnlzoW3zcxHeUEcfUqmnde",
               "name": "img_v3_02169_a7720ee9-8473-48f3-b018-cfa8be1aa7ag.jpg",
               "size": 4104598,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1658%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1667%7D%7D"
             }
           ],
           "国家": "吉隆坡",
@@ -163978,9 +164116,9 @@
           "提交幂等键": "da1df8de13ab426691f957674136cfa9",
           "提交时间": 1790756710295,
           "收件人信息": null,
-          "文化周边处理状态": "已发放",
+          "文化周边处理状态": "已驳回",
           "文化周边消息ID": "{\"applicant:ou_2f4127aaedc845463a20950ee0dd5f87\":\"om_x100b64f836c37538c2ec1cc033e3dcd\",\"admin:ou_0f57acbd1f846f7e034a8ab954506b6d\":\"om_x100b64f836fe54a0c38d007d5695716\",\"admin:ou_db9afe55f685d6227b25f267261ec3e8\":\"om_x100b64f8369ee4b8c251d15d15e901c\"}",
-          "文化周边通知状态": "已发送",
+          "文化周边通知状态": "驳回已通知",
           "时间判定": null,
           "是否发货": null,
           "期望发放日期": null,
@@ -164661,7 +164799,7 @@
           "库存审查状态": "待核实库存",
           "库存审查结论": "部分库存不足",
           "库存快照时间": 1791526934814,
-          "库存核实提醒状态": null,
+          "库存核实提醒状态": "待提醒",
           "库存流水": null,
           "库存确认消息ID": "[\"om_x100b63bccd6104acc02a40f1ed012ed\", \"om_x100b63bccd778ca0c4c6ebad29b88bb\"]",
           "所属战区": null,
@@ -164756,7 +164894,7 @@
           "管理员通知状态": "已发送",
           "要求到达结束日期": 1793289600000,
           "要求达到开始日期": 1793289600000,
-          "计划库存核实时间": null,
+          "计划库存核实时间": 1792720800000,
           "费用合计（人民币）": "1760.2",
           "运费承担者": "普渡付款(PUDU)",
           "需要下单日期": null,
@@ -164764,6 +164902,107 @@
         },
         "id": "recvxwYswtTHKq",
         "record_id": "recvxwYswtTHKq"
+      },
+      {
+        "fields": {
+          "INV/PL": null,
+          "业务类型": "文化周边申领",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "发货图片": null,
+          "国家": null,
+          "备注": null,
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "无需审批",
+          "客户名称": null,
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": null,
+          "库存审查结论": null,
+          "库存快照时间": null,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": null,
+          "所属战区": "品牌&市场营销内部",
+          "排期编辑版本": null,
+          "提交幂等键": "a9bb66b2e3f940dd81948527da4751a9",
+          "提交时间": 1791532745241,
+          "收件人信息": null,
+          "文化周边处理状态": "已发放",
+          "文化周边消息ID": "{\"applicant:ou_1ea41fd82bda1020cbdac058fe189d99\":\"om_x100b63bda07c98bcdda7a3380bb87ec\",\"admin:ou_0f57acbd1f846f7e034a8ab954506b6d\":\"om_x100b63bda01178b0c34958a5b94fbc2\",\"admin:ou_db9afe55f685d6227b25f267261ec3e8\":\"om_x100b63bda1c3b8a0c31e7ed9c808fe8\"}",
+          "文化周边通知状态": "已发送",
+          "时间判定": null,
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "陈肖肖-文化周边申领",
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 文化夹克 / 2XL / 品牌&市场营销内部 × 1",
+          "物料用途": "140期广交会",
+          "用途|活动": null,
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015e_ba11c914-3961-477e-9c01-77c28a38b1eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "venus.chen@pudutech.com",
+              "en_name": "陈肖肖",
+              "id": "ou_1ea41fd82bda1020cbdac058fe189d99",
+              "name": "陈肖肖"
+            }
+          ],
+          "申请人.部门": [
+            "HR业务部"
+          ],
+          "申请单号": "REQ-20261009-006",
+          "申请原因": null,
+          "申请变更次数": null,
+          "申请时角色快照": null,
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvxxmThIPZHD"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261009-006-01",
+              "text_arr": [
+                "REQ-20261009-006-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "文化周边申请",
+          "申请部门|区域": null,
+          "相关附件": null,
+          "管理员通知时间": 1791532746694,
+          "管理员通知状态": null,
+          "要求到达结束日期": null,
+          "要求达到开始日期": null,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "219",
+          "运费承担者": null,
+          "需要下单日期": null,
+          "预计完成制作日期": null
+        },
+        "id": "recvxxmPsNbICH",
+        "record_id": "recvxxmPsNbICH"
       }
     ],
     "申请明细": [
@@ -227600,20 +227839,22 @@
           "品类名称": "文化POLO衫",
           "备注": null,
           "实际发放产品型号": null,
-          "实际发放数量": "2",
+          "实际发放数量": "0",
           "实际发放物料品类": null,
           "实际发放物料编码": null,
           "实际发放语种": null,
-          "审批通过数量": "2",
+          "审批通过数量": "0",
           "库存审查时库存": null,
           "库存流水": [
             {
               "record_ids": [
-                "recvwGQIAlDuFd"
+                "recvwGQIAlDuFd",
+                "recvxxg3JJV2hb"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
@@ -227650,7 +227891,7 @@
           ],
           "明细业务类型": "文化周边",
           "明细变更说明": null,
-          "明细状态": "已发放",
+          "明细状态": "已驳回",
           "明细编号": "REQ-20260930-003-01",
           "是否到货": null,
           "物料下单时间": null,
@@ -230166,6 +230407,130 @@
         },
         "id": "recvxwYtR9JyUT",
         "record_id": "recvxwYtR9JyUT"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvtnWRaQobA0"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X039",
+              "text_arr": [
+                "X039"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "2XL",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "recvtnWQU3oSsm"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "036",
+              "text_arr": [
+                "036"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "文化夹克",
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "1",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": [
+                "recvxxmTXj0hzO"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvxxmPsNbICH"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261009-006",
+              "text_arr": [
+                "REQ-20261009-006"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": "品牌&市场营销内部",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyfXhJ"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0052",
+              "text_arr": [
+                "CUL-0052"
+              ],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "文化周边",
+          "明细变更说明": null,
+          "明细状态": "已发放",
+          "明细编号": "REQ-20261009-006-01",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": "219",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": "219",
+          "附件": null
+        },
+        "id": "recvxxmThIPZHD",
+        "record_id": "recvxxmThIPZHD"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -233441,11 +233806,13 @@
                 "recvwAHGK0GBXW",
                 "recvwGLLUHJG5t",
                 "recvwGMvFAe21p",
-                "recvwGQIAlDuFd"
+                "recvwGQIAlDuFd",
+                "recvxxg3JJV2hb"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",,,,",
+              "text": ",,,,,",
               "text_arr": [
+                "",
                 "",
                 "",
                 "",
@@ -233455,7 +233822,7 @@
               "type": "text"
             }
           ],
-          "当前库存": "10",
+          "当前库存": "12",
           "战区关联": [
             {
               "record_ids": [
@@ -234686,18 +235053,20 @@
             {
               "record_ids": [
                 "recvwvM2CCThWQ",
-                "recvwzyuJqhOhs"
+                "recvwzyuJqhOhs",
+                "recvxxmTXj0hzO"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",",
+              "text": ",,",
               "text_arr": [
+                "",
                 "",
                 ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "2",
+          "当前库存": "1",
           "战区关联": [
             {
               "record_ids": [
@@ -234731,12 +235100,14 @@
           "申请明细": [
             {
               "record_ids": [
-                "recvwvM27GxDwa"
+                "recvwvM27GxDwa",
+                "recvxxmThIPZHD"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260928-007-01",
+              "text": "REQ-20260928-007-01,REQ-20261009-006-01",
               "text_arr": [
-                "REQ-20260928-007-01"
+                "REQ-20260928-007-01",
+                "REQ-20261009-006-01"
               ],
               "type": "text"
             }
@@ -239147,6 +239518,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "1",
           "用户账号": [
@@ -239173,6 +239545,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "2",
           "用户账号": [
@@ -239199,6 +239572,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "3",
           "用户账号": [
@@ -239224,6 +239598,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "4",
           "用户账号": [
@@ -239249,6 +239624,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "5",
           "用户账号": [
@@ -239275,6 +239651,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "7",
           "用户账号": [
@@ -239300,6 +239677,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "8",
           "用户账号": [
@@ -239325,6 +239703,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "9",
           "用户账号": [
@@ -239350,6 +239729,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "10",
           "用户账号": [
@@ -239375,6 +239755,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "11",
           "用户账号": [
@@ -239400,6 +239781,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "12",
           "用户账号": [
@@ -239425,6 +239807,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "14",
           "用户账号": [
@@ -239450,6 +239833,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "15",
           "用户账号": [
@@ -239475,6 +239859,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "18",
           "用户账号": [
@@ -239501,6 +239886,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "19",
           "用户账号": [
@@ -239526,6 +239912,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "20",
           "用户账号": [
@@ -239551,6 +239938,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "21",
           "用户账号": [
@@ -239576,6 +239964,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "22",
           "用户账号": [
@@ -239601,6 +239990,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "23",
           "用户账号": [
@@ -239626,6 +240016,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "24",
           "用户账号": [
@@ -239651,6 +240042,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "25",
           "用户账号": [
@@ -239676,6 +240068,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "26",
           "用户账号": [
@@ -239701,6 +240094,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "27",
           "用户账号": [
@@ -239726,6 +240120,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "28",
           "用户账号": [
@@ -239751,6 +240146,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "29",
           "用户账号": [
@@ -239777,6 +240173,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "31",
           "用户账号": [
@@ -239803,6 +240200,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "32",
           "用户账号": [
@@ -239828,6 +240226,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "33",
           "用户账号": [
@@ -239853,6 +240252,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "34",
           "用户账号": [
@@ -239878,6 +240278,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "35",
           "用户账号": [
@@ -239903,6 +240304,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "36",
           "用户账号": [
@@ -239928,6 +240330,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "37",
           "用户账号": [
@@ -239953,6 +240356,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "38",
           "用户账号": [
@@ -239978,6 +240382,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "39",
           "用户账号": [
@@ -240003,6 +240408,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "40",
           "用户账号": [
@@ -240028,6 +240434,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "41",
           "用户账号": [
@@ -240053,6 +240460,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "42",
           "用户账号": [
@@ -240078,6 +240486,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "43",
           "用户账号": [
@@ -240103,6 +240512,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "44",
           "用户账号": [
@@ -240128,6 +240538,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "45",
           "用户账号": [
@@ -240153,6 +240564,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "46",
           "用户账号": [
@@ -240178,6 +240590,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "47",
           "用户账号": [
@@ -240203,6 +240616,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "48",
           "用户账号": [
@@ -240228,6 +240642,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "49",
           "用户账号": [
@@ -240253,6 +240668,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "50",
           "用户账号": [
@@ -240278,6 +240694,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "51",
           "用户账号": [
@@ -240303,6 +240720,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "52",
           "用户账号": [
@@ -240328,6 +240746,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "53",
           "用户账号": [
@@ -240353,6 +240772,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "54",
           "用户账号": [
@@ -240378,6 +240798,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "55",
           "用户账号": [
@@ -240403,6 +240824,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "56",
           "用户账号": [
@@ -240428,6 +240850,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "57",
           "用户账号": [
@@ -240453,6 +240876,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "58",
           "用户账号": [
@@ -240478,6 +240902,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "59",
           "用户账号": [
@@ -240503,6 +240928,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "60",
           "用户账号": [
@@ -240528,6 +240954,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "61",
           "用户账号": [
@@ -240553,6 +240980,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "62",
           "用户账号": [
@@ -240578,6 +241006,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "63",
           "用户账号": [
@@ -240603,6 +241032,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "64",
           "用户账号": [
@@ -240628,6 +241058,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "65",
           "用户账号": [
@@ -240653,6 +241084,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "66",
           "用户账号": [
@@ -240678,6 +241110,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "67",
           "用户账号": [
@@ -240703,6 +241136,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "68",
           "用户账号": [
@@ -240728,6 +241162,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "69",
           "用户账号": [
@@ -240753,6 +241188,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "70",
           "用户账号": [
@@ -240778,6 +241214,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "71",
           "用户账号": [
@@ -240803,6 +241240,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "72",
           "用户账号": [
@@ -240828,6 +241266,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "73",
           "用户账号": [
@@ -240853,6 +241292,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": "0",
           "是否启用": "是",
           "用户编号": "74",
           "用户账号": [
@@ -240878,6 +241318,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "75",
           "用户账号": [
@@ -240903,6 +241344,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "76",
           "用户账号": [
@@ -240927,7 +241369,8 @@
           "T恤-黑色（短袖）申领数量累计": null,
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
-          "文化夹克申领数量累计": "0",
+          "文化夹克申领数量累计": "1",
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "77",
           "用户账号": [
@@ -240953,6 +241396,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "78",
           "用户账号": [
@@ -240978,6 +241422,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "79",
           "用户账号": [
@@ -241003,6 +241448,7 @@
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
           "文化夹克申领数量累计": null,
+          "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "80",
           "用户账号": [
@@ -251898,9 +252344,9 @@
     "产品型号": 42,
     "物料语种": 12,
     "物料主数据": 910,
-    "库存流水": 508,
-    "物料申请单": 91,
-    "申请明细": 521,
+    "库存流水": 510,
+    "物料申请单": 92,
+    "申请明细": 522,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "文化周边编码及库存数量": 100,

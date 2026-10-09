@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-10-09 11:00:29",
+  "generated_at": "2026-10-09 16:08:38",
   "departments": [
     {
       "department_id": "od-6daa61e0fad320b53db9d267fff19727",
@@ -1227,6 +1227,16 @@
       ]
     },
     {
+      "open_id": "ou_ac75f77402527cfc8c9faae4a7db6df1",
+      "name": "Daniel Cuellar",
+      "department_ids": [
+        "od-57dfd9f076804c22848710a18d16c284"
+      ],
+      "department_paths": [
+        "美国KA组"
+      ]
+    },
+    {
       "open_id": "ou_2a86f3d2f234eee4efda671ec59afff2",
       "name": "Frank Mascola",
       "department_ids": [
@@ -1296,6 +1306,16 @@
       ],
       "department_paths": [
         "美国战队"
+      ]
+    },
+    {
+      "open_id": "ou_3c22946570f7b449d065760b26bbd4ba",
+      "name": "Le Hong Phu",
+      "department_ids": [
+        "od-5172c5e353c88f8b5d4f864bee7bca44"
+      ],
+      "department_paths": [
+        "亚太战区"
       ]
     },
     {
@@ -2169,6 +2189,16 @@
       ]
     },
     {
+      "open_id": "ou_9e304eba9570aabc0db5ee8e0fc07639",
+      "name": "何祈临",
+      "department_ids": [
+        "od-184f859c2485577e35968cb6772788db"
+      ],
+      "department_paths": [
+        "欧洲服务B组"
+      ]
+    },
+    {
       "open_id": "ou_56cccdb4cf4b288ea28d9fb78ed24bea",
       "name": "何科君",
       "department_ids": [
@@ -2584,9 +2614,11 @@
       "open_id": "ou_55df0a929a0e8988b9a63a03e5d80e5b",
       "name": "农余星",
       "department_ids": [
+        "od-d90d38def427cf71640b80459d6b5118",
         "od-c66cd8d7e00d195dfb1a1ef9f337409e"
       ],
       "department_paths": [
+        "M LAB",
         "NPI组"
       ]
     },
@@ -3736,12 +3768,10 @@
       "open_id": "ou_9ead7b2ac74d3579729bd01ffd06d990",
       "name": "刘睎钊",
       "department_ids": [
-        "od-8dc08802227b80fb469148f547072734",
         "od-2c0bf991e0b608110fdc558188f948ac",
         "od-7da7ed6e2f8d4014969d997e7b4faf36"
       ],
       "department_paths": [
-        "成本管理组",
         "财经BP组",
         "财经中心"
       ]
@@ -9561,6 +9591,16 @@
       ]
     },
     {
+      "open_id": "ou_09ceb9fbcf994cc2698697fdf9ad0a2a",
+      "name": "朱恩托",
+      "department_ids": [
+        "od-ecf2a9c63443b1c26699dcec07008209"
+      ],
+      "department_paths": [
+        "项目交付组"
+      ]
+    },
+    {
       "open_id": "ou_04e9875e596a21b2faef9ca7723930df",
       "name": "朱悦堂",
       "department_ids": [
@@ -13300,9 +13340,11 @@
       "open_id": "ou_75bde1eb703ae0726334ee8a32654330",
       "name": "温泉",
       "department_ids": [
+        "od-264e0d6ec3e739c33ad5d32c3908108e",
         "od-5d441daa075643882e57dc112e94aa3c"
       ],
       "department_paths": [
+        "X LAB",
         "X LAB测试组"
       ]
     },
@@ -16652,6 +16694,16 @@
       ],
       "department_paths": [
         "加拿大战队"
+      ]
+    },
+    {
+      "open_id": "ou_873c7a6422e1ead816cd8b50777cb7d5",
+      "name": "苏际文",
+      "department_ids": [
+        "od-89f44bfe9d5e17bb4cb4e3f13fa6b8d6"
+      ],
+      "department_paths": [
+        "美洲服务部"
       ]
     },
     {
@@ -22605,5 +22657,5 @@
       ]
     }
   ],
-  "user_count": 2091
+  "user_count": 2096
 }

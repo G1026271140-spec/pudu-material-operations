@@ -83,7 +83,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.0.5"
+APP_VERSION = "V3.0.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20733,6 +20733,61 @@ def _corporate_apparel_quota_field(product: str) -> tuple[str, int]:
         if feishu_has_field(USER_PERMISSION_TABLE_NAME, field_name):
             return field_name, limit
     return aliases[0], limit
+
+
+def validate_corporate_apparel_cached_quota(
+    requester_open_id: str,
+    lines: list[dict[str, object]],
+    permission_rows: list[dict],
+) -> list[dict[str, object]]:
+    """Validate per-person apparel limits from the currently published permission cache.
+
+    The worker repeats this check against fresh Feishu data before writing.  This
+    cache-backed pass exists so the web page can reject an over-limit request
+    immediately instead of accepting a queue task that is guaranteed to fail.
+    """
+    open_id = str(requester_open_id or "").strip()
+    permission_row = next(
+        (
+            row for row in permission_rows
+            if open_id in feishu_person_open_ids(
+                feishu_fields(row), ["用户账号", "用户", "成员"]
+            )
+        ),
+        None,
+    )
+    permission_fields = feishu_fields(permission_row or {})
+    requested_by_product: dict[str, int] = {}
+    for raw in lines:
+        product = str(raw.get("product") or "").strip()
+        quantity = int(raw.get("quantity") or 0)
+        if product not in CORPORATE_APPAREL_QUOTA_FIELDS or quantity <= 0:
+            raise RuntimeError("企业文化衫领取明细无效。")
+        requested_by_product[product] = requested_by_product.get(product, 0) + quantity
+
+    snapshots: list[dict[str, object]] = []
+    for product, requested in requested_by_product.items():
+        aliases, limit = CORPORATE_APPAREL_QUOTA_FIELDS[product]
+        field_name = next((name for name in aliases if name in permission_fields), aliases[0])
+        current = feishu_int(permission_fields, field_name)
+        target = current + requested
+        if target > limit:
+            remaining = max(0, limit - current)
+            raise RuntimeError(
+                f"{product} 每人累计最多领取 {limit} 件，当前已领取 {current} 件，"
+                f"本次最多还能领取 {remaining} 件。"
+            )
+        snapshots.append(
+            {
+                "product": product,
+                "field": field_name,
+                "current": current,
+                "requested": requested,
+                "target": target,
+                "limit": limit,
+            }
+        )
+    return snapshots
 
 
 def ensure_corporate_apparel_quota_fields() -> None:

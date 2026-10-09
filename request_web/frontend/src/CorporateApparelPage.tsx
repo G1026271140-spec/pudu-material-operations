@@ -16,6 +16,15 @@ type Catalog = { products: string[]; items: Item[]; users: User[]; departments: 
 type Line = { product: string; size: string; quantity: number };
 type Lang = "zh" | "en";
 
+const poloProduct = "休闲商务POLO-黑色（短袖）";
+const perProductLimits: Record<string, number> = {
+  [poloProduct]: 2,
+  "T恤-黑色（短袖）": 1,
+  "休闲商务夹克-黑色（长袖）": 1,
+  "商务衬衫-黑色（长袖）": 1,
+  "冲锋衣-黑色": 1,
+};
+
 const productLabels: Record<string, string> = {
   "T恤-黑色（短袖）": "T-Shirt - Black (Short Sleeve)",
   "休闲商务POLO-黑色（短袖）": "Casual Business Polo - Black (Short Sleeve)",
@@ -32,7 +41,7 @@ const copy = {
     category: "企业文化衫", available: (value: number) => `可领取 ${value} 件`,
     noStock: "暂无库存", selectSize: "选择尺码", cart: "领取清单",
     itemUnit: "件", remove: "删除", submit: "提交领取申请", chooseSize: "请选择尺码",
-    remaining: (value: number) => `余 ${value}`, add: "加入领取清单",
+    remaining: (value: number) => `余 ${value}`, quantity: "领取数量", add: "加入领取清单",
     confirm: "确认领取信息", noDepartment: "未填写部门", back: "返回修改",
     submitting: "正在提交…", confirmSubmit: "确认提交", success: "提交成功",
     queued: (taskId: string) => `申请已进入后台队列（${taskId}）`, loading: "正在加载…",
@@ -40,7 +49,8 @@ const copy = {
     loadFailed: "页面数据加载失败", selectApplicant: "请选择申请人。",
     selectOne: "请至少选择一件企业文化衫。", selectAvailableSize: "请选择有库存的尺码。",
     sizeUnavailable: "该尺码当前已无可领取库存。",
-    duplicate: "每个品类每次只能选择一个尺码；如需更换，请先删除清单中的品类。",
+    quantityInvalid: "请输入有效的领取数量。",
+    requestLimit: (product: string, limit: number) => `${product} 本次最多选择 ${limit} 件。历史领取数量将在提交后由系统继续校验。`,
     submitFailed: "提交失败",
   },
   en: {
@@ -50,7 +60,7 @@ const copy = {
     category: "Corporate Apparel", available: (value: number) => `${value} available`,
     noStock: "Out of stock", selectSize: "Select Size", cart: "Collection List",
     itemUnit: "item(s)", remove: "Remove", submit: "Submit Collection Request", chooseSize: "Select a size",
-    remaining: (value: number) => `${value} left`, add: "Add to List",
+    remaining: (value: number) => `${value} left`, quantity: "Quantity", add: "Add to List",
     confirm: "Confirm Collection Details", noDepartment: "No department", back: "Back to Edit",
     submitting: "Submitting…", confirmSubmit: "Confirm Submission", success: "Submitted",
     queued: (taskId: string) => `Your request has entered the background queue (${taskId})`, loading: "Loading…",
@@ -58,7 +68,8 @@ const copy = {
     loadFailed: "Failed to load page data", selectApplicant: "Select an applicant.",
     selectOne: "Select at least one apparel item.", selectAvailableSize: "Select an available size.",
     sizeUnavailable: "This size is no longer available.",
-    duplicate: "Only one size can be selected per category. Remove the current item before choosing another size.",
+    quantityInvalid: "Enter a valid quantity.",
+    requestLimit: (product: string, limit: number) => `${product} is limited to ${limit} item(s) in this request. Historical claims are checked again after submission.`,
     submitFailed: "Submission failed",
   },
 };
@@ -73,6 +84,7 @@ export default function CorporateApparelPage() {
   const [menu, setMenu] = useState(false);
   const [active, setActive] = useState("");
   const [size, setSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [lines, setLines] = useState<Line[]>([]);
   const [review, setReview] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -111,6 +123,7 @@ export default function CorporateApparelPage() {
     const first = catalog?.items.find((item) => item.product === product && item.available > 0);
     setActive(product);
     setSize(first?.size || "");
+    setQuantity(1);
     setError("");
   }
 
@@ -128,9 +141,15 @@ export default function CorporateApparelPage() {
     if (!active || !size) return setError(t.selectAvailableSize);
     const selected = activeItems.find((item) => item.size === size);
     if (!selected || selected.available < 1) return setError(t.sizeUnavailable);
-    const already = lines.find((line) => line.product === active);
-    if (already) return setError(t.duplicate);
-    setLines((current) => [...current, { product: active, size, quantity: 1 }]);
+    const requested = active === poloProduct ? Math.trunc(quantity) : 1;
+    if (!Number.isFinite(requested) || requested < 1 || requested > selected.available) return setError(t.quantityInvalid);
+    const limit = perProductLimits[active] || 1;
+    const currentProductTotal = lines.filter((line) => line.product === active).reduce((sum, line) => sum + line.quantity, 0);
+    const existing = lines.find((line) => line.product === active && line.size === size);
+    if (currentProductTotal + requested > limit) return setError(t.requestLimit(productLabel(active), limit));
+    setLines((current) => existing
+      ? current.map((line) => line.product === active && line.size === size ? { ...line, quantity: line.quantity + requested } : line)
+      : [...current, { product: active, size, quantity: requested }]);
     setActive("");
   }
 
@@ -203,13 +222,13 @@ export default function CorporateApparelPage() {
             </article>;
           })}
         </div>
-        {lines.length > 0 && <div className="corporate-cart"><h3>{t.cart} · {lines.length} {t.itemUnit}</h3>{lines.map((line) => <div key={line.product}><span>{productLabel(line.product)}</span><b>{line.size}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product))}>{t.remove}</button></div>)}</div>}
+        {lines.length > 0 && <div className="corporate-cart"><h3>{t.cart} · {lines.reduce((sum, line) => sum + line.quantity, 0)} {t.itemUnit}</h3>{lines.map((line) => <div key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product || item.size !== line.size))}>{t.remove}</button></div>)}</div>}
         <button type="button" className="corporate-submit" disabled={!lines.length} onClick={() => { setError(""); setReview(true); }}>{t.submit}</button>
       </section>
 
       {error && <div className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></div>}
-      {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => setSize(item.size)}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div><button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
-      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p>{lines.map((line) => <div className="corporate-review-line" key={line.product}><span>{productLabel(line.product)}</span><b>{line.size} × 1</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
+      {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => { setSize(item.size); setQuantity(1); }}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div>{active === poloProduct && <label className="corporate-quantity">{t.quantity}<input type="number" inputMode="numeric" min={1} max={Math.min(2, activeItems.find((item) => item.size === size)?.available || 1)} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>}<button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
+      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p>{lines.map((line) => <div className="corporate-review-line" key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
     </main>
   );
 }

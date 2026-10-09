@@ -1395,6 +1395,15 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
 
         payload = draft.model_dump()
         lines = list(payload.pop("lines"))
+        page = _json("page_data_cache.json")
+        permission_rows = list(
+            page.get("tables", {}).get(legacy.USER_PERMISSION_TABLE_NAME, [])
+        )
+        legacy.validate_corporate_apparel_cached_quota(
+            draft.requester_open_id,
+            lines,
+            permission_rows,
+        )
         task_id = _enqueue_fast(
             QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
             draft.submission_token,
