@@ -78,6 +78,8 @@ CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
 
 企业文化衫页面从主 Base 中的“文化周边编码及库存数量”同步表读取图片和目录标识，并从行政源表实时读取库存、尺码及已兑换数量；提交和驳回也通过上述独立源表 token 写入行政源表的“系统兑换数量”。“营销物料管理系统”应用必须对行政源表有编辑权限；源表的表 ID 配置在 `config/project_config.json` 的 `feishu.tables.corporate_apparel_source_table_id`。
 
+每天 10:30 和 16:30 的物料缓存任务会先运行 `scripts/reconcile_corporate_apparel_quotas.py --apply`：全量读取“文化周边兑换”和已完成的相关申请明细，把新增兑换计入“用户权限表”对应品类的累计领取数量；未登记人员会创建启用的销售权限记录。按来源累计与现有累计取较大值写入，重复刷新不会重复加数。手动刷新物料缓存和正式发布时也执行同一核对，然后再生成并发布页面缓存。
+
 应用会按表名自动发现以下飞书多维表格：
 
 - 物料主数据

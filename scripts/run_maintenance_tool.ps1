@@ -68,6 +68,7 @@ function Ensure-PythonRuntime {
 
 function Invoke-MaterialCache {
     Invoke-Checked $script:Python @("scripts/sync_new_request_models.py")
+    Invoke-Checked $script:Python @("scripts/reconcile_corporate_apparel_quotas.py", "--apply")
     Invoke-Checked $script:Python @("scripts/generate_page_data_cache.py")
     Invoke-Checked $script:Python @("scripts/generate_request_form_cache.py")
     Invoke-Checked $script:Python @("scripts/preserve_unchanged_cache_files.py", "data/page_data_cache.json", "data/request_form_cache.json")

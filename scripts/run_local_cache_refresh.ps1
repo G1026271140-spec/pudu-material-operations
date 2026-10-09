@@ -228,6 +228,8 @@ try {
             default {
                 Write-RunnerLog "Synchronizing newly added request-page product models."
                 Invoke-CheckedCommand $venvPython @("scripts/sync_new_request_models.py") | Out-Null
+                Write-RunnerLog "Reconciling corporate-apparel claim quotas from new exchange records."
+                Invoke-CheckedCommandWithRetry $venvPython @("scripts/reconcile_corporate_apparel_quotas.py", "--apply") | Out-Null
                 @("scripts/generate_page_data_cache.py", "scripts/generate_request_form_cache.py")
             }
         }
