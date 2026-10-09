@@ -1394,9 +1394,9 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
     if not draft.lines:
         raise HTTPException(status_code=422, detail="请至少选择一件企业文化衫。")
     usage = draft.material_usage.strip()
-    fixed_reasons = {"销售标配", "入职", "出差", "特殊情况按需申请，需补OA"}
-    if usage not in fixed_reasons and not (usage.startswith("参展：") and usage.removeprefix("参展：").strip()):
-        raise HTTPException(status_code=422, detail="请选择有效的申请事由；参展时必须填写活动名称。")
+    fixed_reasons = {"入职", "销售标配", "OA流程申请"}
+    if usage not in fixed_reasons:
+        raise HTTPException(status_code=422, detail="请选择有效的申请事由。")
     try:
         import app as legacy
         from submission_queue import QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST

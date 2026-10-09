@@ -416,7 +416,7 @@ def test_cultural_submit_requires_and_queues_material_usage(monkeypatch):
     assert observed["payload"]["request_payload"]["material_usage"] == "上海展会"
 
 
-def test_corporate_apparel_submit_requires_reason_and_exhibition_name(monkeypatch):
+def test_corporate_apparel_submit_accepts_only_current_reasons(monkeypatch):
     observed = {}
     monkeypatch.setattr(
         web_api,
@@ -442,18 +442,18 @@ def test_corporate_apparel_submit_requires_reason_and_exhibition_name(monkeypatc
     }
 
     missing = TestClient(api).post("/api/corporate-apparel-submit", json=payload)
-    no_event = TestClient(api).post(
-        "/api/corporate-apparel-submit", json={**payload, "material_usage": "参展："}
-    )
-    accepted = TestClient(api).post(
-        "/api/corporate-apparel-submit",
-        json={**payload, "material_usage": "参展：广交会"},
-    )
-
     assert missing.status_code == 422
-    assert no_event.status_code == 422
-    assert accepted.status_code == 200
-    assert observed["payload"]["request_payload"]["material_usage"] == "参展：广交会"
+    for old_reason in ("出差", "参展：广交会", "特殊情况按需申请，需补OA"):
+        rejected = TestClient(api).post(
+            "/api/corporate-apparel-submit", json={**payload, "material_usage": old_reason}
+        )
+        assert rejected.status_code == 422
+    for current_reason in ("入职", "销售标配", "OA流程申请"):
+        accepted = TestClient(api).post(
+            "/api/corporate-apparel-submit", json={**payload, "material_usage": current_reason}
+        )
+        assert accepted.status_code == 200
+        assert observed["payload"]["request_payload"]["material_usage"] == current_reason
 
 
 def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
