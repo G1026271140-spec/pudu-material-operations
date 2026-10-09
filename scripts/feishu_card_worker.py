@@ -329,6 +329,16 @@ def process_card_action_async(
                 idempotency_key=f"cultural-request-reject:{request_no}",
             )
             return
+        if action_key == "reject_corporate_apparel_request":
+            request_no = str(value.get("request_no") or "").strip()
+            if not request_no:
+                raise RuntimeError("企业文化衫领取申请单号不能为空。")
+            inventory_app.enqueue_feishu_background_write(
+                inventory_app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
+                {"draft": {"request_no": request_no, "operator_open_id": operator_open_id}},
+                idempotency_key=f"corporate-apparel-reject:{request_no}",
+            )
+            return
         raise RuntimeError("暂不支持该卡片操作。")
     except Exception as exc:
         logging.exception(
@@ -377,6 +387,7 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
         "confirm_request_inventory",
         "reject_request_inventory",
         "reject_cultural_request",
+        "reject_corporate_apparel_request",
     } and not action_name.startswith(
         ("save_inventory_edit__", "save_inventory_reminder__", "confirm_request_inventory__")
     ):

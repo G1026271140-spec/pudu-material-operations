@@ -31,6 +31,8 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_GIFT_PROJECT,
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
@@ -83,6 +85,8 @@ SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
     QUEUE_TASK_TYPE_RESTOCK,
     QUEUE_TASK_TYPE_STOCK_REDUCTION,
@@ -479,6 +483,116 @@ def process_cultural_request_reject(
     return progress
 
 
+def process_corporate_apparel_request(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    request_payload = dict(task.payload.get("request_payload") or {})
+    lines = [dict(item) for item in list(task.payload.get("lines") or []) if isinstance(item, dict)]
+    token = str(request_payload.get("submission_token") or "").strip()
+    if not token or token != task.idempotency_key:
+        raise RuntimeError("后台任务的企业文化衫领取幂等键不一致。")
+    progress = dict(task.result)
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("write_plan"):
+        progress["write_plan"] = inventory_app.corporate_apparel_request_plan(request_payload, lines)
+        progress["plan_done"] = True
+        save_progress()
+    if not progress.get("write_done"):
+        request_no, line_count, created_new = inventory_app.submit_feishu_corporate_apparel_request(
+            request_payload, dict(progress["write_plan"])
+        )
+        progress.update({"write_done": True, "request_no": request_no, "line_count": line_count, "created_new_request": created_new})
+        save_progress()
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送企业文化衫领取通知。")
+        targets = inventory_app.corporate_apparel_notification_targets(
+            str(progress.get("request_no") or ""), request_payload, lines
+        )
+        sent_keys = {str(value) for value in list(progress.get("notification_sent_keys") or [])}
+        message_ids = {str(key): str(value) for key, value in dict(progress.get("notification_message_ids") or {}).items()}
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys:
+                continue
+            message_id = inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            if str(message_id or "").strip():
+                message_ids[target_key] = str(message_id)
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            progress["notification_message_ids"] = dict(message_ids)
+            save_progress()
+        request_context = inventory_app.corporate_apparel_request_context(str(progress.get("request_no") or ""))
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            str(dict(request_context["request"]).get("record_id") or ""),
+            {
+                "文化周边通知状态": "已发送",
+                inventory_app.CULTURAL_REQUEST_MESSAGE_IDS_FIELD: json.dumps(message_ids, ensure_ascii=False, separators=(",", ":")),
+            },
+        )
+        progress["notification_done"] = True
+        progress["notification_count"] = len(targets)
+        save_progress()
+    return progress
+
+
+def process_corporate_apparel_request_reject(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    draft = dict(task.payload.get("draft") or {})
+    progress = dict(task.result)
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("rejection_plan"):
+        progress["rejection_plan"] = inventory_app.corporate_apparel_rejection_plan(
+            str(draft.get("request_no") or ""), str(draft.get("operator_open_id") or "")
+        )
+        save_progress()
+    if not progress.get("write_done"):
+        result = inventory_app.execute_corporate_apparel_rejection(dict(progress["rejection_plan"]))
+        progress.update({"write_done": True, **dict(result)})
+        save_progress()
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送企业文化衫驳回通知。")
+        request_no = str(progress.get("request_no") or draft.get("request_no") or "")
+        targets = inventory_app.corporate_apparel_rejection_targets(request_no)
+        sent_keys = {str(value) for value in list(progress.get("notification_sent_keys") or [])}
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys:
+                continue
+            message_id = str(target.get("message_id") or "")
+            if message_id:
+                try:
+                    client.update_interactive_message(message_id, dict(target["card"]))
+                except Exception as exc:
+                    if "230031" not in str(exc):
+                        raise
+                    inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            else:
+                inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            save_progress()
+        progress["notification_done"] = True
+        progress["notification_count"] = len(targets)
+        save_progress()
+    return progress
+
+
 def process_task(
     task: SubmissionTask,
     checkpoint: Callable[[dict[str, object]], None] | None = None,
@@ -502,6 +616,10 @@ def process_task(
         return process_cultural_request(task, checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT:
         return process_cultural_request_reject(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST:
+        return process_corporate_apparel_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT:
+        return process_corporate_apparel_request_reject(task, checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT:
         result = inventory_app.execute_cultural_material_management(dict(task.payload.get("draft") or {}))
         return dict(result)

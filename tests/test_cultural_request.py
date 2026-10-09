@@ -31,7 +31,7 @@ class CulturalRequestTests(unittest.TestCase):
                 "record_id": "rec-permission",
                 "fields": {
                     "用户账号": [{"id": "ou_requester"}],
-                    "文化衫申领数量累计": 1,
+                    "POLO申领数量累计": 1,
                     "文化夹克申领数量累计": 0,
                 },
             }
@@ -55,7 +55,7 @@ class CulturalRequestTests(unittest.TestCase):
             "record_id": "rec-permission",
             "fields": {
                 "用户账号": [{"id": "ou_requester"}],
-                "文化衫申领数量累计": 0,
+                "POLO申领数量累计": 0,
                 "文化夹克申领数量累计": 1,
             },
         }]

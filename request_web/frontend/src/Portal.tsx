@@ -4,6 +4,7 @@ import CulturalPage from "./CulturalPage";
 import ManagementPage from "./ManagementPage";
 import type { ManagementTab } from "./ManagementPage";
 import AllocationWorkbench from "./AllocationWorkbench";
+import CorporateApparelPage from "./CorporateApparelPage";
 import "./portal.css";
 
 type Lang = "zh" | "en";
@@ -58,7 +59,7 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     tools: "数据与系统工具",
-    version: "当前应用版本 V3.0.2",
+    version: "当前应用版本 V3.0.3",
     locked: "此功能暂未对外开放",
     password: "请输入管理员密码",
     unlock: "解锁",
@@ -74,7 +75,7 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     tools: "Data & System Tools",
-    version: "Current Version V3.0.2",
+    version: "Current Version V3.0.3",
     locked: "This feature is not publicly available",
     password: "Enter administrator password",
     unlock: "Unlock",
@@ -87,6 +88,7 @@ const text = {
 export default function Portal() {
   const params = new URLSearchParams(window.location.search);
   const directAllocation = params.get("allocation") === "request" && Boolean(params.get("request_id"));
+  const directCorporateApparel = normalizedPath() === "/corporate-apparel";
   const [lang, setLang] = useState<Lang>(() =>
     localStorage.getItem("pudu-lang") === "en" ? "en" : "zh",
   );
@@ -115,6 +117,9 @@ export default function Portal() {
   }, []);
   if (directAllocation) {
     return <AllocationWorkbench lang={lang} directRequestId={params.get("request_id") || ""} operator={params.get("operator") || ""} reviewToken={params.get("review_token") || ""} />;
+  }
+  if (directCorporateApparel) {
+    return <CorporateApparelPage />;
   }
   function changeLang(next: Lang) {
     localStorage.setItem("pudu-lang", next);

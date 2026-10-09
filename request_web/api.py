@@ -324,6 +324,21 @@ class CulturalDraft(BaseModel):
     lines: list[CulturalLine]
 
 
+class CorporateApparelLine(BaseModel):
+    product: str
+    size: str
+    quantity: int = Field(gt=0, le=10)
+
+
+class CorporateApparelDraft(BaseModel):
+    requester: str
+    requester_open_id: str
+    department: str = ""
+    department_id: str = ""
+    submission_token: str = Field(default_factory=lambda: uuid4().hex)
+    lines: list[CorporateApparelLine]
+
+
 api = FastAPI(title="PUDU Material Operations - Request API")
 api.add_middleware(
     CORSMiddleware,
@@ -405,6 +420,31 @@ def cultural_catalog() -> dict[str, Any]:
         "departments": contacts.get("departments", []),
         "maxCulturalShirtQuantity": legacy.CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
         "maxJacketQuantity": legacy.CULTURAL_JACKET_MAX_TOTAL_QUANTITY,
+    }
+
+
+@api.get("/api/corporate-apparel-catalog")
+def corporate_apparel_catalog() -> dict[str, Any]:
+    import app as legacy
+
+    page = _json("page_data_cache.json")
+    contacts = _json("contact_departments_cache.json")
+    rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
+    catalog = legacy.corporate_apparel_catalog(rows)
+    items: list[dict[str, Any]] = []
+    for raw in list(catalog.get("items") or []):
+        item = dict(raw)
+        item["images"] = [
+            f"/category-assets/{Path(str(path)).name}"
+            for path in list(item.get("images") or [])
+        ]
+        items.append(item)
+    return {
+        "generatedAt": page.get("generated_at"),
+        "products": catalog.get("products", []),
+        "items": items,
+        "users": contacts.get("users", []),
+        "departments": contacts.get("departments", []),
     }
 
 
@@ -1338,6 +1378,28 @@ def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
         request_payload = {key: value for key, value in draft.model_dump().items() if key != "lines"}
         request_payload["material_usage"] = draft.material_usage.strip()
         task_id = _enqueue_fast(QUEUE_TASK_TYPE_CULTURAL_REQUEST, draft.submission_token, legacy.queued_cultural_request_payload(request_payload, lines))
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
+
+
+@api.post("/api/corporate-apparel-submit")
+def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
+    if not draft.requester_open_id or not draft.requester:
+        raise HTTPException(status_code=422, detail="请选择申请人。")
+    if not draft.lines:
+        raise HTTPException(status_code=422, detail="请至少选择一件企业文化衫。")
+    try:
+        import app as legacy
+        from submission_queue import QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
+
+        payload = draft.model_dump()
+        lines = list(payload.pop("lines"))
+        task_id = _enqueue_fast(
+            QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            draft.submission_token,
+            legacy.queued_corporate_apparel_request_payload(payload, lines),
+        )
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}

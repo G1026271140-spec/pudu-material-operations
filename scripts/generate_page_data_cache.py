@@ -68,6 +68,18 @@ def request_category_image_attachments(cache: dict) -> list[dict]:
             and str(attachment.get("file_token") or "").strip()
             and is_image_attachment(attachment)
         )
+    for row in list(tables.get(app.CORPORATE_APPAREL_TABLE_NAME) or []):
+        fields = app.feishu_fields(row)
+        values = fields.get("图片")
+        if not isinstance(values, list):
+            continue
+        attachments.extend(
+            attachment
+            for attachment in values
+            if isinstance(attachment, dict)
+            and str(attachment.get("file_token") or "").strip()
+            and is_image_attachment(attachment)
+        )
     return attachments
 
 
@@ -202,6 +214,7 @@ def main() -> int:
         app.CATEGORY_TABLE_NAME: int(counts.get(app.CATEGORY_TABLE_NAME) or 0),
         app.MATERIAL_TABLE_NAME: int(counts.get(app.MATERIAL_TABLE_NAME) or 0),
         app.CULTURAL_MATERIAL_TABLE_NAME: int(counts.get(app.CULTURAL_MATERIAL_TABLE_NAME) or 0),
+        app.CORPORATE_APPAREL_TABLE_NAME: int(counts.get(app.CORPORATE_APPAREL_TABLE_NAME) or 0),
     }
     if any(row_count <= 0 for row_count in required_counts.values()):
         print(
