@@ -43,6 +43,8 @@ const c = {
     applicant: "申请人",
     input: "填写中文名称",
     department: "申请部门",
+    usage: "文化衫用途（请填写展会名称）",
+    usagePlaceholder: "请填写展会名称",
     choose: "选择文化周边",
     chooseHint:
       "选择品类、尺码和战区并加入申领车；文化衫每人累计最多 2 件，文化夹克每人累计最多 1 件。",
@@ -82,6 +84,8 @@ const c = {
     applicant: "Applicant",
     input: "Type a name",
     department: "Department",
+    usage: "Cultural Apparel Usage (Exhibition Name)",
+    usagePlaceholder: "Enter the exhibition name",
     choose: "Select Merchandise",
     chooseHint:
       "Choose a product, size and region. Each applicant may claim up to 2 shirts and 1 jacket cumulatively.",
@@ -130,7 +134,8 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     [error, setError] = useState("");
   const [requesterId, setRequesterId] = useState(""),
     [query, setQuery] = useState(""),
-    [menu, setMenu] = useState(false);
+    [menu, setMenu] = useState(false),
+    [materialUsage, setMaterialUsage] = useState("");
   const [active, setActive] = useState<string | null>(null),
     [model, setModel] = useState(""),
     [region, setRegion] = useState(""),
@@ -260,6 +265,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
           requester_open_id: user.open_id,
           department,
           department_id: departmentId,
+          material_usage: materialUsage.trim(),
           submission_token: submissionToken,
           lines,
         }),
@@ -339,6 +345,15 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
           <label>
             {t.department}
             <input value={department} readOnly />
+          </label>
+          <label className="culture-usage">
+            {t.usage} *
+            <input
+              value={materialUsage}
+              maxLength={500}
+              placeholder={t.usagePlaceholder}
+              onChange={(e) => setMaterialUsage(e.target.value)}
+            />
           </label>
         </div>
       </section>
@@ -433,6 +448,12 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
             if (!user)
               setError(
                 lang === "zh" ? "请选择申请人。" : "Select an applicant.",
+              );
+            else if (!materialUsage.trim())
+              setError(
+                lang === "zh"
+                  ? "请填写文化衫用途（展会名称）。"
+                  : "Enter the cultural apparel usage (exhibition name).",
               );
             else setReview(true);
           }}
@@ -639,6 +660,10 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
               <p>
                 {t.department}
                 <b>{department}</b>
+              </p>
+              <p className="review-usage">
+                {t.usage}
+                <b>{materialUsage.trim()}</b>
               </p>
             </div>
             <table>

@@ -373,6 +373,49 @@ def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypa
     assert observed["payload"]["request_payload"]["accepted_date"] == "2026-09-08"
 
 
+def test_cultural_submit_requires_and_queues_material_usage(monkeypatch):
+    observed = {}
+    monkeypatch.setattr(
+        web_api,
+        "_enqueue_fast",
+        lambda task_type, key, payload: observed.update(
+            task_type=task_type, key=key, payload=payload
+        )
+        or "task-cultural",
+    )
+    payload = {
+        "requester": "测试用户",
+        "requester_open_id": "ou-test",
+        "department": "市场部",
+        "department_id": "od-test",
+        "submission_token": "cultural-token",
+        "lines": [
+            {
+                "product": "文化POLO衫",
+                "model": "M",
+                "region": "品牌&市场营销内部",
+                "quantity": 1,
+                "remark": "",
+            }
+        ],
+    }
+
+    missing = TestClient(api).post("/api/cultural-submit", json=payload)
+    blank = TestClient(api).post(
+        "/api/cultural-submit", json={**payload, "material_usage": "   "}
+    )
+    accepted = TestClient(api).post(
+        "/api/cultural-submit", json={**payload, "material_usage": "  上海展会  "}
+    )
+
+    assert missing.status_code == 422
+    assert blank.status_code == 422
+    assert blank.json()["detail"] == "请填写文化衫用途（展会名称）。"
+    assert accepted.status_code == 200
+    assert accepted.json()["taskId"] == "task-cultural"
+    assert observed["payload"]["request_payload"]["material_usage"] == "上海展会"
+
+
 def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
     observed = []
     payload = {
@@ -413,6 +456,7 @@ def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
     assert observed[0][2]["lines"][0]["product"] == "产品单页"
     assert observed[1][2]["lines"][0]["region"] == "美洲战区"
     assert observed[1][2]["request_payload"]["administrator_override"] is True
+    assert observed[1][2]["request_payload"]["material_usage"] == "测试"
 
 
 def test_admin_only_category_is_rejected_for_non_admin(monkeypatch):

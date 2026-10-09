@@ -914,6 +914,8 @@ EN_DISPLAY_TEXT = {
     "如无法确定战区，请选择您所参加活动所在的地区即可。如美国的展会选择美洲战区。": "If you are unsure which region to choose, select the region where your event takes place. For example, choose the Americas Region for an event in the United States.",
     "加入申领车": "Add to Request Cart",
     "提交文化周边申请": "Submit Cultural Merchandise Request",
+    "文化衫用途（请填写展会名称） *": "Cultural Apparel Usage (Exhibition Name) *",
+    "请填写展会名称": "Enter the exhibition name",
     "请选择尺码和战区。": "Select a size and region.",
     "同一物料不能重复添加，请合并数量后再提交。": "The same item cannot be added twice. Combine the quantities before submission.",
     "当前没有文化周边库存数据，请先更新文化周边页面缓存。": "No cultural merchandise inventory is available. Refresh the cultural merchandise page cache first.",

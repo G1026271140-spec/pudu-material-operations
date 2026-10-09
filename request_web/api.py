@@ -319,6 +319,7 @@ class CulturalDraft(BaseModel):
     requester_open_id: str
     department: str
     department_id: str = ""
+    material_usage: str = Field(min_length=1, max_length=500)
     submission_token: str = Field(default_factory=lambda: uuid4().hex)
     lines: list[CulturalLine]
 
@@ -1297,6 +1298,7 @@ def submit(draft: RequestDraft) -> dict[str, Any]:
                 "requester_open_id": payload.get("requester_open_id"),
                 "department": payload.get("department"),
                 "department_id": payload.get("department_id"),
+                "material_usage": payload.get("material_usage"),
                 "submission_token": cultural_key,
                 "administrator_override": True,
             }
@@ -1324,6 +1326,8 @@ def submit(draft: RequestDraft) -> dict[str, Any]:
 def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
     if not draft.requester_open_id or not draft.requester:
         raise HTTPException(status_code=422, detail="请选择申请人。")
+    if not draft.material_usage.strip():
+        raise HTTPException(status_code=422, detail="请填写文化衫用途（展会名称）。")
     try:
         import app as legacy
 
@@ -1332,6 +1336,7 @@ def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
         from submission_queue import QUEUE_TASK_TYPE_CULTURAL_REQUEST
 
         request_payload = {key: value for key, value in draft.model_dump().items() if key != "lines"}
+        request_payload["material_usage"] = draft.material_usage.strip()
         task_id = _enqueue_fast(QUEUE_TASK_TYPE_CULTURAL_REQUEST, draft.submission_token, legacy.queued_cultural_request_payload(request_payload, lines))
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

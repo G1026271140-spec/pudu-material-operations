@@ -81,7 +81,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.0.1"
+APP_VERSION = "V3.0.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20818,6 +20818,7 @@ def update_cultural_request_cumulative_quantity(
 def initialize_cultural_request_state() -> None:
     defaults: dict[str, object] = {
         "cultural_request_lines": [],
+        "cultural_request_material_usage": "",
         "cultural_request_stage": "edit",
     }
     for key, value in defaults.items():
@@ -20842,7 +20843,7 @@ def queued_cultural_request_payload(
             key: request_payload.get(key)
             for key in (
                 "requester", "requester_open_id", "department", "department_id",
-                "submission_token", "administrator_override",
+                "material_usage", "submission_token", "administrator_override",
             )
         },
         "lines": [
@@ -20884,6 +20885,7 @@ def _cultural_request_card(
     *,
     applicant: bool,
     admin_open_ids: list[str] | None = None,
+    material_usage: str = "",
 ) -> dict[str, object]:
     title = "文化周边需求已提交" if applicant else "文化周边申领通知"
     admin_mentions = " ".join(
@@ -20896,7 +20898,14 @@ def _cultural_request_card(
     elements: list[dict[str, object]] = [
         {"tag": "markdown", "content": lead},
         {"tag": "hr"},
-        {"tag": "markdown", "content": f"**申请单号**：{request_no}\n\n**申请明细**"},
+        {
+            "tag": "markdown",
+            "content": (
+                f"**申请单号**：{request_no}\n\n"
+                f"**文化衫用途**：{material_usage or '-'}\n\n"
+                "**申请明细**"
+            ),
+        },
         _feishu_requester_material_table(lines),
     ]
     if not applicant:
@@ -20946,7 +20955,12 @@ def cultural_request_notification_targets(
             "audience": "applicant",
             "recipient_id": requester_open_id,
             "card": _cultural_request_card(
-                request_no, requester, lines, applicant=True, admin_open_ids=admins
+                request_no,
+                requester,
+                lines,
+                applicant=True,
+                admin_open_ids=admins,
+                material_usage=str(request_payload.get("material_usage") or "").strip(),
             ),
         })
     catalog = cultural_request_catalog(
@@ -20973,7 +20987,11 @@ def cultural_request_notification_targets(
             "audience": "admins",
             "recipient_id": open_id,
             "card": _cultural_request_card(
-                request_no, requester, admin_lines, applicant=False
+                request_no,
+                requester,
+                admin_lines,
+                applicant=False,
+                material_usage=str(request_payload.get("material_usage") or "").strip(),
             ),
         })
     return targets
@@ -21595,6 +21613,7 @@ def submit_feishu_cultural_request(
     refresh_feishu_schema_cache()
     ensure_cultural_request_workflow_fields()
     token = str(request_payload.get("submission_token") or "").strip()
+    material_usage = str(request_payload.get("material_usage") or "").strip()
     valid_lines = [dict(line) for line in lines if int(line.get("quantity") or 0) > 0]
     if not valid_lines:
         raise RuntimeError("请至少选择一条文化周边。")
@@ -21657,6 +21676,7 @@ def submit_feishu_cultural_request(
             "申请部门": request_payload.get("department"),
             "业务类型": "文化周边申领",
             "申请类型": "文化周边申请",
+            "物料用途": material_usage,
             "审批状态": "无需审批",
             "文化周边处理状态": CULTURAL_REQUEST_STATUS_ISSUED,
             "文化周边通知状态": "待发送",
@@ -21752,7 +21772,11 @@ def submit_feishu_cultural_request(
     feishu_update_record_fields(
         REQUEST_TABLE_NAME,
         request_record_id,
-        {"物料明细文字信息": detail_text, "所属战区": request_regions},
+        {
+            "物料明细文字信息": detail_text,
+            "所属战区": request_regions,
+            "物料用途": material_usage,
+        },
     )
     return request_no, len(prepared), created_new
 
@@ -21769,6 +21793,9 @@ def render_cultural_request_page() -> None:
             render_section_header("01", "文化周边申请确认", "提交后将直接登记发放并扣减库存")
             st.markdown(
                 f"**{escape(ui_text('申请人'))}：** {escape(str(draft.get('requester') or '-'))}"
+            )
+            st.markdown(
+                f"**文化衫用途（请填写展会名称）：** {escape(str(draft.get('material_usage') or '-'))}"
             )
         with st.container(border=True):
             render_section_header("02", "文化周边清单", f"共 {len(review_lines)} 种")
@@ -21807,6 +21834,11 @@ def render_cultural_request_page() -> None:
         render_section_header("01", "申请人信息", "选择本次文化周边的申请人")
         requester_col, _ = st.columns([1.35, 1])
         department, department_id, requester, requester_open_id = render_request_contact_fields(requester_col)
+        material_usage = st.text_input(
+            "文化衫用途（请填写展会名称） *",
+            key="cultural_request_material_usage",
+            placeholder="请填写展会名称",
+        )
     with st.container(border=True):
         render_section_header(
             "02",
@@ -21891,8 +21923,13 @@ def render_cultural_request_page() -> None:
             ]
             st.session_state["cultural_request_lines"] = lines
         if st.button("提交文化周边申请", key="cultural_request_preview", type="primary", width="stretch", disabled=not lines):
+            validation_errors: list[str] = []
             if not requester or not requester_open_id:
-                show_request_validation_toast(["请选择申请人。"])
+                validation_errors.append("请选择申请人。")
+            if not str(material_usage or "").strip():
+                validation_errors.append("请填写文化衫用途（展会名称）。")
+            if validation_errors:
+                show_request_validation_toast(validation_errors)
                 return
             try:
                 validate_cultural_request_quantity(lines)
@@ -21904,6 +21941,7 @@ def render_cultural_request_page() -> None:
                 "requester_open_id": requester_open_id,
                 "department": department,
                 "department_id": department_id,
+                "material_usage": str(material_usage).strip(),
                 "submission_token": st.session_state["cultural_request_submission_token"],
                 "lines": lines,
             }

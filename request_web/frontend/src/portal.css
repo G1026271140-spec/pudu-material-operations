@@ -245,6 +245,12 @@
   grid-template-columns: 1.4fr 1fr;
   gap: 12px;
 }
+.culture-contact .culture-usage {
+  grid-column: 1 / -1;
+}
+.reviewgrid .review-usage {
+  grid-column: 1 / -1;
+}
 .culture-cards {
   display: grid;
   grid-template-columns: repeat(6, minmax(130px, 1fr));

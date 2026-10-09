@@ -170,12 +170,18 @@ class CulturalRequestTests(unittest.TestCase):
 
     def test_queue_payload_keeps_cultural_dimensions(self) -> None:
         payload = app.queued_cultural_request_payload(
-            {"requester": "申请人", "requester_open_id": "ou_test", "submission_token": "token"},
+            {
+                "requester": "申请人",
+                "requester_open_id": "ou_test",
+                "material_usage": "深圳展会",
+                "submission_token": "token",
+            },
             [{"product": "文化夹克", "model": "L", "region": "欧洲战区", "quantity": 1, "remark": "test"}],
         )
         self.assertEqual(queue.QUEUE_TASK_TYPE_CULTURAL_REQUEST, "文化周边申领")
         self.assertEqual(payload["lines"][0]["region"], "欧洲战区")
         self.assertEqual(payload["lines"][0]["quantity"], 1)
+        self.assertEqual(payload["request_payload"]["material_usage"], "深圳展会")
 
         override_payload = app.queued_cultural_request_payload(
             {"requester": "管理员", "requester_open_id": "ou_admin", "submission_token": "token", "administrator_override": True},
@@ -200,6 +206,17 @@ class CulturalRequestTests(unittest.TestCase):
         self.assertNotIn(
             "remaining_stock", [column["name"] for column in details["columns"]]
         )
+
+    def test_cultural_request_card_shows_material_usage(self) -> None:
+        card = app._cultural_request_card(
+            "REQ-1",
+            "申请人",
+            [{"product": "文化POLO衫", "model": "M", "region": "中国", "quantity": 1}],
+            applicant=True,
+            material_usage="上海国际展会",
+        )
+
+        self.assertIn("**文化衫用途**：上海国际展会", card["body"]["elements"][2]["content"])
 
     def test_admin_card_shows_stock_after_claim(self) -> None:
         card = app._cultural_request_card(
