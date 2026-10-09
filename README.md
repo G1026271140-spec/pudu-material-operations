@@ -76,7 +76,7 @@ GITHUB_CACHE_REFRESH_TOKEN = "GitHub repository_dispatch token"
 CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
 ```
 
-企业文化衫页面从主 Base 中的“文化周边编码及库存数量”同步表读取目录和库存，提交及驳回时通过上述独立源表 token 写入行政源表的“系统兑换数量”。“营销物料管理”应用必须对行政源表有编辑权限；源表的表 ID 配置在 `config/project_config.json` 的 `feishu.tables.corporate_apparel_source_table_id`。
+企业文化衫页面从主 Base 中的“文化周边编码及库存数量”同步表读取图片和目录标识，并从行政源表实时读取库存、尺码及已兑换数量；提交和驳回也通过上述独立源表 token 写入行政源表的“系统兑换数量”。“营销物料管理系统”应用必须对行政源表有编辑权限；源表的表 ID 配置在 `config/project_config.json` 的 `feishu.tables.corporate_apparel_source_table_id`。
 
 应用会按表名自动发现以下飞书多维表格：
 

@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.0.7"
+APP_VERSION = "V3.0.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20746,15 +20746,31 @@ def update_corporate_apparel_source_redeemed(item: dict[str, object], target: in
     )
 
 
-def corporate_apparel_catalog(rows: list[dict] | None = None) -> dict[str, object]:
+def corporate_apparel_catalog(
+    rows: list[dict] | None = None,
+    *,
+    source_rows: list[dict] | None = None,
+) -> dict[str, object]:
     """Return the five claimable corporate-apparel styles from the shared source."""
-    source_rows = list(
+    synced_rows = list(
         rows if rows is not None else safe_feishu_rows(CORPORATE_APPAREL_TABLE_NAME)
     )
     display_by_source = {value: key for key, value in CORPORATE_APPAREL_STYLE_MAP.items()}
+    source_by_id = (
+        {feishu_record_id(row): row for row in source_rows}
+        if source_rows is not None else None
+    )
     items: list[dict[str, object]] = []
-    for row in source_rows:
-        fields = feishu_fields(row)
+    for row in synced_rows:
+        synced_fields = feishu_fields(row)
+        source_record_id = corporate_apparel_source_record_id(synced_fields.get("SourceID"))
+        if source_by_id is not None:
+            source_row = source_by_id.get(source_record_id)
+            if source_row is None:
+                raise RuntimeError("企业文化衫同步记录未匹配到行政源表，库存数据无法核实。")
+            fields = feishu_fields(source_row)
+        else:
+            fields = synced_fields
         source_style = feishu_text(fields, "款式").strip()
         product = display_by_source.get(source_style)
         record_id = feishu_record_id(row)
@@ -20763,7 +20779,7 @@ def corporate_apparel_catalog(rows: list[dict] | None = None) -> dict[str, objec
         latest_inventory = feishu_int(fields, "最新库存")
         redeemed = feishu_int(fields, "系统兑换数量")
         size = feishu_text(fields, "码数").strip() or "均码"
-        attachments = fields.get("图片") if isinstance(fields.get("图片"), list) else []
+        attachments = synced_fields.get("图片") if isinstance(synced_fields.get("图片"), list) else []
         images = [
             str(item.get("cached_path") or "").strip()
             for item in attachments
@@ -20772,7 +20788,7 @@ def corporate_apparel_catalog(rows: list[dict] | None = None) -> dict[str, objec
         items.append(
             {
                 "record_id": record_id,
-                "source_record_id": corporate_apparel_source_record_id(fields.get("SourceID")),
+                "source_record_id": source_record_id,
                 "product": product,
                 "source_style": source_style,
                 "size": size,
@@ -20889,9 +20905,15 @@ def corporate_apparel_request_plan(
     permission_record_id = feishu_record_id(permission_row or {})
     if not permission_record_id:
         raise RuntimeError("申请人权限记录创建失败，请稍后重试。")
+    authoritative_source_rows = corporate_apparel_source_client().list_records(
+        CORPORATE_APPAREL_SOURCE_TABLE_ID
+    )
     catalog_items = {
         (str(item["product"]), str(item["size"])): item
-        for item in corporate_apparel_catalog(fresh_feishu_rows(CORPORATE_APPAREL_TABLE_NAME))["items"]
+        for item in corporate_apparel_catalog(
+            fresh_feishu_rows(CORPORATE_APPAREL_TABLE_NAME),
+            source_rows=authoritative_source_rows,
+        )["items"]
     }
     prepared: list[dict[str, object]] = []
     requested_by_product: dict[str, int] = {}
@@ -21173,6 +21195,12 @@ def corporate_apparel_rejection_plan(request_no: str, operator_open_id: str) -> 
     source_by_id = {
         feishu_record_id(row): row for row in fresh_feishu_rows(CORPORATE_APPAREL_TABLE_NAME)
     }
+    authoritative_source_by_id = {
+        feishu_record_id(row): row
+        for row in corporate_apparel_source_client().list_records(
+            CORPORATE_APPAREL_SOURCE_TABLE_ID
+        )
+    }
     requested_by_product: dict[str, int] = {}
     stock_targets: list[dict[str, object]] = []
     for line in list(context["lines"]):
@@ -21180,11 +21208,21 @@ def corporate_apparel_rejection_plan(request_no: str, operator_open_id: str) -> 
         source = source_by_id.get(str(item.get("record_id") or ""))
         if source is None:
             raise RuntimeError("企业文化衫领取明细缺少有效的源库存记录。")
+        source_record_id = corporate_apparel_source_record_id(
+            feishu_fields(source).get("SourceID")
+        )
+        authoritative_source = authoritative_source_by_id.get(source_record_id)
+        if authoritative_source is None:
+            raise RuntimeError("企业文化衫领取明细未匹配到行政源库存记录。")
         quantity = max(0, int(item.get("quantity") or 0))
         product = str(item.get("product") or "")
         requested_by_product[product] = requested_by_product.get(product, 0) + quantity
-        current = feishu_int(feishu_fields(source), "系统兑换数量")
-        stock_targets.append({**item, "target_system_redeemed": max(0, current - quantity)})
+        current = feishu_int(feishu_fields(authoritative_source), "系统兑换数量")
+        stock_targets.append({
+            **item,
+            "source_record_id": source_record_id,
+            "target_system_redeemed": max(0, current - quantity),
+        })
     requester_open_id = str(request.get("requester_open_id") or "")
     permission_row = next(
         (

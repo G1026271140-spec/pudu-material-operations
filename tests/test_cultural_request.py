@@ -18,6 +18,33 @@ class CulturalRequestTests(unittest.TestCase):
         )
         self.assertEqual(app.corporate_apparel_source_record_id("invalid"), "")
 
+    def test_corporate_catalog_uses_fresh_source_stock_over_sync_snapshot(self) -> None:
+        encoded = base64.b64encode(b"1:recsource:checksum:1").decode("ascii")
+        synced = [{
+            "record_id": "recsync",
+            "fields": {
+                "SourceID": encoded,
+                "款式": "文化衫-休闲商务POLO-黑色（短袖）",
+                "码数": "XL",
+                "最新库存": 3,
+                "系统兑换数量": 0,
+            },
+        }]
+        source = [{
+            "record_id": "recsource",
+            "fields": {
+                "款式": "文化衫-休闲商务POLO-黑色（短袖）",
+                "码数": "XL",
+                "最新库存": 3,
+                "系统兑换数量": 1,
+            },
+        }]
+
+        item = app.corporate_apparel_catalog(synced, source_rows=source)["items"][0]
+
+        self.assertEqual(item["system_redeemed"], 1)
+        self.assertEqual(item["available"], 2)
+
     def test_corporate_apparel_redeemed_updates_writable_source_table(self) -> None:
         source_client = MagicMock()
         with patch.object(app, "corporate_apparel_source_client", return_value=source_client):

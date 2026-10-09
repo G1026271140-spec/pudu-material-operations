@@ -431,7 +431,10 @@ def corporate_apparel_catalog() -> dict[str, Any]:
     page = _json("page_data_cache.json")
     contacts = _json("contact_departments_cache.json")
     rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
-    catalog = legacy.corporate_apparel_catalog(rows)
+    source_rows = legacy.corporate_apparel_source_client().list_records(
+        legacy.CORPORATE_APPAREL_SOURCE_TABLE_ID
+    )
+    catalog = legacy.corporate_apparel_catalog(rows, source_rows=source_rows)
     items: list[dict[str, Any]] = []
     for raw in list(catalog.get("items") or []):
         item = dict(raw)
