@@ -223,7 +223,10 @@ def process_card_action_async(
                 "version": parts[2],
             }
     try:
-        if operator_open_id not in inventory_app.enabled_admin_open_ids():
+        if action_key == "reject_corporate_apparel_request":
+            if operator_open_id not in inventory_app.enabled_role_open_ids("HR"):
+                raise PermissionError("只有已启用的 HR 可以驳回企业文化衫领取申请。")
+        elif operator_open_id not in inventory_app.enabled_admin_open_ids():
             raise PermissionError("只有已启用管理员可以处理库存确认。")
         if action_key == "edit_request_inventory":
             if not message_id:

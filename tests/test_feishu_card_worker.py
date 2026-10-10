@@ -233,6 +233,29 @@ class FeishuCardWorkerTests(unittest.TestCase):
         )
         thread.start.assert_called_once_with()
 
+    def test_corporate_apparel_reject_accepts_enabled_hr_without_admin_role(self) -> None:
+        with (
+            patch.object(worker.inventory_app, "enabled_role_open_ids", return_value=["ou-hr"]) as roles,
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=[]) as admins,
+            patch.object(worker.inventory_app, "enqueue_feishu_background_write") as enqueue,
+        ):
+            worker.process_card_action_async(
+                action_key="reject_corporate_apparel_request",
+                action_name="",
+                value={"request_no": "REQ-1"},
+                form_value={},
+                operator_open_id="ou-hr",
+                message_id="om-card-1",
+            )
+
+        roles.assert_called_once_with("HR")
+        admins.assert_not_called()
+        enqueue.assert_called_once_with(
+            worker.inventory_app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
+            {"draft": {"request_no": "REQ-1", "operator_open_id": "ou-hr"}},
+            idempotency_key="corporate-apparel-reject:REQ-1",
+        )
+
     def test_reminder_schedule_form_submission_is_accepted(self) -> None:
         thread = Mock()
         event = SimpleNamespace(
