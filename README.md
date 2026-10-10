@@ -80,6 +80,8 @@ CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
 
 每天 10:30 和 16:30 的物料缓存任务会先运行 `scripts/reconcile_corporate_apparel_quotas.py --apply`：全量读取“文化周边兑换”和已完成的相关申请明细，把新增兑换计入“用户权限表”对应品类的累计领取数量；未登记人员会创建启用的销售权限记录。按来源累计与现有累计取较大值写入，重复刷新不会重复加数。手动刷新物料缓存和正式发布时也执行同一核对，然后再生成并发布页面缓存。
 
+“文化周边兑换份额即时同步”飞书 Base 自动化监听该表新增或修改记录，以独立密钥调用 `/api/corporate-exchange-sync`。Web 后台合并并发通知、重新读取权威源表、幂等核对权限份额，再发布本机权限快照供企业文化衫申领接口使用；自动化丢失或执行失败时仍由上述定时全量核对补偿。密钥只保存在部署机器的 `.streamlit/secrets.toml` 中，键名为 `CORPORATE_EXCHANGE_WEBHOOK_TOKEN`，不提交到 Git。可用 `scripts/configure_corporate_exchange_workflow.py` 只读预览，确认后传 `--apply` 创建并启用流程。
+
 应用会按表名自动发现以下飞书多维表格：
 
 - 物料主数据

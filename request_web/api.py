@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import io
 import json
 import secrets
 import time
+import tomllib
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -12,7 +14,7 @@ from typing import Any
 from urllib.parse import quote
 from uuid import uuid4
 
-from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Response
+from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -1387,6 +1389,43 @@ def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
     return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
 
 
+class CorporateExchangeWebhook(BaseModel):
+    record_id: str
+
+
+def _check_corporate_exchange_webhook_token(provided: str) -> None:
+    secrets_path = ROOT / ".streamlit" / "secrets.toml"
+    try:
+        configured = str(tomllib.loads(secrets_path.read_text(encoding="utf-8"))["CORPORATE_EXCHANGE_WEBHOOK_TOKEN"])
+    except (FileNotFoundError, KeyError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail="兑换同步回调尚未配置。") from exc
+    if not configured or not hmac.compare_digest(configured, provided):
+        raise HTTPException(status_code=401, detail="未授权的兑换同步回调。")
+
+
+@api.post("/api/corporate-exchange-sync", status_code=202)
+def corporate_exchange_sync_webhook(
+    payload: CorporateExchangeWebhook,
+    x_pudu_exchange_token: str = Header(default=""),
+) -> dict[str, Any]:
+    _check_corporate_exchange_webhook_token(x_pudu_exchange_token)
+    record_id = payload.record_id.strip()
+    if not record_id.startswith("rec") or len(record_id) > 100:
+        raise HTTPException(status_code=422, detail="无效的兑换记录 ID。")
+    from corporate_exchange_sync import runner
+
+    runner.trigger(record_id)
+    return {"accepted": True}
+
+
+@api.get("/api/corporate-exchange-sync/status")
+def corporate_exchange_sync_status(x_pudu_exchange_token: str = Header(default="")) -> dict[str, Any]:
+    _check_corporate_exchange_webhook_token(x_pudu_exchange_token)
+    from corporate_exchange_sync import runner
+
+    return runner.status()
+
+
 @api.post("/api/corporate-apparel-submit")
 def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
     if not draft.requester_open_id or not draft.requester:
@@ -1405,8 +1444,13 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
         payload["material_usage"] = usage
         lines = list(payload.pop("lines"))
         page = _json("page_data_cache.json")
-        permission_rows = list(
+        cached_permission_rows = list(
             page.get("tables", {}).get(legacy.USER_PERMISSION_TABLE_NAME, [])
+        )
+        from corporate_exchange_sync import current_permission_rows
+
+        permission_rows = current_permission_rows(
+            resolve_cache_path(ROOT, "data/page_data_cache.json"), cached_permission_rows
         )
         legacy.validate_corporate_apparel_cached_quota(
             draft.requester_open_id,
