@@ -448,12 +448,17 @@ def test_corporate_apparel_submit_accepts_only_current_reasons(monkeypatch):
             "/api/corporate-apparel-submit", json={**payload, "material_usage": old_reason}
         )
         assert rejected.status_code == 422
-    for current_reason in ("入职", "销售标配", "OA流程申请"):
+    for current_reason in ("入职", "销售标配", "OA流程申请（如未提报OA流程，一律驳回，请慎选）"):
         accepted = TestClient(api).post(
             "/api/corporate-apparel-submit", json={**payload, "material_usage": current_reason}
         )
         assert accepted.status_code == 200
         assert observed["payload"]["request_payload"]["material_usage"] == current_reason
+    legacy = TestClient(api).post(
+        "/api/corporate-apparel-submit", json={**payload, "material_usage": "OA流程申请"}
+    )
+    assert legacy.status_code == 200
+    assert observed["payload"]["request_payload"]["material_usage"] == "OA流程申请（如未提报OA流程，一律驳回，请慎选）"
 
 
 def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):

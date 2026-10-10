@@ -16,12 +16,12 @@ type Catalog = { products: string[]; items: Item[]; users: User[]; departments: 
 type Line = { product: string; size: string; quantity: number };
 type Lang = "zh" | "en";
 
-const reasonValues = ["入职", "销售标配", "OA流程申请"] as const;
+const reasonValues = ["入职", "销售标配", "OA流程申请（如未提报OA流程，一律驳回，请慎选）"] as const;
 type Reason = typeof reasonValues[number] | "";
 const reasonLabels: Record<Exclude<Reason, "">, string> = {
   "入职": "New Hire",
   "销售标配": "Standard Sales Kit",
-  "OA流程申请": "OA Process Request",
+  "OA流程申请（如未提报OA流程，一律驳回，请慎选）": "OA Process Request (Requests without an OA submission will be rejected. Please choose carefully.)",
 };
 
 const poloProduct = "休闲商务POLO-黑色（短袖）";

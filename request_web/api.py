@@ -1433,7 +1433,9 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
     if not draft.lines:
         raise HTTPException(status_code=422, detail="请至少选择一件企业文化衫。")
     usage = draft.material_usage.strip()
-    fixed_reasons = {"入职", "销售标配", "OA流程申请"}
+    if usage == "OA流程申请":
+        usage = "OA流程申请（如未提报OA流程，一律驳回，请慎选）"
+    fixed_reasons = {"入职", "销售标配", "OA流程申请（如未提报OA流程，一律驳回，请慎选）"}
     if usage not in fixed_reasons:
         raise HTTPException(status_code=422, detail="请选择有效的申请事由。")
     try:
