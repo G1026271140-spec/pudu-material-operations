@@ -587,6 +587,12 @@ def process_corporate_apparel_request_reject(
             sent_keys.add(target_key)
             progress["notification_sent_keys"] = sorted(sent_keys)
             save_progress()
+        context = inventory_app.corporate_apparel_request_context(request_no)
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            str(dict(context["request"]).get("record_id") or ""),
+            {"文化周边通知状态": "驳回已通知"},
+        )
         progress["notification_done"] = True
         progress["notification_count"] = len(targets)
         save_progress()

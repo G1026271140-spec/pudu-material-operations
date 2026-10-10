@@ -10,6 +10,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
@@ -104,6 +105,30 @@ def cultural_request_task(result: dict | None = None) -> SubmissionTask:
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_corporate_apparel_reject_marks_notification_complete_after_card_updates(self) -> None:
+        task = category_task(
+            QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
+            {"draft": {"request_no": "REQ-1", "operator_open_id": "ou-hr"}},
+        )
+        client = Mock()
+        with (
+            patch.object(worker.inventory_app, "corporate_apparel_rejection_plan", return_value={"context": {}}),
+            patch.object(worker.inventory_app, "execute_corporate_apparel_rejection", return_value={"request_no": "REQ-1", "rejected": True}),
+            patch.object(worker.inventory_app, "feishu_client", return_value=client),
+            patch.object(worker.inventory_app, "corporate_apparel_rejection_targets", return_value=[{
+                "key": "hr:ou-hr", "recipient_id": "ou-hr", "message_id": "om-card-1", "card": {"schema": "2.0"},
+            }]),
+            patch.object(worker.inventory_app, "corporate_apparel_request_context", return_value={"request": {"record_id": "request-1"}}),
+            patch.object(worker.inventory_app, "feishu_update_record_fields") as update,
+        ):
+            result = worker.process_corporate_apparel_request_reject(task)
+
+        self.assertTrue(result["notification_done"])
+        client.update_interactive_message.assert_called_once_with("om-card-1", {"schema": "2.0"})
+        update.assert_called_once_with(
+            worker.inventory_app.REQUEST_TABLE_NAME, "request-1", {"文化周边通知状态": "驳回已通知"}
+        )
+
     def test_cultural_reject_reverses_business_write_then_updates_cards(self) -> None:
         task = category_task(
             QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
