@@ -29,7 +29,14 @@ def workflow_body(url: str, secret: str) -> dict:
                 "type": "ChangeRecordTrigger",
                 "title": "文化周边兑换记录新增或修改",
                 "next": "wake_reconciler",
-                "data": {"table_name": EXCHANGE_TABLE, "condition_list": None},
+                "data": {
+                    "table_name": EXCHANGE_TABLE,
+                    "condition_list": [
+                        {"conjunction": "and", "conditions": [
+                            {"field_name": "数量", "operator": "isNotEmpty", "value": []}
+                        ]}
+                    ],
+                },
             },
             {
                 "id": "wake_reconciler",
@@ -41,6 +48,7 @@ def workflow_body(url: str, secret: str) -> dict:
                     "url": [{"value_type": "text", "value": url}],
                     "headers": [
                         {"key": "Content-Type", "value": [{"value_type": "text", "value": "application/json"}]},
+                        {"key": "User-Agent", "value": [{"value_type": "text", "value": "PuduMaterialExchangeSync/1.0"}]},
                         {"key": "X-Pudu-Exchange-Token", "value": [{"value_type": "text", "value": secret}]},
                     ],
                     "body_type": "raw",
@@ -86,6 +94,11 @@ def main() -> int:
     if matching:
         workflow_id = str(matching[0].get("workflow_id") or matching[0].get("id") or "")
         status = str(matching[0].get("status") or "")
+        current = dict((client._request("GET", endpoint + f"/{quote(workflow_id, safe='')}").get("data") or {}))
+        desired = workflow_body(url, secret)
+        if current.get("steps") != desired["steps"]:
+            client._request("PUT", endpoint + f"/{quote(workflow_id, safe='')}",
+                            payload={"title": TITLE, "steps": desired["steps"]})
     else:
         created = client._request("POST", endpoint, payload=workflow_body(url, secret))
         data = dict(created.get("data") or {})

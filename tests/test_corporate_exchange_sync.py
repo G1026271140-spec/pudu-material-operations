@@ -16,7 +16,9 @@ def test_workflow_watches_exchange_changes_and_sends_record_id():
     assert trigger["data"]["table_name"] == "文化周边兑换"
     assert action["type"] == "HTTPClientAction"
     assert action["data"]["raw_body"][1]["value"] == "$.exchange_change.recordId"
-    assert action["data"]["headers"][1]["value"][0]["value"] == "test-secret"
+    headers = {item["key"]: item["value"][0]["value"] for item in action["data"]["headers"]}
+    assert headers["X-Pudu-Exchange-Token"] == "test-secret"
+    assert headers["User-Agent"] == "PuduMaterialExchangeSync/1.0"
 
 
 def test_webhook_rejects_wrong_token_and_queues_valid_record(monkeypatch, tmp_path):
