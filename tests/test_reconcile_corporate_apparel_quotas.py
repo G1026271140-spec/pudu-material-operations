@@ -74,3 +74,19 @@ def test_new_exchange_person_creates_sales_permission():
             "文化夹克申领数量累计": 1,
         }
     ]
+
+
+def test_authoritative_source_rows_override_stale_mirror():
+    client = FakeClient([], [permission("permission-1", "ou-existing", 1)])
+
+    class SourceClient:
+        def list_tables(self):
+            return [{"name": quotas.EXCHANGE_SOURCE_TABLE, "table_id": quotas.EXCHANGE_SOURCE_TABLE_ID}]
+
+        def list_records(self, table_id):
+            assert table_id == quotas.EXCHANGE_SOURCE_TABLE_ID
+            return [exchange("source-1", "ou-existing", "文化衫-休闲商务POLO-黑色（短袖）", 2)]
+
+    assert quotas.build_plan(client, SourceClient())["updates"] == [
+        {"record_id": "permission-1", "fields": {"POLO申领数量累计": 2}}
+    ]

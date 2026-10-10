@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.reconcile_corporate_apparel_quotas import EXCHANGE_TABLE, _client
+from scripts.reconcile_corporate_apparel_quotas import (
+    EXCHANGE_SOURCE_TABLE, EXCHANGE_SOURCE_TABLE_ID, _client, _exchange_client,
+)
 
 TITLE = "文化周边兑换份额即时同步"
 WEBHOOK_PATH = "/api/corporate-exchange-sync"
@@ -30,7 +32,7 @@ def workflow_body(url: str, secret: str) -> dict:
                 "title": "文化周边兑换记录新增或修改",
                 "next": "wake_reconciler",
                 "data": {
-                    "table_name": EXCHANGE_TABLE,
+                    "table_name": EXCHANGE_SOURCE_TABLE,
                     "condition_list": [
                         {"conjunction": "and", "conditions": [
                             {"field_name": "数量", "operator": "isNotEmpty", "value": []}
@@ -75,10 +77,11 @@ def main() -> int:
         raise RuntimeError("缺少独立的兑换同步回调密钥。")
     config = json.loads((ROOT / "config" / "project_config.json").read_text(encoding="utf-8-sig"))
     url = str(config["deployment"]["custom_domain"]).rstrip("/") + WEBHOOK_PATH
-    client = _client()
+    client = _exchange_client()
     tables = client.list_tables()
-    if sum(str(table.get("name") or "") == EXCHANGE_TABLE for table in tables) != 1:
-        raise RuntimeError("未唯一定位‘文化周边兑换’源表。")
+    if sum(table.get("name") == EXCHANGE_SOURCE_TABLE and table.get("table_id") == EXCHANGE_SOURCE_TABLE_ID
+           for table in tables) != 1:
+        raise RuntimeError("未唯一定位‘文化周边兑换（扫码接口）’源表。")
     base = quote(client.config.app_token, safe="")
     endpoint = f"/base/v3/bases/{base}/workflows"
     existing = client._request("POST", endpoint + "/list", payload={"page_size": 100})
@@ -87,7 +90,7 @@ def main() -> int:
     if len(matching) > 1:
         raise RuntimeError("发现同名自动化流程，请先处理重复配置。")
     if not args.apply:
-        print(json.dumps({"dry_run": True, "table": EXCHANGE_TABLE, "url": url,
+        print(json.dumps({"dry_run": True, "table": EXCHANGE_SOURCE_TABLE, "url": url,
                           "existing": [(item.get("workflow_id"), item.get("status")) for item in matching]},
                          ensure_ascii=False))
         return 0
@@ -116,6 +119,17 @@ def main() -> int:
                      if str(item.get("workflow_id") or item.get("id") or "") == workflow_id), {})
     if str(verified.get("status") or "") != "enabled":
         raise RuntimeError("自动化已创建但未验证为启用状态。")
+    # The former trigger was attached to a copied table in the application Base.
+    # Retire it only after the authoritative-source workflow is confirmed live.
+    app_client = _client()
+    app_base = quote(app_client.config.app_token, safe="")
+    app_endpoint = f"/base/v3/bases/{app_base}/workflows"
+    old = app_client._request("POST", app_endpoint + "/list", payload={"page_size": 100})
+    for item in (old.get("data") or {}).get("items") or []:
+        if item.get("title") == TITLE and item.get("status") == "enabled":
+            old_id = str(item.get("workflow_id") or "")
+            if old_id.startswith("wkf"):
+                app_client._request("PATCH", app_endpoint + f"/{quote(old_id, safe='')}/disable")
     print(json.dumps({"configured": True, "workflow_id": workflow_id, "status": "enabled"}, ensure_ascii=False))
     return 0
 

@@ -13,7 +13,7 @@ def test_workflow_watches_exchange_changes_and_sends_record_id():
     body = workflow_body("https://example.invalid/api/corporate-exchange-sync", "test-secret")
     trigger, action = body["steps"]
     assert trigger["type"] == "ChangeRecordTrigger"
-    assert trigger["data"]["table_name"] == "文化周边兑换"
+    assert trigger["data"]["table_name"] == "文化周边兑换（扫码接口）"
     assert action["type"] == "HTTPClientAction"
     assert action["data"]["raw_body"][1]["value"] == "$.exchange_change.recordId"
     headers = {item["key"]: item["value"][0]["value"] for item in action["data"]["headers"]}

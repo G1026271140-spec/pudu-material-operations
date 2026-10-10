@@ -34,6 +34,8 @@
       "cultural_material": "文化周边管理库存",
       "corporate_apparel": "文化周边编码及库存数量",
       "corporate_apparel_source_table_id": "tbledtC3RafsHNh0",
+      "corporate_exchange_source_base_token": "ZdstbJeGgauaEqsKSlnc8ghfnQf",
+      "corporate_exchange_source_table_id": "tblttLY1LMqkWw4q",
       "region": "战区管理",
       "queue": "后台任务队列",
       "queue_payload": "后台任务载荷",

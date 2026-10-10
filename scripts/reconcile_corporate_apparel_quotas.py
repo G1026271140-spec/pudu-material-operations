@@ -17,6 +17,10 @@ from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 SECRETS_PATH = ROOT / ".streamlit" / "secrets.toml"
 
 EXCHANGE_TABLE = "文化周边兑换"
+EXCHANGE_SOURCE_TABLE = "文化周边兑换（扫码接口）"
+_PROJECT_CONFIG = json.loads((ROOT / "config" / "project_config.json").read_text(encoding="utf-8-sig"))
+EXCHANGE_SOURCE_BASE_TOKEN = _PROJECT_CONFIG["feishu"]["tables"]["corporate_exchange_source_base_token"]
+EXCHANGE_SOURCE_TABLE_ID = _PROJECT_CONFIG["feishu"]["tables"]["corporate_exchange_source_table_id"]
 PERMISSION_TABLE = "用户权限表"
 REQUEST_TABLE = "物料申请单"
 REQUEST_LINE_TABLE = "申请明细"
@@ -48,6 +52,13 @@ def _client() -> FeishuBitableClient:
             str(secrets["FEISHU_APP_SECRET"]),
             str(secrets["FEISHU_BITABLE_APP_TOKEN"]),
         )
+    )
+
+
+def _exchange_client() -> FeishuBitableClient:
+    client = _client()
+    return FeishuBitableClient(
+        FeishuBitableConfig(client.config.app_id, client.config.app_secret, EXCHANGE_SOURCE_BASE_TOKEN)
     )
 
 
@@ -86,12 +97,20 @@ def _linked_text(fields: dict[str, Any], field: str) -> str:
     return ""
 
 
-def build_plan(client: FeishuBitableClient) -> dict[str, Any]:
+def build_plan(client: FeishuBitableClient, exchange_client: FeishuBitableClient | None = None) -> dict[str, Any]:
     schema = client.discover_schema()["tables"]
     rows = {
         name: client.list_records(schema[name]["table_id"])
-        for name in (EXCHANGE_TABLE, PERMISSION_TABLE, REQUEST_TABLE, REQUEST_LINE_TABLE, QUEUE_TABLE)
+        for name in (PERMISSION_TABLE, REQUEST_TABLE, REQUEST_LINE_TABLE, QUEUE_TABLE)
     }
+    if exchange_client is None:
+        rows[EXCHANGE_TABLE] = client.list_records(schema[EXCHANGE_TABLE]["table_id"])
+    else:
+        tables = exchange_client.list_tables()
+        matched = [table for table in tables if table.get("name") == EXCHANGE_SOURCE_TABLE]
+        if len(matched) != 1 or matched[0].get("table_id") != EXCHANGE_SOURCE_TABLE_ID:
+            raise RuntimeError("文化周边兑换源表身份不匹配，停止份额同步。")
+        rows[EXCHANGE_TABLE] = exchange_client.list_records(EXCHANGE_SOURCE_TABLE_ID)
     totals: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     people: dict[str, str] = {}
 
@@ -210,7 +229,7 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true", help="Write the calculated updates and missing users.")
     args = parser.parse_args()
     client = _client()
-    plan = build_plan(client)
+    plan = build_plan(client, _exchange_client())
     if args.apply:
         for chunk in _chunks(plan["updates"]):
             client.batch_update_records(plan["table_id"], chunk)

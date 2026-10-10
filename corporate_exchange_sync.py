@@ -15,6 +15,7 @@ from typing import Any
 from scripts.reconcile_corporate_apparel_quotas import (
     _chunks,
     _client,
+    _exchange_client,
     _int,
     _person_id,
     build_plan,
@@ -50,7 +51,7 @@ def _plan_visible(plan: dict[str, Any], rows: list[dict[str, Any]]) -> bool:
 def reconcile_and_publish_overlay() -> dict[str, int]:
     """Use authoritative Base rows; never add a webhook's quantity blindly."""
     client = _client()
-    plan = build_plan(client)
+    plan = build_plan(client, _exchange_client())
     for chunk in _chunks(plan["updates"]):
         client.batch_update_records(plan["table_id"], chunk)
     for chunk in _chunks(plan["creates"]):
