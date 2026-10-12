@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-10-12 10:33:57",
+  "generated_at": "2026-10-12 16:34:39",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2964,7 +2964,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 135,
+      "quantity": 105,
       "unit_price_rmb": 5.416
     },
     {
@@ -4452,7 +4452,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "Bellabot pro",
       "language": "无需语种",
-      "quantity": -13,
+      "quantity": 167,
       "unit_price_rmb": 1.354
     },
     {
@@ -4468,7 +4468,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "T300",
       "language": "无需语种",
-      "quantity": 60,
+      "quantity": 240,
       "unit_price_rmb": 1.354
     },
     {
@@ -4476,7 +4476,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "MT1",
       "language": "无需语种",
-      "quantity": 22,
+      "quantity": 202,
       "unit_price_rmb": 1.354
     },
     {
@@ -4484,7 +4484,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "BG1",
       "language": "无需语种",
-      "quantity": -13,
+      "quantity": 267,
       "unit_price_rmb": 1.354
     },
     {
@@ -4804,7 +4804,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D5",
       "language": "无需语种",
-      "quantity": 82,
+      "quantity": 262,
       "unit_price_rmb": 1.354
     },
     {
@@ -4812,7 +4812,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "D7",
       "language": "无需语种",
-      "quantity": 56,
+      "quantity": 336,
       "unit_price_rmb": 1.354
     },
     {
@@ -5308,7 +5308,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "猛犸MP2000",
       "language": "无需语种",
-      "quantity": 27,
+      "quantity": 207,
       "unit_price_rmb": 1.354
     },
     {
@@ -6980,7 +6980,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT3",
       "language": "无需语种",
-      "quantity": 20,
+      "quantity": 200,
       "unit_price_rmb": 1.354
     },
     {
@@ -6996,7 +6996,7 @@
       "product": "冰箱贴( Fridge Magnet)",
       "model": "GT7",
       "language": "无需语种",
-      "quantity": 10,
+      "quantity": 190,
       "unit_price_rmb": 1.354
     }
   ],
