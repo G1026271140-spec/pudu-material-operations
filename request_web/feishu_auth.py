@@ -7,10 +7,12 @@ signed, HttpOnly session after its tenant matches the application's tenant.
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import json
 import secrets
+import threading
 import time
 import tomllib
 from functools import lru_cache
@@ -23,6 +25,9 @@ from fastapi import HTTPException
 ROOT = Path(__file__).resolve().parents[1]
 OPEN_API = "https://open.feishu.cn/open-apis"
 SESSION_SECONDS = 8 * 3600
+STATE_SECONDS = 10 * 60
+_pending_states: dict[str, tuple[str, int]] = {}
+_state_lock = threading.Lock()
 
 
 @lru_cache(maxsize=1)
@@ -164,5 +169,40 @@ def exchange_code(code: str) -> tuple[str, str]:
     return open_id, tenant_key
 
 
-def new_state() -> str:
-    return secrets.token_urlsafe(32)
+def new_state(return_path: str = "/") -> str:
+    """Create a short signed, one-use OAuth state independent of browser cookies.
+
+    Feishu can hand a workplace page to another browser before returning to
+    our callback, so a cookie-only state check rejects legitimate sign-ins.
+    """
+    expires = int(time.time()) + STATE_SECONDS
+    nonce = secrets.token_urlsafe(24)
+    state = _sign(f"{nonce}:{expires}".encode("ascii"))
+    with _state_lock:
+        for old_state, (_, old_expiry) in list(_pending_states.items()):
+            if old_expiry <= time.time():
+                _pending_states.pop(old_state, None)
+        if len(_pending_states) >= 10000:
+            _pending_states.pop(next(iter(_pending_states)))
+        _pending_states[state] = (safe_return_path(return_path), expires)
+    return state
+
+
+def consume_state(state: str) -> str | None:
+    if not state or len(state) > 256:
+        return None
+    try:
+        encoded, _ = state.split(".", 1)
+        decoded = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)).decode("ascii")
+        _, expires_text = decoded.rsplit(":", 1)
+        expires = int(expires_text)
+        expected = _sign(decoded.encode("ascii"))
+    except (ValueError, UnicodeError, binascii.Error):
+        return None
+    if not hmac.compare_digest(state, expected) or expires <= time.time():
+        return None
+    with _state_lock:
+        pending = _pending_states.pop(state, None)
+    if not pending or pending[1] != expires:
+        return None
+    return pending[0]

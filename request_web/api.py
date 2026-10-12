@@ -359,7 +359,7 @@ async def feishu_enterprise_gate(request: Request, call_next):
     from request_web import feishu_auth
 
     path = request.url.path
-    if path == "/api/health" or path.startswith("/auth/feishu/") or path in {
+    if path in {"/api/health", "/favicon.ico"} or path.startswith("/auth/feishu/") or path in {
         "/api/corporate-exchange-sync", "/api/corporate-exchange-sync/status"
     }:
         return await call_next(request)
@@ -383,10 +383,8 @@ async def feishu_enterprise_gate(request: Request, call_next):
 def feishu_login_start(next: str = "/") -> RedirectResponse:
     from request_web import feishu_auth
 
-    state = feishu_auth.new_state()
+    state = feishu_auth.new_state(next)
     response = RedirectResponse(feishu_auth.authorization_url(state), status_code=303)
-    response.set_cookie("pudu_feishu_state", state, max_age=300, httponly=True, secure=True, samesite="lax")
-    response.set_cookie("pudu_feishu_next", feishu_auth.safe_return_path(next), max_age=300, httponly=True, secure=True, samesite="lax")
     response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -395,8 +393,8 @@ def feishu_login_start(next: str = "/") -> RedirectResponse:
 def feishu_login_callback(request: Request, code: str = "", state: str = "") -> Response:
     from request_web import feishu_auth
 
-    expected = request.cookies.get("pudu_feishu_state", "")
-    if not expected or not state or not secrets.compare_digest(expected, state) or not code:
+    target = feishu_auth.consume_state(state)
+    if target is None or not code:
         raise HTTPException(status_code=400, detail="飞书登录已过期或校验失败，请重新打开页面。")
     try:
         open_id, tenant_key = feishu_auth.exchange_code(code)
@@ -406,11 +404,8 @@ def feishu_login_callback(request: Request, code: str = "", state: str = "") -> 
         raise
     except Exception as exc:
         raise HTTPException(status_code=502, detail="飞书登录暂时失败，请稍后重试。") from exc
-    target = feishu_auth.safe_return_path(request.cookies.get("pudu_feishu_next", "/"))
     response = RedirectResponse(target, status_code=303)
     response.set_cookie("pudu_feishu", feishu_auth.create_session(open_id, tenant_key), max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax")
-    response.delete_cookie("pudu_feishu_state", secure=True, httponly=True, samesite="lax")
-    response.delete_cookie("pudu_feishu_next", secure=True, httponly=True, samesite="lax")
     response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -421,6 +416,11 @@ def feishu_logout() -> RedirectResponse:
     response.delete_cookie("pudu_feishu", secure=True, httponly=True, samesite="lax")
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@api.get("/favicon.ico")
+def favicon() -> FileResponse:
+    return _asset_file("app-icon.ico")
 
 
 @api.middleware("http")
