@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.0"
+APP_VERSION = "V3.2.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8388,6 +8388,7 @@ def material_request_notification_card(
     review_result = str(context.get("result") or "")
     review_status = str(review_request.get("inventory_review_status") or INVENTORY_REVIEW_PENDING)
     review_status_display = review_status
+    saved_reminder_at = str(review_request.get("inventory_review_reminder_at") or "").strip()
     snapshot_at = str(context.get("snapshot_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     elements = [
         _feishu_notification_section(
@@ -8401,7 +8402,7 @@ def material_request_notification_card(
                         ("申请变更次数", review_request.get("inventory_review_version", 0)),
                         (
                             "计划核实时间",
-                            review_request.get("inventory_review_reminder_at") or "未设置",
+                            saved_reminder_at or "未设置",
                         ),
                     ]
                 )
@@ -8542,13 +8543,18 @@ def material_request_notification_card(
                 "tag": "form",
                 "name": f"inventory_review_reminder_form__{request_id}",
                 "vertical_spacing": "8px",
-                "elements": [
+                "elements": ([
+                    {
+                        "tag": "markdown",
+                        "content": f"✅ **已保存核实时间：{saved_reminder_at}**\n如需调整，请在下方重新选择并保存。",
+                    }
+                ] if saved_reminder_at else []) + [
                     {
                         "tag": "select_static",
                         "name": "reminder_schedule",
                         "required": True,
                         "width": "fill",
-                        "placeholder": {"tag": "plain_text", "content": "选择再次核实库存的时间"},
+                        "placeholder": {"tag": "plain_text", "content": "重新选择核实时间" if saved_reminder_at else "选择再次核实库存的时间"},
                         "options": [
                             {
                                 "text": {"tag": "plain_text", "content": label},
@@ -8560,7 +8566,7 @@ def material_request_notification_card(
                     {
                         "tag": "button",
                         "name": f"save_inventory_reminder__{request_id}",
-                        "text": {"tag": "plain_text", "content": "保存核实时间"},
+                        "text": {"tag": "plain_text", "content": "修改核实时间" if saved_reminder_at else "保存核实时间"},
                         "type": "default",
                         "width": "fill",
                         "form_action_type": "submit",

@@ -260,13 +260,19 @@ def process_card_action_async(
             return
         if action_name.startswith("save_inventory_reminder__"):
             schedule_value = str(form_value.get("reminder_schedule") or "").strip()
-            inventory_app.execute_inventory_review_reminder_schedule(
+            saved = inventory_app.execute_inventory_review_reminder_schedule(
                 request_id,
                 operator_open_id,
                 schedule_value,
             )
             context = inventory_app.request_inventory_review_context(request_id=request_id)
             request = dict(context["request"])
+            # Use the confirmed write result: a fresh Base list can still lag
+            # immediately after the update and redraw the card as unsaved.
+            request["inventory_review_reminder_at"] = saved["scheduled_at"].strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            context["request"] = request
             client = inventory_app.feishu_client()
             if client is None:
                 raise RuntimeError("飞书未配置，无法更新库存提醒卡片。")

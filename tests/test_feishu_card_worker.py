@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
@@ -8,6 +9,32 @@ from scripts import feishu_card_worker as worker
 
 
 class FeishuCardWorkerTests(unittest.TestCase):
+    def test_saved_reminder_redraw_uses_confirmed_time_when_read_lags(self) -> None:
+        client = Mock()
+        stale_context = {"request": {"request_no": "REQ-1", "record_id": "request-1"}, "lines": []}
+        saved_at = datetime(2026, 9, 4, 10, 0)
+        with (
+            patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
+            patch.object(worker.inventory_app, "execute_inventory_review_reminder_schedule", return_value={"scheduled_at": saved_at}),
+            patch.object(worker.inventory_app, "request_inventory_review_context", return_value=stale_context),
+            patch.object(worker.inventory_app, "feishu_client", return_value=client),
+            patch.object(worker.inventory_app, "material_request_notification_card", return_value={"schema": "2.0"}) as card,
+        ):
+            worker.process_card_action_async(
+                action_key="",
+                action_name="save_inventory_reminder__request-1",
+                value={},
+                form_value={"reminder_schedule": "1week"},
+                operator_open_id="ou-admin",
+                message_id="om-card-1",
+            )
+
+        self.assertEqual(
+            card.call_args.kwargs["review_context"]["request"]["inventory_review_reminder_at"],
+            "2026-09-04 10:00:00",
+        )
+        client.update_interactive_message.assert_called_once_with("om-card-1", {"schema": "2.0"})
+
     def test_async_edit_load_updates_original_card_message(self) -> None:
         client = Mock()
         card = {"schema": "2.0"}

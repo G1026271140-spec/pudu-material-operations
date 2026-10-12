@@ -38,6 +38,26 @@ class InventoryReviewReminderTests(unittest.TestCase):
         self.assertIn("save_inventory_reminder__request-1", serialized)
         self.assertNotIn("adjust_inventory_review_time", serialized)
 
+    def test_inventory_card_shows_saved_time_and_edit_action(self) -> None:
+        context = {
+            "request": {
+                "record_id": "request-1",
+                "inventory_review_status": app.INVENTORY_REVIEW_PENDING,
+                "inventory_review_version": 0,
+                "inventory_review_reminder_at": "2026-09-04 10:00:00",
+            },
+            "lines": [],
+        }
+
+        card = app.material_request_notification_card(
+            "REQ-1", {}, [], review_context=context
+        )
+        serialized = json.dumps(card, ensure_ascii=False)
+
+        self.assertIn("已保存核实时间：2026-09-04 10:00:00", serialized)
+        self.assertIn("重新选择核实时间", serialized)
+        self.assertIn("修改核实时间", serialized)
+
     def test_schedule_update_writes_plan_and_pending_status(self) -> None:
         context = {
             "request": {
