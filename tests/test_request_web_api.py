@@ -461,6 +461,68 @@ def test_corporate_apparel_submit_accepts_only_current_reasons(monkeypatch):
     assert observed["payload"]["request_payload"]["material_usage"] == "OA流程申请（如未提报OA流程，一律驳回，请慎选）"
 
 
+def test_corporate_apparel_catalog_is_immediate_and_stock_read_is_shared(monkeypatch):
+    calls = []
+
+    class Source:
+        def list_records(self, table_id):
+            calls.append(table_id)
+            return [{"available": len(calls)}]
+
+    def fake_catalog(rows, *, source_rows=None):
+        return {
+            "products": ["Polo"],
+            "items": [{
+                "record_id": "rec-1", "product": "Polo", "size": "M",
+                "available": source_rows[0]["available"] if source_rows else 0,
+                "images": ["assets/request_categories/polo.webp"],
+            }],
+        }
+
+    monkeypatch.setattr(web_api, "_json", lambda name: {
+        "tables": {legacy_app.CORPORATE_APPAREL_TABLE_NAME: [{"record_id": "rec-1"}]},
+        "users": [{"open_id": "ou-1"}], "departments": [],
+    })
+    monkeypatch.setattr(legacy_app, "corporate_apparel_catalog", fake_catalog)
+    monkeypatch.setattr(legacy_app, "corporate_apparel_source_client", lambda: Source())
+    monkeypatch.setitem(web_api._CORPORATE_APPAREL_STOCK_CACHE, "items", None)
+    monkeypatch.setitem(web_api._CORPORATE_APPAREL_STOCK_CACHE, "loaded_at", 0.0)
+    with TestClient(api) as client:
+        catalog = client.get("/api/corporate-apparel-catalog")
+        assert catalog.status_code == 200
+        assert catalog.headers["cache-control"] == "no-store"
+        assert catalog.json()["items"][0]["available"] == 0
+        assert catalog.json()["users"] == [{"open_id": "ou-1"}]
+        assert calls == []
+        first = client.get("/api/corporate-apparel-stock")
+        second = client.get("/api/corporate-apparel-stock")
+        assert first.headers["cache-control"] == "no-store"
+        assert first.json()["items"][0]["available"] == 1
+        assert first.json()["items"][0]["images"] == ["/category-assets/polo.webp"]
+        assert second.json() == first.json()
+        assert len(calls) == 1
+        web_api._CORPORATE_APPAREL_STOCK_CACHE["loaded_at"] = 0.0
+        refreshed = client.get("/api/corporate-apparel-stock")
+        assert refreshed.json()["items"][0]["available"] == 2
+        assert len(calls) == 2
+
+
+def test_corporate_apparel_stock_fails_closed_when_live_source_is_unavailable(monkeypatch):
+    class BrokenSource:
+        def list_records(self, _table_id):
+            raise RuntimeError("source unavailable")
+
+    monkeypatch.setattr(web_api, "_json", lambda _name: {
+        "tables": {legacy_app.CORPORATE_APPAREL_TABLE_NAME: []},
+    })
+    monkeypatch.setattr(legacy_app, "corporate_apparel_source_client", lambda: BrokenSource())
+    monkeypatch.setitem(web_api._CORPORATE_APPAREL_STOCK_CACHE, "items", [{"available": 1}])
+    monkeypatch.setitem(web_api._CORPORATE_APPAREL_STOCK_CACHE, "loaded_at", 0.0)
+    with TestClient(api, raise_server_exceptions=False) as client:
+        response = client.get("/api/corporate-apparel-stock")
+    assert response.status_code == 500
+
+
 def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
     observed = []
     payload = {

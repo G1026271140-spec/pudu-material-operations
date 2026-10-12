@@ -54,6 +54,8 @@ const copy = {
     confirm: "确认领取信息", noDepartment: "未填写部门", back: "返回修改",
     submitting: "正在提交…", confirmSubmit: "确认提交", success: "提交成功",
     queued: (taskId: string) => `申请已进入后台队列（${taskId}）`, loading: "正在加载…",
+    stockLoading: "正在核实实时库存，您可以先填写申请人信息…",
+    stockFailed: "实时库存读取失败，请重试。", retry: "重试",
     previousImage: "上一张", nextImage: "下一张", image: "图片",
     loadFailed: "页面数据加载失败", selectApplicant: "请选择申请人。",
     selectReason: "请选择申请事由。",
@@ -75,6 +77,8 @@ const copy = {
     confirm: "Confirm Collection Details", noDepartment: "No department", back: "Back to Edit",
     submitting: "Submitting…", confirmSubmit: "Confirm Submission", success: "Submitted",
     queued: (taskId: string) => `Your request has entered the background queue (${taskId})`, loading: "Loading…",
+    stockLoading: "Checking live stock. You can fill in the applicant details first…",
+    stockFailed: "Could not load live stock. Please retry.", retry: "Retry",
     previousImage: "Previous image", nextImage: "Next image", image: "Image",
     loadFailed: "Failed to load page data", selectApplicant: "Select an applicant.",
     selectReason: "Select a reason for the request.",
@@ -90,6 +94,9 @@ export default function CorporateApparelPage() {
   const [lang, setLang] = useState<Lang>(() => localStorage.getItem("pudu-lang") === "en" ? "en" : "zh");
   const t = copy[lang];
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [liveItems, setLiveItems] = useState<Item[] | null>(null);
+  const [stockError, setStockError] = useState(false);
+  const [stockBusy, setStockBusy] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [requesterId, setRequesterId] = useState("");
@@ -114,7 +121,23 @@ export default function CorporateApparelPage() {
       })
       .then(setCatalog)
       .catch((reason) => setError(reason instanceof Error ? reason.message : loadInEnglish ? copy.en.loadFailed : copy.zh.loadFailed));
+    void loadStock();
   }, []);
+
+  async function loadStock() {
+    setStockBusy(true);
+    setStockError(false);
+    try {
+      const response = await fetch("/api/corporate-apparel-stock");
+      if (!response.ok) throw Error("Live stock unavailable");
+      const body = await response.json();
+      setLiveItems(body.items as Item[]);
+    } catch {
+      setStockError(true);
+    } finally {
+      setStockBusy(false);
+    }
+  }
 
   const user = catalog?.users.find((item) => item.open_id === requesterId);
   const departmentId = user?.department_ids?.[0] || "";
@@ -123,7 +146,7 @@ export default function CorporateApparelPage() {
     () => (catalog?.users || []).filter((item) => !query || `${item.name} ${item.department_paths?.join(" ")}`.toLowerCase().includes(query.toLowerCase())).slice(0, 80),
     [catalog, query],
   );
-  const activeItems = catalog?.items.filter((item) => item.product === active && item.available > 0) || [];
+  const activeItems = liveItems?.filter((item) => item.product === active && item.available > 0) || [];
   const productImages = (product: string) => [
     ...new Set(
       (catalog?.items || [])
@@ -133,7 +156,8 @@ export default function CorporateApparelPage() {
   ];
 
   function open(product: string) {
-    const first = catalog?.items.find((item) => item.product === product && item.available > 0);
+    if (!liveItems) return setError(t.stockFailed);
+    const first = liveItems.find((item) => item.product === product && item.available > 0);
     setActive(product);
     setSize(first?.size || "");
     setQuantity(1);
@@ -159,6 +183,7 @@ export default function CorporateApparelPage() {
   }
 
   function add() {
+    if (!liveItems) return setError(t.stockFailed);
     if (!active || !size) return setError(t.selectAvailableSize);
     const selected = activeItems.find((item) => item.size === size);
     if (!selected || selected.available < 1) return setError(t.sizeUnavailable);
@@ -175,6 +200,7 @@ export default function CorporateApparelPage() {
   }
 
   async function submit() {
+    if (!liveItems) return setError(t.stockFailed);
     if (!user) return setError(t.selectApplicant);
     if (!reason) return setError(t.selectReason);
     if (!lines.length) return setError(t.selectOne);
@@ -236,18 +262,19 @@ export default function CorporateApparelPage() {
 
       <section className="corporate-section">
         <div className="corporate-title"><i>02</i><div><h2>{t.choose}</h2></div></div>
+        {!liveItems && <p className="corporate-stock-status" role="status">{stockError ? t.stockFailed : t.stockLoading}{stockError && !stockBusy && <button type="button" onClick={() => void loadStock()}>{t.retry}</button>}</p>}
         <div className="corporate-cards">
           {catalog.products.map((product) => {
-            const available = catalog.items.filter((item) => item.product === product).reduce((sum, item) => sum + Math.max(0, item.available), 0);
+            const available = (liveItems || []).filter((item) => item.product === product).reduce((sum, item) => sum + Math.max(0, item.available), 0);
             return <article key={product}>
               {productImages(product).length ? <CategoryCarousel images={productImages(product)} alt={productLabel(product)} previousLabel={t.previousImage} nextLabel={t.nextImage} imageLabel={t.image} /> : <div className="corporate-placeholder">PUDU</div>}
-              <div className="corporate-card-copy"><small>{t.category}</small><h3>{productLabel(product)}</h3><span>{available > 0 ? t.available(available) : t.noStock}</span></div>
-              <button type="button" disabled={available <= 0} onClick={() => open(product)}>{t.selectSize}</button>
+              <div className="corporate-card-copy"><small>{t.category}</small><h3>{productLabel(product)}</h3><span>{!liveItems ? t.stockLoading : available > 0 ? t.available(available) : t.noStock}</span></div>
+              <button type="button" disabled={!liveItems || available <= 0} onClick={() => open(product)}>{t.selectSize}</button>
             </article>;
           })}
         </div>
         {lines.length > 0 && <div className="corporate-cart"><h3>{t.cart} · {lines.reduce((sum, line) => sum + line.quantity, 0)} {t.itemUnit}</h3>{lines.map((line) => <div key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product || item.size !== line.size))}>{t.remove}</button></div>)}</div>}
-        <button type="button" className="corporate-submit" disabled={!lines.length} onClick={() => { setError(""); setReview(true); }}>{t.submit}</button>
+        <button type="button" className="corporate-submit" disabled={!liveItems || !lines.length} onClick={() => { setError(""); setReview(true); }}>{t.submit}</button>
       </section>
 
       {error && <div className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></div>}

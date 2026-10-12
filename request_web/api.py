@@ -5,6 +5,7 @@ import hmac
 import io
 import json
 import secrets
+import threading
 import time
 import tomllib
 from datetime import date
@@ -451,6 +452,9 @@ def app_asset(filename: str) -> FileResponse:
     return _asset_file(filename)
 _ADMIN_SESSIONS: set[str] = set()
 _PENDING_ALLOCATION_CACHE: dict[str, Any] = {"loaded_at": 0.0, "contexts": {}}
+_CORPORATE_APPAREL_STOCK_TTL_SECONDS = 30
+_CORPORATE_APPAREL_STOCK_LOCK = threading.Lock()
+_CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": None}
 
 
 @api.get("/api/health")
@@ -499,16 +503,26 @@ def cultural_catalog() -> dict[str, Any]:
 
 
 @api.get("/api/corporate-apparel-catalog")
-def corporate_apparel_catalog() -> dict[str, Any]:
+def corporate_apparel_catalog(response: Response) -> dict[str, Any]:
     import app as legacy
 
+    response.headers["Cache-Control"] = "no-store"
     page = _json("page_data_cache.json")
     contacts = _json("contact_departments_cache.json")
     rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
-    source_rows = legacy.corporate_apparel_source_client().list_records(
-        legacy.CORPORATE_APPAREL_SOURCE_TABLE_ID
-    )
-    catalog = legacy.corporate_apparel_catalog(rows, source_rows=source_rows)
+    # The local snapshot is enough to show the form immediately. The separate
+    # stock endpoint supplies verified availability before selection is enabled.
+    catalog = legacy.corporate_apparel_catalog(rows)
+    return {
+        "generatedAt": page.get("generated_at"),
+        "products": catalog.get("products", []),
+        "items": _corporate_apparel_web_items(catalog),
+        "users": contacts.get("users", []),
+        "departments": contacts.get("departments", []),
+    }
+
+
+def _corporate_apparel_web_items(catalog: dict[str, Any]) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for raw in list(catalog.get("items") or []):
         item = dict(raw)
@@ -517,13 +531,29 @@ def corporate_apparel_catalog() -> dict[str, Any]:
             for path in list(item.get("images") or [])
         ]
         items.append(item)
-    return {
-        "generatedAt": page.get("generated_at"),
-        "products": catalog.get("products", []),
-        "items": items,
-        "users": contacts.get("users", []),
-        "departments": contacts.get("departments", []),
-    }
+    return items
+
+
+@api.get("/api/corporate-apparel-stock")
+def corporate_apparel_stock(response: Response) -> dict[str, Any]:
+    """Share a short-lived Feishu read across visitors; fail closed on errors."""
+    import app as legacy
+
+    response.headers["Cache-Control"] = "no-store"
+    with _CORPORATE_APPAREL_STOCK_LOCK:
+        cached = _CORPORATE_APPAREL_STOCK_CACHE["items"]
+        if cached is not None and time.monotonic() - _CORPORATE_APPAREL_STOCK_CACHE["loaded_at"] < _CORPORATE_APPAREL_STOCK_TTL_SECONDS:
+            return {"items": cached}
+        page = _json("page_data_cache.json")
+        rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
+        source_rows = legacy.corporate_apparel_source_client().list_records(
+            legacy.CORPORATE_APPAREL_SOURCE_TABLE_ID
+        )
+        items = _corporate_apparel_web_items(
+            legacy.corporate_apparel_catalog(rows, source_rows=source_rows)
+        )
+        _CORPORATE_APPAREL_STOCK_CACHE.update(items=items, loaded_at=time.monotonic())
+        return {"items": items}
 
 
 @api.post("/api/admin/unlock")
