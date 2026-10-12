@@ -35,6 +35,7 @@ def test_callback_checks_tenant_and_restores_direct_page(monkeypatch):
         assert callback.status_code == 303
         assert callback.headers["location"] == "/corporate-apparel"
         assert "httponly" in callback.headers["set-cookie"].lower()
+        assert "Max-Age=2592000" in callback.headers["set-cookie"]
         assert client.get("/api/admin/status").status_code == 200
         assert client.get(f"/auth/feishu/callback?code=ok&state={state}").status_code == 400
 
@@ -52,11 +53,15 @@ def test_foreign_tenant_is_rejected(monkeypatch):
 
 def test_signed_session_rejects_tampering_and_expiry(monkeypatch):
     monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))
+    issued_at = 1_800_000_000
+    monkeypatch.setattr(feishu_auth.time, "time", lambda: issued_at)
     token = feishu_auth.create_session("ou_user", "own-tenant")
     assert feishu_auth.valid_session(token, "own-tenant")
     assert not feishu_auth.valid_session(token, "another-tenant")
     assert not feishu_auth.valid_session(token + "x", "own-tenant")
-    monkeypatch.setattr(feishu_auth.time, "time", lambda: 99999999999)
+    monkeypatch.setattr(feishu_auth.time, "time", lambda: issued_at + 30 * 24 * 3600 - 1)
+    assert feishu_auth.valid_session(token, "own-tenant")
+    monkeypatch.setattr(feishu_auth.time, "time", lambda: issued_at + 30 * 24 * 3600)
     assert not feishu_auth.valid_session(token, "own-tenant")
 
 

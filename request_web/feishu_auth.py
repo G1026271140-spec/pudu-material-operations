@@ -24,7 +24,7 @@ from fastapi import HTTPException
 
 ROOT = Path(__file__).resolve().parents[1]
 OPEN_API = "https://open.feishu.cn/open-apis"
-SESSION_SECONDS = 8 * 3600
+SESSION_SECONDS = 30 * 24 * 3600
 STATE_SECONDS = 10 * 60
 _pending_states: dict[str, tuple[str, int]] = {}
 _state_lock = threading.Lock()
