@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-10-10 16:32:15",
+  "generated_at": "2026-10-12 10:33:57",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -4492,7 +4492,7 @@
       "product": "笔记本礼盒(Notebook Gift Box)",
       "model": "无需型号",
       "language": "无需语种",
-      "quantity": 428,
+      "quantity": 425,
       "unit_price_rmb": 33.85
     },
     {

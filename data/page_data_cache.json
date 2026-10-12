@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-11 16:32:10",
+  "generated_at": "2026-10-12 10:33:40",
   "tables": {
     "物料品类": [
       {
@@ -48179,10 +48179,11 @@
                 "recvvgRRyigeXZ",
                 "recvvlL2XRCAxY",
                 "recvvV6fraIOmW",
-                "recvw1G2vA10tA"
+                "recvw1G2vA10tA",
+                "recvxKHuwORu1I"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260817-001,REQ-20260818-004,REQ-20260826-002,REQ-20260828-005,REQ-20260831-003,REQ-20260901-001,REQ-20260915-001,REQ-20260916-004,REQ-20260922-004,REQ-20260923-002",
+              "text": "REQ-20260817-001,REQ-20260818-004,REQ-20260826-002,REQ-20260828-005,REQ-20260831-003,REQ-20260901-001,REQ-20260915-001,REQ-20260916-004,REQ-20260922-004,REQ-20260923-002,REQ-20261011-001",
               "text_arr": [
                 "REQ-20260817-001",
                 "REQ-20260818-004",
@@ -48193,7 +48194,8 @@
                 "REQ-20260915-001",
                 "REQ-20260916-004",
                 "REQ-20260922-004",
-                "REQ-20260923-002"
+                "REQ-20260923-002",
+                "REQ-20261011-001"
               ],
               "type": "text"
             }
@@ -48222,10 +48224,11 @@
                 "recvvgRTpHqtbr",
                 "recvvlL4ycaMJT",
                 "recvvV6gDSqSan",
-                "recvw1G3PoHSdm"
+                "recvw1G3PoHSdm",
+                "recvxKHvlkdfMO"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260730-004-01,REQ-20260811-001-01,REQ-20260817-001-01,REQ-20260818-004-01,REQ-20260826-002-04,REQ-20260828-005-10,REQ-20260831-003-01,REQ-20260901-001-01,REQ-20260915-001-01,REQ-20260916-004-02,REQ-20260922-004-01,REQ-20260923-002-11",
+              "text": "REQ-20260730-004-01,REQ-20260811-001-01,REQ-20260817-001-01,REQ-20260818-004-01,REQ-20260826-002-04,REQ-20260828-005-10,REQ-20260831-003-01,REQ-20260901-001-01,REQ-20260915-001-01,REQ-20260916-004-02,REQ-20260922-004-01,REQ-20260923-002-11,REQ-20261011-001-01",
               "text_arr": [
                 "REQ-20260730-004-01",
                 "REQ-20260811-001-01",
@@ -48238,7 +48241,8 @@
                 "REQ-20260915-001-01",
                 "REQ-20260916-004-02",
                 "REQ-20260922-004-01",
-                "REQ-20260923-002-11"
+                "REQ-20260923-002-11",
+                "REQ-20261011-001-01"
               ],
               "type": "text"
             }
@@ -50722,10 +50726,11 @@
                 "recvvltdscgeuy",
                 "recvvltT90l4qs",
                 "recvxpJX2SrGA5",
-                "recvxwXQPPMn0a"
+                "recvxwXQPPMn0a",
+                "recvxKHuwORu1I"
               ],
               "table_id": "tbl3eyt8lkl3uQa1",
-              "text": "REQ-20260828-005,REQ-20260831-003,REQ-20260915-002,REQ-20260916-001,REQ-20260916-002,REQ-20261008-001,REQ-20261009-004",
+              "text": "REQ-20260828-005,REQ-20260831-003,REQ-20260915-002,REQ-20260916-001,REQ-20260916-002,REQ-20261008-001,REQ-20261009-004,REQ-20261011-001",
               "text_arr": [
                 "REQ-20260828-005",
                 "REQ-20260831-003",
@@ -50733,7 +50738,8 @@
                 "REQ-20260916-001",
                 "REQ-20260916-002",
                 "REQ-20261008-001",
-                "REQ-20261009-004"
+                "REQ-20261009-004",
+                "REQ-20261011-001"
               ],
               "type": "text"
             }
@@ -50758,10 +50764,11 @@
                 "recvvltfgnhWAe",
                 "recvvltUEOoEwB",
                 "recvxpJYikkmfT",
-                "recvxwXS5MrP7V"
+                "recvxwXS5MrP7V",
+                "recvxKHvlkGGAZ"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260716-001-01,REQ-20260828-005-12,REQ-20260831-003-02,REQ-20260915-002-01,REQ-20260916-001-01,REQ-20260916-002-01,REQ-20261008-001-01,REQ-20261009-004-02",
+              "text": "REQ-20260716-001-01,REQ-20260828-005-12,REQ-20260831-003-02,REQ-20260915-002-01,REQ-20260916-001-01,REQ-20260916-002-01,REQ-20261008-001-01,REQ-20261009-004-02,REQ-20261011-001-02",
               "text_arr": [
                 "REQ-20260716-001-01",
                 "REQ-20260828-005-12",
@@ -50770,7 +50777,8 @@
                 "REQ-20260916-001-01",
                 "REQ-20260916-002-01",
                 "REQ-20261008-001-01",
-                "REQ-20261009-004-02"
+                "REQ-20261009-004-02",
+                "REQ-20261011-001-02"
               ],
               "type": "text"
             }
@@ -74960,10 +74968,11 @@
                 "recvvPEYKFcEGR",
                 "recvwtJntRfc9e",
                 "recvwtJOBfrmo5",
-                "recvxBRbBgXeG6"
+                "recvxBRbBgXeG6",
+                "recvxNqtDfHvkS"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",issue:8B28AF5B-15BB-46FD-8A33-C66D75F82053:REQ-20260811-002-03,issue:4B8A3C13-9DD0-4494-AAD3-6350383F3B79:REQ-20260811-003-02,issue:C321C6AC-A668-4D5C-BD12-A63041D9D845:REQ-20260817-001-02,issue:E8D0FB06-244F-45FC-B2B2-492A433CE4D9:REQ-20260819-001-02,issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-03,issue:63F240DB-0E25-4207-907F-BEE65B802B01:REQ-20260828-004-04,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-01,issue:4DD0E23D-6F31-4D81-80F5-533E30820D60:REQ-20260916-003-10,issue:6AD92CED-FB2B-4273-8D6F-B34A7D4E8B35:REQ-20260916-006-20,issue:3E6D4562-AE9A-4ECA-989B-A80C082A98C7:REQ-20260914-002-26,issue:FCC6E37D-4C7E-4E51-998E-E89471A23851:REQ-20260914-001-10,issue:E25E7F9A-92F7-48C9-AC62-8153044C5DBD:REQ-20260918-011-04,issue:54ADA5D7-EC64-4ED2-A575-9AAA2C3D0AFC:REQ-20260923-001-14,issue:51C21716-96EE-4CC1-8931-BCE677428ACF:REQ-20260923-004-04",
+              "text": ",issue:8B28AF5B-15BB-46FD-8A33-C66D75F82053:REQ-20260811-002-03,issue:4B8A3C13-9DD0-4494-AAD3-6350383F3B79:REQ-20260811-003-02,issue:C321C6AC-A668-4D5C-BD12-A63041D9D845:REQ-20260817-001-02,issue:E8D0FB06-244F-45FC-B2B2-492A433CE4D9:REQ-20260819-001-02,issue:4191949F-BFF6-45A6-9951-A6314AD18F9F:REQ-20260824-002-03,issue:63F240DB-0E25-4207-907F-BEE65B802B01:REQ-20260828-004-04,issue:8EE24AC2-65AE-420C-B068-4782BAD51427:REQ-20260907-001-01,issue:4DD0E23D-6F31-4D81-80F5-533E30820D60:REQ-20260916-003-10,issue:6AD92CED-FB2B-4273-8D6F-B34A7D4E8B35:REQ-20260916-006-20,issue:3E6D4562-AE9A-4ECA-989B-A80C082A98C7:REQ-20260914-002-26,issue:FCC6E37D-4C7E-4E51-998E-E89471A23851:REQ-20260914-001-10,issue:E25E7F9A-92F7-48C9-AC62-8153044C5DBD:REQ-20260918-011-04,issue:54ADA5D7-EC64-4ED2-A575-9AAA2C3D0AFC:REQ-20260923-001-14,issue:51C21716-96EE-4CC1-8931-BCE677428ACF:REQ-20260923-004-04,issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01",
               "text_arr": [
                 "",
                 "issue:8B28AF5B-15BB-46FD-8A33-C66D75F82053:REQ-20260811-002-03",
@@ -74979,12 +74988,13 @@
                 "issue:FCC6E37D-4C7E-4E51-998E-E89471A23851:REQ-20260914-001-10",
                 "issue:E25E7F9A-92F7-48C9-AC62-8153044C5DBD:REQ-20260918-011-04",
                 "issue:54ADA5D7-EC64-4ED2-A575-9AAA2C3D0AFC:REQ-20260923-001-14",
-                "issue:51C21716-96EE-4CC1-8931-BCE677428ACF:REQ-20260923-004-04"
+                "issue:51C21716-96EE-4CC1-8931-BCE677428ACF:REQ-20260923-004-04",
+                "issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01"
               ],
               "type": "text"
             }
           ],
-          "当前库存": "428",
+          "当前库存": "425",
           "战区管理": [
             {
               "record_ids": null,
@@ -156270,6 +156280,65 @@
         },
         "id": "recvxCOogVafPE",
         "record_id": "recvxCOogVafPE"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvxD6tTeHIoZ"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261010-003-01",
+              "text_arr": [
+                "REQ-20261010-003-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": "issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01",
+          "原流水ID": null,
+          "发生时间": 1791770033143,
+          "变更前数量": "428",
+          "变更后数量": "425",
+          "备注": "EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4",
+          "幂等键": "issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01",
+          "库存变化": "-3",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "3",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "销售领用出库",
+          "物料品类": "笔记本礼盒(Notebook Gift Box)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khvob"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0941",
+              "text_arr": [
+                "MAT-0941"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxNqtDfHvkS",
+        "record_id": "recvxNqtDfHvkS"
       }
     ],
     "物料申请单": [
@@ -159800,9 +159869,9 @@
               "file_token": "B4KPbUis2ol6mAx60GscrkOAnPf",
               "name": "img_v3_0215o_5f903d93-7262-490d-9226-96fbbc4f765g_MIDDLE_WEBP.webp",
               "size": 34138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "加拿大",
@@ -160069,17 +160138,17 @@
               "file_token": "SY75b088Poue8wxEA6Yc8fq5nOd",
               "name": "FR2.jpg",
               "size": 236138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             },
             {
               "file_token": "VD6SbQOdJoUaawxow1ecUvY4nOe",
               "name": "FR1.jpg",
               "size": 213041,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "法国",
@@ -160247,25 +160316,25 @@
               "file_token": "BsEIbEOddoV50UxzdSAcw3GUn3c",
               "name": "AU2.jpg",
               "size": 277944,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             },
             {
               "file_token": "IBrdbtvqZof487xfZ3UcxRj5nUR",
               "name": "AU3.jpg",
               "size": 183728,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             },
             {
               "file_token": "PcjebbZ5po6FjpxceMecT1bvnbc",
               "name": "AU1.jpg",
               "size": 289081,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "澳洲ISSA展会物料",
@@ -161666,9 +161735,9 @@
               "file_token": "EJ2SbWO2PounMjxQqUqcg7tgn3e",
               "name": "20260922-095550.jpg",
               "size": 272478,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "智利",
@@ -162171,7 +162240,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015p_e52eff4b-473a-47b1-85db-7c9362e85ccg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015p_e52eff4b-473a-47b1-85db-7c9362e85ccg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "ashley.li@pudutech.com",
               "en_name": "黎晓艳",
               "id": "ou_ea760a608267fb99394a5959051deef5",
@@ -164013,9 +164082,9 @@
               "file_token": "QdbabNoySokBM1xVCG3cQiTsnrg",
               "name": "2026-MKT-CZ0924_INV_PL.xlsx",
               "size": 34231,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "业务类型": "物料领取",
@@ -164026,9 +164095,9 @@
               "file_token": "AwJEbPUigoIYnPxT2axccI09nvg",
               "name": "img_v3_0215r_71e3d283-4f50-432f-a689-b6dbaa24f26g_MIDDLE_WEBP.webp",
               "size": 63888,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "捷克MSV工业展物料",
@@ -164224,9 +164293,9 @@
               "file_token": "XcXDb4eUeo7wrjxx1xGcq2CQn6d",
               "name": "img_v3_0216b_c6f1a8db-5700-4194-98a3-f2cdb4473c1g_MIDDLE_WEBP.webp",
               "size": 47420,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "广交会物料",
@@ -164557,9 +164626,9 @@
               "file_token": "MpO9bdnlzoW3zcxHeUEcfUqmnde",
               "name": "img_v3_02169_a7720ee9-8473-48f3-b018-cfa8be1aa7ag.jpg",
               "size": 4104598,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1739%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1745%7D%7D"
             }
           ],
           "国家": "吉隆坡",
@@ -168179,15 +168248,15 @@
         "fields": {
           "INV/PL": null,
           "业务类型": "物料领取",
-          "临时物料清理状态": null,
+          "临时物料清理状态": "已清理",
           "发货单号及文字信息": null,
           "发货图片": null,
           "国家": "韩国",
           "备注": "客户名称：大正高尔夫集团\n国家：韩国\n收件人信息：深圳创新谷13楼\n运费承担者：普渡付款(PUDU)\n物料用途：客户来深圳拜访，小礼品\n申请人：金晨日",
           "审批实例Code": "EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4",
           "审批意见": null,
-          "审批时间": null,
-          "审批状态": "待审批",
+          "审批时间": 1791770022454,
+          "审批状态": "已发放",
           "客户名称": "大正高尔夫集团",
           "市场负责人": null,
           "库存合适最后提醒时间": null,
@@ -168400,6 +168469,115 @@
         },
         "id": "recvxDEO19wwwl",
         "record_id": "recvxDEO19wwwl"
+      },
+      {
+        "fields": {
+          "INV/PL": null,
+          "业务类型": "物料领取",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "发货图片": null,
+          "国家": "中国",
+          "备注": "代理商名称：杭州钧溢科技有限公司\n国家：中国\n收件人信息：杭州市钱塘区金沙印象城2楼 L30-32 良信智慧住宅体验馆   高磊 15068878588\n运费承担者：普渡付款(PUDU)\n物料用途：经销商销售活动资料派发\n申请人：何国芳",
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "待审批",
+          "客户名称": "杭州钧溢科技有限公司",
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": "待核实库存",
+          "库存审查结论": "部分库存不足",
+          "库存快照时间": 1791729761275,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": "[\"om_x100b638e4906bcb0c2c092782365026\", \"om_x100b638e491870a8c43032312e4e5d8\"]",
+          "所属战区": null,
+          "排期编辑版本": "0",
+          "提交幂等键": "9ff8047d0d544412bc2058b39db7fc19",
+          "提交时间": 1791729632376,
+          "收件人信息": "杭州市钱塘区金沙印象城2楼 L30-32 良信智慧住宅体验馆   高磊 15068878588",
+          "文化周边处理状态": null,
+          "文化周边消息ID": null,
+          "文化周边通知状态": null,
+          "时间判定": "加急申请",
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "经销商销售活动资料派发-何国芳-营销物料领取",
+          "物料下单时间": 1790870400000,
+          "物料使用时间": 1792339200000,
+          "物料到货时间": 1791475200000,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": [
+                "rec27IsS6kg0H4",
+                "rec27IsS6kfYem"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0389,MAT-0369",
+              "text_arr": [
+                "MAT-0389",
+                "MAT-0369"
+              ],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": null,
+          "物料用途": "经销商销售活动资料派发",
+          "用途|活动": "经销商销售活动资料派发",
+          "申请人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_5ceb4e35-af1b-4e54-b109-8699c27504cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "heguofang@pudutech.com",
+              "en_name": "何国芳",
+              "id": "ou_2f5889d972134caae9a69a93c2a4bd54",
+              "name": "何国芳"
+            }
+          ],
+          "申请人.部门": [
+            "CR业务部"
+          ],
+          "申请单号": "REQ-20261011-001",
+          "申请原因": "代理商支持",
+          "申请变更次数": "0",
+          "申请时角色快照": "销售",
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvxKHvlkdfMO",
+                "recvxKHvlkGGAZ"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261011-001-01,REQ-20261011-001-02",
+              "text_arr": [
+                "REQ-20261011-001-01",
+                "REQ-20261011-001-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "普通物料申请",
+          "申请部门|区域": "CR业务部",
+          "相关附件": null,
+          "管理员通知时间": 1791729789552,
+          "管理员通知状态": "已发送",
+          "要求到达结束日期": 1792339200000,
+          "要求达到开始日期": 1792339200000,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "541.6",
+          "运费承担者": "普渡付款(PUDU)",
+          "需要下单日期": null,
+          "预计完成制作日期": 1791475200000
+        },
+        "id": "recvxKHuwORu1I",
+        "record_id": "recvxKHuwORu1I"
       }
     ],
     "申请明细": [
@@ -234648,10 +234826,10 @@
             }
           ],
           "产品型号名称": "无需型号",
-          "出库流水编号": null,
+          "出库流水编号": "issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01",
           "原申请数量": "3",
           "发放人": null,
-          "发放时间": null,
+          "发放时间": "1791770033143",
           "品类": [
             {
               "record_ids": [
@@ -234676,10 +234854,14 @@
           "库存审查时库存": "428",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "recvxNqtDfHvkS"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01",
+              "text_arr": [
+                "issue:EB85FD9A-540F-4E69-8C30-BC9E8CC1FFD4:REQ-20261010-003-01"
+              ],
               "type": "text"
             }
           ],
@@ -234710,7 +234892,7 @@
           ],
           "明细业务类型": null,
           "明细变更说明": null,
-          "明细状态": "待审批",
+          "明细状态": "已发放",
           "明细编号": "REQ-20261010-003-01",
           "是否到货": null,
           "物料下单时间": 1790265600000,
@@ -235078,6 +235260,254 @@
         },
         "id": "recvxDERILajoo",
         "record_id": "recvxDERILajoo"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水编号": null,
+          "原申请数量": "50",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6LG"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "003",
+              "text_arr": [
+                "003"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "公司产品手册",
+          "备注": null,
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "0",
+          "实际发放物料品类": "公司产品手册",
+          "实际发放物料编码": null,
+          "实际发放语种": "简中(Simplified Chinese)",
+          "审批通过数量": "50",
+          "库存审查时库存": "490",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存充足",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvxKHuwORu1I"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261011-001",
+              "text_arr": [
+                "REQ-20261011-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "490",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20261011-001-01",
+          "是否到货": null,
+          "物料下单时间": 1790870400000,
+          "物料使用时间": 1792339200000,
+          "物料到货时间": 1791475200000,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kfYem"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0369",
+              "text_arr": [
+                "MAT-0369"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "50",
+          "申请时单价（人民币）": "5.416",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZxfSqM9E"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y09",
+              "text_arr": [
+                "Y09"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "简中(Simplified Chinese)",
+          "费用小计（人民币）": "270.8",
+          "附件": null
+        },
+        "id": "recvxKHvlkdfMO",
+        "record_id": "recvxKHvlkdfMO"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvpTMOywKTmB"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X019",
+              "text_arr": [
+                "X019"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "无需型号",
+          "出库流水编号": null,
+          "原申请数量": "50",
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "rec27JD20Fj6ZU"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "005",
+              "text_arr": [
+                "005"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+          "备注": null,
+          "实际发放产品型号": "无需型号",
+          "实际发放数量": "0",
+          "实际发放物料品类": "清洁产品线手册CR(Cleaning Product Line Brochure）",
+          "实际发放物料编码": null,
+          "实际发放语种": "简中(Simplified Chinese)",
+          "审批通过数量": "50",
+          "库存审查时库存": "35",
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": "库存不足，需要制作",
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvxKHuwORu1I"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261011-001",
+              "text_arr": [
+                "REQ-20261011-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": "35",
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": null,
+          "明细变更说明": null,
+          "明细状态": "待审批",
+          "明细编号": "REQ-20261011-001-02",
+          "是否到货": null,
+          "物料下单时间": 1790870400000,
+          "物料使用时间": 1792339200000,
+          "物料到货时间": 1791475200000,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kg0H4"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0389",
+              "text_arr": [
+                "MAT-0389"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请数量": "50",
+          "申请时单价（人民币）": "5.416",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": [
+                "recvq3ZxfSqM9E"
+              ],
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": "Y09",
+              "text_arr": [
+                "Y09"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种名称": "简中(Simplified Chinese)",
+          "费用小计（人民币）": "270.8",
+          "附件": null
+        },
+        "id": "recvxKHvlkGGAZ",
+        "record_id": "recvxKHvlkGGAZ"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -245130,7 +245560,7 @@
           "用户编号": "46",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015p_e52eff4b-473a-47b1-85db-7c9362e85ccg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015p_e52eff4b-473a-47b1-85db-7c9362e85ccg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "ashley.li@pudutech.com",
               "en_name": "黎晓艳",
               "id": "ou_ea760a608267fb99394a5959051deef5",
@@ -246587,7 +247017,7 @@
           "用户编号": "102",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015e_19f9bede-8a05-44b0-8e3a-28f5f263b8cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015e_19f9bede-8a05-44b0-8e3a-28f5f263b8cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wushaoqiang@pudutech.com",
               "en_name": "吴少强",
               "id": "ou_07dbc12ee0eb130a61b27d8b6856c52e",
@@ -247393,7 +247823,7 @@
           "用户编号": "133",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015f_15e25f75-1b20-421a-b30d-f082a69f190g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015f_15e25f75-1b20-421a-b30d-f082a69f190g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhuojiaxing@pudutech.com",
               "en_name": "卓佳星",
               "id": "ou_1930aa34a1e2e72dbddeab634ed26cb7",
@@ -249473,7 +249903,7 @@
           "用户编号": "213",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00155_47475cd8-4af3-4b5d-b8ba-95cb40a1be2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00155_47475cd8-4af3-4b5d-b8ba-95cb40a1be2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "yaodexing@pudutech.com",
               "en_name": "姚德兴",
               "id": "ou_4bb1b3a8a6a6a71a223898825bc8c236",
@@ -249629,7 +250059,7 @@
           "用户编号": "219",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015d_34b3d149-6900-4afc-b65d-d58c6db979cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015d_34b3d149-6900-4afc-b65d-d58c6db979cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhonglingxuan@pudutech.com",
               "en_name": "仲泠萱",
               "id": "ou_4f013eae8dd4395cc13b2d175a790ac8",
@@ -256831,7 +257261,7 @@
           "用户编号": "496",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00138_12508344-9709-4cb4-9700-1cca1a78ee5g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00138_12508344-9709-4cb4-9700-1cca1a78ee5g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zengjiayi@pudutech.com",
               "en_name": "曾嘉怡",
               "id": "ou_e6bfd507e8a0683622114252b9e574c5",
@@ -268684,9 +269114,9 @@
     "产品型号": 42,
     "物料语种": 12,
     "物料主数据": 909,
-    "库存流水": 558,
-    "物料申请单": 98,
-    "申请明细": 531,
+    "库存流水": 559,
+    "物料申请单": 99,
+    "申请明细": 533,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "文化周边编码及库存数量": 100,
