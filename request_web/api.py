@@ -11,14 +11,16 @@ from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib import parse
 from urllib.parse import quote
 from uuid import uuid4
 
-from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Response
+from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 
 from live_cache import resolve_cache_path
 
@@ -349,6 +351,76 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@api.middleware("http")
+async def feishu_enterprise_gate(request: Request, call_next):
+    """Protect the public site and APIs without blocking health or tokened webhooks."""
+    from request_web import feishu_auth
+
+    path = request.url.path
+    if path == "/api/health" or path.startswith("/auth/feishu/") or path in {
+        "/api/corporate-exchange-sync", "/api/corporate-exchange-sync/status"
+    }:
+        return await call_next(request)
+    # Only the in-process test client bypasses the gate. Host headers or
+    # loopback proxy connections must not make a public request trusted.
+    if request.url.hostname == "testserver" and request.client and request.client.host == "testclient":
+        return await call_next(request)
+    try:
+        tenant_key = await run_in_threadpool(feishu_auth.own_tenant_key)
+    except Exception:
+        return JSONResponse({"detail": "企业登录暂不可用，请稍后重试。"}, status_code=503)
+    if feishu_auth.valid_session(request.cookies.get("pudu_feishu", ""), tenant_key):
+        return await call_next(request)
+    if path.startswith("/api/") or request.method != "GET":
+        return JSONResponse({"detail": "请先通过飞书登录。"}, status_code=401)
+    target = feishu_auth.safe_return_path(path + (f"?{request.url.query}" if request.url.query else ""))
+    return RedirectResponse("/auth/feishu/start?" + parse.urlencode({"next": target}), status_code=303)
+
+
+@api.get("/auth/feishu/start")
+def feishu_login_start(next: str = "/") -> RedirectResponse:
+    from request_web import feishu_auth
+
+    state = feishu_auth.new_state()
+    response = RedirectResponse(feishu_auth.authorization_url(state), status_code=303)
+    response.set_cookie("pudu_feishu_state", state, max_age=300, httponly=True, secure=True, samesite="lax")
+    response.set_cookie("pudu_feishu_next", feishu_auth.safe_return_path(next), max_age=300, httponly=True, secure=True, samesite="lax")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/callback")
+def feishu_login_callback(request: Request, code: str = "", state: str = "") -> Response:
+    from request_web import feishu_auth
+
+    expected = request.cookies.get("pudu_feishu_state", "")
+    if not expected or not state or not secrets.compare_digest(expected, state) or not code:
+        raise HTTPException(status_code=400, detail="飞书登录已过期或校验失败，请重新打开页面。")
+    try:
+        open_id, tenant_key = feishu_auth.exchange_code(code)
+        if not secrets.compare_digest(tenant_key, feishu_auth.own_tenant_key()):
+            raise HTTPException(status_code=403, detail="仅限本企业飞书成员访问。")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="飞书登录暂时失败，请稍后重试。") from exc
+    target = feishu_auth.safe_return_path(request.cookies.get("pudu_feishu_next", "/"))
+    response = RedirectResponse(target, status_code=303)
+    response.set_cookie("pudu_feishu", feishu_auth.create_session(open_id, tenant_key), max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax")
+    response.delete_cookie("pudu_feishu_state", secure=True, httponly=True, samesite="lax")
+    response.delete_cookie("pudu_feishu_next", secure=True, httponly=True, samesite="lax")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/logout")
+def feishu_logout() -> RedirectResponse:
+    response = RedirectResponse("/", status_code=303)
+    response.delete_cookie("pudu_feishu", secure=True, httponly=True, samesite="lax")
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @api.middleware("http")
