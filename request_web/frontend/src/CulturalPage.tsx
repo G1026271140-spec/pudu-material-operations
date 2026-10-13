@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryCarousel from "./CategoryCarousel";
+import { withCurrentUser } from "./identity";
+import type { CurrentUser } from "./identity";
 
 type Lang = "zh" | "en";
 type User = {
@@ -128,7 +130,7 @@ const SIZE_CHARTS: Record<string, string> = {
   [CULTURAL_JACKET]: "/app-assets/cultural-jacket-size-chart.jpg",
 };
 
-export default function CulturalPage({ lang }: { lang: Lang }) {
+export default function CulturalPage({ lang, currentUser = null }: { lang: Lang; currentUser?: CurrentUser | null }) {
   const t = c[lang];
   const [catalog, setCatalog] = useState<Catalog | null>(null),
     [error, setError] = useState("");
@@ -149,13 +151,21 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     [busy, setBusy] = useState(false),
     [done, setDone] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
+  const requesterTouched = useRef(false);
   useEffect(() => {
     fetch("/api/cultural-catalog")
       .then((r) => r.json())
       .then(setCatalog)
       .catch((e) => setError(e.message));
   }, []);
-  const user = catalog?.users.find((u) => u.open_id === requesterId);
+  useEffect(() => {
+    if (!catalog || !currentUser || currentUser.permission_status === "disabled" || requesterTouched.current || requesterId) return;
+    const person = catalog.users.find((item) => item.open_id === currentUser.open_id) || currentUser;
+    setRequesterId(person.open_id);
+    setQuery(person.name);
+  }, [catalog, currentUser, requesterId]);
+  const user = catalog?.users.find((u) => u.open_id === requesterId)
+    || (currentUser?.open_id === requesterId ? currentUser : undefined);
   const departmentId = user?.department_ids?.[0] || "";
   const department =
     catalog?.departments.find((d) => d.department_id === departmentId)?.path ||
@@ -163,7 +173,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
     "";
   const users = useMemo(
     () =>
-      (catalog?.users || [])
+      withCurrentUser(catalog?.users || [], currentUser)
         .filter(
           (u) =>
             !query ||
@@ -172,7 +182,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
               .includes(query.toLocaleLowerCase()),
         )
         .slice(0, 80),
-    [catalog, query],
+    [catalog, query, currentUser],
   );
   const products = [
     ...new Set(catalog?.combinations.map((x) => x.product) || []),
@@ -318,6 +328,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
                 placeholder={t.input}
                 onFocus={() => setMenu(true)}
                 onChange={(e) => {
+                  requesterTouched.current = true;
                   setQuery(e.target.value);
                   setRequesterId("");
                   setMenu(true);
@@ -330,6 +341,7 @@ export default function CulturalPage({ lang }: { lang: Lang }) {
                     <button
                       key={u.open_id}
                       onClick={() => {
+                        requesterTouched.current = true;
                         setRequesterId(u.open_id);
                         setQuery(u.name);
                         setMenu(false);

@@ -83,21 +83,37 @@ def _unsign(value: str) -> dict[str, object] | None:
         return None
 
 
-def create_session(open_id: str, tenant_key: str) -> str:
-    body = {"open_id": open_id, "tenant_key": tenant_key, "expires": int(time.time()) + SESSION_SECONDS}
+def create_session(open_id: str, tenant_key: str, *, name: str = "", avatar_url: str = "") -> str:
+    body = {
+        "open_id": open_id,
+        "tenant_key": tenant_key,
+        "name": name[:120],
+        "avatar_url": avatar_url[:600] if avatar_url.startswith("https://") else "",
+        "expires": int(time.time()) + SESSION_SECONDS,
+    }
     return _sign(json.dumps(body, separators=(",", ":")).encode("utf-8"))
 
 
-def valid_session(value: str, tenant_key: str) -> bool:
+def session_identity(value: str, tenant_key: str) -> dict[str, str] | None:
     body = _unsign(value) if value else None
-    return bool(
+    if not (
         body
         and body.get("tenant_key") == tenant_key
         and isinstance(body.get("open_id"), str)
         and str(body["open_id"]).startswith("ou_")
         and isinstance(body.get("expires"), int)
         and int(body["expires"]) > time.time()
-    )
+    ):
+        return None
+    return {
+        "open_id": str(body["open_id"]),
+        "name": str(body.get("name") or ""),
+        "avatar_url": str(body.get("avatar_url") or ""),
+    }
+
+
+def valid_session(value: str, tenant_key: str) -> bool:
+    return session_identity(value, tenant_key) is not None
 
 
 def _feishu(method: str, path: str, *, token: str = "", payload: dict | None = None) -> dict:
@@ -154,7 +170,7 @@ def authorization_url(state: str) -> str:
     )
 
 
-def exchange_code(code: str) -> tuple[str, str]:
+def exchange_code(code: str) -> tuple[str, str, dict[str, str]]:
     app_id, app_secret = credentials()
     app_token = _feishu("POST", "/auth/v3/app_access_token/internal", payload={"app_id": app_id, "app_secret": app_secret})["app_access_token"]
     result = _feishu("POST", "/authen/v1/access_token", token=app_token, payload={"grant_type": "authorization_code", "code": code})
@@ -166,7 +182,10 @@ def exchange_code(code: str) -> tuple[str, str]:
     tenant_key = str(user.get("tenant_key") or "")
     if not open_id.startswith("ou_") or not tenant_key:
         raise HTTPException(status_code=403, detail="无法验证飞书用户的企业身份")
-    return open_id, tenant_key
+    return open_id, tenant_key, {
+        "name": str(user.get("name") or "").strip(),
+        "avatar_url": str(user.get("avatar_url") or "").strip(),
+    }
 
 
 def new_state(return_path: str = "/") -> str:

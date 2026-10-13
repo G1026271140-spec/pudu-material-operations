@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryCarousel from "./CategoryCarousel";
+import { withCurrentUser } from "./identity";
+import type { CurrentUser } from "./identity";
 
 type Option = {
   materialCode: string;
@@ -55,7 +57,7 @@ type Line = {
 const clean = (value: string) =>
   value.replace(/\([^)]*\)|（[^）]*）/g, "").trim();
 
-export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
+export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" | "en"; currentUser?: CurrentUser | null }) {
   const t = (zh: string, en: string) => (lang === "zh" ? zh : en);
   const [catalog, setCatalog] = useState<Catalog | null>(null),
     [error, setError] = useState(""),
@@ -76,6 +78,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     [reason, setReason] = useState(""),
     [date, setDate] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
+  const requesterTouched = useRef(false);
   const [selectedModels, setSelectedModels] = useState<string[]>([]),
     [selectedLanguages, setSelectedLanguages] = useState<string[]>([]),
     [customMaterial, setCustomMaterial] = useState(false),
@@ -97,14 +100,15 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     const timer = window.setTimeout(() => setCartNotice(false), 2400);
     return () => window.clearTimeout(timer);
   }, [cartNotice]);
-  const user = catalog?.users.find((u) => u.open_id === requesterId);
+  const user = catalog?.users.find((u) => u.open_id === requesterId)
+    || (currentUser?.open_id === requesterId ? currentUser : undefined);
   const depId = user?.department_ids?.[0] || "";
   const dep = catalog?.departments.find((d) => d.department_id === depId);
   const department =
     dep?.path || dep?.name || user?.department_paths?.[0] || "";
   const requesterOptions = useMemo(() => {
     const q = requesterQuery.trim().toLocaleLowerCase();
-    return (catalog?.users || [])
+    return withCurrentUser(catalog?.users || [], currentUser)
       .filter(
         (u) =>
           !q ||
@@ -113,10 +117,11 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
             .includes(q),
       )
       .slice(0, 80);
-  }, [catalog, requesterQuery]);
+  }, [catalog, requesterQuery, currentUser]);
   const requesterLabel = (u: User) =>
     `${u.name}${u.department_paths?.length ? ` · ${u.department_paths.join("、")}` : ""}`;
   function chooseRequester(u: User) {
+    requesterTouched.current = true;
     const nextIsAdmin = (catalog?.rolesByUser?.[u.open_id] || []).includes(
       "管理员",
     );
@@ -140,6 +145,12 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
     setRequesterQuery(u.name);
     setRequesterOpen(false);
   }
+  useEffect(() => {
+    if (!catalog || !currentUser || currentUser.permission_status === "disabled" || requesterTouched.current || requesterId) return;
+    const person = catalog.users.find((item) => item.open_id === currentUser.open_id) || currentUser;
+    setRequesterId(person.open_id);
+    setRequesterQuery(person.name);
+  }, [catalog, currentUser, requesterId]);
   const total = lines.reduce((s, l) => s + l.quantity * l.unitPriceRmb, 0),
     count = lines.reduce((s, l) => s + l.quantity, 0);
   const isAdminRequester = Boolean(
@@ -528,6 +539,7 @@ export default function App({ lang = "zh" }: { lang?: "zh" | "en" }) {
                   autoComplete="off"
                   onFocus={() => setRequesterOpen(true)}
                   onChange={(e) => {
+                    requesterTouched.current = true;
                     setRequesterQuery(e.target.value);
                     setRequesterId("");
                     setRequesterOpen(true);

@@ -5,6 +5,7 @@ import ManagementPage from "./ManagementPage";
 import type { ManagementTab } from "./ManagementPage";
 import AllocationWorkbench from "./AllocationWorkbench";
 import CorporateApparelPage from "./CorporateApparelPage";
+import type { CurrentUser } from "./identity";
 import "./portal.css";
 
 type Lang = "zh" | "en";
@@ -50,6 +51,23 @@ function pagePath(page: PortalPage): string {
   return "/request";
 }
 
+function IdentityBar({ user, lang }: { user: CurrentUser | null; lang: Lang }) {
+  if (!user) return null;
+  const role = user.permission_status === "disabled"
+    ? (lang === "zh" ? "权限已停用" : "Access disabled")
+    : user.roles.join("、") || (lang === "zh" ? "未设置角色" : "No role");
+  return (
+    <div className="identity-bar" aria-label={lang === "zh" ? "当前登录身份" : "Signed-in identity"}>
+      <div className="identity-person">
+        {user.avatar_url ? <img src={user.avatar_url} alt="" referrerPolicy="no-referrer" /> : <span className="identity-avatar">{user.name.slice(0, 1)}</span>}
+        <span className="identity-name">{user.name}</span>
+        <span className="identity-role">{role}</span>
+      </div>
+      <a href="/auth/feishu/logout">{lang === "zh" ? "退出" : "Sign out"}</a>
+    </div>
+  );
+}
+
 const text = {
   zh: {
     app: "营销物料管理系统",
@@ -59,7 +77,7 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     tools: "数据与系统工具",
-    version: "当前应用版本 V3.2.1",
+    version: "当前应用版本 V3.2.2",
     locked: "此功能暂未对外开放",
     password: "请输入管理员密码",
     unlock: "解锁",
@@ -75,7 +93,7 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     tools: "Data & System Tools",
-    version: "Current Version V3.2.1",
+    version: "Current Version V3.2.2",
     locked: "This feature is not publicly available",
     password: "Enter administrator password",
     unlock: "Unlock",
@@ -97,10 +115,17 @@ export default function Portal() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem("pudu-sidebar-collapsed") === "true",
   );
   const t = text[lang];
+  useEffect(() => {
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((identity) => setCurrentUser(identity))
+      .catch(() => undefined);
+  }, []);
   useEffect(() => {
     fetch("/api/admin/status")
       .then((response) => response.json())
@@ -116,10 +141,10 @@ export default function Portal() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
   if (directAllocation) {
-    return <AllocationWorkbench lang={lang} directRequestId={params.get("request_id") || ""} operator={params.get("operator") || ""} reviewToken={params.get("review_token") || ""} />;
+    return <><IdentityBar user={currentUser} lang={lang} /><AllocationWorkbench lang={lang} directRequestId={params.get("request_id") || ""} operator={params.get("operator") || ""} reviewToken={params.get("review_token") || ""} /></>;
   }
   if (directCorporateApparel) {
-    return <CorporateApparelPage />;
+    return <><IdentityBar user={currentUser} lang={lang} /><CorporateApparelPage currentUser={currentUser} /></>;
   }
   function changeLang(next: Lang) {
     localStorage.setItem("pudu-lang", next);
@@ -242,10 +267,11 @@ export default function Portal() {
         »
       </button>
       <div className="portal-content">
+        <IdentityBar user={currentUser} lang={lang} />
         {page === "request" ? (
-          <RequestPage lang={lang} />
+          <RequestPage lang={lang} currentUser={currentUser} />
         ) : page === "cultural" ? (
-          <CulturalPage lang={lang} />
+          <CulturalPage lang={lang} currentUser={currentUser} />
         ) : unlocked ? (
           <ManagementPage
             lang={lang}

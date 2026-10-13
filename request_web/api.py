@@ -18,7 +18,7 @@ from uuid import uuid4
 
 from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
@@ -398,7 +398,7 @@ def feishu_login_callback(request: Request, code: str = "", state: str = "") -> 
     if target is None or not code:
         raise HTTPException(status_code=400, detail="飞书登录已过期或校验失败，请重新打开页面。")
     try:
-        open_id, tenant_key = feishu_auth.exchange_code(code)
+        open_id, tenant_key, profile = feishu_auth.exchange_code(code)
         if not secrets.compare_digest(tenant_key, feishu_auth.own_tenant_key()):
             raise HTTPException(status_code=403, detail="仅限本企业飞书成员访问。")
     except HTTPException:
@@ -406,17 +406,79 @@ def feishu_login_callback(request: Request, code: str = "", state: str = "") -> 
     except Exception as exc:
         raise HTTPException(status_code=502, detail="飞书登录暂时失败，请稍后重试。") from exc
     response = RedirectResponse(target, status_code=303)
-    response.set_cookie("pudu_feishu", feishu_auth.create_session(open_id, tenant_key), max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax")
+    response.set_cookie("pudu_feishu", feishu_auth.create_session(open_id, tenant_key, **profile), max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax")
     response.headers["Cache-Control"] = "no-store"
     return response
 
 
 @api.get("/auth/feishu/logout")
 def feishu_logout() -> RedirectResponse:
-    response = RedirectResponse("/", status_code=303)
+    response = RedirectResponse("/auth/feishu/signed-out", status_code=303)
     response.delete_cookie("pudu_feishu", secure=True, httponly=True, samesite="lax")
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@api.get("/auth/feishu/signed-out")
+def feishu_signed_out() -> HTMLResponse:
+    return HTMLResponse(
+        '<!doctype html><html lang="zh-CN"><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>已退出登录</title><body style="font:16px system-ui;max-width:420px;'
+        'margin:15vh auto;padding:24px;color:#143b5e;text-align:center">'
+        '<h1>已退出应用</h1><p>当前设备的应用登录状态已清除。</p>'
+        '<a href="/auth/feishu/start" style="color:#075b7b">重新登录 / Sign in</a>'
+        '</body></html>',
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@api.get("/api/auth/me")
+def current_feishu_user(request: Request) -> JSONResponse:
+    """Identity comes from the signed login cookie; permissions are display-only here."""
+    from request_web import feishu_auth
+
+    identity = feishu_auth.session_identity(
+        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+    )
+    if identity is None:
+        raise HTTPException(status_code=401, detail="请先通过飞书登录。")
+    open_id = identity["open_id"]
+    contacts = _json("contact_departments_cache.json")
+    contact = next(
+        (item for item in contacts.get("users", []) if item.get("open_id") == open_id),
+        {},
+    )
+    permission_status = "missing"
+    roles: list[str] = []
+    for row in _json("page_data_cache.json").get("tables", {}).get("用户权限表", []):
+        fields = row.get("fields", {})
+        accounts = fields.get("用户账号") or []
+        if isinstance(accounts, dict):
+            accounts = [accounts]
+        if not any(
+            isinstance(account, dict)
+            and (account.get("id") or account.get("open_id")) == open_id
+            for account in accounts
+        ):
+            continue
+        if str(fields.get("是否启用") or "").strip() == "是":
+            permission_status = "enabled"
+            roles = sorted({str(role) for role in fields.get("角色", []) if str(role).strip()})
+            break
+        permission_status = "disabled"
+    if permission_status == "missing":
+        roles = ["销售"]
+    body = {
+        "open_id": open_id,
+        "name": identity["name"] or str(contact.get("name") or "飞书用户"),
+        "avatar_url": identity["avatar_url"],
+        "department_ids": contact.get("department_ids") or [],
+        "department_paths": contact.get("department_paths") or [],
+        "roles": roles,
+        "permission_status": permission_status,
+    }
+    return JSONResponse(body, headers={"Cache-Control": "no-store"})
 
 
 @api.get("/favicon.ico")

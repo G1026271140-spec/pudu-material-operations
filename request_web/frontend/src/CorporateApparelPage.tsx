@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryCarousel from "./CategoryCarousel";
+import { withCurrentUser } from "./identity";
+import type { CurrentUser } from "./identity";
 import "./corporate-apparel.css";
 
 type User = { open_id: string; name: string; department_ids: string[]; department_paths: string[] };
@@ -90,7 +92,7 @@ const copy = {
   },
 };
 
-export default function CorporateApparelPage() {
+export default function CorporateApparelPage({ currentUser = null }: { currentUser?: CurrentUser | null }) {
   const [lang, setLang] = useState<Lang>(() => localStorage.getItem("pudu-lang") === "en" ? "en" : "zh");
   const t = copy[lang];
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -110,6 +112,7 @@ export default function CorporateApparelPage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
+  const requesterTouched = useRef(false);
 
   useEffect(() => {
     const loadInEnglish = localStorage.getItem("pudu-lang") === "en";
@@ -139,12 +142,19 @@ export default function CorporateApparelPage() {
     }
   }
 
-  const user = catalog?.users.find((item) => item.open_id === requesterId);
+  useEffect(() => {
+    if (!catalog || !currentUser || currentUser.permission_status === "disabled" || requesterTouched.current || requesterId) return;
+    const person = catalog.users.find((item) => item.open_id === currentUser.open_id) || currentUser;
+    setRequesterId(person.open_id);
+    setQuery(person.name);
+  }, [catalog, currentUser, requesterId]);
+  const user = catalog?.users.find((item) => item.open_id === requesterId)
+    || (currentUser?.open_id === requesterId ? currentUser : undefined);
   const departmentId = user?.department_ids?.[0] || "";
   const department = catalog?.departments.find((item) => item.department_id === departmentId)?.path || user?.department_paths?.[0] || "";
   const users = useMemo(
-    () => (catalog?.users || []).filter((item) => !query || `${item.name} ${item.department_paths?.join(" ")}`.toLowerCase().includes(query.toLowerCase())).slice(0, 80),
-    [catalog, query],
+    () => withCurrentUser(catalog?.users || [], currentUser).filter((item) => !query || `${item.name} ${item.department_paths?.join(" ")}`.toLowerCase().includes(query.toLowerCase())).slice(0, 80),
+    [catalog, query, currentUser],
   );
   const activeItems = liveItems?.filter((item) => item.product === active && item.available > 0) || [];
   const productImages = (product: string) => [
@@ -250,9 +260,9 @@ export default function CorporateApparelPage() {
         <div className="corporate-contact">
           <label>{t.applicant} *
             <div className="corporate-combo">
-              <input value={query} placeholder={t.applicantPlaceholder} onFocus={() => setMenu(true)} onChange={(event) => { setQuery(event.target.value); setRequesterId(""); setMenu(true); }} />
+              <input value={query} placeholder={t.applicantPlaceholder} onFocus={() => setMenu(true)} onChange={(event) => { requesterTouched.current = true; setQuery(event.target.value); setRequesterId(""); setMenu(true); }} />
               <button type="button" onClick={() => setMenu(!menu)}>⌄</button>
-              {menu && <div>{users.map((item) => <button type="button" key={item.open_id} onClick={() => { setRequesterId(item.open_id); setQuery(item.name); setMenu(false); }}>{item.name} · {item.department_paths?.join("、")}</button>)}</div>}
+              {menu && <div>{users.map((item) => <button type="button" key={item.open_id} onClick={() => { requesterTouched.current = true; setRequesterId(item.open_id); setQuery(item.name); setMenu(false); }}>{item.name} · {item.department_paths?.join("、")}</button>)}</div>}
             </div>
           </label>
           <label>{t.department}<input value={department} readOnly placeholder={t.departmentPlaceholder} /></label>

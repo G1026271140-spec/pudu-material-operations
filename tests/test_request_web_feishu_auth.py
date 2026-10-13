@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from urllib.parse import parse_qs, urlsplit
 
 from request_web import feishu_auth
+from request_web import api as web_api
 from request_web.api import api
 
 
@@ -21,7 +22,7 @@ def test_public_page_and_api_require_feishu_login(monkeypatch):
 
 def test_callback_checks_tenant_and_restores_direct_page(monkeypatch):
     monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "own-tenant")
-    monkeypatch.setattr(feishu_auth, "exchange_code", lambda code: ("ou_user", "own-tenant"))
+    monkeypatch.setattr(feishu_auth, "exchange_code", lambda code: ("ou_user", "own-tenant", {"name": "测试用户", "avatar_url": ""}))
     with TestClient(api, base_url=PUBLIC, follow_redirects=False) as starter:
         start = starter.get("/auth/feishu/start?next=%2Fcorporate-apparel")
     assert start.status_code == 303
@@ -37,12 +38,21 @@ def test_callback_checks_tenant_and_restores_direct_page(monkeypatch):
         assert "httponly" in callback.headers["set-cookie"].lower()
         assert "Max-Age=2592000" in callback.headers["set-cookie"]
         assert client.get("/api/admin/status").status_code == 200
+        me = client.get("/api/auth/me")
+        assert me.status_code == 200
+        assert me.json()["name"] == "测试用户"
+        assert me.headers["cache-control"] == "no-store"
+        logout = client.get("/auth/feishu/logout")
+        assert logout.status_code == 303
+        assert logout.headers["location"] == "/auth/feishu/signed-out"
+        assert client.get("/auth/feishu/signed-out").status_code == 200
+        assert client.get("/api/auth/me").status_code == 401
         assert client.get(f"/auth/feishu/callback?code=ok&state={state}").status_code == 400
 
 
 def test_foreign_tenant_is_rejected(monkeypatch):
     monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "own-tenant")
-    monkeypatch.setattr(feishu_auth, "exchange_code", lambda code: ("ou_foreign", "foreign-tenant"))
+    monkeypatch.setattr(feishu_auth, "exchange_code", lambda code: ("ou_foreign", "foreign-tenant", {"name": "访客", "avatar_url": ""}))
     with TestClient(api, base_url=PUBLIC, follow_redirects=False) as client:
         start = client.get("/auth/feishu/start")
         state = parse_qs(urlsplit(start.headers["location"]).query)["state"][0]
@@ -63,6 +73,33 @@ def test_signed_session_rejects_tampering_and_expiry(monkeypatch):
     assert feishu_auth.valid_session(token, "own-tenant")
     monkeypatch.setattr(feishu_auth.time, "time", lambda: issued_at + 30 * 24 * 3600)
     assert not feishu_auth.valid_session(token, "own-tenant")
+
+
+def test_current_user_display_roles_do_not_create_permissions(monkeypatch):
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))
+    monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "own-tenant")
+    permission_rows = []
+    def cached_data(name):
+        if name == "contact_departments_cache.json":
+            return {"users": [{"open_id": "ou_user", "name": "目录姓名", "department_ids": ["d1"], "department_paths": ["市场部"]}]}
+        return {"tables": {"用户权限表": permission_rows}}
+    monkeypatch.setattr(web_api, "_json", cached_data)
+    token = feishu_auth.create_session("ou_user", "own-tenant", name="登录姓名")
+    with TestClient(api, base_url=PUBLIC) as client:
+        client.cookies.set("pudu_feishu", token)
+        new_user = client.get("/api/auth/me").json()
+        assert new_user["name"] == "登录姓名"
+        assert new_user["roles"] == ["销售"]
+        assert new_user["permission_status"] == "missing"
+        assert permission_rows == []
+        permission_rows.append({"fields": {"用户账号": [{"id": "ou_user"}], "是否启用": "否", "角色": ["管理员"]}})
+        disabled = client.get("/api/auth/me").json()
+        assert disabled["roles"] == []
+        assert disabled["permission_status"] == "disabled"
+        permission_rows[0]["fields"]["是否启用"] = "是"
+        enabled = client.get("/api/auth/me").json()
+        assert enabled["roles"] == ["管理员"]
+        assert enabled["permission_status"] == "enabled"
 
 
 def test_return_path_cannot_leave_site():
