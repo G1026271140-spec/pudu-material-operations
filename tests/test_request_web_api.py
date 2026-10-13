@@ -523,19 +523,22 @@ def test_corporate_apparel_stock_fails_closed_when_live_source_is_unavailable(mo
     assert response.status_code == 500
 
 
-def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
+@pytest.mark.parametrize("role", ["管理员", "区域市场经理"])
+def test_unified_submit_splits_full_catalog_standard_and_cultural_tasks(monkeypatch, role):
     observed = []
     payload = {
         "title": "test", "department": "市场部", "department_id": "od-test",
-        "requester": "管理员", "requester_open_id": "ou-admin",
+        "requester": "目录授权人", "requester_open_id": "ou-privileged",
         "customer_name": "客户", "country": "中国", "recipient_info": "收件信息",
         "freight_payer": "PUDU", "material_usage": "测试", "submission_token": "mixed-token",
-        "scheduling_version": 1, "accepted_roles": ["管理员"], "accepted_date": "2026-09-17",
+        "scheduling_version": 1, "accepted_roles": [role], "accepted_date": "2026-09-17",
         "accepted_at_ms": 1789574400000, "request_reason": "其他",
         "arrival_start": "2026-09-20", "arrival_end": "2026-09-20",
     }
     lines = [
         {"product": "产品单页", "model": "T300", "language": "英语", "quantity": 1},
+        {"product": "停用品类", "model": "M1", "language": "英语", "quantity": 1,
+         "source": "standard", "admin_only": True},
         {"product": "文化POLO衫", "model": "M", "language": "美洲战区", "quantity": 1,
          "source": "cultural", "admin_only": True},
     ]
@@ -544,9 +547,10 @@ def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
         web_api,
         "build_catalog",
         lambda: {
-            "rolesByUser": {"ou-admin": ["管理员"]},
+            "rolesByUser": {"ou-privileged": [role]},
             "products": [{"name": "产品单页"}],
-            "adminProducts": [{"name": "文化POLO衫"}],
+            "adminProducts": [{"name": "停用品类", "adminOnly": True},
+                              {"name": "文化POLO衫", "adminOnly": True}],
         },
     )
     monkeypatch.setattr(
@@ -561,12 +565,14 @@ def test_unified_submit_splits_admin_standard_and_cultural_tasks(monkeypatch):
     assert response.json()["taskIds"] == ["task-1", "task-2"]
     assert [item[1] for item in observed] == ["mixed-token:standard", "mixed-token:cultural"]
     assert observed[0][2]["lines"][0]["product"] == "产品单页"
+    assert observed[0][2]["lines"][1]["product"] == "停用品类"
     assert observed[1][2]["lines"][0]["region"] == "美洲战区"
     assert observed[1][2]["request_payload"]["administrator_override"] is True
     assert observed[1][2]["request_payload"]["material_usage"] == "测试"
+    assert observed[0][2]["request_payload"]["accepted_roles"] == [role]
 
 
-def test_admin_only_category_is_rejected_for_non_admin(monkeypatch):
+def test_full_catalog_category_is_rejected_for_sales(monkeypatch):
     monkeypatch.setattr(web_api, "_validate", lambda _draft, *, live: ({}, [], []))
     monkeypatch.setattr(
         web_api,
@@ -589,7 +595,7 @@ def test_admin_only_category_is_rejected_for_non_admin(monkeypatch):
     )
     assert response.status_code == 200
     assert response.json()["valid"] is False
-    assert "已启用的管理员" in response.json()["errors"][0]
+    assert "管理员或区域市场经理" in response.json()["errors"][0]
 
 
 def test_page_validation_enforces_cached_sales_lead_time(monkeypatch):
@@ -659,16 +665,25 @@ def test_page_validation_keeps_manager_time_exemption(monkeypatch):
     assert response.json() == {"valid": True, "errors": []}
 
 
-def admin_client():
+def admin_client(monkeypatch):
+    from request_web import feishu_auth
+
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("test-app", "test-secret"))
+    monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "test-tenant")
+    admin_row = next(
+        row for row in web_api._json("page_data_cache.json")["tables"]["用户权限表"]
+        if row["fields"].get("是否启用") == "是"
+        and "管理员" in row["fields"].get("角色", [])
+    )
+    admin_open_id = admin_row["fields"]["用户账号"][0]["id"]
     client = TestClient(api)
-    web_api._ADMIN_SESSIONS.add("test-admin-session")
-    client.cookies.set("pudu_admin", "test-admin-session")
+    client.cookies.set("pudu_feishu", feishu_auth.create_session(admin_open_id, "test-tenant"))
     return client
 
 
-def test_management_catalog_requires_password_and_uses_cached_snapshot():
-    assert TestClient(api).get("/api/admin/management-catalog").status_code == 401
-    response = admin_client().get("/api/admin/management-catalog")
+def test_management_catalog_requires_admin_identity_and_uses_cached_snapshot(monkeypatch):
+    assert TestClient(api).get("/api/admin/management-catalog").status_code == 403
+    response = admin_client(monkeypatch).get("/api/admin/management-catalog")
     assert response.status_code == 200
     payload = response.json()
     assert payload["categories"]
@@ -680,18 +695,18 @@ def test_management_catalog_requires_password_and_uses_cached_snapshot():
     assert "Flyers" in payload["shipping"]["packingTypes"]
 
 
-def test_shipping_invoice_preview_requires_admin_and_normalizes_country_name():
+def test_shipping_invoice_preview_requires_admin_and_normalizes_country_name(monkeypatch):
     body = {"template_date": "2026-09-08", "address_code": "Thailand", "address": ""}
-    assert TestClient(api).post("/api/admin/shipping/invoice-preview", json=body).status_code == 401
+    assert TestClient(api).post("/api/admin/shipping/invoice-preview", json=body).status_code == 403
 
-    response = admin_client().post("/api/admin/shipping/invoice-preview", json=body)
+    response = admin_client(monkeypatch).post("/api/admin/shipping/invoice-preview", json=body)
 
     assert response.status_code == 200
     assert response.json() == {"addressCode": "TH", "invoiceNumber": "2026-MKT-TH0908"}
 
 
-def test_shipping_generate_returns_immediate_workbook_download():
-    response = admin_client().post(
+def test_shipping_generate_returns_immediate_workbook_download(monkeypatch):
+    response = admin_client(monkeypatch).post(
         "/api/admin/shipping/generate",
         json={
             "template_date": "2026-09-08",
@@ -739,7 +754,7 @@ def test_management_restock_queues_existing_worker_payload(monkeypatch):
             }
         ],
     }
-    response = admin_client().post("/api/admin/restock/submit", json=draft)
+    response = admin_client(monkeypatch).post("/api/admin/restock/submit", json=draft)
     assert response.status_code == 200
     assert response.json()["restockNo"] == "RST-TEST"
     assert observed["key"] == "RST-TEST"
@@ -755,7 +770,7 @@ def test_management_reduce_uses_distinct_queue_task_type(monkeypatch):
         "_enqueue_fast",
         lambda task_type, key, payload: observed.update(task_type=task_type, payload=payload) or "task-reduce",
     )
-    response = admin_client().post(
+    response = admin_client(monkeypatch).post(
         "/api/admin/restock/submit",
         json={"mode": "reduce", "operator": "管理员", "lines": [{"product": "产品单页", "model": "T300", "language": "英语", "quantity": 10}]},
     )
@@ -776,7 +791,7 @@ def test_dimension_preview_builds_worker_changes_from_cached_associations(monkey
         },
     }
     monkeypatch.setattr(web_api, "_management_snapshot", lambda: snapshot)
-    response = admin_client().post(
+    response = admin_client(monkeypatch).post(
         "/api/admin/dimension/preview",
         json={
             "kind": "model",
@@ -811,7 +826,7 @@ def test_category_submit_preserves_target_value_rows_for_worker(monkeypatch):
         "_enqueue_fast",
         lambda task_type, key, payload: observed.update(payload=payload) or "task-category",
     )
-    response = admin_client().post(
+    response = admin_client(monkeypatch).post(
         "/api/admin/category/submit",
         json={
             "operation": "edit",
@@ -847,8 +862,8 @@ def test_allocation_pending_requires_admin_and_returns_only_summary(monkeypatch)
     monkeypatch.setattr(legacy_app, "pending_inventory_review_contexts", lambda: [context])
     monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [{"open_id": "ou-admin", "name": "管理员"}])
 
-    assert TestClient(api).get("/api/admin/allocation/pending").status_code == 401
-    response = admin_client().get("/api/admin/allocation/pending")
+    assert TestClient(api).get("/api/admin/allocation/pending").status_code == 403
+    response = admin_client(monkeypatch).get("/api/admin/allocation/pending")
 
     assert response.status_code == 200
     assert response.json()["requests"][0]["requestNo"] == "REQ-1"
@@ -889,7 +904,7 @@ def test_allocation_edit_queues_existing_worker_payload(monkeypatch):
         web_api, "_enqueue_fast",
         lambda task_type, key, payload: observed.update(task_type=task_type, key=key, payload=payload) or "task-allocation",
     )
-    response = admin_client().post(
+    response = admin_client(monkeypatch).post(
         "/api/allocation/request-1/submit",
         json={
             "operation": "edit",
@@ -927,7 +942,7 @@ def test_allocation_order_preview_summarizes_only_printed_order_lines(monkeypatc
             ],
         },
     )
-    response = admin_client().post(
+    response = admin_client(monkeypatch).post(
         "/api/allocation/request-1/order-preview",
         json={"operation": "confirm", "draft": {"operator_open_id": "ou-admin"}},
     )
@@ -952,7 +967,7 @@ def test_allocation_order_workbook_download_uses_existing_template(monkeypatch):
             "lines": [{"category": "产品单页", "model": "T300", "language": "英语", "quantity": 3, "usage": "展会"}],
         },
     )
-    response = admin_client().post(
+    response = admin_client(monkeypatch).post(
         "/api/allocation/request-1/order-workbook",
         json={"operation": "confirm", "draft": {"operator_open_id": "ou-admin"}},
     )

@@ -16,7 +16,7 @@ from urllib import parse
 from urllib.parse import quote
 from uuid import uuid4
 
-from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -307,10 +307,6 @@ class RequestDraft(BaseModel):
     lines: list[MaterialLine]
 
 
-class PasswordAttempt(BaseModel):
-    password: str
-
-
 class CulturalLine(BaseModel):
     product: str
     model: str
@@ -512,7 +508,6 @@ def category_asset(filename: str) -> FileResponse:
 @api.get("/app-assets/{filename:path}")
 def app_asset(filename: str) -> FileResponse:
     return _asset_file(filename)
-_ADMIN_SESSIONS: set[str] = set()
 _PENDING_ALLOCATION_CACHE: dict[str, Any] = {"loaded_at": 0.0, "contexts": {}}
 _CORPORATE_APPAREL_STOCK_TTL_SECONDS = 30
 _CORPORATE_APPAREL_STOCK_LOCK = threading.Lock()
@@ -618,31 +613,51 @@ def corporate_apparel_stock(response: Response) -> dict[str, Any]:
         return {"items": items}
 
 
-@api.post("/api/admin/unlock")
-def admin_unlock(attempt: PasswordAttempt, response: Response) -> dict[str, bool]:
-    import app as legacy
+def _signed_admin_open_id(request: Request) -> str:
+    """Resolve an enabled administrator from the enterprise login and current cache."""
+    from request_web import feishu_auth
 
-    if not secrets.compare_digest(attempt.password, legacy.get_approval_password()):
-        raise HTTPException(status_code=401, detail="密码不正确")
-    token = secrets.token_urlsafe(32)
-    _ADMIN_SESSIONS.add(token)
-    response.set_cookie("pudu_admin", token, httponly=True, secure=False, samesite="strict", max_age=3600)
-    return {"unlocked": True}
+    identity = feishu_auth.session_identity(
+        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+    )
+    if identity is None:
+        return ""
+    open_id = identity["open_id"]
+    for row in _json("page_data_cache.json").get("tables", {}).get("用户权限表", []):
+        fields = row.get("fields", {})
+        accounts = fields.get("用户账号") or []
+        if isinstance(accounts, dict):
+            accounts = [accounts]
+        if not any(
+            isinstance(account, dict)
+            and (account.get("id") or account.get("open_id")) == open_id
+            for account in accounts
+        ):
+            continue
+        if str(fields.get("是否启用") or "").strip() != "是":
+            continue
+        roles = fields.get("角色") or []
+        if isinstance(roles, str):
+            roles = [roles]
+        if "管理员" in roles:
+            return open_id
+    return ""
 
 
-def require_admin(pudu_admin: str = Cookie(default="")) -> str:
-    if not pudu_admin or pudu_admin not in _ADMIN_SESSIONS:
-        raise HTTPException(status_code=401, detail="管理页面需要密码解锁。")
-    return pudu_admin
+def require_admin(request: Request) -> str:
+    open_id = _signed_admin_open_id(request)
+    if not open_id:
+        raise HTTPException(status_code=403, detail="仅已启用的管理员可访问物料管理。")
+    return open_id
 
 
 def _allocation_actor(
+    request: Request,
     request_id: str,
     operator: str = "",
     review_token: str = "",
-    pudu_admin: str = "",
 ) -> str:
-    """Authorize either a password session or the signed administrator card link."""
+    """Authorize an administrator login or a signed administrator card link."""
     import app as legacy
 
     signed = (
@@ -651,14 +666,15 @@ def _allocation_actor(
     )
     if signed:
         return operator
-    if pudu_admin and pudu_admin in _ADMIN_SESSIONS:
+    logged_in_admin = _signed_admin_open_id(request)
+    if logged_in_admin:
         return ""
-    raise HTTPException(status_code=401, detail="配货工作台需要管理员权限或有效的飞书卡片链接。")
+    raise HTTPException(status_code=403, detail="配货工作台需要管理员权限或有效的飞书卡片链接。")
 
 
 @api.get("/api/admin/status")
-def admin_status(pudu_admin: str = Cookie(default="")) -> dict[str, bool]:
-    return {"unlocked": bool(pudu_admin and pudu_admin in _ADMIN_SESSIONS)}
+def admin_status(request: Request) -> dict[str, bool]:
+    return {"unlocked": bool(_signed_admin_open_id(request))}
 
 
 def _management_snapshot() -> dict[str, Any]:
@@ -827,15 +843,15 @@ def allocation_pending(_: str = Depends(require_admin)) -> dict[str, Any]:
 
 @api.get("/api/allocation/{request_id}")
 def allocation_context(
+    request: Request,
     request_id: str,
     operator: str = Query(default=""),
     review_token: str = Query(default=""),
-    pudu_admin: str = Cookie(default=""),
 ) -> dict[str, Any]:
     import app as legacy
     from order_scheduling import SHIP_DATE, as_date
 
-    signed_operator = _allocation_actor(request_id, operator, review_token, pudu_admin)
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
     try:
         cached_contexts = dict(_PENDING_ALLOCATION_CACHE.get("contexts") or {})
         cache_is_fresh = time.monotonic() - float(_PENDING_ALLOCATION_CACHE.get("loaded_at") or 0) <= 120
@@ -957,15 +973,15 @@ def _allocation_order_preview(request_id: str, operation: str, draft: dict[str, 
 
 
 def _authorize_allocation_preview(
+    request: Request,
     request_id: str,
     body: dict[str, Any],
     operator: str,
     review_token: str,
-    pudu_admin: str,
 ) -> tuple[str, dict[str, Any]]:
     import app as legacy
 
-    signed_operator = _allocation_actor(request_id, operator, review_token, pudu_admin)
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
     draft = dict(body.get("draft") or {})
     draft["request_id"] = request_id
     if signed_operator:
@@ -981,14 +997,14 @@ def _authorize_allocation_preview(
 
 @api.post("/api/allocation/{request_id}/order-preview")
 def allocation_order_preview(
+    request: Request,
     request_id: str,
     body: dict[str, Any],
     operator: str = Query(default=""),
     review_token: str = Query(default=""),
-    pudu_admin: str = Cookie(default=""),
 ) -> dict[str, Any]:
     operation, draft = _authorize_allocation_preview(
-        request_id, body, operator, review_token, pudu_admin
+        request, request_id, body, operator, review_token
     )
     try:
         return _allocation_order_preview(request_id, operation, draft)
@@ -998,16 +1014,16 @@ def allocation_order_preview(
 
 @api.post("/api/allocation/{request_id}/order-workbook")
 def allocation_order_workbook(
+    request: Request,
     request_id: str,
     body: dict[str, Any],
     operator: str = Query(default=""),
     review_token: str = Query(default=""),
-    pudu_admin: str = Cookie(default=""),
 ) -> StreamingResponse:
     from order_scheduling_export import build_order_workbook
 
     operation, draft = _authorize_allocation_preview(
-        request_id, body, operator, review_token, pudu_admin
+        request, request_id, body, operator, review_token
     )
     try:
         preview = _allocation_order_preview(request_id, operation, draft)
@@ -1039,11 +1055,11 @@ def allocation_order_workbook(
 
 @api.post("/api/allocation/{request_id}/submit")
 def allocation_submit(
+    request: Request,
     request_id: str,
     body: dict[str, Any],
     operator: str = Query(default=""),
     review_token: str = Query(default=""),
-    pudu_admin: str = Cookie(default=""),
 ) -> dict[str, Any]:
     import app as legacy
     from submission_queue import (
@@ -1051,7 +1067,7 @@ def allocation_submit(
         QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     )
 
-    signed_operator = _allocation_actor(request_id, operator, review_token, pudu_admin)
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
     draft = dict(body.get("draft") or {})
     draft["request_id"] = request_id
     if signed_operator:
@@ -1323,8 +1339,8 @@ def _request_line_groups(
         source = str(line.get("source") or "standard").strip().lower()
         is_admin_only = bool(line.get("admin_only")) or product_key in admin_products
         if source == "cultural" or is_admin_only:
-            if "管理员" not in roles:
-                errors.append("只有用户权限表中已启用的管理员可以申领管理员专用品类。")
+            if not roles.intersection({"管理员", "区域市场经理"}):
+                errors.append("只有用户权限表中已启用的管理员或区域市场经理可以申领此类物料。")
                 continue
         if source == "cultural" and not line.get("is_custom_material"):
             cultural.append(

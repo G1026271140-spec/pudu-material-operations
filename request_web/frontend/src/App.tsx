@@ -56,6 +56,7 @@ type Line = {
 
 const clean = (value: string) =>
   value.replace(/\([^)]*\)|（[^）]*）/g, "").trim();
+const fullCatalogRoles = ["管理员", "区域市场经理"];
 
 export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" | "en"; currentUser?: CurrentUser | null }) {
   const t = (zh: string, en: string) => (lang === "zh" ? zh : en);
@@ -122,10 +123,10 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     `${u.name}${u.department_paths?.length ? ` · ${u.department_paths.join("、")}` : ""}`;
   function chooseRequester(u: User) {
     requesterTouched.current = true;
-    const nextIsAdmin = (catalog?.rolesByUser?.[u.open_id] || []).includes(
-      "管理员",
+    const nextHasFullCatalog = (catalog?.rolesByUser?.[u.open_id] || []).some(
+      (role) => fullCatalogRoles.includes(role),
     );
-    if (!nextIsAdmin) {
+    if (!nextHasFullCatalog) {
       const removed = lines.some(
         (line) => line.admin_only || line.source === "cultural",
       );
@@ -135,7 +136,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
             (line) => !line.admin_only && line.source !== "cultural",
           ),
         );
-        setError("已移除仅限已启用管理员申领的物料品类");
+        setError("已移除仅限已启用管理员或区域市场经理申领的物料品类");
       }
       if (active?.adminOnly || active?.options.some((option) => option.adminOnly)) {
         setActive(null);
@@ -153,8 +154,10 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
   }, [catalog, currentUser, requesterId]);
   const total = lines.reduce((s, l) => s + l.quantity * l.unitPriceRmb, 0),
     count = lines.reduce((s, l) => s + l.quantity, 0);
-  const isAdminRequester = Boolean(
-    requesterId && catalog?.rolesByUser?.[requesterId]?.includes("管理员"),
+  const hasFullCatalog = Boolean(
+    requesterId && catalog?.rolesByUser?.[requesterId]?.some(
+      (role) => fullCatalogRoles.includes(role),
+    ),
   );
   const adminProductMap = new Map(
     (catalog?.adminProducts || []).map((product) => [product.name, product]),
@@ -166,19 +169,19 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     catalog?.products
       .map((product) => {
         const administratorProduct = adminProductMap.get(product.name);
-        return isAdminRequester && administratorProduct
+        return hasFullCatalog && administratorProduct
           ? { ...product, options: administratorProduct.options }
           : product;
       })
       .filter((p) => p.name.toLowerCase().includes(search.toLowerCase())) || [];
-  const adminProducts = isAdminRequester
+  const adminProducts = hasFullCatalog
     ? (catalog?.adminProducts || []).filter(
         (p) =>
           !baseProductNames.has(p.name) &&
           p.name.toLowerCase().includes(search.toLowerCase()),
       )
     : [];
-  const visibleProducts = isAdminRequester
+  const visibleProducts = hasFullCatalog
     ? [...baseProducts, ...adminProducts]
     : baseProducts;
   const definitionOrder = ["印刷物料", "周边礼品", "文化周边"];

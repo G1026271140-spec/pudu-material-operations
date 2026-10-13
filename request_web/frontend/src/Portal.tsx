@@ -77,11 +77,8 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     tools: "数据与系统工具",
-    version: "当前应用版本 V3.2.2",
-    locked: "此功能暂未对外开放",
-    password: "请输入管理员密码",
-    unlock: "解锁",
-    wrong: "密码不正确",
+    version: "当前应用版本 V3.2.3",
+    denied: "仅已启用的管理员可访问物料管理",
     collapse: "收起左侧导航",
     expand: "展开左侧导航",
   },
@@ -93,11 +90,8 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     tools: "Data & System Tools",
-    version: "Current Version V3.2.2",
-    locked: "This feature is not publicly available",
-    password: "Enter administrator password",
-    unlock: "Unlock",
-    wrong: "Incorrect password",
+    version: "Current Version V3.2.3",
+    denied: "Only enabled administrators can access Material Management",
     collapse: "Collapse sidebar",
     expand: "Expand sidebar",
   },
@@ -112,25 +106,19 @@ export default function Portal() {
   );
   const [page, setPage] = useState<PortalPage>(pageFromLocation);
   const [managementTab, setManagementTab] = useState<ManagementTab>(managementTabFromLocation);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [identityLoaded, setIdentityLoaded] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem("pudu-sidebar-collapsed") === "true",
   );
   const t = text[lang];
+  const canManage = currentUser?.permission_status === "enabled" && currentUser.roles.includes("管理员");
   useEffect(() => {
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((identity) => setCurrentUser(identity))
-      .catch(() => undefined);
-  }, []);
-  useEffect(() => {
-    fetch("/api/admin/status")
-      .then((response) => response.json())
-      .then((body) => setUnlocked(Boolean(body.unlocked)))
-      .catch(() => undefined);
+      .catch(() => setCurrentUser(null))
+      .finally(() => setIdentityLoaded(true));
   }, []);
   useEffect(() => {
     const handlePopState = () => {
@@ -171,19 +159,6 @@ export default function Portal() {
     setPage("management");
     setManagementTab(next);
     window.scrollTo({ top: 0, behavior: "auto" });
-  }
-  async function unlock() {
-    setError("");
-    const response = await fetch("/api/admin/unlock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    if (!response.ok) {
-      setError(t.wrong);
-      return;
-    }
-    setUnlocked(true);
   }
   return (
     <div className={`portal${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
@@ -240,14 +215,13 @@ export default function Portal() {
             <span>♧</span>
             {t.cultural}
           </button>
-          <button
+          {canManage && <button
             className={page === "management" ? "active" : ""}
             onClick={() => navigate("management")}
           >
             <span>▣</span>
             {t.management}
-            <i>🔒</i>
-          </button>
+          </button>}
         </nav>
         <div className="sidebar-system">
           <div className="sidebar-label">{t.tools}</div>
@@ -272,31 +246,22 @@ export default function Portal() {
           <RequestPage lang={lang} currentUser={currentUser} />
         ) : page === "cultural" ? (
           <CulturalPage lang={lang} currentUser={currentUser} />
-        ) : unlocked ? (
+        ) : canManage ? (
           <ManagementPage
             lang={lang}
             initialTab={managementTab}
             onTabChange={navigateManagementTab}
           />
-        ) : (
+        ) : identityLoaded ? (
           <main className="locked-page">
             <img src="/app-assets/app-icon.png" alt="" />
             <h1>{t.management}</h1>
             <div className="unlock-card">
               <div className="lock-mark">🔒</div>
-              <h2>{t.locked}</h2>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && unlock()}
-                placeholder={t.password}
-              />
-              <button onClick={unlock}>{t.unlock}</button>
-              {error && <p>{error}</p>}
+              <h2>{t.denied}</h2>
             </div>
           </main>
-        )}
+        ) : null}
       </div>
     </div>
   );

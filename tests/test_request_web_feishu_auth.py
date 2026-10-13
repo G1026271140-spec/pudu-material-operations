@@ -102,6 +102,37 @@ def test_current_user_display_roles_do_not_create_permissions(monkeypatch):
         assert enabled["permission_status"] == "enabled"
 
 
+def test_management_requires_enabled_admin_role_not_old_password_cookie(monkeypatch):
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))
+    monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "own-tenant")
+    rows = []
+    monkeypatch.setattr(
+        web_api, "_json",
+        lambda _name: {"tables": {"用户权限表": rows}},
+    )
+    monkeypatch.setattr(web_api, "_management_snapshot", lambda: {"categories": []})
+    token = feishu_auth.create_session("ou_user", "own-tenant")
+    with TestClient(api, base_url=PUBLIC) as client:
+        client.cookies.set("pudu_feishu", token)
+        client.cookies.set("pudu_admin", "old-password-session")
+        assert client.get("/api/admin/status").json() == {"unlocked": False}
+        assert client.get("/api/admin/management-catalog").status_code == 403
+        assert client.post("/api/admin/unlock", json={"password": "anything"}).status_code == 405
+
+        rows.append({"fields": {
+            "用户账号": [{"id": "ou_user"}], "是否启用": "是",
+            "角色": ["销售", "区域市场经理"],
+        }})
+        assert client.get("/api/admin/management-catalog").status_code == 403
+
+        rows[0]["fields"]["角色"].append("管理员")
+        assert client.get("/api/admin/status").json() == {"unlocked": True}
+        assert client.get("/api/admin/management-catalog").status_code == 200
+
+        rows[0]["fields"]["是否启用"] = "否"
+        assert client.get("/api/admin/management-catalog").status_code == 403
+
+
 def test_return_path_cannot_leave_site():
     assert feishu_auth.safe_return_path("https://evil.example/") == "/"
     assert feishu_auth.safe_return_path("//evil.example/") == "/"
