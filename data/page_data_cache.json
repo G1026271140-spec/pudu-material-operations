@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-13 10:35:03",
+  "generated_at": "2026-10-13 16:34:49",
   "tables": {
     "物料品类": [
       {
@@ -159376,6 +159376,1063 @@
         },
         "id": "recvxR6umkFyLT",
         "record_id": "recvxR6umkFyLT"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvxUqjwV3Trq"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261013-001-01",
+              "text_arr": [
+                "REQ-20261013-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "7",
+          "变更后数量": "6",
+          "备注": "文化周边申领 REQ-20261013-001：文化POLO衫 / S / 大中华战区",
+          "幂等键": "cultural-request:e5abfc6f8fa84451bc3229bd4d8ac456:1",
+          "库存变化": "-1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "-1",
+          "文化周边战区快照": "大中华战区",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyswJM"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0038",
+              "text_arr": [
+                "CUL-0038"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "recvxUqkiSdEX6",
+        "record_id": "recvxUqkiSdEX6"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvxQnToB4jYG"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261012-012-01",
+              "text_arr": [
+                "REQ-20261012-012-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "54",
+          "变更后数量": "55",
+          "备注": "文化周边申领驳回 REQ-20261012-012：文化POLO衫 / XL / 大中华战区",
+          "幂等键": "cultural-reject:REQ-20261012-012:recvxQnToB4jYG",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "1",
+          "文化周边战区快照": "大中华战区",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjym3iE"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0045",
+              "text_arr": [
+                "CUL-0045"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边申领驳回",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "recvxUrmsT9sFo",
+        "record_id": "recvxUrmsT9sFo"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "recvxQnUWmDnHg"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261012-012-02",
+              "text_arr": [
+                "REQ-20261012-012-02"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "5",
+          "变更后数量": "6",
+          "备注": "文化周边申领驳回 REQ-20261012-012：文化夹克 / XL / 电商（国内）",
+          "幂等键": "cultural-reject:REQ-20261012-012:recvxQnUWmDnHg",
+          "库存变化": "1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "1",
+          "文化周边战区快照": "电商（国内）",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjydB4J"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0066",
+              "text_arr": [
+                "CUL-0066"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边申领驳回",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "recvxUrobQixdj",
+        "record_id": "recvxUrobQixdj"
+      },
+      {
+        "fields": {
+          "产品型号": "BG1",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "267",
+          "变更后数量": "257",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:1",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khsuk"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0921",
+              "text_arr": [
+                "MAT-0921"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5YOvJ",
+        "record_id": "recvxUTCm5YOvJ"
+      },
+      {
+        "fields": {
+          "产品型号": "BellaBot",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "110",
+          "变更后数量": "100",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:2",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kh0yw"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0761",
+              "text_arr": [
+                "MAT-0761"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5Josw",
+        "record_id": "recvxUTCm5Josw"
+      },
+      {
+        "fields": {
+          "产品型号": "D5",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "262",
+          "变更后数量": "252",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:3",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvq5oeJMKy7V"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1032",
+              "text_arr": [
+                "MAT-1032"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5V5dJ",
+        "record_id": "recvxUTCm5V5dJ"
+      },
+      {
+        "fields": {
+          "产品型号": "D7",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "336",
+          "变更后数量": "326",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:4",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvq5oeJM08uE"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1033",
+              "text_arr": [
+                "MAT-1033"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5UXp1",
+        "record_id": "recvxUTCm5UXp1"
+      },
+      {
+        "fields": {
+          "产品型号": "ET1",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "160",
+          "变更后数量": "150",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:5",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khtOz"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0931",
+              "text_arr": [
+                "MAT-0931"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5MGra",
+        "record_id": "recvxUTCm5MGra"
+      },
+      {
+        "fields": {
+          "产品型号": "GT3",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "200",
+          "变更后数量": "190",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:6",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvuNIDe3QGwd"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1399",
+              "text_arr": [
+                "MAT-1399"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5tOz1",
+        "record_id": "recvxUTCm5tOz1"
+      },
+      {
+        "fields": {
+          "产品型号": "GT7",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "190",
+          "变更后数量": "180",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:7",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvuNIDe33sil"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1401",
+              "text_arr": [
+                "MAT-1401"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5mjYJ",
+        "record_id": "recvxUTCm5mjYJ"
+      },
+      {
+        "fields": {
+          "产品型号": "MT1",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "202",
+          "变更后数量": "192",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:8",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khgNT"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0861",
+              "text_arr": [
+                "MAT-0861"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5IBlw",
+        "record_id": "recvxUTCm5IBlw"
+      },
+      {
+        "fields": {
+          "产品型号": "PUDU CC1",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "80",
+          "变更后数量": "70",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:9",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khawM"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0821",
+              "text_arr": [
+                "MAT-0821"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5YP70",
+        "record_id": "recvxUTCm5YP70"
+      },
+      {
+        "fields": {
+          "产品型号": "SH1",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "100",
+          "变更后数量": "90",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:10",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khdQO"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0841",
+              "text_arr": [
+                "MAT-0841"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5msvQ",
+        "record_id": "recvxUTCm5msvQ"
+      },
+      {
+        "fields": {
+          "产品型号": "T300",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "240",
+          "变更后数量": "230",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:11",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khfvg"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0851",
+              "text_arr": [
+                "MAT-0851"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5Tobt",
+        "record_id": "recvxUTCm5Tobt"
+      },
+      {
+        "fields": {
+          "产品型号": "猛犸MP2000",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "207",
+          "变更后数量": "197",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:12",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "冰箱贴( Fridge Magnet)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvrRt9le91KM"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1140",
+              "text_arr": [
+                "MAT-1140"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5xhm5",
+        "record_id": "recvxUTCm5xhm5"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "950",
+          "变更后数量": "925",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:13",
+          "库存变化": "-25",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "25",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "定制帽子",
+          "物料编码": [
+            {
+              "record_ids": [
+                "recvrZ6rlQAesy"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-1145",
+              "text_arr": [
+                "MAT-1145"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5TnYm",
+        "record_id": "recvxUTCm5TnYm"
+      },
+      {
+        "fields": {
+          "产品型号": "无需型号",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "425",
+          "变更后数量": "415",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:14",
+          "库存变化": "-10",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "10",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "笔记本礼盒(Notebook Gift Box)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6khvob"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0941",
+              "text_arr": [
+                "MAT-0941"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5Iajs",
+        "record_id": "recvxUTCm5Iajs"
+      },
+      {
+        "fields": {
+          "产品型号": "BellaBot",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "638",
+          "变更后数量": "598",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:15",
+          "库存变化": "-40",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "40",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "公仔(Plush Toy)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgwK2"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0581",
+              "text_arr": [
+                "MAT-0581"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5qIki",
+        "record_id": "recvxUTCm5qIki"
+      },
+      {
+        "fields": {
+          "产品型号": "KettyBot Pro",
+          "关联明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": 1791880395800,
+          "变更前数量": "308",
+          "变更后数量": "278",
+          "备注": "减库单 RST-20261013-9C344F；操作人：高鸿源；减库说明：泰国代理展会物料支持",
+          "幂等键": "restock:9c344f53fb274c0ca218a00737602a89:16",
+          "库存变化": "-30",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": "有效",
+          "数量": "30",
+          "文化周边战区快照": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": null,
+          "流水类型": "物料领取（减少库存）",
+          "物料品类": "公仔(Plush Toy)",
+          "物料编码": [
+            {
+              "record_ids": [
+                "rec27IsS6kgyo0"
+              ],
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": "MAT-0591",
+              "text_arr": [
+                "MAT-0591"
+              ],
+              "type": "text"
+            }
+          ],
+          "语种": "无需语种"
+        },
+        "id": "recvxUTCm5mvO4",
+        "record_id": "recvxUTCm5mvO4"
       }
     ],
     "物料申请单": [
@@ -162906,9 +163963,9 @@
               "file_token": "B4KPbUis2ol6mAx60GscrkOAnPf",
               "name": "img_v3_0215o_5f903d93-7262-490d-9226-96fbbc4f765g_MIDDLE_WEBP.webp",
               "size": 34138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "加拿大",
@@ -163175,17 +164232,17 @@
               "file_token": "SY75b088Poue8wxEA6Yc8fq5nOd",
               "name": "FR2.jpg",
               "size": 236138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             },
             {
               "file_token": "VD6SbQOdJoUaawxow1ecUvY4nOe",
               "name": "FR1.jpg",
               "size": 213041,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "法国",
@@ -163353,25 +164410,25 @@
               "file_token": "BsEIbEOddoV50UxzdSAcw3GUn3c",
               "name": "AU2.jpg",
               "size": 277944,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             },
             {
               "file_token": "IBrdbtvqZof487xfZ3UcxRj5nUR",
               "name": "AU3.jpg",
               "size": 183728,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             },
             {
               "file_token": "PcjebbZ5po6FjpxceMecT1bvnbc",
               "name": "AU1.jpg",
               "size": 289081,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "澳洲ISSA展会物料",
@@ -164772,9 +165829,9 @@
               "file_token": "EJ2SbWO2PounMjxQqUqcg7tgn3e",
               "name": "20260922-095550.jpg",
               "size": 272478,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "智利",
@@ -167119,9 +168176,9 @@
               "file_token": "QdbabNoySokBM1xVCG3cQiTsnrg",
               "name": "2026-MKT-CZ0924_INV_PL.xlsx",
               "size": 34231,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "业务类型": "物料领取",
@@ -167132,9 +168189,9 @@
               "file_token": "AwJEbPUigoIYnPxT2axccI09nvg",
               "name": "img_v3_0215r_71e3d283-4f50-432f-a689-b6dbaa24f26g_MIDDLE_WEBP.webp",
               "size": 63888,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "捷克MSV工业展物料",
@@ -167330,9 +168387,9 @@
               "file_token": "XcXDb4eUeo7wrjxx1xGcq2CQn6d",
               "name": "img_v3_0216b_c6f1a8db-5700-4194-98a3-f2cdb4473c1g_MIDDLE_WEBP.webp",
               "size": 47420,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "广交会物料",
@@ -167663,9 +168720,9 @@
               "file_token": "MpO9bdnlzoW3zcxHeUEcfUqmnde",
               "name": "img_v3_02169_a7720ee9-8473-48f3-b018-cfa8be1aa7ag.jpg",
               "size": 4104598,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1862%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A1870%7D%7D"
             }
           ],
           "国家": "吉隆坡",
@@ -171884,7 +172941,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016d_53e863ea-e315-4723-bad1-7f6e113c4c1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016e_70d89b9f-45fc-4491-8e26-5216f09eba4g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "vivi.zhang@pudutech.com",
               "en_name": "张诗韵",
               "id": "ou_053aeed96090d369cd238ad5e04f342c",
@@ -172927,9 +173984,9 @@
           "提交幂等键": "a0dce3c235d74fbc993a4328e6b98075",
           "提交时间": 1791813735641,
           "收件人信息": null,
-          "文化周边处理状态": "已发放",
+          "文化周边处理状态": "已驳回",
           "文化周边消息ID": "{\"applicant:ou_2f5889d972134caae9a69a93c2a4bd54\":\"om_x100b63fac6604c68dee720ebc60cff6\",\"admin:ou_0f57acbd1f846f7e034a8ab954506b6d\":\"om_x100b63fac61d30a4dd443db942024e9\",\"admin:ou_db9afe55f685d6227b25f267261ec3e8\":\"om_x100b63fac6228ca8c4f7f76b761472b\"}",
-          "文化周边通知状态": "已发送",
+          "文化周边通知状态": "驳回已通知",
           "时间判定": null,
           "是否发货": null,
           "期望发放日期": null,
@@ -173319,6 +174376,107 @@
         },
         "id": "recvxQu4NjLEB1",
         "record_id": "recvxQu4NjLEB1"
+      },
+      {
+        "fields": {
+          "INV/PL": null,
+          "业务类型": "文化周边申领",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "发货图片": null,
+          "国家": null,
+          "备注": null,
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "无需审批",
+          "客户名称": null,
+          "市场负责人": null,
+          "库存合适最后提醒时间": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": null,
+          "库存审查结论": null,
+          "库存快照时间": null,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": null,
+          "所属战区": "大中华战区",
+          "排期编辑版本": null,
+          "提交幂等键": "e5abfc6f8fa84451bc3229bd4d8ac456",
+          "提交时间": 1791873402777,
+          "收件人信息": null,
+          "文化周边处理状态": "已发放",
+          "文化周边消息ID": "{\"applicant:ou_1fe0c2ba586831afd9105278f8dee43a\":\"om_x100b63e955b6a4a8c2227bd8f19bd88\",\"admin:ou_0f57acbd1f846f7e034a8ab954506b6d\":\"om_x100b63e9556a0ca4c152fc91a51730e\",\"admin:ou_db9afe55f685d6227b25f267261ec3e8\":\"om_x100b63e955035c80c45c39e545b82fa\"}",
+          "文化周边通知状态": "已发送",
+          "时间判定": null,
+          "是否发货": null,
+          "期望发放日期": null,
+          "标题": "李茂-文化周边申领",
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 文化POLO衫 / S / 大中华战区 × 1",
+          "物料用途": "广交会",
+          "用途|活动": null,
+          "申请人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011n_1d828783-f257-47e9-9c2a-21eb498cc2fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "limao@pudutech.com",
+              "en_name": "李茂",
+              "id": "ou_1fe0c2ba586831afd9105278f8dee43a",
+              "name": "李茂"
+            }
+          ],
+          "申请人.部门": [
+            "美国KA组"
+          ],
+          "申请单号": "REQ-20261013-001",
+          "申请原因": null,
+          "申请变更次数": null,
+          "申请时角色快照": null,
+          "申请明细": [
+            {
+              "record_ids": [
+                "recvxUqjwV3Trq"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261013-001-01",
+              "text_arr": [
+                "REQ-20261013-001-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "文化周边申请",
+          "申请部门|区域": null,
+          "相关附件": null,
+          "管理员通知时间": 1791873404089,
+          "管理员通知状态": null,
+          "要求到达结束日期": null,
+          "要求达到开始日期": null,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "78",
+          "运费承担者": null,
+          "需要下单日期": null,
+          "预计完成制作日期": null
+        },
+        "id": "recvxUqc0VXqBi",
+        "record_id": "recvxUqc0VXqBi"
       }
     ],
     "申请明细": [
@@ -246597,20 +247755,22 @@
           "品类名称": "文化POLO衫",
           "备注": null,
           "实际发放产品型号": null,
-          "实际发放数量": "1",
+          "实际发放数量": "0",
           "实际发放物料品类": null,
           "实际发放物料编码": null,
           "实际发放语种": null,
-          "审批通过数量": "1",
+          "审批通过数量": "0",
           "库存审查时库存": null,
           "库存流水": [
             {
               "record_ids": [
-                "recvxQnTYK4zvR"
+                "recvxQnTYK4zvR",
+                "recvxUrmsT9sFo"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
@@ -246647,7 +247807,7 @@
           ],
           "明细业务类型": "文化周边",
           "明细变更说明": null,
-          "明细状态": "已发放",
+          "明细状态": "已驳回",
           "明细编号": "REQ-20261012-012-01",
           "是否到货": null,
           "物料下单时间": null,
@@ -246721,20 +247881,22 @@
           "品类名称": "文化夹克",
           "备注": "2026温州人工智能产业博览会暨具身智能机器人应用暨产业展览会",
           "实际发放产品型号": null,
-          "实际发放数量": "1",
+          "实际发放数量": "0",
           "实际发放物料品类": null,
           "实际发放物料编码": null,
           "实际发放语种": null,
-          "审批通过数量": "1",
+          "审批通过数量": "0",
           "库存审查时库存": null,
           "库存流水": [
             {
               "record_ids": [
-                "recvxQnVnhAxmI"
+                "recvxQnVnhAxmI",
+                "recvxUrobQixdj"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
@@ -246771,7 +247933,7 @@
           ],
           "明细业务类型": "文化周边",
           "明细变更说明": null,
-          "明细状态": "已发放",
+          "明细状态": "已驳回",
           "明细编号": "REQ-20261012-012-02",
           "是否到货": null,
           "物料下单时间": null,
@@ -247303,6 +248465,130 @@
         },
         "id": "recvxQu5Z9u2oa",
         "record_id": "recvxQu5Z9u2oa"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvtnWRaQYzUm"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X035",
+              "text_arr": [
+                "X035"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "S",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "recvtnWQU3ylzA"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "035",
+              "text_arr": [
+                "035"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "文化POLO衫",
+          "备注": "广交会",
+          "实际发放产品型号": null,
+          "实际发放数量": "1",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": [
+                "recvxUqkiSdEX6"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "recvxUqc0VXqBi"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261013-001",
+              "text_arr": [
+                "REQ-20261013-001"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": "大中华战区",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyswJM"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0038",
+              "text_arr": [
+                "CUL-0038"
+              ],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "文化周边",
+          "明细变更说明": null,
+          "明细状态": "已发放",
+          "明细编号": "REQ-20261013-001-01",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": "78",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": "78",
+          "附件": null
+        },
+        "id": "recvxUqjwV3Trq",
+        "record_id": "recvxUqjwV3Trq"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -250762,11 +252048,13 @@
               "record_ids": [
                 "recvvxyftD4Vbi",
                 "recvwzQCFY9Pbu",
-                "recvxwkWzoQYDz"
+                "recvxwkWzoQYDz",
+                "recvxUqkiSdEX6"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": ",,",
+              "text": ",,,",
               "text_arr": [
+                "",
                 "",
                 "",
                 ""
@@ -250774,7 +252062,7 @@
               "type": "text"
             }
           ],
-          "当前库存": "7",
+          "当前库存": "6",
           "战区关联": [
             {
               "record_ids": [
@@ -250810,14 +252098,16 @@
               "record_ids": [
                 "recvvxyeT1ATRj",
                 "recvwzQCa82pBv",
-                "recvxwkW265N4O"
+                "recvxwkW265N4O",
+                "recvxUqjwV3Trq"
               ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": "REQ-20260918-007-03,REQ-20260929-001-01,REQ-20261009-001-01",
+              "text": "REQ-20260918-007-03,REQ-20260929-001-01,REQ-20261009-001-01,REQ-20261013-001-01",
               "text_arr": [
                 "REQ-20260918-007-03",
                 "REQ-20260929-001-01",
-                "REQ-20261009-001-01"
+                "REQ-20261009-001-01",
+                "REQ-20261013-001-01"
               ],
               "type": "text"
             }
@@ -251317,17 +252607,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvxQnTYK4zvR"
+                "recvxQnTYK4zvR",
+                "recvxUrmsT9sFo"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "54",
+          "当前库存": "55",
           "战区关联": [
             {
               "record_ids": [
@@ -252932,17 +254224,19 @@
           "库存流水": [
             {
               "record_ids": [
-                "recvxQnVnhAxmI"
+                "recvxQnVnhAxmI",
+                "recvxUrobQixdj"
               ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": "",
+              "text": ",",
               "text_arr": [
+                "",
                 ""
               ],
               "type": "text"
             }
           ],
-          "当前库存": "5",
+          "当前库存": "6",
           "战区关联": [
             {
               "record_ids": [
@@ -256873,11 +258167,11 @@
       },
       {
         "fields": {
-          "POLO申领数量累计": "1",
+          "POLO申领数量累计": "0",
           "T恤-黑色（短袖）申领数量累计": null,
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
-          "文化夹克申领数量累计": "1",
+          "文化夹克申领数量累计": "0",
           "文化衫申领数量累计": null,
           "是否启用": "是",
           "用户编号": "26",
@@ -258123,7 +259417,7 @@
       },
       {
         "fields": {
-          "POLO申领数量累计": "1",
+          "POLO申领数量累计": "2",
           "T恤-黑色（短袖）申领数量累计": null,
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": null,
@@ -260188,7 +261482,7 @@
           "用户编号": "154",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015q_71d2b7e3-ddb3-448d-a902-7677db7ffa6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015q_71d2b7e3-ddb3-448d-a902-7677db7ffa6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "chenqing1@pudutech.com",
               "en_name": "陈青",
               "id": "ou_26b02a68ca9984bd56e13a7239dcbcb7",
@@ -265388,7 +266682,7 @@
           "用户编号": "354",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015g_83a002d4-ec43-463b-a631-abab834075bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015g_83a002d4-ec43-463b-a631-abab834075bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "hexianzhu@pudutech.com",
               "en_name": "何显柱",
               "id": "ou_9d85bb5da7422848a2d0d7b0b2c0310a",
@@ -267364,7 +268658,7 @@
           "用户编号": "430",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0013k_ec76bd2e-d8d3-4ab6-bbb7-b682f7be196g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0013k_ec76bd2e-d8d3-4ab6-bbb7-b682f7be196g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhanghaisheng@pudutech.com",
               "en_name": "张海生",
               "id": "ou_c454d30000123877c1442f698c25f968",
@@ -269730,7 +271024,7 @@
           "用户编号": "521",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015q_674db659-0de8-4790-8f08-35e31f50604g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015q_674db659-0de8-4790-8f08-35e31f50604g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "gongxiaoshan@pudutech.com",
               "en_name": "龚小山",
               "id": "ou_f94d958bf93f644a187914e9dda18fb3",
@@ -270068,7 +271362,7 @@
           "用户编号": "534",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016d_53e863ea-e315-4723-bad1-7f6e113c4c1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016e_70d89b9f-45fc-4491-8e26-5216f09eba4g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "vivi.zhang@pudutech.com",
               "en_name": "张诗韵",
               "id": "ou_053aeed96090d369cd238ad5e04f342c",
@@ -281313,9 +282607,9 @@
     "产品型号": 42,
     "物料语种": 12,
     "物料主数据": 909,
-    "库存流水": 606,
-    "物料申请单": 114,
-    "申请明细": 591,
+    "库存流水": 625,
+    "物料申请单": 115,
+    "申请明细": 592,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "文化周边编码及库存数量": 100,
