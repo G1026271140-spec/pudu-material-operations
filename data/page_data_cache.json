@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-14 10:37:28",
+  "generated_at": "2026-10-14 16:37:21",
   "tables": {
     "物料品类": [
       {
@@ -162086,7 +162086,7 @@
           "用途|活动": "客户8.28来公司到访",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pascal.wu@pudutech.com",
               "en_name": "伍斌",
               "id": "ou_f94b98a17b982fb9f0bfb4aa4fd126de",
@@ -162217,7 +162217,7 @@
           "用途|活动": "9月22日普渡机器人新品发布会（天津）暨品牌推介大会",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_b7618680-fe65-4f85-97eb-2808b765a86g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_b7618680-fe65-4f85-97eb-2808b765a86g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wangxingdong@pudutech.com",
               "en_name": "王兴东",
               "id": "ou_194942f10227e794ee16424fc7642efc",
@@ -162816,7 +162816,7 @@
           "用途|活动": "今年10月的上海工博会展会参加 申请物料支持",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhujunlin@pudutech.com",
               "en_name": "朱俊霖",
               "id": "ou_3d0a5c13b260d3112c7502a975d618fa",
@@ -163058,7 +163058,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wei.chen@pudutech.com",
               "en_name": "陈伟民",
               "id": "ou_76bf5766224974adb0e5691eea343e8a",
@@ -163522,7 +163522,7 @@
           "用途|活动": "前台接待展示",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_d0cef6ac-aafe-4821-ac9f-e8fa85d3fb2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_d0cef6ac-aafe-4821-ac9f-e8fa85d3fb2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "suyanna@pudutech.com",
               "en_name": "苏艳娜",
               "id": "ou_1dccd378d719715eeb87f45a5855e8de",
@@ -165813,7 +165813,7 @@
           "用途|活动": "一带一路拜访活动",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "tanya.mo@pudutech.com",
               "en_name": "莫礎甄",
               "id": "ou_8111ebac46f6c93ef4f54610bd46b6be",
@@ -166235,7 +166235,7 @@
           "用途|活动": "代理商参加线下展会、举办线下活动、推广普渡品牌",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_28fe5b47-b843-4576-b40b-867cb1aacb1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_28fe5b47-b843-4576-b40b-867cb1aacb1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "andy.liu@pudutech.com",
               "en_name": "刘泽杭",
               "id": "ou_761c526a3895c097244b9dbaca6b1e4b",
@@ -166481,7 +166481,7 @@
           "用途|活动": "十月展会/客勤关系维护",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_14e67818-0398-4635-bf2e-04ce0b46a9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_150212f9-7130-4eef-8392-e5bfff07f16g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "amaya.dai@pudutech.com",
               "en_name": "戴欣蓓",
               "id": "ou_aaa687f29e6a2ab4d650381032d679d3",
@@ -167708,7 +167708,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "seno.shi@pudutech.com",
               "en_name": "石逸夫",
               "id": "ou_9262ac4dfe2bc655d4309379a1690a82",
@@ -168271,7 +168271,7 @@
           "用途|活动": "拜访客户期间可以加深记忆",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pascal.wu@pudutech.com",
               "en_name": "伍斌",
               "id": "ou_f94b98a17b982fb9f0bfb4aa4fd126de",
@@ -168408,7 +168408,7 @@
           "用途|活动": "客户来访",
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pascal.wu@pudutech.com",
               "en_name": "伍斌",
               "id": "ou_f94b98a17b982fb9f0bfb4aa4fd126de",
@@ -169574,7 +169574,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_d050b180-b9ed-4f25-bf69-2489cfb993bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_d050b180-b9ed-4f25-bf69-2489cfb993bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "chenzhitian@pudutech.com",
               "en_name": "陈治天",
               "id": "ou_6c010d8e0288c0472e46f9ec630956a7",
@@ -169981,7 +169981,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_b6ddd676-5be2-4e56-ac27-94653e2f306g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_b6ddd676-5be2-4e56-ac27-94653e2f306g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "melon.zhang@pudutech.com",
               "en_name": "张星宸",
               "id": "ou_96a01fc435911236ecb1b7a9c4e86273",
@@ -170892,7 +170892,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_967c2f9c-0301-4988-b752-48dd6b229c0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_967c2f9c-0301-4988-b752-48dd6b229c0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "masisheng@pudutech.com",
               "en_name": "马嗣胜",
               "id": "ou_7e981af73e92d90e602a64b31d78fd50",
@@ -172330,7 +172330,7 @@
           "用途|活动": "新签代理商认证考试奖励",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_e74ca0f0-46df-445e-a5dc-0f6f5d9c70ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_e74ca0f0-46df-445e-a5dc-0f6f5d9c70ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "hulijie@pudutech.com",
               "en_name": "胡丽洁",
               "id": "ou_efee3bdc4a9d0a37d018fd04b99c54c3",
@@ -175287,7 +175287,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_6d45f991-51af-4fdb-8a8e-24264cf7b4fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_6d45f991-51af-4fdb-8a8e-24264cf7b4fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "mattew.huang@pudutech.com",
               "en_name": "黄文凯",
               "id": "ou_26930e0390b556788c663e5b69660745",
@@ -259434,7 +259434,7 @@
           "用户编号": "5",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_967c2f9c-0301-4988-b752-48dd6b229c0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_967c2f9c-0301-4988-b752-48dd6b229c0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "masisheng@pudutech.com",
               "en_name": "马嗣胜",
               "id": "ou_7e981af73e92d90e602a64b31d78fd50",
@@ -259617,7 +259617,7 @@
           "用户编号": "14",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_e9c1c3e2-b13f-45ea-aab4-e3a0c88bab2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pascal.wu@pudutech.com",
               "en_name": "伍斌",
               "id": "ou_f94b98a17b982fb9f0bfb4aa4fd126de",
@@ -259643,7 +259643,7 @@
           "用户编号": "15",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_b7618680-fe65-4f85-97eb-2808b765a86g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_b7618680-fe65-4f85-97eb-2808b765a86g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wangxingdong@pudutech.com",
               "en_name": "王兴东",
               "id": "ou_194942f10227e794ee16424fc7642efc",
@@ -259774,7 +259774,7 @@
           "用户编号": "22",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_19391ec6-ef56-4d91-815f-f926bebfb9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhujunlin@pudutech.com",
               "en_name": "朱俊霖",
               "id": "ou_3d0a5c13b260d3112c7502a975d618fa",
@@ -259826,7 +259826,7 @@
           "用户编号": "24",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_3c574f62-a4bc-44fa-bee7-d1648c43ecag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wei.chen@pudutech.com",
               "en_name": "陈伟民",
               "id": "ou_76bf5766224974adb0e5691eea343e8a",
@@ -259904,7 +259904,7 @@
           "用户编号": "27",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_d0cef6ac-aafe-4821-ac9f-e8fa85d3fb2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_d0cef6ac-aafe-4821-ac9f-e8fa85d3fb2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "suyanna@pudutech.com",
               "en_name": "苏艳娜",
               "id": "ou_1dccd378d719715eeb87f45a5855e8de",
@@ -260114,7 +260114,7 @@
           "用户编号": "36",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_14e67818-0398-4635-bf2e-04ce0b46a9dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_150212f9-7130-4eef-8392-e5bfff07f16g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "amaya.dai@pudutech.com",
               "en_name": "戴欣蓓",
               "id": "ou_aaa687f29e6a2ab4d650381032d679d3",
@@ -260270,7 +260270,7 @@
           "用户编号": "42",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_861ad480-6893-4f5a-b46f-73f79d69c45g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "tanya.mo@pudutech.com",
               "en_name": "莫礎甄",
               "id": "ou_8111ebac46f6c93ef4f54610bd46b6be",
@@ -260322,7 +260322,7 @@
           "用户编号": "44",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_28fe5b47-b843-4576-b40b-867cb1aacb1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_28fe5b47-b843-4576-b40b-867cb1aacb1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "andy.liu@pudutech.com",
               "en_name": "刘泽杭",
               "id": "ou_761c526a3895c097244b9dbaca6b1e4b",
@@ -260556,7 +260556,7 @@
           "用户编号": "53",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_496b4e24-d90d-46c5-8552-e12c3e6474ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "seno.shi@pudutech.com",
               "en_name": "石逸夫",
               "id": "ou_9262ac4dfe2bc655d4309379a1690a82",
@@ -260712,7 +260712,7 @@
           "用户编号": "59",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_d050b180-b9ed-4f25-bf69-2489cfb993bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_d050b180-b9ed-4f25-bf69-2489cfb993bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "chenzhitian@pudutech.com",
               "en_name": "陈治天",
               "id": "ou_6c010d8e0288c0472e46f9ec630956a7",
@@ -260790,7 +260790,7 @@
           "用户编号": "62",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_b6ddd676-5be2-4e56-ac27-94653e2f306g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_b6ddd676-5be2-4e56-ac27-94653e2f306g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "melon.zhang@pudutech.com",
               "en_name": "张星宸",
               "id": "ou_96a01fc435911236ecb1b7a9c4e86273",
@@ -261232,7 +261232,7 @@
           "用户编号": "79",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011f_e74ca0f0-46df-445e-a5dc-0f6f5d9c70ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011f_e74ca0f0-46df-445e-a5dc-0f6f5d9c70ag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "hulijie@pudutech.com",
               "en_name": "胡丽洁",
               "id": "ou_efee3bdc4a9d0a37d018fd04b99c54c3",
@@ -261857,7 +261857,7 @@
           "用户编号": "103",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_1615f54e-5048-4fac-a2e1-9c7dc2a0564g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_1615f54e-5048-4fac-a2e1-9c7dc2a0564g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "huangxinwan@pudutech.com",
               "en_name": "黄心婉",
               "id": "ou_081656b6c0926e7ea582663b42b1ac24",
@@ -262351,7 +262351,7 @@
           "用户编号": "122",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015h_99552802-efd5-4ce1-b74c-608c9d9cc15g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015h_99552802-efd5-4ce1-b74c-608c9d9cc15g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "duanshaoqin@pudutech.com",
               "en_name": "段少钦",
               "id": "ou_11ce41720fe17534b9c0e27c0242920d",
@@ -262455,7 +262455,7 @@
           "用户编号": "126",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_3f5238d9-b3fc-4fe2-9f10-da818753749g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_3f5238d9-b3fc-4fe2-9f10-da818753749g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wangchong@pudutech.com",
               "en_name": "王翀",
               "id": "ou_15044a71a6f51b2a0d3138dc198761a3",
@@ -263989,7 +263989,7 @@
           "用户编号": "185",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_64a351de-1b0d-463d-a5d7-4db22fd153cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_64a351de-1b0d-463d-a5d7-4db22fd153cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "miley.yu@pudutech.com",
               "en_name": "俞慧",
               "id": "ou_40f9ab586192355eb87bbaeb42a1a052",
@@ -264067,7 +264067,7 @@
           "用户编号": "188",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00149_628b908e-c2fe-435e-8d57-e4bf5c83516g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00149_628b908e-c2fe-435e-8d57-e4bf5c83516g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "xuexuexing@pudutech.com",
               "en_name": "薛学星",
               "id": "ou_42855db758786e26d1e44dc7600359c1",
@@ -264379,7 +264379,7 @@
           "用户编号": "200",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_41779c65-4ed2-4052-b93b-1589d54fa9bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_41779c65-4ed2-4052-b93b-1589d54fa9bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhangzhongqi@pudutech.com",
               "en_name": "张钟棋",
               "id": "ou_480f7d8ee622bf8434b924a7ac7f6756",
@@ -265081,7 +265081,7 @@
           "用户编号": "227",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_cb378c0b-e918-43b5-b5b0-a0d99fdd9a9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_cb378c0b-e918-43b5-b5b0-a0d99fdd9a9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "liukezhong@pudutech.com",
               "en_name": "刘可忠",
               "id": "ou_54171adf6ff42306870eb86509488045",
@@ -265393,7 +265393,7 @@
           "用户编号": "239",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_c64730bd-d726-40fd-b67b-ffdd2a53c17g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_c64730bd-d726-40fd-b67b-ffdd2a53c17g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "liuchang02@pudutech.com",
               "en_name": "刘畅",
               "id": "ou_58ac9ec4f2e5c177521cdcee03ffdd9a",
@@ -265627,7 +265627,7 @@
           "用户编号": "248",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_f0d444e7-47e2-498f-833b-6b0173619d1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_f0d444e7-47e2-498f-833b-6b0173619d1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pangjingrong@pudutech.com",
               "en_name": "庞静蓉",
               "id": "ou_5e17a6d65f5126521b0818a6d5677864",
@@ -265783,7 +265783,7 @@
           "用户编号": "254",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0013b_386fe6e6-c6e8-44a5-9fc7-ccece3e0913g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0013b_386fe6e6-c6e8-44a5-9fc7-ccece3e0913g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "qiusiyuan@pudutech.com",
               "en_name": "邱思源",
               "id": "ou_6118f13ecdcc6a8b385373be963b40b4",
@@ -266433,7 +266433,7 @@
           "用户编号": "279",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_22dd2ab1-960b-4d86-8dfa-36d5c2e5f53g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_22dd2ab1-960b-4d86-8dfa-36d5c2e5f53g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "huangjieyi@pudutech.com",
               "en_name": "黄洁仪",
               "id": "ou_710c15cde7ffe5bc6fd7263f1c2bca8a",
@@ -266641,7 +266641,7 @@
           "用户编号": "287",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_cb3004df-e41d-4419-8ac5-2dac110b3aeg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_cb3004df-e41d-4419-8ac5-2dac110b3aeg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "eric.park@pudutech.com",
               "en_name": "朴元植",
               "id": "ou_73c282ff20c56f737543c58086687b3b",
@@ -267057,7 +267057,7 @@
           "用户编号": "303",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_d16f1062-f197-4393-8ec0-66a4d89b0acg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_d16f1062-f197-4393-8ec0-66a4d89b0acg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "duanyuwen@pudutech.com",
               "en_name": "段玉文",
               "id": "ou_7d8e8c99e07294f6ae6aaa53a1c4bd55",
@@ -267395,7 +267395,7 @@
           "用户编号": "316",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_fd773005-6e44-4362-8dcb-6d9c7a4dcf7g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_fd773005-6e44-4362-8dcb-6d9c7a4dcf7g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "jason.wan@pudutech.com",
               "en_name": "湾元生",
               "id": "ou_86c192c0fb8de11e6a2d24f488243b65",
@@ -267473,7 +267473,7 @@
           "用户编号": "319",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_4988a7eb-d0aa-4a11-83f1-36bd9b3444eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_4988a7eb-d0aa-4a11-83f1-36bd9b3444eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "amanda.wang@pudutech.com",
               "en_name": "王舒予",
               "id": "ou_898577a4706ea6bc84a494313d80d588",
@@ -267863,7 +267863,7 @@
           "用户编号": "334",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_9ec1cf72-bc83-4b3f-b9c6-3ca48e32315g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_8956ffa4-607c-4b67-81d6-cc1b5796095g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhaoyongsheng@pudutech.com",
               "en_name": "赵永生",
               "id": "ou_9442f5eaa5cd3b93b7fff37b0b0bf965",
@@ -268123,7 +268123,7 @@
           "用户编号": "344",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_ba946166-4aa5-4f45-a412-a676bdec7bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_ba946166-4aa5-4f45-a412-a676bdec7bag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "chenjing1@pudutech.com",
               "en_name": "陈晶",
               "id": "ou_9710b99ebad00ac31781d9c99e8a905b",
@@ -268435,7 +268435,7 @@
           "用户编号": "356",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_8192e273-9850-46f3-9243-598a775f2b3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_8192e273-9850-46f3-9243-598a775f2b3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "luzhouyue@pudutech.com",
               "en_name": "卢舟越",
               "id": "ou_9ddc875d6adc37a407fa92ed2c200640",
@@ -268955,7 +268955,7 @@
           "用户编号": "376",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_1d6a3ede-31d8-4efa-bea1-89467a95909g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_1d6a3ede-31d8-4efa-bea1-89467a95909g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "huangrongwei@pudutech.com",
               "en_name": "黄荣伟",
               "id": "ou_b05a9079c829e76f41ca6c22588f86e8",
@@ -271217,7 +271217,7 @@
           "用户编号": "463",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_3e59d3a0-5ba4-45cd-ac46-71c1b6c49f7g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016f_af929bd6-c9e3-4059-b274-30f963a0723g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "yewanru@pudutech.com",
               "en_name": "叶婉茹",
               "id": "ou_d4e698975c9242aae6f6f818fe32a418",
@@ -271243,7 +271243,7 @@
           "用户编号": "464",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_af91cfe5-5e50-4ca0-bc73-8f6ffc0bdbeg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_af91cfe5-5e50-4ca0-bc73-8f6ffc0bdbeg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zengweichen@pudutech.com",
               "en_name": "曾炜晨",
               "id": "ou_d5e92ca4926fea68cf86bb124b1b6a77",
@@ -271841,7 +271841,7 @@
           "用户编号": "487",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015h_c05a515b-5aaf-4d52-9f88-cbab59ce2a8g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015h_c05a515b-5aaf-4d52-9f88-cbab59ce2a8g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "chenxiaojun01@pudutech.com",
               "en_name": "陈小军",
               "id": "ou_e2261716aca679b3e78d732d83a95c8f",
@@ -271971,7 +271971,7 @@
           "用户编号": "492",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_5a3c1130-4335-44ff-8d69-abe6fc2fde2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_5a3c1130-4335-44ff-8d69-abe6fc2fde2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "alex.li1@pudutech.com",
               "en_name": "李建峰",
               "id": "ou_e52a3697d0cb64ed45d2a1aef961a471",
@@ -272023,7 +272023,7 @@
           "用户编号": "494",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_7ec0d6fd-a87d-4a89-8c64-73402149f49g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_7ec0d6fd-a87d-4a89-8c64-73402149f49g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "longxiaodong@pudutech.com",
               "en_name": "龙晓东",
               "id": "ou_e59be1058c1c69ba3093a9fc27a84090",
@@ -272127,7 +272127,7 @@
           "用户编号": "498",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_1255c223-9225-469c-bf65-4f48d364a53g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_1255c223-9225-469c-bf65-4f48d364a53g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "huangguanheng@pudutech.com",
               "en_name": "黄冠衡",
               "id": "ou_e7cc4ccf37a6f2740a584d8b71b31806",
@@ -272231,7 +272231,7 @@
           "用户编号": "502",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015h_9c2c8537-b013-40d0-b56e-1655d7c120cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015h_9c2c8537-b013-40d0-b56e-1655d7c120cg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wumeiliang@pudutech.com",
               "en_name": "吴美良",
               "id": "ou_ec73014b3e1f0ce53f911ef6171a50f7",
@@ -272985,7 +272985,7 @@
           "用户编号": "531",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015h_ce3f9905-fd78-4e92-8e7c-07e5fde7f7dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015h_ce3f9905-fd78-4e92-8e7c-07e5fde7f7dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "calvin.li@pudutech.com",
               "en_name": "李樑杰",
               "id": "ou_ffc280f56a05415adad4edba74cd7c06",
@@ -273375,7 +273375,7 @@
           "用户编号": "546",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_6d45f991-51af-4fdb-8a8e-24264cf7b4fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_6d45f991-51af-4fdb-8a8e-24264cf7b4fg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "mattew.huang@pudutech.com",
               "en_name": "黄文凯",
               "id": "ou_26930e0390b556788c663e5b69660745",
@@ -273453,7 +273453,7 @@
           "用户编号": "549",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00157_ca5883de-9791-4f8f-af72-8b3eed34e2bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_ca5883de-9791-4f8f-af72-8b3eed34e2bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhouwugao@pudutech.com",
               "en_name": "周武高",
               "id": "ou_3f5baffe438c088495fdf36951575950",
