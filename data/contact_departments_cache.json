@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-10-12 11:00:31",
+  "generated_at": "2026-10-14 11:01:19",
   "departments": [
     {
       "department_id": "od-c162e90053fcfde5215645671fa901a5",
@@ -1375,6 +1375,16 @@
       ]
     },
     {
+      "open_id": "ou_a4fabea7c3c0dfc59b397c40ef28dcd8",
+      "name": "Stefan Nielsen",
+      "department_ids": [
+        "od-5753bdab5d93188e6b34d610b1222bf0"
+      ],
+      "department_paths": [
+        "欧洲OR业务部"
+      ]
+    },
+    {
       "open_id": "ou_3d5c90e9ec21745b8c7fc6b62d1071a9",
       "name": "Sven Bernhardt",
       "department_ids": [
@@ -2334,6 +2344,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_2b26327633257b6817a3bae50ec94b5d",
+      "name": "余洋洋",
+      "department_ids": [
+        "od-e0a6dbed43b62c85d21f33fa9bb21aff"
+      ],
+      "department_paths": [
+        "CRPBU软件组"
       ]
     },
     {
@@ -3778,6 +3798,16 @@
       ],
       "department_paths": [
         "欧洲服务B组"
+      ]
+    },
+    {
+      "open_id": "ou_3e7b02c926635c575984ed88d9ffecf8",
+      "name": "刘真君",
+      "department_ids": [
+        "od-30db39571d65087f1a2b2b228a26f2fa"
+      ],
+      "department_paths": [
+        "生命周期工具链团队"
       ]
     },
     {
@@ -6197,6 +6227,16 @@
       ]
     },
     {
+      "open_id": "ou_4211e01db5affb2cb1cec37e21196ec2",
+      "name": "孙乐",
+      "department_ids": [
+        "od-09be02d0c22e49d9acb523e297ce841e"
+      ],
+      "department_paths": [
+        "欧洲GR业务部"
+      ]
+    },
+    {
       "open_id": "ou_f41e464b04a853709a2e92a16196e4d8",
       "name": "孙从辉",
       "department_ids": [
@@ -7643,13 +7683,13 @@
       ]
     },
     {
-      "open_id": "ou_c1babe9b130e308ff8a5a84cb5512405",
-      "name": "张晓雷",
+      "open_id": "ou_1c5d6b9a6884929b0e711f118f4b056d",
+      "name": "张晓羚",
       "department_ids": [
-        "od-54989923ac5367b9c79a6692ff383d77"
+        "od-e9be822e07696582ef8c156ffbc06d39"
       ],
       "department_paths": [
-        "校招组"
+        "GRPBU硬件组"
       ]
     },
     {
@@ -9510,6 +9550,16 @@
       ],
       "department_paths": [
         "通用导航及底盘团队"
+      ]
+    },
+    {
+      "open_id": "ou_54937293660e9ab8cc0a5cd0f6f429a4",
+      "name": "朱人政",
+      "department_ids": [
+        "od-88ca157a59730e7a40ef6b1cfc3e2a09"
+      ],
+      "department_paths": [
+        "质量代表组"
       ]
     },
     {
@@ -13189,16 +13239,6 @@
       ]
     },
     {
-      "open_id": "ou_d53217c9aa16a0e287648024b5415cd5",
-      "name": "汪鑫",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_1d9616ccfd624774b6285a64b63becc7",
       "name": "汪飞",
       "department_ids": [
@@ -13801,6 +13841,16 @@
       ]
     },
     {
+      "open_id": "ou_fd83061ad8bd7c937a04878881306c80",
+      "name": "熊皓然",
+      "department_ids": [
+        "od-d9e5ff8ee354bf07eb769f776537d8cd"
+      ],
+      "department_paths": [
+        "GR产品组"
+      ]
+    },
+    {
       "open_id": "ou_452cfbc9befbccababe6b43bf8794aed",
       "name": "熊雨昕",
       "department_ids": [
@@ -13958,6 +14008,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_00b28b88abb2a4c73595fbc29c84f5f0",
+      "name": "王俊璋",
+      "department_ids": [
+        "od-89f44bfe9d5e17bb4cb4e3f13fa6b8d6"
+      ],
+      "department_paths": [
+        "美洲服务部"
       ]
     },
     {
@@ -14637,6 +14697,16 @@
       ]
     },
     {
+      "open_id": "ou_64cb7049e04e4a7fc5d31562353ed49f",
+      "name": "王港锋",
+      "department_ids": [
+        "od-30db39571d65087f1a2b2b228a26f2fa"
+      ],
+      "department_paths": [
+        "生命周期工具链团队"
+      ]
+    },
+    {
       "open_id": "ou_899b7f5ac4d42cd55b199d459ff64c3b",
       "name": "王灵灵",
       "department_ids": [
@@ -15179,16 +15249,6 @@
       ]
     },
     {
-      "open_id": "ou_0a1fbc65f0bd48948b20aa769d3d91dc",
-      "name": "白浩然",
-      "department_ids": [
-        "od-264e0d6ec3e739c33ad5d32c3908108e"
-      ],
-      "department_paths": [
-        "X LAB"
-      ]
-    },
-    {
       "open_id": "ou_600e6b11140526350feb56fe2db39e70",
       "name": "白瓯",
       "department_ids": [
@@ -15434,16 +15494,6 @@
         "IRPBU",
         "M LAB",
         "集成供应链中心"
-      ]
-    },
-    {
-      "open_id": "ou_1987ef3c3f137e69b7d34ec0db7140d4",
-      "name": "禾予",
-      "department_ids": [
-        "od-72e44aa01224d9f0fb674858f50c11c6"
-      ],
-      "department_paths": [
-        "SR2D业务部"
       ]
     },
     {
@@ -17396,16 +17446,6 @@
       ],
       "department_paths": [
         "X LAB"
-      ]
-    },
-    {
-      "open_id": "ou_d097408bd97542b876f1a3f66bf9b146",
-      "name": "蔡杰彬",
-      "department_ids": [
-        "od-283083eed35339f3f9f4515dc115bcb3"
-      ],
-      "department_paths": [
-        "AI变革部"
       ]
     },
     {
@@ -21149,6 +21189,16 @@
       ]
     },
     {
+      "open_id": "ou_1987ef3c3f137e69b7d34ec0db7140d4",
+      "name": "鞠彦烁",
+      "department_ids": [
+        "od-72e44aa01224d9f0fb674858f50c11c6"
+      ],
+      "department_paths": [
+        "SR2D业务部"
+      ]
+    },
+    {
       "open_id": "ou_045870533dc8fa55a0cdaeb1220f650c",
       "name": "韦兰艳",
       "department_ids": [
@@ -21490,16 +21540,6 @@
       ],
       "department_paths": [
         "CRPBU软件组"
-      ]
-    },
-    {
-      "open_id": "ou_5a237dc6d0ddef050a3d8df8b3a6db02",
-      "name": "马晓龙",
-      "department_ids": [
-        "od-257bc9cc6263635875bc1b11aac10705"
-      ],
-      "department_paths": [
-        "数字化组"
       ]
     },
     {
@@ -22803,5 +22843,5 @@
       ]
     }
   ],
-  "user_count": 2110
+  "user_count": 2114
 }
