@@ -43,7 +43,25 @@ class CulturalRequestTests(unittest.TestCase):
         item = app.corporate_apparel_catalog(synced, source_rows=source)["items"][0]
 
         self.assertEqual(item["system_redeemed"], 1)
-        self.assertEqual(item["available"], 2)
+        self.assertEqual(item["available"], 3)
+
+    def test_corporate_catalog_does_not_double_subtract_system_redeemed(self) -> None:
+        encoded = base64.b64encode(b"1:recsource:checksum:1").decode("ascii")
+        synced = [{"record_id": "recsync", "fields": {"SourceID": encoded}}]
+        source = [{
+            "record_id": "recsource",
+            "fields": {
+                "款式": "文化衫-商务衬衫-黑色（长袖）",
+                "码数": "S",
+                "最新库存": 3,
+                "系统兑换数量": 3,
+            },
+        }]
+
+        item = app.corporate_apparel_catalog(synced, source_rows=source)["items"][0]
+
+        self.assertEqual(item["system_redeemed"], 3)
+        self.assertEqual(item["available"], 3)
 
     def test_corporate_apparel_redeemed_updates_writable_source_table(self) -> None:
         source_client = MagicMock()

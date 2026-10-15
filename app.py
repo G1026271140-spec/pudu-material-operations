@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.5"
+APP_VERSION = "V3.2.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -20785,6 +20785,8 @@ def corporate_apparel_catalog(
         record_id = feishu_record_id(row)
         if not product or not record_id:
             continue
+        # The source table's 最新库存 is already a formula that subtracts
+        # 系统兑换数量. Subtracting it again would understate claimable stock.
         latest_inventory = feishu_int(fields, "最新库存")
         redeemed = feishu_int(fields, "系统兑换数量")
         size = feishu_text(fields, "码数").strip() or "均码"
@@ -20804,7 +20806,7 @@ def corporate_apparel_catalog(
                 "code": feishu_text(fields, "编码").strip(),
                 "latest_inventory": latest_inventory,
                 "system_redeemed": redeemed,
-                "available": latest_inventory - redeemed,
+                "available": latest_inventory,
                 "images": images,
             }
         )
