@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 import json
 import logging
 import os
@@ -69,6 +70,7 @@ WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS = int(get_setting("submission_worker.le
 WORKER_HEARTBEAT_INTERVAL_SECONDS = int(get_setting("submission_worker.heartbeat_interval_seconds", 21_600))
 WORKER_HEARTBEAT_TIMEOUT_SECONDS = int(get_setting("submission_worker.heartbeat_timeout_seconds", 28_800))
 INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS = int(get_setting("submission_worker.inventory_review_schedule_check_interval_seconds", 300))
+MAX_PARALLEL_NOTIFICATION_TASKS = 2
 _LEADERSHIP_STATE: dict[str, object] = {
     "checked_at": 0.0,
     "is_leader": False,
@@ -277,6 +279,11 @@ def process_material_request(
     return progress
 
 
+def applicant_bot_unavailable(error: Exception) -> bool:
+    """Feishu 230013 means this applicant cannot receive this app's bot message."""
+    return '"code":230013' in str(error).replace(" ", "")
+
+
 def process_cultural_request(
     task: SubmissionTask,
     checkpoint: Callable[[dict[str, object]], None] | None = None,
@@ -384,6 +391,9 @@ def process_cultural_request(
         sent_keys = {
             str(value) for value in list(progress.get("notification_sent_keys") or [])
         }
+        skipped_keys = {
+            str(value) for value in list(progress.get("notification_skipped_keys") or [])
+        }
         message_ids = {
             str(key): str(value)
             for key, value in dict(progress.get("notification_message_ids") or {}).items()
@@ -391,13 +401,24 @@ def process_cultural_request(
         }
         for target in targets:
             target_key = str(target["key"])
-            if target_key in sent_keys:
+            if target_key in sent_keys or target_key in skipped_keys:
                 continue
-            message_id = inventory_app.send_feishu_interactive_message(
-                client,
-                str(target["recipient_id"]),
-                dict(target["card"]),
-            )
+            try:
+                message_id = inventory_app.send_feishu_interactive_message(
+                    client,
+                    str(target["recipient_id"]),
+                    dict(target["card"]),
+                )
+            except Exception as exc:
+                if target.get("audience") != "applicant" or not applicant_bot_unavailable(exc):
+                    raise
+                skipped_keys.add(target_key)
+                progress["notification_skipped_keys"] = sorted(skipped_keys)
+                progress.setdefault("notification_warnings", []).append(
+                    "申请人不在飞书机器人可用范围，已跳过申请人卡片。"
+                )
+                save_progress()
+                continue
             if str(message_id or "").strip():
                 message_ids[target_key] = str(message_id)
             sent_keys.add(target_key)
@@ -405,8 +426,8 @@ def process_cultural_request(
             progress["notification_message_ids"] = dict(message_ids)
             save_progress()
         progress["notification_counts"] = {
-            "applicant": sum(1 for target in targets if target["audience"] == "applicant"),
-            "admins": sum(1 for target in targets if target["audience"] == "admins"),
+            "applicant": sum(1 for target in targets if target["audience"] == "applicant" and target["key"] in sent_keys),
+            "admins": sum(1 for target in targets if target["audience"] == "admins" and target["key"] in sent_keys),
         }
         inventory_app.feishu_update_record_fields(
             inventory_app.REQUEST_TABLE_NAME,
@@ -516,12 +537,24 @@ def process_corporate_apparel_request(
             str(progress.get("request_no") or ""), request_payload, lines
         )
         sent_keys = {str(value) for value in list(progress.get("notification_sent_keys") or [])}
+        skipped_keys = {str(value) for value in list(progress.get("notification_skipped_keys") or [])}
         message_ids = {str(key): str(value) for key, value in dict(progress.get("notification_message_ids") or {}).items()}
         for target in targets:
             target_key = str(target["key"])
-            if target_key in sent_keys:
+            if target_key in sent_keys or target_key in skipped_keys:
                 continue
-            message_id = inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            try:
+                message_id = inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            except Exception as exc:
+                if target.get("audience") != "applicant" or not applicant_bot_unavailable(exc):
+                    raise
+                skipped_keys.add(target_key)
+                progress["notification_skipped_keys"] = sorted(skipped_keys)
+                progress.setdefault("notification_warnings", []).append(
+                    "申请人不在飞书机器人可用范围，已跳过申请人卡片。"
+                )
+                save_progress()
+                continue
             if str(message_id or "").strip():
                 message_ids[target_key] = str(message_id)
             sent_keys.add(target_key)
@@ -538,7 +571,7 @@ def process_corporate_apparel_request(
             },
         )
         progress["notification_done"] = True
-        progress["notification_count"] = len(targets)
+        progress["notification_count"] = len(sent_keys)
         save_progress()
     return progress
 
@@ -835,22 +868,24 @@ def notify_terminal_failure(task: SubmissionTask, error: Exception) -> None:
             logging.exception("Sending terminal task failure notification failed: %s", recipient)
 
 
-def process_one(
-    worker_name: str,
-    worker_priority: int = DEFAULT_WORKER_PRIORITY,
-) -> bool:
-    client = inventory_app.feishu_client()
-    if client is None:
-        raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
-    if not worker_has_leadership(client, worker_priority):
-        return False
-    task = claim_next_submission_task(
-        client,
-        worker_name,
-        lease_seconds=DEFAULT_LEASE_SECONDS,
+def notification_only_task(task: SubmissionTask) -> bool:
+    """Only this checkpoint guarantees all business stock/quota writes are done."""
+    return (
+        task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
+        and task.result.get("write_done") is True
     )
-    if task is None:
+
+
+def can_run_alongside(task: SubmissionTask, running: list[SubmissionTask]) -> bool:
+    if any(active.task_id == task.task_id for active in running):
         return False
+    notification_count = sum(notification_only_task(active) for active in running)
+    if notification_only_task(task):
+        return notification_count < MAX_PARALLEL_NOTIFICATION_TASKS
+    return not any(not notification_only_task(active) for active in running)
+
+
+def process_claimed_submission_task(client: object, task: SubmissionTask) -> None:
     logging.info("Claimed task %s (%s)", task.task_id, task.task_type)
     try:
         result = process_task(
@@ -884,6 +919,22 @@ def process_one(
         logging.exception("Task %s failed with status %s", task.task_id, status)
         if status == QUEUE_STATUS_FAILED:
             notify_terminal_failure(task, exc)
+    return None
+
+
+def process_one(
+    worker_name: str,
+    worker_priority: int = DEFAULT_WORKER_PRIORITY,
+) -> bool:
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
+    if not worker_has_leadership(client, worker_priority):
+        return False
+    task = claim_next_submission_task(client, worker_name, lease_seconds=DEFAULT_LEASE_SECONDS)
+    if task is None:
+        return False
+    process_claimed_submission_task(client, task)
     return True
 
 
@@ -896,42 +947,67 @@ def run_forever(poll_seconds: float, worker_priority: int) -> bool:
         inventory_app.APP_VERSION,
         started_revision or "unknown",
     )
-    while True:
-        try:
-            scheduler_now = time.monotonic()
-            if (
-                worker_has_leadership(inventory_app.feishu_client(), worker_priority)
-                and scheduler_now - float(_INVENTORY_REVIEW_SCHEDULER_STATE.get("checked_at") or 0)
-                >= INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS
-            ):
-                # A temporary Feishu read failure must not turn the normal
-                # five-second queue poll into an aggressive Base scan loop.
-                _INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = scheduler_now
-                created = inventory_app.enqueue_inventory_review_scheduled_tasks()
-                if created:
-                    logging.info("Enqueued %s inventory review reminder tasks", created)
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
+    with ThreadPoolExecutor(max_workers=1 + MAX_PARALLEL_NOTIFICATION_TASKS) as executor:
+        running: dict[Future[None], SubmissionTask] = {}
+        reloading = False
+        while True:
+            for future in [item for item in running if item.done()]:
+                task = running.pop(future)
                 try:
-                    from order_scheduling_service import SchedulingService
-                    scheduled = SchedulingService(inventory_app).enqueue_due()
-                    if scheduled:
-                        logging.info("Enqueued %s order scheduling restock tasks", scheduled)
+                    future.result()
                 except Exception:
-                    # Scheduling is isolated; a schema/read failure must not stop existing tasks.
-                    logging.exception("Order scheduling scan failed; ordinary queue processing continues")
-            processed = process_one(name, worker_priority)
-        except Exception:
-            logging.exception("Submission worker polling failed")
-            processed = False
-        if not processed:
-            time.sleep(max(1.0, poll_seconds))
-        current_revision = repository_revision()
-        if started_revision and current_revision and current_revision != started_revision:
-            logging.warning(
-                "Repository revision changed from %s to %s; reloading worker.",
-                started_revision,
-                current_revision,
-            )
-            return True
+                    logging.exception("Submission task thread failed unexpectedly: %s", task.task_id)
+            current_revision = repository_revision()
+            if started_revision and current_revision and current_revision != started_revision:
+                if not reloading:
+                    logging.warning(
+                        "Repository revision changed from %s to %s; waiting for running tasks before reload.",
+                        started_revision, current_revision,
+                    )
+                reloading = True
+            if reloading and not running:
+                return True
+            claimed = False
+            if not reloading:
+                try:
+                    scheduler_now = time.monotonic()
+                    is_leader = worker_has_leadership(client, worker_priority)
+                    if (
+                        is_leader
+                        and scheduler_now - float(_INVENTORY_REVIEW_SCHEDULER_STATE.get("checked_at") or 0)
+                        >= INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS
+                    ):
+                        _INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = scheduler_now
+                        created = inventory_app.enqueue_inventory_review_scheduled_tasks()
+                        if created:
+                            logging.info("Enqueued %s inventory review reminder tasks", created)
+                        try:
+                            from order_scheduling_service import SchedulingService
+                            scheduled = SchedulingService(inventory_app).enqueue_due()
+                            if scheduled:
+                                logging.info("Enqueued %s order scheduling restock tasks", scheduled)
+                        except Exception:
+                            logging.exception("Order scheduling scan failed; ordinary queue processing continues")
+                    if is_leader and len(running) < 1 + MAX_PARALLEL_NOTIFICATION_TASKS:
+                        active = list(running.values())
+                        task = claim_next_submission_task(
+                            client, name, lease_seconds=DEFAULT_LEASE_SECONDS,
+                            eligible_predicate=lambda candidate: can_run_alongside(candidate, active),
+                        )
+                        if task is not None:
+                            running[executor.submit(process_claimed_submission_task, client, task)] = task
+                            claimed = True
+                except Exception:
+                    logging.exception("Submission worker polling failed")
+            if claimed:
+                continue
+            if running:
+                wait(list(running), timeout=max(1.0, poll_seconds), return_when=FIRST_COMPLETED)
+            elif not claimed:
+                time.sleep(max(1.0, poll_seconds))
 
 
 def acquire_single_instance_mutex() -> int:

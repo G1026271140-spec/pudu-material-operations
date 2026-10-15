@@ -5,7 +5,7 @@ import hashlib
 import time
 import uuid
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from feishu_bitable import FeishuBitableClient
 from project_config import get_setting
@@ -722,6 +722,7 @@ def claim_next_submission_task(
     *,
     lease_seconds: int = 600,
     now_ms: int | None = None,
+    eligible_predicate: Callable[[SubmissionTask], bool] | None = None,
 ) -> SubmissionTask | None:
     now = timestamp_ms() if now_ms is None else int(now_ms)
     table_id = ensure_submission_queue_table(client)
@@ -730,6 +731,7 @@ def claim_next_submission_task(
         for task in list_submission_tasks(client, table_id)
         if (
             task.completion_status != QUEUE_COMPLETION_COMPLETED
+            and (eligible_predicate is None or eligible_predicate(task))
             and (
             task.status == QUEUE_STATUS_PENDING
             or (

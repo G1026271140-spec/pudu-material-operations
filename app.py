@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.3"
+APP_VERSION = "V3.2.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7600,11 +7600,11 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
     return prepared
 
 
-def next_request_no() -> str:
+def next_request_no(request_rows: list[dict] | None = None) -> str:
     today = datetime.now().strftime("%Y%m%d")
     prefix = f"{REQUEST_NO_PREFIX}-{today}-"
     max_number = 0
-    for row in fresh_feishu_rows(REQUEST_TABLE_NAME):
+    for row in request_rows if request_rows is not None else fresh_feishu_rows(REQUEST_TABLE_NAME):
         request_no = feishu_text(feishu_fields(row), "申请单号")
         if request_no.startswith(prefix):
             suffix = request_no.removeprefix(prefix)
@@ -7622,12 +7622,15 @@ def request_row_sort_key(row: dict) -> tuple[int, str]:
     return submitted_at, feishu_record_id(row)
 
 
-def submission_token_rows(submission_token: str) -> list[dict]:
+def submission_token_rows(
+    submission_token: str, request_rows: list[dict] | None = None
+) -> list[dict]:
     if not submission_token or not feishu_has_field(REQUEST_TABLE_NAME, "提交幂等键"):
         return []
+    source_rows = request_rows if request_rows is not None else fresh_feishu_rows(REQUEST_TABLE_NAME)
     rows = [
         row
-        for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
+        for row in source_rows
         if feishu_text(feishu_fields(row), "提交幂等键") == submission_token
     ]
     return sorted(rows, key=request_row_sort_key)
@@ -21011,14 +21014,15 @@ def submit_feishu_corporate_apparel_request(
         f"{index:02d}. {item['product']} / {item['size']} × {int(item['quantity'])}"
         for index, item in enumerate(items, start=1)
     )
-    existing_rows = submission_token_rows(token)
+    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
+    existing_rows = submission_token_rows(token, request_rows)
     if existing_rows:
         request_row = existing_rows[0]
         request_record_id = feishu_record_id(request_row)
         request_no = feishu_text(feishu_fields(request_row), "申请单号")
         created_new = False
     else:
-        request_no = next_request_no()
+        request_no = next_request_no(request_rows)
         request_fields: dict[str, object] = {
             "申请单号": request_no,
             "标题": f"{request_payload.get('requester') or '申请人'}-企业文化衫领取",

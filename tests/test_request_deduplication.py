@@ -45,6 +45,17 @@ class RequestDeduplicationTests(unittest.TestCase):
         self.assertEqual(result, f"REQ-{today}-004")
         fresh_rows.assert_called_once_with(app.REQUEST_TABLE_NAME)
 
+    def test_request_number_and_token_lookup_reuse_same_snapshot(self) -> None:
+        today = datetime.now().strftime("%Y%m%d")
+        rows = [request_row("request-a", f"REQ-{today}-003", "token-a", 1)]
+        with (
+            patch.object(app, "fresh_feishu_rows") as fresh_rows,
+            patch.object(app, "feishu_has_field", return_value=True),
+        ):
+            self.assertEqual(app.submission_token_rows("token-a", rows), rows)
+            self.assertEqual(app.next_request_no(rows), f"REQ-{today}-004")
+        fresh_rows.assert_not_called()
+
     def test_completed_submission_reuses_existing_request(self) -> None:
         row = request_row("request-a", "REQ-1", "token-1", 1)
         with (

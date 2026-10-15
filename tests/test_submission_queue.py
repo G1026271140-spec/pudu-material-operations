@@ -440,6 +440,22 @@ class SubmissionQueueTests(unittest.TestCase):
         assert claimed is not None
         self.assertEqual(claimed.task_id, expected.task_id)
 
+    def test_claim_can_skip_busy_task_without_changing_fifo_among_eligible(self) -> None:
+        client = FakeQueueClient()
+        first, _ = queue.enqueue_submission_task(
+            client, queue.QUEUE_TASK_TYPE_MATERIAL_REQUEST, "first", {"version": 1}
+        )
+        second, _ = queue.enqueue_submission_task(
+            client, queue.QUEUE_TASK_TYPE_CULTURAL_REQUEST, "second", {"version": 1}
+        )
+        claimed = queue.claim_next_submission_task(
+            client, "worker-a", eligible_predicate=lambda task: task.task_id != first.task_id
+        )
+        self.assertIsNotNone(claimed)
+        assert claimed is not None
+        self.assertEqual(claimed.task_id, second.task_id)
+        self.assertEqual(queue.list_submission_tasks(client)[0].status, queue.QUEUE_STATUS_PENDING)
+
     def test_legacy_queue_rows_receive_completion_marker(self) -> None:
         client = FakeQueueClient()
         queue.ensure_submission_queue_table(client)

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import unittest
+import threading
+import time
 from unittest.mock import Mock, patch
 
 from scripts import submission_worker as worker
@@ -11,6 +13,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
     QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
@@ -105,6 +108,84 @@ def cultural_request_task(result: dict | None = None) -> SubmissionTask:
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_run_forever_processes_notification_while_writer_is_active(self) -> None:
+        writer = material_request_task()
+        notification = SubmissionTask(**{
+            **writer.__dict__, "task_id": "notification-1",
+            "task_type": QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            "result": {"write_plan": {"items": []}, "write_done": True, "request_no": "REQ-1"},
+        })
+        queued = [writer, notification]
+        started: set[str] = set()
+        all_started = threading.Event()
+        release = threading.Event()
+        lock = threading.Lock()
+        outcome: list[bool] = []
+
+        def fake_claim(_client, _name, *, eligible_predicate, **_kwargs):
+            for task in list(queued):
+                if eligible_predicate(task):
+                    queued.remove(task)
+                    return task
+            return None
+
+        def fake_process(_client, task):
+            with lock:
+                started.add(task.task_id)
+                if len(started) == 2:
+                    all_started.set()
+            release.wait(5)
+
+        def revision():
+            return "new" if all_started.is_set() else "old"
+
+        previous_checked_at = worker._INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"]
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker, "worker_has_leadership", return_value=True),
+            patch.object(worker, "claim_next_submission_task", side_effect=fake_claim),
+            patch.object(worker, "process_claimed_submission_task", side_effect=fake_process),
+            patch.object(worker, "repository_revision", side_effect=revision),
+            patch.object(worker, "INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS", 10**9),
+        ):
+            worker._INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = time.monotonic()
+            thread = threading.Thread(target=lambda: outcome.append(worker.run_forever(0, 100)), daemon=True)
+            thread.start()
+            try:
+                self.assertTrue(all_started.wait(5), "writer and notification should overlap")
+            finally:
+                release.set()
+                thread.join(5)
+                worker._INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = previous_checked_at
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(outcome, [True])
+
+    def test_parallel_lane_only_admits_checkpointed_corporate_notifications(self) -> None:
+        writer = material_request_task()
+        notification = SubmissionTask(**{
+            **writer.__dict__, "task_id": "notification-1",
+            "task_type": QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            "result": {"write_plan": {"items": []}, "write_done": True, "request_no": "REQ-1"},
+        })
+        second_notification = SubmissionTask(**{
+            **notification.__dict__, "task_id": "notification-2",
+        })
+        third_notification = SubmissionTask(**{
+            **notification.__dict__, "task_id": "notification-3",
+        })
+        uncheckpointed = SubmissionTask(**{
+            **notification.__dict__, "task_id": "not-yet-written", "result": {},
+        })
+
+        self.assertTrue(worker.notification_only_task(notification))
+        self.assertFalse(worker.notification_only_task(uncheckpointed))
+        self.assertTrue(worker.can_run_alongside(notification, [writer]))
+        self.assertTrue(worker.can_run_alongside(second_notification, [writer, notification]))
+        self.assertFalse(worker.can_run_alongside(third_notification, [writer, notification, second_notification]))
+        self.assertFalse(worker.can_run_alongside(uncheckpointed, [writer]))
+        self.assertFalse(worker.can_run_alongside(notification, [notification]))
+        self.assertTrue(worker.can_run_alongside(writer, [notification]))
+
     def test_corporate_apparel_reject_marks_notification_complete_after_card_updates(self) -> None:
         task = category_task(
             QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
@@ -389,6 +470,80 @@ class SubmissionWorkerTests(unittest.TestCase):
         send.assert_called_once()
         self.assertEqual(send.call_args.args[1], "ou_admin")
         self.assertTrue(result["notification_done"])
+
+    def test_cultural_unavailable_applicant_is_skipped_but_admin_is_notified(self) -> None:
+        task = cultural_request_task({
+            "quota_checked": True, "quota_allowed": True, "quota_reserved": True,
+            "quota_updated": True, "write_done": True, "request_no": "REQ-1",
+        })
+        targets = [
+            {"key": "applicant:ou_sales", "audience": "applicant", "recipient_id": "ou_sales", "card": {}},
+            {"key": "admin:ou_admin", "audience": "admins", "recipient_id": "ou_admin", "card": {}},
+        ]
+        def send(_client, recipient_id, _card):
+            if recipient_id == "ou_sales":
+                raise RuntimeError('Feishu HTTP 400: {"code":230013,"msg":"Bot has NO availability to this user."}')
+            return "om-admin"
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "cultural_request_notification_targets", return_value=targets),
+            patch.object(worker.inventory_app, "send_feishu_interactive_message", side_effect=send) as deliver,
+            patch.object(worker.inventory_app, "submission_token_rows", return_value=[{"record_id": "rec-request"}]),
+            patch.object(worker.inventory_app, "feishu_update_record_fields"),
+        ):
+            result = worker.process_cultural_request(task)
+        self.assertTrue(result["notification_done"])
+        self.assertEqual(result["notification_skipped_keys"], ["applicant:ou_sales"])
+        self.assertEqual(result["notification_counts"], {"applicant": 0, "admins": 1})
+        self.assertEqual(deliver.call_count, 2)
+
+    def test_corporate_unavailable_applicant_is_skipped_and_hr_receives_card(self) -> None:
+        original = material_request_task()
+        task = SubmissionTask(**{
+            **original.__dict__, "task_type": QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            "result": {"write_plan": {"items": []}, "write_done": True, "request_no": "REQ-1"},
+        })
+        targets = [
+            {"key": "applicant:ou_sales", "audience": "applicant", "recipient_id": "ou_sales", "card": {}},
+            {"key": "hr:ou_hr", "audience": "hr", "recipient_id": "ou_hr", "card": {}},
+        ]
+        checkpoints: list[dict] = []
+        def send(_client, recipient_id, _card):
+            if recipient_id == "ou_sales":
+                raise RuntimeError('Feishu HTTP 400: {"code":230013,"msg":"Bot has NO availability to this user."}')
+            return "om-hr"
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "corporate_apparel_notification_targets", return_value=targets),
+            patch.object(worker.inventory_app, "send_feishu_interactive_message", side_effect=send) as deliver,
+            patch.object(worker.inventory_app, "corporate_apparel_request_context", return_value={"request": {"record_id": "rec-request"}}),
+            patch.object(worker.inventory_app, "feishu_update_record_fields") as update,
+            patch.object(worker.inventory_app, "submit_feishu_corporate_apparel_request") as rewrite,
+        ):
+            result = worker.process_corporate_apparel_request(task, checkpoints.append)
+        rewrite.assert_not_called()
+        self.assertTrue(result["notification_done"])
+        self.assertEqual(result["notification_skipped_keys"], ["applicant:ou_sales"])
+        self.assertEqual(result["notification_sent_keys"], ["hr:ou_hr"])
+        self.assertEqual(result["notification_count"], 1)
+        self.assertEqual(deliver.call_count, 2)
+        update.assert_called_once()
+        self.assertTrue(any(item.get("notification_skipped_keys") for item in checkpoints))
+
+    def test_unavailable_hr_still_retries_instead_of_being_skipped(self) -> None:
+        original = material_request_task()
+        task = SubmissionTask(**{
+            **original.__dict__, "task_type": QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            "result": {"write_plan": {"items": []}, "write_done": True, "request_no": "REQ-1"},
+        })
+        targets = [{"key": "hr:ou_hr", "audience": "hr", "recipient_id": "ou_hr", "card": {}}]
+        with (
+            patch.object(worker.inventory_app, "feishu_client", return_value=object()),
+            patch.object(worker.inventory_app, "corporate_apparel_notification_targets", return_value=targets),
+            patch.object(worker.inventory_app, "send_feishu_interactive_message", side_effect=RuntimeError('Feishu HTTP 400: {"code":230013}')),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "230013"):
+                worker.process_corporate_apparel_request(task)
 
     def test_approval_writeback_success_notifies_and_completes(self) -> None:
         task = category_task(

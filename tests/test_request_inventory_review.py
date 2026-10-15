@@ -818,6 +818,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
         }
         with (
             patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "fresh_feishu_rows", return_value=[]),
             patch.object(app, "feishu_has_field", return_value=True),
             patch.object(app, "feishu_datetime_value", return_value=123456),
             patch.object(app, "feishu_batch_update_record_fields") as update_lines,
