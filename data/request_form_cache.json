@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-10-14 10:37:40",
+  "generated_at": "2026-10-15 16:45:20",
   "products": [
     "产品单页(Product Flyer )",
     "公司产品手册",
@@ -2948,7 +2948,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 625,
+      "quantity": 585,
       "unit_price_rmb": 5.416
     },
     {
@@ -3100,7 +3100,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": 65,
+      "quantity": 15,
       "unit_price_rmb": 5.416
     },
     {
