@@ -28,6 +28,11 @@ from submission_queue import (
     QUEUE_TASK_TYPE_ORDER_PLAN,
     QUEUE_TASK_TYPE_ORDER_RESTOCK,
     QUEUE_STATUS_FAILED,
+    QUEUE_STATUS_CANCELLED,
+    QUEUE_COMPLETION_COMPLETED,
+    QUEUE_FIELD_STATUS,
+    QUEUE_FIELD_ERROR,
+    QUEUE_FIELD_COMPLETION_STATUS,
     QUEUE_TASK_TYPE_CATEGORY_DELETE,
     QUEUE_TASK_TYPE_CATEGORY_SYNC,
     QUEUE_TASK_TYPE_CULTURAL_REQUEST,
@@ -55,6 +60,7 @@ from submission_queue import (
     current_worker_leader,
     ensure_submission_queue_table,
     fail_submission_task,
+    find_task_by_idempotency_key,
     retry_failed_submission_tasks,
     update_worker_heartbeat,
 )
@@ -888,6 +894,16 @@ def can_run_alongside(task: SubmissionTask, running: list[SubmissionTask]) -> bo
 def process_claimed_submission_task(client: object, task: SubmissionTask) -> None:
     logging.info("Claimed task %s (%s)", task.task_id, task.task_type)
     try:
+        if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST and not task.result:
+            canonical = find_task_by_idempotency_key(client, task.idempotency_key)
+            if canonical is not None and canonical.task_id != task.task_id:
+                client.update_record(ensure_submission_queue_table(client), task.record_id, {
+                    QUEUE_FIELD_STATUS: QUEUE_STATUS_CANCELLED,
+                    QUEUE_FIELD_ERROR: f"重复任务，使用 {canonical.task_id}",
+                    QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_COMPLETED,
+                })
+                logging.info("Cancelled duplicate task %s; canonical=%s", task.task_id, canonical.task_id)
+                return
         result = process_task(
             task,
             checkpoint=lambda progress: checkpoint_submission_task(

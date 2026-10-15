@@ -108,6 +108,31 @@ def cultural_request_task(result: dict | None = None) -> SubmissionTask:
 
 
 class SubmissionWorkerTests(unittest.TestCase):
+    def test_duplicate_corporate_task_is_cancelled_before_quota_write(self) -> None:
+        original = material_request_task()
+        task = SubmissionTask(**{
+            **original.__dict__, "task_type": QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            "result": {},
+        })
+        client = Mock()
+        with (
+            patch.object(worker, "find_task_by_idempotency_key", return_value=SubmissionTask(**{
+                **task.__dict__, "task_id": "earlier-task", "record_id": "earlier-record",
+            })),
+            patch.object(worker, "ensure_submission_queue_table", return_value="queue-table"),
+            patch.object(worker, "process_task") as process,
+        ):
+            worker.process_claimed_submission_task(client, task)
+        process.assert_not_called()
+        client.update_record.assert_called_once_with(
+            "queue-table", task.record_id,
+            {
+                worker.QUEUE_FIELD_STATUS: worker.QUEUE_STATUS_CANCELLED,
+                worker.QUEUE_FIELD_ERROR: "重复任务，使用 earlier-task",
+                worker.QUEUE_FIELD_COMPLETION_STATUS: worker.QUEUE_COMPLETION_COMPLETED,
+            },
+        )
+
     def test_run_forever_processes_notification_while_writer_is_active(self) -> None:
         writer = material_request_task()
         notification = SubmissionTask(**{

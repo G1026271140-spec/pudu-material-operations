@@ -8,6 +8,7 @@ import secrets
 import threading
 import time
 import tomllib
+from contextlib import contextmanager
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -1387,19 +1388,58 @@ def _queue_client_and_table() -> tuple[Any, str, str]:
     return client, table_id, payload_table_id
 
 
+_ENQUEUE_KEY_GUARD = threading.Lock()
+_ENQUEUE_KEY_LOCKS: dict[str, tuple[threading.Lock, int]] = {}
+
+
+@contextmanager
+def _enqueue_key_lock(key: str):
+    with _ENQUEUE_KEY_GUARD:
+        lock, users = _ENQUEUE_KEY_LOCKS.get(key, (threading.Lock(), 0))
+        _ENQUEUE_KEY_LOCKS[key] = (lock, users + 1)
+    lock.acquire()
+    try:
+        yield
+    finally:
+        lock.release()
+        with _ENQUEUE_KEY_GUARD:
+            _, users = _ENQUEUE_KEY_LOCKS[key]
+            if users == 1:
+                del _ENQUEUE_KEY_LOCKS[key]
+            else:
+                _ENQUEUE_KEY_LOCKS[key] = (lock, users - 1)
+
+
 def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
+    normalized_key = idempotency_key.strip()
+    if not normalized_key:
+        raise ValueError("后台任务提交标识不能为空。")
+    with _enqueue_key_lock(normalized_key):
+        return _enqueue_fast_locked(task_type, normalized_key, payload)
+
+
+def _enqueue_fast_locked(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
     from submission_queue import (
         QUEUE_COMPLETION_UNFINISHED, QUEUE_FIELD_COMPLETION_STATUS,
+        QUEUE_FIELD_ERROR,
         QUEUE_FIELD_IDEMPOTENCY_KEY, QUEUE_FIELD_PAYLOAD, QUEUE_FIELD_RETRY_COUNT,
         QUEUE_FIELD_STATUS, QUEUE_FIELD_SUBMITTED_AT, QUEUE_FIELD_TASK_ID,
         QUEUE_FIELD_TASK_TYPE, QUEUE_PAYLOAD_INLINE_LIMIT, QUEUE_STATUS_PENDING,
+        QUEUE_STATUS_CANCELLED, QUEUE_COMPLETION_COMPLETED,
         QUEUE_PAYLOAD_CHUNK_SIZE, QUEUE_PAYLOAD_FIELD_CONTENT,
         QUEUE_PAYLOAD_FIELD_INDEX, QUEUE_PAYLOAD_FIELD_TASK_ID,
+        find_task_by_idempotency_key,
         timestamp_ms,
     )
 
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    normalized_payload = json.loads(serialized)
     client, table_id, payload_table_id = _queue_client_and_table()
+    existing = find_task_by_idempotency_key(client, idempotency_key, table_id)
+    if existing is not None:
+        if existing.task_type != task_type or existing.payload != normalized_payload:
+            raise ValueError("同一提交标识已用于不同申请内容，请刷新页面后重新提交。")
+        return existing.task_id
     task_id = uuid4().hex
     stored_payload = serialized
     chunk_record_ids: list[str] = []
@@ -1451,6 +1491,21 @@ def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any])
             if record_id:
                 client.delete_record(payload_table_id, record_id)
         raise RuntimeError("申请未能写入后台任务队列。")
+    try:
+        canonical = find_task_by_idempotency_key(client, idempotency_key, table_id)
+    except Exception:
+        # The write has succeeded.  Return its ID rather than inviting a retry
+        # that could create another record; the Worker checks duplicates too.
+        return task_id
+    if canonical is not None and canonical.task_id != task_id:
+        client.update_record(table_id, str(rows[0].get("record_id") or ""), {
+            QUEUE_FIELD_STATUS: QUEUE_STATUS_CANCELLED,
+            QUEUE_FIELD_ERROR: f"重复任务，使用 {canonical.task_id}",
+            QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_COMPLETED,
+        })
+        if canonical.task_type != task_type or canonical.payload != normalized_payload:
+            raise ValueError("同一提交标识已用于不同申请内容，请刷新页面后重新提交。")
+        return canonical.task_id
     return task_id
 
 
@@ -1634,15 +1689,31 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
         permission_rows = current_permission_rows(
             resolve_cache_path(ROOT, "data/page_data_cache.json"), cached_permission_rows
         )
-        legacy.validate_corporate_apparel_cached_quota(
-            draft.requester_open_id,
-            lines,
-            permission_rows,
-        )
+        queued_payload = legacy.queued_corporate_apparel_request_payload(payload, lines)
+        try:
+            legacy.validate_corporate_apparel_cached_quota(
+                draft.requester_open_id,
+                lines,
+                permission_rows,
+            )
+        except RuntimeError:
+            # A retry of a successful request must return its original task,
+            # even after that task has already consumed the applicant's quota.
+            from submission_queue import find_task_by_idempotency_key
+
+            client, table_id, _ = _queue_client_and_table()
+            existing = find_task_by_idempotency_key(client, draft.submission_token, table_id)
+            if (
+                existing is not None
+                and existing.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
+                and existing.payload == queued_payload
+            ):
+                return {"accepted": True, "created": False, "taskId": existing.task_id, "status": existing.status}
+            raise
         task_id = _enqueue_fast(
             QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
             draft.submission_token,
-            legacy.queued_corporate_apparel_request_payload(payload, lines),
+            queued_payload,
         )
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

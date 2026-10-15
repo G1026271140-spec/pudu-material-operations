@@ -1,6 +1,8 @@
 import importlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
@@ -264,7 +266,7 @@ def test_cultural_catalog_applies_category_visibility_and_line_claimability(monk
     }]
 
 
-def test_fast_enqueue_performs_one_queue_write_without_readback(monkeypatch):
+def test_fast_enqueue_performs_one_queue_write(monkeypatch):
     class QueueClient:
         def __init__(self):
             self.calls = []
@@ -275,6 +277,7 @@ def test_fast_enqueue_performs_one_queue_write_without_readback(monkeypatch):
 
     client = QueueClient()
     monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue", "tbl-payload"))
+    monkeypatch.setattr("submission_queue.find_task_by_idempotency_key", lambda *_args: None)
 
     task_id = web_api._enqueue_fast("物料申请写入", "stable-token", {"version": 1})
 
@@ -298,6 +301,7 @@ def test_fast_enqueue_chunks_large_management_payload(monkeypatch):
 
     client = QueueClient()
     monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue", "tbl-payload"))
+    monkeypatch.setattr("submission_queue.find_task_by_idempotency_key", lambda *_args: None)
     monkeypatch.setattr("submission_queue.QUEUE_PAYLOAD_INLINE_LIMIT", 20)
     monkeypatch.setattr("submission_queue.QUEUE_PAYLOAD_CHUNK_SIZE", 10)
 
@@ -307,6 +311,66 @@ def test_fast_enqueue_chunks_large_management_payload(monkeypatch):
     marker = json.loads(client.calls[1][1][0]["载荷JSON"])
     assert marker["storage"] == "chunks"
     assert marker["chunks"] == len(client.calls[0][1])
+
+
+def test_fast_enqueue_reuses_same_token_even_for_concurrent_requests(monkeypatch):
+    class QueueClient:
+        def __init__(self):
+            self.records = []
+
+        def batch_create_records(self, _table_id, records):
+            self.records.extend(records)
+            return [{"record_id": "rec-first"}]
+
+    client = QueueClient()
+    monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue", "tbl-payload"))
+
+    def find_existing(_client, _key, _table_id):
+        if not client.records:
+            return None
+        fields = client.records[0]
+        return SimpleNamespace(
+            task_id=fields["任务ID"], task_type=fields["任务类型"],
+            payload=json.loads(fields["载荷JSON"]),
+        )
+
+    monkeypatch.setattr("submission_queue.find_task_by_idempotency_key", find_existing)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(
+            lambda _: web_api._enqueue_fast("企业文化衫领取", "same-token", {"version": 1}),
+            range(2),
+        ))
+    assert results[0] == results[1]
+    assert len(client.records) == 1
+    with pytest.raises(ValueError, match="不同申请内容"):
+        web_api._enqueue_fast("企业文化衫领取", "same-token", {"version": 2})
+    assert len(client.records) == 1
+
+
+def test_fast_enqueue_cancels_duplicate_found_after_create(monkeypatch):
+    class QueueClient:
+        def __init__(self):
+            self.updates = []
+
+        def batch_create_records(self, _table_id, _records):
+            return [{"record_id": "rec-second"}]
+
+        def update_record(self, *args):
+            self.updates.append(args)
+
+    client = QueueClient()
+    monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (client, "tbl-queue", "tbl-payload"))
+    checks = iter((None, SimpleNamespace(
+        task_id="earlier-task", task_type="企业文化衫领取", payload={"version": 1},
+    )))
+    monkeypatch.setattr(
+        "submission_queue.find_task_by_idempotency_key",
+        lambda *_args: next(checks),
+    )
+    task_id = web_api._enqueue_fast("企业文化衫领取", "same-token", {"version": 1})
+    assert task_id == "earlier-task"
+    assert client.updates[0][0:2] == ("tbl-queue", "rec-second")
+    assert client.updates[0][2]["状态"] == "已取消"
 
 
 def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypatch):
@@ -459,6 +523,37 @@ def test_corporate_apparel_submit_accepts_only_current_reasons(monkeypatch):
     )
     assert legacy.status_code == 200
     assert observed["payload"]["request_payload"]["material_usage"] == "OA流程申请（如未提报OA流程，一律驳回，请慎选）"
+
+
+def test_corporate_apparel_retry_reuses_completed_task_after_quota_changes(monkeypatch):
+    request = {
+        "requester": "测试用户", "requester_open_id": "ou-test", "department": "市场部",
+        "material_usage": "入职", "submission_token": "same-token",
+        "lines": [{"product": "T恤-黑色（短袖）", "size": "M", "quantity": 1}],
+    }
+    normalized = web_api.CorporateApparelDraft.model_validate(request).model_dump()
+    existing_payload = legacy_app.queued_corporate_apparel_request_payload(
+        {key: value for key, value in normalized.items() if key != "lines"},
+        normalized["lines"],
+    )
+    monkeypatch.setattr(web_api, "_json", lambda _name: {"tables": {legacy_app.USER_PERMISSION_TABLE_NAME: []}})
+    monkeypatch.setattr(web_api, "_queue_client_and_table", lambda: (object(), "tbl-queue", ""))
+    monkeypatch.setattr(
+        legacy_app, "validate_corporate_apparel_cached_quota",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("已达到领取上限")),
+    )
+    monkeypatch.setattr(
+        "submission_queue.find_task_by_idempotency_key",
+        lambda *_args: SimpleNamespace(
+            task_id="original-task", task_type="企业文化衫领取",
+            payload=existing_payload, status="已完成",
+        ),
+    )
+    monkeypatch.setattr(web_api, "_enqueue_fast", lambda *_args: pytest.fail("must not enqueue twice"))
+    response = TestClient(api).post("/api/corporate-apparel-submit", json=request)
+    assert response.status_code == 200
+    assert response.json()["taskId"] == "original-task"
+    assert response.json()["created"] is False
 
 
 def test_corporate_apparel_catalog_is_immediate_and_stock_read_is_shared(monkeypatch):
