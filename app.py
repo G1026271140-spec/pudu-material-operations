@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.6"
+APP_VERSION = "V3.2.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8937,6 +8937,44 @@ def execute_inventory_review_reminder_schedule(
     }
 
 
+def pending_inventory_review_summaries(
+    request_rows: list[dict] | None = None,
+) -> list[dict[str, object]]:
+    """Build the workbench list without reading stock, categories or every line.
+
+    Opening a request still performs the live detail and stock checks. The
+    request row already contains its linked line ids and review conclusion.
+    """
+    rows = request_rows if request_rows is not None else fresh_feishu_rows(REQUEST_TABLE_NAME)
+    summaries: list[dict[str, object]] = []
+    for row in rows:
+        fields = feishu_fields(row)
+        if feishu_text(fields, "申请类型") != "普通物料申请":
+            continue
+        if feishu_text(fields, "审批状态") != REQUEST_STATUS_PENDING:
+            continue
+        if feishu_text(fields, "库存审查状态") == INVENTORY_REVIEW_CONFIRMED:
+            continue
+        if not feishu_record_id(row):
+            continue
+        request = load_feishu_request_records([row])[0]
+        summaries.append({
+            "requestId": str(request.get("record_id") or ""),
+            "requestNo": str(request.get("request_no") or ""),
+            "requester": str(request.get("requester") or ""),
+            "department": str(request.get("department") or ""),
+            "reason": str(request.get("request_reason") or ""),
+            "status": str(request.get("status") or ""),
+            "inventoryReviewStatus": str(request.get("inventory_review_status") or ""),
+            "inventoryReviewResult": feishu_text(fields, "库存审查结论"),
+            "inventoryReviewVersion": feishu_int(fields, "申请变更次数"),
+            "reminderAt": str(request.get("inventory_review_reminder_at") or ""),
+            "submittedAt": str(request.get("submitted_at") or ""),
+            "lineCount": len(feishu_link_ids_any(fields, ["申请明细"])),
+        })
+    return summaries
+
+
 def pending_inventory_review_contexts() -> list[dict[str, object]]:
     contexts: list[dict[str, object]] = []
     request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
@@ -11320,17 +11358,20 @@ def request_inventory_review_context(
     request_id: str = "",
     request_no: str = "",
 ) -> dict[str, object]:
-    request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
-    request_row = next(
-        (
-            row
-            for row in request_rows
-            if (request_id and feishu_record_id(row) == request_id)
-            or (request_no and feishu_text(feishu_fields(row), "申请单号") == request_no)
-        ),
-        None,
-    )
-    if request_row is None:
+    if request_id:
+        client = feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法读取申请单。")
+        request_row = client.get_record(feishu_table_id(REQUEST_TABLE_NAME), request_id)
+    else:
+        request_row = next(
+            (
+                row for row in fresh_feishu_rows(REQUEST_TABLE_NAME)
+                if request_no and feishu_text(feishu_fields(row), "申请单号") == request_no
+            ),
+            None,
+        )
+    if not request_row:
         raise RuntimeError("申请单不存在或已被删除。")
     request = load_feishu_request_records([request_row])[0]
     request_fields = feishu_fields(request_row)
@@ -11343,12 +11384,17 @@ def request_inventory_review_context(
             "inventory_message_ids": _json_list(feishu_text(request_fields, "库存确认消息ID")),
         }
     )
-    material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
-    category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+    # These independent reads used to run serially, so their latencies added
+    # together on every detail click. Keep all three live, but overlap them.
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        material_future = executor.submit(fresh_feishu_rows, MATERIAL_TABLE_NAME)
+        category_future = executor.submit(fresh_feishu_rows, CATEGORY_TABLE_NAME)
+        line_future = executor.submit(fresh_feishu_rows, REQUEST_LINE_TABLE_NAME)
+        material_rows = material_future.result()
+        category_rows = category_future.result()
+        line_rows = line_future.result()
     all_lines = load_feishu_request_line_records(
-        fresh_feishu_rows(REQUEST_LINE_TABLE_NAME),
-        material_rows,
-        category_rows,
+        line_rows, material_rows, category_rows,
     )
     lines = request_lines_for_request(request, all_lines)
     for line in lines:

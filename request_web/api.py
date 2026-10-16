@@ -4,10 +4,12 @@ import hashlib
 import hmac
 import io
 import json
+import logging
 import secrets
 import threading
 import time
 import tomllib
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import date
 from functools import lru_cache
@@ -31,9 +33,18 @@ ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "request_web" / "frontend" / "dist"
 
 
+@lru_cache(maxsize=8)
+def _parsed_json_cache(path: str, modified_ns: int, size: int) -> dict[str, Any]:
+    # The published cache path and file metadata change on every refresh.
+    # Parsing the multi-megabyte page cache on every identity/API request is
+    # unnecessary, while this key still makes a newly published cache visible.
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+
+
 def _json(name: str) -> dict[str, Any]:
     path = resolve_cache_path(ROOT, f"data/{name}")
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+    stat = path.stat()
+    return _parsed_json_cache(str(path), stat.st_mtime_ns, stat.st_size)
 
 
 def _asset_file(relative: str) -> FileResponse:
@@ -509,7 +520,13 @@ def category_asset(filename: str) -> FileResponse:
 @api.get("/app-assets/{filename:path}")
 def app_asset(filename: str) -> FileResponse:
     return _asset_file(filename)
-_PENDING_ALLOCATION_CACHE: dict[str, Any] = {"loaded_at": 0.0, "contexts": {}}
+_PENDING_ALLOCATION_CACHE: dict[str, Any] = {
+    "loaded_at": 0.0, "last_attempt": 0.0, "summaries": None,
+    "updated_at": "", "source": "", "refreshing": False,
+    "last_error": "", "contexts": {},
+}
+_PENDING_ALLOCATION_LOCK = threading.Lock()
+_PENDING_ALLOCATION_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pending-allocation")
 _CORPORATE_APPAREL_STOCK_TTL_SECONDS = 30
 _CORPORATE_APPAREL_STOCK_LOCK = threading.Lock()
 _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": None}
@@ -823,23 +840,59 @@ def _allocation_operators(legacy: Any) -> list[dict[str, Any]]:
     ]
 
 
-@api.get("/api/admin/allocation/pending")
-def allocation_pending(_: str = Depends(require_admin)) -> dict[str, Any]:
+def _refresh_pending_allocation() -> None:
     import app as legacy
 
     try:
-        contexts = legacy.pending_inventory_review_contexts()
-        _PENDING_ALLOCATION_CACHE["loaded_at"] = time.monotonic()
-        _PENDING_ALLOCATION_CACHE["contexts"] = {
-            str(dict(item.get("request") or {}).get("record_id") or ""): dict(item)
-            for item in contexts
-        }
-        return {
-            "requests": [_allocation_summary(dict(item)) for item in contexts],
-            "operators": _allocation_operators(legacy),
-        }
+        summaries = legacy.pending_inventory_review_summaries()
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE.update(
+                summaries=summaries, loaded_at=time.monotonic(),
+                updated_at=legacy.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                source="live", last_error="", contexts={},
+            )
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"未核实库存申请读取失败：{exc}") from exc
+        logging.warning("Refreshing pending allocation list failed: %s", exc)
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE["last_error"] = "飞书实时申请单暂不可用；当前显示最近缓存。"
+    finally:
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE["refreshing"] = False
+
+
+@api.get("/api/admin/allocation/pending")
+def allocation_pending(
+    refresh: bool = False, _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+
+    with _PENDING_ALLOCATION_LOCK:
+        if _PENDING_ALLOCATION_CACHE["summaries"] is None:
+            page = _json("page_data_cache.json")
+            _PENDING_ALLOCATION_CACHE.update(
+                summaries=legacy.pending_inventory_review_summaries(
+                    list(page.get("tables", {}).get(legacy.REQUEST_TABLE_NAME, []))
+                ),
+                updated_at=str(page.get("generated_at") or ""),
+                source="published",
+            )
+        now = time.monotonic()
+        should_refresh = (
+            not _PENDING_ALLOCATION_CACHE["refreshing"]
+            and (refresh or now - float(_PENDING_ALLOCATION_CACHE["loaded_at"] or 0) > 90)
+            and (refresh or now - float(_PENDING_ALLOCATION_CACHE["last_attempt"] or 0) > 60)
+        )
+        if should_refresh:
+            _PENDING_ALLOCATION_CACHE.update(refreshing=True, last_attempt=now, last_error="")
+            _PENDING_ALLOCATION_EXECUTOR.submit(_refresh_pending_allocation)
+        snapshot = {
+            "requests": list(_PENDING_ALLOCATION_CACHE["summaries"] or []),
+            "source": _PENDING_ALLOCATION_CACHE["source"],
+            "updatedAt": _PENDING_ALLOCATION_CACHE["updated_at"],
+            "refreshing": bool(_PENDING_ALLOCATION_CACHE["refreshing"]),
+            "refreshError": _PENDING_ALLOCATION_CACHE["last_error"],
+        }
+    return {**snapshot, "operators": _allocation_operators(legacy)}
 
 
 @api.get("/api/allocation/{request_id}")

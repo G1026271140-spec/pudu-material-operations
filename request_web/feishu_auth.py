@@ -170,10 +170,26 @@ def authorization_url(state: str) -> str:
     )
 
 
-def exchange_code(code: str) -> tuple[str, str, dict[str, str]]:
+@lru_cache(maxsize=1)
+def _app_token() -> tuple[str, float]:
     app_id, app_secret = credentials()
-    app_token = _feishu("POST", "/auth/v3/app_access_token/internal", payload={"app_id": app_id, "app_secret": app_secret})["app_access_token"]
-    result = _feishu("POST", "/authen/v1/access_token", token=app_token, payload={"grant_type": "authorization_code", "code": code})
+    result = _feishu(
+        "POST", "/auth/v3/app_access_token/internal",
+        payload={"app_id": app_id, "app_secret": app_secret},
+    )
+    return str(result["app_access_token"]), time.time() + int(result.get("expire", 7200)) - 120
+
+
+def _current_app_token() -> str:
+    token, expires = _app_token()
+    if time.time() >= expires:
+        _app_token.cache_clear()
+        token, _ = _app_token()
+    return token
+
+
+def exchange_code(code: str) -> tuple[str, str, dict[str, str]]:
+    result = _feishu("POST", "/authen/v1/access_token", token=_current_app_token(), payload={"grant_type": "authorization_code", "code": code})
     user_token = str((result.get("data") or {}).get("access_token") or "")
     if not user_token:
         raise RuntimeError("Feishu did not issue a user access token")

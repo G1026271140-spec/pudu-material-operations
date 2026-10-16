@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./allocation.css";
 
 type Lang = "zh" | "en";
@@ -85,11 +85,16 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [confirmMode, setConfirmMode] = useState<"confirm" | "edit" | "">("");
   const [orderPreview, setOrderPreview] = useState<any>(null);
   const [pendingCachedAt, setPendingCachedAt] = useState("");
+  const [pendingRefreshing, setPendingRefreshing] = useState(false);
+  const [pendingWarning, setPendingWarning] = useState("");
+  const pendingPollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingPollCount = useRef(0);
   const signedQuery = `operator=${encodeURIComponent(operator)}&review_token=${encodeURIComponent(reviewToken)}`;
 
   useEffect(() => {
     if (directRequestId) loadContext(directRequestId);
     else loadPending();
+    return () => { if (pendingPollRef.current) clearTimeout(pendingPollRef.current); };
   }, [directRequestId]);
 
   function applyPending(body: PendingSessionCache) {
@@ -100,24 +105,32 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   }
 
   async function loadPending(forceRefresh = false) {
-    setLoading(true); setError("");
+    if (forceRefresh) pendingPollCount.current = 0;
+    const cached = !forceRefresh ? readPendingSessionCache() : null;
+    if (cached) applyPending(cached);
+    setLoading(!cached && pending.length === 0);
+    setError("");
     try {
-      if (!forceRefresh) {
-        const cached = readPendingSessionCache();
-        if (cached) {
-          applyPending(cached);
-          return;
-        }
-      }
-      const body = await jsonFetch("/api/admin/allocation/pending");
+      const body = await jsonFetch(`/api/admin/allocation/pending${forceRefresh ? "?refresh=true" : ""}`);
       const cache = {
         requests: body.requests || [],
         operators: body.operators || [],
-        cachedAt: new Date().toISOString(),
+        cachedAt: body.updatedAt || new Date().toISOString(),
       };
       writePendingSessionCache(cache);
       applyPending(cache);
-    } catch (e) { setError(e instanceof Error ? e.message : "读取失败"); }
+      setPendingRefreshing(Boolean(body.refreshing));
+      setPendingWarning(body.refreshError || "");
+      if (pendingPollRef.current) clearTimeout(pendingPollRef.current);
+      if (body.refreshing && pendingPollCount.current < 45) {
+        pendingPollCount.current += 1;
+        pendingPollRef.current = setTimeout(() => void loadPending(), 4000);
+      } else pendingPollCount.current = 0;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "读取失败";
+      if (cached) setPendingWarning(message);
+      else setError(message);
+    }
     finally { setLoading(false); }
   }
 
@@ -256,9 +269,10 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
   if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}><div className="allocation-loading"><i/><b>{tr("正在抓取实时申请与库存数据，请稍候……", "Loading live request and inventory data…")}</b></div></main>;
   if (!requestId || !context) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{tr("当前列表已临时保存在本标签页，关闭标签页后自动清除。", "This list is cached in this tab and clears when the tab closes.")}</p>}</div><button onClick={() => loadPending(true)}>↻ {tr("刷新实时申请单", "Refresh live requests")}</button></header>
+    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{tr("列表快照：", "List snapshot: ")}{pendingCachedAt}{pendingRefreshing ? tr(" · 正在后台同步实时申请单", " · refreshing live requests") : ""}</p>}</div><button onClick={() => loadPending(true)}>↻ {tr("刷新实时申请单", "Refresh live requests")}</button></header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
-    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">✓ {tr("当前没有等待库存核实的普通物料申请。", "There are no material requests waiting for inventory review.")}</div>}</section>
+    {pendingWarning && <div className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</div>}
+    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{pendingRefreshing || pendingWarning ? tr("正在核对实时申请单；当前快照中没有待处理记录。", "Checking live requests; none in the current snapshot.") : tr("当前没有等待库存核实的普通物料申请。", "There are no material requests waiting for inventory review.")}</div>}</section>
   </main>;
 
   const request = context.request;

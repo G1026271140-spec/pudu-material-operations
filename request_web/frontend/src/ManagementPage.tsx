@@ -71,7 +71,11 @@ export default function ManagementPage({
       .then(setCatalog)
       .catch((e) => setError(e.message));
   };
-  useEffect(load, []);
+  // Allocation and shipping schedule do not use the large management catalog.
+  // Let their own data load immediately instead of blocking the whole page.
+  useEffect(() => {
+    if (tab !== "allocation" && tab !== "schedule" && !catalog) load();
+  }, [tab, catalog]);
   useEffect(() => setTab(initialTab), [initialTab]);
   function selectTab(next: ManagementTab) {
     setTab(next);
@@ -79,7 +83,7 @@ export default function ManagementPage({
     setSuccess("");
     onTabChange?.(next);
   }
-  if (!catalog) return <main className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</main>;
+  const needsCatalog = tab !== "allocation" && tab !== "schedule";
   const tabs = [
     ["allocation", tr("配货工作台", "Allocation")],
     ["schedule", tr("发货排期", "Shipping Schedule")],
@@ -94,17 +98,18 @@ export default function ManagementPage({
     <main className="management-page">
       <div className="legacy-page-header">
         <div><small>{tr("库存工作台", "Inventory Workspace")}</small><h1>{tr("物料管理", "Material Management")}</h1><p>{tr("采购补库与基础维度统一管理", "Restocking and material dimensions")}</p></div>
-        <button onClick={load}>↻ {tr("刷新本页数据", "Refresh page data")}</button>
+        {needsCatalog && <button onClick={load}>↻ {tr("刷新本页数据", "Refresh page data")}</button>}
       </div>
       <div className="management-body">
         <div className="management-tabs">{tabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} onClick={() => selectTab(key)}>{label}</button>)}</div>
         {success && <div className="success-banner">✓ {success}</div>}
+        {needsCatalog && !catalog && <div className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</div>}
         {tab === "allocation" && <AllocationWorkbench lang={lang} embedded />}
         {tab === "schedule" && <ShippingSchedulePage lang={lang} />}
-        {tab === "shipping" && <ShippingTemplatePage catalog={catalog} lang={lang} />}
-        {tab === "restock" && <Restock catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
-        {tab === "category" && <CategoryManager catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
-        {(["model", "language", "region"] as string[]).includes(tab) && <DimensionManager key={tab} kind={tab as Kind} catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
+        {tab === "shipping" && catalog && <ShippingTemplatePage catalog={catalog} lang={lang} />}
+        {tab === "restock" && catalog && <Restock catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
+        {tab === "category" && catalog && <CategoryManager catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
+        {(["model", "language", "region"] as string[]).includes(tab) && catalog && <DimensionManager key={tab} kind={tab as Kind} catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
       </div>
       {error && <div className="toast" onClick={() => setError("")}>{error} ×</div>}
       {busy && <div className="submit-overlay"><div className="spinner"/><strong>{tr("正在提交数据，请稍后……", "Submitting, please wait…")}</strong><span>{tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}

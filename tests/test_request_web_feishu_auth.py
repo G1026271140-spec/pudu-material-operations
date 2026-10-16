@@ -61,6 +61,29 @@ def test_foreign_tenant_is_rejected(monkeypatch):
         assert not client.cookies.get("pudu_feishu")
 
 
+def test_oauth_reuses_app_token_until_expiry(monkeypatch):
+    calls = []
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))
+    feishu_auth._app_token.cache_clear()
+
+    def fake_feishu(_method, path, *, token="", payload=None):
+        calls.append(path)
+        if path == "/auth/v3/app_access_token/internal":
+            return {"app_access_token": "app-token", "expire": 7200}
+        if path == "/authen/v1/access_token":
+            assert token == "app-token"
+            return {"data": {"access_token": "user-token"}}
+        return {"data": {"open_id": "ou_user", "tenant_key": "own-tenant"}}
+
+    monkeypatch.setattr(feishu_auth, "_feishu", fake_feishu)
+    try:
+        feishu_auth.exchange_code("first")
+        feishu_auth.exchange_code("second")
+    finally:
+        feishu_auth._app_token.cache_clear()
+    assert calls.count("/auth/v3/app_access_token/internal") == 1
+
+
 def test_signed_session_rejects_tampering_and_expiry(monkeypatch):
     monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))
     issued_at = 1_800_000_000

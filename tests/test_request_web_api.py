@@ -945,16 +945,17 @@ def test_category_submit_preserves_target_value_rows_for_worker(monkeypatch):
 
 
 def test_allocation_pending_requires_admin_and_returns_only_summary(monkeypatch):
-    context = {
-        "request": {
-            "record_id": "request-1", "request_no": "REQ-1", "requester": "申请人",
-            "department": "市场部", "request_reason": "展会需求", "status": "待审批",
-            "inventory_review_status": "待核实", "inventory_review_version": 2,
-        },
-        "lines": [{"record_id": "line-1"}], "result": "库存充足",
-        "material_rows": [{"large": "must-not-leak"}],
+    summary = {
+        "requestId": "request-1", "requestNo": "REQ-1", "requester": "申请人",
+        "department": "市场部", "reason": "展会需求", "status": "待审批",
+        "inventoryReviewStatus": "待核实", "inventoryReviewVersion": 2,
+        "lineCount": 1,
     }
-    monkeypatch.setattr(legacy_app, "pending_inventory_review_contexts", lambda: [context])
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_CACHE", {
+        "loaded_at": web_api.time.monotonic(), "last_attempt": web_api.time.monotonic(),
+        "summaries": [summary], "updated_at": "2026-10-16 10:00:00",
+        "source": "live", "refreshing": False, "last_error": "", "contexts": {},
+    })
     monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [{"open_id": "ou-admin", "name": "管理员"}])
 
     assert TestClient(api).get("/api/admin/allocation/pending").status_code == 403
@@ -964,6 +965,82 @@ def test_allocation_pending_requires_admin_and_returns_only_summary(monkeypatch)
     assert response.json()["requests"][0]["requestNo"] == "REQ-1"
     assert response.json()["requests"][0]["lineCount"] == 1
     assert "material_rows" not in response.text
+
+
+def test_pending_allocation_summary_needs_only_request_rows():
+    rows = [
+        {"record_id": "req-1", "fields": {
+            "申请单号": "REQ-1", "申请类型": "普通物料申请", "审批状态": "待审批",
+            "库存审查状态": "待核实库存", "库存审查结论": "库存充足",
+            "申请明细": [{"record_ids": ["line-1", "line-2"]}],
+        }},
+        {"record_id": "req-2", "fields": {
+            "申请单号": "REQ-2", "申请类型": "普通物料申请", "审批状态": "待审批",
+            "库存审查状态": "已核实库存",
+        }},
+    ]
+
+    summaries = legacy_app.pending_inventory_review_summaries(rows)
+
+    assert len(summaries) == 1
+    assert summaries[0]["requestNo"] == "REQ-1"
+    assert summaries[0]["lineCount"] == 2
+
+
+def test_pending_allocation_returns_snapshot_before_live_refresh(monkeypatch):
+    client = admin_client(monkeypatch)
+    page = web_api._json("page_data_cache.json")
+    row = {"record_id": "req-1", "fields": {
+        "申请单号": "REQ-1", "申请类型": "普通物料申请", "审批状态": "待审批",
+        "库存审查状态": "待核实库存", "申请明细": [{"record_ids": ["line-1"]}],
+    }}
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_CACHE", {
+        "loaded_at": 0.0, "last_attempt": 0.0, "summaries": None,
+        "updated_at": "", "source": "", "refreshing": False,
+        "last_error": "", "contexts": {},
+    })
+    monkeypatch.setattr(web_api, "_json", lambda _name: {
+        "generated_at": "2026-10-16 09:00:00",
+        "tables": {**page["tables"], legacy_app.REQUEST_TABLE_NAME: [row]},
+    })
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_EXECUTOR", SimpleNamespace(submit=lambda _fn: None))
+    monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [])
+
+    response = client.get("/api/admin/allocation/pending")
+
+    assert response.status_code == 200
+    assert response.json()["requests"][0]["requestNo"] == "REQ-1"
+    assert response.json()["source"] == "published"
+    assert response.json()["refreshing"] is True
+
+
+def test_pending_allocation_refresh_failure_keeps_last_snapshot(monkeypatch):
+    snapshot = {"requestNo": "REQ-1"}
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_CACHE", {
+        "loaded_at": 0.0, "last_attempt": 0.0, "summaries": [snapshot],
+        "updated_at": "2026-10-16 09:00:00", "source": "published",
+        "refreshing": True, "last_error": "", "contexts": {},
+    })
+    monkeypatch.setattr(
+        legacy_app, "pending_inventory_review_summaries",
+        lambda: (_ for _ in ()).throw(RuntimeError("Data not ready")),
+    )
+
+    web_api._refresh_pending_allocation()
+
+    assert web_api._PENDING_ALLOCATION_CACHE["summaries"] == [snapshot]
+    assert web_api._PENDING_ALLOCATION_CACHE["refreshing"] is False
+    assert "最近缓存" in web_api._PENDING_ALLOCATION_CACHE["last_error"]
+
+
+def test_json_cache_updates_when_published_file_changes(tmp_path, monkeypatch):
+    path = tmp_path / "page_data_cache.json"
+    path.write_text('{"revision": 1}', encoding="utf-8")
+    monkeypatch.setattr(web_api, "resolve_cache_path", lambda _root, _relative: path)
+
+    assert web_api._json("page_data_cache.json")["revision"] == 1
+    path.write_text('{"revision": 2}', encoding="utf-8")
+    assert web_api._json("page_data_cache.json")["revision"] == 2
 
 
 def test_signed_card_allocation_context_keeps_live_request_and_cached_options(monkeypatch):
