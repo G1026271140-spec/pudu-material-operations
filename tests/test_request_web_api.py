@@ -1067,6 +1067,53 @@ def test_signed_card_allocation_context_keeps_live_request_and_cached_options(mo
     assert response.json()["signedCardAccess"] is True
     assert response.json()["operatorOpenId"] == "ou-admin"
     assert response.json()["materials"][0]["record_id"] == "mat-1"
+    assert response.json()["verifiedLive"] is True
+
+
+def test_allocation_snapshot_is_read_only_and_skips_feishu(monkeypatch):
+    monkeypatch.setattr(legacy_app, "valid_request_review_access_token", lambda *args: True)
+    monkeypatch.setattr(legacy_app, "cached_enabled_admin_open_ids", lambda *args: ["ou-admin"])
+    monkeypatch.setattr(web_api, "_json", lambda _name: {
+        "generated_at": "2026-10-15 16:45:04",
+        "tables": {
+            legacy_app.REQUEST_TABLE_NAME: [{"record_id": "request-1", "fields": {}}],
+            legacy_app.MATERIAL_TABLE_NAME: [],
+            legacy_app.CATEGORY_TABLE_NAME: [],
+            legacy_app.REQUEST_LINE_TABLE_NAME: [],
+        },
+    })
+    monkeypatch.setattr(legacy_app, "request_inventory_review_context", lambda **_kwargs: (_ for _ in ()).throw(AssertionError("live read should not run")))
+    monkeypatch.setattr(legacy_app, "request_inventory_review_context_from_rows", lambda *_args, **_kwargs: {
+        "request": {"record_id": "request-1", "request_no": "REQ-1"},
+        "request_row": {"fields": {}}, "lines": [], "result": "库存充足",
+        "snapshot_at": "2026-10-15 16:45:04", "material_rows": [], "category_rows": [],
+    })
+    monkeypatch.setattr(legacy_app, "load_static_request_form_cache", lambda: {"generated_at": "cache-time"})
+    monkeypatch.setattr(legacy_app, "cached_allocation_material_records", lambda *args, **kwargs: [])
+    monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [])
+
+    response = TestClient(api).get(
+        "/api/allocation/request-1?operator=ou-admin&review_token=signed&snapshot=true"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["verifiedLive"] is False
+    assert response.json()["snapshotAt"] == "2026-10-15 16:45:04"
+
+
+def test_allocation_transient_feishu_error_is_safe_and_retryable(monkeypatch):
+    monkeypatch.setattr(legacy_app, "valid_request_review_access_token", lambda *args: True)
+    monkeypatch.setattr(legacy_app, "cached_enabled_admin_open_ids", lambda *args: ["ou-admin"])
+    monkeypatch.setattr(legacy_app, "request_inventory_review_context", lambda **_kwargs: (_ for _ in ()).throw(RuntimeError('Feishu HTTP 400: {"code":1254607,"msg":"Data not ready","log_id":"secret"}')))
+
+    response = TestClient(api).get(
+        "/api/allocation/request-1?operator=ou-admin&review_token=signed"
+    )
+
+    assert response.status_code == 503
+    assert response.headers["X-Pudu-Retryable"] == "1"
+    assert "secret" not in response.text
+    assert "自动重试" in response.json()["detail"]
 
 
 def test_allocation_edit_queues_existing_worker_payload(monkeypatch):

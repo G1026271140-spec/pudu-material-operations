@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.7"
+APP_VERSION = "V3.2.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -11373,6 +11373,29 @@ def request_inventory_review_context(
         )
     if not request_row:
         raise RuntimeError("申请单不存在或已被删除。")
+    # These independent reads used to run serially, so their latencies added
+    # together on every detail click. Keep all three live, but overlap them.
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        material_future = executor.submit(fresh_feishu_rows, MATERIAL_TABLE_NAME)
+        category_future = executor.submit(fresh_feishu_rows, CATEGORY_TABLE_NAME)
+        line_future = executor.submit(fresh_feishu_rows, REQUEST_LINE_TABLE_NAME)
+        material_rows = material_future.result()
+        category_rows = category_future.result()
+        line_rows = line_future.result()
+    return request_inventory_review_context_from_rows(
+        request_row, material_rows, category_rows, line_rows,
+    )
+
+
+def request_inventory_review_context_from_rows(
+    request_row: dict,
+    material_rows: list[dict],
+    category_rows: list[dict],
+    line_rows: list[dict],
+    *,
+    snapshot_at: str = "",
+) -> dict[str, object]:
+    """Assemble a read-only snapshot or verified live review from the same rules."""
     request = load_feishu_request_records([request_row])[0]
     request_fields = feishu_fields(request_row)
     request.update(
@@ -11384,15 +11407,6 @@ def request_inventory_review_context(
             "inventory_message_ids": _json_list(feishu_text(request_fields, "库存确认消息ID")),
         }
     )
-    # These independent reads used to run serially, so their latencies added
-    # together on every detail click. Keep all three live, but overlap them.
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        material_future = executor.submit(fresh_feishu_rows, MATERIAL_TABLE_NAME)
-        category_future = executor.submit(fresh_feishu_rows, CATEGORY_TABLE_NAME)
-        line_future = executor.submit(fresh_feishu_rows, REQUEST_LINE_TABLE_NAME)
-        material_rows = material_future.result()
-        category_rows = category_future.result()
-        line_rows = line_future.result()
     all_lines = load_feishu_request_line_records(
         line_rows, material_rows, category_rows,
     )
@@ -11410,7 +11424,7 @@ def request_inventory_review_context(
         "request_row": request_row,
         "lines": lines,
         "result": request_inventory_review_result(lines),
-        "snapshot_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "snapshot_at": snapshot_at or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "material_rows": material_rows,
         "category_rows": category_rows,
     }

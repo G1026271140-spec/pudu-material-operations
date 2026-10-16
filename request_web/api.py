@@ -901,22 +901,38 @@ def allocation_context(
     request_id: str,
     operator: str = Query(default=""),
     review_token: str = Query(default=""),
+    snapshot: bool = Query(default=False),
 ) -> dict[str, Any]:
     import app as legacy
     from order_scheduling import SHIP_DATE, as_date
 
     signed_operator = _allocation_actor(request, request_id, operator, review_token)
     try:
-        cached_contexts = dict(_PENDING_ALLOCATION_CACHE.get("contexts") or {})
-        cache_is_fresh = time.monotonic() - float(_PENDING_ALLOCATION_CACHE.get("loaded_at") or 0) <= 120
-        context = cached_contexts.get(request_id) if cache_is_fresh else None
-        if context is None:
+        if snapshot:
+            page = _json("page_data_cache.json")
+            tables = page.get("tables", {})
+            request_row = next(
+                (row for row in tables.get(legacy.REQUEST_TABLE_NAME, [])
+                 if legacy.feishu_record_id(row) == request_id),
+                None,
+            )
+            if request_row is None:
+                raise HTTPException(status_code=404, detail="本地快照中尚无该申请单，正在尝试实时读取。")
+            context = legacy.request_inventory_review_context_from_rows(
+                request_row,
+                list(tables.get(legacy.MATERIAL_TABLE_NAME, [])),
+                list(tables.get(legacy.CATEGORY_TABLE_NAME, [])),
+                list(tables.get(legacy.REQUEST_LINE_TABLE_NAME, [])),
+                snapshot_at=str(page.get("generated_at") or ""),
+            )
+        else:
             context = legacy.request_inventory_review_context(request_id=request_id)
         request = dict(context["request"])
         lines = [dict(item) for item in list(context.get("lines") or [])]
         current_ids = {str(item.get("material_record_id") or "") for item in lines}
+        form_cache = legacy.load_static_request_form_cache()
         materials = legacy.cached_allocation_material_records(
-            legacy.load_static_request_form_cache(),
+            form_cache,
             list(context.get("material_rows") or []),
             current_material_ids=current_ids,
             category_rows=list(context.get("category_rows") or []),
@@ -932,11 +948,18 @@ def allocation_context(
             "operatorOpenId": signed_operator,
             "signedCardAccess": bool(signed_operator),
             "operators": _allocation_operators(legacy),
-            "cacheGeneratedAt": legacy.load_static_request_form_cache().get("generated_at"),
+            "cacheGeneratedAt": form_cache.get("generated_at"),
+            "verifiedLive": not snapshot,
         }
     except HTTPException:
         raise
     except Exception as exc:
+        if "1254607" in str(exc) or "Data not ready" in str(exc):
+            raise HTTPException(
+                status_code=503,
+                detail="飞书正在准备申请单数据，系统将自动重试；请勿重复提交。",
+                headers={"X-Pudu-Retryable": "1", "Retry-After": "4"},
+            ) from exc
         raise HTTPException(status_code=503, detail=f"申请单实时配货数据读取失败：{exc}") from exc
 
 
