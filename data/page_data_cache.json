@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-16 16:43:45",
+  "generated_at": "2026-10-17 10:33:25",
   "tables": {
     "物料品类": [
       {
@@ -165383,7 +165383,7 @@
           "用途|活动": "云南金云洁智能科技有限公司邮寄大礼包",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012f_fc5d37f6-19d0-47c4-953c-31a85ae6a84g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0012f_fc5d37f6-19d0-47c4-953c-31a85ae6a84g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "kouyinling@pudutech.com",
               "en_name": "寇银玲",
               "id": "ou_18f06f5c47fbe9aa8891edd375160072",
@@ -168202,9 +168202,9 @@
               "file_token": "B4KPbUis2ol6mAx60GscrkOAnPf",
               "name": "img_v3_0215o_5f903d93-7262-490d-9226-96fbbc4f765g_MIDDLE_WEBP.webp",
               "size": 34138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "加拿大",
@@ -168467,17 +168467,17 @@
               "file_token": "SY75b088Poue8wxEA6Yc8fq5nOd",
               "name": "FR2.jpg",
               "size": 236138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             },
             {
               "file_token": "VD6SbQOdJoUaawxow1ecUvY4nOe",
               "name": "FR1.jpg",
               "size": 213041,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "法国",
@@ -168643,25 +168643,25 @@
               "file_token": "BsEIbEOddoV50UxzdSAcw3GUn3c",
               "name": "AU2.jpg",
               "size": 277944,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             },
             {
               "file_token": "IBrdbtvqZof487xfZ3UcxRj5nUR",
               "name": "AU3.jpg",
               "size": 183728,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             },
             {
               "file_token": "PcjebbZ5po6FjpxceMecT1bvnbc",
               "name": "AU1.jpg",
               "size": 289081,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "澳洲ISSA展会物料",
@@ -168941,7 +168941,7 @@
           "用途|活动": "经销商引入礼包",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012f_fc5d37f6-19d0-47c4-953c-31a85ae6a84g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0012f_fc5d37f6-19d0-47c4-953c-31a85ae6a84g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "kouyinling@pudutech.com",
               "en_name": "寇银玲",
               "id": "ou_18f06f5c47fbe9aa8891edd375160072",
@@ -169757,9 +169757,9 @@
               "file_token": "ESAAb25zZoM7RKxlXNecD3EJnjf",
               "name": "img_v3_0216f_98552dac-dd3e-483b-9eaf-b8b1841faffg_MIDDLE_WEBP.webp",
               "size": 72266,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ESAAb25zZoM7RKxlXNecD3EJnjf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ESAAb25zZoM7RKxlXNecD3EJnjf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ESAAb25zZoM7RKxlXNecD3EJnjf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ESAAb25zZoM7RKxlXNecD3EJnjf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "哥伦比亚",
@@ -170055,9 +170055,9 @@
               "file_token": "EJ2SbWO2PounMjxQqUqcg7tgn3e",
               "name": "20260922-095550.jpg",
               "size": 272478,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "智利",
@@ -172362,9 +172362,9 @@
               "file_token": "QdbabNoySokBM1xVCG3cQiTsnrg",
               "name": "2026-MKT-CZ0924_INV_PL.xlsx",
               "size": 34231,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "业务类型": "物料领取",
@@ -172375,9 +172375,9 @@
               "file_token": "AwJEbPUigoIYnPxT2axccI09nvg",
               "name": "img_v3_0215r_71e3d283-4f50-432f-a689-b6dbaa24f26g_MIDDLE_WEBP.webp",
               "size": 63888,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "捷克MSV工业展物料",
@@ -172571,9 +172571,9 @@
               "file_token": "XcXDb4eUeo7wrjxx1xGcq2CQn6d",
               "name": "img_v3_0216b_c6f1a8db-5700-4194-98a3-f2cdb4473c1g_MIDDLE_WEBP.webp",
               "size": 47420,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "广交会物料",
@@ -172900,9 +172900,9 @@
               "file_token": "MpO9bdnlzoW3zcxHeUEcfUqmnde",
               "name": "img_v3_02169_a7720ee9-8473-48f3-b018-cfa8be1aa7ag.jpg",
               "size": 4104598,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "吉隆坡",
@@ -173790,7 +173790,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_a51e7837-483b-48bc-aa65-5edcba4d025g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_a51e7837-483b-48bc-aa65-5edcba4d025g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhangquanyan@pudutech.com",
               "en_name": "张权炎",
               "id": "ou_a313fcd7034975f1f9cf52f7121709a4",
@@ -173988,7 +173988,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015j_969ffb87-4a9b-48ec-94e9-2b37c613945g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015j_969ffb87-4a9b-48ec-94e9-2b37c613945g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "tom.wu@pudutech.com",
               "en_name": "吴政谕",
               "id": "ou_dcf7672957e1505e85b035fe1988e240",
@@ -175499,9 +175499,9 @@
               "file_token": "IvN5bKq6goL7VaxMpjVcndHSn8F",
               "name": "8be7deddcb478f0834d8e159b07f6a79.jpg",
               "size": 173959,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IvN5bKq6goL7VaxMpjVcndHSn8F&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IvN5bKq6goL7VaxMpjVcndHSn8F&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IvN5bKq6goL7VaxMpjVcndHSn8F/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IvN5bKq6goL7VaxMpjVcndHSn8F/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "中国",
@@ -180421,9 +180421,9 @@
               "file_token": "QSYPbivPQod5tkxak1Yc4LSlntg",
               "name": "de0fcbbbf84afb20dfb0134acf524eaf.jpg",
               "size": 164494,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QSYPbivPQod5tkxak1Yc4LSlntg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QSYPbivPQod5tkxak1Yc4LSlntg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QSYPbivPQod5tkxak1Yc4LSlntg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2320%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QSYPbivPQod5tkxak1Yc4LSlntg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2339%7D%7D"
             }
           ],
           "国家": "中国",
@@ -183803,6 +183803,208 @@
         },
         "id": "reczz28Ny85lOtRX",
         "record_id": "reczz28Ny85lOtRX"
+      },
+      {
+        "fields": {
+          "INV/PL": null,
+          "业务类型": "企业文化衫领取",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "发货图片": null,
+          "国家": null,
+          "备注": null,
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "无需审批",
+          "客户名称": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": null,
+          "库存审查结论": null,
+          "库存快照时间": null,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": null,
+          "所属战区": null,
+          "排期编辑版本": null,
+          "提交人": null,
+          "提交幂等键": "96984592e158458d9903decd62366d6c",
+          "提交时间": 1792143191640,
+          "收件人信息": null,
+          "文化周边处理状态": "已驳回",
+          "文化周边消息ID": "{\"applicant:ou_70c6d87fe35c6e52ee3cbac78ef822e6\":\"om_x100b622ab6e574bcddfada273f9e117\",\"hr:ou_2672c786bc7ef3236be12a1041e971b7\":\"om_x100b622ab6ad00acc1399bcc6eecf22\"}",
+          "文化周边通知状态": "驳回已通知",
+          "时间判定": null,
+          "是否发货": null,
+          "标题": "华悦-企业文化衫领取",
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 休闲商务POLO-黑色（短袖） / M × 1\n02. 休闲商务夹克-黑色（长袖） / M × 1\n03. 商务衬衫-黑色（长袖） / M × 1",
+          "物料用途": "销售标配",
+          "用途|活动": null,
+          "申请人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_9c20d31e-e5f8-4298-9c4f-54f6ba3db16g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "huayue@pudutech.com",
+              "en_name": "华悦",
+              "id": "ou_70c6d87fe35c6e52ee3cbac78ef822e6",
+              "name": "华悦"
+            }
+          ],
+          "申请人.部门": [
+            "SR3D业务部"
+          ],
+          "申请单号": "REQ-20261016-002",
+          "申请原因": null,
+          "申请变更次数": null,
+          "申请时角色快照": null,
+          "申请明细": [
+            {
+              "record_ids": [
+                "reczz28O2AGd6rGY",
+                "reczz28O2AMPxtXq",
+                "reczz28O2ARjxUCg"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261016-002-01,REQ-20261016-002-02,REQ-20261016-002-03",
+              "text_arr": [
+                "REQ-20261016-002-01",
+                "REQ-20261016-002-02",
+                "REQ-20261016-002-03"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "企业文化衫领取",
+          "申请部门|区域": null,
+          "相关附件": null,
+          "管理员通知时间": 1792143194200,
+          "管理员通知状态": null,
+          "要求到达结束日期": null,
+          "要求达到开始日期": null,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": null,
+          "运费承担者": null,
+          "需要下单日期": null,
+          "预计完成制作日期": null
+        },
+        "id": "reczz28O29vzRkj1",
+        "record_id": "reczz28O29vzRkj1"
+      },
+      {
+        "fields": {
+          "INV/PL": null,
+          "业务类型": "企业文化衫领取",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "发货图片": null,
+          "国家": null,
+          "备注": null,
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "无需审批",
+          "客户名称": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": null,
+          "库存审查结论": null,
+          "库存快照时间": null,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": null,
+          "所属战区": null,
+          "排期编辑版本": null,
+          "提交人": null,
+          "提交幂等键": "8212594cf39640edb13cbf37f10b09dd",
+          "提交时间": 1792143625040,
+          "收件人信息": null,
+          "文化周边处理状态": "已发放",
+          "文化周边消息ID": "{\"applicant:ou_053aeed96090d369cd238ad5e04f342c\":\"om_x100b622b5aa8e8acc13fd431b32f594\",\"hr:ou_2672c786bc7ef3236be12a1041e971b7\":\"om_x100b622b5a691cb0dfcb7184ac94f91\"}",
+          "文化周边通知状态": "已发送",
+          "时间判定": null,
+          "是否发货": null,
+          "标题": "张诗韵-企业文化衫领取",
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 休闲商务POLO-黑色（短袖） / M × 1",
+          "物料用途": "入职",
+          "用途|活动": null,
+          "申请人": [
+            {
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016e_70d89b9f-45fc-4491-8e26-5216f09eba4g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "vivi.zhang@pudutech.com",
+              "en_name": "张诗韵",
+              "id": "ou_053aeed96090d369cd238ad5e04f342c",
+              "name": "张诗韵"
+            }
+          ],
+          "申请人.部门": [
+            "德国CR业务组"
+          ],
+          "申请单号": "REQ-20261016-003",
+          "申请原因": null,
+          "申请变更次数": null,
+          "申请时角色快照": null,
+          "申请明细": [
+            {
+              "record_ids": [
+                "reczz28O2IQsArZd"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261016-003-01",
+              "text_arr": [
+                "REQ-20261016-003-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "企业文化衫领取",
+          "申请部门|区域": null,
+          "相关附件": null,
+          "管理员通知时间": 1792143626543,
+          "管理员通知状态": null,
+          "要求到达结束日期": null,
+          "要求达到开始日期": null,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": null,
+          "运费承担者": null,
+          "需要下单日期": null,
+          "预计完成制作日期": null
+        },
+        "id": "reczz28O2HXug0pH",
+        "record_id": "reczz28O2HXug0pH"
       }
     ],
     "申请明细": [
@@ -269579,6 +269781,438 @@
         },
         "id": "reczz28Ny8ExIsGJ",
         "record_id": "reczz28Ny8ExIsGJ"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "M",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "品类名称": "休闲商务POLO-黑色（短袖）",
+          "备注": "企业文化衫库存记录ID:recvxwYCwHRwYy",
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "0",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "reczz28O29vzRkj1"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261016-002",
+              "text_arr": [
+                "REQ-20261016-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "企业文化衫",
+          "明细变更说明": null,
+          "明细状态": "已驳回",
+          "明细编号": "REQ-20261016-002-01",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": null,
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": null,
+          "附件": null
+        },
+        "id": "reczz28O2AGd6rGY",
+        "record_id": "reczz28O2AGd6rGY"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "M",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "品类名称": "休闲商务夹克-黑色（长袖）",
+          "备注": "企业文化衫库存记录ID:recvxwYCwHR3lA",
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "0",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "reczz28O29vzRkj1"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261016-002",
+              "text_arr": [
+                "REQ-20261016-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "企业文化衫",
+          "明细变更说明": null,
+          "明细状态": "已驳回",
+          "明细编号": "REQ-20261016-002-02",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": null,
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": null,
+          "附件": null
+        },
+        "id": "reczz28O2AMPxtXq",
+        "record_id": "reczz28O2AMPxtXq"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "M",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "品类名称": "商务衬衫-黑色（长袖）",
+          "备注": "企业文化衫库存记录ID:recvxwYCwHYcPj",
+          "实际发放产品型号": null,
+          "实际发放数量": "0",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "0",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "reczz28O29vzRkj1"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261016-002",
+              "text_arr": [
+                "REQ-20261016-002"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "企业文化衫",
+          "明细变更说明": null,
+          "明细状态": "已驳回",
+          "明细编号": "REQ-20261016-002-03",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": null,
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": null,
+          "附件": null
+        },
+        "id": "reczz28O2ARjxUCg",
+        "record_id": "reczz28O2ARjxUCg"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": null,
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "M",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": null,
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "品类名称": "休闲商务POLO-黑色（短袖）",
+          "备注": "企业文化衫库存记录ID:recvxwYCwHRwYy",
+          "实际发放产品型号": null,
+          "实际发放数量": "1",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": null,
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "reczz28O2HXug0pH"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261016-003",
+              "text_arr": [
+                "REQ-20261016-003"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": null,
+          "文化周边物料": [
+            {
+              "record_ids": null,
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "企业文化衫",
+          "明细变更说明": null,
+          "明细状态": "已发放",
+          "明细编号": "REQ-20261016-003-01",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": null,
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": null,
+          "附件": null
+        },
+        "id": "reczz28O2IQsArZd",
+        "record_id": "reczz28O2IQsArZd"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -275398,9 +276032,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275427,9 +276061,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275456,9 +276090,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275485,9 +276119,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275514,9 +276148,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275543,9 +276177,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275572,9 +276206,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275601,9 +276235,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275630,9 +276264,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275659,9 +276293,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275688,9 +276322,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275717,9 +276351,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275746,9 +276380,9 @@
               "file_token": "Kry6b4yxQor9HGxmITBcxjgKn2e",
               "name": "稿定设计-5.png",
               "size": 1247416,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Kry6b4yxQor9HGxmITBcxjgKn2e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Kry6b4yxQor9HGxmITBcxjgKn2e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1c3031f065b5dd649d19.webp"
             }
           ],
@@ -275794,9 +276428,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -275823,9 +276457,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -275845,56 +276479,56 @@
       },
       {
         "fields": {
-          "SourceID": "NzY5NDU0ODY5MTUyMDE3OTQxMTpyZWN2dGppdEg3TGlsdDowZWU5Zjk1YjQ3MDM0Yjk5NTE4MjQyZDdhNDdhNmVmYzox",
+          "SourceID": "NzY5NDU0ODY5MTUyMDE3OTQxMTpyZWN2dGppdEg3TGlsdDowNGUyZGEwYTc3MjcwMzcxZGU4MGZiNTFlZTA5Y2VhZjox",
           "原始库存数量": "0",
           "图片": [
             {
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
           "备注": null,
           "文化币售价/个": "5",
-          "最新库存": "0",
+          "最新库存": "-1",
           "本次入库数量（20260825）": "13",
           "款式": "文化衫-休闲商务POLO-黑色（短袖）",
           "物品分类": "文化衫",
           "码数": "S",
           "系统兑换数量": "1",
           "编码": "CF-003",
-          "表格兑换数量": "12"
+          "表格兑换数量": "13"
         },
         "id": "recvxwYCwHjAd6",
         "record_id": "recvxwYCwHjAd6"
       },
       {
         "fields": {
-          "SourceID": "NzY5NDU0ODY5MTUyMDE3OTQxMTpyZWN2dGppdEg3TXNHbTo3YWRjYjk1OWRiMjQxNDQ2M2Y5MTNmNGU4NWQ3NmVlYzox",
+          "SourceID": "NzY5NDU0ODY5MTUyMDE3OTQxMTpyZWN2dGppdEg3TXNHbTozMjBkYjhmY2VmMWNlM2Y3OWU0Nzk4NGRiNTg3MTFmNDox",
           "原始库存数量": "0",
           "图片": [
             {
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
           "备注": null,
           "文化币售价/个": "5",
-          "最新库存": "5",
+          "最新库存": "4",
           "本次入库数量（20260825）": "32",
           "款式": "文化衫-休闲商务POLO-黑色（短袖）",
           "物品分类": "文化衫",
           "码数": "M",
-          "系统兑换数量": "10",
+          "系统兑换数量": "11",
           "编码": "CF-003",
           "表格兑换数量": "17"
         },
@@ -275910,9 +276544,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -275939,9 +276573,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -275968,9 +276602,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -275997,9 +276631,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -276026,9 +276660,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -276055,9 +276689,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -276084,9 +276718,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -276113,9 +276747,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -276142,9 +276776,9 @@
               "file_token": "W0FzbVdoToxAOVxvw58cCaMdnXf",
               "name": "稿定设计-4.png",
               "size": 1754937,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W0FzbVdoToxAOVxvw58cCaMdnXf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W0FzbVdoToxAOVxvw58cCaMdnXf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0693d28bace07eb39e0f.webp"
             }
           ],
@@ -276190,9 +276824,9 @@
               "file_token": "R2yubxVQ9odY1IxRonqcsZbdnob",
               "name": "稿定设计-3.png",
               "size": 1753543,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=R2yubxVQ9odY1IxRonqcsZbdnob&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=R2yubxVQ9odY1IxRonqcsZbdnob&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/R2yubxVQ9odY1IxRonqcsZbdnob/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/R2yubxVQ9odY1IxRonqcsZbdnob/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b62063e89aad6fa1eac1.webp"
             }
           ],
@@ -276238,9 +276872,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276267,9 +276901,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276296,9 +276930,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276325,9 +276959,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276354,9 +276988,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276383,9 +277017,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276412,9 +277046,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276441,9 +277075,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276470,9 +277104,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276499,9 +277133,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276528,9 +277162,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276557,9 +277191,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276586,9 +277220,9 @@
               "file_token": "JTxib2zgSonTlVxPi1McLHpUnbd",
               "name": "稿定设计-2.png",
               "size": 1827582,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JTxib2zgSonTlVxPi1McLHpUnbd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JTxib2zgSonTlVxPi1McLHpUnbd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/b7ad60ca43b69e16b42f.webp"
             }
           ],
@@ -276634,9 +277268,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276663,9 +277297,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276692,9 +277326,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276721,9 +277355,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276750,9 +277384,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276779,9 +277413,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276808,9 +277442,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276837,9 +277471,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276866,9 +277500,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276895,9 +277529,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276924,9 +277558,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276953,9 +277587,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -276982,9 +277616,9 @@
               "file_token": "P4FnbkRkoo8XY9xkrGgc6XClnme",
               "name": "稿定设计-1.png",
               "size": 1683800,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=P4FnbkRkoo8XY9xkrGgc6XClnme&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/P4FnbkRkoo8XY9xkrGgc6XClnme/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/81ab79aead56af29284d.webp"
             }
           ],
@@ -277068,9 +277702,9 @@
               "file_token": "XKpvbaGXLoEo24xpRgxcHuMTnfe",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XKpvbaGXLoEo24xpRgxcHuMTnfe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XKpvbaGXLoEo24xpRgxcHuMTnfe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XKpvbaGXLoEo24xpRgxcHuMTnfe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XKpvbaGXLoEo24xpRgxcHuMTnfe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/9a9472f498abb45073e3.webp"
             }
           ],
@@ -277097,9 +277731,9 @@
               "file_token": "FMLUbz4JboiVeTxGV1mcnlqUnTd",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FMLUbz4JboiVeTxGV1mcnlqUnTd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=FMLUbz4JboiVeTxGV1mcnlqUnTd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FMLUbz4JboiVeTxGV1mcnlqUnTd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/FMLUbz4JboiVeTxGV1mcnlqUnTd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/30b97c4096a335c4c19f.webp"
             }
           ],
@@ -277126,9 +277760,9 @@
               "file_token": "VnIPbsSN5o3om7xIq6JcWj6PnVf",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VnIPbsSN5o3om7xIq6JcWj6PnVf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VnIPbsSN5o3om7xIq6JcWj6PnVf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VnIPbsSN5o3om7xIq6JcWj6PnVf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VnIPbsSN5o3om7xIq6JcWj6PnVf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/d32be533d311faa49558.webp"
             }
           ],
@@ -277155,9 +277789,9 @@
               "file_token": "ZUS0bOW56ov3KQxPkNBcTO3OnYd",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZUS0bOW56ov3KQxPkNBcTO3OnYd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZUS0bOW56ov3KQxPkNBcTO3OnYd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZUS0bOW56ov3KQxPkNBcTO3OnYd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZUS0bOW56ov3KQxPkNBcTO3OnYd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/4aac5809db890b202e05.webp"
             }
           ],
@@ -277184,9 +277818,9 @@
               "file_token": "M4lxbafUxoL4elxHegZcKKfnn9b",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=M4lxbafUxoL4elxHegZcKKfnn9b&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=M4lxbafUxoL4elxHegZcKKfnn9b&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/M4lxbafUxoL4elxHegZcKKfnn9b/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/M4lxbafUxoL4elxHegZcKKfnn9b/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/c60732ff4f920aba55d0.webp"
             }
           ],
@@ -277213,9 +277847,9 @@
               "file_token": "LlKKbWixuo58nGxFBqLcVsIKnGe",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LlKKbWixuo58nGxFBqLcVsIKnGe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LlKKbWixuo58nGxFBqLcVsIKnGe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LlKKbWixuo58nGxFBqLcVsIKnGe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LlKKbWixuo58nGxFBqLcVsIKnGe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/c85d6caeb0fd0b82cdce.webp"
             }
           ],
@@ -277242,9 +277876,9 @@
               "file_token": "O02qbXFFfow4gtxijYIcgAiEnDd",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=O02qbXFFfow4gtxijYIcgAiEnDd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=O02qbXFFfow4gtxijYIcgAiEnDd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/O02qbXFFfow4gtxijYIcgAiEnDd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/O02qbXFFfow4gtxijYIcgAiEnDd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/e7d94aedfdb92265a213.webp"
             }
           ],
@@ -277271,9 +277905,9 @@
               "file_token": "GNHibxgZZoJveTx8tAWc7k5kn90",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GNHibxgZZoJveTx8tAWc7k5kn90&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GNHibxgZZoJveTx8tAWc7k5kn90&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GNHibxgZZoJveTx8tAWc7k5kn90/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GNHibxgZZoJveTx8tAWc7k5kn90/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/c6f5235f0b00912de9fd.webp"
             }
           ],
@@ -277300,9 +277934,9 @@
               "file_token": "OK0FbAG5toPc7HxYEFncrb8qnId",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=OK0FbAG5toPc7HxYEFncrb8qnId&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=OK0FbAG5toPc7HxYEFncrb8qnId&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/OK0FbAG5toPc7HxYEFncrb8qnId/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/OK0FbAG5toPc7HxYEFncrb8qnId/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/3d7fd589679cc1dc1d2f.webp"
             }
           ],
@@ -277329,9 +277963,9 @@
               "file_token": "UDPRbcPJKomjlVxyvApcqgQRnVb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=UDPRbcPJKomjlVxyvApcqgQRnVb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=UDPRbcPJKomjlVxyvApcqgQRnVb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/UDPRbcPJKomjlVxyvApcqgQRnVb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/UDPRbcPJKomjlVxyvApcqgQRnVb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/540a4d0ed430b874d9a0.webp"
             }
           ],
@@ -277358,9 +277992,9 @@
               "file_token": "YuApbpO5eofwmExmyC2cnCTrnth",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YuApbpO5eofwmExmyC2cnCTrnth&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YuApbpO5eofwmExmyC2cnCTrnth&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YuApbpO5eofwmExmyC2cnCTrnth/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YuApbpO5eofwmExmyC2cnCTrnth/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/739fc47df89d39a6f880.webp"
             }
           ],
@@ -277387,9 +278021,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277416,9 +278050,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277445,9 +278079,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277474,9 +278108,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277503,9 +278137,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277532,9 +278166,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277561,9 +278195,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277590,9 +278224,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277619,9 +278253,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277648,9 +278282,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277677,9 +278311,9 @@
               "file_token": "CWcJbnHcUo0OrlxdwU7cMSjFnJb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CWcJbnHcUo0OrlxdwU7cMSjFnJb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CWcJbnHcUo0OrlxdwU7cMSjFnJb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/f996770599f950264064.webp"
             }
           ],
@@ -277706,9 +278340,9 @@
               "file_token": "XQ3JbadI3oDM7DxtWo5cl5LGnQd",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XQ3JbadI3oDM7DxtWo5cl5LGnQd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XQ3JbadI3oDM7DxtWo5cl5LGnQd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XQ3JbadI3oDM7DxtWo5cl5LGnQd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XQ3JbadI3oDM7DxtWo5cl5LGnQd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/74a3cb58379d767c546d.webp"
             }
           ],
@@ -277735,9 +278369,9 @@
               "file_token": "A4mQbvGiXoAqHgxv5cjcI1Uwnub",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=A4mQbvGiXoAqHgxv5cjcI1Uwnub&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=A4mQbvGiXoAqHgxv5cjcI1Uwnub&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/A4mQbvGiXoAqHgxv5cjcI1Uwnub/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/A4mQbvGiXoAqHgxv5cjcI1Uwnub/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/789ed159277d11cd07e6.webp"
             }
           ],
@@ -277764,9 +278398,9 @@
               "file_token": "C6LvbzPqvo5K0oxnX4acS1Dwn3e",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=C6LvbzPqvo5K0oxnX4acS1Dwn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=C6LvbzPqvo5K0oxnX4acS1Dwn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/C6LvbzPqvo5K0oxnX4acS1Dwn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/C6LvbzPqvo5K0oxnX4acS1Dwn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/fb36be363fa57ab5d5ed.webp"
             }
           ],
@@ -277793,9 +278427,9 @@
               "file_token": "KNw3b2USJo7E8exseGaczrhPnaf",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KNw3b2USJo7E8exseGaczrhPnaf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=KNw3b2USJo7E8exseGaczrhPnaf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KNw3b2USJo7E8exseGaczrhPnaf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/KNw3b2USJo7E8exseGaczrhPnaf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/1b0e6989bd92ab8f8f63.webp"
             }
           ],
@@ -277822,9 +278456,9 @@
               "file_token": "IAQFbDvObodpJpxpptocAHAQnwb",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IAQFbDvObodpJpxpptocAHAQnwb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IAQFbDvObodpJpxpptocAHAQnwb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IAQFbDvObodpJpxpptocAHAQnwb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IAQFbDvObodpJpxpptocAHAQnwb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/d3aa213844fd02e5c91a.webp"
             }
           ],
@@ -277851,9 +278485,9 @@
               "file_token": "CfJDbWZepoG1mKxKD41c9dAUnEh",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CfJDbWZepoG1mKxKD41c9dAUnEh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CfJDbWZepoG1mKxKD41c9dAUnEh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CfJDbWZepoG1mKxKD41c9dAUnEh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CfJDbWZepoG1mKxKD41c9dAUnEh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/affb8a940edeefbefd78.webp"
             }
           ],
@@ -277880,9 +278514,9 @@
               "file_token": "ZSflbqYDIoP8anxnWkVcuo7anWe",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZSflbqYDIoP8anxnWkVcuo7anWe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZSflbqYDIoP8anxnWkVcuo7anWe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZSflbqYDIoP8anxnWkVcuo7anWe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZSflbqYDIoP8anxnWkVcuo7anWe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/44a71380018dc0ae8175.webp"
             }
           ],
@@ -277909,9 +278543,9 @@
               "file_token": "C81YbG8OOolHA8x5LxHcBc7Un2b",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=C81YbG8OOolHA8x5LxHcBc7Un2b&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=C81YbG8OOolHA8x5LxHcBc7Un2b&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/C81YbG8OOolHA8x5LxHcBc7Un2b/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/C81YbG8OOolHA8x5LxHcBc7Un2b/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/ac0da479cdc3796d7ebc.webp"
             }
           ],
@@ -277938,9 +278572,9 @@
               "file_token": "CLh0bipbtoQw5KxH1rwcJsEkn55",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CLh0bipbtoQw5KxH1rwcJsEkn55&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=CLh0bipbtoQw5KxH1rwcJsEkn55&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CLh0bipbtoQw5KxH1rwcJsEkn55/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/CLh0bipbtoQw5KxH1rwcJsEkn55/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/14c6bd157e3f4fdd7577.webp"
             }
           ],
@@ -277967,9 +278601,9 @@
               "file_token": "LGA8bpc1moe6sjxdC0IcvvpxnSc",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LGA8bpc1moe6sjxdC0IcvvpxnSc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LGA8bpc1moe6sjxdC0IcvvpxnSc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LGA8bpc1moe6sjxdC0IcvvpxnSc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LGA8bpc1moe6sjxdC0IcvvpxnSc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/2bc1a76e1c428cd17ddd.webp"
             }
           ],
@@ -277996,9 +278630,9 @@
               "file_token": "SplWbljMqoVXvoxEPwyccfOPnhe",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SplWbljMqoVXvoxEPwyccfOPnhe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SplWbljMqoVXvoxEPwyccfOPnhe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SplWbljMqoVXvoxEPwyccfOPnhe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SplWbljMqoVXvoxEPwyccfOPnhe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/03c7c93a36abb95d5149.webp"
             }
           ],
@@ -278025,9 +278659,9 @@
               "file_token": "QC5Jbh9Gko4UPmxV5t4c92TRnje",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QC5Jbh9Gko4UPmxV5t4c92TRnje&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QC5Jbh9Gko4UPmxV5t4c92TRnje&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QC5Jbh9Gko4UPmxV5t4c92TRnje/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QC5Jbh9Gko4UPmxV5t4c92TRnje/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/c36474b3cce76d01b186.webp"
             }
           ],
@@ -278054,9 +278688,9 @@
               "file_token": "XEHBbI4XToodsKx0j1dcP6k6nLh",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XEHBbI4XToodsKx0j1dcP6k6nLh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XEHBbI4XToodsKx0j1dcP6k6nLh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XEHBbI4XToodsKx0j1dcP6k6nLh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XEHBbI4XToodsKx0j1dcP6k6nLh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/0c3aaed495e643dadc9d.webp"
             }
           ],
@@ -278083,9 +278717,9 @@
               "file_token": "Eu4sb91CnouyucxyUjccjg1MnCf",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Eu4sb91CnouyucxyUjccjg1MnCf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Eu4sb91CnouyucxyUjccjg1MnCf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Eu4sb91CnouyucxyUjccjg1MnCf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Eu4sb91CnouyucxyUjccjg1MnCf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/5f630d34e92fa3848af4.webp"
             }
           ],
@@ -278112,9 +278746,9 @@
               "file_token": "EVbdbu8C0orC3FxpNVCc0j89nEc",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EVbdbu8C0orC3FxpNVCc0j89nEc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EVbdbu8C0orC3FxpNVCc0j89nEc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EVbdbu8C0orC3FxpNVCc0j89nEc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EVbdbu8C0orC3FxpNVCc0j89nEc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/dce02d421d397218de72.webp"
             }
           ],
@@ -278141,9 +278775,9 @@
               "file_token": "QmXCb5xgfo7QVwxg5mGc4F79nvg",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QmXCb5xgfo7QVwxg5mGc4F79nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QmXCb5xgfo7QVwxg5mGc4F79nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QmXCb5xgfo7QVwxg5mGc4F79nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QmXCb5xgfo7QVwxg5mGc4F79nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/c965a91407aa4e029d54.webp"
             }
           ],
@@ -278170,9 +278804,9 @@
               "file_token": "AJ9HbVsyZosYDuxICt2c1wRXntd",
               "name": "image.png",
               "size": 1024,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AJ9HbVsyZosYDuxICt2c1wRXntd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AJ9HbVsyZosYDuxICt2c1wRXntd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "type": "image/png",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AJ9HbVsyZosYDuxICt2c1wRXntd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A30%7D%7D",
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AJ9HbVsyZosYDuxICt2c1wRXntd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblOUvklAihp8g34%22%2C%22rev%22%3A32%7D%7D",
               "cached_path": "assets/request_categories/39954308fa420c65f1de.webp"
             }
           ],
@@ -278886,7 +279520,7 @@
           "用户编号": "11",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0012f_fc5d37f6-19d0-47c4-953c-31a85ae6a84g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0012f_fc5d37f6-19d0-47c4-953c-31a85ae6a84g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "kouyinling@pudutech.com",
               "en_name": "寇银玲",
               "id": "ou_18f06f5c47fbe9aa8891edd375160072",
@@ -280137,7 +280771,7 @@
           "用户编号": "63",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_a51e7837-483b-48bc-aa65-5edcba4d025g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_a51e7837-483b-48bc-aa65-5edcba4d025g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhangquanyan@pudutech.com",
               "en_name": "张权炎",
               "id": "ou_a313fcd7034975f1f9cf52f7121709a4",
@@ -280189,7 +280823,7 @@
           "用户编号": "65",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015j_969ffb87-4a9b-48ec-94e9-2b37c613945g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015j_969ffb87-4a9b-48ec-94e9-2b37c613945g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "tom.wu@pudutech.com",
               "en_name": "吴政谕",
               "id": "ou_dcf7672957e1505e85b035fe1988e240",
@@ -281932,7 +282566,7 @@
           "用户编号": "132",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_73b97265-0389-4603-ac78-fd1ca091746g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_73b97265-0389-4603-ac78-fd1ca091746g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pengpai@pudutech.com",
               "en_name": "彭湃",
               "id": "ou_18a7efcff2356820924f0d011eb3b3c4",
@@ -283596,7 +284230,7 @@
           "用户编号": "196",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011h_a05ae7d3-10ee-4015-b67c-36604eb75cdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011h_a05ae7d3-10ee-4015-b67c-36604eb75cdg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "yuanxiaoqian@pudutech.com",
               "en_name": "袁小倩",
               "id": "ou_450b7af0a528210dc7ceefe2f561fcee",
@@ -286144,7 +286778,7 @@
           "用户编号": "294",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0014l_5c5b35ad-fa67-4b56-ab94-2d0bd30e2ddg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0014l_5c5b35ad-fa67-4b56-ab94-2d0bd30e2ddg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "yangfeng1@pudutech.com",
               "en_name": "杨风",
               "id": "ou_79cfac15b01fad7de1fcc56db773becc",
@@ -287574,7 +288208,7 @@
           "用户编号": "349",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015a_1c273d64-2610-475e-8a12-b9e5200f9e3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_1c273d64-2610-475e-8a12-b9e5200f9e3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "yangjinle@pudutech.com",
               "en_name": "杨金乐",
               "id": "ou_99c23e77cff6bc2fb2bd4a2b52942c13",
@@ -289992,7 +290626,7 @@
           "用户编号": "442",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0014l_163bf390-9ec3-4ab0-a4f6-762f1f642b4g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0014l_163bf390-9ec3-4ab0-a4f6-762f1f642b4g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhanglisong@pudutech.com",
               "en_name": "张利松",
               "id": "ou_ccabfbf8843ee6e87da53b54a1890f9b",
@@ -290096,7 +290730,7 @@
           "用户编号": "446",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00157_9cda4a68-eea6-477c-b09b-64b7a419aecg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016i_6c0d284b-c29a-4cc5-b10c-7c8a4dbf36eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "liumingkun@pudutech.com",
               "en_name": "刘铭坤",
               "id": "ou_cdee5fd4c54014676f198ed546841f68",
@@ -290278,7 +290912,7 @@
           "用户编号": "453",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00141_d34baf35-563a-488e-b4f2-22d5fe101d0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00141_d34baf35-563a-488e-b4f2-22d5fe101d0g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "liweifeng@pudutech.com",
               "en_name": "李韦锋",
               "id": "ou_d0c072959c42140be8d84a18d30e2115",
@@ -292348,7 +292982,7 @@
       },
       {
         "fields": {
-          "POLO申领数量累计": "0",
+          "POLO申领数量累计": "1",
           "T恤-黑色（短袖）申领数量累计": "0",
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": "0",
@@ -293619,6 +294253,32 @@
         },
         "id": "reczz28NfDonpZhF",
         "record_id": "reczz28NfDonpZhF"
+      },
+      {
+        "fields": {
+          "POLO申领数量累计": "0",
+          "T恤-黑色（短袖）申领数量累计": null,
+          "冲锋衣-黑色申领数量累计": null,
+          "商务衬衫-黑色（长袖）神灵数量累计": "0",
+          "文化夹克申领数量累计": "0",
+          "文化衫申领数量累计": null,
+          "是否启用": "是",
+          "用户编号": "582",
+          "用户账号": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015a_9c20d31e-e5f8-4298-9c4f-54f6ba3db16g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "huayue@pudutech.com",
+              "en_name": "华悦",
+              "id": "ou_70c6d87fe35c6e52ee3cbac78ef822e6",
+              "name": "华悦"
+            }
+          ],
+          "角色": [
+            "销售"
+          ]
+        },
+        "id": "reczz28O28nnsDmP",
+        "record_id": "reczz28O28nnsDmP"
       }
     ],
     "物料下单批次": [
@@ -304768,13 +305428,13 @@
     "物料语种": 12,
     "物料主数据": 909,
     "库存流水": 696,
-    "物料申请单": 165,
-    "申请明细": 695,
+    "物料申请单": 167,
+    "申请明细": 699,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "文化周边编码及库存数量": 100,
     "战区管理": 10,
-    "用户权限表": 576,
+    "用户权限表": 577,
     "物料下单批次": 18,
     "物料下单批次明细": 110
   },
