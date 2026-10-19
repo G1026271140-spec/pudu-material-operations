@@ -72,11 +72,10 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [ack, setAck] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [confirmMode, setConfirmMode] = useState<"confirm" | "edit" | "">("");
-  const [orderPreview, setOrderPreview] = useState<any>(null);
+  const [downloadingWorkbook, setDownloadingWorkbook] = useState(false);
+  const submitLockRef = useRef(false);
   const [pendingCachedAt, setPendingCachedAt] = useState("");
   const [pendingRefreshing, setPendingRefreshing] = useState(false);
   const [pendingWarning, setPendingWarning] = useState("");
@@ -299,53 +298,46 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     return draft;
   }
 
-  async function openConfirm(mode: "confirm" | "edit") {
+  async function submit(mode: "confirm" | "edit") {
+    if (submitLockRef.current) return;
     const message = validate(mode);
     if (message) return setError(message);
-    setPreviewing(true); setError("");
-    try {
-      const suffix = directRequestId ? `?${signedQuery}` : "";
-      const draft = allocationDraft(mode);
-      const preview = await jsonFetch(`/api/allocation/${encodeURIComponent(requestId)}/order-preview${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
-      setOrderPreview(preview);
-      setConfirmMode(mode);
-    } catch (e) { setError(e instanceof Error ? e.message : "下单信息预览失败"); }
-    finally { setPreviewing(false); }
-  }
-
-  async function submit() {
-    const mode = confirmMode as "confirm" | "edit";
-    const draft = allocationDraft(mode);
+    submitLockRef.current = true;
     setSubmitting(true); setError("");
     try {
       const suffix = directRequestId ? `?${signedQuery}` : "";
-      let workbook: Blob | null = null;
-      if (orderPreview?.workbookAvailable) {
-        const workbookResponse = await fetch(`/api/allocation/${encodeURIComponent(requestId)}/order-workbook${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
-        if (!workbookResponse.ok) {
-          const failure = await workbookResponse.json().catch(() => ({}));
-          throw Error(detail(failure.detail, "下单表生成失败"));
-        }
-        workbook = await workbookResponse.blob();
-      }
+      const draft = allocationDraft(mode);
       const body = await jsonFetch(`/api/allocation/${encodeURIComponent(requestId)}/submit${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
-      if (workbook) {
-        const url = URL.createObjectURL(workbook);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = orderPreview.workbookFilename || `物料下单表-${request.request_no || requestId}.xlsx`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
       setSuccess(`${tr("配货任务已进入后台队列", "Allocation task queued")}（${body.taskId}）`);
       // Queue acceptance is not inventory-review completion. Keep the request
       // visible until the Worker confirms the write and SQLite removes it.
-      setConfirmMode("");
-      setOrderPreview(null);
+      const needsWorkbook = mode === "confirm"
+        ? (context.lines || []).some((line: any) => isPrintMaterial(line) && Number(line.current_stock || 0) < Number(line.quantity || 0))
+        : rows.some(row => row.order_required && isPrintMaterial(materialById[row.material_record_id]));
+      if (needsWorkbook) {
+        setDownloadingWorkbook(true);
+        void (async () => {
+          try {
+            const response = await fetch(`/api/allocation/${encodeURIComponent(requestId)}/order-workbook${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
+            if (!response.ok) {
+              const failure = await response.json().catch(() => ({}));
+              throw Error(detail(failure.detail, "下单表生成失败"));
+            }
+            const url = URL.createObjectURL(await response.blob());
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = `物料下单表-${request.request_no || requestId}.xlsx`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          } catch (e) {
+            setError(`${tr("配货任务已入队，但下单表下载失败；请勿重复提交。", "Allocation was queued, but the order workbook download failed. Do not resubmit.")} ${e instanceof Error ? e.message : ""}`);
+          } finally { setDownloadingWorkbook(false); }
+        })();
+      }
     } catch (e) { setError(e instanceof Error ? e.message : "提交失败"); }
-    finally { setSubmitting(false); }
+    finally { setSubmitting(false); submitLockRef.current = false; }
   }
 
   if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}><div className="allocation-loading"><i/><b>{tr("正在读取本机待核实申请单……", "Loading local pending requests…")}</b></div></main>;
@@ -369,14 +361,14 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     {success && <div className="allocation-toast allocation-task-toast" role="status">
       <button type="button" className="allocation-toast-close" aria-label={tr("关闭提示", "Close notification")} onClick={() => setSuccess("")}>×</button>
       <strong>{success}</strong>
-      <small>{tr("后台完成后，申请人与管理员飞书卡片会按原流程更新。", "The requester and administrator cards will update after background completion.")}</small>
+      <small>{downloadingWorkbook ? tr("正在后台生成下单表，完成后自动下载；请勿重复提交。", "Preparing the order workbook for automatic download. Do not resubmit.") : tr("后台完成后，申请人与管理员飞书卡片会按原流程更新。", "The requester and administrator cards will update after background completion.")}</small>
     </div>}
     {!context.verifiedLive && <div className="allocation-live-banner" role="status"><span>{liveChecking ? tr("正在核对实时申请明细和库存。下方为历史快照，核对完成前不能提交。", "Checking live request lines and stock. The snapshot below is read-only until verification finishes.") : (liveWarning || tr("当前仅显示历史快照，不能提交。", "Showing a read-only snapshot."))}</span>{!liveChecking && <button onClick={() => loadContext(requestId)}>{tr("重试实时读取", "Retry live verification")}</button>}</div>}
     {request.inventory_review_status === "已核实库存" ? <div className="allocation-success">✓ {tr("该申请已经完成库存核实，无需再次处理。", "This request has already completed inventory review.")}</div> : <>
       <section className="request-overview"><div className="allocation-title"><b>{request.request_no || "-"}</b><span>{context.verifiedLive ? tr("实时库存更新于", "Live stock updated at") : tr("历史快照更新于", "Snapshot updated at")} {context.snapshotAt}</span></div><div className="allocation-metrics"><span>{tr("申请人", "Requester")}<b>{request.requester || "-"}</b></span><span>{tr("申请部门", "Department")}<b>{request.department || "-"}</b></span><span>{tr("当前结论", "Current Result")}<b>{context.result || "-"}</b></span><span>{tr("变更次数", "Changes")}<b>{request.inventory_review_version || 0}</b></span><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span></div><div className="request-notes"><p><b>{tr("申请原因", "Reason")}：</b>{request.request_reason || "-"}</p><p><b>{tr("物料用途", "Usage")}：</b>{request.material_usage || "-"}</p><p><b>{tr("收件人信息", "Recipient")}：</b>{request.recipient_info || "-"}</p></div></section>
       <fieldset className="allocation-readonly-guard" disabled={!context.verifiedLive}>
       <section className="allocation-form"><div className="allocation-control"><label>{tr("申请单发货日期", "Shipping Date")} *<input type="date" value={shipDate} onChange={e => setShipDate(e.target.value)}/></label>{!context.signedCardAccess && <label>{tr("本次配货操作人", "Allocation Operator")} *<select value={operatorId} onChange={e => setOperatorId(e.target.value)}><option value="">{tr("请选择管理员", "Select administrator")}</option>{operators.map(x => <option key={x.open_id} value={x.open_id}>{x.name} · {(x.department_paths || []).join(" / ")}</option>)}</select></label>}</div>
-        <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{context.verifiedLive ? tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`) : tr("当前为历史快照，库存尚未实时核对。", "This is a snapshot; stock has not been verified live.")}</p></div><button className="confirm-original" onClick={() => openConfirm("confirm")}>✓ {tr("按原申请确认配货方案", "Review Original Allocation")}</button></div>
+        <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{context.verifiedLive ? tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`) : tr("当前为历史快照，库存尚未实时核对。", "This is a snapshot; stock has not been verified live.")}</p></div><button className="confirm-original" disabled={submitting} onClick={() => submit("confirm")}>✓ {tr("按原申请提交配货方案", "Submit Original Allocation")}</button></div>
         <div className="allocation-lines">{rows.map((row, index) => {
           const categories = unique(materials.map((x: any) => x.category));
           const models = unique(materials.filter((x: any) => x.category === row.category).map((x: any) => x.model));
@@ -406,7 +398,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         <div className="amount-comparison"><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span><span>{tr("当前配货总金额", "Allocation Total")}<b>{money(currentTotal)}</b><em className={currentTotal - originalTotal < 0 ? "negative" : ""}>{currentTotal - originalTotal >= 0 ? "+" : ""}{money(currentTotal - originalTotal)}</em></span></div>
         <label className="change-note">{tr("配货调整说明", "Allocation Change Note")} *<textarea placeholder={tr("请说明替换、增加、删除物料或调整数量的原因；该说明会发送给申请人。", "Explain replacements, additions, deletions, or quantity changes. This will be sent to the requester.")} value={changeNote} onChange={e => setChangeNote(e.target.value)}/></label>
         <label className="allocation-ack"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)}/>{tr("我已核对配货方案，并确认向申请人发送变更通知", "I reviewed this plan and confirm notifying the requester")}</label>
-        <button className="submit-allocation" disabled={!ack} onClick={() => openConfirm("edit")}>{tr("提交配货方案", "Submit Allocation Plan")}</button>
+        <button className="submit-allocation" disabled={!ack || submitting} onClick={() => submit("edit")}>{tr("提交配货方案", "Submit Allocation Plan")}</button>
       </section>
       </fieldset>
     </>}
@@ -434,7 +426,6 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         <div className="modal-actions"><button onClick={() => setSplitIndex(null)}>{tr("取消", "Cancel")}</button><button className="primary" onClick={applySplit}>{tr("应用分装", "Apply Split")}</button></div>
       </div>
     </div>}
-    {confirmMode && orderPreview && <div className="allocation-modal-backdrop" onMouseDown={() => { setConfirmMode(""); setOrderPreview(null); }}><div className="allocation-modal order-confirm-modal" onMouseDown={e => e.stopPropagation()}><button className="close" onClick={() => { setConfirmMode(""); setOrderPreview(null); }}>×</button><h2>{tr("确认配货与下单信息", "Confirm Allocation and Order")}</h2><p><b>{request.request_no}</b> · {request.requester} · {shipDate}</p><div className="modal-summary"><span>{tr("配货明细", "Allocation Lines")}<b>{confirmMode === "confirm" ? context.lines.length : rows.length}</b></span><span>{tr("需要下单", "Order Lines")}<b>{orderPreview.lineCount}</b></span><span>{tr("下单总数量", "Order Quantity")}<b>{orderPreview.totalQuantity}</b></span></div><div className="order-confirm-section"><h3>{tr("需要下单的印刷物料汇总", "Printed Materials to Order")}</h3>{orderPreview.lines.length ? <div className="order-confirm-table-wrap"><table className="order-confirm-table"><thead><tr><th>{tr("类型", "Type")}</th><th>{tr("物料名称", "Material")}</th><th>{tr("语种", "Language")}</th><th>{tr("数量", "Quantity")}</th><th>{tr("用途", "Purpose")}</th></tr></thead><tbody>{orderPreview.lines.map((line: any, index: number) => <tr key={`${line.category}-${line.model}-${line.language}-${index}`}><td>{line.category}</td><td>{line.model}</td><td>{line.language}</td><td>{line.quantity}</td><td>{line.usage || "-"}</td></tr>)}</tbody></table></div> : <div className="order-confirm-empty">{tr("本次配货没有需要下单的印刷物料，不会生成下单表。", "No printed materials require ordering; no order workbook will be generated.")}</div>}</div>{confirmMode === "edit" && <p className="note-preview">{changeNote}</p>}<p className="order-confirm-hint">{orderPreview.workbookAvailable ? tr("再次确认后，配货任务将写入后台队列，并立即下载物料下单表。", "Final confirmation queues the allocation and downloads the order workbook.") : tr("再次确认后，配货任务将写入后台队列。", "Final confirmation queues the allocation.")}</p><div className="modal-actions"><button onClick={() => { setConfirmMode(""); setOrderPreview(null); }}>{tr("返回修改", "Back")}</button><button className="primary" onClick={submit}>{orderPreview.workbookAvailable ? tr("确认写入并下载下单表", "Confirm and Download") : tr("确认写入配货方案", "Confirm Allocation")}</button></div></div></div>}
-    {(previewing || submitting) && <div className="allocation-submit-overlay"><i/><b>{previewing ? tr("正在汇总下单信息……", "Preparing order summary…") : tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{previewing ? tr("正在核对实时申请明细与下单表模板", "Checking live lines and the order template") : tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
+    {submitting && <div className="allocation-submit-overlay"><i/><b>{tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
   </main>;
 }
