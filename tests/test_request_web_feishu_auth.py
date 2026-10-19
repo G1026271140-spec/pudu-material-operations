@@ -61,6 +61,43 @@ def test_foreign_tenant_is_rejected(monkeypatch):
         assert not client.cookies.get("pudu_feishu")
 
 
+def test_workplace_preauthorization_handoff_is_one_use(monkeypatch):
+    monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "own-tenant")
+    monkeypatch.setattr(feishu_auth, "exchange_code", lambda code: ("ou_user", "own-tenant", {"name": "测试用户", "avatar_url": ""}))
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("cli_test", "secret"))
+    with TestClient(api, base_url=PUBLIC, follow_redirects=False) as client:
+        start = client.get("/auth/feishu/workplace-start")
+        assert start.status_code == 303
+        assert urlsplit(start.headers["location"]).path == "/open-apis/authen/v1/index"
+        assert parse_qs(urlsplit(start.headers["location"]).query)["redirect_uri"] == [PUBLIC + "/auth/feishu/callback"]
+        state = parse_qs(urlsplit(start.headers["location"]).query)["state"][0]
+        assert client.get("/auth/feishu/callback?code=ok&state=bad").status_code == 400
+        handoff = client.get(f"/auth/feishu/callback?code=ok&state={state}")
+        assert handoff.status_code == 200
+        assert "no-store" in handoff.headers["cache-control"]
+        assert "lk_jump_to_browser=true" in handoff.text
+        ticket = handoff.text.split("ticket=", 1)[1].split("&amp;", 1)[0]
+        browser = client.get(f"/auth/feishu/browser-complete?ticket={ticket}")
+        assert browser.status_code == 303
+        assert browser.headers["location"] == "/"
+        assert "Max-Age=2592000" in browser.headers["set-cookie"]
+        assert client.get("/api/auth/me").status_code == 200
+        assert client.get(f"/auth/feishu/browser-complete?ticket={ticket}").status_code == 400
+
+
+def test_workplace_handoff_rejects_account_switch_and_expiry(monkeypatch):
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))
+    monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "own-tenant")
+    with TestClient(api, base_url=PUBLIC, follow_redirects=False) as client:
+        client.cookies.set("pudu_feishu", feishu_auth.create_session("ou_existing", "own-tenant"))
+        ticket = feishu_auth.create_workplace_ticket("ou_other", "own-tenant", {})
+        assert client.get(f"/auth/feishu/browser-complete?ticket={ticket}").status_code == 409
+    monkeypatch.setattr(feishu_auth.time, "time", lambda: 1_800_000_000)
+    ticket = feishu_auth.create_workplace_ticket("ou_user", "own-tenant", {})
+    monkeypatch.setattr(feishu_auth.time, "time", lambda: 1_800_000_091)
+    assert feishu_auth.consume_workplace_ticket(ticket) is None
+
+
 def test_oauth_reuses_app_token_until_expiry(monkeypatch):
     calls = []
     monkeypatch.setattr(feishu_auth, "credentials", lambda: ("app", "secret"))

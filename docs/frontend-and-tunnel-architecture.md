@@ -108,6 +108,20 @@ https://pudu-material-operations.gaohongyuan.me/api/health
 
 ## 4. FastAPI 与本机 Web Runner
 
+### 飞书工作台桌面端入口
+
+飞书工作台「桌面端主页」应使用当前应用的工作台免登入口：
+
+```text
+https://pudu-material-operations.gaohongyuan.me/auth/feishu/workplace-start
+```
+
+桌面端保持「从主页跳转至新页面时在浏览器中打开」。应用在飞书客户端内
+取得预授权码、校验企业身份，再通过一次性短时票据打开外部浏览器并写入
+30 天会话 Cookie。无需新增安全设置中的回调 URL。移动端主页保持正式域名
+直达链接，不要误改。工作台主页变更需在飞书开放平台保存并按要求发布。
+旧域名 `material.gaohongyuan.me` 的 Cookie 与正式域名不共享，不应再用于工作台入口。
+
 正式 Web 运行副本位于：
 
 ```text

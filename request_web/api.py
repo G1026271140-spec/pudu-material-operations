@@ -399,6 +399,17 @@ def feishu_login_start(next: str = "/") -> RedirectResponse:
     return response
 
 
+@api.get("/auth/feishu/workplace-start")
+def feishu_workplace_start() -> RedirectResponse:
+    """Authenticate inside Feishu before handing a session to the browser."""
+    from request_web import feishu_auth
+
+    state = feishu_auth.new_state(feishu_auth.WORKPLACE_RETURN_PATH)
+    response = RedirectResponse(feishu_auth.workplace_authorization_url(state), status_code=303)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @api.get("/auth/feishu/callback")
 def feishu_login_callback(request: Request, code: str = "", state: str = "") -> Response:
     from request_web import feishu_auth
@@ -414,9 +425,48 @@ def feishu_login_callback(request: Request, code: str = "", state: str = "") -> 
         raise
     except Exception as exc:
         raise HTTPException(status_code=502, detail="飞书登录暂时失败，请稍后重试。") from exc
+    if target == feishu_auth.WORKPLACE_RETURN_PATH:
+        from html import escape
+
+        ticket = feishu_auth.create_workplace_ticket(open_id, tenant_key, profile)
+        destination = f"{feishu_auth.public_origin()}/auth/feishu/browser-complete?" + parse.urlencode(
+            {"ticket": ticket, "lk_jump_to_browser": "true"}
+        )
+        html = (
+            '<!doctype html><html lang="zh-CN"><meta charset="utf-8">'
+            '<meta name="referrer" content="no-referrer">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>正在打开应用</title><body>'
+            '<p>正在浏览器中打开营销物料管理系统…</p>'
+            f'<a href="{escape(destination, quote=True)}">如未自动打开，请点击此处</a>'
+            f'<script>location.replace({json.dumps(destination)});</script>'
+            '</body></html>'
+        )
+        return HTMLResponse(html, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
     response = RedirectResponse(target, status_code=303)
     response.set_cookie("pudu_feishu", feishu_auth.create_session(open_id, tenant_key, **profile), max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax")
     response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/browser-complete")
+def feishu_browser_complete(request: Request, ticket: str = "") -> RedirectResponse:
+    from request_web import feishu_auth
+
+    identity = feishu_auth.consume_workplace_ticket(ticket)
+    if identity is None:
+        raise HTTPException(status_code=400, detail="工作台登录已过期，请从飞书工作台重新打开。")
+    open_id, tenant_key, profile = identity
+    existing = feishu_auth.session_identity(request.cookies.get("pudu_feishu", ""), tenant_key)
+    if existing is not None and existing["open_id"] != open_id:
+        raise HTTPException(status_code=409, detail="浏览器已登录其他飞书用户，请先退出后重试。")
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie(
+        "pudu_feishu", feishu_auth.create_session(open_id, tenant_key, **profile),
+        max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax",
+    )
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
     return response
 
 

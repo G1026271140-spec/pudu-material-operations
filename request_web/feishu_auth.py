@@ -28,6 +28,10 @@ SESSION_SECONDS = 30 * 24 * 3600
 STATE_SECONDS = 10 * 60
 _pending_states: dict[str, tuple[str, int]] = {}
 _state_lock = threading.Lock()
+WORKPLACE_TICKET_SECONDS = 90
+WORKPLACE_RETURN_PATH = "/auth/feishu/workplace-handoff"
+_workplace_tickets: dict[str, tuple[str, str, dict[str, str], int]] = {}
+_ticket_lock = threading.Lock()
 
 
 @lru_cache(maxsize=1)
@@ -52,6 +56,36 @@ def public_origin() -> str:
 
 def callback_url() -> str:
     return f"{public_origin()}/auth/feishu/callback"
+
+
+def workplace_authorization_url(state: str) -> str:
+    app_id, _ = credentials()
+    return "https://open.feishu.cn/open-apis/authen/v1/index?" + parse.urlencode(
+        {"app_id": app_id, "redirect_uri": callback_url(), "state": state}
+    )
+
+
+def create_workplace_ticket(open_id: str, tenant_key: str, profile: dict[str, str]) -> str:
+    ticket = secrets.token_urlsafe(32)
+    expires = int(time.time()) + WORKPLACE_TICKET_SECONDS
+    with _ticket_lock:
+        for old, data in list(_workplace_tickets.items()):
+            if data[3] <= time.time():
+                _workplace_tickets.pop(old, None)
+        if len(_workplace_tickets) >= 10000:
+            _workplace_tickets.pop(next(iter(_workplace_tickets)))
+        _workplace_tickets[ticket] = (open_id, tenant_key, profile, expires)
+    return ticket
+
+
+def consume_workplace_ticket(ticket: str) -> tuple[str, str, dict[str, str]] | None:
+    if not ticket or len(ticket) > 128:
+        return None
+    with _ticket_lock:
+        payload = _workplace_tickets.pop(ticket, None)
+    if payload is None or payload[3] <= time.time():
+        return None
+    return payload[:3]
 
 
 def is_public_host(host: str) -> bool:
