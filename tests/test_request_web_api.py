@@ -1008,7 +1008,7 @@ def test_pending_allocation_summary_needs_only_request_rows():
     assert summaries[0]["lineCount"] == 2
 
 
-def test_pending_allocation_returns_snapshot_before_live_refresh(monkeypatch):
+def test_pending_allocation_reads_sqlite_without_starting_live_refresh(monkeypatch):
     client = admin_client(monkeypatch)
     row = {"record_id": "req-1", "fields": {
         "申请单号": "REQ-1", "申请类型": "普通物料申请", "审批状态": "待审批",
@@ -1018,15 +1018,17 @@ def test_pending_allocation_returns_snapshot_before_live_refresh(monkeypatch):
         "last_attempt": 0.0, "refreshing": False, "last_error": "",
     })
     monkeypatch.setattr(pending_inventory_sqlite, "list_pending", lambda: [(row, 1, "2026-10-16")])
-    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_EXECUTOR", SimpleNamespace(submit=lambda _fn: None))
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_EXECUTOR", SimpleNamespace(
+        submit=lambda _fn: (_ for _ in ()).throw(AssertionError("page read started live refresh"))
+    ))
     monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [])
 
-    response = client.get("/api/admin/allocation/pending")
+    response = client.get("/api/admin/allocation/pending?refresh=true")
 
     assert response.status_code == 200
     assert response.json()["requests"][0]["requestNo"] == "REQ-1"
     assert response.json()["source"] == "sqlite"
-    assert response.json()["refreshing"] is True
+    assert response.json()["refreshing"] is False
 
 
 def test_pending_allocation_refresh_failure_keeps_last_snapshot(monkeypatch):
@@ -1065,6 +1067,30 @@ def test_pending_allocation_retries_feishu_data_not_ready(monkeypatch):
     assert delays == [8, 20]
     assert web_api._PENDING_ALLOCATION_CACHE["last_error"] == ""
     assert web_api._PENDING_ALLOCATION_CACHE["refreshing"] is False
+
+
+def test_pending_reconciliation_runs_only_on_background_schedule(monkeypatch):
+    waits = []
+    refreshed = []
+
+    class StopAfterOneRun:
+        def wait(self, seconds):
+            waits.append(seconds)
+            return len(waits) == 2
+
+        def is_set(self):
+            return False
+
+    monkeypatch.setattr(web_api, "_PENDING_RECONCILE_STOP", StopAfterOneRun())
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_CACHE", {
+        "last_attempt": 0.0, "refreshing": False, "last_error": "",
+    })
+    monkeypatch.setattr(web_api, "_refresh_pending_allocation", lambda: refreshed.append(True))
+
+    web_api._pending_reconcile_loop()
+
+    assert waits == [30, 900]
+    assert refreshed == [True]
 
 
 def test_json_cache_updates_when_published_file_changes(tmp_path, monkeypatch):

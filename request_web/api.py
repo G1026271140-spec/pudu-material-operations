@@ -10,7 +10,7 @@ import threading
 import time
 import tomllib
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -353,7 +353,16 @@ class CorporateApparelDraft(BaseModel):
     lines: list[CorporateApparelLine]
 
 
-api = FastAPI(title="PUDU Material Operations - Request API")
+@asynccontextmanager
+async def _pending_inventory_lifespan(_app: FastAPI):
+    start_pending_reconciliation()
+    try:
+        yield
+    finally:
+        stop_pending_reconciliation()
+
+
+api = FastAPI(title="PUDU Material Operations - Request API", lifespan=_pending_inventory_lifespan)
 api.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -588,6 +597,8 @@ _PENDING_ALLOCATION_CACHE: dict[str, Any] = {
 }
 _PENDING_ALLOCATION_LOCK = threading.Lock()
 _PENDING_ALLOCATION_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="pending-allocation")
+_PENDING_RECONCILE_STOP = threading.Event()
+_PENDING_RECONCILE_THREAD: threading.Thread | None = None
 _CORPORATE_APPAREL_STOCK_TTL_SECONDS = 30
 _CORPORATE_APPAREL_STOCK_LOCK = threading.Lock()
 _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": None}
@@ -938,6 +949,36 @@ def _refresh_pending_allocation() -> None:
             _PENDING_ALLOCATION_CACHE["refreshing"] = False
 
 
+def _pending_reconcile_loop() -> None:
+    # Incremental Worker/webhook writes keep SQLite current. A slow full Base
+    # scan is only a background safety net, never part of opening the page.
+    if _PENDING_RECONCILE_STOP.wait(30):
+        return
+    while not _PENDING_RECONCILE_STOP.is_set():
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE.update(refreshing=True, last_attempt=time.monotonic())
+        _refresh_pending_allocation()
+        if _PENDING_RECONCILE_STOP.wait(900):
+            return
+
+
+def start_pending_reconciliation() -> None:
+    global _PENDING_RECONCILE_THREAD
+    if _PENDING_RECONCILE_THREAD and _PENDING_RECONCILE_THREAD.is_alive():
+        return
+    _PENDING_RECONCILE_STOP.clear()
+    _PENDING_RECONCILE_THREAD = threading.Thread(
+        target=_pending_reconcile_loop, name="pending-inventory-reconcile", daemon=True,
+    )
+    _PENDING_RECONCILE_THREAD.start()
+
+
+def stop_pending_reconciliation() -> None:
+    _PENDING_RECONCILE_STOP.set()
+    if _PENDING_RECONCILE_THREAD:
+        _PENDING_RECONCILE_THREAD.join(timeout=1)
+
+
 @api.get("/api/admin/allocation/pending")
 def allocation_pending(
     refresh: bool = False, _: str = Depends(require_admin)
@@ -951,15 +992,6 @@ def allocation_pending(
     for summary in summaries:
         summary["lineCount"] = line_counts.get(str(summary.get("requestId") or ""), 0)
     with _PENDING_ALLOCATION_LOCK:
-        now = time.monotonic()
-        should_refresh = (
-            not _PENDING_ALLOCATION_CACHE["refreshing"]
-            and (refresh or now - float(_PENDING_ALLOCATION_CACHE["last_attempt"] or 0) > 3600)
-            and (refresh or now - float(_PENDING_ALLOCATION_CACHE["last_attempt"] or 0) > 60)
-        )
-        if should_refresh:
-            _PENDING_ALLOCATION_CACHE.update(refreshing=True, last_attempt=now, last_error="")
-            _PENDING_ALLOCATION_EXECUTOR.submit(_refresh_pending_allocation)
         snapshot = {
             "requests": summaries,
             "source": "sqlite",
