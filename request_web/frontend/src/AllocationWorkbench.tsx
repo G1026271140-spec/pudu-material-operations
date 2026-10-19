@@ -50,15 +50,6 @@ function writePendingSessionCache(cache: PendingSessionCache) {
   }
 }
 
-function removePendingRequestFromSessionCache(requestId: string) {
-  const cached = readPendingSessionCache();
-  if (!cached) return;
-  writePendingSessionCache({
-    ...cached,
-    requests: cached.requests.filter(item => item.requestId !== requestId),
-  });
-}
-
 async function jsonFetch(url: string, options?: RequestInit) {
   const response = await fetch(url, options);
   const body = await response.json();
@@ -74,6 +65,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [operatorId, setOperatorId] = useState(operator);
   const [context, setContext] = useState<any>(null);
   const [rows, setRows] = useState<any[]>([]);
+  const [splitIndex, setSplitIndex] = useState<number | null>(null);
+  const [splitQuantities, setSplitQuantities] = useState<Record<string, number>>({});
   const [shipDate, setShipDate] = useState("");
   const [changeNote, setChangeNote] = useState("");
   const [ack, setAck] = useState(false);
@@ -231,6 +224,57 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     setRows([...rows, { uid: crypto.randomUUID(), line_record_id: "", material_record_id: first.record_id, category: first.category, model: first.model, language: first.language, quantity: 1, remark: "", order_required: defaultOrderRequired(first, 1) }]);
   }
 
+  function openSplit(index: number) {
+    const row = rows[index];
+    if (!row?.line_record_id) return;
+    const original = (context?.lines || []).find((line: any) => line.record_id === row.line_record_id);
+    setSplitIndex(index);
+    setSplitQuantities({ [row.material_record_id]: Math.max(1, Number(original?.quantity || row.quantity || 1)) });
+  }
+
+  function toggleSplitMaterial(materialId: string) {
+    const next = { ...splitQuantities };
+    if (materialId in next) delete next[materialId];
+    else next[materialId] = 1;
+    const selected = Object.keys(next);
+    const source = splitIndex === null ? null : rows[splitIndex];
+    const original = (context?.lines || []).find((line: any) => line.record_id === source?.line_record_id);
+    const total = Math.max(1, Number(original?.quantity || source?.quantity || 1));
+    selected.forEach((id, index) => {
+      next[id] = Math.max(1, Math.floor(total / selected.length) + (index < total % selected.length ? 1 : 0));
+    });
+    setSplitQuantities(next);
+  }
+
+  function applySplit() {
+    if (splitIndex === null) return;
+    const selected = Object.entries(splitQuantities).filter(([, quantity]) => Number(quantity) > 0);
+    if (selected.length < 2) return setError(tr("请至少选择两种型号或语种组合。", "Select at least two model/language combinations."));
+    const source = rows[splitIndex];
+    if (selected.some(([id]) => rows.some((row, index) => index !== splitIndex && row.material_record_id === id))) {
+      return setError(tr("方案中已有相同物料，请先合并数量。", "The plan already contains one of the selected materials."));
+    }
+    const splitRows = selected.map(([id, quantity]) => {
+      const material = materialById[id];
+      return {
+        uid: crypto.randomUUID(),
+        line_record_id: id === source.material_record_id ? source.line_record_id : "",
+        split_source_line_id: source.line_record_id,
+        material_record_id: id,
+        category: material.category,
+        model: material.model,
+        language: material.language,
+        quantity: Number(quantity),
+        remark: source.remark,
+        order_required: defaultOrderRequired(material, Number(quantity)),
+      };
+    });
+    setRows([...rows.slice(0, splitIndex), ...splitRows, ...rows.slice(splitIndex + 1)]);
+    setSplitIndex(null);
+    setSplitQuantities({});
+    setError("");
+  }
+
   function validate(mode: "confirm" | "edit") {
     if (!context?.verifiedLive) return tr("尚未完成实时核对，不能提交。请先重试实时读取。", "Live verification is required before submission.");
     if (!shipDate) return tr("请选择申请单发货日期。", "Select a shipping date.");
@@ -257,7 +301,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     if (mode === "edit") {
       draft.change_note = changeNote.trim();
       draft.before_lines = (context.lines || []).map((x: any) => ({ record_id: x.record_id || "", material_record_id: x.material_record_id || "", product: x.product || "", model: x.model || "", language: x.language || "", quantity: Number(x.quantity || 0), remark: x.remark || "", unit_price_rmb: Number(x.unit_price_rmb || 0), subtotal_rmb: Number(x.subtotal_rmb || 0) }));
-      draft.lines = rows.map(x => ({ line_record_id: x.line_record_id, material_record_id: x.material_record_id, quantity: Number(x.quantity), remark: x.remark || "", order_required: x.order_required === true }));
+      draft.lines = rows.map(x => ({ line_record_id: x.line_record_id, split_source_line_id: x.split_source_line_id || "", material_record_id: x.material_record_id, quantity: Number(x.quantity), remark: x.remark || "", order_required: x.order_required === true }));
     }
     return draft;
   }
@@ -303,8 +347,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
       setSuccess(`${tr("配货任务已进入后台队列", "Allocation task queued")}（${body.taskId}）`);
-      removePendingRequestFromSessionCache(requestId);
-      setPending(current => current.filter(item => item.requestId !== requestId));
+      // Queue acceptance is not inventory-review completion. Keep the request
+      // visible until the Worker confirms the write and SQLite removes it.
       setConfirmMode("");
       setOrderPreview(null);
     } catch (e) { setError(e instanceof Error ? e.message : "提交失败"); }
@@ -320,6 +364,12 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   </main>;
 
   const request = context.request;
+  const splitSource = splitIndex === null ? null : rows[splitIndex];
+  const splitOriginal = (context.lines || []).find((line: any) => line.record_id === splitSource?.line_record_id);
+  const splitBaseQuantity = Math.max(1, Number(splitOriginal?.quantity || splitSource?.quantity || 1));
+  const splitOptions = materials.filter((item: any) => item.category === splitSource?.category);
+  const splitModels = unique(splitOptions.map((item: any) => item.model));
+  const splitTotal = Object.values(splitQuantities).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
   return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
     <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("调整本次申请的配货方案", "Adjust the allocation plan for this request")}</p></div>{!directRequestId && <button onClick={() => { contextLoadRef.current += 1; setRequestId(""); setContext(null); loadPending(); }}>← {tr("返回申请单列表", "Back to requests")}</button>}</header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
@@ -340,7 +390,24 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
           const languages = unique(materials.filter((x: any) => x.category === row.category && x.model === row.model).map((x: any) => x.language));
           const material = materialById[row.material_record_id] || {};
           const canOrder = isPrintMaterial(material);
-          return <article key={row.uid}><div className="line-index">{String(index + 1).padStart(2, "0")}</div><div className="line-fields"><label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label><label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => { const quantity = Math.max(1, Number(e.target.value)); setRows(rows.map((x, i) => i === index ? {...x, quantity, order_required: canOrder ? x.order_required : false} : x)); }}/></label><label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: canOrder && e.target.value === "yes"} : x))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label><label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label></div><div className="stock-info"><span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span><span>{tr("在途库存", "In Transit")}<b>{Number(material.in_transit_quantity || 0)}</b></span><span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span><button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button></div></article>;
+          return <article key={row.uid}>
+            <div className="line-index">{String(index + 1).padStart(2, "0")}</div>
+            <div className="line-fields">
+              <label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label>
+              <label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label>
+              <label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label>
+              <label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => { const quantity = Math.max(1, Number(e.target.value)); setRows(rows.map((x, i) => i === index ? {...x, quantity, order_required: canOrder ? x.order_required : false} : x)); }}/></label>
+              <label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: canOrder && e.target.value === "yes"} : x))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label>
+              <label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label>
+            </div>
+            <div className="stock-info">
+              <span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span>
+              <span>{tr("在途库存", "In Transit")}<b>{Number(material.in_transit_quantity || 0)}</b></span>
+              <span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span>
+              {row.line_record_id && <button className="split-line-button" onClick={() => openSplit(index)}>{tr("分装", "Split")}</button>}
+              <button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button>
+            </div>
+          </article>;
         })}</div>
         <button className="add-allocation-line" onClick={addRow}>＋ {tr("新增明细", "Add Line")}</button>
         <div className="amount-comparison"><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span><span>{tr("当前配货总金额", "Allocation Total")}<b>{money(currentTotal)}</b><em className={currentTotal - originalTotal < 0 ? "negative" : ""}>{currentTotal - originalTotal >= 0 ? "+" : ""}{money(currentTotal - originalTotal)}</em></span></div>
@@ -350,6 +417,30 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       </section>
       </fieldset>
     </>}
+    {splitSource && <div className="allocation-modal-backdrop" onMouseDown={() => setSplitIndex(null)}>
+      <div className="allocation-modal split-modal" role="dialog" aria-modal="true" aria-label={tr("分装申请明细", "Split request line")} onMouseDown={event => event.stopPropagation()}>
+        <button className="close" aria-label={tr("关闭", "Close")} onClick={() => setSplitIndex(null)}>×</button>
+        <h2>{tr("分装申请明细", "Split Request Line")}</h2>
+        <p className="split-intro">{splitSource.category}：{splitSource.model} / {splitSource.language}，{tr("原申请", "Originally requested")} {splitBaseQuantity} {tr("件", "items")}</p>
+        <p className="split-hint">{tr("按型号展开语种并勾选组合。勾选时按原申请数量均分；数量或占原申请比例可单独修改，最终总数可以增减。", "Expand a model and select language combinations. Selection divides the original quantity evenly; edit quantity or percentage independently. The final total may change.")}</p>
+        <div className="split-options">
+          {splitModels.map(model => <details key={model} open>
+            <summary>{model}</summary>
+            {splitOptions.filter((item: any) => item.model === model).map((item: any) => {
+              const checked = item.record_id in splitQuantities;
+              const quantity = splitQuantities[item.record_id] || 0;
+              return <div className="split-option" key={item.record_id}>
+                <label className="split-option-check"><input type="checkbox" checked={checked} onChange={() => toggleSplitMaterial(item.record_id)}/><span>{item.language}</span></label>
+                <label>{tr("数量", "Quantity")}<input type="number" min="1" disabled={!checked} value={checked ? quantity : ""} onChange={event => setSplitQuantities(current => ({ ...current, [item.record_id]: Math.max(1, Math.floor(Number(event.target.value) || 1)) }))}/></label>
+                <label>{tr("占原申请比例", "% of original")}<input type="number" min="0" step="0.1" disabled={!checked} value={checked ? Number((quantity / splitBaseQuantity * 100).toFixed(1)) : ""} onChange={event => setSplitQuantities(current => ({ ...current, [item.record_id]: Math.max(1, Math.round(splitBaseQuantity * (Number(event.target.value) || 0) / 100)) }))}/></label>
+              </div>;
+            })}
+          </details>)}
+        </div>
+        <div className="split-totals"><span>{tr("原申请", "Original")}: <b>{splitBaseQuantity}</b></span><span>{tr("分装后", "After split")}: <b>{splitTotal}</b></span><span>{tr("差额", "Difference")}: <b>{splitTotal - splitBaseQuantity > 0 ? "+" : ""}{splitTotal - splitBaseQuantity}</b></span></div>
+        <div className="modal-actions"><button onClick={() => setSplitIndex(null)}>{tr("取消", "Cancel")}</button><button className="primary" onClick={applySplit}>{tr("应用分装", "Apply Split")}</button></div>
+      </div>
+    </div>}
     {confirmMode && orderPreview && <div className="allocation-modal-backdrop" onMouseDown={() => { setConfirmMode(""); setOrderPreview(null); }}><div className="allocation-modal order-confirm-modal" onMouseDown={e => e.stopPropagation()}><button className="close" onClick={() => { setConfirmMode(""); setOrderPreview(null); }}>×</button><h2>{tr("确认配货与下单信息", "Confirm Allocation and Order")}</h2><p><b>{request.request_no}</b> · {request.requester} · {shipDate}</p><div className="modal-summary"><span>{tr("配货明细", "Allocation Lines")}<b>{confirmMode === "confirm" ? context.lines.length : rows.length}</b></span><span>{tr("需要下单", "Order Lines")}<b>{orderPreview.lineCount}</b></span><span>{tr("下单总数量", "Order Quantity")}<b>{orderPreview.totalQuantity}</b></span></div><div className="order-confirm-section"><h3>{tr("需要下单的印刷物料汇总", "Printed Materials to Order")}</h3>{orderPreview.lines.length ? <div className="order-confirm-table-wrap"><table className="order-confirm-table"><thead><tr><th>{tr("类型", "Type")}</th><th>{tr("物料名称", "Material")}</th><th>{tr("语种", "Language")}</th><th>{tr("数量", "Quantity")}</th><th>{tr("用途", "Purpose")}</th></tr></thead><tbody>{orderPreview.lines.map((line: any, index: number) => <tr key={`${line.category}-${line.model}-${line.language}-${index}`}><td>{line.category}</td><td>{line.model}</td><td>{line.language}</td><td>{line.quantity}</td><td>{line.usage || "-"}</td></tr>)}</tbody></table></div> : <div className="order-confirm-empty">{tr("本次配货没有需要下单的印刷物料，不会生成下单表。", "No printed materials require ordering; no order workbook will be generated.")}</div>}</div>{confirmMode === "edit" && <p className="note-preview">{changeNote}</p>}<p className="order-confirm-hint">{orderPreview.workbookAvailable ? tr("再次确认后，配货任务将写入后台队列，并立即下载物料下单表。", "Final confirmation queues the allocation and downloads the order workbook.") : tr("再次确认后，配货任务将写入后台队列。", "Final confirmation queues the allocation.")}</p><div className="modal-actions"><button onClick={() => { setConfirmMode(""); setOrderPreview(null); }}>{tr("返回修改", "Back")}</button><button className="primary" onClick={submit}>{orderPreview.workbookAvailable ? tr("确认写入并下载下单表", "Confirm and Download") : tr("确认写入配货方案", "Confirm Allocation")}</button></div></div></div>}
     {(previewing || submitting) && <div className="allocation-submit-overlay"><i/><b>{previewing ? tr("正在汇总下单信息……", "Preparing order summary…") : tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{previewing ? tr("正在核对实时申请明细与下单表模板", "Checking live lines and the order template") : tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
   </main>;

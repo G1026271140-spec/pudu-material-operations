@@ -7,7 +7,7 @@ import app
 
 class AdminAccessTests(unittest.TestCase):
     def test_application_version_is_shown_in_sidebar(self) -> None:
-        self.assertEqual(app.APP_VERSION, "V3.2.8")
+        self.assertEqual(app.APP_VERSION, "V3.2.9")
 
     def test_runtime_health_checks_use_fastapi_endpoint(self):
         root = Path(__file__).resolve().parents[1]

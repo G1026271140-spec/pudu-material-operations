@@ -169,14 +169,10 @@ class FeishuCardWorkerTests(unittest.TestCase):
             idempotency_key="request-inventory-card-confirm:request-1:2:",
         )
 
-    def test_inventory_reject_deletes_request_and_updates_card(self) -> None:
-        client = Mock()
-        result = {"request_no": "REQ-1", "requester": "销售甲", "rejected": True}
+    def test_inventory_reject_stages_background_task(self) -> None:
         with (
             patch.object(worker.inventory_app, "enabled_admin_open_ids", return_value=["ou-admin"]),
-            patch.object(worker.inventory_app, "execute_request_inventory_reject", return_value=result) as reject,
-            patch.object(worker.inventory_app, "feishu_client", return_value=client),
-            patch.object(worker.inventory_app, "material_request_rejection_card", return_value={"schema": "2.0"}) as card,
+            patch.object(worker.inventory_app, "enqueue_feishu_background_write") as enqueue,
         ):
             worker.process_card_action_async(
                 action_key="reject_request_inventory",
@@ -187,15 +183,15 @@ class FeishuCardWorkerTests(unittest.TestCase):
                 message_id="om-card-1",
             )
 
-        reject.assert_called_once_with(
-            {
+        enqueue.assert_called_once_with(
+            worker.inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+            {"draft": {
                 "request_id": "request-1",
                 "expected_version": 2,
                 "operator_open_id": "ou-admin",
-            }
+            }, "message_id": "om-card-1"},
+            idempotency_key="request-inventory-card-reject:request-1:2",
         )
-        card.assert_called_once_with("REQ-1", "销售甲")
-        client.update_interactive_message.assert_called_once_with("om-card-1", {"schema": "2.0"})
 
     def test_inventory_reject_callback_is_supported(self) -> None:
         thread = Mock()

@@ -369,7 +369,8 @@ async def feishu_enterprise_gate(request: Request, call_next):
 
     path = request.url.path
     if path in {"/api/health", "/favicon.ico"} or path.startswith("/auth/feishu/") or path in {
-        "/api/corporate-exchange-sync", "/api/corporate-exchange-sync/status"
+        "/api/corporate-exchange-sync", "/api/corporate-exchange-sync/status",
+        "/api/pending-inventory-sync",
     }:
         return await call_next(request)
     # Only the in-process test client bypasses the gate. Host headers or
@@ -489,6 +490,18 @@ def current_feishu_user(request: Request) -> JSONResponse:
     return JSONResponse(body, headers={"Cache-Control": "no-store"})
 
 
+def _authenticated_submitter(request: Request) -> tuple[str, str]:
+    """The submitter is always the signed-in Feishu identity, never form data."""
+    from request_web import feishu_auth
+
+    identity = feishu_auth.session_identity(
+        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+    )
+    if not identity or not str(identity.get("open_id") or "").strip():
+        raise HTTPException(status_code=401, detail="请先通过飞书登录后提交申请。")
+    return str(identity.get("name") or "飞书用户"), str(identity["open_id"])
+
+
 @api.get("/favicon.ico")
 def favicon() -> FileResponse:
     return _asset_file("app-icon.ico")
@@ -521,12 +534,10 @@ def category_asset(filename: str) -> FileResponse:
 def app_asset(filename: str) -> FileResponse:
     return _asset_file(filename)
 _PENDING_ALLOCATION_CACHE: dict[str, Any] = {
-    "loaded_at": 0.0, "last_attempt": 0.0, "summaries": None,
-    "updated_at": "", "source": "", "refreshing": False,
-    "last_error": "", "contexts": {},
+    "last_attempt": 0.0, "refreshing": False, "last_error": "",
 }
 _PENDING_ALLOCATION_LOCK = threading.Lock()
-_PENDING_ALLOCATION_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pending-allocation")
+_PENDING_ALLOCATION_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="pending-allocation")
 _CORPORATE_APPAREL_STOCK_TTL_SECONDS = 30
 _CORPORATE_APPAREL_STOCK_LOCK = threading.Lock()
 _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": None}
@@ -841,20 +852,16 @@ def _allocation_operators(legacy: Any) -> list[dict[str, Any]]:
 
 
 def _refresh_pending_allocation() -> None:
-    import app as legacy
+    from pending_inventory_sqlite import reconcile_live
 
     try:
-        summaries = legacy.pending_inventory_review_summaries()
+        reconcile_live()
         with _PENDING_ALLOCATION_LOCK:
-            _PENDING_ALLOCATION_CACHE.update(
-                summaries=summaries, loaded_at=time.monotonic(),
-                updated_at=legacy.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                source="live", last_error="", contexts={},
-            )
+            _PENDING_ALLOCATION_CACHE["last_error"] = ""
     except Exception as exc:
         logging.warning("Refreshing pending allocation list failed: %s", exc)
         with _PENDING_ALLOCATION_LOCK:
-            _PENDING_ALLOCATION_CACHE["last_error"] = "飞书实时申请单暂不可用；当前显示最近缓存。"
+            _PENDING_ALLOCATION_CACHE["last_error"] = "飞书实时核对暂不可用；当前显示本机未核实申请单。"
     finally:
         with _PENDING_ALLOCATION_LOCK:
             _PENDING_ALLOCATION_CACHE["refreshing"] = False
@@ -865,30 +872,27 @@ def allocation_pending(
     refresh: bool = False, _: str = Depends(require_admin)
 ) -> dict[str, Any]:
     import app as legacy
+    from pending_inventory_sqlite import list_pending
 
+    local_rows = list_pending()
+    summaries = legacy.pending_inventory_review_summaries([row for row, _, _ in local_rows])
+    line_counts = {legacy.feishu_record_id(row): count for row, count, _ in local_rows}
+    for summary in summaries:
+        summary["lineCount"] = line_counts.get(str(summary.get("requestId") or ""), 0)
     with _PENDING_ALLOCATION_LOCK:
-        if _PENDING_ALLOCATION_CACHE["summaries"] is None:
-            page = _json("page_data_cache.json")
-            _PENDING_ALLOCATION_CACHE.update(
-                summaries=legacy.pending_inventory_review_summaries(
-                    list(page.get("tables", {}).get(legacy.REQUEST_TABLE_NAME, []))
-                ),
-                updated_at=str(page.get("generated_at") or ""),
-                source="published",
-            )
         now = time.monotonic()
         should_refresh = (
             not _PENDING_ALLOCATION_CACHE["refreshing"]
-            and (refresh or now - float(_PENDING_ALLOCATION_CACHE["loaded_at"] or 0) > 90)
+            and (refresh or now - float(_PENDING_ALLOCATION_CACHE["last_attempt"] or 0) > 3600)
             and (refresh or now - float(_PENDING_ALLOCATION_CACHE["last_attempt"] or 0) > 60)
         )
         if should_refresh:
             _PENDING_ALLOCATION_CACHE.update(refreshing=True, last_attempt=now, last_error="")
             _PENDING_ALLOCATION_EXECUTOR.submit(_refresh_pending_allocation)
         snapshot = {
-            "requests": list(_PENDING_ALLOCATION_CACHE["summaries"] or []),
-            "source": _PENDING_ALLOCATION_CACHE["source"],
-            "updatedAt": _PENDING_ALLOCATION_CACHE["updated_at"],
+            "requests": summaries,
+            "source": "sqlite",
+            "updatedAt": max((updated for _, _, updated in local_rows), default=""),
             "refreshing": bool(_PENDING_ALLOCATION_CACHE["refreshing"]),
             "refreshError": _PENDING_ALLOCATION_CACHE["last_error"],
         }
@@ -909,21 +913,20 @@ def allocation_context(
     signed_operator = _allocation_actor(request, request_id, operator, review_token)
     try:
         if snapshot:
+            from pending_inventory_sqlite import get as get_pending_request
+
+            local = get_pending_request(request_id)
+            if local is None:
+                raise HTTPException(status_code=404, detail="本机未核实申请单中没有该记录，正在尝试实时读取。")
+            request_row, line_rows = local
             page = _json("page_data_cache.json")
             tables = page.get("tables", {})
-            request_row = next(
-                (row for row in tables.get(legacy.REQUEST_TABLE_NAME, [])
-                 if legacy.feishu_record_id(row) == request_id),
-                None,
-            )
-            if request_row is None:
-                raise HTTPException(status_code=404, detail="本地快照中尚无该申请单，正在尝试实时读取。")
             context = legacy.request_inventory_review_context_from_rows(
                 request_row,
                 list(tables.get(legacy.MATERIAL_TABLE_NAME, [])),
                 list(tables.get(legacy.CATEGORY_TABLE_NAME, [])),
-                list(tables.get(legacy.REQUEST_LINE_TABLE_NAME, [])),
-                snapshot_at=str(page.get("generated_at") or ""),
+                line_rows,
+                snapshot_at="本机未核实申请单",
             )
         else:
             context = legacy.request_inventory_review_context(request_id=request_id)
@@ -1179,10 +1182,24 @@ def allocation_submit(
         f"request-inventory-{operation}:{request_id}:{version}:"
         f"{hashlib.sha256(serialized_lines.encode('utf-8')).hexdigest()}:{draft.get('ship_date')}"
     )
+    from pending_inventory_sqlite import stage_action, mark_action
+
+    try:
+        stage_action(idempotency, request_id, operation, draft)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"配货方案未能保存到本机：{exc}") from exc
     try:
         task_id = _enqueue_fast(task_type, idempotency, {"draft": draft})
     except Exception as exc:
+        try:
+            mark_action(idempotency, "failed", error=str(exc))
+        except Exception:
+            logging.exception("Could not mark staged allocation %s as failed", idempotency)
         raise HTTPException(status_code=503, detail=f"配货任务未能进入后台队列：{exc}") from exc
+    try:
+        mark_action(idempotency, "queued", task_id=task_id)
+    except Exception:
+        logging.exception("Allocation %s entered the queue but SQLite status update failed", idempotency)
     return {"accepted": True, "taskId": task_id}
 
 
@@ -1603,8 +1620,9 @@ def validate(draft: RequestDraft) -> dict[str, Any]:
 
 
 @api.post("/api/submit")
-def submit(draft: RequestDraft) -> dict[str, Any]:
+def submit(draft: RequestDraft, request: Request) -> dict[str, Any]:
     payload, lines, errors = _validate(draft, live=False)
+    payload["submitter"], payload["submitter_open_id"] = _authenticated_submitter(request)
     import order_scheduling as scheduling_rules
 
     payload["request_reason"] = scheduling_rules.normalize_reason(
@@ -1653,6 +1671,8 @@ def submit(draft: RequestDraft) -> dict[str, Any]:
             cultural_payload = {
                 "requester": payload.get("requester"),
                 "requester_open_id": payload.get("requester_open_id"),
+                "submitter": payload.get("submitter"),
+                "submitter_open_id": payload.get("submitter_open_id"),
                 "department": payload.get("department"),
                 "department_id": payload.get("department_id"),
                 "material_usage": payload.get("material_usage"),
@@ -1680,7 +1700,7 @@ def submit(draft: RequestDraft) -> dict[str, Any]:
 
 
 @api.post("/api/cultural-submit")
-def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
+def cultural_submit(draft: CulturalDraft, request: Request) -> dict[str, Any]:
     if not draft.requester_open_id or not draft.requester:
         raise HTTPException(status_code=422, detail="请选择申请人。")
     if not draft.material_usage.strip():
@@ -1693,6 +1713,7 @@ def cultural_submit(draft: CulturalDraft) -> dict[str, Any]:
         from submission_queue import QUEUE_TASK_TYPE_CULTURAL_REQUEST
 
         request_payload = {key: value for key, value in draft.model_dump().items() if key != "lines"}
+        request_payload["submitter"], request_payload["submitter_open_id"] = _authenticated_submitter(request)
         request_payload["material_usage"] = draft.material_usage.strip()
         task_id = _enqueue_fast(QUEUE_TASK_TYPE_CULTURAL_REQUEST, draft.submission_token, legacy.queued_cultural_request_payload(request_payload, lines))
     except Exception as exc:
@@ -1737,8 +1758,43 @@ def corporate_exchange_sync_status(x_pudu_exchange_token: str = Header(default="
     return runner.status()
 
 
+class PendingInventoryEvent(BaseModel):
+    record_id: str
+
+
+def _apply_pending_inventory_event(record_id: str) -> None:
+    from pending_inventory_sqlite import refresh_from_feishu
+
+    # Base can fire as soon as the request header is written, before its lines.
+    # The submission Worker writes the complete record itself; this event path
+    # also repairs manual/external records and status changes.
+    time.sleep(8)
+    for attempt in range(6):
+        try:
+            refresh_from_feishu(record_id)
+            return
+        except Exception as exc:
+            if attempt == 5:
+                logging.exception("Pending inventory event %s failed: %s", record_id, exc)
+                return
+            time.sleep(5 * (attempt + 1))
+
+
+@api.post("/api/pending-inventory-sync", status_code=202)
+def pending_inventory_sync_webhook(
+    payload: PendingInventoryEvent,
+    x_pudu_pending_token: str = Header(default=""),
+) -> dict[str, Any]:
+    _check_corporate_exchange_webhook_token(x_pudu_pending_token)
+    record_id = payload.record_id.strip()
+    if not record_id.startswith("rec") or len(record_id) > 100:
+        raise HTTPException(status_code=422, detail="无效的申请单记录 ID。")
+    _PENDING_ALLOCATION_EXECUTOR.submit(_apply_pending_inventory_event, record_id)
+    return {"accepted": True}
+
+
 @api.post("/api/corporate-apparel-submit")
-def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
+def corporate_apparel_submit(draft: CorporateApparelDraft, request: Request) -> dict[str, Any]:
     if not draft.requester_open_id or not draft.requester:
         raise HTTPException(status_code=422, detail="请选择申请人。")
     if not draft.lines:
@@ -1754,6 +1810,7 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
         from submission_queue import QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
 
         payload = draft.model_dump()
+        payload["submitter"], payload["submitter_open_id"] = _authenticated_submitter(request)
         payload["material_usage"] = usage
         lines = list(payload.pop("lines"))
         page = _json("page_data_cache.json")
@@ -1779,10 +1836,20 @@ def corporate_apparel_submit(draft: CorporateApparelDraft) -> dict[str, Any]:
 
             client, table_id, _ = _queue_client_and_table()
             existing = find_task_by_idempotency_key(client, draft.submission_token, table_id)
+            legacy_payload = dict(queued_payload)
+            legacy_request = dict(legacy_payload.get("request_payload") or {})
+            legacy_request["submitter"] = None
+            legacy_request["submitter_open_id"] = None
+            legacy_payload["request_payload"] = legacy_request
+            older_payload = dict(legacy_payload)
+            older_request = dict(legacy_request)
+            older_request.pop("submitter", None)
+            older_request.pop("submitter_open_id", None)
+            older_payload["request_payload"] = older_request
             if (
                 existing is not None
                 and existing.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
-                and existing.payload == queued_payload
+                and existing.payload in (queued_payload, legacy_payload, older_payload)
             ):
                 return {"accepted": True, "created": False, "taskId": existing.task_id, "status": existing.status}
             raise

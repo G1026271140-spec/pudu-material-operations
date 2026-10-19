@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import hashlib
 import hmac
 import os
@@ -48,6 +49,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_RESTOCK,
@@ -84,7 +86,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.8"
+APP_VERSION = "V3.2.9"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -10741,6 +10743,12 @@ def submit_feishu_material_request(
         request_payload.get("requester"),
         request_payload.get("requester_open_id"),
     )
+    if not feishu_has_field(REQUEST_TABLE_NAME, "提交人"):
+        raise RuntimeError("物料申请单缺少提交人字段，无法记录登录提交身份。")
+    set_first_person_or_plain_field(
+        REQUEST_TABLE_NAME, request_fields, ["提交人"],
+        request_payload.get("submitter"), request_payload.get("submitter_open_id"),
+    )
     set_first_plain_field(
         REQUEST_TABLE_NAME,
         request_fields,
@@ -10830,6 +10838,21 @@ def submit_feishu_material_request(
     if canonical_row is not None:
         request_no = feishu_text(feishu_fields(canonical_row), "申请单号") or request_no
         created_new_request = feishu_record_id(canonical_row) == request_record_id
+    if created_new_request:
+        try:
+            from pending_inventory_sqlite import upsert as cache_pending_request
+
+            if len(created_line_records) != len(line_records):
+                raise RuntimeError("飞书返回的申请明细数量与提交数量不一致")
+            cache_pending_request(
+                {"record_id": request_record_id, "fields": {**request_fields, "申请单号": request_no}},
+                [
+                    {"record_id": feishu_record_id(row), "fields": {**line_records[index], **feishu_fields(row)}}
+                    for index, row in enumerate(created_line_records)
+                ],
+            )
+        except Exception:
+            logging.exception("Could not index new pending request %s in local SQLite", request_no)
     return request_no, len(line_records), created_new_request
 
 
@@ -10854,6 +10877,8 @@ def queued_material_request_payload(
             "department_id",
             "requester",
             "requester_open_id",
+            "submitter",
+            "submitter_open_id",
             "customer_name",
             "country",
             "recipient_info",
@@ -10942,12 +10967,36 @@ def enqueue_feishu_background_write(
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法创建后台写入任务。")
-    return enqueue_submission_task(
-        client,
-        task_type,
-        str(idempotency_key or uuid.uuid4().hex),
-        payload,
+    key = str(idempotency_key or uuid.uuid4().hex)
+    operation = (
+        "edit" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT else
+        "confirm" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM else
+        "reject" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT else ""
     )
+    if operation:
+        from pending_inventory_sqlite import stage_action
+
+        draft = dict(payload.get("draft") or {})
+        stage_action(key, str(draft.get("request_id") or ""), operation, draft)
+    try:
+        result = enqueue_submission_task(client, task_type, key, payload)
+    except Exception as exc:
+        if operation:
+            try:
+                from pending_inventory_sqlite import mark_action
+
+                mark_action(key, "failed", error=str(exc))
+            except Exception:
+                logging.exception("Could not mark staged card action %s as failed", key)
+        raise
+    if operation:
+        try:
+            from pending_inventory_sqlite import mark_action
+
+            mark_action(key, "queued", task_id=result[0].task_id)
+        except Exception:
+            logging.exception("Card action %s entered queue but local status update failed", key)
+    return result
 
 
 def serialize_category_sync_args(args: dict[str, object]) -> dict[str, object]:
@@ -11190,6 +11239,7 @@ def load_feishu_request_line_records(
                 "actual_language": actual_language,
                 "actual_material_code": feishu_text(fields, "实际发放物料编码"),
                 "quantity": quantity,
+                "original_quantity": feishu_int(fields, "原申请数量", quantity),
                 "usage": feishu_text(fields, "物料用途"),
                 "remark": feishu_text(fields, "备注"),
                 "stock_snapshot": feishu_int(fields, "提交时库存快照"),
@@ -11804,6 +11854,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     for item in desired:
         material_id = str(item.get("material_record_id") or "")
         line_record_id = str(item.get("line_record_id") or "")
+        split_source_line_id = str(item.get("split_source_line_id") or "")
         quantity = int(item.get("quantity") or 0)
         if material_id in seen:
             raise RuntimeError("同一物料不能在申请中重复出现。")
@@ -11820,6 +11871,14 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             seen_line_ids.add(line_record_id)
         material_fields = feishu_fields(material_by_id[material_id])
         product = feishu_text(material_fields, "物料品类")
+        if split_source_line_id:
+            source = next(
+                (line for line in list(context["lines"])
+                 if str(line.get("record_id") or "") == split_source_line_id),
+                None,
+            )
+            if source is None or normalize_category_match_key(source.get("product")) != normalize_category_match_key(product):
+                raise RuntimeError("分装只能选择原申请明细相同品类的型号和语种组合。")
         category_definition = category_definition_by_key.get(
             normalize_category_match_key(product),
             UNDEFINED_CATEGORY_DEFINITION,
@@ -11846,6 +11905,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
                 "model": feishu_text(material_fields, "产品型号") or NO_MODEL_TEXT,
                 "language": feishu_text(material_fields, "语种"),
                 "quantity": quantity,
+                "split_source_line_id": split_source_line_id,
                 "remark": str(item.get("remark") or "").strip(),
                 "current_stock": feishu_int(material_fields, "当前库存"),
                 "order_required": allocation_line_requires_order(
@@ -11921,7 +11981,10 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
                 str(item["language"]),
             )
             if feishu_has_field(REQUEST_LINE_TABLE_NAME, "原申请数量"):
-                fields["原申请数量"] = str(int(existing.get("quantity") or item["quantity"]))
+                original_quantity = existing.get("original_quantity")
+                fields["原申请数量"] = str(int(
+                    original_quantity if original_quantity is not None else existing.get("quantity") or item["quantity"]
+                ))
             line_updates.append({"record_id": line_id, "fields": fields})
         else:
             next_line_suffix += 1
@@ -11936,7 +11999,7 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
                     # display position. Allocation edits may delete or reorder
                     # rows, so newly created lines must never reuse a suffix.
                     "明细编号": next_line_no,
-                    "原申请数量": str(int(item["quantity"])),
+                    "原申请数量": "0" if item.get("split_source_line_id") else str(int(item["quantity"])),
                     "提交时库存快照": int(item["current_stock"]),
                     "明细状态": REQUEST_LINE_STATUS_PENDING,
                     "所属申请单": [request_id],
@@ -11997,6 +12060,12 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         now,
     )
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
+    try:
+        from pending_inventory_sqlite import delete as remove_pending_request
+
+        remove_pending_request(request_id)
+    except Exception:
+        logging.exception("Could not remove confirmed request %s from local SQLite", request_id)
     if ship_date not in (None, ""):
         sync_request_ship_date_to_schedule(request_id, ship_date)
 
@@ -12126,6 +12195,12 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         else {}
     )
     if already_confirmed:
+        try:
+            from pending_inventory_sqlite import delete as remove_pending_request
+
+            remove_pending_request(request_id)
+        except Exception:
+            logging.exception("Could not remove already confirmed request %s from local SQLite", request_id)
         if ship_date not in (None, ""):
             feishu_update_record_fields(
                 REQUEST_TABLE_NAME,
@@ -12166,6 +12241,12 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         request_updates["库存审查人"] = person_value
         request_updates["申请物料最后修改人"] = person_value
     feishu_update_record_fields(REQUEST_TABLE_NAME, request_id, request_updates)
+    try:
+        from pending_inventory_sqlite import delete as remove_pending_request
+
+        remove_pending_request(request_id)
+    except Exception:
+        logging.exception("Could not remove confirmed request %s from local SQLite", request_id)
     if ship_date not in (None, ""):
         sync_request_ship_date_to_schedule(request_id, ship_date)
     notify_enabled_admins_of_material_request(
@@ -12221,6 +12302,12 @@ def execute_request_inventory_reject(draft: dict[str, object]) -> dict[str, obje
     if client is None:
         raise RuntimeError("飞书未配置，无法删除申请单。")
     client.delete_record(feishu_table_id(REQUEST_TABLE_NAME), request_id)
+    try:
+        from pending_inventory_sqlite import delete as remove_pending_request
+
+        remove_pending_request(request_id)
+    except Exception:
+        logging.exception("Could not remove rejected request %s from local SQLite", request_id)
     notify_requester_of_inventory_rejection(request)
     return {
         "request_no": request.get("request_no"),
@@ -21039,7 +21126,7 @@ def queued_corporate_apparel_request_payload(
         "version": 1,
         "request_payload": {
             key: request_payload.get(key)
-            for key in ("requester", "requester_open_id", "department", "department_id", "material_usage", "submission_token")
+            for key in ("requester", "requester_open_id", "submitter", "submitter_open_id", "department", "department_id", "material_usage", "submission_token")
         },
         "lines": [
             {
@@ -21103,6 +21190,12 @@ def submit_feishu_corporate_apparel_request(
         set_first_person_or_plain_field(
             REQUEST_TABLE_NAME, request_fields, ["申请人", "申请人姓名"],
             request_payload.get("requester"), request_payload.get("requester_open_id"),
+        )
+        if not feishu_has_field(REQUEST_TABLE_NAME, "提交人"):
+            raise RuntimeError("物料申请单缺少提交人字段，无法记录登录提交身份。")
+        set_first_person_or_plain_field(
+            REQUEST_TABLE_NAME, request_fields, ["提交人"],
+            request_payload.get("submitter"), request_payload.get("submitter_open_id"),
         )
         set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人OpenID"], request_payload.get("requester_open_id"))
         created = feishu_create_record(REQUEST_TABLE_NAME, request_fields)
@@ -21564,7 +21657,7 @@ def queued_cultural_request_payload(
         "request_payload": {
             key: request_payload.get(key)
             for key in (
-                "requester", "requester_open_id", "department", "department_id",
+                "requester", "requester_open_id", "submitter", "submitter_open_id", "department", "department_id",
                 "material_usage", "submission_token", "administrator_override",
             )
         },
@@ -22425,6 +22518,12 @@ def submit_feishu_cultural_request(
             ["申请人", "申请人姓名"],
             request_payload.get("requester"),
             request_payload.get("requester_open_id"),
+        )
+        if not feishu_has_field(REQUEST_TABLE_NAME, "提交人"):
+            raise RuntimeError("物料申请单缺少提交人字段，无法记录登录提交身份。")
+        set_first_person_or_plain_field(
+            REQUEST_TABLE_NAME, request_fields, ["提交人"],
+            request_payload.get("submitter"), request_payload.get("submitter_open_id"),
         )
         set_first_plain_field(REQUEST_TABLE_NAME, request_fields, ["申请人OpenID"], request_payload.get("requester_open_id"))
         created_request = feishu_create_record(REQUEST_TABLE_NAME, request_fields)

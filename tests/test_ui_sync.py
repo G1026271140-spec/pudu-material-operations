@@ -255,8 +255,8 @@ class ReactAllocationOrderRulesTests(unittest.TestCase):
         self.assertIn('window.sessionStorage.setItem', self.allocation)
         self.assertIn('async function loadPending(forceRefresh = false)', self.allocation)
         self.assertIn('onClick={() => loadPending(true)}', self.allocation)
-        self.assertIn('removePendingRequestFromSessionCache(requestId)', self.allocation)
-        self.assertIn('current.filter(item => item.requestId !== requestId)', self.allocation)
+        self.assertNotIn('removePendingRequestFromSessionCache(requestId)', self.allocation)
+        self.assertIn('if (cached) applyPending(cached)', self.allocation)
 
     def test_queued_allocation_uses_the_shared_red_popup(self) -> None:
         self.assertIn('className="allocation-toast allocation-task-toast"', self.allocation)

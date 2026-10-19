@@ -45,6 +45,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_MATERIAL_REQUEST,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
@@ -103,6 +104,7 @@ SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
@@ -772,6 +774,23 @@ def process_task(
         return inventory_app.execute_request_inventory_edit(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
         return inventory_app.execute_request_inventory_confirm(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT:
+        result = inventory_app.execute_request_inventory_reject(dict(payload["draft"]))
+        message_id = str(payload.get("message_id") or "")
+        if message_id:
+            try:
+                client = inventory_app.feishu_client()
+                if client is not None:
+                    client.update_interactive_message(
+                        message_id,
+                        inventory_app.material_request_rejection_card(
+                            str(result.get("request_no") or ""),
+                            str(result.get("requester") or "申请人"),
+                        ),
+                    )
+            except Exception:
+                logging.exception("Failed to refresh rejected request card %s", message_id)
+        return result
     if task.task_type == QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER:
         request_id = str(payload.get("request_id") or "")
         return {

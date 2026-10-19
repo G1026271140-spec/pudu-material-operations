@@ -306,22 +306,17 @@ def process_card_action_async(
             )
             return
         if action_key == "reject_request_inventory":
-            result = inventory_app.execute_request_inventory_reject(
-                {
-                    "request_id": request_id,
-                    "expected_version": int(value.get("version") or 0),
-                    "operator_open_id": operator_open_id,
-                }
+            version = int(value.get("version") or 0)
+            draft = {
+                "request_id": request_id,
+                "expected_version": version,
+                "operator_open_id": operator_open_id,
+            }
+            inventory_app.enqueue_feishu_background_write(
+                inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+                {"draft": draft, "message_id": message_id},
+                idempotency_key=f"request-inventory-card-reject:{request_id}:{version}",
             )
-            client = inventory_app.feishu_client()
-            if client is not None and message_id:
-                client.update_interactive_message(
-                    message_id,
-                    inventory_app.material_request_rejection_card(
-                        str(result.get("request_no") or value.get("request_no") or ""),
-                        str(result.get("requester") or "申请人"),
-                    ),
-                )
             return
         if action_key == "reject_cultural_request":
             request_no = str(value.get("request_no") or "").strip()

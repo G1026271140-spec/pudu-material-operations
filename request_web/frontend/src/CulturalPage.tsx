@@ -321,6 +321,10 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
         </div>
         <div className="culture-contact">
           <label>
+            {lang === "zh" ? "提交人（飞书登录）" : "Submitted By (Feishu Login)"}
+            <input value={currentUser?.name || ""} readOnly aria-readonly="true" />
+          </label>
+          <label>
             {t.applicant} *
             <div className="combobox">
               <input
