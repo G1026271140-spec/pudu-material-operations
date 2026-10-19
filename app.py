@@ -50,6 +50,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_RESTOCK,
@@ -86,7 +87,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.2.9"
+APP_VERSION = "V3.3.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -10971,7 +10972,8 @@ def enqueue_feishu_background_write(
     operation = (
         "edit" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT else
         "confirm" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM else
-        "reject" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT else ""
+        "reject" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT else
+        "schedule" if task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE else ""
     )
     if operation:
         from pending_inventory_sqlite import stage_action

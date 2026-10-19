@@ -46,6 +46,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
@@ -105,6 +106,7 @@ SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
     QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
@@ -791,6 +793,35 @@ def process_task(
             except Exception:
                 logging.exception("Failed to refresh rejected request card %s", message_id)
         return result
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE:
+        draft = dict(payload["draft"])
+        request_id = str(draft.get("request_id") or "")
+        saved = inventory_app.execute_inventory_review_reminder_schedule(
+            request_id,
+            str(draft.get("operator_open_id") or ""),
+            str(draft.get("schedule_value") or ""),
+        )
+        message_id = str(payload.get("message_id") or "")
+        if message_id:
+            try:
+                context = inventory_app.request_inventory_review_context(request_id=request_id)
+                request = dict(context["request"])
+                request["inventory_review_reminder_at"] = saved["scheduled_at"].strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                context["request"] = request
+                client = inventory_app.feishu_client()
+                if client is not None:
+                    card = inventory_app.material_request_notification_card(
+                        str(request.get("request_no") or ""), request,
+                        list(context.get("lines") or []), review_context=context,
+                        operator_open_id=str(draft.get("operator_open_id") or ""),
+                    )
+                    client.update_interactive_message(message_id, card)
+            except Exception:
+                logging.exception("Failed to refresh inventory reminder card %s", message_id)
+        return {"request_id": request_id, "request_no": saved.get("request_no"),
+                "scheduled_at": saved["scheduled_at"].isoformat()}
     if task.task_type == QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER:
         request_id = str(payload.get("request_id") or "")
         return {

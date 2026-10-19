@@ -260,30 +260,18 @@ def process_card_action_async(
             return
         if action_name.startswith("save_inventory_reminder__"):
             schedule_value = str(form_value.get("reminder_schedule") or "").strip()
-            saved = inventory_app.execute_inventory_review_reminder_schedule(
-                request_id,
-                operator_open_id,
-                schedule_value,
+            if not schedule_value:
+                raise RuntimeError("请选择库存核实时间。")
+            draft = {
+                "request_id": request_id,
+                "operator_open_id": operator_open_id,
+                "schedule_value": schedule_value,
+            }
+            inventory_app.enqueue_feishu_background_write(
+                inventory_app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
+                {"draft": draft, "message_id": message_id},
+                idempotency_key=f"request-inventory-reminder:{request_id}:{message_id}:{schedule_value}",
             )
-            context = inventory_app.request_inventory_review_context(request_id=request_id)
-            request = dict(context["request"])
-            # Use the confirmed write result: a fresh Base list can still lag
-            # immediately after the update and redraw the card as unsaved.
-            request["inventory_review_reminder_at"] = saved["scheduled_at"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-            context["request"] = request
-            client = inventory_app.feishu_client()
-            if client is None:
-                raise RuntimeError("飞书未配置，无法更新库存提醒卡片。")
-            card = inventory_app.material_request_notification_card(
-                str(request.get("request_no") or ""),
-                request,
-                list(context.get("lines") or []),
-                review_context=context,
-                operator_open_id=operator_open_id,
-            )
-            client.update_interactive_message(message_id, card)
             return
         if action_key == "confirm_request_inventory" or action_name in {
             "confirm_request_inventory",
