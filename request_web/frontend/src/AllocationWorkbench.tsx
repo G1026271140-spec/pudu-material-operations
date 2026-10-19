@@ -102,17 +102,24 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
   async function loadPending(forceRefresh = false) {
     if (forceRefresh) pendingPollCount.current = 0;
-    const cached = !forceRefresh ? readPendingSessionCache() : null;
+    const previous = readPendingSessionCache();
+    const cached = !forceRefresh ? previous : null;
     if (cached) applyPending(cached);
     setLoading(!cached && pending.length === 0);
     setError("");
     try {
       const body = await jsonFetch(`/api/admin/allocation/pending${forceRefresh ? "?refresh=true" : ""}`);
-      const cache = {
+      const snapshot = {
         requests: body.requests || [],
         operators: body.operators || [],
         cachedAt: body.updatedAt || new Date().toISOString(),
       };
+      // An empty SQLite file during the first live reconciliation is not a
+      // confirmed empty queue. Keep the last non-empty tab snapshot until the
+      // server finishes reconciling and can authoritatively clear it.
+      const cache = body.refreshing && snapshot.requests.length === 0 && previous?.requests.length
+        ? { ...previous, operators: snapshot.operators.length ? snapshot.operators : previous.operators }
+        : snapshot;
       writePendingSessionCache(cache);
       applyPending(cache);
       setPendingRefreshing(Boolean(body.refreshing));
@@ -360,7 +367,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{tr("列表快照：", "List snapshot: ")}{pendingCachedAt}{pendingRefreshing ? tr(" · 正在后台同步实时申请单", " · refreshing live requests") : ""}</p>}</div><button onClick={() => loadPending(true)}>↻ {tr("刷新实时申请单", "Refresh live requests")}</button></header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {pendingWarning && <div className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</div>}
-    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{pendingRefreshing || pendingWarning ? tr("正在核对实时申请单；当前快照中没有待处理记录。", "Checking live requests; none in the current snapshot.") : tr("当前没有等待库存核实的普通物料申请。", "There are no material requests waiting for inventory review.")}</div>}</section>
+    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pendingRefreshing && !pending.length ? tr("同步中", "Syncing") : `${pending.length} ${tr("条", "requests")}`}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{pendingRefreshing || pendingWarning ? tr("正在核对实时申请单；请稍候。", "Checking live requests; please wait.") : tr("当前没有等待库存核实的普通物料申请。", "There are no material requests waiting for inventory review.")}</div>}</section>
   </main>;
 
   const request = context.request;

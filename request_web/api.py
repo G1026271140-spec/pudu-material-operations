@@ -893,7 +893,17 @@ def _allocation_summary(context: dict[str, Any]) -> dict[str, Any]:
 
 
 def _allocation_operators(legacy: Any) -> list[dict[str, Any]]:
-    enabled_ids = set(legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args()))
+    # The allocation list is SQLite-backed. Do not turn every page load into
+    # a fresh Feishu permission-table request (which can take tens of seconds).
+    enabled_ids: set[str] = set()
+    permission_rows = _json("page_data_cache.json").get("tables", {}).get("用户权限表", [])
+    for row in permission_rows:
+        fields = legacy.feishu_fields(row)
+        if not legacy.feishu_permission_enabled(fields):
+            continue
+        if "管理员" not in legacy.feishu_choice_values(fields, "角色"):
+            continue
+        enabled_ids.update(legacy.feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]))
     contacts = _json("contact_departments_cache.json")
     return [
         user for user in list(contacts.get("users") or [])
@@ -905,7 +915,18 @@ def _refresh_pending_allocation() -> None:
     from pending_inventory_sqlite import reconcile_live
 
     try:
-        reconcile_live()
+        # Feishu occasionally returns 1254607 while its Base view is being
+        # prepared. Retry here, off the request thread, rather than leaving an
+        # empty SQLite snapshot stale for the next hour.
+        for attempt in range(3):
+            try:
+                reconcile_live()
+                break
+            except Exception as exc:
+                if "1254607" not in str(exc) or attempt == 2:
+                    raise
+                logging.warning("Pending allocation source not ready; retry %s/2", attempt + 1)
+                time.sleep((8, 20)[attempt])
         with _PENDING_ALLOCATION_LOCK:
             _PENDING_ALLOCATION_CACHE["last_error"] = ""
     except Exception as exc:

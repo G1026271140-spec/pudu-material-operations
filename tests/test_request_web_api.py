@@ -970,6 +970,24 @@ def test_allocation_pending_requires_admin_and_returns_only_summary(monkeypatch)
     assert "material_rows" not in response.text
 
 
+def test_allocation_operators_use_published_permissions_not_live_feishu(monkeypatch):
+    monkeypatch.setattr(
+        legacy_app, "cached_enabled_admin_open_ids",
+        lambda *_args: (_ for _ in ()).throw(AssertionError("live Feishu read")),
+    )
+    monkeypatch.setattr(web_api, "_json", lambda name: (
+        {"tables": {"用户权限表": [
+            {"fields": {"用户账号": [{"id": "ou_admin"}], "角色": ["管理员"], "是否启用": "是"}},
+            {"fields": {"用户账号": [{"id": "ou_disabled"}], "角色": ["管理员"], "是否启用": "否"}},
+        ]}} if name == "page_data_cache.json" else
+        {"users": [{"open_id": "ou_admin", "name": "管理员"}, {"open_id": "ou_disabled", "name": "停用管理员"}]}
+    ))
+
+    operators = web_api._allocation_operators(legacy_app)
+
+    assert [user["open_id"] for user in operators] == ["ou_admin"]
+
+
 def test_pending_allocation_summary_needs_only_request_rows():
     rows = [
         {"record_id": "req-1", "fields": {
@@ -1024,6 +1042,29 @@ def test_pending_allocation_refresh_failure_keeps_last_snapshot(monkeypatch):
 
     assert web_api._PENDING_ALLOCATION_CACHE["refreshing"] is False
     assert "本机" in web_api._PENDING_ALLOCATION_CACHE["last_error"]
+
+
+def test_pending_allocation_retries_feishu_data_not_ready(monkeypatch):
+    attempts = []
+    delays = []
+    monkeypatch.setattr(web_api, "_PENDING_ALLOCATION_CACHE", {
+        "last_attempt": 0.0, "refreshing": True, "last_error": "",
+    })
+
+    def reconcile():
+        attempts.append(1)
+        if len(attempts) < 3:
+            raise RuntimeError("Feishu HTTP 400: 1254607 Data not ready")
+
+    monkeypatch.setattr(pending_inventory_sqlite, "reconcile_live", reconcile)
+    monkeypatch.setattr(web_api.time, "sleep", delays.append)
+
+    web_api._refresh_pending_allocation()
+
+    assert len(attempts) == 3
+    assert delays == [8, 20]
+    assert web_api._PENDING_ALLOCATION_CACHE["last_error"] == ""
+    assert web_api._PENDING_ALLOCATION_CACHE["refreshing"] is False
 
 
 def test_json_cache_updates_when_published_file_changes(tmp_path, monkeypatch):
