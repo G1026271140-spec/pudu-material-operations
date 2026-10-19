@@ -1204,53 +1204,8 @@ def test_allocation_edit_queues_existing_worker_payload(monkeypatch):
     assert observed["payload"]["draft"]["lines"][0]["order_required"] is True
 
 
-def test_allocation_order_preview_summarizes_only_printed_order_lines(monkeypatch):
-    monkeypatch.setattr(legacy_app, "cached_enabled_admin_open_ids", lambda *args: ["ou-admin"])
-    monkeypatch.setattr(
-        legacy_app,
-        "request_inventory_review_context",
-        lambda **_kwargs: {
-            "request": {"request_no": "REQ-ORDER", "material_usage": "展会"},
-            "lines": [
-                {"product": "产品单页", "category_definition": "印刷物料", "model": "T300", "language": "英语", "quantity": 3, "current_stock": 0, "remark": "加厚"},
-                {"product": "公仔", "category_definition": "周边礼品", "model": "Bella", "language": "无需语种", "quantity": 2, "current_stock": 0, "remark": ""},
-            ],
-            "material_rows": [],
-            "category_rows": [
-                {"record_id": "cat-print", "fields": {"物料品类": "产品单页", "中文页面名称": "产品单页", "品类定义": "印刷物料"}},
-                {"record_id": "cat-gift", "fields": {"物料品类": "公仔", "中文页面名称": "公仔", "品类定义": "周边礼品"}},
-            ],
-        },
-    )
-    response = admin_client(monkeypatch).post(
-        "/api/allocation/request-1/order-preview",
-        json={"operation": "confirm", "draft": {"operator_open_id": "ou-admin"}},
-    )
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["lineCount"] == 1
-    assert payload["totalQuantity"] == 3
-    assert payload["lines"][0] == {
-        "category": "产品单页", "model": "T300", "language": "英语",
-        "quantity": 3, "usage": "展会\n制作备注：加厚",
-    }
-
-
-def test_allocation_order_workbook_download_uses_existing_template(monkeypatch):
-    monkeypatch.setattr(legacy_app, "cached_enabled_admin_open_ids", lambda *args: ["ou-admin"])
-    monkeypatch.setattr(
-        web_api,
-        "_allocation_order_preview",
-        lambda *_args, **_kwargs: {
-            "requestNo": "REQ-ORDER", "workbookAvailable": True,
-            "workbookFilename": "物料下单表-REQ-ORDER.xlsx",
-            "lines": [{"category": "产品单页", "model": "T300", "language": "英语", "quantity": 3, "usage": "展会"}],
-        },
-    )
-    response = admin_client(monkeypatch).post(
-        "/api/allocation/request-1/order-workbook",
-        json={"operation": "confirm", "draft": {"operator_open_id": "ou-admin"}},
-    )
-    assert response.status_code == 200
-    assert response.content.startswith(b"PK")
-    assert "filename*=UTF-8''" in response.headers["content-disposition"]
+def test_allocation_order_export_endpoints_are_removed(monkeypatch):
+    client = admin_client(monkeypatch)
+    for name in ("order-preview", "order-workbook"):
+        response = client.post(f"/api/allocation/request-1/{name}", json={})
+        assert response.status_code == 405

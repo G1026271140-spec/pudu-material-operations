@@ -74,7 +74,6 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [downloadingWorkbook, setDownloadingWorkbook] = useState(false);
   const submitLockRef = useRef(false);
   const [pendingCachedAt, setPendingCachedAt] = useState("");
   const [pendingRefreshing, setPendingRefreshing] = useState(false);
@@ -311,31 +310,6 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       setSuccess(`${tr("配货任务已进入后台队列", "Allocation task queued")}（${body.taskId}）`);
       // Queue acceptance is not inventory-review completion. Keep the request
       // visible until the Worker confirms the write and SQLite removes it.
-      const needsWorkbook = mode === "confirm"
-        ? (context.lines || []).some((line: any) => isPrintMaterial(line) && Number(line.current_stock || 0) < Number(line.quantity || 0))
-        : rows.some(row => row.order_required && isPrintMaterial(materialById[row.material_record_id]));
-      if (needsWorkbook) {
-        setDownloadingWorkbook(true);
-        void (async () => {
-          try {
-            const response = await fetch(`/api/allocation/${encodeURIComponent(requestId)}/order-workbook${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
-            if (!response.ok) {
-              const failure = await response.json().catch(() => ({}));
-              throw Error(detail(failure.detail, "下单表生成失败"));
-            }
-            const url = URL.createObjectURL(await response.blob());
-            const anchor = document.createElement("a");
-            anchor.href = url;
-            anchor.download = `物料下单表-${request.request_no || requestId}.xlsx`;
-            document.body.appendChild(anchor);
-            anchor.click();
-            anchor.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-          } catch (e) {
-            setError(`${tr("配货任务已入队，但下单表下载失败；请勿重复提交。", "Allocation was queued, but the order workbook download failed. Do not resubmit.")} ${e instanceof Error ? e.message : ""}`);
-          } finally { setDownloadingWorkbook(false); }
-        })();
-      }
     } catch (e) { setError(e instanceof Error ? e.message : "提交失败"); }
     finally { setSubmitting(false); submitLockRef.current = false; }
   }
@@ -361,7 +335,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     {success && <div className="allocation-toast allocation-task-toast" role="status">
       <button type="button" className="allocation-toast-close" aria-label={tr("关闭提示", "Close notification")} onClick={() => setSuccess("")}>×</button>
       <strong>{success}</strong>
-      <small>{downloadingWorkbook ? tr("正在后台生成下单表，完成后自动下载；请勿重复提交。", "Preparing the order workbook for automatic download. Do not resubmit.") : tr("后台完成后，申请人与管理员飞书卡片会按原流程更新。", "The requester and administrator cards will update after background completion.")}</small>
+      <small>{tr("后台完成后，申请人与管理员飞书卡片会按原流程更新。", "The requester and administrator cards will update after background completion.")}</small>
     </div>}
     {!context.verifiedLive && <div className="allocation-live-banner" role="status"><span>{liveChecking ? tr("正在核对实时申请明细和库存。下方为历史快照，核对完成前不能提交。", "Checking live request lines and stock. The snapshot below is read-only until verification finishes.") : (liveWarning || tr("当前仅显示历史快照，不能提交。", "Showing a read-only snapshot."))}</span>{!liveChecking && <button onClick={() => loadContext(requestId)}>{tr("重试实时读取", "Retry live verification")}</button>}</div>}
     {request.inventory_review_status === "已核实库存" ? <div className="allocation-success">✓ {tr("该申请已经完成库存核实，无需再次处理。", "This request has already completed inventory review.")}</div> : <>
