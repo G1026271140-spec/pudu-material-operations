@@ -46,6 +46,7 @@ from submission_queue import (
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_WITHDRAW,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
@@ -106,6 +107,7 @@ SUPPORTED_QUEUE_TASK_TYPES = {
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_WITHDRAW,
     QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
     QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
     QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
@@ -776,6 +778,10 @@ def process_task(
         return inventory_app.execute_request_inventory_edit(dict(payload["draft"]))
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
         return inventory_app.execute_request_inventory_confirm(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_WITHDRAW:
+        from request_withdrawal import process_withdrawal
+
+        return process_withdrawal(task, checkpoint)
     if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT:
         result = inventory_app.execute_request_inventory_reject(dict(payload["draft"]))
         message_id = str(payload.get("message_id") or "")

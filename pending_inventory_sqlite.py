@@ -121,7 +121,7 @@ def delete(request_id: str) -> None:
 
 
 def stage_action(action_key: str, request_id: str, operation: str, draft: dict) -> None:
-    if not action_key or not request_id or operation not in {"edit", "confirm", "reject", "schedule"}:
+    if not action_key or not request_id or operation not in {"edit", "confirm", "reject", "schedule", "withdraw"}:
         raise ValueError("配货操作缺少有效的申请单、类型或提交标识")
     serialized = json.dumps(draft, ensure_ascii=False, sort_keys=True, default=str)
     with _connect() as connection:

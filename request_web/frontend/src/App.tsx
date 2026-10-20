@@ -505,7 +505,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     return (
       <main className="success">
         <div>✓</div>
-        <h1>{t("提交成功", "Submitted")}</h1>
+        <h1>{t("您的申请已提交", "Your request has been submitted")}</h1>
         <p>{done}</p>
         <button onClick={() => location.reload()}>
           {t("继续申请", "New Request")}

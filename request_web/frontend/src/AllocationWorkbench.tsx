@@ -74,6 +74,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [withdrawConfirm, setWithdrawConfirm] = useState(false);
+  const [withdrawQueued, setWithdrawQueued] = useState(false);
   const submitLockRef = useRef(false);
   const [pendingCachedAt, setPendingCachedAt] = useState("");
   const [pendingRefreshing, setPendingRefreshing] = useState(false);
@@ -143,6 +145,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   async function loadContext(id: string) {
     if (!id) return;
     const sequence = ++contextLoadRef.current;
+    setWithdrawConfirm(false); setWithdrawQueued(false);
     setLoading(true); setError(""); setSuccess(""); setLiveWarning("");
     const base = `/api/allocation/${encodeURIComponent(id)}`;
     const query = directRequestId ? `${signedQuery}&` : "";
@@ -298,7 +301,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   }
 
   async function submit(mode: "confirm" | "edit") {
-    if (submitLockRef.current) return;
+    if (submitLockRef.current || withdrawQueued) return;
     const message = validate(mode);
     if (message) return setError(message);
     submitLockRef.current = true;
@@ -311,6 +314,22 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       // Queue acceptance is not inventory-review completion. Keep the request
       // visible until the Worker confirms the write and SQLite removes it.
     } catch (e) { setError(e instanceof Error ? e.message : "提交失败"); }
+    finally { setSubmitting(false); submitLockRef.current = false; }
+  }
+
+  async function withdrawRequest() {
+    if (submitLockRef.current || withdrawQueued) return;
+    submitLockRef.current = true;
+    setSubmitting(true); setError("");
+    try {
+      const suffix = directRequestId ? `?${signedQuery}` : "";
+      const body = await jsonFetch(`/api/allocation/${encodeURIComponent(requestId)}/withdraw${suffix}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expected_version: Number(context.request.inventory_review_version || 0) }),
+      });
+      setWithdrawQueued(true); setWithdrawConfirm(false);
+      setSuccess(`${tr("申请删除任务已提交，完成后会通知申请人与管理员", "Deletion queued. The applicant and administrators will be notified after completion")}（${body.taskId}）`);
+    } catch (e) { setWithdrawConfirm(false); setError(e instanceof Error ? e.message : tr("删除申请失败", "Could not delete the request")); }
     finally { setSubmitting(false); submitLockRef.current = false; }
   }
 
@@ -335,12 +354,13 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     {success && <div className="allocation-toast allocation-task-toast" role="status">
       <button type="button" className="allocation-toast-close" aria-label={tr("关闭提示", "Close notification")} onClick={() => setSuccess("")}>×</button>
       <strong>{success}</strong>
-      <small>{tr("后台完成后，申请人与管理员飞书卡片会按原流程更新。", "The requester and administrator cards will update after background completion.")}</small>
+      <small>{withdrawQueued ? tr("删除完成后，申请人与管理员将收到撤回通知。", "The applicant and administrators will receive a withdrawal notice after deletion.") : tr("后台完成后，申请人与管理员飞书卡片会按原流程更新。", "The requester and administrator cards will update after background completion.")}</small>
     </div>}
     {!context.verifiedLive && <div className="allocation-live-banner" role="status"><span>{liveChecking ? tr("正在核对实时申请明细和库存。下方为历史快照，核对完成前不能提交。", "Checking live request lines and stock. The snapshot below is read-only until verification finishes.") : (liveWarning || tr("当前仅显示历史快照，不能提交。", "Showing a read-only snapshot."))}</span>{!liveChecking && <button onClick={() => loadContext(requestId)}>{tr("重试实时读取", "Retry live verification")}</button>}</div>}
     {request.inventory_review_status === "已核实库存" ? <div className="allocation-success">✓ {tr("该申请已经完成库存核实，无需再次处理。", "This request has already completed inventory review.")}</div> : <>
       <section className="request-overview"><div className="allocation-title"><b>{request.request_no || "-"}</b><span>{context.verifiedLive ? tr("实时库存更新于", "Live stock updated at") : tr("历史快照更新于", "Snapshot updated at")} {context.snapshotAt}</span></div><div className="allocation-metrics"><span>{tr("申请人", "Requester")}<b>{request.requester || "-"}</b></span><span>{tr("申请部门", "Department")}<b>{request.department || "-"}</b></span><span>{tr("当前结论", "Current Result")}<b>{context.result || "-"}</b></span><span>{tr("变更次数", "Changes")}<b>{request.inventory_review_version || 0}</b></span><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span></div><div className="request-notes"><p><b>{tr("申请原因", "Reason")}：</b>{request.request_reason || "-"}</p><p><b>{tr("物料用途", "Usage")}：</b>{request.material_usage || "-"}</p><p><b>{tr("收件人信息", "Recipient")}：</b>{request.recipient_info || "-"}</p></div></section>
-      <fieldset className="allocation-readonly-guard" disabled={!context.verifiedLive}>
+      <div className="allocation-withdraw-action"><button className="withdraw-request" disabled={submitting || withdrawQueued} onClick={() => setWithdrawConfirm(true)}>{withdrawQueued ? tr("删除任务已提交", "Deletion queued") : tr("删除申请", "Delete Request")}</button></div>
+      <fieldset className="allocation-readonly-guard" disabled={!context.verifiedLive || withdrawQueued}>
       <section className="allocation-form"><div className="allocation-control"><label>{tr("申请单发货日期", "Shipping Date")} *<input type="date" value={shipDate} onChange={e => setShipDate(e.target.value)}/></label>{!context.signedCardAccess && <label>{tr("本次配货操作人", "Allocation Operator")} *<select value={operatorId} onChange={e => setOperatorId(e.target.value)}><option value="">{tr("请选择管理员", "Select administrator")}</option>{operators.map(x => <option key={x.open_id} value={x.open_id}>{x.name} · {(x.department_paths || []).join(" / ")}</option>)}</select></label>}</div>
         <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{context.verifiedLive ? tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`) : tr("当前为历史快照，库存尚未实时核对。", "This is a snapshot; stock has not been verified live.")}</p></div><button className="confirm-original" disabled={submitting} onClick={() => submit("confirm")}>✓ {tr("按原申请提交配货方案", "Submit Original Allocation")}</button></div>
         <div className="allocation-lines">{rows.map((row, index) => {
@@ -400,6 +420,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         <div className="modal-actions"><button onClick={() => setSplitIndex(null)}>{tr("取消", "Cancel")}</button><button className="primary" onClick={applySplit}>{tr("应用分装", "Apply Split")}</button></div>
       </div>
     </div>}
-    {submitting && <div className="allocation-submit-overlay"><i/><b>{tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
+    {withdrawConfirm && <div className="allocation-modal-backdrop" onMouseDown={() => !submitting && setWithdrawConfirm(false)}><div className="allocation-modal" role="dialog" aria-modal="true" aria-labelledby="withdraw-title" onMouseDown={e => e.stopPropagation()}><h2 id="withdraw-title">{tr("删除申请", "Delete Request")}</h2><p><b>{request.request_no}</b> · {request.requester}</p><p>{tr("确认删除该申请单及全部申请明细？删除完成后，将向申请人与已启用管理员发送撤回通知。", "Delete this request and all its lines? The applicant and enabled administrators will receive a withdrawal notice after deletion.")}</p><div className="modal-actions"><button autoFocus disabled={submitting} onClick={() => setWithdrawConfirm(false)}>{tr("取消", "Cancel")}</button><button className="withdraw-request" disabled={submitting} onClick={withdrawRequest}>{tr("确认删除", "Delete Request")}</button></div></div></div>}
+    {submitting && <div className="allocation-submit-overlay"><i/><b>{withdrawConfirm ? tr("正在提交删除任务……", "Submitting deletion task…") : tr("正在提交配货方案，请稍后……", "Submitting allocation plan…")}</b><span>{tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
   </main>;
 }

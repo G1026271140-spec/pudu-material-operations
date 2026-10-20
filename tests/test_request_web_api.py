@@ -377,6 +377,7 @@ def test_fast_enqueue_cancels_duplicate_found_after_create(monkeypatch):
 def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypatch):
     monkeypatch.setattr(web_api, "_authenticated_submitter", lambda _request: ("提交用户", "ou-submitter"))
     observed = {}
+    monkeypatch.setattr(web_api, "_schedule_submission_receipt", lambda *args: observed.update(receipt=args))
     payload = {
         "title": "test",
         "department": "市场部",
@@ -433,6 +434,7 @@ def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypa
 
     assert response.status_code == 200
     assert response.json()["taskId"] == "task-fast"
+    assert observed["receipt"] == ("stable-token", "ou-test", "物料申领", ["task-fast"])
     assert observed["live"] is False
     assert observed["key"] == "stable-token"
     assert observed["payload"]["request_payload"]["accepted_roles"] == ["区域市场经理"]
@@ -442,6 +444,7 @@ def test_submit_uses_page_snapshot_and_skips_live_permission_validation(monkeypa
 def test_cultural_submit_requires_and_queues_material_usage(monkeypatch):
     monkeypatch.setattr(web_api, "_authenticated_submitter", lambda _request: ("提交用户", "ou-submitter"))
     observed = {}
+    monkeypatch.setattr(web_api, "_schedule_submission_receipt", lambda *args: observed.update(receipt=args))
     monkeypatch.setattr(
         web_api,
         "_enqueue_fast",
@@ -480,12 +483,14 @@ def test_cultural_submit_requires_and_queues_material_usage(monkeypatch):
     assert blank.json()["detail"] == "请填写文化衫用途（展会名称）。"
     assert accepted.status_code == 200
     assert accepted.json()["taskId"] == "task-cultural"
+    assert observed["receipt"] == ("cultural-token", "ou-test", "文化周边申领", ["task-cultural"])
     assert observed["payload"]["request_payload"]["material_usage"] == "上海展会"
 
 
 def test_corporate_apparel_submit_accepts_only_current_reasons(monkeypatch):
     monkeypatch.setattr(web_api, "_authenticated_submitter", lambda _request: ("提交用户", "ou-submitter"))
     observed = {}
+    monkeypatch.setattr(web_api, "_schedule_submission_receipt", lambda *args: observed.update(receipt=args))
     monkeypatch.setattr(
         web_api,
         "_enqueue_fast",
@@ -526,6 +531,7 @@ def test_corporate_apparel_submit_accepts_only_current_reasons(monkeypatch):
         "/api/corporate-apparel-submit", json={**payload, "material_usage": "OA流程申请"}
     )
     assert legacy.status_code == 200
+    assert observed["receipt"] == ("apparel-token", "ou-test", "企业文化衫领取", ["task-apparel"])
     assert observed["payload"]["request_payload"]["material_usage"] == "OA流程申请（如未提报OA流程，一律驳回，请慎选）"
 
 
@@ -1209,3 +1215,33 @@ def test_allocation_order_export_endpoints_are_removed(monkeypatch):
     for name in ("order-preview", "order-workbook"):
         response = client.post(f"/api/allocation/request-1/{name}", json={})
         assert response.status_code == 405
+
+
+def test_allocation_withdraw_checks_admin_and_stages_deletion(monkeypatch, tmp_path):
+    monkeypatch.setenv("PUDU_PENDING_INVENTORY_DB", str(tmp_path / "pending.sqlite3"))
+    pending_inventory_sqlite.upsert({"record_id": "recRequest", "fields": {
+        "申请单号": "REQ-DELETE", "申请类型": "普通物料申请", "审批状态": "待审批",
+        "库存审查状态": "待核实库存", "申请变更次数": "2",
+    }}, [{"record_id": "recLine", "fields": {}}])
+    observed = []
+    monkeypatch.setattr(web_api, "_enqueue_fast", lambda *args: observed.append(args) or "delete-task")
+    assert TestClient(api).post("/api/allocation/recRequest/withdraw", json={"expected_version": 2}).status_code == 403
+    client = admin_client(monkeypatch)
+    assert client.post("/api/allocation/recRequest/withdraw", json={"expected_version": -1}).status_code == 422
+    assert not observed
+    response = client.post("/api/allocation/recRequest/withdraw", json={"expected_version": 2})
+    assert response.status_code == 200
+    assert observed[0][0] == "物料申请撤回删除"
+    assert observed[0][2]["draft"]["request_id"] == "recRequest"
+    assert observed[0][2]["draft"]["operator_open_id"]
+    # Acceptance alone does not remove a record before the business write succeeds.
+    assert pending_inventory_sqlite.get("recRequest") is not None
+
+
+def test_receipt_registration_is_local_and_never_waits_on_feishu(monkeypatch):
+    import submission_receipts
+    observed = []
+    monkeypatch.setattr(submission_receipts, "enqueue", lambda *args: observed.append(args))
+    monkeypatch.setattr(legacy_app, "feishu_client", lambda: pytest.fail("must not call Feishu on receipt registration"))
+    web_api._schedule_submission_receipt("token", "ou_applicant", "物料申领", ["task-1"])
+    assert observed == [("token", "ou_applicant", "物料申领", ["task-1"])]

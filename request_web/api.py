@@ -354,11 +354,15 @@ class CorporateApparelDraft(BaseModel):
 
 @asynccontextmanager
 async def _pending_inventory_lifespan(_app: FastAPI):
+    import submission_receipts
+
+    submission_receipts.start()
     start_pending_reconciliation()
     try:
         yield
     finally:
         stop_pending_reconciliation()
+        submission_receipts.stop()
 
 
 api = FastAPI(title="PUDU Material Operations - Request API", lifespan=_pending_inventory_lifespan)
@@ -1140,6 +1144,42 @@ def allocation_submit(
     return {"accepted": True, "taskId": task_id}
 
 
+@api.post("/api/allocation/{request_id}/withdraw")
+def allocation_withdraw(
+    request: Request, request_id: str, body: dict[str, Any],
+    operator: str = Query(default=""), review_token: str = Query(default=""),
+) -> dict[str, Any]:
+    from pending_inventory_sqlite import stage_action, mark_action
+    from submission_queue import QUEUE_TASK_TYPE_REQUEST_WITHDRAW
+
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
+    actor = signed_operator or _signed_admin_open_id(request)
+    try:
+        version = int(body.get("expected_version") or 0)
+        if version < 0:
+            raise ValueError()
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail="申请版本无效，请刷新后处理。") from exc
+    # The Worker checks live eligibility before deleting. A card-opened request
+    # can be newer than SQLite; do not reject it against a stale local version.
+    draft = {"request_id": request_id, "expected_version": version, "operator_open_id": actor}
+    key = f"request-withdraw:{request_id}:{version}"
+    try:
+        stage_action(key, request_id, "withdraw", draft)
+        task_id = _enqueue_fast(QUEUE_TASK_TYPE_REQUEST_WITHDRAW, key, {"draft": draft})
+    except Exception as exc:
+        try:
+            mark_action(key, "failed", error=str(exc))
+        except Exception:
+            logging.exception("Could not mark staged withdrawal %s as failed", key)
+        raise HTTPException(status_code=503, detail=f"删除任务未能进入后台队列：{exc}") from exc
+    try:
+        mark_action(key, "queued", task_id=task_id)
+    except Exception:
+        logging.exception("Withdrawal %s queued but SQLite status update failed", key)
+    return {"accepted": True, "taskId": task_id}
+
+
 @api.post("/api/admin/restock/submit")
 def management_restock_submit(
     draft: dict[str, Any], _: str = Depends(require_admin)
@@ -1556,6 +1596,16 @@ def validate(draft: RequestDraft) -> dict[str, Any]:
     return {"valid": not errors, "errors": list(dict.fromkeys(errors))}
 
 
+def _schedule_submission_receipt(token: str, recipient: str, kind: str, task_ids: list[str]) -> None:
+    import submission_receipts
+
+    try:
+        submission_receipts.enqueue(token, recipient, kind, task_ids)
+    except Exception:
+        # A successful queue write must still return success to the browser.
+        logging.exception("Could not persist applicant submission receipt %s", token)
+
+
 @api.post("/api/submit")
 def submit(draft: RequestDraft, request: Request) -> dict[str, Any]:
     payload, lines, errors = _validate(draft, live=False)
@@ -1627,6 +1677,7 @@ def submit(draft: RequestDraft, request: Request) -> dict[str, Any]:
             )
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"申请未能进入后台队列：{exc}") from exc
+    _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "物料申领", task_ids)
     return {
         "accepted": True,
         "created": True,
@@ -1655,6 +1706,7 @@ def cultural_submit(draft: CulturalDraft, request: Request) -> dict[str, Any]:
         task_id = _enqueue_fast(QUEUE_TASK_TYPE_CULTURAL_REQUEST, draft.submission_token, legacy.queued_cultural_request_payload(request_payload, lines))
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "文化周边申领", [task_id])
     return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
 
 
@@ -1788,6 +1840,7 @@ def corporate_apparel_submit(draft: CorporateApparelDraft, request: Request) -> 
                 and existing.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
                 and existing.payload in (queued_payload, legacy_payload, older_payload)
             ):
+                _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "企业文化衫领取", [existing.task_id])
                 return {"accepted": True, "created": False, "taskId": existing.task_id, "status": existing.status}
             raise
         task_id = _enqueue_fast(
@@ -1797,6 +1850,7 @@ def corporate_apparel_submit(draft: CorporateApparelDraft, request: Request) -> 
         )
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "企业文化衫领取", [task_id])
     return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
 
 
