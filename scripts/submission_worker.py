@@ -516,6 +516,61 @@ def process_cultural_request_reject(
     return progress
 
 
+def process_corporate_apparel_quota_rejection(
+    task: SubmissionTask, progress: dict[str, object],
+    request_payload: dict[str, object], lines: list[dict[str, object]],
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    from request_withdrawal import send_notice
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    # Persist the rejection before any notification: later quota changes must not
+    # turn a partially-notified rejection back into an issued application.
+    progress.update({"rejected": True, "rejection_reason": "quota_exceeded",
+                     "business_write_skipped": True, "write_done": True})
+    save_progress()
+    if progress.get("rejection_notification_done"):
+        return progress
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送企业文化衫超限通知。")
+    targets = inventory_app.corporate_apparel_quota_rejection_targets(
+        request_payload, lines, list(dict(progress["write_plan"]).get("quota_exceeded") or []),
+    )
+    sent = set(progress.get("rejection_notification_sent_keys") or [])
+    skipped = set(progress.get("rejection_notification_skipped_keys") or [])
+    message_ids = dict(progress.get("rejection_notification_message_ids") or {})
+    for target in targets:
+        key = str(target["key"])
+        if key in sent or key in skipped:
+            continue
+        try:
+            message_id = send_notice(
+                client, str(target["recipient_id"]),
+                inventory_app._feishu_normalize_card_tables(dict(target["card"])),
+                f"corporate-apparel-quota-rejection:{task.idempotency_key}:{key}",
+            )
+        except Exception as exc:
+            if target.get("audience") != "applicant" or not applicant_bot_unavailable(exc):
+                raise
+            skipped.add(key)
+            progress["rejection_notification_skipped_keys"] = sorted(skipped)
+            save_progress()
+            continue
+        sent.add(key)
+        message_ids[key] = message_id
+        progress["rejection_notification_sent_keys"] = sorted(sent)
+        progress["rejection_notification_message_ids"] = dict(message_ids)
+        save_progress()
+    progress.update({"rejection_notification_done": True, "notification_done": True,
+                     "notification_count": len(sent)})
+    save_progress()
+    return progress
+
+
 def process_corporate_apparel_request(
     task: SubmissionTask,
     checkpoint: Callable[[dict[str, object]], None] | None = None,
@@ -535,6 +590,13 @@ def process_corporate_apparel_request(
         progress["write_plan"] = inventory_app.corporate_apparel_request_plan(request_payload, lines)
         progress["plan_done"] = True
         save_progress()
+    if progress.get("rejected") or (
+        dict(progress["write_plan"]).get("quota_allowed") is False
+        and not progress.get("write_done")
+    ):
+        return process_corporate_apparel_quota_rejection(
+            task, progress, request_payload, lines, checkpoint,
+        )
     if not progress.get("write_done"):
         request_no, line_count, created_new = inventory_app.submit_feishu_corporate_apparel_request(
             request_payload, dict(progress["write_plan"])

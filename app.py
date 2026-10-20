@@ -87,7 +87,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.3.7"
+APP_VERSION = "V3.3.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -21065,17 +21065,7 @@ def corporate_apparel_request_plan(
     permission_record_id = feishu_record_id(permission_row or {})
     if not permission_record_id:
         raise RuntimeError("申请人权限记录创建失败，请稍后重试。")
-    authoritative_source_rows = corporate_apparel_source_client().list_records(
-        CORPORATE_APPAREL_SOURCE_TABLE_ID
-    )
-    catalog_items = {
-        (str(item["product"]), str(item["size"])): item
-        for item in corporate_apparel_catalog(
-            fresh_feishu_rows(CORPORATE_APPAREL_TABLE_NAME),
-            source_rows=authoritative_source_rows,
-        )["items"]
-    }
-    prepared: list[dict[str, object]] = []
+    validated_lines: list[dict[str, object]] = []
     requested_by_product: dict[str, int] = {}
     seen: set[tuple[str, str]] = set()
     for raw in lines:
@@ -21088,20 +21078,9 @@ def corporate_apparel_request_plan(
         if key in seen:
             raise RuntimeError("同一品类和尺码不能重复提交。")
         seen.add(key)
-        item = catalog_items.get(key)
-        if not item:
-            raise RuntimeError(f"未找到企业文化衫库存组合：{product} / {size}")
-        if int(item["available"]) < quantity:
-            raise RuntimeError(f"{product} / {size} 可领取库存不足。")
         requested_by_product[product] = requested_by_product.get(product, 0) + quantity
-        prepared.append(
-            {
-                **item,
-                "quantity": quantity,
-                "target_system_redeemed": int(item["system_redeemed"]) + quantity,
-            }
-        )
-    if not prepared:
+        validated_lines.append({"product": product, "size": size, "quantity": quantity})
+    if not validated_lines:
         raise RuntimeError("请至少选择一件企业文化衫。")
     quota_targets: list[dict[str, object]] = []
     permission_fields = feishu_fields(permission_row or {})
@@ -21109,12 +21088,41 @@ def corporate_apparel_request_plan(
         field_name, limit = _corporate_apparel_quota_field(product)
         current = feishu_int(permission_fields, field_name)
         target = current + requested
-        if target > limit:
-            raise RuntimeError(f"{product} 每人累计最多领取 {limit} 件，当前已领取 {current} 件。")
         quota_targets.append(
-            {"product": product, "field": field_name, "current": current, "target": target, "limit": limit}
+            {"product": product, "field": field_name, "current": current,
+             "requested": requested, "target": target, "limit": limit}
         )
+    quota_exceeded = [item for item in quota_targets if int(item["target"]) > int(item["limit"])]
+    if quota_exceeded:
+        # A business rejection, not a transient write failure. Check before stock
+        # reads so a sold-out size cannot obscure the quota rejection route.
+        return {
+            "permission_record_id": permission_record_id,
+            "quota_allowed": False, "quota_exceeded": quota_exceeded,
+            "quota_targets": quota_targets, "items": [],
+        }
+    authoritative_source_rows = corporate_apparel_source_client().list_records(
+        CORPORATE_APPAREL_SOURCE_TABLE_ID
+    )
+    catalog_items = {
+        (str(item["product"]), str(item["size"])): item
+        for item in corporate_apparel_catalog(
+            fresh_feishu_rows(CORPORATE_APPAREL_TABLE_NAME),
+            source_rows=authoritative_source_rows,
+        )["items"]
+    }
+    prepared: list[dict[str, object]] = []
+    for line in validated_lines:
+        product, size, quantity = str(line["product"]), str(line["size"]), int(line["quantity"])
+        item = catalog_items.get((product, size))
+        if not item:
+            raise RuntimeError(f"未找到企业文化衫库存组合：{product} / {size}")
+        if int(item["available"]) < quantity:
+            raise RuntimeError(f"{product} / {size} 可领取库存不足。")
+        prepared.append({**item, "quantity": quantity,
+                         "target_system_redeemed": int(item["system_redeemed"]) + quantity})
     return {
+        "quota_allowed": True,
         "permission_record_id": permission_record_id,
         "items": prepared,
         "quota_targets": quota_targets,
@@ -21144,6 +21152,8 @@ def queued_corporate_apparel_request_payload(
 def submit_feishu_corporate_apparel_request(
     request_payload: dict[str, object], plan: dict[str, object]
 ) -> tuple[str, int, bool]:
+    if plan.get("quota_allowed") is False:
+        raise ValueError("额度超限申请只能发送驳回通知，不能写入领取或库存数据。")
     refresh_feishu_schema_cache()
     ensure_cultural_request_workflow_fields()
     token = str(request_payload.get("submission_token") or "").strip()
@@ -21296,6 +21306,38 @@ def corporate_apparel_notification_targets(
             "key": f"hr:{open_id}", "audience": "hr", "recipient_id": open_id,
             "card": _corporate_apparel_card(request_no, requester, lines, applicant=False, material_usage=material_usage),
         })
+    return targets
+
+
+def corporate_apparel_quota_rejection_targets(
+    request_payload: dict[str, object], lines: list[dict[str, object]],
+    exceeded: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Reuse the apparel notification recipients/table, without HR rejection actions."""
+    targets = corporate_apparel_notification_targets("", request_payload, lines)
+    reason = "\n".join(
+        f"{item['product']}：历史已领取 {int(item['current'])} 件，"
+        f"本次申请 {int(item['requested'])} 件，每人累计上限 {int(item['limit'])} 件。"
+        for item in exceeded
+    )
+    for target in targets:
+        card = target["card"]
+        title = "企业文化衫领取已驳回" if target["audience"] == "applicant" else "企业文化衫领取超限通知"
+        card["header"]["template"] = "red"
+        card["header"]["title"]["content"] = title
+        card["config"]["summary"]["content"] = title
+        lead = (
+            "您的企业文化衫领取申请因累计数量超限已自动驳回。"
+            if target["audience"] == "applicant"
+            else f"{request_payload.get('requester') or '申请人'} 的企业文化衫领取申请因累计数量超限已自动驳回。"
+        )
+        # No request number exists here, and no stock/quota was consumed to refund.
+        card["body"]["elements"] = [
+            {"tag": "markdown", "content": f"**{lead}**\n本次整单未登记领取，库存、系统兑换数量及个人领取累计均未变更。"},
+            {"tag": "markdown", "content": f"**驳回原因**\n{reason}"},
+            {"tag": "markdown", "content": f"申请事由：{request_payload.get('material_usage') or '未填写'}\n本次申请明细："},
+            card["body"]["elements"][2],
+        ]
     return targets
 
 
