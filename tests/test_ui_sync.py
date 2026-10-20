@@ -360,11 +360,11 @@ class CulturalMobileLayoutTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn(
-            "技术岗同学如参加展会可申领polo，市场部暂无夹克库存哦，请勿申领~",
+            "销售岗和技术岗同学如参加展会需要夹克或冲锋衣请找HR刘如蓓询问标准配额和OA申请，市场部暂无销售岗和技术岗的夹克库存哦，请勿申领~",
             page,
         )
         self.assertIn(
-            "Technical colleagues attending exhibitions may request a polo shirt.",
+            "Sales and technical colleagues who need a jacket or outdoor jacket for an exhibition should contact Liu Rubei in HR",
             page,
         )
         self.assertIn('product === CULTURAL_JACKET || product === CULTURAL_POLO', page)

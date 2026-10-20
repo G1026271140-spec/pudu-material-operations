@@ -67,7 +67,7 @@ const c = {
     successHint: "申请已进入后台队列",
     empty: "当前没有文化周边库存数据。",
     jacketNoticeTitle: "文化夹克申领提示",
-    jacketNotice: "技术岗同学如参加展会可申领polo，市场部暂无夹克库存哦，请勿申领~",
+    jacketNotice: "销售岗和技术岗同学如参加展会需要夹克或冲锋衣请找HR刘如蓓询问标准配额和OA申请，市场部暂无销售岗和技术岗的夹克库存哦，请勿申领~",
     poloNoticeTitle: "文化POLO衫申领提示",
     poloNotice: "销售同学可直接联系刘如蓓领取适合自己尺码的polo",
     jacketNoticeCancel: "取消",
@@ -110,7 +110,7 @@ const c = {
     empty: "No cultural merchandise inventory is available.",
     jacketNoticeTitle: "Cultural Jacket Notice",
     jacketNotice:
-      "Technical colleagues attending exhibitions may request a polo shirt. Marketing currently has no jacket inventory, so please do not request one.",
+      "Sales and technical colleagues who need a jacket or outdoor jacket for an exhibition should contact Liu Rubei in HR about standard quotas and OA applications. Marketing currently has no jacket inventory for sales or technical staff, so please do not request one here.",
     poloNoticeTitle: "Cultural Polo Shirt Notice",
     poloNotice:
       "Sales colleagues can contact Liu Rubei directly to collect a polo shirt in a suitable size.",
