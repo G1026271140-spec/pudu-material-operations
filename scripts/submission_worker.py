@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import app as inventory_app
+import task_failure_notices
 from project_config import get_setting
 from submission_queue import (
     QUEUE_TASK_TYPE_ORDER_EDIT,
@@ -928,18 +929,7 @@ def process_task(
                 if checkpoint is not None:
                     checkpoint(progress)
             return progress
-        # A writeback loop can be in progress when an older workflow enqueues
-        # this task. Keep early retries silent; only repeated incompleteness is
-        # treated as a genuine anomaly.
-        if task.retry_count >= 3 and not progress.get("failure_notified"):
-            progress["failure_notification_count"] = (
-                inventory_app.notify_enabled_admins_of_approval_writeback(
-                    request_no, instance_code, succeeded=False
-                )
-            )
-            progress["failure_notified"] = True
-            if checkpoint is not None:
-                checkpoint(progress)
+        # The common failure handler sends a single operations alert per attempt.
         raise RuntimeError(f"申请单 {request_no} 的审批回写尚未完整完成，等待修复后重试。")
     if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REVERT:
         ids = [str(value) for value in list(payload.get("transaction_ids") or [])]
@@ -966,30 +956,14 @@ def process_task(
     raise RuntimeError(f"不支持的后台任务类型：{task.task_type}")
 
 
-def notify_terminal_failure(task: SubmissionTask, error: Exception) -> None:
-    request_payload = dict(task.payload.get("request_payload") or {})
-    requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
+def notify_task_failure(
+    task: SubmissionTask, error: Exception | str, status: str, progress: dict[str, object],
+) -> None:
+    """Persist locally without waiting for Feishu or changing business state."""
     try:
-        recipients = list(inventory_app.enabled_admin_open_ids())
+        task_failure_notices.enqueue(task, error, status, progress=progress)
     except Exception:
-        logging.exception("Loading administrators for terminal task failure failed")
-        recipients = []
-    if requester_open_id.startswith("ou_"):
-        recipients.append(requester_open_id)
-    recipients = list(dict.fromkeys(recipient for recipient in recipients if recipient))
-    client = inventory_app.feishu_client()
-    if client is None:
-        return
-    message = (
-        f"后台写入任务“{task.task_type}”处理失败。任务ID：{task.task_id[:8]}。"
-        "任务数据仍保留在“后台任务队列”，请管理员检查 Worker 日志后重试。"
-        f"\n错误：{str(error)[:500]}"
-    )
-    for recipient in recipients:
-        try:
-            client.send_text_message(recipient, message)
-        except Exception:
-            logging.exception("Sending terminal task failure notification failed: %s", recipient)
+        logging.exception("Persisting task failure alert failed: %s", task.task_id)
 
 
 def notification_only_task(task: SubmissionTask) -> bool:
@@ -1011,6 +985,13 @@ def can_run_alongside(task: SubmissionTask, running: list[SubmissionTask]) -> bo
 
 def process_claimed_submission_task(client: object, task: SubmissionTask) -> None:
     logging.info("Claimed task %s (%s)", task.task_id, task.task_type)
+    latest_progress = dict(task.result)
+
+    def checkpoint(progress: dict[str, object]) -> None:
+        checkpoint_submission_task(client, task, progress)
+        latest_progress.clear()
+        latest_progress.update(progress)
+
     try:
         if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST and not task.result:
             canonical = find_task_by_idempotency_key(client, task.idempotency_key)
@@ -1022,14 +1003,8 @@ def process_claimed_submission_task(client: object, task: SubmissionTask) -> Non
                 })
                 logging.info("Cancelled duplicate task %s; canonical=%s", task.task_id, canonical.task_id)
                 return
-        result = process_task(
-            task,
-            checkpoint=lambda progress: checkpoint_submission_task(
-                client,
-                task,
-                progress,
-            ),
-        )
+        result = process_task(task, checkpoint=checkpoint)
+        latest_progress = dict(result)
         complete_submission_task(client, task, result)
         logging.info("Completed task %s: %s", task.task_id, result.get("request_no"))
     except Exception as exc:
@@ -1043,16 +1018,18 @@ def process_claimed_submission_task(client: object, task: SubmissionTask) -> Non
         retryable = not (
             task.task_type in order_task_types and isinstance(exc, ValueError)
         )
-        status = fail_submission_task(
-            client,
-            task,
-            exc,
-            max_retries=MAX_RETRIES,
-            retryable=retryable,
-        )
+        try:
+            status = fail_submission_task(
+                client, task, exc, max_retries=MAX_RETRIES, retryable=retryable,
+            )
+        except Exception as state_error:
+            logging.exception("Updating failed task state failed: %s", task.task_id)
+            notify_task_failure(
+                task, f"{exc}\n任务状态回写失败：{state_error}", "状态回写失败", latest_progress,
+            )
+            return
         logging.exception("Task %s failed with status %s", task.task_id, status)
-        if status == QUEUE_STATUS_FAILED:
-            notify_terminal_failure(task, exc)
+        notify_task_failure(task, exc, status, latest_progress)
     return None
 
 
@@ -1201,6 +1178,7 @@ def main(argv: list[str] | None = None) -> int:
             logging.info("Backfilled completion state for %s queue tasks", backfilled)
         if args.setup:
             return 0
+        task_failure_notices.start()
         recover_unfinished = args.retry_failed or worker_has_leadership(
             client,
             args.worker_priority,
@@ -1215,6 +1193,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         return RELOAD_EXIT_CODE if run_forever(args.poll_seconds, args.worker_priority) else 0
     finally:
+        task_failure_notices.stop()
         release_single_instance_mutex(mutex_handle)
 
 
