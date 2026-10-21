@@ -5,7 +5,7 @@
     "material_request",
     "inventory_restock"
   ],
-  "generated_at": "2026-10-19 11:01:13",
+  "generated_at": "2026-10-21 11:00:34",
   "departments": [
     {
       "department_id": "od-c162e90053fcfde5215645671fa901a5",
@@ -599,6 +599,12 @@
       "department_id": "od-e8cc1fb212bdc51eb6b639db73e85c1e",
       "name": "基座模型数采实习生组",
       "path": "基座模型数采实习生组",
+      "parent_department_id": ""
+    },
+    {
+      "department_id": "od-be91f039d8c2939761388da62e7c14f3",
+      "name": "基座模型算法实习生组",
+      "path": "基座模型算法实习生组",
       "parent_department_id": ""
     },
     {
@@ -1232,7 +1238,7 @@
       "parent_department_id": ""
     }
   ],
-  "row_count": 204,
+  "row_count": 205,
   "users": [
     {
       "open_id": "ou_050624eb0b61caa9754a4f8de5454040",
@@ -2346,6 +2352,16 @@
       ],
       "department_paths": [
         "采购开发组"
+      ]
+    },
+    {
+      "open_id": "ou_e89ffa4ab67f4c7bbbf09c39fde47698",
+      "name": "余开琴",
+      "department_ids": [
+        "od-9c8b192d089e36db46e1c6ab85181660"
+      ],
+      "department_paths": [
+        "中东欧战队"
       ]
     },
     {
@@ -4457,16 +4473,6 @@
       ]
     },
     {
-      "open_id": "ou_e068685fce491be7467d59fcca298f22",
-      "name": "向大锋",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
-      ]
-    },
-    {
       "open_id": "ou_21952a3f890d1ec23a97349d0af0e22d",
       "name": "向奥阳",
       "department_ids": [
@@ -4526,10 +4532,10 @@
       "open_id": "ou_469fdf2f5e421dfafc6c26c01d144487",
       "name": "吕一帆",
       "department_ids": [
-        "od-e8cc1fb212bdc51eb6b639db73e85c1e"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型数采实习生组"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -4834,16 +4840,6 @@
       ],
       "department_paths": [
         "SR测试组"
-      ]
-    },
-    {
-      "open_id": "ou_94fce59d035048694998969100534965",
-      "name": "吴晓芳",
-      "department_ids": [
-        "od-9e387510e5f803ba2124d78b4af8d0ea"
-      ],
-      "department_paths": [
-        "建湖生产组"
       ]
     },
     {
@@ -5466,16 +5462,6 @@
       ],
       "department_paths": [
         "X LAB"
-      ]
-    },
-    {
-      "open_id": "ou_c1ef0b35f9e4f9ba8835af4e5e2ab109",
-      "name": "周方明",
-      "department_ids": [
-        "od-17a71865d680ccdd42d8ac4fc076e4a9"
-      ],
-      "department_paths": [
-        "IRPBU软件组"
       ]
     },
     {
@@ -6894,12 +6880,12 @@
       "open_id": "ou_1852fa89a5809ae806f01d7eda83c193",
       "name": "岳世昌",
       "department_ids": [
-        "od-d90d38def427cf71640b80459d6b5118",
-        "od-08f98c115575f6c2bbe17b0c42ae0197"
+        "od-08f98c115575f6c2bbe17b0c42ae0197",
+        "od-35d3951cd13bbceaa705479d93557ba7"
       ],
       "department_paths": [
-        "M LAB",
-        "ORPBU 软件组"
+        "ORPBU 软件组",
+        "软件平台架构部"
       ]
     },
     {
@@ -7272,11 +7258,13 @@
       "department_ids": [
         "od-25d320a49e945efe59e2b6cf41f9ba93",
         "od-e8cc1fb212bdc51eb6b639db73e85c1e",
+        "od-be91f039d8c2939761388da62e7c14f3",
         "od-3dd1486ac774c442539f2658feefbf00"
       ],
       "department_paths": [
         "GRPBU算法组",
         "基座模型数采实习生组",
+        "基座模型算法实习生组",
         "基座模型部"
       ]
     },
@@ -8220,9 +8208,11 @@
       "open_id": "ou_c524cb7931e972489f28d00e1a75d399",
       "name": "张营",
       "department_ids": [
+        "od-08f98c115575f6c2bbe17b0c42ae0197",
         "od-35d3951cd13bbceaa705479d93557ba7"
       ],
       "department_paths": [
+        "ORPBU 软件组",
         "软件平台架构部"
       ]
     },
@@ -9324,10 +9314,10 @@
       "open_id": "ou_cadd9a733937ca406a3c781607253abb",
       "name": "曹家骏",
       "department_ids": [
-        "od-3dd1486ac774c442539f2658feefbf00"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型部"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -10558,10 +10548,10 @@
       "open_id": "ou_bf51dd5e55ff8c25a9224eb4f7b50742",
       "name": "李志佳",
       "department_ids": [
-        "od-e8cc1fb212bdc51eb6b639db73e85c1e"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型数采实习生组"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -11819,6 +11809,16 @@
       ]
     },
     {
+      "open_id": "ou_6d2ce5096a1d0ce2a478b234d6f7f9b4",
+      "name": "杨杜飞",
+      "department_ids": [
+        "od-0fb85889b8ef919a21a392e0dc075d54"
+      ],
+      "department_paths": [
+        "IR部"
+      ]
+    },
+    {
       "open_id": "ou_3665b0707cfe556cfe260e99dad4c964",
       "name": "杨杰",
       "department_ids": [
@@ -12209,16 +12209,6 @@
       ]
     },
     {
-      "open_id": "ou_993a898f3174b09561b0f7f48c7c8a3b",
-      "name": "林宏津",
-      "department_ids": [
-        "od-4460d5aedeb32b282f1fd1cf0fc5c8eb"
-      ],
-      "department_paths": [
-        "GRPBU软件组"
-      ]
-    },
-    {
       "open_id": "ou_1efa0efcd942cca43d8b2b32aeeb205e",
       "name": "林昌奎",
       "department_ids": [
@@ -12282,10 +12272,10 @@
       "open_id": "ou_11cd72eb028c92678d941e61c23effc6",
       "name": "林梓鑫",
       "department_ids": [
-        "od-e8cc1fb212bdc51eb6b639db73e85c1e"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型数采实习生组"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -12974,10 +12964,10 @@
       "open_id": "ou_9d6006597b6c1a92a173821914123e9d",
       "name": "武金龙",
       "department_ids": [
-        "od-9ad23d5284430da79278f14ad7fbadd6"
+        "od-a2c8c76e17adbe337a08b3599350f975"
       ],
       "department_paths": [
-        "CRPBU算法组"
+        "CRPBU"
       ]
     },
     {
@@ -13004,10 +12994,10 @@
       "open_id": "ou_11ce41720fe17534b9c0e27c0242920d",
       "name": "段少钦",
       "department_ids": [
-        "od-e8cc1fb212bdc51eb6b639db73e85c1e"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型数采实习生组"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -13232,6 +13222,16 @@
       ],
       "department_paths": [
         "X LAB"
+      ]
+    },
+    {
+      "open_id": "ou_52123d9c221928031cb468129323863f",
+      "name": "汤雨薇",
+      "department_ids": [
+        "od-3d5cdc839a981f2cdd959484763640b6"
+      ],
+      "department_paths": [
+        "COE"
       ]
     },
     {
@@ -15043,10 +15043,12 @@
       "name": "王远志",
       "department_ids": [
         "od-b55838766852bd358d2139850375397e",
+        "od-62d305b24a1a254ea505354e9a4d4897",
         "od-87008252685ec50922f3b015a8d6f2fc"
       ],
       "department_paths": [
         "ORPBU机械组",
+        "PDT管理部",
         "SE管理部"
       ]
     },
@@ -16074,10 +16076,10 @@
       "open_id": "ou_8c31c948d50430c7d2e62dea07eff744",
       "name": "罗炜松",
       "department_ids": [
-        "od-3dd1486ac774c442539f2658feefbf00"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型部"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -16314,10 +16316,10 @@
       "open_id": "ou_252a19f0fa9509935b5e9df632edc424",
       "name": "肖明浩",
       "department_ids": [
-        "od-e8cc1fb212bdc51eb6b639db73e85c1e"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型数采实习生组"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -17365,16 +17367,6 @@
       ]
     },
     {
-      "open_id": "ou_b566feec553b85b6d3cebbbf76d81685",
-      "name": "蓝启成",
-      "department_ids": [
-        "od-6daa61e0fad320b53db9d267fff19727"
-      ],
-      "department_paths": [
-        "AI Infra部"
-      ]
-    },
-    {
       "open_id": "ou_6f40edfa6cf2c58246fd88fcce3464c7",
       "name": "蓝奕东",
       "department_ids": [
@@ -17975,10 +17967,12 @@
       "name": "许炜槟",
       "department_ids": [
         "od-6fe84fa3fd8163eabf46a2ca8766a3b5",
+        "od-62d305b24a1a254ea505354e9a4d4897",
         "od-87008252685ec50922f3b015a8d6f2fc"
       ],
       "department_paths": [
         "ORPBU",
+        "PDT管理部",
         "SE管理部"
       ]
     },
@@ -17990,6 +17984,16 @@
       ],
       "department_paths": [
         "桐乡生产组"
+      ]
+    },
+    {
+      "open_id": "ou_b2bcfd60b0cb42b019a4b319b55e021c",
+      "name": "许睿烁",
+      "department_ids": [
+        "od-2f3b4aa135c682dcf06b79b2f1f75642"
+      ],
+      "department_paths": [
+        "通用导航及底盘团队"
       ]
     },
     {
@@ -18792,10 +18796,10 @@
       "open_id": "ou_c85b4a3c8816cb66810d2472cfe68e33",
       "name": "邓开元",
       "department_ids": [
-        "od-3dd1486ac774c442539f2658feefbf00"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型部"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -18926,16 +18930,6 @@
       ],
       "department_paths": [
         "IQC组"
-      ]
-    },
-    {
-      "open_id": "ou_c991e5ad91071e86c6d51880a6ba9eaf",
-      "name": "邓锦榕",
-      "department_ids": [
-        "od-75d6b33abad414680ad52fde19e35e5a"
-      ],
-      "department_paths": [
-        "收入成本核算组"
       ]
     },
     {
@@ -19830,10 +19824,10 @@
       "open_id": "ou_198b973c75e635169749ccc157c1bca5",
       "name": "钱泽中",
       "department_ids": [
-        "od-3dd1486ac774c442539f2658feefbf00"
+        "od-be91f039d8c2939761388da62e7c14f3"
       ],
       "department_paths": [
-        "基座模型部"
+        "基座模型算法实习生组"
       ]
     },
     {
@@ -20318,6 +20312,16 @@
       ],
       "department_paths": [
         "ORPBU测试组"
+      ]
+    },
+    {
+      "open_id": "ou_d4a5db26567d6a7e51223405cde5a8ca",
+      "name": "陈崇冬",
+      "department_ids": [
+        "od-1fd86a029c8f9337c98371ce5c1cded7"
+      ],
+      "department_paths": [
+        "平台软件测试组"
       ]
     },
     {
@@ -21257,16 +21261,6 @@
       ]
     },
     {
-      "open_id": "ou_b4129f0fbe44a5a863b573ef2e7dba4f",
-      "name": "雷田",
-      "department_ids": [
-        "od-54989923ac5367b9c79a6692ff383d77"
-      ],
-      "department_paths": [
-        "校招组"
-      ]
-    },
-    {
       "open_id": "ou_b41a570fd26d5c9efb70573b4ebd4c66",
       "name": "霍俊良",
       "department_ids": [
@@ -21818,16 +21812,6 @@
       ],
       "department_paths": [
         "桐乡品控组"
-      ]
-    },
-    {
-      "open_id": "ou_5dbb921b2e3e742ce59938f5c2bcbf89",
-      "name": "高晓伟",
-      "department_ids": [
-        "od-7c4c394d59fe1b9f14e3629e853dea7c"
-      ],
-      "department_paths": [
-        "桐乡生产组"
       ]
     },
     {
@@ -22923,5 +22907,5 @@
       ]
     }
   ],
-  "user_count": 2123
+  "user_count": 2120
 }
