@@ -1,8 +1,9 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-10-22 16:36:30",
+  "generated_at": "2026-10-22 17:04:31",
   "products": [
+    "产品折页(Single Product Brochure)",
     "产品单页(Product Flyer )",
     "公司产品手册",
     "工业产品线手册IR(Industrial Product Line Brochure）",
@@ -34,6 +35,7 @@
     "PUDU定制眼镜"
   ],
   "configured_language_products": [
+    "产品折页(Single Product Brochure)",
     "产品单页(Product Flyer )",
     "公司产品手册",
     "工业产品线手册IR(Industrial Product Line Brochure）",
@@ -71,6 +73,7 @@
     "GT3",
     "GT5",
     "GT7",
+    "GT系列三折页",
     "Hulk",
     "HULK集合（三折页）",
     "KettyBot Pro",
@@ -133,7 +136,8 @@
     "GT3": "OR",
     "GT5": "OR",
     "GT7": "OR",
-    "HULK集合（三折页）": "OR"
+    "HULK集合（三折页）": "OR",
+    "GT系列三折页": "OR"
   },
   "model_display_names": {
     "BG1": {
@@ -303,9 +307,17 @@
     "HULK集合（三折页）": {
       "zh": "HULK集合（三折页）",
       "en": "HULK集合（三折页）"
+    },
+    "GT系列三折页": {
+      "zh": "GT系列三折页",
+      "en": "GT series"
     }
   },
   "category_display_names": {
+    "产品折页(Single Product Brochure)": {
+      "zh": "产品折页",
+      "en": "Single Product Brochure"
+    },
     "产品单页(Product Flyer )": {
       "zh": "产品单页",
       "en": "Product Flyer"
@@ -374,6 +386,28 @@
     "韩语(Korean)"
   ],
   "active_combinations": [
+    {
+      "product": "产品折页(Single Product Brochure)",
+      "models": [
+        {
+          "model": "GT系列三折页",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(Japanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
+          ],
+          "product_line": "OR"
+        }
+      ]
+    },
     {
       "product": "产品单页(Product Flyer )",
       "models": [
@@ -679,6 +713,23 @@
             "繁中(Traditional Chinese)",
             "葡语(Portuguese)",
             "西语(Spanish)",
+            "韩语(Korean)"
+          ],
+          "product_line": "OR"
+        },
+        {
+          "model": "HULK集合（三折页）",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(Japanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
             "韩语(Korean)"
           ],
           "product_line": "OR"
@@ -1182,6 +1233,23 @@
           "product_line": "SR"
         },
         {
+          "model": "HULK集合（三折页）",
+          "languages": [
+            "英语(English)",
+            "简中(Simplified Chinese)",
+            "德语(German)",
+            "日语(Japanese)",
+            "法语(French)",
+            "西语(Spanish)",
+            "葡语(Portuguese)",
+            "俄语(Russian)",
+            "繁中(Traditional Chinese)",
+            "意大利语(Italian)",
+            "韩语(Korean)"
+          ],
+          "product_line": "OR"
+        },
+        {
           "model": "KettyBot Pro",
           "languages": [
             "英语(English)",
@@ -1597,8 +1665,24 @@
       ]
     }
   ],
-  "combination_count": 675,
+  "combination_count": 708,
   "inventory_rows": [
+    {
+      "material_code": "MAT-0011",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "英语(English)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0012",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "德语(German)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
     {
       "material_code": "MAT-0181",
       "product": "产品单页(Product Flyer )",
@@ -4512,6 +4596,70 @@
       "unit_price_rmb": 1.0155
     },
     {
+      "material_code": "MAT-0003",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "日语(Japanese)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0004",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "法语(French)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0005",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "西语(Spanish)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0006",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "葡语(Portuguese)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0007",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "俄语(Russian)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0008",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0009",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-0010",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "意大利语(Italian)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
       "material_code": "MAT-0993",
       "product": "产品单页(Product Flyer )",
       "model": "D5",
@@ -6998,8 +7146,192 @@
       "language": "无需语种",
       "quantity": 170,
       "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-1423",
+      "product": "产品折页(Single Product Brochure)",
+      "model": "GT系列三折页",
+      "language": "韩语(Korean)",
+      "quantity": 0,
+      "unit_price_rmb": 1.354
+    },
+    {
+      "material_code": "MAT-1424",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "英语(English)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1425",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1426",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "德语(German)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1427",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "日语(Japanese)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1428",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "法语(French)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1429",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "西语(Spanish)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1430",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "葡语(Portuguese)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1431",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "俄语(Russian)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1432",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1433",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "意大利语(Italian)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1434",
+      "product": "产品单页(Product Flyer )",
+      "model": "HULK集合（三折页）",
+      "language": "韩语(Korean)",
+      "quantity": 0,
+      "unit_price_rmb": 0.2708
+    },
+    {
+      "material_code": "MAT-1435",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "英语(English)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1436",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "简中(Simplified Chinese)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1437",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "德语(German)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1438",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "日语(Japanese)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1439",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "法语(French)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1440",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "西语(Spanish)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1441",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "葡语(Portuguese)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1442",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "俄语(Russian)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1443",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "繁中(Traditional Chinese)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1444",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "意大利语(Italian)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
+    },
+    {
+      "material_code": "MAT-1445",
+      "product": "产品易拉宝(Product Roll-Up)",
+      "model": "HULK集合（三折页）",
+      "language": "韩语(Korean)",
+      "quantity": 0,
+      "unit_price_rmb": 70.408
     }
   ],
-  "row_count": 675,
+  "row_count": 708,
   "built_from": "page_data_static_snapshot"
 }
