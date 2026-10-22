@@ -1277,6 +1277,11 @@ def management_category_submit(
 
     operation = str(body.get("operation") or "")
     token = str(body.get("submission_token") or uuid4().hex)
+    if operation == "delete":
+        try:
+            legacy.validate_category_delete_draft(dict(body.get("draft") or {}), require_confirmation=True)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
     try:
         if operation == "delete":
             draft = dict(body.get("draft") or {})

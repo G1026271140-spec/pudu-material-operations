@@ -956,6 +956,31 @@ def test_category_submit_preserves_target_value_rows_for_worker(monkeypatch):
     assert observed["payload"]["sync_args"]["target_values_rows"][0]["values"]["quantity"] == 8
 
 
+@pytest.mark.parametrize("kind,confirmed,name,rows,expected", [
+    ("material_rows", True, "", ["mat-1"], 200),
+    ("material_rows", True, "", [], 422),
+    ("material_rows", False, "", ["mat-1"], 422),
+    ("categories", True, "产品单页", ["mat-1"], 200),
+    ("categories", True, "其他品类", ["mat-1"], 422),
+    ("categories", False, "产品单页", ["mat-1"], 422),
+    ("", True, "", ["mat-1"], 422),
+])
+def test_category_delete_submit_requires_explicit_scope_and_confirmation(monkeypatch, kind, confirmed, name, rows, expected):
+    observed = []
+    monkeypatch.setattr(web_api, "_enqueue_fast", lambda *args: observed.append(args) or "task-delete")
+    response = admin_client(monkeypatch).post("/api/admin/category/submit", json={
+        "operation": "delete", "submission_token": "delete-token",
+        "draft": {"delete_kind": kind, "category_names": ["产品单页"],
+                  "record_ids": rows, "records": [{"record_id": i, "category": "产品单页"} for i in rows],
+                  "scope_confirmed": confirmed, "confirmed_category_name": name},
+    })
+    assert response.status_code == expected
+    assert len(observed) == (1 if expected == 200 else 0)
+    if expected == 200:
+        assert observed[0][2]["draft"]["delete_kind"] == kind
+        assert observed[0][2]["draft"]["record_ids"] == rows
+
+
 def test_allocation_pending_requires_admin_and_returns_only_summary(monkeypatch):
     row = {"record_id": "request-1", "fields": {
         "申请单号": "REQ-1", "申请类型": "普通物料申请", "审批状态": "待审批",

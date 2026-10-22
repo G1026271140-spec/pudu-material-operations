@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Category deletion safety fixture</title></head>
+<body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {CategoryManager} from '../src/ManagementPage.tsx';
+import '../src/styles.css';
+// Isolated fixture: no authentication, no live data, and no network writes.
+window.fetch=async()=>{throw Error('测试页面禁止后台写入 / Network writes disabled in fixture');};
+const category='公仔(Plush Toy)';
+const catalog={categories:[{record_id:'cat-1',category,status:'启用',category_definition:'周边礼品'}],inventory:[
+{record_id:'row-1',category,material_code:'MAT-0741',model:'BG1',language:'无需语种',quantity:0,status:'启用'},
+{record_id:'row-2',category,material_code:'MAT-0581',model:'BellaBot',language:'无需语种',quantity:561,status:'启用'},
+{record_id:'row-3',category,material_code:'MAT-0591',model:'KettyBot Pro',language:'无需语种',quantity:242,status:'启用'}],culturalInventory:[],dimensions:{model:[],language:[],region:[]},categoryDefinitions:['周边礼品'],packingTypes:['其他'],statuses:['启用'],visibilityOptions:['是'],noModelText:'无需型号',noLanguageText:'无需语种'};
+function Fixture(){const[error,setError]=React.useState('');return React.createElement('main',{className:'management-page'},React.createElement('p',null,'隔离测试页面：不会删除真实数据'),React.createElement(CategoryManager,{catalog,tr:(zh,en)=>new URLSearchParams(location.search).get('lang')==='en'?en:zh,setBusy:()=>{},setSuccess:()=>{},setError}),React.createElement('p',{role:'alert'},error));}
+createRoot(document.getElementById('root')).render(React.createElement(Fixture));
+</script></body></html>

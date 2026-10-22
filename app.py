@@ -87,7 +87,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.4.0"
+APP_VERSION = "V3.4.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -17073,6 +17073,7 @@ def category_delete_record_signature(record: dict) -> tuple[object, ...]:
         float(record.get("unit_price") or 0),
         normalize_enabled_status(record.get("status")),
         normalize_request_page_visibility(record.get("request_visible")),
+        int(record.get("in_transit_quantity") or 0),
     )
 
 
@@ -17162,11 +17163,42 @@ def clear_category_delete_state() -> None:
             st.session_state.pop(key, None)
 
 
+def validate_category_delete_draft(
+    draft: dict[str, object], *, require_confirmation: bool = False,
+) -> None:
+    """Fail closed: a missing/empty row selection must never mean a category delete."""
+    kind = draft.get("delete_kind")
+    if kind not in {"material_rows", "categories"}:
+        raise ValueError("必须明确选择删除所选物料行或删除整个品类。")
+    names = draft.get("category_names")
+    ids = draft.get("record_ids")
+    records = draft.get("records")
+    if not isinstance(names, list) or not names or any(not isinstance(n, str) or not n.strip() for n in names) or len(set(names)) != len(names):
+        raise ValueError("删除品类范围为空或无效，请重新预览。")
+    if not isinstance(ids, list) or any(not isinstance(i, str) or not i.strip() for i in ids) or len(set(ids)) != len(ids):
+        raise ValueError("删除物料行标识无效或重复，请重新预览。")
+    if not isinstance(records, list) or any(not isinstance(row, dict) for row in records):
+        raise ValueError("缺少删除明细快照，请重新预览。")
+    preview_ids = [row.get("record_id") for row in records]
+    if any(not isinstance(i, str) or not i.strip() for i in preview_ids) or len(set(preview_ids)) != len(preview_ids) or set(preview_ids) != set(ids):
+        raise ValueError("删除记录范围与预览明细不一致，请重新预览。")
+    if any(row.get("category") not in names for row in records):
+        raise ValueError("删除明细包含其他品类，已阻止操作。")
+    if kind == "material_rows" and not ids:
+        raise ValueError("请勾选要删除的物料行；空选择不会删除整个品类。")
+    if require_confirmation or draft.get("requires_explicit_confirmation"):
+        if draft.get("scope_confirmed") is not True:
+            raise ValueError("请先核对并确认删除范围和明细。")
+        if kind == "categories" and (len(names) != 1 or draft.get("confirmed_category_name") != names[0]):
+            raise ValueError("删除整个品类必须输入完整品类名称确认。")
+
+
 def execute_category_delete(
     draft: dict[str, object],
     *,
     notify_admins: bool = True,
 ) -> dict[str, int]:
+    validate_category_delete_draft(draft)
     delete_kind = str(draft.get("delete_kind") or "")
     category_names = [str(value) for value in list(draft.get("category_names") or [])]
     preview_records = [dict(row) for row in list(draft.get("records") or []) if isinstance(row, dict)]
@@ -17174,6 +17206,18 @@ def execute_category_delete(
     categories = load_feishu_category_records()
     inventory_records = load_feishu_inventory_records()
     category_by_name = {str(item.get("category") or ""): item for item in categories}
+    cultural_names = {
+        name for name in category_names
+        if category_by_name.get(name, {}).get("category_definition") == CATEGORY_DEFINITION_CULTURAL
+    }
+    cultural_records = (
+        load_cultural_dimension_inventory_records(fresh_feishu_rows(CULTURAL_MATERIAL_TABLE_NAME))
+        if cultural_names else []
+    )
+    inventory_records = [*inventory_records, *[
+        row for row in cultural_records if row.get("category") in cultural_names
+    ]]
+    cultural_ids = {str(row.get("record_id") or "") for row in cultural_records}
     if delete_kind == "categories":
         blockers = category_delete_category_blockers(category_names, category_by_name, inventory_records)
         current_records = [row for row in inventory_records if str(row.get("category") or "") in set(category_names)]
@@ -17183,6 +17227,8 @@ def execute_category_delete(
         record_ids = {str(value) for value in list(draft.get("record_ids") or [])}
         current_records = [row for row in inventory_records if str(row.get("record_id") or "") in record_ids]
         blockers = category_delete_blockers(current_records)
+        if any(str(row.get("category") or "") not in category_names for row in current_records):
+            blockers.append("所选物料行已不属于预览品类")
         if len(record_ids) != len(current_records):
             blockers.append("部分物料行已被其他操作修改或删除")
     changed = category_delete_changed_records(preview_records, current_records)
@@ -17191,12 +17237,21 @@ def execute_category_delete(
     if blockers:
         raise RuntimeError("删除前检查未通过：" + "；".join(blockers[:8]))
     if delete_kind == "categories":
+        if cultural_names:
+            feishu_batch_delete_record_ids(CULTURAL_MATERIAL_TABLE_NAME, [
+                str(row.get("record_id") or "") for row in current_records
+                if str(row.get("record_id") or "") in cultural_ids
+            ])
         for name in category_names:
             delete_feishu_category(name, str(category_by_name[name].get("record_id") or ""))
     else:
         deleted_ids = {str(row.get("record_id") or "") for row in current_records}
         for row in current_records:
-            delete_feishu_inventory_item(str(row.get("record_id") or ""))
+            record_id = str(row.get("record_id") or "")
+            if record_id in cultural_ids:
+                feishu_batch_delete_record_ids(CULTURAL_MATERIAL_TABLE_NAME, [record_id])
+            else:
+                delete_feishu_inventory_item(record_id)
         for name in category_names:
             category = category_by_name.get(name)
             if category:
