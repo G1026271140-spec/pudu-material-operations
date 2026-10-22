@@ -43,7 +43,22 @@ def _parsed_json_cache(path: str, modified_ns: int, size: int) -> dict[str, Any]
 def _json(name: str) -> dict[str, Any]:
     path = resolve_cache_path(ROOT, f"data/{name}")
     stat = path.stat()
-    return _parsed_json_cache(str(path), stat.st_mtime_ns, stat.st_size)
+    data = _parsed_json_cache(str(path), stat.st_mtime_ns, stat.st_size)
+    if name == "page_data_cache.json":
+        from catalog_deletions import filter_page_snapshot
+        return filter_page_snapshot(data)
+    return data
+
+
+def catalog_revision() -> str:
+    from catalog_deletions import revision
+
+    signatures = []
+    for name in ("page_data_cache.json", "request_form_cache.json", "contact_departments_cache.json"):
+        path = resolve_cache_path(ROOT, f"data/{name}")
+        stat = path.stat()
+        signatures.append((str(path), stat.st_mtime_ns, stat.st_size))
+    return hashlib.sha256(repr((signatures, revision())).encode()).hexdigest()
 
 
 def _asset_file(relative: str) -> FileResponse:
@@ -87,6 +102,7 @@ def _image_index() -> dict[str, list[str]]:
 def build_catalog() -> dict[str, Any]:
     import app as legacy
 
+    revision = catalog_revision()
     cache = _json("request_form_cache.json")
     contacts = _json("contact_departments_cache.json")
     images = _image_index()
@@ -94,6 +110,23 @@ def build_catalog() -> dict[str, Any]:
     display_names = cache.get("model_display_names", {})
     category_display_names = cache.get("category_display_names", {})
     page = _json("page_data_cache.json")
+    # Request and page snapshots may have different publication times. Never
+    # revive a deleted row from the older request snapshot, even for admins.
+    tables = page.get("tables", {})
+    existing_categories = {
+        legacy.normalize_category_match_key(legacy.feishu_text(legacy.feishu_fields(row), "物料品类"))
+        for row in tables.get(legacy.CATEGORY_TABLE_NAME, [])
+    }
+    existing_combinations = {
+        legacy.request_material_match_key(item.get("category"), item.get("model"), item.get("language"))
+        for item in legacy.feishu_inventory_records_from_rows(
+            list(tables.get(legacy.MATERIAL_TABLE_NAME, [])),
+            list(tables.get(legacy.CATEGORY_TABLE_NAME, [])), active_only=False,
+        )
+    }
+    inventory_rows = [row for row in cache.get("inventory_rows", [])
+                      if legacy.normalize_category_match_key(row.get("product")) in existing_categories
+                      and legacy.request_material_match_key(row.get("product"), row.get("model"), row.get("language")) in existing_combinations]
     roles_by_user: dict[str, list[str]] = {}
     for row in page.get("tables", {}).get("用户权限表", []):
         fields = row.get("fields", {})
@@ -107,7 +140,7 @@ def build_catalog() -> dict[str, Any]:
             if open_id:
                 roles_by_user[open_id] = sorted({str(role) for role in fields.get("角色", []) if str(role).strip()})
     combinations: dict[str, list[dict[str, Any]]] = {}
-    for row in cache.get("inventory_rows", []):
+    for row in inventory_rows:
         product = str(row.get("product") or "").strip()
         combinations.setdefault(product, []).append(
             {
@@ -120,7 +153,7 @@ def build_catalog() -> dict[str, Any]:
                 "unitPriceRmb": float(row.get("unit_price_rmb") or 0),
             }
         )
-    base_product_names = list(cache.get("products", []))
+    base_product_names = [name for name in cache.get("products", []) if combinations.get(name)]
     base_product_keys = {
         legacy.normalize_category_match_key(name) for name in base_product_names
     }
@@ -128,7 +161,7 @@ def build_catalog() -> dict[str, Any]:
         legacy.request_material_match_key(
             row.get("product"), row.get("model"), row.get("language")
         )
-        for row in cache.get("inventory_rows", [])
+        for row in inventory_rows
     }
 
     tables = page.get("tables", {})
@@ -261,6 +294,7 @@ def build_catalog() -> dict[str, Any]:
             }
         )
     return {
+        "revision": revision,
         "generatedAt": cache.get("generated_at"),
         "products": [
             {
@@ -273,7 +307,7 @@ def build_catalog() -> dict[str, Any]:
                 "images": images.get(name, []),
                 "options": combinations.get(name, []),
             }
-            for name in cache.get("products", [])
+            for name in base_product_names
         ],
         "adminProducts": admin_products,
         "users": contacts.get("users", []),
@@ -613,8 +647,15 @@ def health() -> dict[str, str]:
 
 
 @api.get("/api/catalog")
-def catalog() -> dict[str, Any]:
+def catalog(response: Response) -> dict[str, Any]:
+    response.headers["Cache-Control"] = "no-store"
     return build_catalog()
+
+
+@api.get("/api/catalog/revision")
+def request_catalog_revision(response: Response) -> dict[str, str]:
+    response.headers["Cache-Control"] = "no-store"
+    return {"revision": catalog_revision()}
 
 
 @api.get("/api/cultural-catalog")

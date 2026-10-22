@@ -87,7 +87,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.4.3"
+APP_VERSION = "V3.4.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -13798,6 +13798,8 @@ def delete_feishu_inventory_item(record_id: str) -> None:
     if client is None:
         return
     client.delete_record(feishu_table_id("物料主数据"), record_id)
+    from catalog_deletions import record_deleted
+    record_deleted(MATERIAL_TABLE_NAME, [record_id])
 
 
 def update_feishu_inventory_item(
@@ -13841,10 +13843,12 @@ def delete_feishu_category(product: str, category_record_id: str) -> None:
     client = feishu_client()
     if client is None:
         return
+    from catalog_deletions import record_deleted
     for row in feishu_material_rows():
         if feishu_text(feishu_fields(row), "物料品类") == product:
-            client.delete_record(feishu_table_id("物料主数据"), feishu_record_id(row))
+            delete_feishu_inventory_item(feishu_record_id(row))
     client.delete_record(feishu_table_id("物料品类"), category_record_id)
+    record_deleted(CATEGORY_TABLE_NAME, [category_record_id])
 
 
 def update_feishu_category(
@@ -17236,9 +17240,14 @@ def execute_category_delete(
         blockers.append("预览后数据已变化：" + "、".join(changed[:8]))
     if blockers:
         raise RuntimeError("删除前检查未通过：" + "；".join(blockers[:8]))
+    from catalog_deletions import record_deleted
     if delete_kind == "categories":
         if cultural_names:
             feishu_batch_delete_record_ids(CULTURAL_MATERIAL_TABLE_NAME, [
+                str(row.get("record_id") or "") for row in current_records
+                if str(row.get("record_id") or "") in cultural_ids
+            ])
+            record_deleted(CULTURAL_MATERIAL_TABLE_NAME, [
                 str(row.get("record_id") or "") for row in current_records
                 if str(row.get("record_id") or "") in cultural_ids
             ])
@@ -17250,6 +17259,7 @@ def execute_category_delete(
             record_id = str(row.get("record_id") or "")
             if record_id in cultural_ids:
                 feishu_batch_delete_record_ids(CULTURAL_MATERIAL_TABLE_NAME, [record_id])
+                record_deleted(CULTURAL_MATERIAL_TABLE_NAME, [record_id])
             else:
                 delete_feishu_inventory_item(record_id)
         for name in category_names:

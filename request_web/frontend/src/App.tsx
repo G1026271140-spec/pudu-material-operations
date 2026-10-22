@@ -32,6 +32,7 @@ type User = {
 };
 type Department = { department_id: string; name: string; path: string };
 type Catalog = {
+  revision?: string;
   generatedAt: string;
   products: Product[];
   adminProducts: Product[];
@@ -88,13 +89,48 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     [remark, setRemark] = useState(""),
     [lines, setLines] = useState<Line[]>([]);
   useEffect(() => {
-    fetch("/api/catalog")
-      .then((r) => {
-        if (!r.ok) throw Error("目录加载失败");
-        return r.json();
-      })
-      .then(setCatalog)
-      .catch((e) => setError(e.message));
+    let stopped = false;
+    let loading = false;
+    let revision = "";
+    const controller = new AbortController();
+    async function refresh(initial = false) {
+      if (loading || stopped || (!initial && document.visibilityState === "hidden")) return;
+      loading = true;
+      try {
+        if (!initial) {
+          const response = await fetch("/api/catalog/revision", { cache: "no-store", signal: controller.signal });
+          if (!response.ok) return;
+          const latest = await response.json();
+          if (latest.revision === revision) return;
+        }
+        const response = await fetch("/api/catalog", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw Error("目录加载失败");
+        const latest: Catalog = await response.json();
+        if (!stopped) {
+          revision = latest.revision || "";
+          setCatalog(latest);
+        }
+      } catch (error) {
+        // A background refresh must not discard a form or interrupt selection.
+        if (initial && !stopped) setError(error instanceof Error ? error.message : "目录加载失败");
+      } finally {
+        loading = false;
+      }
+    }
+    const check = () => { void refresh(); };
+    void refresh(true);
+    const timer = window.setInterval(check, 15000);
+    window.addEventListener("focus", check);
+    document.addEventListener("visibilitychange", check);
+    document.addEventListener("pudu:check-request-catalog", check);
+    return () => {
+      stopped = true;
+      controller.abort();
+      window.clearInterval(timer);
+      window.removeEventListener("focus", check);
+      document.removeEventListener("visibilitychange", check);
+      document.removeEventListener("pudu:check-request-catalog", check);
+    };
   }, []);
   useEffect(() => {
     if (!cartNotice) return;
@@ -159,6 +195,22 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
       (role) => fullCatalogRoles.includes(role),
     ),
   );
+  useEffect(() => {
+    if (!catalog) return;
+    setActive((current) => {
+      if (!current) return null;
+      const latest = (hasFullCatalog ? catalog.adminProducts || [] : catalog.products)
+        .find((product) => product.name === current.name);
+      return latest?.options.length ? latest : null;
+    });
+  }, [catalog, hasFullCatalog]);
+  useEffect(() => {
+    if (!active) return;
+    const models = new Set(active.options.map((option) => option.model || "无需型号"));
+    const languages = new Set(active.options.map((option) => option.language || "无需语种"));
+    setSelectedModels((selected) => selected.filter((model) => models.has(model)));
+    setSelectedLanguages((selected) => selected.filter((language) => languages.has(language)));
+  }, [active]);
   const adminProductMap = new Map(
     (catalog?.adminProducts || []).map((product) => [product.name, product]),
   );
@@ -273,6 +325,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     [active, selectedModels],
   );
   function open(p: Product) {
+    document.dispatchEvent(new Event("pudu:check-request-catalog"));
     setActive(p);
     const ms = [...new Set(p.options.map((o) => o.model || "无需型号"))];
     const ls = [...new Set(p.options.map((o) => o.language || "无需语种"))];

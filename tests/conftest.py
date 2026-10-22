@@ -2,6 +2,11 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
+def isolate_catalog_deletions(tmp_path, monkeypatch):
+    monkeypatch.setenv("PUDU_CATALOG_DELETIONS_DB", str(tmp_path / "catalog-deletions.sqlite3"))
+
+
+@pytest.fixture(autouse=True)
 def isolate_submission_receipts(tmp_path, monkeypatch):
     import submission_receipts
 
