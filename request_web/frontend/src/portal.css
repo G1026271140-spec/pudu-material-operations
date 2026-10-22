@@ -196,7 +196,8 @@
   display: grid;
   gap: 7px;
 }
-.sidebar nav button {
+.sidebar nav button,
+.sidebar nav .corporate-apparel-link {
   display: grid;
   grid-template-columns: 24px 1fr auto;
   align-items: center;
@@ -208,6 +209,16 @@
   color: #173f59;
   text-align: left;
   cursor: pointer;
+}
+.sidebar nav .corporate-apparel-link {
+  font: inherit;
+  text-decoration: none;
+}
+.sidebar nav .corporate-apparel-link:hover,
+.sidebar nav .corporate-apparel-link:focus-visible {
+  border-color: #b9d3df;
+  background: #e7f1f6;
+  color: #075b7b;
 }
 .sidebar nav button.active {
   border-color: #b9d3df;
@@ -527,6 +538,9 @@
     overflow-x: auto;
     margin-top: 8px;
   }
+  .sidebar nav:has(.corporate-apparel-link) {
+    grid-template-columns: repeat(4, max-content);
+  }
   .language-switch {
     width: 210px;
     margin-left: auto;
@@ -603,7 +617,11 @@
     width: 100%;
     padding-bottom: 2px;
   }
-  .sidebar nav button {
+  .sidebar nav:has(.corporate-apparel-link) {
+    grid-template-columns: repeat(4, minmax(132px, 1fr));
+  }
+  .sidebar nav button,
+  .sidebar nav .corporate-apparel-link {
     min-height: 42px;
     padding: 8px 10px;
     font-size: 12px;
