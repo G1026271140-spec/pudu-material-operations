@@ -5,6 +5,7 @@ from datetime import date
 import streamlit as st
 
 from shipping_template import (
+    DEFAULT_SHIPPING_COST,
     DEFAULT_PAYMENT_TERM,
     DEFAULT_PRODUCT_MODEL,
     Carton,
@@ -888,6 +889,11 @@ def render_shipping_template_page(
     template_date, address_code, recipient = _render_recipient_fields(template_date)
     cartons, carton_items, category_by_id = _render_cartons_and_contents(categories)
     lines = _render_invoice_summary(category_by_id, carton_items)
+    shipping_cost = st.number_input(
+        "Shipping Cost（美元）", min_value=0.0, value=float(DEFAULT_SHIPPING_COST),
+        step=1.0, format="%.2f", key="shipping_cost",
+        help="运费从原货物总值中按比例扣减，发票总额不增加；运费不进入装箱单。",
+    )
     allocations = build_shipping_carton_allocations(carton_items)
     _render_live_summary(lines, cartons, allocations)
 
@@ -908,6 +914,7 @@ def render_shipping_template_page(
                 lines=lines,
                 cartons=cartons,
                 allocations=allocations,
+                shipping_cost=shipping_cost,
             )
         except Exception as exc:
             st.error(str(exc))

@@ -842,9 +842,12 @@ def management_catalog(_: str = Depends(require_admin)) -> dict[str, Any]:
         value = str(category.get("packing_list_product_type") or "").strip()
         if value and value not in packing_types:
             packing_types.append(value)
+    from shipping_template import DEFAULT_SHIPPING_COST
+
     snapshot["shipping"] = {
         "cartonPresets": CARTON_PRESETS,
         "packingTypes": packing_types,
+        "defaultShippingCost": float(DEFAULT_SHIPPING_COST),
     }
     return snapshot
 
@@ -864,7 +867,7 @@ def shipping_invoice_preview(body: dict[str, Any], _: str = Depends(require_admi
 
 @api.post("/api/admin/shipping/generate")
 def shipping_generate(body: dict[str, Any], _: str = Depends(require_admin)) -> StreamingResponse:
-    from shipping_template import Carton, CartonAllocation, ShippingLine, generate_shipping_workbook
+    from shipping_template import DEFAULT_SHIPPING_COST, Carton, CartonAllocation, ShippingLine, generate_shipping_workbook
 
     try:
         lines = [ShippingLine(**dict(item)) for item in list(body.get("lines") or [])]
@@ -877,6 +880,7 @@ def shipping_generate(body: dict[str, Any], _: str = Depends(require_admin)) -> 
             lines=lines,
             cartons=cartons,
             allocations=allocations,
+            shipping_cost=body.get("shipping_cost", DEFAULT_SHIPPING_COST),
         )
     except Exception as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

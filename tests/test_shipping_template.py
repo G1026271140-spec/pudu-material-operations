@@ -103,11 +103,12 @@ class ShippingTemplateTests(unittest.TestCase):
             lines=lines,
             cartons=cartons,
             allocations=allocations,
+            shipping_cost=0,
         )
         workbook = load_workbook(BytesIO(data), data_only=False)
         self.assertEqual(invoice_number, "2026-MKT-US0813")
         self.assertEqual(workbook["INV"]["B24"].value, "Invoice 9")
-        self.assertEqual(workbook["INV"]["G25"].value, "=SUM(G16:G24)")
+        self.assertEqual(workbook["INV"]["G26"].value, "=SUM(G16:G25)")
         self.assertIn("A15:A23", {str(value) for value in workbook["PL (2)"].merged_cells.ranges})
         self.assertEqual(workbook["PL (2)"]["G24"].value, "=SUM(G15:G23)")
 
@@ -119,6 +120,7 @@ class ShippingTemplateTests(unittest.TestCase):
             lines=[ShippingLine("L1", "Flyer", "Flyer", "Flyers", 10, 0.06, "4911101000")],
             cartons=[Carton(1, 1, 2, 3, 50, 40, 30)],
             allocations=[CartonAllocation(1, "L1", 10)],
+            shipping_cost=0,
         )
         workbook = load_workbook(BytesIO(data), data_only=False)
 
@@ -137,6 +139,7 @@ class ShippingTemplateTests(unittest.TestCase):
             lines=[ShippingLine("L1", "Flyer", "Flyer", "Flyers", 10, 0.06, "4911101000")],
             cartons=[Carton(1, 1, 2, 3, 50, 40, 30)],
             allocations=[CartonAllocation(1, "L1", 10)],
+            shipping_cost=0,
         )
         workbook = load_workbook(BytesIO(data), data_only=False)
 
@@ -173,6 +176,7 @@ class ShippingTemplateTests(unittest.TestCase):
                 CartonAllocation(1, "category-1", 100),
                 CartonAllocation(2, "category-1", 50),
             ],
+            shipping_cost=0,
         )
         workbook = load_workbook(BytesIO(data), data_only=False)
 

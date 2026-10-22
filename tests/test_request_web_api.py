@@ -817,6 +817,7 @@ def test_shipping_generate_returns_immediate_workbook_download(monkeypatch):
         "/api/admin/shipping/generate",
         json={
             "template_date": "2026-09-08",
+            "shipping_cost": 0,
             "address_code": "US",
             "recipient": {"recipient_name": "Test User", "address": "United States"},
             "lines": [{
@@ -835,6 +836,25 @@ def test_shipping_generate_returns_immediate_workbook_download(monkeypatch):
     assert response.status_code == 200
     assert response.content.startswith(b"PK")
     assert "2026-MKT-US0908_INV_PL.xlsx" in response.headers["content-disposition"]
+
+
+@pytest.mark.parametrize("cost,expected_cost,status", [(None, 100, 200), (50, 50, 200), (200, 200, 200), (1001, None, 422), (-1, None, 422)])
+def test_shipping_freight_default_and_override(monkeypatch, cost, expected_cost, status):
+    from io import BytesIO
+    from openpyxl import load_workbook
+
+    body = {"template_date": "2026-10-22", "address_code": "US", "recipient": {},
+        "lines": [{"line_id": "A", "invoice_name": "Goods", "packing_name": "Goods", "packing_type": "Give aways", "quantity": 10, "unit_price": 100, "customs_code": "1234"}],
+        "cartons": [{"carton_no": 1, "carton_quantity": 1, "net_weight": 2, "gross_weight": 3, "length_cm": 40, "width_cm": 30, "height_cm": 20}],
+        "allocations": [{"carton_no": 1, "line_id": "A", "quantity": 10}]}
+    if cost is not None: body["shipping_cost"] = cost
+    response = admin_client(monkeypatch).post("/api/admin/shipping/generate", json=body)
+    assert response.status_code == status
+    if status == 200:
+        invoice = load_workbook(BytesIO(response.content))["INV"]
+        assert invoice["B17"].value == "Shipping Cost"
+        assert invoice["F17"].value == expected_cost
+        assert invoice["E16"].value * invoice["F16"].value + invoice["F17"].value == 1000
 
 
 def test_management_restock_queues_existing_worker_payload(monkeypatch):

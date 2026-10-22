@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shipping cost fixture</title></head>
+<body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import ShippingTemplatePage from '../src/ShippingTemplatePage.tsx';
+import '../src/styles.css';
+window.fetch=async url=>{if(String(url).endsWith('/invoice-preview'))return new Response(JSON.stringify({invoiceNumber:'TEST-INV',addressCode:'US'}),{status:200});throw Error('Isolated fixture: generation disabled');};
+const catalog={categories:[{record_id:'cat-1',category:'公仔',category_definition:'周边礼品',commercial_invoice_name:'Plush Toy',unit_price:100}],shipping:{defaultShippingCost:100,cartonPresets:{},packingTypes:['Give aways']}};
+createRoot(document.getElementById('root')).render(React.createElement(ShippingTemplatePage,{catalog,lang:new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'}));
+</script></body></html>

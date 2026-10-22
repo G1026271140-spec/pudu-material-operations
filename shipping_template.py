@@ -4,6 +4,7 @@ import re
 from copy import copy
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal, InvalidOperation, ROUND_FLOOR, ROUND_HALF_UP
 from io import BytesIO
 from pathlib import Path
 from typing import Iterable
@@ -20,6 +21,44 @@ from country_codes import COUNTRY_CODE_ALIASES, COUNTRY_CODES
 TEMPLATE_PATH = Path(__file__).resolve().parent / "assets" / "shipping" / "骏博发货模板.xlsx"
 DEFAULT_PRODUCT_MODEL = "sample items no commercial Value, Custom purpose only"
 DEFAULT_PAYMENT_TERM = "Free of Charge,No commercial Value, Custom purpose only"
+DEFAULT_SHIPPING_COST = Decimal("100.00")
+
+
+@dataclass(frozen=True)
+class InvoicePricing:
+    original_total: Decimal
+    shipping_cost: Decimal
+    goods_amounts: tuple[Decimal, ...]
+
+    @property
+    def goods_total(self) -> Decimal:
+        return sum(self.goods_amounts, Decimal("0.00"))
+
+
+def invoice_pricing(lines: Iterable[ShippingLine], shipping_cost: object = DEFAULT_SHIPPING_COST) -> InvoicePricing:
+    """Extract freight from the existing invoice value, never add it on top."""
+    try:
+        freight = Decimal(str(shipping_cost))
+        raw_amounts = [Decimal(str(line.unit_price)) * int(line.quantity) for line in lines]
+    except (InvalidOperation, ValueError, TypeError, OverflowError) as exc:
+        raise ValueError("运费及货物单价必须为有效数字。") from exc
+    if not freight.is_finite() or freight < 0 or any(not n.is_finite() or n < 0 for n in raw_amounts):
+        raise ValueError("运费及货物金额必须为非负有限数字。")
+    freight = freight.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    raw_total = sum(raw_amounts, Decimal(0))
+    original_total = raw_total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    if freight > original_total:
+        raise ValueError(f"货物原总值为 {original_total:.2f} 美元，不足以扣出 {freight:.2f} 美元运费，请调整运费或货物单价。")
+    target_cents = int((original_total - freight) * 100)
+    # Largest-remainder allocation preserves the total to the cent and avoids
+    # assigning a negative rounding adjustment to a small/zero-value line.
+    shares = [Decimal(target_cents) * amount / raw_total if raw_total else Decimal(0) for amount in raw_amounts]
+    cents = [int(share.to_integral_value(rounding=ROUND_FLOOR)) for share in shares]
+    remainder = target_cents - sum(cents)
+    order = sorted(range(len(shares)), key=lambda i: (-(shares[i] - cents[i]), i))
+    for index in order[:remainder]:
+        cents[index] += 1
+    return InvoicePricing(original_total, freight, tuple(Decimal(n) / 100 for n in cents))
 
 @dataclass(frozen=True)
 class ShippingLine:
@@ -250,25 +289,35 @@ def _write_shared_header(
         ws["B12"] = str(recipient.get("payment_term") or DEFAULT_PAYMENT_TERM)
 
 
-def _write_invoice(ws: Worksheet, lines: list[ShippingLine]) -> None:
+def _write_invoice(ws: Worksheet, lines: list[ShippingLine], pricing: InvoicePricing) -> None:
     start_row, end_row = _prepare_detail_rows(
         ws,
         template_start=16,
         template_end=23,
-        desired_count=len(lines),
+        desired_count=len(lines) + 1,
         max_col=7,
     )
-    for row, line in zip(range(start_row, end_row + 1), lines):
+    for index, (row, line) in enumerate(zip(range(start_row, end_row), lines)):
         ws.cell(row, 1, line.sku or "/")
         ws.cell(row, 2, line.invoice_name)
         ws.cell(row, 3, line.packing_type)
         ws.cell(row, 4, line.product_model or DEFAULT_PRODUCT_MODEL)
         ws.cell(row, 5, int(line.quantity))
-        ws.cell(row, 6, float(line.unit_price))
-        ws.cell(row, 7, f"=E{row}*F{row}")
+        if pricing.shipping_cost:
+            ws.cell(row, 6, float(pricing.goods_amounts[index] / int(line.quantity)))
+            ws.cell(row, 7, f"=ROUND(E{row}*F{row},2)")
+        else:
+            ws.cell(row, 6, float(line.unit_price))
+            ws.cell(row, 7, f"=E{row}*F{row}")
         ws.cell(row, 5).number_format = "#,##0"
-        ws.cell(row, 6).number_format = "0.000"
+        ws.cell(row, 6).number_format = "0.000######" if pricing.shipping_cost else "0.000"
         ws.cell(row, 7).number_format = "0.00"
+    # Freight is an invoice-only service line, not a physical packing item.
+    for col, value in enumerate(("/", "Shipping Cost", "N/A", "N/A", 1, float(pricing.shipping_cost), f"=E{end_row}*F{end_row}"), start=1):
+        ws.cell(end_row, col, value)
+    ws.cell(end_row, 5).number_format = "#,##0"
+    ws.cell(end_row, 6).number_format = "0.000"
+    ws.cell(end_row, 7).number_format = "0.00"
     total_row = end_row + 1
     ws.merge_cells(start_row=total_row, start_column=1, end_row=total_row, end_column=6)
     ws.cell(total_row, 7, f"=SUM(G{start_row}:G{end_row})")
@@ -367,11 +416,13 @@ def generate_shipping_workbook(
     cartons: Iterable[Carton],
     allocations: Iterable[CartonAllocation],
     template_path: Path = TEMPLATE_PATH,
+    shipping_cost: object = DEFAULT_SHIPPING_COST,
 ) -> tuple[str, bytes]:
     line_list = list(lines)
     carton_list = list(cartons)
     allocation_list = list(allocations)
     validate_shipping_data(line_list, carton_list, allocation_list)
+    pricing = invoice_pricing(line_list, shipping_cost)
     invoice_number = build_invoice_number(template_date, address_code)
     if not template_path.exists():
         raise FileNotFoundError(f"未找到发货模板：{template_path}")
@@ -393,7 +444,7 @@ def generate_shipping_workbook(
         invoice_date=template_date,
         packing_list=True,
     )
-    _write_invoice(invoice_sheet, line_list)
+    _write_invoice(invoice_sheet, line_list, pricing)
     _write_packing_list(packing_sheet, line_list, carton_list, allocation_list)
     _clear_workbook_fills(workbook)
     workbook.calculation.fullCalcOnLoad = True
