@@ -1,0 +1,10 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>积木 T300 模型预览</title><body><main style="max-width:900px;margin:24px auto;padding:20px"><h1>积木 · T300</h1><p>周边礼品 / 无需语种 / 申领页不显示</p><div style="max-width:360px" id="root"></div><p><a id="offline">打开独立演示文件</a></p></main><script type="module">
+import React from 'react';import {createRoot} from 'react-dom/client';
+import CategoryModelMedia from '../src/CategoryModelMedia.tsx';
+import model from '../../../assets/category_models/t300-building-blocks.glb?url';
+import poster from '../../../assets/category_models/reference-1.png?url';
+import offline from '../../../assets/category_models/t300-building-blocks-demo.html?url';
+import '../src/styles.css';
+document.getElementById('offline').href=offline;
+createRoot(document.getElementById('root')).render(React.createElement(CategoryModelMedia,{images:[poster],alt:'积木',modelUrl:model,lang:'zh'}));
+</script></body></html>

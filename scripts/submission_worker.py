@@ -756,11 +756,16 @@ def process_task(
         return {"line_count": len(lines), "notification_count": notified}
     if task.task_type == QUEUE_TASK_TYPE_CATEGORY_SYNC:
         progress = dict(task.result)
+        media = payload.get("category_media")
+        if media is not None:
+            from category_media import category_media_fields
+            category_media_fields(media)
         if not progress.get("write_done"):
             sync_result = inventory_app.sync_feishu_category_inventory(
                 **inventory_app.deserialize_category_sync_args(dict(payload["sync_args"]))
             )
             result = {
+                "category_record_id": str(sync_result.get("category_record_id") or ""),
                 "target_count": int(sync_result.get("target_count") or 0),
                 "created_count": int(sync_result.get("created_count") or 0),
                 "updated_count": int(sync_result.get("updated_count") or 0),
@@ -775,6 +780,12 @@ def process_task(
                 checkpoint(progress)
         else:
             result = dict(progress.get("write_result") or {})
+        if media is not None and not progress.get("media_done"):
+            from category_media import apply_category_media
+            apply_category_media(str(result.get("category_record_id") or ""), media)
+            progress["media_done"] = True
+            if checkpoint is not None:
+                checkpoint(progress)
         draft = dict(payload.get("draft") or {})
         notice_kind = str(payload.get("notification_kind") or "")
         notified = int(progress.get("notification_count") or 0)
@@ -787,6 +798,7 @@ def process_task(
             if checkpoint is not None:
                 checkpoint(progress)
         return {
+            "category_record_id": str(result.get("category_record_id") or ""),
             "target_count": int(result.get("target_count") or 0),
             "created_count": int(result.get("created_count") or 0),
             "updated_count": int(result.get("updated_count") or 0),

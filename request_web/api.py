@@ -99,6 +99,30 @@ def _image_index() -> dict[str, list[str]]:
     return result
 
 
+def _model_index() -> dict[str, str]:
+    """Only serve locally reviewed GLBs explicitly attached to a category."""
+    manifest_path = ROOT / "assets/category_models/manifest.json"
+    if not manifest_path.is_file():
+        return {}
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    result = {}
+    for row in _json("page_data_cache.json").get("tables", {}).get("物料品类", []):
+        fields = row.get("fields", {})
+        name = str(fields.get("物料品类") or "").strip()
+        for attachment in fields.get("申领页图片") or []:
+            if not isinstance(attachment, dict):
+                continue
+            entry = manifest.get(str(attachment.get("name") or ""))
+            if not name or not isinstance(entry, dict):
+                continue
+            relative = str(entry.get("path") or "")
+            path = (ROOT / "assets" / relative).resolve()
+            if relative.startswith("category_models/") and path.is_relative_to((ROOT / "assets/category_models").resolve()) and path.suffix == ".glb" and path.is_file():
+                result[name] = f"/app-assets/{relative}"
+                break
+    return result
+
+
 def build_catalog() -> dict[str, Any]:
     import app as legacy
 
@@ -106,6 +130,7 @@ def build_catalog() -> dict[str, Any]:
     cache = _json("request_form_cache.json")
     contacts = _json("contact_departments_cache.json")
     images = _image_index()
+    models_3d = _model_index()
     product_lines = cache.get("model_product_lines", {})
     display_names = cache.get("model_display_names", {})
     category_display_names = cache.get("category_display_names", {})
@@ -274,6 +299,7 @@ def build_catalog() -> dict[str, Any]:
                 "categoryDefinition": meta["definition"],
                 "image": (images.get(product) or [None])[0],
                 "images": images.get(product, []),
+                "modelUrl": models_3d.get(product),
                 "options": options,
                 "source": "standard",
                 "adminOnly": legacy.normalize_category_match_key(product) not in base_product_keys,
@@ -288,6 +314,7 @@ def build_catalog() -> dict[str, Any]:
                 "categoryDefinition": meta["definition"],
                 "image": (images.get(product) or [None])[0],
                 "images": images.get(product, []),
+                "modelUrl": models_3d.get(product),
                 "options": options,
                 "source": "cultural",
                 "adminOnly": True,
@@ -305,6 +332,7 @@ def build_catalog() -> dict[str, Any]:
                 ).get("definition", ""),
                 "image": (images.get(name) or [None])[0],
                 "images": images.get(name, []),
+                "modelUrl": models_3d.get(name),
                 "options": combinations.get(name, []),
             }
             for name in base_product_names
@@ -856,6 +884,7 @@ def _management_snapshot() -> dict[str, Any]:
         "inventory": inventory,
         "restockInventory": restock_inventory,
         "restockImages": _image_index(),
+        "restockModels": _model_index(),
         "culturalInventory": cultural,
         "dimensions": {
             "model": legacy.dimension_management_records("model", model_rows),

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryCarousel from "./CategoryCarousel";
+import CategoryModelMedia from "./CategoryModelMedia";
 import { withCurrentUser } from "./identity";
 import type { CurrentUser } from "./identity";
 
@@ -20,6 +21,7 @@ type Product = {
   categoryDefinition?: string;
   image?: string;
   images?: string[];
+  modelUrl?: string;
   options: Option[];
   source?: "standard" | "cultural";
   adminOnly?: boolean;
@@ -855,7 +857,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                 <div className="cards">
                   {group.products.map((p) => (
                     <article key={p.name}>
-                      {(p.images?.length || p.image) ? (
+                      {p.modelUrl ? <CategoryModelMedia images={p.images?.length?p.images:[p.image!].filter(Boolean)} alt={p.nameDisplay?.[lang] || clean(p.name)} modelUrl={p.modelUrl} lang={lang} /> : (p.images?.length || p.image) ? (
                         <CategoryCarousel
                           images={p.images?.length ? p.images : [p.image!]}
                           alt={p.nameDisplay?.[lang] || clean(p.name)}
