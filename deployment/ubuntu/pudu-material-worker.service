@@ -1,0 +1,39 @@
+[Unit]
+Description=PUDU Material Operations - submission worker (cutover required)
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/pudu-materials-operation/worker-enabled
+ConditionPathExists=/home/gaohongyuan1/pudu-materials-operation/source/.streamlit/secrets.toml
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=exec
+User=gaohongyuan1
+Group=gaohongyuan1
+WorkingDirectory=/home/gaohongyuan1/pudu-materials-operation/source
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PUDU_SUBMISSION_WORKER_LOG_DIR=/home/gaohongyuan1/pudu-materials-operation/logs/worker
+ExecStart=/home/gaohongyuan1/pudu-materials-operation/venv/bin/python scripts/submission_worker.py --poll-seconds 5 --worker-priority 100
+Restart=on-failure
+RestartSec=10
+# Worker may have an active non-atomic upstream write. Plan and drain before stop.
+TimeoutStopSec=900
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/gaohongyuan1/pudu-materials-operation/source/data
+ReadWritePaths=/home/gaohongyuan1/pudu-materials-operation/source/work
+ReadWritePaths=/home/gaohongyuan1/pudu-materials-operation/logs
+CapabilityBoundingSet=
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pudu-material-worker
+
+[Install]
+WantedBy=multi-user.target
