@@ -1,6 +1,6 @@
 # Fill an absolute credentials_file path on the receiving machine.
 [feishu]
-credentials_file = "C:/REPLACE_INSTALL_ROOT/.streamlit/secrets.toml"
+credentials_file = "C:/REPLACE_INSTALL_ROOT/config/secrets.toml"
 app_token = "G5SQb9m7IaHAXzsGTtsclqSCnnh"
 table_id = "tblLwiOPlIc1eLNi"
 source_field = "素材提交（压缩包）| Material Submission(zip package)"

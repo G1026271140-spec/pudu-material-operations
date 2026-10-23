@@ -35,8 +35,6 @@ def secrets_for(config: DeploymentConfig) -> dict[str, object]:
     data: dict[str, object] = dict(config.extra_secrets)
     data.update(
         {
-            "INVENTORY_VIEW_PASSWORD": config.inventory_password,
-            "APPROVAL_VIEW_PASSWORD": config.approval_password,
             "FEISHU_APP_ID": config.feishu_app_id,
             "FEISHU_APP_SECRET": config.feishu_app_secret,
             "FEISHU_BITABLE_APP_TOKEN": config.feishu_bitable_app_token,
@@ -45,7 +43,7 @@ def secrets_for(config: DeploymentConfig) -> dict[str, object]:
             "FEISHU_APPROVAL_WRITEBACK_APP_SECRET": config.approval_writeback_app_secret,
             "GITHUB_CACHE_REFRESH_TOKEN": config.github_token,
             "CLOUDFLARE_TUNNEL_TOKEN": config.cloudflare_tunnel_token,
-            "STREAMLIT_APP_URL": config.public_url + "/",
+            "PUBLIC_APP_URL": config.public_url + "/",
         }
     )
     return {key: value for key, value in data.items() if value not in (None, "")}
@@ -62,5 +60,5 @@ def write_deployment_configuration(root: Path, config: DeploymentConfig) -> None
     local["port"] = int(config.port)
     _atomic_write(project_path, json.dumps(project, ensure_ascii=False, indent=2) + "\n")
     secret_lines = [f"{key} = {_toml_value(value)}" for key, value in sorted(secrets_for(config).items())]
-    secret_path = root / ".streamlit" / "secrets.toml"
+    secret_path = root / "config" / "secrets.toml"
     _atomic_write(secret_path, "\n".join(secret_lines) + "\n")

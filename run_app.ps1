@@ -32,15 +32,15 @@ $NetworkIps = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue
     Select-Object -ExpandProperty IPAddress -First 3
 
 Write-Host ""
-Write-Host "Streamlit will run on the first available port." -ForegroundColor Green
+Write-Host "React + FastAPI will run on the first available port." -ForegroundColor Green
 Write-Host "Local URL:   $LocalUrl" -ForegroundColor Cyan
 foreach ($Ip in $NetworkIps) {
     Write-Host "Network URL: http://$Ip`:$Port" -ForegroundColor Cyan
 }
 Write-Host ""
-Write-Host "Realtime inventory page: $LocalUrl/?view=inventory" -ForegroundColor Yellow
+Write-Host "Application page: $LocalUrl/" -ForegroundColor Yellow
 Write-Host "Press Ctrl+C to stop the app." -ForegroundColor DarkGray
 Write-Host ""
 
 Set-Location -LiteralPath $ProjectRoot
-& $PythonPath -m streamlit run app.py --server.port $Port --server.address 0.0.0.0
+& $PythonPath -m uvicorn request_web.api:api --host 0.0.0.0 --port $Port

@@ -200,8 +200,8 @@ class CulturalRequestTests(unittest.TestCase):
         query_params = {"section": "cultural_request"}
         session_state: dict[str, object] = {}
         with (
-            patch.object(app.st, "query_params", query_params),
-            patch.object(app.st, "session_state", session_state),
+            patch.object(app.runtime, "request_query", query_params),
+            patch.object(app.runtime, "request_state", session_state),
         ):
             selected = app.apply_management_section_from_query()
 

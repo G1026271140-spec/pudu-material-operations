@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
 
 from feishu_bitable import FeishuBitableClient, FeishuBitableConfig
 
-SECRETS_PATH = ROOT / ".streamlit" / "secrets.toml"
+SECRETS_PATH = ROOT / "config" / "secrets.toml"
 
 EXCHANGE_TABLE = "文化周边兑换"
 EXCHANGE_SOURCE_TABLE = "文化周边兑换（扫码接口）"

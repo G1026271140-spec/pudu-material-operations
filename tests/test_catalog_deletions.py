@@ -90,7 +90,11 @@ def test_old_request_cache_never_revives_deleted_options_for_any_role(monkeypatc
     assert admin == set(remaining)
 
 
-def test_api_parsed_cache_observes_deletion_without_file_change(monkeypatch):
+def test_api_parsed_cache_observes_deletion_without_file_change(monkeypatch, tmp_path):
+    # The parser is mocked below, but the metadata key still needs a real file.
+    (tmp_path / "page_data_cache.json").write_text("{}", encoding="utf-8")
+    from pathlib import Path
+    monkeypatch.setattr(web, "resolve_cache_path", lambda _root, relative: tmp_path / Path(relative).name)
     page = {"tables": {app.MATERIAL_TABLE_NAME: [{"record_id": "old"}, {"record_id": "new"}]}}
     monkeypatch.setattr(web, "_parsed_json_cache", lambda *_: page)
     before = web.catalog_revision()

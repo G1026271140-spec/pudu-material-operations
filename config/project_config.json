@@ -8,7 +8,6 @@
     "cache_workflow_file": "refresh-static-cache.yml"
   },
   "deployment": {
-    "streamlit_app_url": "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/",
     "custom_domain": "https://pudu-material-operations.gaohongyuan.me",
     "local_web": {
       "address": "127.0.0.1",
@@ -81,9 +80,5 @@
       "Friday"
     ],
     "contact_time": "11:00"
-  },
-  "streamlit_wake": {
-    "task_name": "PUDU Streamlit Nightly Wake",
-    "daily_time": "23:20"
   }
 }

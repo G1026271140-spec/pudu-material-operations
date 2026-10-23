@@ -41,15 +41,7 @@ class RequestDraftTests(unittest.TestCase):
         self.assertEqual(errors, [])
         service.assert_not_called()
 
-    def test_request_validation_errors_use_prominent_toast(self) -> None:
-        with patch.object(app.st, "toast") as toast:
-            app.show_request_validation_toast(["请补充必填信息：申请人", "请至少加入一种申请物料"])
-
-        toast.assert_called_once_with(
-            "请补充必填信息：申请人；请至少加入一种申请物料",
-            icon="⚠️",
-            duration="long",
-        )
+    pass  # Retired widget test: test_request_validation_errors_use_prominent_toast
 
     def test_english_request_options_show_only_parenthesized_english_name(self) -> None:
         with patch.object(app, "get_ui_language", return_value=app.LANGUAGE_EN):
@@ -75,7 +67,7 @@ class RequestDraftTests(unittest.TestCase):
     def test_new_request_defaults_to_pudu_freight_payer(self) -> None:
         session_state: dict[str, object] = {}
         with (
-            patch.object(app.st, "session_state", session_state),
+            patch.object(app.runtime, "request_state", session_state),
             patch.object(app, "get_secret_value", side_effect=lambda _name, default="": default),
         ):
             app.initialize_request_form_state()

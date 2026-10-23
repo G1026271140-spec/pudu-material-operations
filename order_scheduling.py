@@ -1,4 +1,4 @@
-"""Ordinary-material ordering rules. No I/O, Streamlit, or inventory mutations."""
+"""Ordinary-material ordering rules. No I/O, UI, or inventory mutations."""
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone

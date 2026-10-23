@@ -69,7 +69,7 @@ try {
         Write-RunnerLog ("GitHub update unavailable; using existing clean copy: {0}" -f $_.Exception.Message) "WARN"
     }
 
-    $secretsDirectory = Join-Path $RepoPath ".streamlit"
+    $secretsDirectory = Join-Path $RepoPath "config"
     New-Item -ItemType Directory -Path $secretsDirectory -Force | Out-Null
     Copy-Item -LiteralPath $SecretsPath -Destination (Join-Path $secretsDirectory "secrets.toml") -Force
 

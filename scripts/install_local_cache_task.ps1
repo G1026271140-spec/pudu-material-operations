@@ -19,7 +19,7 @@ if (-not $SourceRepoPath) {
 }
 $SourceRepoPath = [IO.Path]::GetFullPath($SourceRepoPath)
 $RunnerRoot = [IO.Path]::GetFullPath($RunnerRoot)
-$SourceSecretsPath = Join-Path $SourceRepoPath ".streamlit\secrets.toml"
+$SourceSecretsPath = Join-Path $SourceRepoPath "config\secrets.toml"
 $SourceRunnerScript = Join-Path $SourceRepoPath "scripts\run_local_cache_refresh.ps1"
 $RunnerRepoPath = Join-Path $RunnerRoot "repo"
 $RunnerSecretsPath = Join-Path $RunnerRoot "secrets.toml"
@@ -28,7 +28,7 @@ $LogDirectory = Join-Path $RunnerRoot "logs"
 $HiddenWrapper = Join-Path $SourceRepoPath "scripts\run_powershell_hidden.vbs"
 
 if (-not (Test-Path -LiteralPath $SourceSecretsPath)) {
-    throw "Local Streamlit secrets were not found: $SourceSecretsPath"
+    throw "Local service secrets were not found: $SourceSecretsPath"
 }
 if (-not (Test-Path -LiteralPath $SourceRunnerScript)) {
     throw "Cache runner script was not found: $SourceRunnerScript"

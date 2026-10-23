@@ -76,7 +76,7 @@ class RequestLineLimitTests(unittest.TestCase):
     def test_no_ordinary_request_limit_remains_in_ui_or_editing_services(self) -> None:
         root = Path(__file__).resolve().parents[1]
         app_source = (root / "app.py").read_text(encoding="utf-8")
-        scheduling_page = (root / "order_scheduling_page.py").read_text(encoding="utf-8")
+        scheduling_page = (root / "request_web/frontend/src/ShippingSchedulePage.tsx").read_text(encoding="utf-8")
         scheduling_service = (root / "order_scheduling_service.py").read_text(encoding="utf-8")
         config = json.loads((root / "config/project_config.json").read_text(encoding="utf-8"))
         self.assertNotIn("MAX_REQUEST_LINE_COUNT", app_source + scheduling_page + scheduling_service)

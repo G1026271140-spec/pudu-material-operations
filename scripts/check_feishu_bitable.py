@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 from feishu_bitable import FeishuBitableClient, FeishuBitableConfig, FeishuBitableError
 
-SECRETS_PATH = ROOT / ".streamlit" / "secrets.toml"
+SECRETS_PATH = ROOT / "config" / "secrets.toml"
 OUTPUT_PATH = ROOT / "work" / "feishu_bitable_schema.json"
 
 EXPECTED_TABLES = [

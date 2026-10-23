@@ -21,7 +21,7 @@ from lark_oapi.event.callback.model.p2_card_action_trigger import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SECRETS_PATH = ROOT / ".streamlit" / "secrets.toml"
+SECRETS_PATH = ROOT / "config" / "secrets.toml"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -35,10 +35,8 @@ INVENTORY_MESSAGE_CACHE_LIMIT = 1000
 
 
 def load_credentials() -> tuple[str, str]:
-    with SECRETS_PATH.open("rb") as file:
-        secrets = tomllib.load(file)
-    app_id = str(secrets.get("FEISHU_APP_ID") or "").strip()
-    app_secret = str(secrets.get("FEISHU_APP_SECRET") or "").strip()
+    app_id = inventory_app.runtime.secret("FEISHU_APP_ID", root=ROOT)
+    app_secret = inventory_app.runtime.secret("FEISHU_APP_SECRET", root=ROOT)
     if not app_id or not app_secret:
         raise RuntimeError("FEISHU_APP_ID or FEISHU_APP_SECRET is not configured.")
     return app_id, app_secret
@@ -158,6 +156,7 @@ def process_inventory_message(
             logging.exception("Sending inventory query error failed: %s", message_id)
 
 
+@inventory_app.runtime.request_scope()
 def handle_inventory_message(data: P2ImMessageReceiveV1) -> None:
     event = data.event
     message = event.message if event else None
@@ -356,6 +355,7 @@ def process_card_action_async(
                 logging.exception("Updating card with asynchronous action error failed")
 
 
+@inventory_app.runtime.request_scope()
 def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse:
     event = data.event
     action = event.action if event else None

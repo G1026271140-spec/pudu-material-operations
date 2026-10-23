@@ -83,8 +83,8 @@ EN_DISPLAY_TEXT = {
     "检查连接并刷新数据": "Check Connection & Refresh",
     "飞书多维表格连接成功": "Feishu Bitable connected",
     "飞书多维表格连接失败": "Feishu Bitable connection failed",
-    "请在 Streamlit Secrets 中同时填写 FEISHU_APP_ID、FEISHU_APP_SECRET、FEISHU_BITABLE_APP_TOKEN。": (
-        "Add FEISHU_APP_ID, FEISHU_APP_SECRET, and FEISHU_BITABLE_APP_TOKEN to Streamlit Secrets."
+    "请在服务配置中同时填写 FEISHU_APP_ID、FEISHU_APP_SECRET、FEISHU_BITABLE_APP_TOKEN。": (
+        "Add FEISHU_APP_ID, FEISHU_APP_SECRET, and FEISHU_BITABLE_APP_TOKEN to the server configuration."
     ),
     "飞书多维表格读取失败，请先检查应用权限和多维表格授权。": (
         "Feishu Bitable could not be read. Check the app permissions and Bitable authorization."
@@ -1483,116 +1483,3 @@ def localize_column_config(
 
 _PATCHED = False
 _LANGUAGE_GETTER: Callable[[], str] = lambda: LANGUAGE_ZH
-
-
-def install_streamlit_ui_translation(st_module: object, language_getter: Callable[[], str]) -> None:
-    """Localize Streamlit's presentation layer without changing widget values."""
-    global _PATCHED, _LANGUAGE_GETTER
-    _LANGUAGE_GETTER = language_getter
-    if _PATCHED:
-        return
-
-    from streamlit.delta_generator import DeltaGenerator
-
-    text_methods = {
-        "button",
-        "caption",
-        "checkbox",
-        "date_input",
-        "download_button",
-        "error",
-        "expander",
-        "file_uploader",
-        "form_submit_button",
-        "header",
-        "info",
-        "link_button",
-        "markdown",
-        "metric",
-        "multiselect",
-        "number_input",
-        "popover",
-        "radio",
-        "selectbox",
-        "spinner",
-        "subheader",
-        "success",
-        "text_area",
-        "text_input",
-        "title",
-        "toggle",
-        "warning",
-        "write",
-    }
-    option_methods = {"multiselect", "radio", "selectbox"}
-    table_methods = {"data_editor", "dataframe"}
-    all_methods = text_methods | table_methods | {"tabs"}
-
-    for method_name in all_methods:
-        original = getattr(DeltaGenerator, method_name, None)
-        if original is None:
-            continue
-
-        def build_wrapper(name: str, original_method: Callable[..., object]) -> Callable[..., object]:
-            @wraps(original_method)
-            def localized(self: object, *args: object, **kwargs: object) -> object:
-                language = normalize_ui_language(_LANGUAGE_GETTER())
-                localized_args = list(args)
-                localized_kwargs = dict(kwargs)
-
-                if name in text_methods:
-                    if localized_args and isinstance(localized_args[0], str):
-                        localized_args[0] = translate_ui_text(localized_args[0], language)
-                    elif isinstance(localized_kwargs.get("label"), str):
-                        localized_kwargs["label"] = translate_ui_text(
-                            localized_kwargs["label"], language
-                        )
-                    for key in ("help", "placeholder"):
-                        if isinstance(localized_kwargs.get(key), str):
-                            localized_kwargs[key] = translate_ui_text(
-                                localized_kwargs[key], language
-                            )
-
-                if name == "write":
-                    localized_args = [
-                        translate_ui_text(item, language) if isinstance(item, str) else item
-                        for item in localized_args
-                    ]
-
-                if name in option_methods:
-                    formatter = localized_kwargs.get("format_func", str)
-
-                    def localized_formatter(option: object, base: Callable[[object], object] = formatter) -> object:
-                        return translate_ui_text(base(option), language)
-
-                    localized_kwargs["format_func"] = localized_formatter
-
-                if name == "tabs" and localized_args:
-                    labels = localized_args[0]
-                    if isinstance(labels, (list, tuple)):
-                        localized_args[0] = [
-                            translate_ui_text(label, language) for label in labels
-                        ]
-
-                if name in table_methods:
-                    data = localized_args[0] if localized_args else localized_kwargs.get("data")
-                    localized_kwargs["column_config"] = localize_column_config(
-                        data,
-                        localized_kwargs.get("column_config"),
-                        language,
-                    )
-
-                return original_method(self, *localized_args, **localized_kwargs)
-
-            return localized
-
-        setattr(DeltaGenerator, method_name, build_wrapper(method_name, original))
-
-    # Streamlit exposes bound methods at module level. Rebind them so direct
-    # calls such as st.button and calls on columns/sidebar use the same wrapper.
-    main_delta = getattr(st_module, "_main", None)
-    if main_delta is not None:
-        for method_name in all_methods:
-            if hasattr(main_delta, method_name):
-                setattr(st_module, method_name, getattr(main_delta, method_name))
-    _PATCHED = True

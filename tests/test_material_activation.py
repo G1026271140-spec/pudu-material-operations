@@ -678,7 +678,7 @@ class MaterialActivationTests(unittest.TestCase):
             "request_form_cache_locked": True,
         }
         with (
-            patch.object(app.st, "session_state", session_state),
+            patch.object(app.runtime, "request_state", session_state),
             patch.object(app, "request_form_cache_state", return_value={}),
             patch.object(app, "request_form_cache_from_runtime_page_data", return_value=None),
             patch.object(app, "load_static_request_form_cache", return_value=new_cache),

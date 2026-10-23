@@ -18,7 +18,7 @@ def test_liveness_is_not_readiness():
     ('GET', '/corporate-apparel'), ('POST', '/api/requests'),
     ('POST', '/api/corporate-exchange-sync'), ('POST', '/api/pending-inventory-sync'),
     ('GET', '/auth/feishu/start'), ('GET', '/docs'),
-    ('GET', '/.streamlit/secrets.toml'), ('POST', '/api/health'),
+    ('GET', '/config/secrets.toml'), ('POST', '/api/health'),
 ])
 def test_all_business_auth_and_webhook_routes_fail_closed(method, path):
     with TestClient(api) as client:

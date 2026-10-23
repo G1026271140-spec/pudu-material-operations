@@ -19,7 +19,7 @@ $RunnerRepoPath = Join-Path $RunnerRoot "repo"
 $RunnerSecretsPath = Join-Path $RunnerRoot "secrets.toml"
 $TokenFile = Join-Path $RunnerRoot "cloudflare-token.txt"
 $LogDirectory = Join-Path $RunnerRoot "logs"
-$SourceSecretsPath = Join-Path $SourceRepoPath ".streamlit\secrets.toml"
+$SourceSecretsPath = Join-Path $SourceRepoPath "config\secrets.toml"
 $WebRunner = Join-Path $RunnerRoot "run_local_web_app.ps1"
 $TunnelRunner = Join-Path $RunnerRoot "run_cloudflare_named_tunnel.ps1"
 $HiddenWrapper = Join-Path $SourceRepoPath "scripts\run_powershell_hidden.vbs"
@@ -108,7 +108,7 @@ $escapedRunnerRepoPath = [Regex]::Escape($RunnerRepoPath)
 $orphanedWebProcesses = Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" -ErrorAction SilentlyContinue |
     Where-Object {
         $_.CommandLine -match $escapedRunnerRepoPath -and
-        $_.CommandLine -match "(streamlit\s+run\s+app\.py|uvicorn\s+request_web\.api:api)"
+        $_.CommandLine -match "uvicorn\s+request_web\.api:api"
     }
 foreach ($process in $orphanedWebProcesses) {
     Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue

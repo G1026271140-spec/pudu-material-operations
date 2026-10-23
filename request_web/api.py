@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from live_cache import resolve_cache_path
+import backend_runtime
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,8 +57,12 @@ def catalog_revision() -> str:
     signatures = []
     for name in ("page_data_cache.json", "request_form_cache.json", "contact_departments_cache.json"):
         path = resolve_cache_path(ROOT, f"data/{name}")
-        stat = path.stat()
-        signatures.append((str(path), stat.st_mtime_ns, stat.st_size))
+        try:
+            stat = path.stat()
+        except FileNotFoundError:
+            signatures.append((str(path), None, None))
+        else:
+            signatures.append((str(path), stat.st_mtime_ns, stat.st_size))
     return hashlib.sha256(repr((signatures, revision())).encode()).hexdigest()
 
 
@@ -437,6 +442,12 @@ api.add_middleware(
 
 
 @api.middleware("http")
+async def backend_request_context(request: Request, call_next):
+    with backend_runtime.request_scope(request.query_params):
+        return await call_next(request)
+
+
+@api.middleware("http")
 async def feishu_enterprise_gate(request: Request, call_next):
     """Protect the public site and APIs without blocking health or tokened webhooks."""
     from request_web import feishu_auth
@@ -779,8 +790,11 @@ def _signed_admin_open_id(request: Request) -> str:
     """Resolve an enabled administrator from the enterprise login and current cache."""
     from request_web import feishu_auth
 
+    session_cookie = request.cookies.get("pudu_feishu", "")
+    if not session_cookie:
+        return ""
     identity = feishu_auth.session_identity(
-        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+        session_cookie, feishu_auth.own_tenant_key()
     )
     if identity is None:
         return ""
@@ -1794,12 +1808,13 @@ class CorporateExchangeWebhook(BaseModel):
 
 
 def _check_corporate_exchange_webhook_token(provided: str) -> None:
-    secrets_path = ROOT / ".streamlit" / "secrets.toml"
     try:
-        configured = str(tomllib.loads(secrets_path.read_text(encoding="utf-8"))["CORPORATE_EXCHANGE_WEBHOOK_TOKEN"])
+        configured = backend_runtime.secret("CORPORATE_EXCHANGE_WEBHOOK_TOKEN", root=ROOT)
     except (FileNotFoundError, KeyError, ValueError) as exc:
         raise HTTPException(status_code=503, detail="兑换同步回调尚未配置。") from exc
-    if not configured or not hmac.compare_digest(configured, provided):
+    if not configured:
+        raise HTTPException(status_code=503, detail="兑换同步回调尚未配置。")
+    if not hmac.compare_digest(configured, provided):
         raise HTTPException(status_code=401, detail="未授权的兑换同步回调。")
 
 

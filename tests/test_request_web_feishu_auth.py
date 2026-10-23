@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import pytest
 from urllib.parse import parse_qs, urlsplit
 
 from request_web import feishu_auth
@@ -7,6 +8,16 @@ from request_web.api import api
 
 
 PUBLIC = "https://pudu-material-operations.gaohongyuan.me"
+
+
+@pytest.fixture(autouse=True)
+def fake_auth_config_and_directory(monkeypatch):
+    # Native OAuth/session logic is exercised with synthetic identity only.
+    monkeypatch.setattr(feishu_auth, "credentials", lambda: ("cli_unit_test", "unit-test-secret"))
+    monkeypatch.setattr(web_api, "_json", lambda name: {
+        "users": [{"open_id": "ou_user", "name": "测试用户"}],
+        "tables": {"用户权限表": []},
+    })
 
 
 def test_public_page_and_api_require_feishu_login(monkeypatch):

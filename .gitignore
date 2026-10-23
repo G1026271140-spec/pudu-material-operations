@@ -19,7 +19,7 @@ request_web/frontend/node_modules/
 request_web/frontend/*.tsbuildinfo
 __pycache__/
 work/
-.streamlit/secrets.toml
+config/secrets.toml
 *.pyc
 data/~$*
 data/*.tmp

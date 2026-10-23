@@ -16,6 +16,7 @@ from request_web.api import api, build_catalog
 web_api = importlib.import_module("request_web.api")
 
 
+@pytest.mark.skipif(not (Path(__file__).resolve().parents[1] / "data/page_data_cache.json").is_file(), reason="Published snapshot integration: source-only handover omits business data")
 def test_catalog_uses_local_snapshot_and_exposes_all_products():
     catalog = build_catalog()
     assert "代理商支持" in catalog["reasons"]
@@ -226,6 +227,7 @@ def test_direct_route_serves_the_spa(path):
     assert "text/html" in response.headers["content-type"]
 
 
+@pytest.mark.skipif(not (Path(__file__).resolve().parents[1] / "data/request_form_cache.json").is_file(), reason="Published snapshot integration: source-only handover omits business data")
 def test_workspace_excludes_gift_page_and_reads_cached_surfaces():
     payload = TestClient(api).get("/api/workspace").json()
     assert payload["inventory"]
@@ -780,17 +782,32 @@ def admin_client(monkeypatch):
 
     monkeypatch.setattr(feishu_auth, "credentials", lambda: ("test-app", "test-secret"))
     monkeypatch.setattr(feishu_auth, "own_tenant_key", lambda: "test-tenant")
-    admin_row = next(
-        row for row in web_api._json("page_data_cache.json")["tables"]["用户权限表"]
-        if row["fields"].get("是否启用") == "是"
-        and "管理员" in row["fields"].get("角色", [])
-    )
-    admin_open_id = admin_row["fields"]["用户账号"][0]["id"]
+    admin_open_id = "ou_unit_test_admin"
+    # Keep auth real (signed cookie + role lookup), but never require a staff
+    # snapshot just to create a test administrator.
+    original_json = web_api._json
+    def test_json(name):
+        try:
+            result = original_json(name)
+        except FileNotFoundError:
+            if name != "page_data_cache.json":
+                raise
+            result = {"tables": {}}
+        if name == "page_data_cache.json":
+            from copy import deepcopy
+            result = deepcopy(result)
+            permissions = result.setdefault("tables", {}).setdefault("用户权限表", [])
+            permissions.append({"record_id": "unit-test-permission", "fields": {
+                "是否启用": "是", "角色": ["管理员"], "用户账号": [{"id": admin_open_id}],
+            }})
+        return result
+    monkeypatch.setattr(web_api, "_json", test_json)
     client = TestClient(api)
     client.cookies.set("pudu_feishu", feishu_auth.create_session(admin_open_id, "test-tenant"))
     return client
 
 
+@pytest.mark.skipif(not (Path(__file__).resolve().parents[1] / "data/page_data_cache.json").is_file(), reason="Published snapshot integration: source-only handover omits business data")
 def test_management_catalog_requires_admin_identity_and_uses_cached_snapshot(monkeypatch):
     assert TestClient(api).get("/api/admin/management-catalog").status_code == 403
     response = admin_client(monkeypatch).get("/api/admin/management-catalog")

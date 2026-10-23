@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
     [string]$RepoPath,
@@ -99,8 +99,8 @@ try {
     if ([int]$Counts[0] -ne 0 -or [int]$Counts[1] -ne 0) {
         throw "Local master must match origin/master before release; ahead=$($Counts[0]), behind=$($Counts[1])."
     }
-    if (-not (Test-Path -LiteralPath (Join-Path $RepoPath ".streamlit\secrets.toml"))) {
-        throw "Local .streamlit/secrets.toml is required."
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoPath "config\secrets.toml"))) {
+        throw "Local config/secrets.toml is required."
     }
     $Mutex = [Threading.Mutex]::new($false, "Local\PuduMaterialCacheRefresh")
     $HasMutex = $Mutex.WaitOne(0)
@@ -126,7 +126,7 @@ try {
         "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File",
         (Join-Path $RepoPath "scripts\run_maintenance_tool.ps1"),
         "-Tool", "AllCaches", "-RepoPath", $RepoPath,
-        "-SecretsPath", (Join-Path $RepoPath ".streamlit\secrets.toml"),
+        "-SecretsPath", (Join-Path $RepoPath "config\secrets.toml"),
         "-LogDirectory", (Join-Path $RepoPath "work\maintenance-tools"),
         "-MutexAlreadyHeld", "-SkipLivePublication"
     ) | Out-Null
@@ -164,7 +164,7 @@ try {
         "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File",
         (Join-Path $RepoPath "scripts\run_maintenance_tool.ps1"),
         "-Tool", "SyncAllRuntimes", "-RepoPath", $RepoPath,
-        "-SecretsPath", (Join-Path $RepoPath ".streamlit\secrets.toml"),
+        "-SecretsPath", (Join-Path $RepoPath "config\secrets.toml"),
         "-LogDirectory", (Join-Path $RepoPath "work\maintenance-tools")
     ) | Out-Null
 

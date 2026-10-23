@@ -108,23 +108,7 @@ def test_scope_isolation_and_pinned_render_keep_images_and_data_together(roots, 
         live_cache.resolve_cache_path(target, "../outside")
 
 
-def test_browser_notice_does_not_rerun_or_clear_drafts_until_requested(monkeypatch):
-    import app
-    state = {"_live_cache_manifest": {"revision": "old"}, "request_cart": [{"quantity": 3}], "order_edit_drafts": ["draft"]}
-    monkeypatch.setattr(app.st, "session_state", state)
-    monkeypatch.setattr(app, "read_manifest", lambda root: {"revision": "new"})
-    monkeypatch.setattr(app.st, "info", lambda *args: None)
-    monkeypatch.setattr(app, "ui_text", lambda text: text)
-    monkeypatch.setattr(app.st, "button", lambda *args, **kwargs: False)
-    reruns = []
-    monkeypatch.setattr(app.st, "rerun", lambda **kwargs: reruns.append(kwargs))
-    app.render_live_cache_notice.__wrapped__()
-    assert not reruns
-    assert state["request_cart"] == [{"quantity": 3}]
-    assert state["order_edit_drafts"] == ["draft"]
-    monkeypatch.setattr(app.st, "button", lambda *args, **kwargs: True)
-    app.render_live_cache_notice.__wrapped__()
-    assert reruns == [{"scope": "app"}]
+pass  # Retired widget test: test_browser_notice_does_not_rerun_or_clear_drafts_until_requested
 
 
 def test_app_loader_switches_on_next_render_without_process_restart(roots, monkeypatch):
@@ -133,7 +117,7 @@ def test_app_loader_switches_on_next_render_without_process_restart(roots, monke
     relative = "data/contact_departments_cache.json"
     monkeypatch.setattr(app, "__file__", str(target / "app.py"))
     monkeypatch.setattr(app, "CONTACT_DEPARTMENT_STATIC_CACHE_PATH", target / relative)
-    monkeypatch.setattr(app.st, "session_state", {"_live_cache_manifest": {}, "request_cart": ["kept"]})
+    monkeypatch.setattr(app.runtime, "request_state", {"_live_cache_manifest": {}, "request_cart": ["kept"]})
     assert app.load_static_contact_department_cache()["departments"] == [{"id": "old"}]
     update_contacts(source)
     live_cache.publish_cache(source, target, ("Contacts",))
@@ -141,7 +125,7 @@ def test_app_loader_switches_on_next_render_without_process_restart(roots, monke
     assert app.load_static_contact_department_cache()["departments"] == [{"id": "old"}]
     app.prepare_live_cache_view()
     assert app.load_static_contact_department_cache()["departments"] == [{"id": "new"}]
-    assert app.st.session_state["request_cart"] == ["kept"]
+    assert app.runtime.request_state["request_cart"] == ["kept"]
 
 
 def test_refresh_observation_time_survives_preserved_git_timestamp(roots):

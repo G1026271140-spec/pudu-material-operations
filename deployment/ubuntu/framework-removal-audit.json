@@ -1,0 +1,176 @@
+{
+  "removed-ui-definitions.json": {
+    "app.py": [
+      "add_material_category",
+      "admin_auth_gate",
+      "apply_changes",
+      "auth_gate",
+      "close_application_window",
+      "fullscreen_data_sync",
+      "inject_global_styles",
+      "install_button_click_guard",
+      "main",
+      "navigate_to_inventory",
+      "navigate_to_management",
+      "navigate_to_management_section",
+      "navigate_to_warehouse_locations",
+      "render_add_category_form",
+      "render_cached_warehouse_images",
+      "render_category_admin",
+      "render_category_delete_review",
+      "render_category_delete_workspace",
+      "render_category_edit_review",
+      "render_category_option_pool",
+      "render_change_form",
+      "render_compact_request_cart_panel",
+      "render_cultural_material_management",
+      "render_cultural_request_page",
+      "render_dimension_management_page",
+      "render_download_center",
+      "render_existing_gift_project_form",
+      "render_feishu_error",
+      "render_gift_fixed_rules",
+      "render_gift_image",
+      "render_gift_project_detail_drawer",
+      "render_gift_projects_page",
+      "render_github_cache_publish",
+      "render_inventory_plan_submission_success",
+      "render_inventory_query_link",
+      "render_inventory_view",
+      "render_live_cache_notice",
+      "render_management_page",
+      "render_management_page_with_navigation_loading",
+      "render_material_dashboard",
+      "render_material_data_admin",
+      "render_mobile_request_toolbar",
+      "render_new_category_review",
+      "render_new_gift_project_form",
+      "render_page_cache_refresh_button",
+      "render_page_cache_toolbar",
+      "render_page_header",
+      "render_request_cart_added_toast",
+      "render_request_contact_fields",
+      "render_request_inventory_review_page",
+      "render_request_material_builder",
+      "render_request_model_selector",
+      "render_request_review",
+      "render_request_submission_success",
+      "render_restock_form",
+      "render_restock_material_builder",
+      "render_restock_review",
+      "render_section_header",
+      "render_sidebar_link",
+      "render_storage_diagnostics",
+      "render_transaction_admin",
+      "render_warehouse_floor_map",
+      "render_warehouse_location_view",
+      "render_warehouse_materials",
+      "restore_default_sidebar_on_page_load",
+      "scroll_request_page_to_top_if_needed",
+      "show_request_validation_toast",
+      "sidebar_admin_auth_gate",
+      "stop_on_invalid_feishu_config"
+    ],
+    "shipping_page.py": [
+      "_render_cartons_and_contents",
+      "_render_invoice_summary",
+      "_render_live_summary",
+      "_render_recipient_fields",
+      "_render_shipping_page_styles",
+      "render_shipping_template_page"
+    ]
+  },
+  "retired-ui-tests.json": {
+    "test_admin_access.py": [
+      "test_inventory_review_page_is_available_for_signed_admin_links",
+      "test_material_management_navigation_does_not_request_fullscreen_loading",
+      "test_other_navigation_does_not_request_database_loading_overlay",
+      "test_inventory_query_uses_requested_feishu_table",
+      "test_locked_cache_publish_does_not_expose_github_link",
+      "test_locked_system_connection_does_not_read_secret_status"
+    ],
+    "test_category_inventory_plan.py": [
+      "test_category_option_pool_keeps_selected_values_across_reruns",
+      "test_category_option_pool_passes_single_compact_grouped_configuration"
+    ],
+    "test_dimension_management.py": [
+      "test_model_management_page_includes_product_line_in_draft_and_preview"
+    ],
+    "test_live_cache.py": [
+      "test_browser_notice_does_not_rerun_or_clear_drafts_until_requested"
+    ],
+    "test_order_scheduling.py": [
+      "test_request_date_widgets_default_empty_and_accept_single_date",
+      "test_admin_page_renders_groups_and_edit_dialog",
+      "test_pending_io_does_not_block_page_and_issued_requests_hidden"
+    ],
+    "test_request_cart.py": [
+      "test_request_preview_callback_only_records_intent",
+      "test_successful_cart_addition_shows_right_side_toast_once"
+    ],
+    "test_request_draft.py": [
+      "test_request_validation_errors_use_prominent_toast"
+    ],
+    "test_request_inventory_review.py": [
+      "test_review_page_uses_fullscreen_application_loading_overlay"
+    ],
+    "test_ui_i18n.py": [
+      "test_literal_widget_text_has_english_translation"
+    ],
+    "test_ui_sync.py": [
+      "test_button_click_guard_uses_short_repeat_click_window",
+      "test_cached_pages_remain_available_without_background_polling",
+      "test_inventory_plan_submission_shows_overlay_instead_of_closing_window",
+      "test_inventory_plan_success_renders_bilingual_fullscreen_overlay",
+      "test_native_loading_spinner_is_not_a_fullscreen_mask",
+      "test_navigation_does_not_add_artificial_wait_or_overlay",
+      "test_overlay_clears_busy_state_after_failure",
+      "test_overlay_clears_busy_state_after_success",
+      "test_overlay_css_keeps_responsive_fullscreen_panel",
+      "test_request_form_edits_read_static_cache_without_loading_overlay",
+      "test_request_review_shows_success_overlay_instead_of_closing_window",
+      "test_request_success_renders_persistent_fullscreen_overlay",
+      "test_request_success_uses_english_message_on_english_page",
+      "test_submission_waits_do_not_use_inline_spinners"
+    ],
+    "test_shipping_page.py": [
+      "render_shipping_carton_page_fixture",
+      "render_shipping_recipient_page_fixture",
+      "test_carton_page_renders_two_columns_and_automatic_metrics",
+      "test_carton_preset_fills_dimensions_and_gross_weight",
+      "test_manual_carton_edit_clears_selected_preset",
+      "test_shipping_page_uses_compact_two_carton_layout",
+      "test_country_name_input_is_replaced_with_address_code"
+    ],
+    "test_gift_projects.py": [
+      "test_collapsed_project_stage_does_not_keep_expanded_grid_height",
+      "test_gift_detail_drawer_styles_do_not_reposition_all_popovers"
+    ],
+    "test_local_web_runner.py": [
+      "test_request_quantity_controls_are_compact_and_no_200_preset"
+    ],
+    "test_mobile_request_layout.py": [
+      "test_phone_rules_are_scoped_to_request_page",
+      "test_phone_specification_selector_is_centered_and_compact",
+      "test_phone_cart_and_submit_actions_are_fixed",
+      "test_request_sections_have_stable_keys",
+      "test_request_material_interactions_use_a_fragment",
+      "test_all_request_specification_popovers_are_preloaded",
+      "test_request_editor_displays_cached_estimated_total",
+      "test_phone_toolbar_supports_language_and_navigation",
+      "test_phone_form_and_catalog_use_two_column_grids",
+      "test_phone_cart_bottom_sheet_resets_native_popover_transform",
+      "test_model_line_selector_uses_a_responsive_group_grid",
+      "test_phone_specification_keeps_models_scrollable_and_actions_fixed",
+      "test_phone_compact_specification_window_hugs_single_model_content",
+      "test_phone_toolbar_is_icon_only_without_a_container_frame",
+      "test_phone_business_labels_reserve_real_layout_height",
+      "test_phone_specification_sections_are_labeled_and_visually_separated",
+      "test_desktop_model_heading_reserves_space_above_widget_label",
+      "test_desktop_specification_selector_label_stays_on_one_line",
+      "test_request_specification_has_quantity_presets_and_compact_custom_fields",
+      "test_product_model_label_reserves_layout_space_before_product_lines",
+      "test_phone_specification_keeps_add_action_above_short_viewport_chrome"
+    ]
+  }
+}

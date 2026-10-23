@@ -108,7 +108,7 @@ try {
         ) "WARN"
     }
 
-    $repoSecretsDirectory = Join-Path $RepoPath ".streamlit"
+    $repoSecretsDirectory = Join-Path $RepoPath "config"
     New-Item -ItemType Directory -Path $repoSecretsDirectory -Force | Out-Null
     Copy-Item -LiteralPath $SecretsPath -Destination (Join-Path $repoSecretsDirectory "secrets.toml") -Force
 

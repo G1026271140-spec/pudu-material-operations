@@ -1,7 +1,7 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches", "ValidateCaches", "FeishuSmokeTest", "WakeStreamlit", "SyncAllRuntimes", "RefreshCommitRestartApp")]
+    [ValidateSet("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches", "ValidateCaches", "FeishuSmokeTest", "SyncAllRuntimes", "RefreshCommitRestartApp")]
     [string]$Tool,
 
     [Parameter(Mandatory = $true)]
@@ -98,7 +98,7 @@ try {
             if (-not $HasMutex) { throw "Another cache refresh is already running." }
         }
     }
-    if ($Tool -ne "WakeStreamlit") { Ensure-PythonRuntime }
+    Ensure-PythonRuntime
     if ($Tool -in @("MaterialCache", "ContactCache", "WarehouseCache", "AllCaches", "FeishuSmokeTest") -and -not (Test-Path -LiteralPath $SecretsPath)) {
         throw "Secrets file is missing: $SecretsPath"
     }
@@ -115,11 +115,6 @@ try {
             Invoke-Checked $script:Python @("scripts/validate_warehouse_location_cache.py")
         }
         "FeishuSmokeTest" { Invoke-Checked $script:Python @("scripts/full_feishu_smoke_test.py") }
-        "WakeStreamlit" {
-            $Node = "C:\Program Files\nodejs\node.exe"
-            if (-not (Test-Path -LiteralPath $Node)) { $Node = (Get-Command node.exe -ErrorAction Stop).Source }
-            Invoke-Checked $Node @("scripts/wake_streamlit_app.mjs", "--url", "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/", "--log", "work/streamlit-wake.log", "--profile", "work/streamlit-wake-edge-profile", "--timeout-ms", "150000")
-        }
         "SyncAllRuntimes" {
             $SyncCode = "from pathlib import Path; from deployment_launcher.runtime import synchronize_current_runtimes; synchronize_current_runtimes(Path.cwd())"
             Invoke-Checked $script:Python @("-c", $SyncCode)

@@ -19,6 +19,13 @@ EXCEEDED = [{"product": TSHIRT, "field": "T恤-黑色（短袖）申领数量累
 REJECT_PLAN = {"quota_allowed": False, "quota_exceeded": EXCEEDED, "items": []}
 
 
+@pytest.fixture(autouse=True)
+def isolated_quota_schema(monkeypatch):
+    # Field discovery must not depend on a developer's live schema cache.
+    fields = {name: {"type": 2} for aliases, _limit in app.CORPORATE_APPAREL_QUOTA_FIELDS.values() for name in aliases}
+    monkeypatch.setattr(app, "feishu_schema", lambda: {"tables": {app.USER_PERMISSION_TABLE_NAME: {"fields": fields}}})
+
+
 @pytest.mark.parametrize("lines,current,expected_requested", [
     (LINES, 1, 1),
     ([{"product": POLO, "size": "M", "quantity": 1},

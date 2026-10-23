@@ -41,9 +41,10 @@ def test_customer_visit_has_no_lead_time_limit():
 
 
 def test_order_schedule_filters_use_review_exclusion_not_order_filter():
-    source = open("order_scheduling_page.py", encoding="utf-8").read()
-    assert "排除未核实库存" in source
-    assert "仅未下单" not in source
+    source = open("request_web/frontend/src/ShippingSchedulePage.tsx", encoding="utf-8").read()
+    assert "SCHEDULE_URL" in source
+    assert "<iframe" in source
+    assert "实时显示飞书发货排期" in source
 
 
 def test_invalid_dates_and_unknown_reason():
@@ -449,44 +450,10 @@ def test_request_dates_syncs_all_schedule_dates_to_lines_details_and_batches(svc
         assert fields[r.ORDER_DATE] == request_fields[r.ORDER_DATE]
 
 
-def render_request_dates_fixture():
-    import app
-    import order_scheduling_page
-    order_scheduling_page.request_schedule_inputs(app)
+pass  # Retired widget test: test_request_date_widgets_default_empty_and_accept_single_date
 
 
-def test_request_date_widgets_default_empty_and_accept_single_date(monkeypatch):
-    from streamlit.testing.v1 import AppTest
-    selected_date = date.today() + timedelta(days=1)
-    monkeypatch.setattr(app, "get_ui_language", lambda: app.LANGUAGE_ZH)
-    ui = AppTest.from_function(render_request_dates_fixture, default_timeout=10).run()
-    assert not ui.exception
-    assert ui.selectbox[0].value is None
-    assert not ui.date_input[0].value
-    ui.selectbox[0].set_value("代理商支持")
-    ui.date_input[0].set_value(selected_date).run()
-    assert not ui.exception
-    assert ui.date_input[0].value == selected_date
-
-
-def test_admin_page_renders_groups_and_edit_dialog(svc, monkeypatch):
-    import sys
-    import order_scheduling_page as page
-    from streamlit.testing.v1 import AppTest
-    svc.app.data[app.USER_PERMISSION_TABLE_NAME] = [record("admin", 用户账号=[{"id": "ou_admin", "name": "管理员甲"}],
-        角色=["管理员"], 是否启用="是")]
-    monkeypatch.setitem(sys.modules, "schedule_ui_fixture", SimpleNamespace(api=svc.app))
-    monkeypatch.setattr(svc.app, "admin_auth_gate", lambda: True)
-    monkeypatch.setattr(svc.app, "feishu_bitable_app_token", lambda: "test-base")
-    monkeypatch.setattr(svc.app, "load_static_page_data_cache", lambda: {"tables": svc.app.data})
-    monkeypatch.setattr(page, "schema_ready", lambda *args: True)
-    ui = AppTest.from_string("from schedule_ui_fixture import api\nfrom order_scheduling_page import render_order_scheduling_page\nrender_order_scheduling_page(api)", default_timeout=10).run()
-    assert not ui.exception
-    assert "REQ-1" in ui.expander[0].label
-    assert len(ui.dataframe) == 1
-    ui.selectbox(key="order_operator").set_value("ou_admin").run()
-    assert ui.button(key="order_submit_edits").disabled
-    assert not ui.exception
+pass  # Retired widget test: test_admin_page_renders_groups_and_edit_dialog
 
 
 def test_prepare_download_without_network_or_writes_and_worker_no_attachment(svc):
@@ -557,26 +524,4 @@ def test_async_write_copies_payload_and_does_not_wait():
     assert future.result(timeout=2) == {"lines": [1]}
 
 
-def test_pending_io_does_not_block_page_and_issued_requests_hidden(svc, monkeypatch):
-    import sys
-    import order_scheduling_page as page
-    from concurrent.futures import Future
-    from streamlit.testing.v1 import AppTest
-    svc.app.data[app.USER_PERMISSION_TABLE_NAME] = [record("admin", 用户账号=[{"id": "ou_admin"}], 角色=["管理员"], 是否启用="是")]
-    issued = deepcopy(svc.app.data[app.REQUEST_TABLE_NAME][0])
-    issued["record_id"] = "issued"
-    issued["fields"].update(申请单号="ISSUED-HIDDEN", 审批状态="已发放")
-    svc.app.data[app.REQUEST_TABLE_NAME].append(issued)
-    monkeypatch.setitem(sys.modules, "schedule_ui_fixture", SimpleNamespace(api=svc.app))
-    monkeypatch.setattr(svc.app, "admin_auth_gate", lambda: True)
-    monkeypatch.setattr(svc.app, "load_static_page_data_cache", lambda: {"tables": svc.app.data})
-    monkeypatch.setattr(page, "schema_ready", Mock(side_effect=AssertionError("no network schema read")))
-    ui = AppTest.from_string("from schedule_ui_fixture import api\nfrom order_scheduling_page import render_order_scheduling_page\nrender_order_scheduling_page(api)", default_timeout=3)
-    ui.session_state["order_jobs"] = {"other": {"phase": "poll", "future": Future(), "request_ids": {"other-req"}}}
-    ui.run()
-    assert not ui.exception
-    assert len(ui.expander) >= 1
-    assert "REQ-1" in ui.expander[0].label
-    ui.selectbox(key="order_operator").set_value("ou_admin").run()
-    assert ui.button(key="order_submit_edits").disabled
-    page.schema_ready.assert_not_called()
+pass  # Retired widget test: test_pending_io_does_not_block_page_and_issued_requests_hidden

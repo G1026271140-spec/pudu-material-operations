@@ -9,20 +9,11 @@ class RequestCartTests(unittest.TestCase):
         self.assertIs(app.APP_RUNTIME.fresh_feishu_rows, app.fresh_feishu_rows)
         self.assertEqual(app.APP_RUNTIME.LANGUAGE_EN, app.LANGUAGE_EN)
 
-    def test_request_preview_callback_only_records_intent(self) -> None:
-        state = {}
-        with (
-            patch.object(app.st, "session_state", state),
-            patch.object(app.st, "rerun") as rerun,
-        ):
-            app.request_preview_full_rerun()
-
-        self.assertTrue(state["request_preview_requested"])
-        rerun.assert_not_called()
+    pass  # Retired widget assertion: test_request_preview_callback_only_records_intent
 
     def test_compact_cart_toggle_stays_in_session_state(self) -> None:
         state = {}
-        with patch.object(app.st, "session_state", state):
+        with patch.object(app.runtime, "request_state", state):
             app.toggle_request_compact_cart()
             self.assertTrue(state["request_compact_cart_open"])
             app.toggle_request_compact_cart()
@@ -53,7 +44,7 @@ class RequestCartTests(unittest.TestCase):
             self.assertIsNone(app.request_category_image_path("定制LOGO书包(Customized PUDU bag)"))
 
     def test_chinese_category_label_hides_bilingual_suffix(self) -> None:
-        with patch.object(app.st, "session_state", {app.UI_LANGUAGE_SESSION_KEY: app.LANGUAGE_ZH}):
+        with patch.object(app.runtime, "request_state", {app.UI_LANGUAGE_SESSION_KEY: app.LANGUAGE_ZH}):
             self.assertEqual(
                 app.request_category_display_label(
                     "工业产品线手册IR(Industrial Product Line Brochure）"
@@ -167,7 +158,7 @@ class RequestCartTests(unittest.TestCase):
         custom_line = app.build_custom_request_material_line("新品", 50, "")
         session_state = {"request_material_lines": [custom_line]}
 
-        with patch.object(app.st, "session_state", session_state):
+        with patch.object(app.runtime, "request_state", session_state):
             normalized = app.get_request_material_lines()
             payload = app.queued_material_request_payload(
                 {"submission_token": "submit-custom"}, normalized
@@ -228,7 +219,7 @@ class RequestCartTests(unittest.TestCase):
             "language": "已停用语种",
         }
 
-        with patch.object(app.st, "session_state", state):
+        with patch.object(app.runtime, "request_state", state):
             app.normalize_request_option_state(
                 "models",
                 ["M1", "M2"],
@@ -245,7 +236,7 @@ class RequestCartTests(unittest.TestCase):
 
     def test_language_does_not_default_to_first_available_option(self) -> None:
         state = {"language": None}
-        with patch.object(app.st, "session_state", state):
+        with patch.object(app.runtime, "request_state", state):
             selected = app.ensure_request_language_default(
                 "language",
                 ["英语", "简中"],
@@ -256,7 +247,7 @@ class RequestCartTests(unittest.TestCase):
 
     def test_model_multi_select_does_not_preselect_first_option(self) -> None:
         state = {"models": []}
-        with patch.object(app.st, "session_state", state):
+        with patch.object(app.runtime, "request_state", state):
             app.normalize_request_option_state(
                 "models",
                 ["M1", "M2"],
@@ -286,7 +277,7 @@ class RequestCartTests(unittest.TestCase):
             "language_multi": True,
         }
 
-        with patch.object(app.st, "session_state", state):
+        with patch.object(app.runtime, "request_state", state):
             app.enforce_request_cart_exclusive_multi_select(
                 "model_multi",
                 "language_multi",
@@ -296,20 +287,7 @@ class RequestCartTests(unittest.TestCase):
         self.assertFalse(state["language_multi"])
         self.assertTrue(state["request_form_cache_locked"])
 
-    def test_successful_cart_addition_shows_right_side_toast_once(self) -> None:
-        state = {
-            "request_cart_added_toast": True,
-            app.UI_LANGUAGE_SESSION_KEY: app.LANGUAGE_ZH,
-        }
-        with (
-            patch.object(app.st, "session_state", state),
-            patch.object(app.st, "toast") as toast,
-        ):
-            app.render_request_cart_added_toast()
-            app.render_request_cart_added_toast()
-
-        toast.assert_called_once_with("已加入购物车", icon="🛒", duration="long")
-        self.assertNotIn("request_cart_added_toast", state)
+    pass  # Retired widget test: test_successful_cart_addition_shows_right_side_toast_once
 
 
 if __name__ == "__main__":

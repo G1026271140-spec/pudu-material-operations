@@ -20,7 +20,7 @@ class ContactDirectoryTests(unittest.TestCase):
         session_state = {"contact_department_cache_data": old_cache}
 
         with (
-            patch.object(app.st, "session_state", session_state),
+            patch.object(app.runtime, "request_state", session_state),
             patch.object(app, "load_static_contact_department_cache", return_value=new_cache),
         ):
             result = app.get_contact_directory_cache()
@@ -93,7 +93,7 @@ class ContactDirectoryTests(unittest.TestCase):
             },
         }
 
-        with patch.object(app.st, "session_state", session_state):
+        with patch.object(app.runtime, "request_state", session_state):
             app.sync_request_department_from_selected_applicant()
 
         self.assertEqual(session_state["request_department_id"], "od-sales")
@@ -106,7 +106,7 @@ class ContactDirectoryTests(unittest.TestCase):
             app.REQUEST_CONTACT_USER_LOOKUP_KEY: {},
         }
 
-        with patch.object(app.st, "session_state", session_state):
+        with patch.object(app.runtime, "request_state", session_state):
             app.sync_request_department_from_selected_applicant()
 
         self.assertIsNone(session_state["request_department_id"])
@@ -123,7 +123,7 @@ class ContactDirectoryTests(unittest.TestCase):
             },
         }
 
-        with patch.object(app.st, "session_state", session_state):
+        with patch.object(app.runtime, "request_state", session_state):
             app.sync_request_department_from_selected_applicant()
 
         self.assertIsNone(session_state["request_department_id"])

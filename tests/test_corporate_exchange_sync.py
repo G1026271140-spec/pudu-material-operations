@@ -22,7 +22,7 @@ def test_workflow_watches_exchange_changes_and_sends_record_id():
 
 
 def test_webhook_rejects_wrong_token_and_queues_valid_record(monkeypatch, tmp_path):
-    secrets_dir = tmp_path / ".streamlit"
+    secrets_dir = tmp_path / "config"
     secrets_dir.mkdir()
     (secrets_dir / "secrets.toml").write_text(
         'CORPORATE_EXCHANGE_WEBHOOK_TOKEN = "test-token"', encoding="utf-8"

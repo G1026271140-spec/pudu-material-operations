@@ -995,6 +995,7 @@ def can_run_alongside(task: SubmissionTask, running: list[SubmissionTask]) -> bo
     return not any(not notification_only_task(active) for active in running)
 
 
+@inventory_app.runtime.request_scope()
 def process_claimed_submission_task(client: object, task: SubmissionTask) -> None:
     logging.info("Claimed task %s (%s)", task.task_id, task.task_type)
     latest_progress = dict(task.result)

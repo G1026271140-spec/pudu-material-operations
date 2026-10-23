@@ -20,6 +20,7 @@ from pathlib import Path
 from urllib import parse, request
 
 from fastapi import HTTPException
+from backend_runtime import secret
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,9 +37,8 @@ _ticket_lock = threading.Lock()
 
 @lru_cache(maxsize=1)
 def credentials() -> tuple[str, str]:
-    values = tomllib.loads((ROOT / ".streamlit" / "secrets.toml").read_text(encoding="utf-8"))
-    app_id = str(values.get("FEISHU_APP_ID") or "").strip()
-    app_secret = str(values.get("FEISHU_APP_SECRET") or "").strip()
+    app_id = secret("FEISHU_APP_ID", root=ROOT)
+    app_secret = secret("FEISHU_APP_SECRET", root=ROOT)
     if not app_id or not app_secret:
         raise RuntimeError("Feishu application credentials are not configured")
     return app_id, app_secret

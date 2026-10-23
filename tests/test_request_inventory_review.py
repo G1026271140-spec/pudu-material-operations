@@ -7,6 +7,17 @@ import app
 
 
 class RequestInventoryReviewTests(unittest.TestCase):
+    def setUp(self):
+        # These are unit tests; use explicit field types, never live discovery.
+        schema = {"tables": {app.REQUEST_LINE_TABLE_NAME: {"fields": {
+            "品类名称": {"type": 1}, "产品型号名称": {"type": 1},
+            "语种名称": {"type": 1}, "语言名称": {"type": 1},
+            "物料编码": {"type": 18},
+        }}}}
+        patcher = patch.object(app, "feishu_schema", return_value=schema)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_expired_admin_card_is_replaced_and_new_message_id_is_saved(self) -> None:
         client = Mock()
         client.update_interactive_message.side_effect = RuntimeError(
@@ -198,11 +209,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
             field_names=["所属申请单", "物料编码", "申请数量"],
         )
 
-    def test_review_page_uses_fullscreen_application_loading_overlay(self) -> None:
-        self.assertIn(
-            "正在抓取申请单数据，请稍候...",
-            app.render_request_inventory_review_page.__code__.co_consts,
-        )
+    pass  # Retired widget test: test_review_page_uses_fullscreen_application_loading_overlay
 
     def test_cached_allocation_catalog_uses_cache_and_keeps_current_disabled_item(self) -> None:
         cache = {"inventory_rows": [{"material_code": "MAT-1"}]}

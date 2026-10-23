@@ -3,7 +3,7 @@ Description=PUDU Material Operations - submission worker (cutover required)
 After=network-online.target
 Wants=network-online.target
 ConditionPathExists=/etc/pudu-materials-operation/worker-enabled
-ConditionPathExists=/home/gaohongyuan1/pudu-materials-operation/source/.streamlit/secrets.toml
+ConditionPathExists=/home/gaohongyuan1/pudu-materials-operation/source/config/secrets.toml
 StartLimitIntervalSec=300
 StartLimitBurst=5
 

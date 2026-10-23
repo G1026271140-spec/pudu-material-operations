@@ -30,7 +30,7 @@ ERROR = "#C9362B"
 
 def config_from_current_install(root: Path = ROOT) -> DeploymentConfig:
     project = json.loads((root / "config" / "project_config.json").read_text(encoding="utf-8"))
-    secret_path = root / ".streamlit" / "secrets.toml"
+    secret_path = root / "config" / "secrets.toml"
     secrets = tomllib.loads(secret_path.read_text(encoding="utf-8")) if secret_path.exists() else {}
     deployment = project.get("deployment", {})
     local = deployment.get("local_web", {})
@@ -46,7 +46,7 @@ def config_from_current_install(root: Path = ROOT) -> DeploymentConfig:
         "FEISHU_APPROVAL_WRITEBACK_APP_SECRET",
         "GITHUB_CACHE_REFRESH_TOKEN",
         "CLOUDFLARE_TUNNEL_TOKEN",
-        "STREAMLIT_APP_URL",
+        "PUBLIC_APP_URL",
     }
     return DeploymentConfig(
         install_root=str(root),

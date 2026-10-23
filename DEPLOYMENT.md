@@ -1,132 +1,25 @@
-> 交接提示（2026-10-23）：本文含历史内容。正式架构为 React/FastAPI + Windows Worker + 飞书 Base；管理员使用飞书角色认证，无额外管理密码。以 docs/handover 下当前说明为准。
+# 部署与迁移
 
-# 多人共用与部署说明
+当前代码使用 React + FastAPI + Python Worker，配置入口统一为 `config/secrets.toml` 或 `PUDU_SECRETS_FILE` 指定的外部文件；不再有旧页面服务器或云端唤醒任务。
 
-这个项目现在只使用飞书多维表格作为运行时数据库。飞书配置缺失时，应用会直接停止并提示补齐配置。
+## Ubuntu
 
-## 推荐方式
+先按 [Ubuntu 服务说明](deployment/ubuntu/README.md) 准备独立 Python 环境和 systemd 服务。服务准备阶段只开放 `/api/health`，其他业务路径返回 503。Worker 仅安装配置，切换条件未满足前保持 disabled/inactive。
 
-把项目部署在一台固定电脑、公司内网服务器、VPS 或 Streamlit Community Cloud 上，让所有管理人访问同一个 Streamlit 地址：
+上线前须验证：
 
-```powershell
-cd "$env:USERPROFILE\Desktop\营销物料管理系统"
-.\run_app.ps1
-```
+1. 网络：虚拟机能连接飞书开放平台和公司批准的软件源。
+2. 身份：公司域名、HTTPS、飞书重定向地址与企业身份校验；管理员和 HR 角色仍来自权限表。
+3. 数据：实时模式不读取生产业务快照；逐请求测量源表耗时。认证令牌复用不等于业务缓存。
+4. 执行：任务生成接口、队列和 Worker 端到端通过。排空原节点在途任务后只切换一个生产执行节点，不能靠非原子领导选举保证双节点绝不重复。
+5. 结果：按真实申请单、明细、库存/配额、任务终态和通知结果验收，不以入队成功或进程 Running 代替完成。
 
-`run_app.ps1` 会自动寻找可用端口。如果 `8501` 被占用，它会自动尝试 `8502`、`8503` 等端口，并打印本机地址和局域网地址。
+## Windows 现有生产
 
-其他管理人只需要访问同一个地址，例如：
+Web、Submission Worker、卡片 Worker 和 Cache Runner 是独立运行副本。当前分支的源码修改不会自动更新这些副本。旧节点升级必须受控迁移密钥到新配置路径，并整体验证，不得只更新其中一个文件。
 
-```text
-http://服务器IP:端口
-http://服务器IP:端口/?view=inventory
-```
+维护脚本统一使用新的 `config` 目录。`scripts/run_local_web_app.ps1` 启动 `uvicorn request_web.api:api`；`scripts/submission_worker.py` 执行队列；`scripts/feishu_card_worker.py` 处理卡片长连接。当前生产节点暂不停止或换源，等待迁移窗口。
 
-## 必填 Secrets
+## 安全与回退
 
-本地运行时写入 `.streamlit/secrets.toml`，云端部署时写入 Streamlit Cloud Secrets：
-
-```toml
-INVENTORY_VIEW_PASSWORD = "replace-with-a-strong-password"
-APPROVAL_VIEW_PASSWORD = "replace-with-a-strong-password"
-FEISHU_APP_ID = "cli_xxx"
-FEISHU_APP_SECRET = "你的 app secret"
-FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
-FEISHU_APPROVAL_WRITEBACK_APP_ID = "cli_xxx"
-FEISHU_APPROVAL_WRITEBACK_APP_SECRET = "审批回写应用的 app secret"
-GITHUB_CACHE_REFRESH_TOKEN = "GitHub repository_dispatch token"
-CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
-STREAMLIT_APP_URL = "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/"
-```
-
-缺少任意一项飞书配置时，应用会直接停止并提示补齐配置。
-`STREAMLIT_APP_URL` 用于机器人消息中的审批和专用配货页面链接；当前生产地址已内置，可不配置，应用地址变更时再覆盖。专用配货页面复用申请页静态物料目录缓存，页面内的品类、型号、语种、数量和备注调整仅保存在当前会话，点击提交后才会一次性进入后台任务队列。
-
-## 飞书权限
-
-飞书应用需要：
-
-- 开通多维表格读写相关权限。
-- 添加“机器人”应用能力，并开通“以应用的身份发消息”权限（`im:message:send_as_bot`）。
-- 开通接收单聊消息（`im:message.p2p_msg:readonly`）、接收群内 @ 机器人消息（`im:message.group_at_msg:readonly`）和读取消息资源（`im:message:readonly`）权限。
-- 开通图片识别权限（`optical_char_recognition:image`）。
-- 在“事件与回调”中选择长连接方式，并订阅“接收消息”事件（`im.message.receive_v1`）。
-- 在开发者后台发布/生效权限变更。
-- 在目标多维表格右上角 `... -> 更多 -> 添加文档应用` 中添加该应用。
-
-### 机器人截图查库存
-
-机器人支持从截图或文字识别物料品类、产品型号、语种和需求数量，实时读取飞书“物料主数据”与“物料品类”，并以 Card 2.0 表格回复库存充足、库存不足、无此组合和相似库存组合。文字可按“品类 型号 语种 数量”发送，支持部分品类/型号、语种别名和轻微拼写错误的模糊搜索，最多返回 10 个按相关度排序的真实库存组合；数量可省略，此时只返回当前库存。单聊中直接发送文字或截图即可；群聊中需要在同一条消息里 @ 机器人，截图查询需同时附图。
-
-该功能由 Windows 常驻任务承载，不由 Streamlit Cloud 进程承载。固定电脑安装或更新任务：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install_feishu_card_worker_task.ps1
-```
-
-计划任务名称默认为 `PUDU Feishu Card Worker`。更新代码后重启该任务即可加载新版本；电脑必须保持联网，任务会在登录时启动并在异常退出后自动重启。
-
-### 营销申请后台任务
-
-应用内业务写入统一采用后台队列。Streamlit Cloud 把物料申请、采购补库、品类维护、库存提交修正/撤回和周边礼品项目操作写入飞书「后台任务队列」；独立 Windows Worker 负责执行实际业务表写入和通知。物料申请不再支持附件。应用显示任务已进入后台队列后，用户可以关闭页面，不会中断后续写入。
-
-在保持联网的 Windows 电脑上安装或更新 Worker：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install_submission_worker_task.ps1
-```
-
-计划任务名称为 `PUDU Submission Worker`，登录后常驻运行，锁屏不影响处理，异常退出后一分钟自动重启。它使用 `%LOCALAPPDATA%\PuduSubmissionWorker` 下的独立 Git 副本、虚拟环境、Secrets 和日志，不会读写桌面工作区，也不会与 `%LOCALAPPDATA%\PuduMaterialCacheRunner` 中的缓存刷新程序发生 Git 冲突。
-
-任务使用 `提交幂等键` 防止 Worker 重启造成重复申请，处理过程会分阶段保存进度。单次任务最多重试 10 次，退避时间最高 15 分钟；Worker 在处理中退出后，10 分钟租约过期即可由重启后的进程接管。日志位置：
-
-```text
-%LOCALAPPDATA%\PuduSubmissionWorker\logs\worker.log
-%LOCALAPPDATA%\PuduSubmissionWorker\logs\bootstrap.log
-```
-
-手动检查或恢复失败任务：
-
-```powershell
-Stop-ScheduledTask -TaskName "PUDU Submission Worker"
-cd "$env:LOCALAPPDATA\PuduSubmissionWorker\repo"
-.\.venv\Scripts\python.exe scripts\submission_worker.py --once
-.\.venv\Scripts\python.exe scripts\submission_worker.py --retry-failed --once
-Start-ScheduledTask -TaskName "PUDU Submission Worker"
-```
-
-代码推送到 `master` 后重新运行安装脚本，安装器会停止旧 Worker、快进更新独立副本、校验或修复队列表结构，再启动新版本。
-
-营销物料申请成功后，机器人会自动向“用户权限表”内角色包含“管理员”且“是否启用”为“是”的账号发送无操作按钮的申请通知卡片。卡片完整展示申请信息、收件信息、物料用途与全部明细，并提示管理员关注飞书审批进度。申请人若尚未登记，应用会新增一条仅包含“销售”身份的启用记录；应用不会自动添加管理员身份。启用的申请人会收到已进入审批流程的回执和物料明细。机器人提醒失败不会影响申请数据的写入。
-
-管理员库存确认卡片提供“按原申请确认”和“调整配货方案”两个入口。原申请无需修改时由卡片 Worker 直接完成库存核实，不再经过后台任务队列；需要改变品类、型号、语种、数量或增删明细时，打开轻量配货工作台。配货台复用 `data/request_form_cache.json` 的启用物料目录，只读取当前申请及实时库存，提交时仍由后台 Worker 执行版本校验、数据写入、变更通知和管理员卡片同步。
-
-“物料管理”统一包含采购补库、品类管理和物料数据库。采购补库确认后直接增加物料主数据库存，并为每条明细写入“物料采购（增加库存）”流水；完成后机器人会向全部启用管理员发送补库卡片，列明补库单号、补库人、采购单号、补库说明、每条物料及库存变化。采购补库与物料申领共用静态选项缓存，Windows 本地缓存任务会在每天 `10:30` 和 `16:30` 同步更新。
-
-申请与补库选项缓存会从当前启用的“物料主数据”行生成品类、型号、语种组合配置。GitHub 手动缓存工作流、Windows 本地缓存任务和应用内缓存刷新使用同一份表清单与构建逻辑；静态缓存提交前会校验组合配置、唯一组合数和原始启用行完全一致，校验失败时不会发布缓存。
-
-每次 Windows 本地缓存任务、GitHub 手动缓存工作流或应用内“更新全部数据缓存”执行前，都会维护库存行启停状态：库存不为 `0` 的行自动启用；库存为 `0` 且超过 14 天没有有效库存数量变化的行自动停用，并向全部启用管理员发送停用明细卡片。首次运行会在“物料主数据”自动创建文本字段 `库存归零时间`；没有历史流水和计时值的零库存行从首次检查时开始计时，不会被立即误停用。
-
-应用会按名称读取以下表：
-
-- 物料主数据
-- 物料品类
-- 库存流水
-- 物料申请单
-- 申请明细
-- 库存批量操作
-- 用户权限表
-- 后台任务队列
-- 后台任务载荷
-
-“物料申请单”包含独立文本字段：`客户名称`、`国家`、`收件人信息`、`运费承担者`。审批发放页不读取仓库静态缓存；进入页面及点击“刷新实时数据”时直接从飞书读取申请单、申请明细和物料主数据。
-
-## 下载备份
-
-打开实时库存页并输入密码 `replace-with-a-strong-password` 后，可以从飞书当前数据导出：
-
-- 完整库存 Excel
-- 完整库存 CSV
-- 库存变更流水
-- 当前筛选结果 Excel
-- 当前筛选结果 CSV
+不要提交密钥、人员快照、SQLite、通知 outbox 或日志。配置文件权限最小化，日志只记录必要的任务标识和错误摘要。新节点验收失败时保持未接管状态，旧节点继续运行；不要删除旧队列状态或重放已有任务来测试。

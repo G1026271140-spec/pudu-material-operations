@@ -188,7 +188,7 @@ try {
         Invoke-CheckedCommand $git @("switch", "master") | Out-Null
         Invoke-CheckedCommand $git @("pull", "--ff-only", "origin", "master") | Out-Null
 
-        $repoSecretsDirectory = Join-Path $RepoPath ".streamlit"
+        $repoSecretsDirectory = Join-Path $RepoPath "config"
         New-Item -ItemType Directory -Path $repoSecretsDirectory -Force | Out-Null
         Copy-Item -LiteralPath $SecretsPath -Destination (Join-Path $repoSecretsDirectory "secrets.toml") -Force
 

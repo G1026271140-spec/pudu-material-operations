@@ -1,5 +1,7 @@
 # 公司 GitLab 源码交接
 
+> 2026-10-23 更新：`codex/remove-streamlit` 的 V3.5.0 已移除旧页面框架及运行配置，改用 `config/secrets.toml` / `PUDU_SECRETS_FILE`；新的 README 与 DEPLOYMENT.md 为当前部署入口。下列 V3.4.5 基线和旧 Windows 节点说明是原交接历史，不代表已切换生产。
+
 - 目标仓库：`git@code.pudu.work:gaohongyuan1/pudu-materials-operation.git`
 - 网页地址：`https://code.pudu.work/gaohongyuan1/pudu-materials-operation`
 - GitLab 默认交接分支：`main`。保留远程初始化提交 `d8a61e8`，将其与清理版源码历史合并，不强制推送；初始化 README 另存为 `docs/gitlab-initial-README.md`。
@@ -9,7 +11,7 @@
 - 为避免泄露历史默认凭据，交接包已将旧页面密码回退值与对应测试替换为占位值，补全 secrets 示例并标记历史文档。正式生产源码未变更。
 - 本次 GitLab 准备额外扩展 `.gitignore`，避免后续误提交运行快照；未修改业务功能。
 
-先阅读 `docs/handover/00-请先阅读.md`。当前 README 和部分历史文档仍描述早期 Streamlit，正式系统为 React + FastAPI + 飞书 Base + 本地 SQLite + Windows Worker。
+原交接内容见 `docs/handover/00-请先阅读.md`。历史文档描述旧生产部署，当前代码入口为 React + FastAPI + 飞书 Base + 持久任务状态 + Python Worker。
 
 ## 代码提交不等于生产切换
 
