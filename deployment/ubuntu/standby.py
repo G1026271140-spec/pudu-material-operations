@@ -7,6 +7,7 @@ only after live-read mode, enterprise SSO and the single-writer cutover pass.
 from __future__ import annotations
 
 import time
+import os
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -45,6 +46,7 @@ def health():
     return {
         "status": "ok",
         "mode": "commissioning",
+        "version": os.environ.get("PUDU_DEPLOYED_VERSION", "commissioning"),
         "business_ready": False,
         "uptime_seconds": round(time.monotonic() - STARTED, 2),
     }
