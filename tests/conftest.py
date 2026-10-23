@@ -1,4 +1,16 @@
 import pytest
+import socket
+
+
+@pytest.fixture(autouse=True)
+def unit_tests_never_contact_external_services(monkeypatch):
+    """Unmocked I/O fails immediately, not against a real company API."""
+    original = socket.socket.connect
+    def connect(sock, address):
+        if isinstance(address, tuple) and address[0] not in {'127.0.0.1', '::1', 'localhost'}:
+            raise AssertionError('External networking is forbidden in unit tests; mock the source client')
+        return original(sock, address)
+    monkeypatch.setattr(socket.socket, 'connect', connect)
 
 
 @pytest.fixture(autouse=True)

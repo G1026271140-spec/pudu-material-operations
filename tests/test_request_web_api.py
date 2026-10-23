@@ -1170,7 +1170,12 @@ def test_json_cache_updates_when_published_file_changes(tmp_path, monkeypatch):
     monkeypatch.setattr(web_api, "resolve_cache_path", lambda _root, _relative: path)
 
     assert web_api._json("page_data_cache.json")["revision"] == 1
+    previous = path.stat()
     path.write_text('{"revision": 2}', encoding="utf-8")
+    # Some VM filesystems expose identical timestamps for back-to-back writes.
+    # A publication must have distinct file metadata; do not depend on a sleep.
+    import os
+    os.utime(path, ns=(previous.st_atime_ns, previous.st_mtime_ns + 1_000_000))
     assert web_api._json("page_data_cache.json")["revision"] == 2
 
 

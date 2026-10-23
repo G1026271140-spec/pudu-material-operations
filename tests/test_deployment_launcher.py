@@ -15,7 +15,7 @@ from deployment_launcher.release import bump_release_version_files, next_patch_v
 
 def valid_config(**overrides: object) -> DeploymentConfig:
     values: dict[str, object] = {
-        "install_root": r"C:\PuduMaterialOperations",
+        "install_root": str(Path.home() / "PuduMaterialOperations"),
         "hostname": "materials.example.com",
         "port": 8501,
         "cloudflare_mode": CloudflareMode.MANUAL,
