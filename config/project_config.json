@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "project": {
+    "display_name": "PUDU 营销物料管理系统",
+    "github_account": "G1026271140-spec",
+    "github_repository": "G1026271140-spec/pudu-material-operations",
+    "github_branch": "master",
+    "cache_workflow_file": "refresh-static-cache.yml"
+  },
+  "deployment": {
+    "streamlit_app_url": "https://pudu-material-inventory-ndgbxrpkkrzgkbapvhzvix.streamlit.app/",
+    "custom_domain": "https://pudu-material-operations.gaohongyuan.me",
+    "local_web": {
+      "address": "127.0.0.1",
+      "port": 8501,
+      "runner_root": "%USERPROFILE%\\PuduMaterialWebRunner",
+      "web_task_name": "PUDU Material Web App",
+      "tunnel_task_name": "PUDU Material Cloudflare Tunnel"
+    }
+  },
+  "feishu": {
+    "approval_definition_code": "5FD7D9F1-B15B-4150-BDDB-D21674FDDFA7",
+    "tables": {
+      "request": "物料申请单",
+      "request_line": "申请明细",
+      "request_change": "申请物料变更记录表",
+      "material": "物料主数据",
+      "category": "物料品类",
+      "model": "产品型号",
+      "language": "物料语种",
+      "ledger": "库存流水",
+      "user_permission": "用户权限表",
+      "gift_project": "项目周边礼品物料筹备详情list",
+      "cultural_material": "文化周边管理库存",
+      "corporate_apparel": "文化周边编码及库存数量",
+      "corporate_apparel_source_table_id": "tbledtC3RafsHNh0",
+      "corporate_exchange_source_base_token": "ZdstbJeGgauaEqsKSlnc8ghfnQf",
+      "corporate_exchange_source_table_id": "tblttLY1LMqkWw4q",
+      "region": "战区管理",
+      "queue": "后台任务队列",
+      "queue_payload": "后台任务载荷",
+      "worker_registry": "后台任务节点列表",
+      "legacy_worker_registry": "后台Worker节点"
+    }
+  },
+  "runtime": {
+    "data_cache_ttl_seconds": 30,
+    "inventory_auto_disable_days": 14,
+    "default_low_stock_threshold": 100
+  },
+  "submission_worker": {
+    "task_name": "PUDU Submission Worker",
+    "runner_root": "%LOCALAPPDATA%\\PuduSubmissionWorker",
+    "poll_seconds": 5.0,
+    "lease_seconds": 600,
+    "max_retries": 10,
+    "priority": 100,
+    "leadership_check_interval_seconds": 60,
+    "heartbeat_interval_seconds": 21600,
+    "heartbeat_timeout_seconds": 28800,
+    "inventory_review_schedule_check_interval_seconds": 300
+  },
+  "queue": {
+    "payload_inline_limit": 12000,
+    "payload_chunk_size": 12000
+  },
+  "card_worker": {
+    "task_name": "PUDU Feishu Card Worker"
+  },
+  "cache_runner": {
+    "task_name": "PUDU Material Cache Refresh",
+    "contact_task_name": "PUDU Contact Cache Refresh",
+    "runner_root": "%LOCALAPPDATA%\\PuduMaterialCacheRunner",
+    "daily_times": [
+      "10:30",
+      "16:30"
+    ],
+    "contact_days": [
+      "Monday",
+      "Wednesday",
+      "Friday"
+    ],
+    "contact_time": "11:00"
+  },
+  "streamlit_wake": {
+    "task_name": "PUDU Streamlit Nightly Wake",
+    "daily_time": "23:20"
+  }
+}

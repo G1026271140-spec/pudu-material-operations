@@ -1,0 +1,39 @@
+.venv/
+# GitLab handover repository is source-only. Runtime snapshots stay outside Git.
+logs/
+tmp/
+.pytest_cache/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+*.pudu-migration
+data/*
+!data/README-HANDOVER.md
+assets/gift_projects/
+assets/request_categories/
+assets/warehouse_locations/
+PUDU Material Operations Setup.exe
+PUDU Material Operations Setup.version
+request_web/frontend/node_modules/
+request_web/frontend/*.tsbuildinfo
+__pycache__/
+work/
+.streamlit/secrets.toml
+*.pyc
+data/~$*
+data/*.tmp
+data/daily_issuance_notification_state.json
+data/daily_issuance_notifier.log
+streamlit.log
+streamlit.err.log
+extensions/material-automation/.git/
+extensions/material-automation/config.toml
+extensions/material-automation/logs/
+extensions/material-automation/state/
+extensions/material-automation/*.ndjson
+extensions/material-automation/*.manifest.json
+extensions/material-automation/feishu_wiki_auth.png
+extensions/material-automation/region_field_update.json
+extensions/material-automation/source_region_filter.json
+extensions/material-automation/translation_probe.json

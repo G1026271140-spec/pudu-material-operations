@@ -1,0 +1,1213 @@
+from __future__ import annotations
+
+import argparse
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+import json
+import logging
+import os
+import socket
+import subprocess
+import sys
+import time
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from typing import Callable
+
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import app as inventory_app
+import task_failure_notices
+from project_config import get_setting
+from submission_queue import (
+    QUEUE_TASK_TYPE_ORDER_EDIT,
+    QUEUE_TASK_TYPE_ORDER_GENERATE,
+    QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
+    QUEUE_TASK_TYPE_ORDER_PLAN,
+    QUEUE_TASK_TYPE_ORDER_RESTOCK,
+    QUEUE_STATUS_FAILED,
+    QUEUE_STATUS_CANCELLED,
+    QUEUE_COMPLETION_COMPLETED,
+    QUEUE_FIELD_STATUS,
+    QUEUE_FIELD_ERROR,
+    QUEUE_FIELD_COMPLETION_STATUS,
+    QUEUE_TASK_TYPE_CATEGORY_DELETE,
+    QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
+    QUEUE_TASK_TYPE_GIFT_PROJECT,
+    QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
+    QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_WITHDRAW,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
+    QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+    QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
+    QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
+    QUEUE_TASK_TYPE_RESTOCK,
+    QUEUE_TASK_TYPE_STOCK_REDUCTION,
+    QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
+    QUEUE_TASK_TYPE_TRANSACTION_REVERT,
+    SubmissionTask,
+    checkpoint_submission_task,
+    claim_next_submission_task,
+    backfill_submission_completion_status,
+    complete_submission_task,
+    current_worker_leader,
+    ensure_submission_queue_table,
+    fail_submission_task,
+    find_task_by_idempotency_key,
+    retry_failed_submission_tasks,
+    update_worker_heartbeat,
+)
+
+
+DEFAULT_POLL_SECONDS = float(get_setting("submission_worker.poll_seconds", 5.0))
+DEFAULT_LEASE_SECONDS = int(get_setting("submission_worker.lease_seconds", 600))
+MAX_RETRIES = int(get_setting("submission_worker.max_retries", 10))
+RELOAD_EXIT_CODE = 75
+ALREADY_RUNNING_EXIT_CODE = 76
+DEFAULT_WORKER_PRIORITY = int(get_setting("submission_worker.priority", 100))
+WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS = int(get_setting("submission_worker.leadership_check_interval_seconds", 60))
+WORKER_HEARTBEAT_INTERVAL_SECONDS = int(get_setting("submission_worker.heartbeat_interval_seconds", 21_600))
+WORKER_HEARTBEAT_TIMEOUT_SECONDS = int(get_setting("submission_worker.heartbeat_timeout_seconds", 28_800))
+INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS = int(get_setting("submission_worker.inventory_review_schedule_check_interval_seconds", 300))
+MAX_PARALLEL_NOTIFICATION_TASKS = 2
+_LEADERSHIP_STATE: dict[str, object] = {
+    "checked_at": 0.0,
+    "is_leader": False,
+    "leader_id": "",
+    "heartbeat_at": 0.0,
+}
+_INVENTORY_REVIEW_SCHEDULER_STATE: dict[str, float] = {"checked_at": 0.0}
+SUPPORTED_QUEUE_TASK_TYPES = {
+    QUEUE_TASK_TYPE_ORDER_EDIT,
+    QUEUE_TASK_TYPE_ORDER_GENERATE,
+    QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
+    QUEUE_TASK_TYPE_ORDER_PLAN,
+    QUEUE_TASK_TYPE_ORDER_RESTOCK,
+    QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+    QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+    QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,
+    QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT,
+    QUEUE_TASK_TYPE_RESTOCK,
+    QUEUE_TASK_TYPE_STOCK_REDUCTION,
+    QUEUE_TASK_TYPE_CATEGORY_SYNC,
+    QUEUE_TASK_TYPE_CATEGORY_DELETE,
+    QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT,
+    QUEUE_TASK_TYPE_REQUEST_WITHDRAW,
+    QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE,
+    QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER,
+    QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW,
+    QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY,
+    QUEUE_TASK_TYPE_TRANSACTION_REVERT,
+    QUEUE_TASK_TYPE_TRANSACTION_REPLACE,
+    QUEUE_TASK_TYPE_GIFT_PROJECT,
+}
+
+
+def repository_revision() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def worker_id() -> str:
+    return f"{socket.gethostname()}:{os.getpid()}"
+
+
+def worker_node_id() -> str:
+    return socket.gethostname().strip().casefold()
+
+
+def worker_has_leadership(client: object, priority: int) -> bool:
+    now = time.monotonic()
+    if now - float(_LEADERSHIP_STATE.get("checked_at") or 0) < WORKER_LEADERSHIP_CHECK_INTERVAL_SECONDS:
+        return bool(_LEADERSHIP_STATE.get("is_leader"))
+    node_id = worker_node_id()
+    heartbeat_due = (
+        now - float(_LEADERSHIP_STATE.get("heartbeat_at") or 0)
+        >= WORKER_HEARTBEAT_INTERVAL_SECONDS
+    )
+    if heartbeat_due:
+        is_leader, leader_id = update_worker_heartbeat(
+            client,
+            node_id,
+            socket.gethostname(),
+            priority,
+            inventory_app.APP_VERSION,
+            heartbeat_timeout_seconds=WORKER_HEARTBEAT_TIMEOUT_SECONDS,
+        )
+        _LEADERSHIP_STATE["heartbeat_at"] = now
+    else:
+        leader_id = current_worker_leader(
+            client,
+            heartbeat_timeout_seconds=WORKER_HEARTBEAT_TIMEOUT_SECONDS,
+        ) or node_id
+        is_leader = leader_id == node_id
+    previous_leader = str(_LEADERSHIP_STATE.get("leader_id") or "")
+    _LEADERSHIP_STATE.update(
+        {"checked_at": now, "is_leader": is_leader, "leader_id": leader_id}
+    )
+    if leader_id != previous_leader:
+        logging.info(
+            "Queue leader is %s; current node=%s priority=%s",
+            leader_id,
+            node_id,
+            priority,
+        )
+    return is_leader
+
+
+def configure_logging() -> Path:
+    configured_log_dir = os.environ.get("PUDU_SUBMISSION_WORKER_LOG_DIR")
+    log_dir = (
+        Path(configured_log_dir)
+        if configured_log_dir
+        else Path(os.environ.get("LOCALAPPDATA") or ROOT / "work")
+        / "PuduSubmissionWorker"
+        / "logs"
+    )
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / "worker.log"
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    if not root_logger.handlers:
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+        file_handler = RotatingFileHandler(
+            log_path,
+            maxBytes=5 * 1024 * 1024,
+            backupCount=5,
+            encoding="utf-8",
+        )
+        file_handler.setFormatter(formatter)
+        root_logger.addHandler(file_handler)
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        root_logger.addHandler(stream_handler)
+    return log_path
+
+
+def process_material_request(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    request_payload = dict(task.payload.get("request_payload") or {})
+    lines = [
+        dict(line)
+        for line in list(task.payload.get("lines") or [])
+        if isinstance(line, dict)
+    ]
+    submission_token = str(request_payload.get("submission_token") or "").strip()
+    if not submission_token or submission_token != task.idempotency_key:
+        raise RuntimeError("后台任务的申请幂等键不一致。")
+
+    progress = dict(task.result)
+    warnings = [
+        str(item)
+        for item in list(progress.get("warnings") or [])
+        if str(item).strip()
+    ]
+
+    def save_progress() -> None:
+        progress["warnings"] = list(dict.fromkeys(warnings))
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    inventory_app.refresh_feishu_schema_cache()
+    inventory_app.cleanup_incomplete_submission_rows(submission_token)
+    request_no, line_count, created_during_attempt = (
+        inventory_app.submit_feishu_material_request(request_payload, lines)
+    )
+    created_new_request = bool(
+        progress.get("created_new_request", created_during_attempt)
+    )
+    progress.update(
+        {
+            "request_no": request_no,
+            "line_count": line_count,
+            "created_new_request": created_new_request,
+            "request_persisted": True,
+        }
+    )
+    save_progress()
+
+    if not progress.get("sales_permission_done"):
+        try:
+            progress["sales_permission_result"] = (
+                inventory_app.ensure_requester_sales_permission(request_payload)
+            )
+        except Exception as exc:
+            warnings.append(f"申请人销售权限自动登记失败：{exc}")
+            progress["sales_permission_result"] = "failed"
+        progress["sales_permission_done"] = True
+        save_progress()
+
+    if not progress.get("admin_notification_done"):
+        try:
+            progress["admin_notification_count"] = (
+                inventory_app.notify_enabled_admins_of_material_request(
+                    request_no,
+                    request_payload,
+                    lines,
+                )
+            )
+        except Exception as exc:
+            warnings.append(f"管理员通知发送失败：{exc}")
+            progress["admin_notification_count"] = 0
+        progress["admin_notification_done"] = True
+        save_progress()
+
+    if not progress.get("sales_receipt_done"):
+        try:
+            progress["sales_receipt_count"] = inventory_app.notify_sales_request_received(
+                request_no,
+                request_payload,
+                lines,
+            )
+        except Exception as exc:
+            warnings.append(f"申请人回执发送失败：{exc}")
+            progress["sales_receipt_count"] = 0
+        progress["sales_receipt_done"] = True
+        save_progress()
+
+    return progress
+
+
+def applicant_bot_unavailable(error: Exception) -> bool:
+    """Feishu 230013 means this applicant cannot receive this app's bot message."""
+    return '"code":230013' in str(error).replace(" ", "")
+
+
+def process_cultural_request(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    request_payload = dict(task.payload.get("request_payload") or {})
+    lines = [
+        dict(line) for line in list(task.payload.get("lines") or []) if isinstance(line, dict)
+    ]
+    token = str(request_payload.get("submission_token") or "").strip()
+    if not token or token != task.idempotency_key:
+        raise RuntimeError("后台任务的文化周边申请幂等键不一致。")
+    progress = dict(task.result)
+    warnings = [str(item) for item in list(progress.get("warnings") or []) if str(item).strip()]
+
+    def save_progress() -> None:
+        progress["warnings"] = list(dict.fromkeys(warnings))
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("quota_checked"):
+        quota = inventory_app.cultural_request_quota_snapshot(request_payload, lines)
+        progress.update(
+            {
+                "quota_checked": True,
+                "quota_allowed": bool(quota["allowed"]),
+                "quota_current_quantity": int(quota["current_quantity"]),
+                "quota_requested_quantity": int(quota["requested_quantity"]),
+                "quota_target_quantity": int(quota["target_quantity"]),
+                "quota_current_jacket_quantity": int(quota["current_jacket_quantity"]),
+                "quota_requested_jacket_quantity": int(quota["requested_jacket_quantity"]),
+                "quota_target_jacket_quantity": int(quota["target_jacket_quantity"]),
+                "quota_label": str(quota["quota_label"]),
+                "quota_limit": int(quota["quota_limit"]),
+                "quota_permission_record_id": str(quota["permission_record_id"]),
+            }
+        )
+        save_progress()
+
+    if not progress.get("quota_allowed"):
+        if not progress.get("rejection_notification_done"):
+            progress["rejection_notification_counts"] = (
+                inventory_app.notify_cultural_request_rejected(
+                    request_payload,
+                    int(
+                        progress.get("quota_current_jacket_quantity")
+                        if progress.get("quota_label") == "文化夹克"
+                        else progress.get("quota_current_quantity")
+                        or 0
+                    ),
+                    int(
+                        progress.get("quota_requested_jacket_quantity")
+                        if progress.get("quota_label") == "文化夹克"
+                        else progress.get("quota_requested_quantity")
+                        or 0
+                    ),
+                    quota_label=str(progress.get("quota_label") or "文化衫"),
+                    quota_limit=int(progress.get("quota_limit") or 2),
+                )
+            )
+            progress["rejection_notification_done"] = True
+            save_progress()
+        progress.update({"rejected": True, "write_done": True, "notification_done": True})
+        save_progress()
+        return progress
+
+    if not progress.get("write_done"):
+        request_no, line_count, created_new = inventory_app.submit_feishu_cultural_request(
+            request_payload, lines
+        )
+        progress.update(
+            {
+                "write_done": True,
+                "request_no": request_no,
+                "line_count": line_count,
+                "created_new_request": created_new,
+            }
+        )
+        save_progress()
+
+    # The business write performs the authoritative live inventory validation.
+    # Only consume the applicant's cumulative quota after that write succeeds.
+    # If the write fails (for example because a cached option has sold out), the
+    # task can retry without leaving a quota reservation behind.  A retry after
+    # a successful idempotent write also resumes here safely from its checkpoint.
+    if not progress.get("quota_reserved") and not progress.get("quota_updated"):
+        inventory_app.update_cultural_request_cumulative_quantity(
+            str(progress.get("quota_permission_record_id") or ""),
+            int(progress.get("quota_target_quantity") or 0),
+            (
+                int(progress["quota_target_jacket_quantity"])
+                if "quota_target_jacket_quantity" in progress
+                else None
+            ),
+        )
+        progress["quota_reserved"] = True
+        progress["quota_updated"] = True
+        save_progress()
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送文化周边通知。")
+        targets = inventory_app.cultural_request_notification_targets(
+            str(progress.get("request_no") or ""), request_payload, lines
+        )
+        sent_keys = {
+            str(value) for value in list(progress.get("notification_sent_keys") or [])
+        }
+        skipped_keys = {
+            str(value) for value in list(progress.get("notification_skipped_keys") or [])
+        }
+        message_ids = {
+            str(key): str(value)
+            for key, value in dict(progress.get("notification_message_ids") or {}).items()
+            if str(key).strip() and str(value).strip()
+        }
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys or target_key in skipped_keys:
+                continue
+            try:
+                message_id = inventory_app.send_feishu_interactive_message(
+                    client,
+                    str(target["recipient_id"]),
+                    dict(target["card"]),
+                )
+            except Exception as exc:
+                if target.get("audience") != "applicant" or not applicant_bot_unavailable(exc):
+                    raise
+                skipped_keys.add(target_key)
+                progress["notification_skipped_keys"] = sorted(skipped_keys)
+                progress.setdefault("notification_warnings", []).append(
+                    "申请人不在飞书机器人可用范围，已跳过申请人卡片。"
+                )
+                save_progress()
+                continue
+            if str(message_id or "").strip():
+                message_ids[target_key] = str(message_id)
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            progress["notification_message_ids"] = dict(message_ids)
+            save_progress()
+        progress["notification_counts"] = {
+            "applicant": sum(1 for target in targets if target["audience"] == "applicant" and target["key"] in sent_keys),
+            "admins": sum(1 for target in targets if target["audience"] == "admins" and target["key"] in sent_keys),
+        }
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            inventory_app.feishu_record_id(
+                inventory_app.submission_token_rows(token)[0]
+            ),
+            {
+                "文化周边通知状态": "已发送",
+                inventory_app.CULTURAL_REQUEST_MESSAGE_IDS_FIELD: json.dumps(
+                    message_ids, ensure_ascii=False, separators=(",", ":")
+                ),
+            },
+        )
+        progress["notification_done"] = True
+        save_progress()
+    return progress
+
+
+def process_cultural_request_reject(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    draft = dict(task.payload.get("draft") or {})
+    progress = dict(task.result)
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("write_done"):
+        result = inventory_app.execute_cultural_request_rejection(draft)
+        progress.update({"write_done": True, **dict(result)})
+        save_progress()
+    request_no = str(progress.get("request_no") or draft.get("request_no") or "")
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送文化周边驳回通知。")
+        targets = inventory_app.cultural_request_rejection_targets(request_no)
+        sent_keys = {
+            str(value) for value in list(progress.get("notification_sent_keys") or [])
+        }
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys:
+                continue
+            message_id = str(target.get("message_id") or "")
+            card = dict(target["card"])
+            if message_id:
+                try:
+                    client.update_interactive_message(message_id, card)
+                except Exception as exc:
+                    if "230031" not in str(exc):
+                        raise
+                    inventory_app.send_feishu_interactive_message(
+                        client, str(target["recipient_id"]), card
+                    )
+            else:
+                inventory_app.send_feishu_interactive_message(
+                    client, str(target["recipient_id"]), card
+                )
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            save_progress()
+        context = inventory_app.cultural_request_context(request_no)
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            str(dict(context["request"]).get("record_id") or ""),
+            {"文化周边通知状态": "驳回已通知"},
+        )
+        progress["notification_done"] = True
+        progress["notification_count"] = len(targets)
+        save_progress()
+    return progress
+
+
+def process_corporate_apparel_quota_rejection(
+    task: SubmissionTask, progress: dict[str, object],
+    request_payload: dict[str, object], lines: list[dict[str, object]],
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    from request_withdrawal import send_notice
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    # Persist the rejection before any notification: later quota changes must not
+    # turn a partially-notified rejection back into an issued application.
+    progress.update({"rejected": True, "rejection_reason": "quota_exceeded",
+                     "business_write_skipped": True, "write_done": True})
+    save_progress()
+    if progress.get("rejection_notification_done"):
+        return progress
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法发送企业文化衫超限通知。")
+    targets = inventory_app.corporate_apparel_quota_rejection_targets(
+        request_payload, lines, list(dict(progress["write_plan"]).get("quota_exceeded") or []),
+    )
+    sent = set(progress.get("rejection_notification_sent_keys") or [])
+    skipped = set(progress.get("rejection_notification_skipped_keys") or [])
+    message_ids = dict(progress.get("rejection_notification_message_ids") or {})
+    for target in targets:
+        key = str(target["key"])
+        if key in sent or key in skipped:
+            continue
+        try:
+            message_id = send_notice(
+                client, str(target["recipient_id"]),
+                inventory_app._feishu_normalize_card_tables(dict(target["card"])),
+                f"corporate-apparel-quota-rejection:{task.idempotency_key}:{key}",
+            )
+        except Exception as exc:
+            if target.get("audience") != "applicant" or not applicant_bot_unavailable(exc):
+                raise
+            skipped.add(key)
+            progress["rejection_notification_skipped_keys"] = sorted(skipped)
+            save_progress()
+            continue
+        sent.add(key)
+        message_ids[key] = message_id
+        progress["rejection_notification_sent_keys"] = sorted(sent)
+        progress["rejection_notification_message_ids"] = dict(message_ids)
+        save_progress()
+    progress.update({"rejection_notification_done": True, "notification_done": True,
+                     "notification_count": len(sent)})
+    save_progress()
+    return progress
+
+
+def process_corporate_apparel_request(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    request_payload = dict(task.payload.get("request_payload") or {})
+    lines = [dict(item) for item in list(task.payload.get("lines") or []) if isinstance(item, dict)]
+    token = str(request_payload.get("submission_token") or "").strip()
+    if not token or token != task.idempotency_key:
+        raise RuntimeError("后台任务的企业文化衫领取幂等键不一致。")
+    progress = dict(task.result)
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("write_plan"):
+        progress["write_plan"] = inventory_app.corporate_apparel_request_plan(request_payload, lines)
+        progress["plan_done"] = True
+        save_progress()
+    if progress.get("rejected") or (
+        dict(progress["write_plan"]).get("quota_allowed") is False
+        and not progress.get("write_done")
+    ):
+        return process_corporate_apparel_quota_rejection(
+            task, progress, request_payload, lines, checkpoint,
+        )
+    if not progress.get("write_done"):
+        request_no, line_count, created_new = inventory_app.submit_feishu_corporate_apparel_request(
+            request_payload, dict(progress["write_plan"])
+        )
+        progress.update({"write_done": True, "request_no": request_no, "line_count": line_count, "created_new_request": created_new})
+        save_progress()
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送企业文化衫领取通知。")
+        targets = inventory_app.corporate_apparel_notification_targets(
+            str(progress.get("request_no") or ""), request_payload, lines
+        )
+        sent_keys = {str(value) for value in list(progress.get("notification_sent_keys") or [])}
+        skipped_keys = {str(value) for value in list(progress.get("notification_skipped_keys") or [])}
+        message_ids = {str(key): str(value) for key, value in dict(progress.get("notification_message_ids") or {}).items()}
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys or target_key in skipped_keys:
+                continue
+            try:
+                message_id = inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            except Exception as exc:
+                if target.get("audience") != "applicant" or not applicant_bot_unavailable(exc):
+                    raise
+                skipped_keys.add(target_key)
+                progress["notification_skipped_keys"] = sorted(skipped_keys)
+                progress.setdefault("notification_warnings", []).append(
+                    "申请人不在飞书机器人可用范围，已跳过申请人卡片。"
+                )
+                save_progress()
+                continue
+            if str(message_id or "").strip():
+                message_ids[target_key] = str(message_id)
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            progress["notification_message_ids"] = dict(message_ids)
+            save_progress()
+        request_context = inventory_app.corporate_apparel_request_context(str(progress.get("request_no") or ""))
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            str(dict(request_context["request"]).get("record_id") or ""),
+            {
+                "文化周边通知状态": "已发送",
+                inventory_app.CULTURAL_REQUEST_MESSAGE_IDS_FIELD: json.dumps(message_ids, ensure_ascii=False, separators=(",", ":")),
+            },
+        )
+        progress["notification_done"] = True
+        progress["notification_count"] = len(sent_keys)
+        save_progress()
+    return progress
+
+
+def process_corporate_apparel_request_reject(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    draft = dict(task.payload.get("draft") or {})
+    progress = dict(task.result)
+
+    def save_progress() -> None:
+        if checkpoint is not None:
+            checkpoint(dict(progress))
+
+    if not progress.get("rejection_plan"):
+        progress["rejection_plan"] = inventory_app.corporate_apparel_rejection_plan(
+            str(draft.get("request_no") or ""), str(draft.get("operator_open_id") or "")
+        )
+        save_progress()
+    if not progress.get("write_done"):
+        result = inventory_app.execute_corporate_apparel_rejection(dict(progress["rejection_plan"]))
+        progress.update({"write_done": True, **dict(result)})
+        save_progress()
+    if not progress.get("notification_done"):
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书未配置，无法发送企业文化衫驳回通知。")
+        request_no = str(progress.get("request_no") or draft.get("request_no") or "")
+        targets = inventory_app.corporate_apparel_rejection_targets(request_no)
+        sent_keys = {str(value) for value in list(progress.get("notification_sent_keys") or [])}
+        for target in targets:
+            target_key = str(target["key"])
+            if target_key in sent_keys:
+                continue
+            message_id = str(target.get("message_id") or "")
+            if message_id:
+                try:
+                    client.update_interactive_message(message_id, dict(target["card"]))
+                except Exception as exc:
+                    if "230031" not in str(exc):
+                        raise
+                    inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            else:
+                inventory_app.send_feishu_interactive_message(client, str(target["recipient_id"]), dict(target["card"]))
+            sent_keys.add(target_key)
+            progress["notification_sent_keys"] = sorted(sent_keys)
+            save_progress()
+        context = inventory_app.corporate_apparel_request_context(request_no)
+        inventory_app.feishu_update_record_fields(
+            inventory_app.REQUEST_TABLE_NAME,
+            str(dict(context["request"]).get("record_id") or ""),
+            {"文化周边通知状态": "驳回已通知"},
+        )
+        progress["notification_done"] = True
+        progress["notification_count"] = len(targets)
+        save_progress()
+    return progress
+
+
+def process_task(
+    task: SubmissionTask,
+    checkpoint: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    if task.task_type in {QUEUE_TASK_TYPE_ORDER_EDIT, QUEUE_TASK_TYPE_ORDER_GENERATE,
+                         QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
+                         QUEUE_TASK_TYPE_ORDER_PLAN, QUEUE_TASK_TYPE_ORDER_RESTOCK}:
+        from order_scheduling_service import SchedulingService
+        service = SchedulingService(inventory_app)
+        method = {QUEUE_TASK_TYPE_ORDER_EDIT: service.edit,
+                  QUEUE_TASK_TYPE_ORDER_GENERATE: service.record_schedule,
+                  QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY: service.record_schedule,
+                  QUEUE_TASK_TYPE_ORDER_PLAN: service.plan, QUEUE_TASK_TYPE_ORDER_RESTOCK: service.restock}[task.task_type]
+        if checkpoint is None:
+            raise RuntimeError("排期写入必须使用持久化检查点，禁止无检查点执行。")
+        with inventory_app.DATA_LOCK:
+            return method(dict(task.payload), dict(task.result), checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_MATERIAL_REQUEST:
+        return process_material_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST:
+        return process_cultural_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT:
+        return process_cultural_request_reject(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST:
+        return process_corporate_apparel_request(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT:
+        return process_corporate_apparel_request_reject(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_CULTURAL_MANAGEMENT:
+        result = inventory_app.execute_cultural_material_management(dict(task.payload.get("draft") or {}))
+        return dict(result)
+    payload = dict(task.payload)
+    if task.task_type in {QUEUE_TASK_TYPE_RESTOCK, QUEUE_TASK_TYPE_STOCK_REDUCTION}:
+        progress = dict(task.result)
+        if not progress.get("write_done"):
+            lines = inventory_app.submit_inventory_restock(dict(payload["draft"]))
+            progress.update({"write_done": True, "lines": lines})
+            if checkpoint is not None:
+                checkpoint(progress)
+        else:
+            lines = [dict(item) for item in list(progress.get("lines") or []) if isinstance(item, dict)]
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            notified = inventory_app.notify_enabled_admins_of_restock(dict(payload["draft"]), lines)
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
+        return {"line_count": len(lines), "notification_count": notified}
+    if task.task_type == QUEUE_TASK_TYPE_CATEGORY_SYNC:
+        progress = dict(task.result)
+        media = payload.get("category_media")
+        if media is not None:
+            from category_media import category_media_fields
+            category_media_fields(media)
+        if not progress.get("write_done"):
+            sync_result = inventory_app.sync_feishu_category_inventory(
+                **inventory_app.deserialize_category_sync_args(dict(payload["sync_args"]))
+            )
+            result = {
+                "category_record_id": str(sync_result.get("category_record_id") or ""),
+                "target_count": int(sync_result.get("target_count") or 0),
+                "created_count": int(sync_result.get("created_count") or 0),
+                "updated_count": int(sync_result.get("updated_count") or 0),
+                "deleted_count": int(sync_result.get("deleted_count") or 0),
+                "quantity_difference": int(sync_result.get("quantity_difference") or 0),
+                "target_quantity": int(sync_result.get("target_quantity") or 0),
+                "models": list(sync_result.get("models") or []),
+                "languages": list(sync_result.get("languages") or []),
+            }
+            progress.update({"write_done": True, "write_result": result})
+            if checkpoint is not None:
+                checkpoint(progress)
+        else:
+            result = dict(progress.get("write_result") or {})
+        if media is not None and not progress.get("media_done"):
+            from category_media import apply_category_media
+            apply_category_media(str(result.get("category_record_id") or ""), media)
+            progress["media_done"] = True
+            if checkpoint is not None:
+                checkpoint(progress)
+        draft = dict(payload.get("draft") or {})
+        notice_kind = str(payload.get("notification_kind") or "")
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            if notice_kind == "create":
+                notified = inventory_app.notify_enabled_admins_of_category_create(draft, result)
+            elif notice_kind == "edit":
+                notified = inventory_app.notify_enabled_admins_of_category_edit(draft, result)
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
+        return {
+            "category_record_id": str(result.get("category_record_id") or ""),
+            "target_count": int(result.get("target_count") or 0),
+            "created_count": int(result.get("created_count") or 0),
+            "updated_count": int(result.get("updated_count") or 0),
+            "deleted_count": int(result.get("deleted_count") or 0),
+            "notification_count": notified,
+        }
+    if task.task_type == QUEUE_TASK_TYPE_CATEGORY_DELETE:
+        progress = dict(task.result)
+        draft = dict(payload["draft"])
+        if not progress.get("write_done"):
+            delete_result = inventory_app.execute_category_delete(
+                draft,
+                notify_admins=False,
+            )
+            progress.update({
+                "write_done": True,
+                "deleted_count": int(delete_result.get("deleted_count") or 0),
+            })
+            if checkpoint is not None:
+                checkpoint(progress)
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            notified = inventory_app.notify_enabled_admins_of_category_delete({
+                **draft,
+                "deleted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            })
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
+        return {
+            "deleted_count": int(progress.get("deleted_count") or 0),
+            "notification_count": notified,
+        }
+    if task.task_type == QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT:
+        progress = dict(task.result)
+        draft = dict(payload["draft"])
+        if not progress.get("write_done"):
+            result = inventory_app.execute_dimension_management(draft)
+            progress.update({"write_done": True, "write_result": dict(result)})
+            if checkpoint is not None:
+                checkpoint(progress)
+        else:
+            result = dict(progress.get("write_result") or {})
+        notified = int(progress.get("notification_count") or 0)
+        if not progress.get("notification_done"):
+            notified = inventory_app.notify_enabled_admins_of_dimension_management(draft, result)
+            progress.update({"notification_done": True, "notification_count": notified})
+            if checkpoint is not None:
+                checkpoint(progress)
+        return {**result, "notification_count": notified}
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT:
+        return inventory_app.execute_request_inventory_edit(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
+        return inventory_app.execute_request_inventory_confirm(dict(payload["draft"]))
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_WITHDRAW:
+        from request_withdrawal import process_withdrawal
+
+        return process_withdrawal(task, checkpoint)
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REJECT:
+        result = inventory_app.execute_request_inventory_reject(dict(payload["draft"]))
+        message_id = str(payload.get("message_id") or "")
+        if message_id:
+            try:
+                client = inventory_app.feishu_client()
+                if client is not None:
+                    client.update_interactive_message(
+                        message_id,
+                        inventory_app.material_request_rejection_card(
+                            str(result.get("request_no") or ""),
+                            str(result.get("requester") or "申请人"),
+                        ),
+                    )
+            except Exception:
+                logging.exception("Failed to refresh rejected request card %s", message_id)
+        return result
+    if task.task_type == QUEUE_TASK_TYPE_REQUEST_INVENTORY_REMINDER_SCHEDULE:
+        draft = dict(payload["draft"])
+        request_id = str(draft.get("request_id") or "")
+        saved = inventory_app.execute_inventory_review_reminder_schedule(
+            request_id,
+            str(draft.get("operator_open_id") or ""),
+            str(draft.get("schedule_value") or ""),
+        )
+        message_id = str(payload.get("message_id") or "")
+        if message_id:
+            try:
+                context = inventory_app.request_inventory_review_context(request_id=request_id)
+                request = dict(context["request"])
+                request["inventory_review_reminder_at"] = saved["scheduled_at"].strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                context["request"] = request
+                client = inventory_app.feishu_client()
+                if client is not None:
+                    card = inventory_app.material_request_notification_card(
+                        str(request.get("request_no") or ""), request,
+                        list(context.get("lines") or []), review_context=context,
+                        operator_open_id=str(draft.get("operator_open_id") or ""),
+                    )
+                    client.update_interactive_message(message_id, card)
+            except Exception:
+                logging.exception("Failed to refresh inventory reminder card %s", message_id)
+        return {"request_id": request_id, "request_no": saved.get("request_no"),
+                "scheduled_at": saved["scheduled_at"].isoformat()}
+    if task.task_type == QUEUE_TASK_TYPE_INVENTORY_REVIEW_REMINDER:
+        request_id = str(payload.get("request_id") or "")
+        return {
+            "request_id": request_id,
+            "notification_count": inventory_app.notify_enabled_admins_of_inventory_review_reminder(
+                request_id,
+                reason="计划核实时间已到",
+                mark_scheduled_reminder=True,
+            ),
+        }
+    if task.task_type == QUEUE_TASK_TYPE_WEEKLY_INVENTORY_REVIEW:
+        return {
+            "iso_year": int(payload.get("iso_year") or 0),
+            "iso_week": int(payload.get("iso_week") or 0),
+            "notification_count": inventory_app.notify_weekly_pending_inventory_reviews(),
+        }
+    if task.task_type == QUEUE_TASK_TYPE_APPROVAL_WRITEBACK_NOTIFY:
+        request_no = str(payload.get("request_no") or "")
+        instance_code = str(payload.get("instance_code") or "")
+        progress = dict(task.result)
+        if inventory_app.approval_writeback_is_complete(request_no):
+            if not progress.get("custom_material_cleanup_done"):
+                progress["custom_material_cleanup_count"] = (
+                    inventory_app.cleanup_custom_materials_for_request(request_no)
+                )
+                progress["custom_material_cleanup_done"] = True
+                if checkpoint is not None:
+                    checkpoint(progress)
+            if not progress.get("success_notified"):
+                progress["success_notification_count"] = (
+                    inventory_app.notify_enabled_admins_of_approval_writeback(
+                        request_no, instance_code, succeeded=True
+                    )
+                )
+                progress["success_notified"] = True
+                if checkpoint is not None:
+                    checkpoint(progress)
+            return progress
+        # The common failure handler sends a single operations alert per attempt.
+        raise RuntimeError(f"申请单 {request_no} 的审批回写尚未完整完成，等待修复后重试。")
+    if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REVERT:
+        ids = [str(value) for value in list(payload.get("transaction_ids") or [])]
+        for transaction_id in ids:
+            inventory_app.revert_feishu_transaction(transaction_id, str(payload.get("note") or ""))
+        return {"reverted_count": len(ids)}
+    if task.task_type == QUEUE_TASK_TYPE_TRANSACTION_REPLACE:
+        logs = inventory_app.replace_feishu_transaction(**dict(payload["args"]))
+        return {"log_count": len(logs)}
+    if task.task_type == QUEUE_TASK_TYPE_GIFT_PROJECT:
+        operation = str(payload.get("operation") or "")
+        args = dict(payload.get("args") or {})
+        if operation == "existing":
+            result = inventory_app.create_gift_project_request(**args)
+        elif operation == "new":
+            result = inventory_app.create_new_gift_project_request(**args)
+        elif operation == "batch":
+            result = inventory_app.process_gift_project_batch(args)
+        else:
+            raise RuntimeError(f"不支持的周边礼品任务操作：{operation}")
+        if operation == "batch":
+            return dict(result)
+        return {"completed": True}
+    raise RuntimeError(f"不支持的后台任务类型：{task.task_type}")
+
+
+def notify_task_failure(
+    task: SubmissionTask, error: Exception | str, status: str, progress: dict[str, object],
+) -> None:
+    """Persist locally without waiting for Feishu or changing business state."""
+    try:
+        task_failure_notices.enqueue(task, error, status, progress=progress)
+    except Exception:
+        logging.exception("Persisting task failure alert failed: %s", task.task_id)
+
+
+def notification_only_task(task: SubmissionTask) -> bool:
+    """Only this checkpoint guarantees all business stock/quota writes are done."""
+    return (
+        task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
+        and task.result.get("write_done") is True
+    )
+
+
+def can_run_alongside(task: SubmissionTask, running: list[SubmissionTask]) -> bool:
+    if any(active.task_id == task.task_id for active in running):
+        return False
+    notification_count = sum(notification_only_task(active) for active in running)
+    if notification_only_task(task):
+        return notification_count < MAX_PARALLEL_NOTIFICATION_TASKS
+    return not any(not notification_only_task(active) for active in running)
+
+
+def process_claimed_submission_task(client: object, task: SubmissionTask) -> None:
+    logging.info("Claimed task %s (%s)", task.task_id, task.task_type)
+    latest_progress = dict(task.result)
+
+    def checkpoint(progress: dict[str, object]) -> None:
+        checkpoint_submission_task(client, task, progress)
+        latest_progress.clear()
+        latest_progress.update(progress)
+
+    try:
+        if task.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST and not task.result:
+            canonical = find_task_by_idempotency_key(client, task.idempotency_key)
+            if canonical is not None and canonical.task_id != task.task_id:
+                client.update_record(ensure_submission_queue_table(client), task.record_id, {
+                    QUEUE_FIELD_STATUS: QUEUE_STATUS_CANCELLED,
+                    QUEUE_FIELD_ERROR: f"重复任务，使用 {canonical.task_id}",
+                    QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_COMPLETED,
+                })
+                logging.info("Cancelled duplicate task %s; canonical=%s", task.task_id, canonical.task_id)
+                return
+        result = process_task(task, checkpoint=checkpoint)
+        latest_progress = dict(result)
+        complete_submission_task(client, task, result)
+        logging.info("Completed task %s: %s", task.task_id, result.get("request_no"))
+    except Exception as exc:
+        order_task_types = {
+            QUEUE_TASK_TYPE_ORDER_EDIT,
+            QUEUE_TASK_TYPE_ORDER_GENERATE,
+            QUEUE_TASK_TYPE_ORDER_GENERATE_LEGACY,
+            QUEUE_TASK_TYPE_ORDER_PLAN,
+            QUEUE_TASK_TYPE_ORDER_RESTOCK,
+        }
+        retryable = not (
+            task.task_type in order_task_types and isinstance(exc, ValueError)
+        )
+        try:
+            status = fail_submission_task(
+                client, task, exc, max_retries=MAX_RETRIES, retryable=retryable,
+            )
+        except Exception as state_error:
+            logging.exception("Updating failed task state failed: %s", task.task_id)
+            notify_task_failure(
+                task, f"{exc}\n任务状态回写失败：{state_error}", "状态回写失败", latest_progress,
+            )
+            return
+        logging.exception("Task %s failed with status %s", task.task_id, status)
+        notify_task_failure(task, exc, status, latest_progress)
+    return None
+
+
+def process_one(
+    worker_name: str,
+    worker_priority: int = DEFAULT_WORKER_PRIORITY,
+) -> bool:
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
+    if not worker_has_leadership(client, worker_priority):
+        return False
+    task = claim_next_submission_task(client, worker_name, lease_seconds=DEFAULT_LEASE_SECONDS)
+    if task is None:
+        return False
+    process_claimed_submission_task(client, task)
+    return True
+
+
+def run_forever(poll_seconds: float, worker_priority: int) -> bool:
+    name = worker_id()
+    started_revision = repository_revision()
+    logging.info(
+        "Submission worker started: %s; app_version=%s; revision=%s",
+        name,
+        inventory_app.APP_VERSION,
+        started_revision or "unknown",
+    )
+    client = inventory_app.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
+    with ThreadPoolExecutor(max_workers=1 + MAX_PARALLEL_NOTIFICATION_TASKS) as executor:
+        running: dict[Future[None], SubmissionTask] = {}
+        reloading = False
+        while True:
+            for future in [item for item in running if item.done()]:
+                task = running.pop(future)
+                try:
+                    future.result()
+                except Exception:
+                    logging.exception("Submission task thread failed unexpectedly: %s", task.task_id)
+            current_revision = repository_revision()
+            if started_revision and current_revision and current_revision != started_revision:
+                if not reloading:
+                    logging.warning(
+                        "Repository revision changed from %s to %s; waiting for running tasks before reload.",
+                        started_revision, current_revision,
+                    )
+                reloading = True
+            if reloading and not running:
+                return True
+            claimed = False
+            if not reloading:
+                try:
+                    scheduler_now = time.monotonic()
+                    is_leader = worker_has_leadership(client, worker_priority)
+                    if (
+                        is_leader
+                        and scheduler_now - float(_INVENTORY_REVIEW_SCHEDULER_STATE.get("checked_at") or 0)
+                        >= INVENTORY_REVIEW_SCHEDULE_CHECK_INTERVAL_SECONDS
+                    ):
+                        _INVENTORY_REVIEW_SCHEDULER_STATE["checked_at"] = scheduler_now
+                        created = inventory_app.enqueue_inventory_review_scheduled_tasks()
+                        if created:
+                            logging.info("Enqueued %s inventory review reminder tasks", created)
+                        try:
+                            from order_scheduling_service import SchedulingService
+                            scheduled = SchedulingService(inventory_app).enqueue_due()
+                            if scheduled:
+                                logging.info("Enqueued %s order scheduling restock tasks", scheduled)
+                        except Exception:
+                            logging.exception("Order scheduling scan failed; ordinary queue processing continues")
+                    if is_leader and len(running) < 1 + MAX_PARALLEL_NOTIFICATION_TASKS:
+                        active = list(running.values())
+                        task = claim_next_submission_task(
+                            client, name, lease_seconds=DEFAULT_LEASE_SECONDS,
+                            eligible_predicate=lambda candidate: can_run_alongside(candidate, active),
+                        )
+                        if task is not None:
+                            running[executor.submit(process_claimed_submission_task, client, task)] = task
+                            claimed = True
+                except Exception:
+                    logging.exception("Submission worker polling failed")
+            if claimed:
+                continue
+            if running:
+                wait(list(running), timeout=max(1.0, poll_seconds), return_when=FIRST_COMPLETED)
+            elif not claimed:
+                time.sleep(max(1.0, poll_seconds))
+
+
+def acquire_single_instance_mutex() -> int:
+    if os.name != "nt":
+        return 0
+    import ctypes
+
+    kernel32 = ctypes.windll.kernel32
+    create_mutex = kernel32.CreateMutexW
+    create_mutex.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_wchar_p]
+    create_mutex.restype = ctypes.c_void_p
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = [ctypes.c_void_p]
+    close_handle.restype = ctypes.c_int
+    raw_handle = create_mutex(None, False, "Local\\PuduSubmissionWorker")
+    handle = int(raw_handle or 0)
+    if not handle:
+        raise OSError("无法创建 Windows Worker 单实例锁。")
+    if int(kernel32.GetLastError()) == 183:
+        close_handle(ctypes.c_void_p(handle))
+        return -1
+    return handle
+
+
+def release_single_instance_mutex(handle: int) -> None:
+    if os.name == "nt" and handle > 0:
+        import ctypes
+
+        close_handle = ctypes.windll.kernel32.CloseHandle
+        close_handle.argtypes = [ctypes.c_void_p]
+        close_handle.restype = ctypes.c_int
+        close_handle(ctypes.c_void_p(handle))
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="PUDU recoverable submission worker")
+    parser.add_argument("--once", action="store_true", help="Process queued tasks and exit")
+    parser.add_argument("--setup", action="store_true", help="Create or repair the queue table and exit")
+    parser.add_argument("--retry-failed", action="store_true", help="Move failed tasks back to pending")
+    parser.add_argument("--poll-seconds", type=float, default=DEFAULT_POLL_SECONDS)
+    parser.add_argument("--worker-priority", type=int, default=DEFAULT_WORKER_PRIORITY)
+    args = parser.parse_args(argv)
+
+    log_path = configure_logging()
+    mutex_handle = acquire_single_instance_mutex()
+    if mutex_handle < 0:
+        logging.info("Submission worker is already running; retrying takeover shortly.")
+        return ALREADY_RUNNING_EXIT_CODE
+    try:
+        client = inventory_app.feishu_client()
+        if client is None:
+            raise RuntimeError("飞书配置缺失，后台任务 Worker 无法启动。")
+        table_id = ensure_submission_queue_table(client)
+        logging.info("Submission queue ready: %s; log=%s", table_id, log_path)
+        backfilled = backfill_submission_completion_status(client)
+        if backfilled:
+            logging.info("Backfilled completion state for %s queue tasks", backfilled)
+        if args.setup:
+            return 0
+        task_failure_notices.start()
+        recover_unfinished = args.retry_failed or worker_has_leadership(
+            client,
+            args.worker_priority,
+        )
+        if recover_unfinished:
+            count = retry_failed_submission_tasks(client)
+            logging.info("Recovered %s unfinished failed tasks", count)
+        if args.once:
+            name = worker_id()
+            while process_one(name, args.worker_priority):
+                pass
+            return 0
+        return RELOAD_EXIT_CODE if run_forever(args.poll_seconds, args.worker_priority) else 0
+    finally:
+        task_failure_notices.stop()
+        release_single_instance_mutex(mutex_handle)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

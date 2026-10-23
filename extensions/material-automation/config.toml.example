@@ -1,0 +1,18 @@
+# Fill an absolute credentials_file path on the receiving machine.
+[feishu]
+credentials_file = "C:/REPLACE_INSTALL_ROOT/.streamlit/secrets.toml"
+app_token = "G5SQb9m7IaHAXzsGTtsclqSCnnh"
+table_id = "tblLwiOPlIc1eLNi"
+source_field = "素材提交（压缩包）| Material Submission(zip package)"
+image_field = "原始素材（图片）"
+video_field = "原始素材（视频）"
+
+[worker]
+download_root = "~/Desktop/全球之旅整理素材"
+state_file = "state/processed.json"
+log_file = "logs/worker.log"
+poll_interval_seconds = 3600
+request_timeout_seconds = 300
+max_extract_bytes = 53687091200
+max_archive_entries = 10000
+delete_archive_after_success = true

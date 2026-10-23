@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>目录删除更新测试</title></head>
+<body><aside style="position:fixed;top:0;right:0;z-index:9999;background:white"><button id="remove">模拟后台删除 BG1</button><button id="clear">模拟删除所有公仔明细</button></aside><div id="root"></div>
+<script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import RequestPage from '../src/App.tsx';
+import '../src/styles.css';
+let revision = 'before';
+let models = ['BellaBot', 'BG1', '停用型号'];
+const user = { open_id: 'test-admin', name: '测试管理员', roles: ['管理员'], permission_status: 'enabled', department_ids: ['dep'], department_paths: ['测试部门'] };
+function catalog() {
+  const product = { name: '公仔', categoryDefinition: '周边礼品', options: models.map(model => ({ materialCode: model, model, modelDisplay: model, productLine: 'SR', language: '无需语种', stock: 0, unitPriceRmb: 10 })) };
+  return { revision, generatedAt: 'test', products: models.length ? [product] : [], adminProducts: models.length ? [product] : [], users: [user], departments: [{ department_id: 'dep', name: '测试部门', path: '测试部门' }], rolesByUser: { 'test-admin': ['管理员'] }, reasons: ['其他'] };
+}
+window.fetch = async (url, options = {}) => {
+  if (options.method && options.method !== 'GET') throw Error('Test fixture forbids writes');
+  if (url === '/api/catalog') return new Response(JSON.stringify(catalog()));
+  if (url === '/api/catalog/revision') return new Response(JSON.stringify({ revision }));
+  throw Error(`Unexpected network request: ${url}`);
+};
+document.getElementById('remove').onclick = () => { models = models.filter(model => model !== 'BG1'); revision = 'deleted-bg1'; document.dispatchEvent(new Event('pudu:check-request-catalog')); };
+document.getElementById('clear').onclick = () => { models = []; revision = 'empty'; document.dispatchEvent(new Event('pudu:check-request-catalog')); };
+createRoot(document.getElementById('root')).render(React.createElement(RequestPage, { lang: 'zh', currentUser: user }));
+</script></body></html>

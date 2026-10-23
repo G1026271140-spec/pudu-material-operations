@@ -1,0 +1,1945 @@
+from __future__ import annotations
+
+import hashlib
+import hmac
+import io
+import json
+import logging
+import secrets
+import threading
+import time
+import tomllib
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import asynccontextmanager, contextmanager
+from datetime import date
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
+from urllib import parse
+from uuid import uuid4
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
+
+from live_cache import resolve_cache_path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DIST = ROOT / "request_web" / "frontend" / "dist"
+
+
+@lru_cache(maxsize=8)
+def _parsed_json_cache(path: str, modified_ns: int, size: int) -> dict[str, Any]:
+    # The published cache path and file metadata change on every refresh.
+    # Parsing the multi-megabyte page cache on every identity/API request is
+    # unnecessary, while this key still makes a newly published cache visible.
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+
+
+def _json(name: str) -> dict[str, Any]:
+    path = resolve_cache_path(ROOT, f"data/{name}")
+    stat = path.stat()
+    data = _parsed_json_cache(str(path), stat.st_mtime_ns, stat.st_size)
+    if name == "page_data_cache.json":
+        from catalog_deletions import filter_page_snapshot
+        return filter_page_snapshot(data)
+    return data
+
+
+def catalog_revision() -> str:
+    from catalog_deletions import revision
+
+    signatures = []
+    for name in ("page_data_cache.json", "request_form_cache.json", "contact_departments_cache.json"):
+        path = resolve_cache_path(ROOT, f"data/{name}")
+        stat = path.stat()
+        signatures.append((str(path), stat.st_mtime_ns, stat.st_size))
+    return hashlib.sha256(repr((signatures, revision())).encode()).hexdigest()
+
+
+def _asset_file(relative: str) -> FileResponse:
+    try:
+        path = resolve_cache_path(ROOT, f"assets/{relative}")
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="资源不存在") from exc
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="资源不存在")
+    return FileResponse(path)
+
+
+def _image_index() -> dict[str, list[str]]:
+    page = _json("page_data_cache.json")
+    result: dict[str, list[str]] = {}
+    for row in page.get("tables", {}).get("物料品类", []):
+        fields = row.get("fields", {})
+        product = str(fields.get("物料品类") or "").strip()
+        attachments = fields.get("申领页图片") or []
+        if not product or not attachments:
+            continue
+        images: list[str] = []
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+            token = str(attachment.get("file_token") or "").strip()
+            if not token:
+                continue
+            filename = hashlib.sha256(token.encode()).hexdigest()[:20] + ".webp"
+            if resolve_cache_path(
+                ROOT, f"assets/request_categories/{filename}"
+            ).is_file():
+                path = f"/category-assets/{filename}"
+                if path not in images:
+                    images.append(path)
+        if images:
+            result[product] = images
+    return result
+
+
+def _model_index() -> dict[str, str]:
+    """Only serve locally reviewed GLBs explicitly attached to a category."""
+    manifest_path = ROOT / "assets/category_models/manifest.json"
+    if not manifest_path.is_file():
+        return {}
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    result = {}
+    for row in _json("page_data_cache.json").get("tables", {}).get("物料品类", []):
+        fields = row.get("fields", {})
+        name = str(fields.get("物料品类") or "").strip()
+        for attachment in fields.get("申领页图片") or []:
+            if not isinstance(attachment, dict):
+                continue
+            entry = manifest.get(str(attachment.get("name") or ""))
+            if not name or not isinstance(entry, dict):
+                continue
+            relative = str(entry.get("path") or "")
+            path = (ROOT / "assets" / relative).resolve()
+            if relative.startswith("category_models/") and path.is_relative_to((ROOT / "assets/category_models").resolve()) and path.suffix == ".glb" and path.is_file():
+                result[name] = f"/app-assets/{relative}"
+                break
+    return result
+
+
+def build_catalog() -> dict[str, Any]:
+    import app as legacy
+
+    revision = catalog_revision()
+    cache = _json("request_form_cache.json")
+    contacts = _json("contact_departments_cache.json")
+    images = _image_index()
+    models_3d = _model_index()
+    product_lines = cache.get("model_product_lines", {})
+    display_names = cache.get("model_display_names", {})
+    category_display_names = cache.get("category_display_names", {})
+    page = _json("page_data_cache.json")
+    # Request and page snapshots may have different publication times. Never
+    # revive a deleted row from the older request snapshot, even for admins.
+    tables = page.get("tables", {})
+    existing_categories = {
+        legacy.normalize_category_match_key(legacy.feishu_text(legacy.feishu_fields(row), "物料品类"))
+        for row in tables.get(legacy.CATEGORY_TABLE_NAME, [])
+    }
+    existing_combinations = {
+        legacy.request_material_match_key(item.get("category"), item.get("model"), item.get("language"))
+        for item in legacy.feishu_inventory_records_from_rows(
+            list(tables.get(legacy.MATERIAL_TABLE_NAME, [])),
+            list(tables.get(legacy.CATEGORY_TABLE_NAME, [])), active_only=False,
+        )
+    }
+    inventory_rows = [row for row in cache.get("inventory_rows", [])
+                      if legacy.normalize_category_match_key(row.get("product")) in existing_categories
+                      and legacy.request_material_match_key(row.get("product"), row.get("model"), row.get("language")) in existing_combinations]
+    roles_by_user: dict[str, list[str]] = {}
+    for row in page.get("tables", {}).get("用户权限表", []):
+        fields = row.get("fields", {})
+        if str(fields.get("是否启用") or "").strip() != "是":
+            continue
+        accounts = fields.get("用户账号") or []
+        if isinstance(accounts, dict):
+            accounts = [accounts]
+        for account in accounts:
+            open_id = str(account.get("id") or account.get("open_id") or "").strip() if isinstance(account, dict) else ""
+            if open_id:
+                roles_by_user[open_id] = sorted({str(role) for role in fields.get("角色", []) if str(role).strip()})
+    combinations: dict[str, list[dict[str, Any]]] = {}
+    for row in inventory_rows:
+        product = str(row.get("product") or "").strip()
+        combinations.setdefault(product, []).append(
+            {
+                "materialCode": row.get("material_code", ""),
+                "model": row.get("model", "无需型号"),
+                "modelDisplay": display_names.get(row.get("model", "无需型号"), {}).get("zh", row.get("model", "无需型号")),
+                "productLine": product_lines.get(row.get("model", "无需型号"), ""),
+                "language": row.get("language", "无需语种"),
+                "stock": int(row.get("quantity") or 0),
+                "unitPriceRmb": float(row.get("unit_price_rmb") or 0),
+            }
+        )
+    base_product_names = [name for name in cache.get("products", []) if combinations.get(name)]
+    base_product_keys = {
+        legacy.normalize_category_match_key(name) for name in base_product_names
+    }
+    base_option_keys = {
+        legacy.request_material_match_key(
+            row.get("product"), row.get("model"), row.get("language")
+        )
+        for row in inventory_rows
+    }
+
+    tables = page.get("tables", {})
+    category_rows = list(tables.get(legacy.CATEGORY_TABLE_NAME, []))
+    material_rows = list(tables.get(legacy.MATERIAL_TABLE_NAME, []))
+    cultural_rows = list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, []))
+    model_rows = list(tables.get(legacy.MODEL_TABLE_NAME, []))
+    raw_material_by_id = {
+        legacy.feishu_record_id(row): row for row in material_rows
+    }
+    category_meta: dict[str, dict[str, Any]] = {}
+    category_price_rmb: dict[str, float] = {}
+    for row in category_rows:
+        fields = legacy.feishu_fields(row)
+        name = legacy.feishu_text(fields, "物料品类").strip()
+        if not name:
+            continue
+        key = legacy.normalize_category_match_key(name)
+        category_meta[key] = {
+            "name": name,
+            "definition": legacy.feishu_text(fields, "品类定义"),
+            "display": {
+                "zh": legacy.feishu_text(fields, "中文页面名称") or name,
+                "en": legacy.feishu_text(fields, "英文页面名称") or name,
+            },
+        }
+        category_price_rmb[key] = legacy.feishu_float(fields, legacy.UNIT_PRICE_RMB_FIELD)
+
+    model_meta: dict[str, dict[str, str]] = {}
+    for row in model_rows:
+        fields = legacy.feishu_fields(row)
+        name = legacy.feishu_text(fields, "产品型号").strip()
+        if name:
+            model_meta[name] = {
+                "display": legacy.feishu_text(fields, "中文页面名称") or name,
+                "line": legacy.feishu_text(fields, "产品线"),
+            }
+
+    admin_options: dict[str, list[dict[str, Any]]] = {}
+    for item in legacy.feishu_inventory_records_from_rows(
+        material_rows, category_rows, active_only=False
+    ):
+        product = str(item.get("category") or "").strip()
+        product_key = legacy.normalize_category_match_key(product)
+        if not product or product_key not in category_meta:
+            continue
+        if category_meta[product_key].get("definition") == legacy.CATEGORY_DEFINITION_CULTURAL:
+            continue
+        raw_fields = legacy.feishu_fields(
+            raw_material_by_id.get(str(item.get("record_id") or ""), {})
+        )
+        model = str(item.get("model") or legacy.NO_MODEL_TEXT)
+        admin_options.setdefault(product, []).append(
+            {
+                "materialCode": item.get("material_code", ""),
+                "model": model,
+                "modelDisplay": model_meta.get(model, {}).get("display", model),
+                "productLine": model_meta.get(model, {}).get("line", ""),
+                "language": item.get("language") or legacy.NO_LANGUAGE_TEXT,
+                "stock": int(item.get("quantity") or 0),
+                "inTransitStock": int(item.get("in_transit_quantity") or 0),
+                "unitPriceRmb": legacy.request_material_unit_price_rmb(
+                    raw_fields, category_price_rmb.get(product_key, 0.0)
+                ),
+                "source": "standard",
+                "adminOnly": legacy.request_material_match_key(
+                    product, model, item.get("language") or legacy.NO_LANGUAGE_TEXT
+                ) not in base_option_keys,
+            }
+        )
+
+    cultural_options: dict[str, list[dict[str, Any]]] = {}
+    admin_cultural_categories = {
+        meta["name"]: meta
+        for meta in category_meta.values()
+        if meta.get("definition") == legacy.CATEGORY_DEFINITION_CULTURAL
+    }
+    for row in cultural_rows:
+        fields = legacy.feishu_fields(row)
+        product = legacy.feishu_text(fields, "物料品类").strip()
+        if product not in admin_cultural_categories:
+            continue
+        if legacy.feishu_text(fields, legacy.CULTURAL_CLAIMABLE_FIELD).strip() != legacy.CULTURAL_CLAIMABLE_YES:
+            continue
+        model = legacy.feishu_text(fields, "产品型号").strip()
+        region = legacy.feishu_text(fields, "战区管理").strip()
+        if not model or not region:
+            continue
+        cultural_options.setdefault(product, []).append(
+            {
+                "materialCode": legacy.feishu_text(fields, "文化周边编码"),
+                "model": model,
+                "modelDisplay": model_meta.get(model, {}).get("display", model),
+                "productLine": model_meta.get(model, {}).get("line", ""),
+                "language": region,
+                "stock": legacy.feishu_int(fields, "当前库存"),
+                "unitPriceRmb": legacy.feishu_float(fields, "单价（人民币）"),
+                "source": "cultural",
+                "adminOnly": True,
+            }
+        )
+
+    admin_products: list[dict[str, Any]] = []
+    for product, options in admin_options.items():
+        meta = category_meta[legacy.normalize_category_match_key(product)]
+        admin_products.append(
+            {
+                "name": product,
+                "nameDisplay": meta["display"],
+                "categoryDefinition": meta["definition"],
+                "image": (images.get(product) or [None])[0],
+                "images": images.get(product, []),
+                "modelUrl": models_3d.get(product),
+                "options": options,
+                "source": "standard",
+                "adminOnly": legacy.normalize_category_match_key(product) not in base_product_keys,
+            }
+        )
+    for product, options in cultural_options.items():
+        meta = admin_cultural_categories[product]
+        admin_products.append(
+            {
+                "name": product,
+                "nameDisplay": meta["display"],
+                "categoryDefinition": meta["definition"],
+                "image": (images.get(product) or [None])[0],
+                "images": images.get(product, []),
+                "modelUrl": models_3d.get(product),
+                "options": options,
+                "source": "cultural",
+                "adminOnly": True,
+            }
+        )
+    return {
+        "revision": revision,
+        "generatedAt": cache.get("generated_at"),
+        "products": [
+            {
+                "name": name,
+                "nameDisplay": category_display_names.get(name, {}),
+                "categoryDefinition": category_meta.get(
+                    legacy.normalize_category_match_key(name), {}
+                ).get("definition", ""),
+                "image": (images.get(name) or [None])[0],
+                "images": images.get(name, []),
+                "modelUrl": models_3d.get(name),
+                "options": combinations.get(name, []),
+            }
+            for name in base_product_names
+        ],
+        "adminProducts": admin_products,
+        "users": contacts.get("users", []),
+        "departments": contacts.get("departments", []),
+        "rolesByUser": roles_by_user,
+        "reasons": ["代理商支持", "展会需求", "客户来访", "其他"],
+    }
+
+
+class MaterialLine(BaseModel):
+    product: str
+    model: str
+    language: str
+    quantity: int = Field(gt=0, le=1_000_000)
+    remark: str = ""
+    current_stock: int = 0
+    inventory_status: str = ""
+    is_custom_material: bool = False
+    source: str = "standard"
+    admin_only: bool = False
+
+
+class RequestDraft(BaseModel):
+    title: str
+    department: str
+    department_id: str = ""
+    requester: str
+    requester_open_id: str
+    customer_name: str
+    country: str
+    recipient_info: str
+    freight_payer: str = "PUDU"
+    material_usage: str
+    submission_token: str = Field(default_factory=lambda: uuid4().hex)
+    scheduling_version: int = 1
+    accepted_roles: list[str] = Field(default_factory=list)
+    accepted_date: str = ""
+    accepted_at_ms: int = 0
+    request_reason: str
+    arrival_start: str
+    arrival_end: str
+    lines: list[MaterialLine]
+
+
+class CulturalLine(BaseModel):
+    product: str
+    model: str
+    region: str
+    quantity: int = Field(gt=0, le=2)
+    remark: str = ""
+
+
+class CulturalDraft(BaseModel):
+    requester: str
+    requester_open_id: str
+    department: str
+    department_id: str = ""
+    material_usage: str = Field(min_length=1, max_length=500)
+    submission_token: str = Field(default_factory=lambda: uuid4().hex)
+    lines: list[CulturalLine]
+
+
+class CorporateApparelLine(BaseModel):
+    product: str
+    size: str
+    quantity: int = Field(gt=0, le=10)
+
+
+class CorporateApparelDraft(BaseModel):
+    requester: str
+    requester_open_id: str
+    department: str = ""
+    department_id: str = ""
+    material_usage: str = Field(min_length=1, max_length=500)
+    submission_token: str = Field(default_factory=lambda: uuid4().hex)
+    lines: list[CorporateApparelLine]
+
+
+@asynccontextmanager
+async def _pending_inventory_lifespan(_app: FastAPI):
+    import submission_receipts
+
+    submission_receipts.start()
+    start_pending_reconciliation()
+    try:
+        yield
+    finally:
+        stop_pending_reconciliation()
+        submission_receipts.stop()
+
+
+api = FastAPI(title="PUDU Material Operations - Request API", lifespan=_pending_inventory_lifespan)
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@api.middleware("http")
+async def feishu_enterprise_gate(request: Request, call_next):
+    """Protect the public site and APIs without blocking health or tokened webhooks."""
+    from request_web import feishu_auth
+
+    path = request.url.path
+    if path in {"/api/health", "/favicon.ico"} or path.startswith("/auth/feishu/") or path in {
+        "/api/corporate-exchange-sync", "/api/corporate-exchange-sync/status",
+        "/api/pending-inventory-sync",
+    }:
+        return await call_next(request)
+    # Only the in-process test client bypasses the gate. Host headers or
+    # loopback proxy connections must not make a public request trusted.
+    if request.url.hostname == "testserver" and request.client and request.client.host == "testclient":
+        return await call_next(request)
+    try:
+        tenant_key = await run_in_threadpool(feishu_auth.own_tenant_key)
+    except Exception:
+        return JSONResponse({"detail": "企业登录暂不可用，请稍后重试。"}, status_code=503)
+    if feishu_auth.valid_session(request.cookies.get("pudu_feishu", ""), tenant_key):
+        return await call_next(request)
+    if path.startswith("/api/") or request.method != "GET":
+        return JSONResponse({"detail": "请先通过飞书登录。"}, status_code=401)
+    target = feishu_auth.safe_return_path(path + (f"?{request.url.query}" if request.url.query else ""))
+    return RedirectResponse("/auth/feishu/start?" + parse.urlencode({"next": target}), status_code=303)
+
+
+@api.get("/auth/feishu/start")
+def feishu_login_start(next: str = "/") -> RedirectResponse:
+    from request_web import feishu_auth
+
+    state = feishu_auth.new_state(next)
+    response = RedirectResponse(feishu_auth.authorization_url(state), status_code=303)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/workplace-start")
+def feishu_workplace_start() -> RedirectResponse:
+    """Authenticate inside Feishu before handing a session to the browser."""
+    from request_web import feishu_auth
+
+    state = feishu_auth.new_state(feishu_auth.WORKPLACE_RETURN_PATH)
+    response = RedirectResponse(feishu_auth.workplace_authorization_url(state), status_code=303)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/callback")
+def feishu_login_callback(request: Request, code: str = "", state: str = "") -> Response:
+    from request_web import feishu_auth
+
+    target = feishu_auth.consume_state(state)
+    if target is None or not code:
+        raise HTTPException(status_code=400, detail="飞书登录已过期或校验失败，请重新打开页面。")
+    try:
+        open_id, tenant_key, profile = feishu_auth.exchange_code(code)
+        if not secrets.compare_digest(tenant_key, feishu_auth.own_tenant_key()):
+            raise HTTPException(status_code=403, detail="仅限本企业飞书成员访问。")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="飞书登录暂时失败，请稍后重试。") from exc
+    if target == feishu_auth.WORKPLACE_RETURN_PATH:
+        from html import escape
+
+        ticket = feishu_auth.create_workplace_ticket(open_id, tenant_key, profile)
+        destination = f"{feishu_auth.public_origin()}/auth/feishu/browser-complete?" + parse.urlencode(
+            {"ticket": ticket, "lk_jump_to_browser": "true"}
+        )
+        html = (
+            '<!doctype html><html lang="zh-CN"><meta charset="utf-8">'
+            '<meta name="referrer" content="no-referrer">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>正在打开应用</title><body>'
+            '<p>正在浏览器中打开营销物料管理系统…</p>'
+            f'<a href="{escape(destination, quote=True)}">如未自动打开，请点击此处</a>'
+            f'<script>location.replace({json.dumps(destination)});</script>'
+            '</body></html>'
+        )
+        return HTMLResponse(html, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+    response = RedirectResponse(target, status_code=303)
+    response.set_cookie("pudu_feishu", feishu_auth.create_session(open_id, tenant_key, **profile), max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/browser-complete")
+def feishu_browser_complete(request: Request, ticket: str = "") -> RedirectResponse:
+    from request_web import feishu_auth
+
+    identity = feishu_auth.consume_workplace_ticket(ticket)
+    if identity is None:
+        raise HTTPException(status_code=400, detail="工作台登录已过期，请从飞书工作台重新打开。")
+    open_id, tenant_key, profile = identity
+    existing = feishu_auth.session_identity(request.cookies.get("pudu_feishu", ""), tenant_key)
+    if existing is not None and existing["open_id"] != open_id:
+        raise HTTPException(status_code=409, detail="浏览器已登录其他飞书用户，请先退出后重试。")
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie(
+        "pudu_feishu", feishu_auth.create_session(open_id, tenant_key, **profile),
+        max_age=feishu_auth.SESSION_SECONDS, httponly=True, secure=True, samesite="lax",
+    )
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
+
+
+@api.get("/auth/feishu/logout")
+def feishu_logout() -> RedirectResponse:
+    response = RedirectResponse("/auth/feishu/signed-out", status_code=303)
+    response.delete_cookie("pudu_feishu", secure=True, httponly=True, samesite="lax")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@api.get("/auth/feishu/signed-out")
+def feishu_signed_out() -> HTMLResponse:
+    return HTMLResponse(
+        '<!doctype html><html lang="zh-CN"><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>已退出登录</title><body style="font:16px system-ui;max-width:420px;'
+        'margin:15vh auto;padding:24px;color:#143b5e;text-align:center">'
+        '<h1>已退出应用</h1><p>当前设备的应用登录状态已清除。</p>'
+        '<a href="/auth/feishu/start" style="color:#075b7b">重新登录 / Sign in</a>'
+        '</body></html>',
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@api.get("/api/auth/me")
+def current_feishu_user(request: Request) -> JSONResponse:
+    """Identity comes from the signed login cookie; permissions are display-only here."""
+    from request_web import feishu_auth
+
+    identity = feishu_auth.session_identity(
+        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+    )
+    if identity is None:
+        raise HTTPException(status_code=401, detail="请先通过飞书登录。")
+    open_id = identity["open_id"]
+    contacts = _json("contact_departments_cache.json")
+    contact = next(
+        (item for item in contacts.get("users", []) if item.get("open_id") == open_id),
+        {},
+    )
+    permission_status = "missing"
+    roles: list[str] = []
+    for row in _json("page_data_cache.json").get("tables", {}).get("用户权限表", []):
+        fields = row.get("fields", {})
+        accounts = fields.get("用户账号") or []
+        if isinstance(accounts, dict):
+            accounts = [accounts]
+        if not any(
+            isinstance(account, dict)
+            and (account.get("id") or account.get("open_id")) == open_id
+            for account in accounts
+        ):
+            continue
+        if str(fields.get("是否启用") or "").strip() == "是":
+            permission_status = "enabled"
+            roles = sorted({str(role) for role in fields.get("角色", []) if str(role).strip()})
+            break
+        permission_status = "disabled"
+    if permission_status == "missing":
+        roles = ["销售"]
+    body = {
+        "open_id": open_id,
+        "name": identity["name"] or str(contact.get("name") or "飞书用户"),
+        "avatar_url": identity["avatar_url"],
+        "department_ids": contact.get("department_ids") or [],
+        "department_paths": contact.get("department_paths") or [],
+        "roles": roles,
+        "permission_status": permission_status,
+    }
+    return JSONResponse(body, headers={"Cache-Control": "no-store"})
+
+
+def _authenticated_submitter(request: Request) -> tuple[str, str]:
+    """The submitter is always the signed-in Feishu identity, never form data."""
+    from request_web import feishu_auth
+
+    identity = feishu_auth.session_identity(
+        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+    )
+    if not identity or not str(identity.get("open_id") or "").strip():
+        raise HTTPException(status_code=401, detail="请先通过飞书登录后提交申请。")
+    return str(identity.get("name") or "飞书用户"), str(identity["open_id"])
+
+
+@api.get("/favicon.ico")
+def favicon() -> FileResponse:
+    return _asset_file("app-icon.ico")
+
+
+@api.middleware("http")
+async def frontend_cache_policy(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    content_type = response.headers.get("content-type", "")
+    if path.startswith("/assets/"):
+        response.headers["Cache-Control"] = (
+            "public, max-age=31536000, immutable"
+            if response.status_code == 200
+            else "no-store"
+        )
+    elif content_type.startswith("text/html"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
+@api.get("/category-assets/{filename:path}")
+def category_asset(filename: str) -> FileResponse:
+    return _asset_file(f"request_categories/{filename}")
+
+
+@api.get("/app-assets/{filename:path}")
+def app_asset(filename: str) -> FileResponse:
+    return _asset_file(filename)
+_PENDING_ALLOCATION_CACHE: dict[str, Any] = {
+    "last_attempt": 0.0, "refreshing": False, "last_error": "",
+}
+_PENDING_ALLOCATION_LOCK = threading.Lock()
+_PENDING_ALLOCATION_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="pending-allocation")
+_PENDING_RECONCILE_STOP = threading.Event()
+_PENDING_RECONCILE_THREAD: threading.Thread | None = None
+_CORPORATE_APPAREL_STOCK_TTL_SECONDS = 30
+_CORPORATE_APPAREL_STOCK_LOCK = threading.Lock()
+_CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": None}
+
+
+@api.get("/api/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@api.get("/api/catalog")
+def catalog(response: Response) -> dict[str, Any]:
+    response.headers["Cache-Control"] = "no-store"
+    return build_catalog()
+
+
+@api.get("/api/catalog/revision")
+def request_catalog_revision(response: Response) -> dict[str, str]:
+    response.headers["Cache-Control"] = "no-store"
+    return {"revision": catalog_revision()}
+
+
+@api.get("/api/cultural-catalog")
+def cultural_catalog() -> dict[str, Any]:
+    import app as legacy
+
+    page = _json("page_data_cache.json")
+    contacts = _json("contact_departments_cache.json")
+    images = _image_index()
+    tables = page.get("tables", {})
+    filtered = legacy.cultural_request_catalog(
+        list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, [])),
+        list(tables.get(legacy.CATEGORY_TABLE_NAME, [])),
+        list(tables.get(legacy.MODEL_TABLE_NAME, [])),
+    )
+    combinations = [
+        {
+            "product": row["product"],
+            "model": row["model"],
+            "region": row["region"],
+            "stock": int(row.get("stock") or 0),
+            "unitPriceRmb": float(row.get("unit_price_rmb") or 0),
+        }
+        for row in filtered["combinations"].values()
+    ]
+    return {
+        "generatedAt": page.get("generated_at"),
+        "combinations": combinations,
+        "images": images,
+        "categoryLabels": filtered["category_labels"],
+        "users": contacts.get("users", []),
+        "departments": contacts.get("departments", []),
+        "maxCulturalShirtQuantity": legacy.CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
+        "maxJacketQuantity": legacy.CULTURAL_JACKET_MAX_TOTAL_QUANTITY,
+    }
+
+
+@api.get("/api/corporate-apparel-catalog")
+def corporate_apparel_catalog(response: Response) -> dict[str, Any]:
+    import app as legacy
+
+    response.headers["Cache-Control"] = "no-store"
+    page = _json("page_data_cache.json")
+    contacts = _json("contact_departments_cache.json")
+    rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
+    # The local snapshot is enough to show the form immediately. The separate
+    # stock endpoint supplies verified availability before selection is enabled.
+    catalog = legacy.corporate_apparel_catalog(rows)
+    return {
+        "generatedAt": page.get("generated_at"),
+        "products": catalog.get("products", []),
+        "items": _corporate_apparel_web_items(catalog),
+        "users": contacts.get("users", []),
+        "departments": contacts.get("departments", []),
+    }
+
+
+def _corporate_apparel_web_items(catalog: dict[str, Any]) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for raw in list(catalog.get("items") or []):
+        item = dict(raw)
+        item["images"] = [
+            f"/category-assets/{Path(str(path)).name}"
+            for path in list(item.get("images") or [])
+        ]
+        items.append(item)
+    return items
+
+
+@api.get("/api/corporate-apparel-stock")
+def corporate_apparel_stock(response: Response) -> dict[str, Any]:
+    """Share a short-lived Feishu read across visitors; fail closed on errors."""
+    import app as legacy
+
+    response.headers["Cache-Control"] = "no-store"
+    with _CORPORATE_APPAREL_STOCK_LOCK:
+        cached = _CORPORATE_APPAREL_STOCK_CACHE["items"]
+        if cached is not None and time.monotonic() - _CORPORATE_APPAREL_STOCK_CACHE["loaded_at"] < _CORPORATE_APPAREL_STOCK_TTL_SECONDS:
+            return {"items": cached}
+        page = _json("page_data_cache.json")
+        rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
+        source_rows = legacy.corporate_apparel_source_client().list_records(
+            legacy.CORPORATE_APPAREL_SOURCE_TABLE_ID
+        )
+        items = _corporate_apparel_web_items(
+            legacy.corporate_apparel_catalog(rows, source_rows=source_rows)
+        )
+        _CORPORATE_APPAREL_STOCK_CACHE.update(items=items, loaded_at=time.monotonic())
+        return {"items": items}
+
+
+def _signed_admin_open_id(request: Request) -> str:
+    """Resolve an enabled administrator from the enterprise login and current cache."""
+    from request_web import feishu_auth
+
+    identity = feishu_auth.session_identity(
+        request.cookies.get("pudu_feishu", ""), feishu_auth.own_tenant_key()
+    )
+    if identity is None:
+        return ""
+    open_id = identity["open_id"]
+    for row in _json("page_data_cache.json").get("tables", {}).get("用户权限表", []):
+        fields = row.get("fields", {})
+        accounts = fields.get("用户账号") or []
+        if isinstance(accounts, dict):
+            accounts = [accounts]
+        if not any(
+            isinstance(account, dict)
+            and (account.get("id") or account.get("open_id")) == open_id
+            for account in accounts
+        ):
+            continue
+        if str(fields.get("是否启用") or "").strip() != "是":
+            continue
+        roles = fields.get("角色") or []
+        if isinstance(roles, str):
+            roles = [roles]
+        if "管理员" in roles:
+            return open_id
+    return ""
+
+
+def require_admin(request: Request) -> str:
+    open_id = _signed_admin_open_id(request)
+    if not open_id:
+        raise HTTPException(status_code=403, detail="仅已启用的管理员可访问物料管理。")
+    return open_id
+
+
+def _allocation_actor(
+    request: Request,
+    request_id: str,
+    operator: str = "",
+    review_token: str = "",
+) -> str:
+    """Authorize an administrator login or a signed administrator card link."""
+    import app as legacy
+
+    signed = (
+        legacy.valid_request_review_access_token(request_id, operator, review_token)
+        and operator in legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args())
+    )
+    if signed:
+        return operator
+    logged_in_admin = _signed_admin_open_id(request)
+    if logged_in_admin:
+        return ""
+    raise HTTPException(status_code=403, detail="配货工作台需要管理员权限或有效的飞书卡片链接。")
+
+
+@api.get("/api/admin/status")
+def admin_status(request: Request) -> dict[str, bool]:
+    return {"unlocked": bool(_signed_admin_open_id(request))}
+
+
+def _management_snapshot() -> dict[str, Any]:
+    import app as legacy
+
+    page = _json("page_data_cache.json")
+    tables = page.get("tables", {})
+    category_rows = list(tables.get(legacy.CATEGORY_TABLE_NAME, []))
+    material_rows = list(tables.get(legacy.MATERIAL_TABLE_NAME, []))
+    model_rows = list(tables.get(legacy.MODEL_TABLE_NAME, []))
+    language_rows = list(tables.get(legacy.LANGUAGE_TABLE_NAME, []))
+    region_rows = list(tables.get(legacy.REGION_TABLE_NAME, []))
+    cultural_rows = list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, []))
+    categories = legacy.feishu_category_records_from_rows(category_rows)
+    inventory = legacy.feishu_inventory_records_from_rows(
+        material_rows, category_rows, active_only=False
+    )
+    restock_inventory = [dict(item) for item in inventory]
+    inventory_category_keys = {
+        legacy.normalize_category_match_key(item.get("category")) for item in inventory
+    }
+    restock_inventory.extend(
+        {
+            "record_id": "",
+            "material_code": "",
+            "category": str(category.get("category") or ""),
+            "model": legacy.NO_MODEL_TEXT,
+            "language": legacy.NO_LANGUAGE_TEXT,
+            "quantity": 0,
+            "unit_price": float(category.get("unit_price") or 0),
+            "status": str(category.get("status") or legacy.STATUS_INACTIVE),
+            "request_visible": str(category.get("request_visible") or legacy.REQUEST_PAGE_HIDDEN_VALUE),
+            "synthetic": True,
+        }
+        for category in categories
+        if category.get("no_model")
+        and category.get("no_language")
+        and legacy.normalize_category_match_key(category.get("category"))
+        not in inventory_category_keys
+    )
+    cultural = legacy.load_cultural_dimension_inventory_records(cultural_rows)
+    return {
+        "generatedAt": page.get("generated_at"),
+        "categories": categories,
+        "inventory": inventory,
+        "restockInventory": restock_inventory,
+        "restockImages": _image_index(),
+        "restockModels": _model_index(),
+        "culturalInventory": cultural,
+        "dimensions": {
+            "model": legacy.dimension_management_records("model", model_rows),
+            "language": legacy.dimension_management_records("language", language_rows),
+            "region": legacy.dimension_management_records("region", region_rows),
+        },
+        "categoryDefinitions": list(legacy.CATEGORY_DEFINITION_OPTIONS),
+        "packingTypes": list(legacy.PACKING_LIST_PRODUCT_TYPE_OPTIONS),
+        "statuses": list(legacy.MATERIAL_STATUS_OPTIONS),
+        "visibilityOptions": list(legacy.REQUEST_PAGE_VISIBILITY_OPTIONS),
+        "modelTypes": list(legacy.MODEL_TYPE_OPTIONS),
+        "noModelText": legacy.NO_MODEL_TEXT,
+        "noLanguageText": legacy.NO_LANGUAGE_TEXT,
+        "maxRestockLines": legacy.MAX_RESTOCK_LINE_COUNT,
+    }
+
+
+@api.get("/api/admin/management-catalog")
+def management_catalog(_: str = Depends(require_admin)) -> dict[str, Any]:
+    snapshot = _management_snapshot()
+    from shipping_page import CARTON_PRESETS, PACKING_TYPE_OPTIONS
+
+    packing_types = list(PACKING_TYPE_OPTIONS)
+    for category in snapshot.get("categories", []):
+        value = str(category.get("packing_list_product_type") or "").strip()
+        if value and value not in packing_types:
+            packing_types.append(value)
+    from shipping_template import DEFAULT_SHIPPING_COST
+
+    snapshot["shipping"] = {
+        "cartonPresets": CARTON_PRESETS,
+        "packingTypes": packing_types,
+        "defaultShippingCost": float(DEFAULT_SHIPPING_COST),
+    }
+    return snapshot
+
+
+@api.post("/api/admin/shipping/invoice-preview")
+def shipping_invoice_preview(body: dict[str, Any], _: str = Depends(require_admin)) -> dict[str, str]:
+    from shipping_template import build_invoice_number, infer_address_code, normalize_address_code
+
+    raw_code = str(body.get("address_code") or "").strip()
+    normalized = normalize_address_code(raw_code) if raw_code else infer_address_code(str(body.get("address") or ""))
+    try:
+        invoice_number = build_invoice_number(date.fromisoformat(str(body.get("template_date") or "")), normalized)
+    except Exception:
+        invoice_number = ""
+    return {"addressCode": normalized, "invoiceNumber": invoice_number}
+
+
+@api.post("/api/admin/shipping/generate")
+def shipping_generate(body: dict[str, Any], _: str = Depends(require_admin)) -> StreamingResponse:
+    from shipping_template import DEFAULT_SHIPPING_COST, Carton, CartonAllocation, ShippingLine, generate_shipping_workbook
+
+    try:
+        lines = [ShippingLine(**dict(item)) for item in list(body.get("lines") or [])]
+        cartons = [Carton(**dict(item)) for item in list(body.get("cartons") or [])]
+        allocations = [CartonAllocation(**dict(item)) for item in list(body.get("allocations") or [])]
+        invoice_number, workbook = generate_shipping_workbook(
+            template_date=date.fromisoformat(str(body.get("template_date") or "")),
+            address_code=str(body.get("address_code") or ""),
+            recipient=dict(body.get("recipient") or {}),
+            lines=lines,
+            cartons=cartons,
+            allocations=allocations,
+            shipping_cost=body.get("shipping_cost", DEFAULT_SHIPPING_COST),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    filename = f"{invoice_number}_INV_PL.xlsx"
+    return StreamingResponse(
+        io.BytesIO(workbook),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _allocation_summary(context: dict[str, Any]) -> dict[str, Any]:
+    request = dict(context.get("request") or {})
+    return {
+        "requestId": str(request.get("record_id") or ""),
+        "requestNo": str(request.get("request_no") or ""),
+        "requester": str(request.get("requester") or ""),
+        "department": str(request.get("department") or ""),
+        "reason": str(request.get("request_reason") or ""),
+        "status": str(request.get("status") or ""),
+        "inventoryReviewStatus": str(request.get("inventory_review_status") or ""),
+        "inventoryReviewResult": str(context.get("result") or ""),
+        "inventoryReviewVersion": int(request.get("inventory_review_version") or 0),
+        "reminderAt": str(request.get("inventory_review_reminder_at") or ""),
+        "submittedAt": str(request.get("submitted_at") or ""),
+        "lineCount": len(list(context.get("lines") or [])),
+    }
+
+
+def _allocation_operators(legacy: Any) -> list[dict[str, Any]]:
+    # The allocation list is SQLite-backed. Do not turn every page load into
+    # a fresh Feishu permission-table request (which can take tens of seconds).
+    enabled_ids: set[str] = set()
+    permission_rows = _json("page_data_cache.json").get("tables", {}).get("用户权限表", [])
+    for row in permission_rows:
+        fields = legacy.feishu_fields(row)
+        if not legacy.feishu_permission_enabled(fields):
+            continue
+        if "管理员" not in legacy.feishu_choice_values(fields, "角色"):
+            continue
+        enabled_ids.update(legacy.feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]))
+    contacts = _json("contact_departments_cache.json")
+    return [
+        user for user in list(contacts.get("users") or [])
+        if str(user.get("open_id") or user.get("id") or "") in enabled_ids
+    ]
+
+
+def _refresh_pending_allocation() -> None:
+    from pending_inventory_sqlite import reconcile_live
+
+    try:
+        # Feishu occasionally returns 1254607 while its Base view is being
+        # prepared. Retry here, off the request thread, rather than leaving an
+        # empty SQLite snapshot stale for the next hour.
+        for attempt in range(3):
+            try:
+                reconcile_live()
+                break
+            except Exception as exc:
+                if "1254607" not in str(exc) or attempt == 2:
+                    raise
+                logging.warning("Pending allocation source not ready; retry %s/2", attempt + 1)
+                time.sleep((8, 20)[attempt])
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE["last_error"] = ""
+    except Exception as exc:
+        logging.warning("Refreshing pending allocation list failed: %s", exc)
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE["last_error"] = "飞书实时核对暂不可用；当前显示本机未核实申请单。"
+    finally:
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE["refreshing"] = False
+
+
+def _pending_reconcile_loop() -> None:
+    # Incremental Worker/webhook writes keep SQLite current. A slow full Base
+    # scan is only a background safety net, never part of opening the page.
+    if _PENDING_RECONCILE_STOP.wait(30):
+        return
+    while not _PENDING_RECONCILE_STOP.is_set():
+        with _PENDING_ALLOCATION_LOCK:
+            _PENDING_ALLOCATION_CACHE.update(refreshing=True, last_attempt=time.monotonic())
+        _refresh_pending_allocation()
+        if _PENDING_RECONCILE_STOP.wait(900):
+            return
+
+
+def start_pending_reconciliation() -> None:
+    global _PENDING_RECONCILE_THREAD
+    if _PENDING_RECONCILE_THREAD and _PENDING_RECONCILE_THREAD.is_alive():
+        return
+    _PENDING_RECONCILE_STOP.clear()
+    _PENDING_RECONCILE_THREAD = threading.Thread(
+        target=_pending_reconcile_loop, name="pending-inventory-reconcile", daemon=True,
+    )
+    _PENDING_RECONCILE_THREAD.start()
+
+
+def stop_pending_reconciliation() -> None:
+    _PENDING_RECONCILE_STOP.set()
+    if _PENDING_RECONCILE_THREAD:
+        _PENDING_RECONCILE_THREAD.join(timeout=1)
+
+
+@api.get("/api/admin/allocation/pending")
+def allocation_pending(
+    refresh: bool = False, _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+    from pending_inventory_sqlite import list_pending
+
+    local_rows = list_pending()
+    summaries = legacy.pending_inventory_review_summaries([row for row, _, _ in local_rows])
+    line_counts = {legacy.feishu_record_id(row): count for row, count, _ in local_rows}
+    for summary in summaries:
+        summary["lineCount"] = line_counts.get(str(summary.get("requestId") or ""), 0)
+    with _PENDING_ALLOCATION_LOCK:
+        snapshot = {
+            "requests": summaries,
+            "source": "sqlite",
+            "updatedAt": max((updated for _, _, updated in local_rows), default=""),
+            "refreshing": bool(_PENDING_ALLOCATION_CACHE["refreshing"]),
+            "refreshError": _PENDING_ALLOCATION_CACHE["last_error"],
+        }
+    return {**snapshot, "operators": _allocation_operators(legacy)}
+
+
+@api.get("/api/allocation/{request_id}")
+def allocation_context(
+    request: Request,
+    request_id: str,
+    operator: str = Query(default=""),
+    review_token: str = Query(default=""),
+    snapshot: bool = Query(default=False),
+) -> dict[str, Any]:
+    import app as legacy
+    from order_scheduling import SHIP_DATE, as_date
+
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
+    try:
+        if snapshot:
+            from pending_inventory_sqlite import get as get_pending_request
+
+            local = get_pending_request(request_id)
+            if local is None:
+                raise HTTPException(status_code=404, detail="本机未核实申请单中没有该记录，正在尝试实时读取。")
+            request_row, line_rows = local
+            page = _json("page_data_cache.json")
+            tables = page.get("tables", {})
+            context = legacy.request_inventory_review_context_from_rows(
+                request_row,
+                list(tables.get(legacy.MATERIAL_TABLE_NAME, [])),
+                list(tables.get(legacy.CATEGORY_TABLE_NAME, [])),
+                line_rows,
+                snapshot_at="本机未核实申请单",
+            )
+        else:
+            context = legacy.request_inventory_review_context(request_id=request_id)
+        request = dict(context["request"])
+        lines = [dict(item) for item in list(context.get("lines") or [])]
+        current_ids = {str(item.get("material_record_id") or "") for item in lines}
+        form_cache = legacy.load_static_request_form_cache()
+        materials = legacy.cached_allocation_material_records(
+            form_cache,
+            list(context.get("material_rows") or []),
+            current_material_ids=current_ids,
+            category_rows=list(context.get("category_rows") or []),
+        )
+        ship_date = as_date(legacy.feishu_fields(context.get("request_row") or {}).get(SHIP_DATE))
+        return {
+            "request": request,
+            "lines": lines,
+            "result": context.get("result"),
+            "snapshotAt": context.get("snapshot_at"),
+            "shipDate": ship_date.isoformat() if ship_date else "",
+            "materials": materials,
+            "operatorOpenId": signed_operator,
+            "signedCardAccess": bool(signed_operator),
+            "operators": _allocation_operators(legacy),
+            "cacheGeneratedAt": form_cache.get("generated_at"),
+            "verifiedLive": not snapshot,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        if "1254607" in str(exc) or "Data not ready" in str(exc):
+            raise HTTPException(
+                status_code=503,
+                detail="飞书正在准备申请单数据，系统将自动重试；请勿重复提交。",
+                headers={"X-Pudu-Retryable": "1", "Retry-After": "4"},
+            ) from exc
+        raise HTTPException(status_code=503, detail=f"申请单实时配货数据读取失败：{exc}") from exc
+
+
+
+
+@api.post("/api/allocation/{request_id}/submit")
+def allocation_submit(
+    request: Request,
+    request_id: str,
+    body: dict[str, Any],
+    operator: str = Query(default=""),
+    review_token: str = Query(default=""),
+) -> dict[str, Any]:
+    import app as legacy
+    from submission_queue import (
+        QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM,
+        QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT,
+    )
+
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
+    draft = dict(body.get("draft") or {})
+    draft["request_id"] = request_id
+    if signed_operator:
+        draft["operator_open_id"] = signed_operator
+    operator_open_id = str(draft.get("operator_open_id") or "").strip()
+    if operator_open_id not in legacy.cached_enabled_admin_open_ids(*legacy.feishu_config_args()):
+        raise HTTPException(status_code=422, detail="请选择已启用的管理员作为本次配货操作人。")
+    operation = str(body.get("operation") or "")
+    if operation not in {"confirm", "edit"}:
+        raise HTTPException(status_code=422, detail="不支持的配货操作。")
+    if not str(draft.get("ship_date") or "").strip():
+        raise HTTPException(status_code=422, detail="请选择申请单发货日期。")
+    if operation == "edit":
+        if not str(draft.get("change_note") or "").strip():
+            raise HTTPException(status_code=422, detail="请填写配货调整说明。")
+        lines = [dict(item) for item in list(draft.get("lines") or []) if isinstance(item, dict)]
+        if not lines:
+            raise HTTPException(status_code=422, detail="配货方案必须至少保留一条物料明细。")
+        material_ids = [str(item.get("material_record_id") or "") for item in lines]
+        if any(not item for item in material_ids) or len(set(material_ids)) != len(material_ids):
+            raise HTTPException(status_code=422, detail="配货方案包含无效或重复物料。")
+        if any(int(item.get("quantity") or 0) <= 0 for item in lines):
+            raise HTTPException(status_code=422, detail="配货数量必须大于 0。")
+    task_type = (
+        QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM
+        if operation == "confirm"
+        else QUEUE_TASK_TYPE_REQUEST_INVENTORY_EDIT
+    )
+    version = int(draft.get("expected_version") or 0)
+    serialized_lines = json.dumps(draft.get("lines") or [], ensure_ascii=False, sort_keys=True)
+    idempotency = (
+        f"request-inventory-{operation}:{request_id}:{version}:"
+        f"{hashlib.sha256(serialized_lines.encode('utf-8')).hexdigest()}:{draft.get('ship_date')}"
+    )
+    from pending_inventory_sqlite import stage_action, mark_action
+
+    try:
+        stage_action(idempotency, request_id, operation, draft)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"配货方案未能保存到本机：{exc}") from exc
+    try:
+        task_id = _enqueue_fast(task_type, idempotency, {"draft": draft})
+    except Exception as exc:
+        try:
+            mark_action(idempotency, "failed", error=str(exc))
+        except Exception:
+            logging.exception("Could not mark staged allocation %s as failed", idempotency)
+        raise HTTPException(status_code=503, detail=f"配货任务未能进入后台队列：{exc}") from exc
+    try:
+        mark_action(idempotency, "queued", task_id=task_id)
+    except Exception:
+        logging.exception("Allocation %s entered the queue but SQLite status update failed", idempotency)
+    return {"accepted": True, "taskId": task_id}
+
+
+@api.post("/api/allocation/{request_id}/withdraw")
+def allocation_withdraw(
+    request: Request, request_id: str, body: dict[str, Any],
+    operator: str = Query(default=""), review_token: str = Query(default=""),
+) -> dict[str, Any]:
+    from pending_inventory_sqlite import stage_action, mark_action
+    from submission_queue import QUEUE_TASK_TYPE_REQUEST_WITHDRAW
+
+    signed_operator = _allocation_actor(request, request_id, operator, review_token)
+    actor = signed_operator or _signed_admin_open_id(request)
+    try:
+        version = int(body.get("expected_version") or 0)
+        if version < 0:
+            raise ValueError()
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail="申请版本无效，请刷新后处理。") from exc
+    # The Worker checks live eligibility before deleting. A card-opened request
+    # can be newer than SQLite; do not reject it against a stale local version.
+    draft = {"request_id": request_id, "expected_version": version, "operator_open_id": actor}
+    key = f"request-withdraw:{request_id}:{version}"
+    try:
+        stage_action(key, request_id, "withdraw", draft)
+        task_id = _enqueue_fast(QUEUE_TASK_TYPE_REQUEST_WITHDRAW, key, {"draft": draft})
+    except Exception as exc:
+        try:
+            mark_action(key, "failed", error=str(exc))
+        except Exception:
+            logging.exception("Could not mark staged withdrawal %s as failed", key)
+        raise HTTPException(status_code=503, detail=f"删除任务未能进入后台队列：{exc}") from exc
+    try:
+        mark_action(key, "queued", task_id=task_id)
+    except Exception:
+        logging.exception("Withdrawal %s queued but SQLite status update failed", key)
+    return {"accepted": True, "taskId": task_id}
+
+
+@api.post("/api/admin/restock/submit")
+def management_restock_submit(
+    draft: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+    from submission_queue import QUEUE_TASK_TYPE_RESTOCK, QUEUE_TASK_TYPE_STOCK_REDUCTION
+
+    errors = legacy.validate_restock_draft(draft)
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+    token = str(draft.get("submission_token") or uuid4().hex)
+    normalized = {
+        **draft,
+        "submission_token": token,
+        "restock_no": str(draft.get("restock_no") or legacy.build_restock_no(token)),
+    }
+    mode = str(normalized.get("mode") or "restock")
+    task_type = QUEUE_TASK_TYPE_STOCK_REDUCTION if mode == "reduce" else QUEUE_TASK_TYPE_RESTOCK
+    try:
+        task_id = _enqueue_fast(
+            task_type,
+            str(normalized["restock_no"]),
+            {"draft": normalized},
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"采购补库任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id, "restockNo": normalized["restock_no"]}
+
+
+@api.post("/api/admin/dimension/preview")
+def management_dimension_preview(
+    draft: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+
+    snapshot = _management_snapshot()
+    kind = str(draft.get("kind") or "")
+    if kind not in {"model", "language", "region"}:
+        raise HTTPException(status_code=422, detail="不支持的基础维度类型。")
+    operation = str(draft.get("operation") or "")
+    records = list(snapshot["dimensions"][kind])
+    record_id = str(draft.get("record_id") or "")
+    current = next((item for item in records if item["record_id"] == record_id), None)
+    if operation != "create" and current is None:
+        raise HTTPException(status_code=422, detail="所选记录不存在，请刷新后重试。")
+    name = str(draft.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="请填写名称。")
+    duplicate = next(
+        (
+            item for item in records
+            if legacy.normalize_option_label(item["name"]).casefold()
+            == legacy.normalize_option_label(name).casefold()
+            and item["record_id"] != record_id
+        ),
+        None,
+    )
+    if operation != "delete" and duplicate:
+        raise HTTPException(status_code=422, detail="名称已经存在。")
+    changes = legacy.dimension_association_plan(
+        kind,
+        operation,
+        str((current or {}).get("name") or name),
+        name,
+        list(draft.get("selected_keys") or []),
+        list(snapshot["culturalInventory"] if kind == "region" else snapshot["inventory"]),
+        list(snapshot["categories"]),
+    )
+    return {"draft": {**draft, "changes": changes}, "changes": changes}
+
+
+@api.post("/api/admin/dimension/submit")
+def management_dimension_submit(
+    draft: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    from submission_queue import QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT
+
+    try:
+        task_id = _enqueue_fast(
+            QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT,
+            str(draft.get("submission_token") or uuid4().hex),
+            {"draft": draft},
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"基础维度任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id}
+
+
+@api.post("/api/admin/category/submit")
+def management_category_submit(
+    body: dict[str, Any], _: str = Depends(require_admin)
+) -> dict[str, Any]:
+    import app as legacy
+    from submission_queue import QUEUE_TASK_TYPE_CATEGORY_DELETE, QUEUE_TASK_TYPE_CATEGORY_SYNC
+
+    operation = str(body.get("operation") or "")
+    token = str(body.get("submission_token") or uuid4().hex)
+    if operation == "delete":
+        try:
+            legacy.validate_category_delete_draft(dict(body.get("draft") or {}), require_confirmation=True)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+    try:
+        if operation == "delete":
+            draft = dict(body.get("draft") or {})
+            task_id = _enqueue_fast(
+                QUEUE_TASK_TYPE_CATEGORY_DELETE, token, {"draft": draft}
+            )
+        else:
+            raw_sync_args = dict(body.get("sync_args") or {})
+            if "target_values_rows" in raw_sync_args and "target_values" not in raw_sync_args:
+                raw_sync_args = legacy.deserialize_category_sync_args(raw_sync_args)
+            sync_args = legacy.serialize_category_sync_args(raw_sync_args)
+            task_id = _enqueue_fast(
+                QUEUE_TASK_TYPE_CATEGORY_SYNC,
+                token,
+                {
+                    "sync_args": sync_args,
+                    "draft": dict(body.get("draft") or {}),
+                    "notification_kind": "create" if operation == "create" else "edit",
+                },
+            )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"品类管理任务未能进入后台队列：{exc}") from exc
+    return {"accepted": True, "taskId": task_id}
+
+
+def _field_text(value: Any) -> str:
+    if isinstance(value, list):
+        return "、".join(filter(None, (_field_text(item) for item in value)))
+    if isinstance(value, dict):
+        return str(value.get("name") or value.get("text") or value.get("id") or "")
+    return str(value or "")
+
+
+@api.get("/api/workspace")
+def workspace() -> dict[str, Any]:
+    import app as legacy
+
+    request_cache = _json("request_form_cache.json")
+    page = _json("page_data_cache.json")
+    tables = page.get("tables", {})
+    in_transit_by_code = {
+        _field_text(row.get("fields", {}).get("物料编码")): legacy.feishu_int(
+            row.get("fields", {}), "在途库存"
+        )
+        for row in tables.get("物料主数据", [])
+    }
+
+    def rows(table: str, fields: list[str]) -> list[dict[str, Any]]:
+        result = []
+        for row in tables.get(table, []):
+            source = row.get("fields", {})
+            result.append({"recordId": row.get("record_id", ""), **{name: _field_text(source.get(name)) for name in fields}})
+        return result
+
+    inventory = [
+        {
+            "物料编码": row.get("material_code", ""), "物料品类": row.get("product", ""),
+            "产品型号": row.get("model", ""), "语种": row.get("language", ""),
+            "库存数量": int(row.get("quantity") or 0), "单价（人民币）": float(row.get("unit_price_rmb") or 0),
+            "在途库存": in_transit_by_code.get(str(row.get("material_code") or ""), 0),
+            "库存价值": round(int(row.get("quantity") or 0) * float(row.get("unit_price_rmb") or 0), 2),
+        }
+        for row in request_cache.get("inventory_rows", [])
+    ]
+    return {
+        "generatedAt": page.get("generated_at"),
+        "inventory": inventory,
+        "categories": rows("物料品类", ["物料品类", "中文页面名称", "英文页面名称", "品类定义", "启用状态", "是否在申领页显示", "是否无需型号", "是否无需语种"]),
+        "models": rows("产品型号", ["产品型号", "中文页面名称", "英文页面名称", "产品线", "型号类型", "启用状态"]),
+        "languages": rows("物料语种", ["语种", "中文页面名称", "英文页面名称", "启用状态"]),
+        "regions": rows("战区管理", ["战区名称", "中文页面名称", "英文页面名称", "启用状态"]),
+        "cultural": rows("文化周边管理库存", ["物料品类", "产品型号", "战区管理", "当前库存", "单价（人民币）", "备注"]),
+        "requests": rows("物料申请单", ["申请单号", "标题", "申请人姓名", "申请部门", "审批状态", "库存审查状态", "申请原因", "物料使用时间"]),
+        "orderBatches": rows("物料下单批次", ["下单批次号", "批次状态", "生成人", "生成时间", "启用自动补库", "备注"]),
+        "warehouse": _json("warehouse_location_cache.json"),
+    }
+
+
+def _validate(draft: RequestDraft, *, live: bool) -> tuple[dict[str, Any], list[dict[str, Any]], list[str]]:
+    import app as legacy
+
+    data = draft.model_dump()
+    lines = data.pop("lines")
+    errors = legacy.validate_request_draft(
+        {**data, "lines": lines}, include_live_schedule_validation=live
+    )
+    return data, lines, errors
+
+
+def _cached_schedule_errors(draft: RequestDraft) -> list[str]:
+    """Validate page timing rules from the local permission snapshot only."""
+    import order_scheduling as scheduling_rules
+
+    roles = build_catalog().get("rolesByUser", {}).get(draft.requester_open_id) or ["销售"]
+    try:
+        scheduling_rules.calculate_dates(
+            draft.arrival_start,
+            draft.arrival_end,
+            draft.request_reason,
+            list(roles),
+            submitted=scheduling_rules.today(),
+        )
+    except Exception as exc:
+        return [str(exc)]
+    return []
+
+
+def _request_line_groups(
+    draft: RequestDraft,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str], list[str]]:
+    """Split the unified cart into the two existing inventory pipelines."""
+    import app as legacy
+
+    catalog = build_catalog()
+    roles = set(catalog.get("rolesByUser", {}).get(draft.requester_open_id) or [])
+    base_products = {
+        legacy.normalize_category_match_key(item.get("name"))
+        for item in catalog.get("products", [])
+    }
+    admin_products = {
+        legacy.normalize_category_match_key(item.get("name"))
+        for item in catalog.get("adminProducts", [])
+        if item.get("adminOnly")
+    }
+    standard: list[dict[str, Any]] = []
+    cultural: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for line_model in draft.lines:
+        line = line_model.model_dump()
+        product_key = legacy.normalize_category_match_key(line.get("product"))
+        source = str(line.get("source") or "standard").strip().lower()
+        is_admin_only = bool(line.get("admin_only")) or product_key in admin_products
+        if source == "cultural" or is_admin_only:
+            if not roles.intersection({"管理员", "区域市场经理"}):
+                errors.append("只有用户权限表中已启用的管理员或区域市场经理可以申领此类物料。")
+                continue
+        if source == "cultural" and not line.get("is_custom_material"):
+            cultural.append(
+                {
+                    "product": line["product"],
+                    "model": line["model"],
+                    "region": line["language"],
+                    "quantity": line["quantity"],
+                    "remark": line.get("remark", ""),
+                }
+            )
+        else:
+            if (
+                (base_products or admin_products)
+                and
+                not line.get("is_custom_material")
+                and product_key not in base_products
+                and product_key not in admin_products
+            ):
+                errors.append(f"物料品类未启用或不在当前目录中：{line.get('product')}")
+                continue
+            standard.append(line)
+    return standard, cultural, list(dict.fromkeys(errors)), sorted(roles)
+
+
+@lru_cache(maxsize=1)
+def _queue_client_and_table() -> tuple[Any, str, str]:
+    import app as legacy
+    from submission_queue import QUEUE_PAYLOAD_TABLE_NAME, QUEUE_TABLE_NAME
+
+    client = legacy.feishu_client()
+    if client is None:
+        raise RuntimeError("飞书未配置，无法创建后台申请任务。")
+    tables = client.list_tables()
+    table = next((row for row in tables if str(row.get("name") or "").strip() == QUEUE_TABLE_NAME), None)
+    table_id = str((table or {}).get("table_id") or "").strip()
+    if not table_id:
+        raise RuntimeError("未找到后台任务队列表。")
+    payload_table = next(
+        (row for row in tables if str(row.get("name") or "").strip() == QUEUE_PAYLOAD_TABLE_NAME),
+        None,
+    )
+    payload_table_id = str((payload_table or {}).get("table_id") or "").strip()
+    return client, table_id, payload_table_id
+
+
+_ENQUEUE_KEY_GUARD = threading.Lock()
+_ENQUEUE_KEY_LOCKS: dict[str, tuple[threading.Lock, int]] = {}
+
+
+@contextmanager
+def _enqueue_key_lock(key: str):
+    with _ENQUEUE_KEY_GUARD:
+        lock, users = _ENQUEUE_KEY_LOCKS.get(key, (threading.Lock(), 0))
+        _ENQUEUE_KEY_LOCKS[key] = (lock, users + 1)
+    lock.acquire()
+    try:
+        yield
+    finally:
+        lock.release()
+        with _ENQUEUE_KEY_GUARD:
+            _, users = _ENQUEUE_KEY_LOCKS[key]
+            if users == 1:
+                del _ENQUEUE_KEY_LOCKS[key]
+            else:
+                _ENQUEUE_KEY_LOCKS[key] = (lock, users - 1)
+
+
+def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
+    normalized_key = idempotency_key.strip()
+    if not normalized_key:
+        raise ValueError("后台任务提交标识不能为空。")
+    with _enqueue_key_lock(normalized_key):
+        return _enqueue_fast_locked(task_type, normalized_key, payload)
+
+
+def _enqueue_fast_locked(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
+    from submission_queue import (
+        QUEUE_COMPLETION_UNFINISHED, QUEUE_FIELD_COMPLETION_STATUS,
+        QUEUE_FIELD_ERROR,
+        QUEUE_FIELD_IDEMPOTENCY_KEY, QUEUE_FIELD_PAYLOAD, QUEUE_FIELD_RETRY_COUNT,
+        QUEUE_FIELD_STATUS, QUEUE_FIELD_SUBMITTED_AT, QUEUE_FIELD_TASK_ID,
+        QUEUE_FIELD_TASK_TYPE, QUEUE_PAYLOAD_INLINE_LIMIT, QUEUE_STATUS_PENDING,
+        QUEUE_STATUS_CANCELLED, QUEUE_COMPLETION_COMPLETED,
+        QUEUE_PAYLOAD_CHUNK_SIZE, QUEUE_PAYLOAD_FIELD_CONTENT,
+        QUEUE_PAYLOAD_FIELD_INDEX, QUEUE_PAYLOAD_FIELD_TASK_ID,
+        find_task_by_idempotency_key,
+        timestamp_ms,
+    )
+
+    serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    normalized_payload = json.loads(serialized)
+    client, table_id, payload_table_id = _queue_client_and_table()
+    existing = find_task_by_idempotency_key(client, idempotency_key, table_id)
+    if existing is not None:
+        if existing.task_type != task_type or existing.payload != normalized_payload:
+            raise ValueError("同一提交标识已用于不同申请内容，请刷新页面后重新提交。")
+        return existing.task_id
+    task_id = uuid4().hex
+    stored_payload = serialized
+    chunk_record_ids: list[str] = []
+    if len(serialized) > QUEUE_PAYLOAD_INLINE_LIMIT:
+        if not payload_table_id:
+            raise RuntimeError("未找到后台任务载荷表，无法保存大型任务。")
+        chunks = [
+            serialized[index:index + QUEUE_PAYLOAD_CHUNK_SIZE]
+            for index in range(0, len(serialized), QUEUE_PAYLOAD_CHUNK_SIZE)
+        ]
+        created_chunks = client.batch_create_records(
+            payload_table_id,
+            [
+                {
+                    QUEUE_PAYLOAD_FIELD_TASK_ID: task_id,
+                    QUEUE_PAYLOAD_FIELD_INDEX: index,
+                    QUEUE_PAYLOAD_FIELD_CONTENT: content,
+                }
+                for index, content in enumerate(chunks)
+            ],
+        )
+        if len(created_chunks) != len(chunks):
+            raise RuntimeError("后台任务载荷分片未完整写入。")
+        chunk_record_ids = [str(row.get("record_id") or "") for row in created_chunks]
+        stored_payload = json.dumps(
+            {
+                "storage": "chunks",
+                "task_id": task_id,
+                "chunks": len(chunks),
+                "sha256": hashlib.sha256(serialized.encode("utf-8")).hexdigest(),
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    try:
+        rows = client.batch_create_records(table_id, [{
+            QUEUE_FIELD_TASK_ID: task_id, QUEUE_FIELD_TASK_TYPE: task_type,
+            QUEUE_FIELD_IDEMPOTENCY_KEY: idempotency_key, QUEUE_FIELD_STATUS: QUEUE_STATUS_PENDING,
+            QUEUE_FIELD_PAYLOAD: stored_payload, QUEUE_FIELD_SUBMITTED_AT: timestamp_ms(),
+            QUEUE_FIELD_RETRY_COUNT: 0, QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_UNFINISHED,
+        }])
+    except Exception:
+        for record_id in chunk_record_ids:
+            if record_id:
+                client.delete_record(payload_table_id, record_id)
+        raise
+    if not rows:
+        for record_id in chunk_record_ids:
+            if record_id:
+                client.delete_record(payload_table_id, record_id)
+        raise RuntimeError("申请未能写入后台任务队列。")
+    try:
+        canonical = find_task_by_idempotency_key(client, idempotency_key, table_id)
+    except Exception:
+        # The write has succeeded.  Return its ID rather than inviting a retry
+        # that could create another record; the Worker checks duplicates too.
+        return task_id
+    if canonical is not None and canonical.task_id != task_id:
+        client.update_record(table_id, str(rows[0].get("record_id") or ""), {
+            QUEUE_FIELD_STATUS: QUEUE_STATUS_CANCELLED,
+            QUEUE_FIELD_ERROR: f"重复任务，使用 {canonical.task_id}",
+            QUEUE_FIELD_COMPLETION_STATUS: QUEUE_COMPLETION_COMPLETED,
+        })
+        if canonical.task_type != task_type or canonical.payload != normalized_payload:
+            raise ValueError("同一提交标识已用于不同申请内容，请刷新页面后重新提交。")
+        return canonical.task_id
+    return task_id
+
+
+@api.post("/api/validate")
+def validate(draft: RequestDraft) -> dict[str, Any]:
+    _, _, errors = _validate(draft, live=False)
+    _, cultural_lines, access_errors, _ = _request_line_groups(draft)
+    errors.extend(access_errors)
+    if cultural_lines:
+        try:
+            import app as legacy
+
+            legacy.validate_cultural_request_quantity(cultural_lines)
+        except Exception as exc:
+            errors.append(str(exc))
+    if not errors:
+        errors.extend(_cached_schedule_errors(draft))
+    return {"valid": not errors, "errors": list(dict.fromkeys(errors))}
+
+
+def _schedule_submission_receipt(token: str, recipient: str, kind: str, task_ids: list[str]) -> None:
+    import submission_receipts
+
+    try:
+        submission_receipts.enqueue(token, recipient, kind, task_ids)
+    except Exception:
+        # A successful queue write must still return success to the browser.
+        logging.exception("Could not persist applicant submission receipt %s", token)
+
+
+@api.post("/api/submit")
+def submit(draft: RequestDraft, request: Request) -> dict[str, Any]:
+    payload, lines, errors = _validate(draft, live=False)
+    payload["submitter"], payload["submitter_open_id"] = _authenticated_submitter(request)
+    import order_scheduling as scheduling_rules
+
+    payload["request_reason"] = scheduling_rules.normalize_reason(
+        payload.get("request_reason")
+    )
+    standard_lines, cultural_lines, access_errors, cached_roles = _request_line_groups(draft)
+    payload["accepted_roles"] = list(cached_roles)
+    errors.extend(access_errors)
+    if cultural_lines:
+        try:
+            import app as legacy
+
+            legacy.validate_cultural_request_quantity(cultural_lines)
+        except Exception as exc:
+            errors.append(str(exc))
+    if errors:
+        raise HTTPException(status_code=422, detail=list(dict.fromkeys(errors)))
+    try:
+        import app as legacy
+        from submission_queue import (
+            QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+            QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+        )
+
+        task_ids: list[str] = []
+        mixed = bool(standard_lines and cultural_lines)
+        if standard_lines:
+            standard_key = (
+                f"{draft.submission_token}:standard" if mixed else draft.submission_token
+            )
+            standard_payload = dict(payload)
+            standard_payload["submission_token"] = standard_key
+            task_ids.append(
+                _enqueue_fast(
+                    QUEUE_TASK_TYPE_MATERIAL_REQUEST,
+                    standard_key,
+                    legacy.queued_material_request_payload(
+                        standard_payload, standard_lines
+                    ),
+                )
+            )
+        if cultural_lines:
+            cultural_key = (
+                f"{draft.submission_token}:cultural" if mixed else draft.submission_token
+            )
+            cultural_payload = {
+                "requester": payload.get("requester"),
+                "requester_open_id": payload.get("requester_open_id"),
+                "submitter": payload.get("submitter"),
+                "submitter_open_id": payload.get("submitter_open_id"),
+                "department": payload.get("department"),
+                "department_id": payload.get("department_id"),
+                "material_usage": payload.get("material_usage"),
+                "submission_token": cultural_key,
+                "administrator_override": True,
+            }
+            task_ids.append(
+                _enqueue_fast(
+                    QUEUE_TASK_TYPE_CULTURAL_REQUEST,
+                    cultural_key,
+                    legacy.queued_cultural_request_payload(
+                        cultural_payload, cultural_lines
+                    ),
+                )
+            )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"申请未能进入后台队列：{exc}") from exc
+    _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "物料申领", task_ids)
+    return {
+        "accepted": True,
+        "created": True,
+        "taskId": task_ids[0],
+        "taskIds": task_ids,
+        "status": "待处理",
+    }
+
+
+@api.post("/api/cultural-submit")
+def cultural_submit(draft: CulturalDraft, request: Request) -> dict[str, Any]:
+    if not draft.requester_open_id or not draft.requester:
+        raise HTTPException(status_code=422, detail="请选择申请人。")
+    if not draft.material_usage.strip():
+        raise HTTPException(status_code=422, detail="请填写文化衫用途（展会名称）。")
+    try:
+        import app as legacy
+
+        lines = [line.model_dump() for line in draft.lines]
+        legacy.validate_cultural_request_quantity(lines)
+        from submission_queue import QUEUE_TASK_TYPE_CULTURAL_REQUEST
+
+        request_payload = {key: value for key, value in draft.model_dump().items() if key != "lines"}
+        request_payload["submitter"], request_payload["submitter_open_id"] = _authenticated_submitter(request)
+        request_payload["material_usage"] = draft.material_usage.strip()
+        task_id = _enqueue_fast(QUEUE_TASK_TYPE_CULTURAL_REQUEST, draft.submission_token, legacy.queued_cultural_request_payload(request_payload, lines))
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "文化周边申领", [task_id])
+    return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
+
+
+class CorporateExchangeWebhook(BaseModel):
+    record_id: str
+
+
+def _check_corporate_exchange_webhook_token(provided: str) -> None:
+    secrets_path = ROOT / ".streamlit" / "secrets.toml"
+    try:
+        configured = str(tomllib.loads(secrets_path.read_text(encoding="utf-8"))["CORPORATE_EXCHANGE_WEBHOOK_TOKEN"])
+    except (FileNotFoundError, KeyError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail="兑换同步回调尚未配置。") from exc
+    if not configured or not hmac.compare_digest(configured, provided):
+        raise HTTPException(status_code=401, detail="未授权的兑换同步回调。")
+
+
+@api.post("/api/corporate-exchange-sync", status_code=202)
+def corporate_exchange_sync_webhook(
+    payload: CorporateExchangeWebhook,
+    x_pudu_exchange_token: str = Header(default=""),
+) -> dict[str, Any]:
+    _check_corporate_exchange_webhook_token(x_pudu_exchange_token)
+    record_id = payload.record_id.strip()
+    if not record_id.startswith("rec") or len(record_id) > 100:
+        raise HTTPException(status_code=422, detail="无效的兑换记录 ID。")
+    from corporate_exchange_sync import runner
+
+    runner.trigger(record_id)
+    return {"accepted": True}
+
+
+@api.get("/api/corporate-exchange-sync/status")
+def corporate_exchange_sync_status(x_pudu_exchange_token: str = Header(default="")) -> dict[str, Any]:
+    _check_corporate_exchange_webhook_token(x_pudu_exchange_token)
+    from corporate_exchange_sync import runner
+
+    return runner.status()
+
+
+class PendingInventoryEvent(BaseModel):
+    record_id: str
+
+
+def _apply_pending_inventory_event(record_id: str) -> None:
+    from pending_inventory_sqlite import refresh_from_feishu
+
+    # Base can fire as soon as the request header is written, before its lines.
+    # The submission Worker writes the complete record itself; this event path
+    # also repairs manual/external records and status changes.
+    time.sleep(8)
+    for attempt in range(6):
+        try:
+            refresh_from_feishu(record_id)
+            return
+        except Exception as exc:
+            if attempt == 5:
+                logging.exception("Pending inventory event %s failed: %s", record_id, exc)
+                return
+            time.sleep(5 * (attempt + 1))
+
+
+@api.post("/api/pending-inventory-sync", status_code=202)
+def pending_inventory_sync_webhook(
+    payload: PendingInventoryEvent,
+    x_pudu_pending_token: str = Header(default=""),
+) -> dict[str, Any]:
+    _check_corporate_exchange_webhook_token(x_pudu_pending_token)
+    record_id = payload.record_id.strip()
+    if not record_id.startswith("rec") or len(record_id) > 100:
+        raise HTTPException(status_code=422, detail="无效的申请单记录 ID。")
+    _PENDING_ALLOCATION_EXECUTOR.submit(_apply_pending_inventory_event, record_id)
+    return {"accepted": True}
+
+
+@api.post("/api/corporate-apparel-submit")
+def corporate_apparel_submit(draft: CorporateApparelDraft, request: Request) -> dict[str, Any]:
+    if not draft.requester_open_id or not draft.requester:
+        raise HTTPException(status_code=422, detail="请选择申请人。")
+    if not draft.lines:
+        raise HTTPException(status_code=422, detail="请至少选择一件企业文化衫。")
+    usage = draft.material_usage.strip()
+    if usage == "OA流程申请":
+        usage = "OA流程申请（如未提报OA流程，一律驳回，请慎选）"
+    fixed_reasons = {"入职", "销售标配", "OA流程申请（如未提报OA流程，一律驳回，请慎选）"}
+    if usage not in fixed_reasons:
+        raise HTTPException(status_code=422, detail="请选择有效的申请事由。")
+    try:
+        import app as legacy
+        from submission_queue import QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
+
+        payload = draft.model_dump()
+        payload["submitter"], payload["submitter_open_id"] = _authenticated_submitter(request)
+        payload["material_usage"] = usage
+        lines = list(payload.pop("lines"))
+        page = _json("page_data_cache.json")
+        cached_permission_rows = list(
+            page.get("tables", {}).get(legacy.USER_PERMISSION_TABLE_NAME, [])
+        )
+        from corporate_exchange_sync import current_permission_rows
+
+        permission_rows = current_permission_rows(
+            resolve_cache_path(ROOT, "data/page_data_cache.json"), cached_permission_rows
+        )
+        queued_payload = legacy.queued_corporate_apparel_request_payload(payload, lines)
+        try:
+            legacy.validate_corporate_apparel_cached_quota(
+                draft.requester_open_id,
+                lines,
+                permission_rows,
+            )
+        except RuntimeError:
+            # A retry of a successful request must return its original task,
+            # even after that task has already consumed the applicant's quota.
+            from submission_queue import find_task_by_idempotency_key
+
+            client, table_id, _ = _queue_client_and_table()
+            existing = find_task_by_idempotency_key(client, draft.submission_token, table_id)
+            legacy_payload = dict(queued_payload)
+            legacy_request = dict(legacy_payload.get("request_payload") or {})
+            legacy_request["submitter"] = None
+            legacy_request["submitter_open_id"] = None
+            legacy_payload["request_payload"] = legacy_request
+            older_payload = dict(legacy_payload)
+            older_request = dict(legacy_request)
+            older_request.pop("submitter", None)
+            older_request.pop("submitter_open_id", None)
+            older_payload["request_payload"] = older_request
+            if (
+                existing is not None
+                and existing.task_type == QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST
+                and existing.payload in (queued_payload, legacy_payload, older_payload)
+            ):
+                _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "企业文化衫领取", [existing.task_id])
+                return {"accepted": True, "created": False, "taskId": existing.task_id, "status": existing.status}
+            raise
+        task_id = _enqueue_fast(
+            QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,
+            draft.submission_token,
+            queued_payload,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _schedule_submission_receipt(draft.submission_token, draft.requester_open_id, "企业文化衫领取", [task_id])
+    return {"accepted": True, "created": True, "taskId": task_id, "status": "待处理"}
+
+
+if DIST.is_dir():
+    api.mount("/assets", StaticFiles(directory=DIST / "assets"), name="frontend-assets")
+    api.mount("/static", StaticFiles(directory=DIST / "assets"), name="request-static")
+
+    @api.get("/{path:path}")
+    def spa(path: str) -> FileResponse:
+        candidate = (DIST / path).resolve()
+        if path and DIST.resolve() in candidate.parents and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(DIST / "index.html")

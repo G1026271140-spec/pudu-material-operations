@@ -1,0 +1,11 @@
+import { mountModelScene } from '../src/modelScene';
+const data = document.getElementById('model-data')!.textContent!.trim();
+const url = `data:model/gltf-binary;base64,${data}`;
+const status=document.getElementById('status')!;
+const view=mountModelScene(document.getElementById('viewer')!,url,()=>{status.hidden=true;},()=>{status.textContent='此浏览器暂不支持三维预览，可下载 GLB 模型使用三维软件打开。';});
+document.getElementById('left')!.onclick=()=>view.rotate(-.35);
+document.getElementById('right')!.onclick=()=>view.rotate(.35);
+document.getElementById('in')!.onclick=()=>view.zoom(.85);
+document.getElementById('out')!.onclick=()=>view.zoom(1.15);
+document.getElementById('reset')!.onclick=view.reset;
+(document.getElementById('download')! as HTMLAnchorElement).href=url;

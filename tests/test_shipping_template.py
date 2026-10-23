@@ -1,0 +1,192 @@
+from __future__ import annotations
+
+import unittest
+from datetime import date
+from io import BytesIO
+
+from openpyxl import load_workbook
+
+from country_codes import COUNTRY_CODES
+from shipping_template import (
+    Carton,
+    CartonAllocation,
+    ShippingLine,
+    build_invoice_number,
+    generate_shipping_workbook,
+    infer_address_code,
+    normalize_address_code,
+    validate_shipping_data,
+)
+
+
+class ShippingTemplateTests(unittest.TestCase):
+    def test_invoice_number_uses_year_code_and_template_date(self) -> None:
+        self.assertEqual(build_invoice_number(date(2026, 8, 13), " mx "), "2026-MKT-MX0813")
+        self.assertEqual(infer_address_code("墨西哥城客户仓库"), "MX")
+        self.assertEqual(infer_address_code("Paris, France"), "FR")
+
+    def test_country_names_are_normalized_to_address_codes(self) -> None:
+        self.assertEqual(normalize_address_code("泰国"), "TH")
+        self.assertEqual(normalize_address_code("Thailand"), "TH")
+        self.assertEqual(normalize_address_code(" th "), "TH")
+        self.assertEqual(normalize_address_code("巴拿马"), "PA")
+        self.assertEqual(normalize_address_code("Panama"), "PA")
+        self.assertEqual(infer_address_code("Panama City, Panama"), "PA")
+        self.assertEqual(normalize_address_code("科特迪瓦"), "CI")
+        self.assertEqual(normalize_address_code("Côte d'Ivoire"), "CI")
+        self.assertEqual(normalize_address_code("新西兰"), "NZ")
+        self.assertGreaterEqual(len(COUNTRY_CODES), 249)
+        self.assertEqual(
+            build_invoice_number(date(2026, 8, 14), "泰国"),
+            "2026-MKT-TH0814",
+        )
+
+    def test_country_matching_does_not_treat_codes_as_address_substrings(self) -> None:
+        self.assertEqual(infer_address_code("Bucharest, Romania"), "RO")
+        self.assertEqual(infer_address_code("Shipping office"), "")
+        self.assertEqual(normalize_address_code("custom"), "CUSTOM")
+
+    def test_validation_supports_many_products_per_carton_and_product_split(self) -> None:
+        lines = [
+            ShippingLine("L1", "Flyers", "Flyers", "flyers", 10, 0.06, "4911101000"),
+            ShippingLine("L2", "Doll", "Doll", "give aways", 5, 1.6, "9503002100"),
+        ]
+        cartons = [
+            Carton(1, 1, 2, 3, 40, 30, 20),
+            Carton(2, 1, 1, 2, 20, 20, 20),
+        ]
+        allocations = [
+            CartonAllocation(1, "L1", 6),
+            CartonAllocation(1, "L2", 5),
+            CartonAllocation(2, "L1", 4),
+        ]
+        validate_shipping_data(lines, cartons, allocations)
+
+    def test_validation_rejects_quantity_mismatch(self) -> None:
+        with self.assertRaisesRegex(ValueError, "各箱分配合计"):
+            validate_shipping_data(
+                [ShippingLine("L1", "Flyers", "Flyers", "flyers", 10, 0.06, "4911101000")],
+                [Carton(1, 1, 2, 3, 40, 30, 20)],
+                [CartonAllocation(1, "L1", 9)],
+            )
+
+    def test_validation_requires_dimensions_and_gross_weight(self) -> None:
+        line = ShippingLine("L1", "Flyers", "Flyers", "flyers", 10, 0.06, "4911101000")
+        allocation = CartonAllocation(1, "L1", 10)
+
+        with self.assertRaisesRegex(ValueError, "请填写必填项：长、毛重"):
+            validate_shipping_data(
+                [line],
+                [Carton(1, 1, 0, 0, 0, 40, 30)],
+                [allocation],
+            )
+
+    def test_validation_rejects_nonpositive_automatic_net_weight(self) -> None:
+        with self.assertRaisesRegex(ValueError, "毛重必须大于自动估算的包材重量"):
+            validate_shipping_data(
+                [ShippingLine("L1", "Flyers", "Flyers", "flyers", 10, 0.06, "4911101000")],
+                [Carton(1, 1, 0, 1, 40, 30, 20)],
+                [CartonAllocation(1, "L1", 10)],
+            )
+
+    def test_generated_workbook_expands_rows_and_keeps_carton_groups(self) -> None:
+        lines = [
+            ShippingLine(f"L{index}", f"Invoice {index}", f"Packing {index}", "type", 2, 1.5, "123456")
+            for index in range(1, 10)
+        ]
+        cartons = [Carton(1, 1, 10, 12, 50, 40, 30)]
+        allocations = [CartonAllocation(1, line.line_id, 2) for line in lines]
+        invoice_number, data = generate_shipping_workbook(
+            template_date=date(2026, 8, 13),
+            address_code="US",
+            recipient={"contact": "A"},
+            lines=lines,
+            cartons=cartons,
+            allocations=allocations,
+            shipping_cost=0,
+        )
+        workbook = load_workbook(BytesIO(data), data_only=False)
+        self.assertEqual(invoice_number, "2026-MKT-US0813")
+        self.assertEqual(workbook["INV"]["B24"].value, "Invoice 9")
+        self.assertEqual(workbook["INV"]["G26"].value, "=SUM(G16:G25)")
+        self.assertIn("A15:A23", {str(value) for value in workbook["PL (2)"].merged_cells.ranges})
+        self.assertEqual(workbook["PL (2)"]["G24"].value, "=SUM(G15:G23)")
+
+    def test_generated_workbook_calculates_cbm_and_invoice_amounts(self) -> None:
+        _, data = generate_shipping_workbook(
+            template_date=date(2026, 8, 13),
+            address_code="MX",
+            recipient={"contact": "A", "address": "Mexico"},
+            lines=[ShippingLine("L1", "Flyer", "Flyer", "Flyers", 10, 0.06, "4911101000")],
+            cartons=[Carton(1, 1, 2, 3, 50, 40, 30)],
+            allocations=[CartonAllocation(1, "L1", 10)],
+            shipping_cost=0,
+        )
+        workbook = load_workbook(BytesIO(data), data_only=False)
+
+        self.assertEqual(workbook["INV"]["G16"].value, "=E16*F16")
+        self.assertEqual(workbook["PL (2)"]["K15"].value, 0.06)
+        self.assertEqual(workbook["PL (2)"]["K16"].value, "=SUM(K15)")
+        self.assertEqual(workbook["PL (2)"]["H16"].number_format, "0.00")
+        self.assertEqual(workbook["PL (2)"]["I16"].number_format, "0.00")
+        self.assertEqual(workbook["PL (2)"]["K16"].number_format, "0.000")
+
+    def test_generated_workbook_removes_all_cell_fills(self) -> None:
+        _, data = generate_shipping_workbook(
+            template_date=date(2026, 8, 14),
+            address_code="US",
+            recipient={"contact": "A"},
+            lines=[ShippingLine("L1", "Flyer", "Flyer", "Flyers", 10, 0.06, "4911101000")],
+            cartons=[Carton(1, 1, 2, 3, 50, 40, 30)],
+            allocations=[CartonAllocation(1, "L1", 10)],
+            shipping_cost=0,
+        )
+        workbook = load_workbook(BytesIO(data), data_only=False)
+
+        filled_cells = [
+            f"{worksheet.title}!{cell.coordinate}"
+            for worksheet in workbook.worksheets
+            for row in worksheet.iter_rows()
+            for cell in row
+            if cell.fill.fill_type is not None
+        ]
+        self.assertEqual(filled_cells, [])
+
+    def test_invoice_aggregates_one_product_split_across_cartons(self) -> None:
+        _, data = generate_shipping_workbook(
+            template_date=date(2026, 8, 13),
+            address_code="DE",
+            recipient={"contact": "A"},
+            lines=[
+                ShippingLine(
+                    "category-1",
+                    "Product Flyer",
+                    "Product Flyer",
+                    "Flyers",
+                    150,
+                    0.06,
+                    "4911101000",
+                )
+            ],
+            cartons=[
+                Carton(1, 1, 10, 11, 50, 40, 30),
+                Carton(2, 1, 12, 13, 50, 40, 30),
+            ],
+            allocations=[
+                CartonAllocation(1, "category-1", 100),
+                CartonAllocation(2, "category-1", 50),
+            ],
+            shipping_cost=0,
+        )
+        workbook = load_workbook(BytesIO(data), data_only=False)
+
+        self.assertEqual(workbook["INV"]["B16"].value, "Product Flyer")
+        self.assertEqual(workbook["INV"]["E16"].value, 150)
+        self.assertEqual(workbook["PL (2)"]["A15"].value, 1)
+        self.assertEqual(workbook["PL (2)"]["G15"].value, 100)
+        self.assertEqual(workbook["PL (2)"]["A16"].value, 2)
+        self.assertEqual(workbook["PL (2)"]["G16"].value, 50)
+
+
+if __name__ == "__main__":
+    unittest.main()

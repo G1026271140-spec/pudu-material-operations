@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { build } from 'vite';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const output=path.resolve(here,'../../../assets/category_models');
+const bundle=await build({configFile:false,logLevel:'error',build:{write:false,minify:true,lib:{entry:path.join(here,'t300-demo-entry.ts'),name:'T300Demo',formats:['iife']}}});
+const script=(Array.isArray(bundle)?bundle[0]:bundle).output.find(file=>file.type==='chunk').code;
+const glb=await fs.readFile(path.join(output,'t300-building-blocks.glb'));
+const html=`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>积木 T300 三维演示</title><style>body{margin:0;background:#eaf0f3;color:#173e5a;font:14px system-ui}main{height:100dvh;display:flex;flex-direction:column}header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#fff}h1{font-size:20px;margin:0}#viewer{flex:1;min-height:0}canvas{width:100%;height:100%;display:block}nav{display:flex;gap:8px;justify-content:center;padding:10px;flex-wrap:wrap;background:white}button,a{padding:8px 12px;border:1px solid #bccfdc;border-radius:6px;color:#173e5a;background:white;text-decoration:none;font:inherit;cursor:pointer}p{margin:0;padding:8px 12px;text-align:center}#status{position:absolute;top:45%;left:0;right:0;pointer-events:none}</style><main><header><h1>积木 · T300</h1><span>PUDU</span></header><div id="viewer"></div><p id="status">正在加载三维模型…</p><nav><button id="left">向左旋转</button><button id="right">向右旋转</button><button id="in">放大</button><button id="out">缩小</button><button id="reset">复位</button><a id="download" download="T300-building-blocks.glb">下载 GLB</a></nav><p>鼠标拖动或单指旋转，滚轮或双指缩放；方向键旋转，Home 复位。</p><p>参考图片重建，非原始 CAD、非实测模型。背面和内部结构含推测，不能作为生产或搭建图纸。</p></main><script id="model-data" type="application/octet-stream">${glb.toString('base64')}</script><script>${script.replaceAll('</script','<\\/script')}</script></html>`;
+await fs.writeFile(path.join(output,'t300-building-blocks-demo.html'),html);
+console.log(JSON.stringify({offlineDemo:path.join(output,'t300-building-blocks-demo.html'),bytes:Buffer.byteLength(html)}));
