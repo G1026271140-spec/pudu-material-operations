@@ -2,6 +2,7 @@
 
 - 目标仓库：`git@code.pudu.work:gaohongyuan1/pudu-materials-operation.git`
 - 网页地址：`https://code.pudu.work/gaohongyuan1/pudu-materials-operation`
+- GitLab 默认交接分支：`main`。保留远程初始化提交 `d8a61e8`，将其与清理版源码历史合并，不强制推送；初始化 README 另存为 `docs/gitlab-initial-README.md`。
 - 代码基线：V3.4.5，原 GitHub 提交 `6d1f36ebd624c59b9f31e4b6542768172f5ac177`。
 - 本副本来自 2026-10-23 清理版交接包的 `01-source`，保留前后端、dist、业务模板、Worker、Windows 部署、缓存和扩展自动化脚本及测试。
 - 不导入旧 Git 历史，不含生产密钥、人员/申请/库存快照、SQLite、通知 outbox、日志、虚拟环境或原安装器。
