@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "live_feishu",
-  "generated_at": "2026-10-23 16:35:16",
+  "generated_at": "2026-10-24 10:33:41",
   "tables": {
     "物料品类": [
       {
@@ -151121,6 +151121,65 @@
         },
         "id": "reczz28QhzMAr2Io",
         "record_id": "reczz28QhzMAr2Io"
+      },
+      {
+        "fields": {
+          "产品型号": null,
+          "关联明细": [
+            {
+              "record_ids": [
+                "reczz28Qpi6iIFwM"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261023-008-01",
+              "text_arr": [
+                "REQ-20261023-008-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "原Supabase ID": null,
+          "原流水ID": null,
+          "发生时间": null,
+          "变更前数量": "14",
+          "变更后数量": "13",
+          "备注": "文化周边申领 REQ-20261023-008：文化POLO衫 / M / HMT战队",
+          "幂等键": "cultural-request:b32575fcd45149d99c1c2af10978e129:1",
+          "库存变化": "-1",
+          "撤回时间": null,
+          "操作人": null,
+          "操作状态": null,
+          "数量": "-1",
+          "文化周边战区快照": "HMT战队",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyKxcv"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0028",
+              "text_arr": [
+                "CUL-0028"
+              ],
+              "type": "text"
+            }
+          ],
+          "流水业务类型": "文化周边",
+          "流水类型": null,
+          "物料品类": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种": null
+        },
+        "id": "reczz28Qpi96H6Gq",
+        "record_id": "reczz28Qpi96H6Gq"
       }
     ],
     "物料申请单": [
@@ -151923,7 +151982,7 @@
           "用途|活动": "参加巴西展会",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_afae7883-02be-4b21-a8c9-729e71c2236g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_afae7883-02be-4b21-a8c9-729e71c2236g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "ines.sun@pudutech.com",
               "en_name": "孙一尧",
               "id": "ou_6035e89ee68758d9575a96bd0026e2e6",
@@ -152070,7 +152129,7 @@
           "用途|活动": "参加巴西展会2",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_afae7883-02be-4b21-a8c9-729e71c2236g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_afae7883-02be-4b21-a8c9-729e71c2236g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "ines.sun@pudutech.com",
               "en_name": "孙一尧",
               "id": "ou_6035e89ee68758d9575a96bd0026e2e6",
@@ -154246,7 +154305,7 @@
           "用途|活动": "代理商展会支持",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "lynn.wang@pudutech.com",
               "en_name": "王林慧",
               "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
@@ -154595,9 +154654,9 @@
               "file_token": "B4KPbUis2ol6mAx60GscrkOAnPf",
               "name": "img_v3_0215o_5f903d93-7262-490d-9226-96fbbc4f765g_MIDDLE_WEBP.webp",
               "size": 34138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=B4KPbUis2ol6mAx60GscrkOAnPf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/B4KPbUis2ol6mAx60GscrkOAnPf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "加拿大",
@@ -154860,17 +154919,17 @@
               "file_token": "SY75b088Poue8wxEA6Yc8fq5nOd",
               "name": "FR2.jpg",
               "size": 236138,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=SY75b088Poue8wxEA6Yc8fq5nOd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/SY75b088Poue8wxEA6Yc8fq5nOd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             },
             {
               "file_token": "VD6SbQOdJoUaawxow1ecUvY4nOe",
               "name": "FR1.jpg",
               "size": 213041,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VD6SbQOdJoUaawxow1ecUvY4nOe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VD6SbQOdJoUaawxow1ecUvY4nOe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "法国",
@@ -154951,7 +155010,7 @@
           "用途|活动": "Groupe mousquetaires的Intermarché展会",
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "lynn.wang@pudutech.com",
               "en_name": "王林慧",
               "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
@@ -155036,25 +155095,25 @@
               "file_token": "BsEIbEOddoV50UxzdSAcw3GUn3c",
               "name": "AU2.jpg",
               "size": 277944,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=BsEIbEOddoV50UxzdSAcw3GUn3c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/BsEIbEOddoV50UxzdSAcw3GUn3c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             },
             {
               "file_token": "IBrdbtvqZof487xfZ3UcxRj5nUR",
               "name": "AU3.jpg",
               "size": 183728,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IBrdbtvqZof487xfZ3UcxRj5nUR&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IBrdbtvqZof487xfZ3UcxRj5nUR/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             },
             {
               "file_token": "PcjebbZ5po6FjpxceMecT1bvnbc",
               "name": "AU1.jpg",
               "size": 289081,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PcjebbZ5po6FjpxceMecT1bvnbc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PcjebbZ5po6FjpxceMecT1bvnbc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "澳洲ISSA展会物料",
@@ -156150,9 +156209,9 @@
               "file_token": "ESAAb25zZoM7RKxlXNecD3EJnjf",
               "name": "img_v3_0216f_98552dac-dd3e-483b-9eaf-b8b1841faffg_MIDDLE_WEBP.webp",
               "size": 72266,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ESAAb25zZoM7RKxlXNecD3EJnjf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ESAAb25zZoM7RKxlXNecD3EJnjf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ESAAb25zZoM7RKxlXNecD3EJnjf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ESAAb25zZoM7RKxlXNecD3EJnjf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "哥伦比亚",
@@ -156448,9 +156507,9 @@
               "file_token": "EJ2SbWO2PounMjxQqUqcg7tgn3e",
               "name": "20260922-095550.jpg",
               "size": 272478,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=EJ2SbWO2PounMjxQqUqcg7tgn3e&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/EJ2SbWO2PounMjxQqUqcg7tgn3e/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "智利",
@@ -158755,9 +158814,9 @@
               "file_token": "QdbabNoySokBM1xVCG3cQiTsnrg",
               "name": "2026-MKT-CZ0924_INV_PL.xlsx",
               "size": 34231,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QdbabNoySokBM1xVCG3cQiTsnrg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QdbabNoySokBM1xVCG3cQiTsnrg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "业务类型": "物料领取",
@@ -158768,9 +158827,9 @@
               "file_token": "AwJEbPUigoIYnPxT2axccI09nvg",
               "name": "img_v3_0215r_71e3d283-4f50-432f-a689-b6dbaa24f26g_MIDDLE_WEBP.webp",
               "size": 63888,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=AwJEbPUigoIYnPxT2axccI09nvg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/AwJEbPUigoIYnPxT2axccI09nvg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "捷克MSV工业展物料",
@@ -158964,9 +159023,9 @@
               "file_token": "XcXDb4eUeo7wrjxx1xGcq2CQn6d",
               "name": "img_v3_0216b_c6f1a8db-5700-4194-98a3-f2cdb4473c1g_MIDDLE_WEBP.webp",
               "size": 47420,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=XcXDb4eUeo7wrjxx1xGcq2CQn6d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/webp",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/XcXDb4eUeo7wrjxx1xGcq2CQn6d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "广交会物料",
@@ -159293,9 +159352,9 @@
               "file_token": "MpO9bdnlzoW3zcxHeUEcfUqmnde",
               "name": "img_v3_02169_a7720ee9-8473-48f3-b018-cfa8be1aa7ag.jpg",
               "size": 4104598,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MpO9bdnlzoW3zcxHeUEcfUqmnde&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MpO9bdnlzoW3zcxHeUEcfUqmnde/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "吉隆坡",
@@ -161892,9 +161951,9 @@
               "file_token": "IvN5bKq6goL7VaxMpjVcndHSn8F",
               "name": "8be7deddcb478f0834d8e159b07f6a79.jpg",
               "size": 173959,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IvN5bKq6goL7VaxMpjVcndHSn8F&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=IvN5bKq6goL7VaxMpjVcndHSn8F&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IvN5bKq6goL7VaxMpjVcndHSn8F/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/IvN5bKq6goL7VaxMpjVcndHSn8F/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "中国",
@@ -166449,7 +166508,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_7481f547-04f3-4e2a-92ac-fb4c33f63cag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016f_7481f547-04f3-4e2a-92ac-fb4c33f63cag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wanggangfeng@pudutech.com",
               "en_name": "王港锋",
               "id": "ou_64cb7049e04e4a7fc5d31562353ed49f",
@@ -166603,9 +166662,9 @@
               "file_token": "QSYPbivPQod5tkxak1Yc4LSlntg",
               "name": "de0fcbbbf84afb20dfb0134acf524eaf.jpg",
               "size": 164494,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QSYPbivPQod5tkxak1Yc4LSlntg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QSYPbivPQod5tkxak1Yc4LSlntg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QSYPbivPQod5tkxak1Yc4LSlntg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QSYPbivPQod5tkxak1Yc4LSlntg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "中国",
@@ -166880,7 +166939,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016d_9410a9a6-120d-4608-bca9-9b0127d1b51g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016o_baa90746-ece2-4649-ab72-87bfff584f6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "rongxinyao@pudutech.com",
               "en_name": "荣鑫耀",
               "id": "ou_feaa26a3be6e7f97f0f6069ad0a1d3e3",
@@ -167668,7 +167727,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_81a623cf-91e9-477b-9f02-99177272100g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016f_81a623cf-91e9-477b-9f02-99177272100g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "james.wang@pudutech.com",
               "en_name": "王俊璋",
               "id": "ou_00b28b88abb2a4c73595fbc29c84f5f0",
@@ -169799,7 +169858,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_81a623cf-91e9-477b-9f02-99177272100g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016f_81a623cf-91e9-477b-9f02-99177272100g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "james.wang@pudutech.com",
               "en_name": "王俊璋",
               "id": "ou_00b28b88abb2a4c73595fbc29c84f5f0",
@@ -171932,7 +171991,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "lynn.wang@pudutech.com",
               "en_name": "王林慧",
               "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
@@ -172043,7 +172102,7 @@
           "用途|活动": null,
           "申请人": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "lynn.wang@pudutech.com",
               "en_name": "王林慧",
               "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
@@ -172102,9 +172161,9 @@
               "file_token": "VzTWbxl5yo4LGuxkIvjcDRvEnyd",
               "name": "img_v3_0216m_22ffeb8c-f12e-4527-b719-34465338d2ag (2).jpg",
               "size": 1732656,
-              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VzTWbxl5yo4LGuxkIvjcDRvEnyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D",
+              "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VzTWbxl5yo4LGuxkIvjcDRvEnyd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D",
               "type": "image/jpeg",
-              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VzTWbxl5yo4LGuxkIvjcDRvEnyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2691%7D%7D"
+              "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VzTWbxl5yo4LGuxkIvjcDRvEnyd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tbl3eyt8lkl3uQa1%22%2C%22rev%22%3A2696%7D%7D"
             }
           ],
           "国家": "香港",
@@ -174696,6 +174755,113 @@
         },
         "id": "reczz28Qkd06m4cc",
         "record_id": "reczz28Qkd06m4cc"
+      },
+      {
+        "fields": {
+          "INV/PL": null,
+          "业务类型": "文化周边申领",
+          "临时物料清理状态": null,
+          "发货单号及文字信息": null,
+          "发货图片": null,
+          "国家": null,
+          "备注": null,
+          "审批实例Code": null,
+          "审批意见": null,
+          "审批时间": null,
+          "审批状态": "无需审批",
+          "客户名称": null,
+          "库存审查人": null,
+          "库存审查时间": null,
+          "库存审查状态": null,
+          "库存审查结论": null,
+          "库存快照时间": null,
+          "库存核实提醒状态": null,
+          "库存流水": null,
+          "库存确认消息ID": null,
+          "所属战区": "HMT战队",
+          "排期编辑版本": null,
+          "提交人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011m_6fac4ae4-eb8d-426d-9d5a-f23b196cd00g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "sunny.song@pudutech.com",
+              "en_name": "宋婷",
+              "id": "ou_4d5b49f6c8f381944339272d158e63bc",
+              "name": "宋婷"
+            }
+          ],
+          "提交幂等键": "b32575fcd45149d99c1c2af10978e129",
+          "提交时间": 1792754357595,
+          "收件人信息": null,
+          "文化周边处理状态": "已发放",
+          "文化周边消息ID": "{\"applicant:ou_4d5b49f6c8f381944339272d158e63bc\":\"om_x100b6280634f94acdf6ea90efd5d8e5\",\"admin:ou_0f57acbd1f846f7e034a8ab954506b6d\":\"om_x100b6280636ffcb0c054d436b061f71\",\"admin:ou_db9afe55f685d6227b25f267261ec3e8\":\"om_x100b6280630ccc68dd3cf119f7b98de\"}",
+          "文化周边通知状态": "已发送",
+          "时间判定": null,
+          "是否发货": null,
+          "标题": "宋婷-文化周边申领",
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料明细": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "物料明细文字信息": "01. 文化POLO衫 / M / HMT战队 × 1",
+          "物料用途": "上海 CeMAT",
+          "用途|活动": null,
+          "申请人": [
+            {
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011m_6fac4ae4-eb8d-426d-9d5a-f23b196cd00g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "email": "sunny.song@pudutech.com",
+              "en_name": "宋婷",
+              "id": "ou_4d5b49f6c8f381944339272d158e63bc",
+              "name": "宋婷"
+            }
+          ],
+          "申请人.部门": [
+            "HMT战队"
+          ],
+          "申请单号": "REQ-20261023-008",
+          "申请原因": null,
+          "申请变更次数": null,
+          "申请时角色快照": null,
+          "申请明细": [
+            {
+              "record_ids": [
+                "reczz28Qpi6iIFwM"
+              ],
+              "table_id": "tbl6i0F9UZjTuTV1",
+              "text": "REQ-20261023-008-01",
+              "text_arr": [
+                "REQ-20261023-008-01"
+              ],
+              "type": "text"
+            }
+          ],
+          "申请物料更改信息说明": null,
+          "申请物料最后修改人": null,
+          "申请物料最后修改时间": null,
+          "申请类型": "文化周边申请",
+          "申请部门|区域": null,
+          "相关附件": null,
+          "管理员通知时间": 1792754358762,
+          "管理员通知状态": null,
+          "要求到达结束日期": null,
+          "要求达到开始日期": null,
+          "计划库存核实时间": null,
+          "费用合计（人民币）": "78",
+          "运费承担者": null,
+          "需要下单日期": null,
+          "预计完成制作日期": null
+        },
+        "id": "reczz28QphpTIpRQ",
+        "record_id": "reczz28QphpTIpRQ"
       }
     ],
     "申请明细": [
@@ -274064,6 +274230,130 @@
         },
         "id": "reczz28Qkd8kci8V",
         "record_id": "reczz28Qkd8kci8V"
+      },
+      {
+        "fields": {
+          "下单表生成状态": null,
+          "产品型号": [
+            {
+              "record_ids": [
+                "recvtnWRaQ4wFt"
+              ],
+              "table_id": "tbl233OjVUgT4cJ5",
+              "text": "X036",
+              "text_arr": [
+                "X036"
+              ],
+              "type": "text"
+            }
+          ],
+          "产品型号名称": "M",
+          "出库流水编号": null,
+          "原申请数量": null,
+          "发放人": null,
+          "发放时间": null,
+          "品类": [
+            {
+              "record_ids": [
+                "recvtnWQU3ylzA"
+              ],
+              "table_id": "tbl45q6s50SzEnFI",
+              "text": "035",
+              "text_arr": [
+                "035"
+              ],
+              "type": "text"
+            }
+          ],
+          "品类名称": "文化POLO衫",
+          "备注": null,
+          "实际发放产品型号": null,
+          "实际发放数量": "1",
+          "实际发放物料品类": null,
+          "实际发放物料编码": null,
+          "实际发放语种": null,
+          "审批通过数量": "1",
+          "库存审查时库存": null,
+          "库存流水": [
+            {
+              "record_ids": [
+                "reczz28Qpi96H6Gq"
+              ],
+              "table_id": "tbljMfuTeGM7VC3v",
+              "text": "",
+              "text_arr": [
+                ""
+              ],
+              "type": "text"
+            }
+          ],
+          "库存满足状态": null,
+          "所属申请单": [
+            {
+              "record_ids": [
+                "reczz28QphpTIpRQ"
+              ],
+              "table_id": "tbl3eyt8lkl3uQa1",
+              "text": "REQ-20261023-008",
+              "text_arr": [
+                "REQ-20261023-008"
+              ],
+              "type": "text"
+            }
+          ],
+          "提交时库存快照": null,
+          "文化周边战区": "HMT战队",
+          "文化周边物料": [
+            {
+              "record_ids": [
+                "recvtnXxjyKxcv"
+              ],
+              "table_id": "tblu3wRpylTj6zJl",
+              "text": "CUL-0028",
+              "text_arr": [
+                "CUL-0028"
+              ],
+              "type": "text"
+            }
+          ],
+          "明细业务类型": "文化周边",
+          "明细变更说明": null,
+          "明细状态": "已发放",
+          "明细编号": "REQ-20261023-008-01",
+          "是否到货": null,
+          "物料下单时间": null,
+          "物料使用时间": null,
+          "物料到货时间": null,
+          "物料到货状态": null,
+          "物料发货时间": null,
+          "物料编码": [
+            {
+              "record_ids": null,
+              "table_id": "tbl4UsiEmprnImIY",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "申请数量": "1",
+          "申请时单价（人民币）": "78",
+          "缺货说明": null,
+          "计划到仓日期": null,
+          "语种": [
+            {
+              "record_ids": null,
+              "table_id": "tblYZ3XpkUkQWevb",
+              "text": null,
+              "text_arr": [],
+              "type": "text"
+            }
+          ],
+          "语种名称": null,
+          "费用小计（人民币）": "78",
+          "附件": null
+        },
+        "id": "reczz28Qpi6iIFwM",
+        "record_id": "reczz28Qpi6iIFwM"
       }
     ],
     "项目周边礼品物料筹备详情list": [
@@ -276730,14 +277020,18 @@
           "备注": "初始库存来自 2026 展会服装需求收集表；重复组合已合并需求数量。",
           "库存流水": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "reczz28Qpi96H6Gq"
+              ],
               "table_id": "tbljMfuTeGM7VC3v",
-              "text": null,
-              "text_arr": [],
+              "text": "",
+              "text_arr": [
+                ""
+              ],
               "type": "text"
             }
           ],
-          "当前库存": "14",
+          "当前库存": "13",
           "战区关联": [
             {
               "record_ids": [
@@ -276770,10 +277064,14 @@
           ],
           "申请明细": [
             {
-              "record_ids": null,
+              "record_ids": [
+                "reczz28Qpi6iIFwM"
+              ],
               "table_id": "tbl6i0F9UZjTuTV1",
-              "text": null,
-              "text_arr": [],
+              "text": "REQ-20261023-008-01",
+              "text_arr": [
+                "REQ-20261023-008-01"
+              ],
               "type": "text"
             }
           ]
@@ -283727,7 +284025,7 @@
           "用户编号": "12",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_afae7883-02be-4b21-a8c9-729e71c2236g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_afae7883-02be-4b21-a8c9-729e71c2236g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "ines.sun@pudutech.com",
               "en_name": "孙一尧",
               "id": "ou_6035e89ee68758d9575a96bd0026e2e6",
@@ -284252,7 +284550,7 @@
           "用户编号": "35",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0011e_2228e38e-9b06-4385-bc52-8b9b3ad0ef9g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "lynn.wang@pudutech.com",
               "en_name": "王林慧",
               "id": "ou_f89d13ad42227326e0a2a5ef0ad0b8c8",
@@ -288137,7 +288435,7 @@
           "用户编号": "147",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015e_e51f9711-6378-4119-9131-62576e7ae8dg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016o_1283c553-3a47-468e-8bf9-09b959ef31bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "xiangaoyang@pudutech.com",
               "en_name": "向奥阳",
               "id": "ou_21952a3f890d1ec23a97349d0af0e22d",
@@ -289047,7 +289345,7 @@
           "用户编号": "173",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00vs_0fe02511-6e64-4dc1-a901-ab442421fd7g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00vs_0fe02511-6e64-4dc1-a901-ab442421fd7g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "zhujunan@pudutech.com",
               "en_name": "朱俊安",
               "id": "ou_37d02bce928ecfae2bca678657ae106e",
@@ -290498,7 +290796,7 @@
       },
       {
         "fields": {
-          "POLO申领数量累计": "1",
+          "POLO申领数量累计": "2",
           "T恤-黑色（短袖）申领数量累计": null,
           "冲锋衣-黑色申领数量累计": null,
           "商务衬衫-黑色（长袖）神灵数量累计": "1",
@@ -293317,7 +293615,7 @@
           "用户编号": "295",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015h_a36f72ed-fbd3-4f1c-896a-eadaf212a36g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015h_a36f72ed-fbd3-4f1c-896a-eadaf212a36g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "jihaolin@pudutech.com",
               "en_name": "季昊林",
               "id": "ou_7a01752b9e3ba8a16f81ef8d16664f5e",
@@ -295942,7 +296240,7 @@
           "用户编号": "370",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00149_1cdc08b5-d7fc-4d4a-ab66-cd47130a23bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00149_1cdc08b5-d7fc-4d4a-ab66-cd47130a23bg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "jambo.ding@pudutech.com",
               "en_name": "丁建波",
               "id": "ou_aa331a6ab19be890a165de03ba1cc9da",
@@ -297902,7 +298200,7 @@
           "用户编号": "426",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0013a_0a16426b-6f2e-41ee-8a69-79ac80dcaa8g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0013a_0a16426b-6f2e-41ee-8a69-79ac80dcaa8g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "pengjili@pudutech.com",
               "en_name": "彭际黎",
               "id": "ou_c2767e10d339e5f180c33305c900c8cf",
@@ -298672,7 +298970,7 @@
           "用户编号": "448",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0014i_a4e8f866-6794-473c-b82c-7ba8bff0ec8g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0014i_a4e8f866-6794-473c-b82c-7ba8bff0ec8g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "seem.zhang@pudutech.com",
               "en_name": "张杰雄",
               "id": "ou_ce72767c7ac9590109eeb0ba3104587c",
@@ -299512,7 +299810,7 @@
           "用户编号": "472",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0015r_b99d6efb-9968-416b-a7f7-2dc58170192g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0015r_b99d6efb-9968-416b-a7f7-2dc58170192g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "luhao@pudutech.com",
               "en_name": "陆昊",
               "id": "ou_d91146b5fa12edd50fcaef983ca6cef9",
@@ -302522,7 +302820,7 @@
           "用户编号": "558",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_7481f547-04f3-4e2a-92ac-fb4c33f63cag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016f_7481f547-04f3-4e2a-92ac-fb4c33f63cag~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "wanggangfeng@pudutech.com",
               "en_name": "王港锋",
               "id": "ou_64cb7049e04e4a7fc5d31562353ed49f",
@@ -302627,7 +302925,7 @@
           "用户编号": "561",
           "用户账号": [
             {
-              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016d_9410a9a6-120d-4608-bca9-9b0127d1b51g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016o_baa90746-ece2-4649-ab72-87bfff584f6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "rongxinyao@pudutech.com",
               "en_name": "荣鑫耀",
               "id": "ou_feaa26a3be6e7f97f0f6069ad0a1d3e3",
@@ -302907,7 +303205,7 @@
           "用户编号": "569",
           "用户账号": [
             {
-              "avatar_url": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0016f_81a623cf-91e9-477b-9f02-99177272100g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+              "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0016f_81a623cf-91e9-477b-9f02-99177272100g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
               "email": "james.wang@pudutech.com",
               "en_name": "王俊璋",
               "id": "ou_00b28b88abb2a4c73595fbc29c84f5f0",
@@ -317669,9 +317967,9 @@
     "产品型号": 43,
     "物料语种": 12,
     "物料主数据": 775,
-    "库存流水": 746,
-    "物料申请单": 202,
-    "申请明细": 809,
+    "库存流水": 747,
+    "物料申请单": 203,
+    "申请明细": 810,
     "项目周边礼品物料筹备详情list": 13,
     "文化周边管理库存": 67,
     "文化周边编码及库存数量": 100,
