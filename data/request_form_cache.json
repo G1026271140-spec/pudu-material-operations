@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-10-23 16:35:22",
+  "generated_at": "2026-10-25 10:32:33",
   "products": [
     "产品折页(Single Product Brochure)",
     "产品单页(Product Flyer )",
@@ -1712,7 +1712,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BellaBot",
       "language": "法语(French)",
-      "quantity": 0,
+      "quantity": 20,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2096,7 +2096,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "BG1",
       "language": "法语(French)",
-      "quantity": 0,
+      "quantity": 220,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2808,7 +2808,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "MT1 Max",
       "language": "法语(French)",
-      "quantity": -50,
+      "quantity": -30,
       "unit_price_rmb": 0.4062
     },
     {
@@ -2912,7 +2912,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "ET1",
       "language": "法语(French)",
-      "quantity": 0,
+      "quantity": 220,
       "unit_price_rmb": 0.4062
     },
     {
@@ -3048,7 +3048,7 @@
       "product": "工业产品线手册IR(Industrial Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 105,
+      "quantity": 305,
       "unit_price_rmb": 5.416
     },
     {
@@ -3120,7 +3120,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": 135,
+      "quantity": 335,
       "unit_price_rmb": 5.416
     },
     {
@@ -3184,7 +3184,7 @@
       "product": "清洁产品线手册CR(Cleaning Product Line Brochure）",
       "model": "无需型号",
       "language": "简中(Simplified Chinese)",
-      "quantity": -105,
+      "quantity": -35,
       "unit_price_rmb": 5.416
     },
     {
@@ -5416,7 +5416,7 @@
       "product": "产品单页(Product Flyer )",
       "model": "猛犸MP2000",
       "language": "英语(English)",
-      "quantity": -75,
+      "quantity": 125,
       "unit_price_rmb": 0.4062
     },
     {
