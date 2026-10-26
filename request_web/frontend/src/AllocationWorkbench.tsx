@@ -20,6 +20,7 @@ const isPrintMaterial = (material: any) =>
 const defaultOrderRequired = (material: any, quantity: number) =>
   isPrintMaterial(material) && Number(material?.quantity || 0) < Number(quantity || 0);
 const PENDING_SESSION_CACHE_KEY = "pudu-allocation-pending-session-v2";
+const usesLiveData = () => document.querySelector('meta[name="pudu-live-data"]')?.getAttribute('content') === '1';
 
 type PendingSessionCache = {
   requests: any[];
@@ -28,6 +29,7 @@ type PendingSessionCache = {
 };
 
 function readPendingSessionCache(): PendingSessionCache | null {
+  if (usesLiveData()) return null;
   try {
     const raw = window.sessionStorage.getItem(PENDING_SESSION_CACHE_KEY);
     if (!raw) return null;
@@ -44,6 +46,7 @@ function readPendingSessionCache(): PendingSessionCache | null {
 }
 
 function writePendingSessionCache(cache: PendingSessionCache) {
+  if (usesLiveData()) return;
   try {
     window.sessionStorage.setItem(PENDING_SESSION_CACHE_KEY, JSON.stringify(cache));
   } catch {
@@ -162,7 +165,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     const query = directRequestId ? `${signedQuery}&` : "";
     let hasSnapshot = false;
     try {
-      const cached = await jsonFetch(`${base}?${query}snapshot=true`);
+      const cached = usesLiveData() ? null : await jsonFetch(`${base}?${query}snapshot=true`);
+      if (!cached) throw Error('Live source mode');
       if (sequence !== contextLoadRef.current) return;
       applyContext(cached, id);
       hasSnapshot = true;
@@ -367,7 +371,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
   if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}><div className="allocation-loading"><i/><b>{tr("正在读取本机待核实申请单……", "Loading local pending requests…")}</b></div></main>;
   if (!requestId || !context) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{tr("本机列表更新于：", "Local list updated at: ")}{pendingCachedAt}{pendingRefreshing ? tr(" · 后台正在核对飞书", " · background Feishu reconciliation") : ""}</p>}</div><button onClick={() => loadPending(true)}>↻ {tr("刷新本机列表", "Refresh local list")}</button></header>
+    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{usesLiveData() ? tr("飞书读取时间：", "Read from Feishu at: ") : tr("本机列表更新于：", "Local list updated at: ")}{pendingCachedAt}{pendingRefreshing ? tr(" · 后台正在核对飞书", " · background Feishu reconciliation") : ""}</p>}</div><button onClick={() => loadPending(true)}>↻ {usesLiveData() ? tr("刷新飞书数据", "Refresh Feishu data") : tr("刷新本机列表", "Refresh local list")}</button></header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {pendingWarning && <div className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</div>}
     <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><span className="pending-arrival">{tr("要求到达：", "Required arrival: ")}{requiredArrivalText(item, lang)}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
@@ -400,7 +404,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       <div className="allocation-withdraw-action"><button className="withdraw-request" disabled={submitting || withdrawQueued} onClick={() => setWithdrawConfirm(true)}>{withdrawQueued ? tr("删除任务已提交", "Deletion queued") : tr("删除申请", "Delete Request")}</button></div>
       <fieldset className="allocation-readonly-guard" disabled={!context.verifiedLive || withdrawQueued}>
       <section className="allocation-form"><div className="allocation-control"><label>{tr("申请单发货日期", "Shipping Date")} *<input type="date" value={shipDate} onChange={e => setShipDate(e.target.value)}/></label>{!context.signedCardAccess && <label>{tr("本次配货操作人", "Allocation Operator")} *<select value={operatorId} onChange={e => setOperatorId(e.target.value)}><option value="">{tr("请选择管理员", "Select administrator")}</option>{operators.map(x => <option key={x.open_id} value={x.open_id}>{x.name} · {(x.department_paths || []).join(" / ")}</option>)}</select></label>}</div>
-        <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{context.verifiedLive ? tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`) : tr("当前为历史快照，库存尚未实时核对。", "This is a snapshot; stock has not been verified live.")}</p></div><button className="confirm-original" disabled={submitting} onClick={() => submit("confirm")}>✓ {tr("按原申请提交配货方案", "Submit Original Allocation")}</button></div>
+        <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{usesLiveData() ? tr("品类、型号、语种和库存均为本次飞书实时读取。", "Category, model, language and stock were read live from Feishu.") : context.verifiedLive ? tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`) : tr("当前为历史快照，库存尚未实时核对。", "This is a snapshot; stock has not been verified live.")}</p></div><button className="confirm-original" disabled={submitting} onClick={() => submit("confirm")}>✓ {tr("按原申请提交配货方案", "Submit Original Allocation")}</button></div>
         <div className="allocation-table-toolbar"><strong>{rows.length} {tr("条明细", "lines")}</strong><span>{canEdit ? tr("点击明细行调整品类、规格、数量或进行分装。", "Select a line to edit its material, quantity or split allocation.") : tr("完成实时核对后可调整明细。", "Editing is available after live verification.")}</span></div>
         <div className="allocation-table-scroll" role="region" aria-label={tr("配货明细表，可左右滚动", "Allocation lines, horizontally scrollable")} tabIndex={0}>
           <table className="allocation-detail-table">

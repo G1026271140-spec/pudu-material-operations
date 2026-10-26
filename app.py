@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.5.1"
+APP_VERSION = "V3.5.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -619,6 +619,9 @@ def feishu_client() -> FeishuBitableClient | None:
 
 @runtime.cache_data(show_spinner=False, ttl=300)
 def load_feishu_schema_snapshot(app_id: str, app_secret: str, app_token: str) -> dict:
+    if runtime.realtime_reads():
+        from request_web.live_data import reader
+        return reader().schema()
     return get_feishu_bitable_client(app_id, app_secret, app_token).discover_schema()
 
 
@@ -631,6 +634,9 @@ def refresh_feishu_schema_cache() -> None:
 
 
 def feishu_table_id(table_name: str) -> str:
+    if runtime.realtime_reads():
+        from request_web.live_data import reader
+        return reader().table_id(table_name)
     table = feishu_schema().get("tables", {}).get(table_name)
     if not table:
         raise RuntimeError(f"飞书多维表格缺少数据表：{table_name}")
@@ -2245,6 +2251,9 @@ def prepare_live_cache_view() -> None:
 
 
 def load_static_request_form_cache() -> dict[str, object]:
+    if runtime.realtime_reads():
+        from request_web.live_data import document
+        return document('request_form_cache.json')
     if not REQUEST_FORM_STATIC_CACHE_PATH.exists():
         return {
             "schema_version": REQUEST_FORM_CACHE_SCHEMA_VERSION,
@@ -2453,6 +2462,8 @@ def sync_request_department_from_selected_applicant() -> None:
 
 
 def get_request_form_selection_context() -> dict[str, object]:
+    if runtime.realtime_reads():
+        return request_form_cache_to_selection_context(load_static_request_form_cache())
     state = request_form_cache_state()
     live_data = state.get("data") if isinstance(state.get("data"), dict) else None
     runtime_data = request_form_cache_from_runtime_page_data()
@@ -2732,6 +2743,9 @@ def workbook_bytes(df: pd.DataFrame) -> bytes:
 
 @runtime.cache_data(show_spinner=False, ttl=DATA_CACHE_TTL_SECONDS)
 def load_feishu_rows_snapshot(table_name: str, app_id: str, app_secret: str, app_token: str) -> list[dict]:
+    if runtime.realtime_reads():
+        from request_web.live_data import reader
+        return reader().rows(table_name)
     if not app_id or not app_secret or not app_token:
         return []
     client = get_feishu_bitable_client(app_id, app_secret, app_token)
@@ -2743,6 +2757,9 @@ def load_feishu_rows_snapshot(table_name: str, app_id: str, app_secret: str, app
 
 
 def load_static_page_data_cache() -> dict[str, object]:
+    if runtime.realtime_reads():
+        from request_web.live_data import document
+        return document('page_data_cache.json')
     if not PAGE_DATA_STATIC_CACHE_PATH.exists():
         return {"schema_version": 1, "generated_at": "", "tables": {}}
     data = load_static_json_file(*static_cache_file_signature(PAGE_DATA_STATIC_CACHE_PATH))
@@ -2764,6 +2781,9 @@ def page_data_runtime_cache() -> dict[str, object]:
 
 
 def page_data_cache_rows(table_name: str) -> list[dict]:
+    if runtime.realtime_reads():
+        from request_web.live_data import reader
+        return reader().rows(table_name)
     static_cache = load_static_page_data_cache()
     static_generated_at = str(static_cache.get("generated_at") or "")
     static_tables = dict(static_cache.get("tables") or {})
@@ -2798,6 +2818,9 @@ def page_data_cache_rows(table_name: str) -> list[dict]:
 
 
 def feishu_rows(table_name: str) -> list[dict]:
+    if runtime.realtime_reads():
+        from request_web.live_data import reader
+        return reader().rows(table_name)
     cached_rows = page_data_cache_rows(table_name)
     if cached_rows or table_name in dict(load_static_page_data_cache().get("tables") or {}):
         return cached_rows
@@ -3097,6 +3120,9 @@ def build_live_contact_department_cache() -> dict[str, object]:
 
 
 def load_static_contact_department_cache() -> dict[str, object]:
+    if runtime.realtime_reads():
+        from request_web.live_data import document
+        return document('contact_departments_cache.json')
     if not CONTACT_DEPARTMENT_STATIC_CACHE_PATH.exists():
         return {
             "schema_version": 1,
@@ -3120,6 +3146,8 @@ load_static_contact_department_cache.clear = load_static_json_file.clear  # type
 
 
 def get_contact_directory_cache() -> dict[str, object]:
+    if runtime.realtime_reads():
+        return load_static_contact_department_cache()
     static_cache = load_static_contact_department_cache()
     cached = runtime.request_state.get("contact_department_cache_data")
     if (
@@ -12279,6 +12307,9 @@ def request_lines_for_request(
 
 
 def load_warehouse_location_cache() -> dict[str, object]:
+    if runtime.realtime_reads():
+        from request_web.live_data import document
+        return document('warehouse_location_cache.json')
     if not WAREHOUSE_LOCATION_CACHE_PATH.exists():
         return {"schema_version": 1, "generated_at": "", "shelves": []}
     data = load_static_json_file(*static_cache_file_signature(WAREHOUSE_LOCATION_CACHE_PATH))
@@ -12792,6 +12823,9 @@ def corporate_apparel_catalog(
             for item in attachments
             if isinstance(item, dict) and str(item.get("cached_path") or "").strip()
         ]
+        if runtime.realtime_reads():
+            from request_web.live_data import attachment_images
+            images = [item['path'] for item in attachment_images(CORPORATE_APPAREL_TABLE_NAME,row,'图片')]
         items.append(
             {
                 "record_id": record_id,

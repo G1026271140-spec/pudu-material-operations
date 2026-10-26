@@ -1,5 +1,15 @@
 # Ubuntu 服务搭建（非业务上线）
 
+## V3.5.2 网页浏览验证
+
+`pudu-material-web-live.service` 是飞书出网恢复后的浏览配置；安装为实际的 `pudu-material-web.service` 前，先验证授权配置、源表读取及测试。`PUDU_REALTIME_READS=1` 使每个 HTTP 请求从源表读取数据，只在该请求内部复用组合视图；不读取业务 JSON 或 SQLite 读取快照，不运行缓存刷新。附件图片从当前记录验证归属后读取，不将应用令牌交给浏览器。
+
+`PUDU_WEB_READ_ONLY=1` 开放已登录员工的页面浏览，并保留管理员 API 权限。业务提交及同步 Webhook 返回 409；不启动通知、SQLite 对账线程或写入 Worker。页面显示浏览验证状态。该设置用于本次页面验收，不等于完成生产切换。
+
+飞书凭据独立保存在 `shared/config/secrets.toml`，目录 700、文件 600，源码不含密钥或业务快照。新域名通过 `PUDU_PUBLIC_ORIGIN=https://materials.pudu.work` 指定；飞书后台仍需允许对应 OAuth 回调 `/auth/feishu/callback`。真实用户登录须在用户浏览器完成。
+
+回退时恢复原 `source` 符号链接及保存的 systemd Web 配置，然后 daemon-reload 并重启 Web；Worker 保持禁用，持久业务状态不删除。
+
 本目录是 2026-10-23 虚拟机准备阶段的部署资产，**不修改现有 Windows 生产实例**。
 
 - 系统：Ubuntu 24.04 / Python 3.12，目标账号 `gaohongyuan1`。

@@ -65,10 +65,20 @@ class _State(MutableMapping):
 
 request_state = _State('pudu_request_state')
 request_query = _State('pudu_request_query')
+_scope_active = ContextVar('pudu_scope_active', default=False)
+
+
+def in_request_scope() -> bool:
+    return _scope_active.get()
+
+
+def web_read_only() -> bool:
+    return os.environ.get('PUDU_WEB_READ_ONLY', '').lower() in {'1', 'true', 'yes'}
 
 
 @contextmanager
 def request_scope(query=None):
+    active_token = _scope_active.set(True)
     state_token = request_state._value.set({})
     query_token = request_query._value.set(dict(query or {}))
     try:
@@ -76,6 +86,7 @@ def request_scope(query=None):
     finally:
         request_state._value.reset(state_token)
         request_query._value.reset(query_token)
+        _scope_active.reset(active_token)
 
 
 def realtime_reads() -> bool:

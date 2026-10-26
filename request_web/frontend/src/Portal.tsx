@@ -59,6 +59,7 @@ function IdentityBar({ user, lang }: { user: CurrentUser | null; lang: Lang }) {
   return (
     <div className="identity-bar" aria-label={lang === "zh" ? "当前登录身份" : "Signed-in identity"}>
       <div className="identity-person">
+        {user.read_only && <span role="status">{lang === 'zh' ? '浏览验证 · 提交暂未开放' : 'Preview · submissions disabled'}</span>}
         {user.avatar_url ? <img src={user.avatar_url} alt="" referrerPolicy="no-referrer" /> : <span className="identity-avatar">{user.name.slice(0, 1)}</span>}
         <span className="identity-name">{user.name}</span>
         <span className="identity-role">{role}</span>
@@ -79,7 +80,7 @@ const text = {
     corporateApparel: "企业文化衫领取",
     corporateApparelHint: "在新页面打开企业文化衫领取",
     tools: "数据与系统工具",
-    version: "当前应用版本 V3.2.8",
+    version: "当前应用版本 V3.5.2",
     denied: "仅已启用的管理员可访问物料管理",
     collapse: "收起左侧导航",
     expand: "展开左侧导航",
@@ -94,7 +95,7 @@ const text = {
     corporateApparel: "Corporate Apparel Request",
     corporateApparelHint: "Open Corporate Apparel Request in a new tab",
     tools: "Data & System Tools",
-    version: "Current Version V3.2.8",
+    version: "Current Version V3.5.2",
     denied: "Only enabled administrators can access Material Management",
     collapse: "Collapse sidebar",
     expand: "Expand sidebar",

@@ -1,6 +1,6 @@
 # PUDU Material Operations
 
-V3.5.1：React + TypeScript/Vite 前端、FastAPI/Uvicorn 后端和独立 Python Worker。已移除旧服务端页面框架、旧页面入口、唤醒脚本与相关运行配置。配货工作台使用紧凑明细表、按行调整面板，并显示要求到达时间。
+V3.5.2：React + TypeScript/Vite 前端、FastAPI/Uvicorn 后端和独立 Python Worker。新增虚拟机实时读表浏览模式，页面、权限和配货列表实时读取飞书，保留企业登录；浏览阶段关闭提交、同步 Webhook 和后台通知。配货工作台使用紧凑明细表、按行调整面板，并显示要求到达时间。
 
 这是公司 GitLab 交接及 Ubuntu 迁移分支。**代码调整不表示现有 Windows 生产实例已经升级，也不表示虚拟机业务已接通。** Ubuntu 准备状态见 [服务部署说明](deployment/ubuntu/README.md)。
 

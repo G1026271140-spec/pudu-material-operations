@@ -1,0 +1,37 @@
+[Unit]
+Description=PUDU Material Operations - live data web preview
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=exec
+User=gaohongyuan1
+Group=gaohongyuan1
+WorkingDirectory=/home/gaohongyuan1/pudu-materials-operation/source
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=TZ=Asia/Shanghai
+Environment=PUDU_SECRETS_FILE=/home/gaohongyuan1/pudu-materials-operation/shared/config/secrets.toml
+Environment=PUDU_PUBLIC_ORIGIN=https://materials.pudu.work
+Environment=PUDU_REALTIME_READS=1
+Environment=PUDU_WEB_READ_ONLY=1
+ExecStart=/home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m uvicorn request_web.api:api --host 0.0.0.0 --port 8501 --no-proxy-headers --no-access-log
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+CapabilityBoundingSet=
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pudu-material-web
+
+[Install]
+WantedBy=multi-user.target

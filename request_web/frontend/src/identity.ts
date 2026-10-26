@@ -1,4 +1,6 @@
 export type CurrentUser = {
+  read_only?: boolean;
+  version?: string;
   open_id: string;
   name: string;
   avatar_url: string;

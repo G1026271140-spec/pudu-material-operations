@@ -47,7 +47,7 @@ def credentials() -> tuple[str, str]:
 @lru_cache(maxsize=1)
 def public_origin() -> str:
     values = json.loads((ROOT / "config" / "project_config.json").read_text(encoding="utf-8"))
-    origin = str(values["deployment"]["custom_domain"]).rstrip("/")
+    origin = secret("PUDU_PUBLIC_ORIGIN", str(values["deployment"]["custom_domain"])).rstrip("/")
     parsed = parse.urlsplit(origin)
     if parsed.scheme != "https" or not parsed.hostname or parsed.path:
         raise RuntimeError("Public web origin must be an HTTPS origin")

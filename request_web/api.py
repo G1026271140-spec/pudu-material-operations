@@ -42,6 +42,9 @@ def _parsed_json_cache(path: str, modified_ns: int, size: int) -> dict[str, Any]
 
 
 def _json(name: str) -> dict[str, Any]:
+    if backend_runtime.realtime_reads():
+        from request_web.live_data import document
+        return document(name)
     path = resolve_cache_path(ROOT, f"data/{name}")
     stat = path.stat()
     data = _parsed_json_cache(str(path), stat.st_mtime_ns, stat.st_size)
@@ -52,6 +55,8 @@ def _json(name: str) -> dict[str, Any]:
 
 
 def catalog_revision() -> str:
+    if backend_runtime.realtime_reads():
+        return "live"
     from catalog_deletions import revision
 
     signatures = []
@@ -77,6 +82,16 @@ def _asset_file(relative: str) -> FileResponse:
 
 
 def _image_index() -> dict[str, list[str]]:
+    if backend_runtime.realtime_reads():
+        import app
+        from request_web.live_data import attachment_images, reader
+        result = {}
+        for row in reader().rows(app.CATEGORY_TABLE_NAME):
+            name = app.feishu_text(app.feishu_fields(row), '物料品类')
+            images = attachment_images(app.CATEGORY_TABLE_NAME,row,'申领页图片')
+            if name and images:
+                result[name] = [item['path'] for item in images]
+        return result
     page = _json("page_data_cache.json")
     result: dict[str, list[str]] = {}
     for row in page.get("tables", {}).get("物料品类", []):
@@ -421,6 +436,9 @@ class CorporateApparelDraft(BaseModel):
 
 @asynccontextmanager
 async def _pending_inventory_lifespan(_app: FastAPI):
+    if backend_runtime.web_read_only():
+        yield
+        return
     import submission_receipts
 
     submission_receipts.start()
@@ -444,7 +462,14 @@ api.add_middleware(
 @api.middleware("http")
 async def backend_request_context(request: Request, call_next):
     with backend_runtime.request_scope(request.query_params):
-        return await call_next(request)
+        try:
+            return await call_next(request)
+        except (RuntimeError, OSError) as exc:
+            if not backend_runtime.realtime_reads():
+                raise
+            logging.exception('Live source request failed')
+            return JSONResponse({'detail':'飞书实时数据读取暂时失败，请稍后重试。'},status_code=503,
+                headers={'Cache-Control':'no-store','Retry-After':'5'})
 
 
 @api.middleware("http")
@@ -588,11 +613,13 @@ def current_feishu_user(request: Request) -> JSONResponse:
     if identity is None:
         raise HTTPException(status_code=401, detail="请先通过飞书登录。")
     open_id = identity["open_id"]
-    contacts = _json("contact_departments_cache.json")
-    contact = next(
-        (item for item in contacts.get("users", []) if item.get("open_id") == open_id),
-        {},
-    )
+    if backend_runtime.realtime_reads():
+        # The catalog supplies the full live directory. Identity display uses
+        # the already authenticated profile instead of fetching 200 departments.
+        contact = {}
+    else:
+        contacts = _json("contact_departments_cache.json")
+        contact = next((item for item in contacts.get("users", []) if item.get("open_id") == open_id),{})
     permission_status = "missing"
     roles: list[str] = []
     for row in _json("page_data_cache.json").get("tables", {}).get("用户权限表", []):
@@ -621,6 +648,8 @@ def current_feishu_user(request: Request) -> JSONResponse:
         "department_paths": contact.get("department_paths") or [],
         "roles": roles,
         "permission_status": permission_status,
+        "read_only": backend_runtime.web_read_only(),
+        "version": __import__('app').APP_VERSION,
     }
     return JSONResponse(body, headers={"Cache-Control": "no-store"})
 
@@ -644,6 +673,9 @@ def favicon() -> FileResponse:
 
 @api.middleware("http")
 async def frontend_cache_policy(request, call_next):
+    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'}:
+        return JSONResponse({'detail':'当前服务器处于浏览验证阶段，业务提交尚未开放。'},status_code=409,
+            headers={'Cache-Control':'no-store'})
     response = await call_next(request)
     path = request.url.path
     content_type = response.headers.get("content-type", "")
@@ -653,7 +685,7 @@ async def frontend_cache_policy(request, call_next):
             if response.status_code == 200
             else "no-store"
         )
-    elif content_type.startswith("text/html"):
+    elif content_type.startswith("text/html") or (backend_runtime.realtime_reads() and path.startswith('/api/')):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -682,7 +714,29 @@ _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": Non
 
 @api.get("/api/health")
 def health() -> dict[str, str]:
+    if backend_runtime.realtime_reads():
+        import app
+        return {'status':'ok','version':app.APP_VERSION,'mode':'live_read_only' if backend_runtime.web_read_only() else 'live',
+            'business_cache_enabled':False,'worker_enabled':False}
     return {"status": "ok"}
+
+
+@api.get('/api/live-image/{table}/{record_id}/{file_token}')
+def live_source_image(table: str, record_id: str, file_token: str) -> Response:
+    if not backend_runtime.realtime_reads():
+        raise HTTPException(status_code=404,detail='资源不存在')
+    from request_web.live_data import image_bytes
+    from PIL import Image, ImageOps, UnidentifiedImageError
+    try:
+        content = image_bytes(table,record_id,file_token)
+        with Image.open(io.BytesIO(content)) as original:
+            picture = ImageOps.exif_transpose(original).convert('RGB')
+            picture.thumbnail((1600,1600))
+            output = io.BytesIO()
+            picture.save(output,'WEBP',quality=78)
+        return Response(output.getvalue(),media_type='image/webp',headers={'Cache-Control':'no-store'})
+    except (KeyError, UnidentifiedImageError) as exc:
+        raise HTTPException(status_code=404,detail='图片不存在') from exc
 
 
 @api.get("/api/catalog")
@@ -757,7 +811,8 @@ def _corporate_apparel_web_items(catalog: dict[str, Any]) -> list[dict[str, Any]
     for raw in list(catalog.get("items") or []):
         item = dict(raw)
         item["images"] = [
-            f"/category-assets/{Path(str(path)).name}"
+            str(path) if backend_runtime.realtime_reads() and str(path).startswith('/api/live-image/')
+            else f"/category-assets/{Path(str(path)).name}"
             for path in list(item.get("images") or [])
         ]
         items.append(item)
@@ -772,7 +827,7 @@ def corporate_apparel_stock(response: Response) -> dict[str, Any]:
     response.headers["Cache-Control"] = "no-store"
     with _CORPORATE_APPAREL_STOCK_LOCK:
         cached = _CORPORATE_APPAREL_STOCK_CACHE["items"]
-        if cached is not None and time.monotonic() - _CORPORATE_APPAREL_STOCK_CACHE["loaded_at"] < _CORPORATE_APPAREL_STOCK_TTL_SECONDS:
+        if not backend_runtime.realtime_reads() and cached is not None and time.monotonic() - _CORPORATE_APPAREL_STOCK_CACHE["loaded_at"] < _CORPORATE_APPAREL_STOCK_TTL_SECONDS:
             return {"items": cached}
         page = _json("page_data_cache.json")
         rows = list(page.get("tables", {}).get(legacy.CORPORATE_APPAREL_TABLE_NAME, []))
@@ -782,7 +837,8 @@ def corporate_apparel_stock(response: Response) -> dict[str, Any]:
         items = _corporate_apparel_web_items(
             legacy.corporate_apparel_catalog(rows, source_rows=source_rows)
         )
-        _CORPORATE_APPAREL_STOCK_CACHE.update(items=items, loaded_at=time.monotonic())
+        if not backend_runtime.realtime_reads():
+            _CORPORATE_APPAREL_STOCK_CACHE.update(items=items, loaded_at=time.monotonic())
         return {"items": items}
 
 
@@ -1080,6 +1136,13 @@ def allocation_pending(
     import app as legacy
     from pending_inventory_sqlite import list_pending
 
+    if backend_runtime.realtime_reads():
+        from request_web.live_data import reader
+        source = reader()
+        return {'requests':legacy.pending_inventory_review_summaries(source.rows(legacy.REQUEST_TABLE_NAME)),
+            'source':'live_feishu','updatedAt':source.generated_at,'refreshing':False,'refreshError':'',
+            'operators':_allocation_operators(legacy)}
+
     local_rows = list_pending()
     summaries = legacy.pending_inventory_review_summaries([row for row, _, _ in local_rows])
     line_counts = {legacy.feishu_record_id(row): count for row, count, _ in local_rows}
@@ -1109,6 +1172,8 @@ def allocation_context(
 
     signed_operator = _allocation_actor(request, request_id, operator, review_token)
     try:
+        if backend_runtime.realtime_reads():
+            snapshot = False
         if snapshot:
             from pending_inventory_sqlite import get as get_pending_request
 
@@ -1956,8 +2021,13 @@ if DIST.is_dir():
     api.mount("/static", StaticFiles(directory=DIST / "assets"), name="request-static")
 
     @api.get("/{path:path}")
-    def spa(path: str) -> FileResponse:
+    def spa(path: str) -> Response:
+        if path.startswith(('.', 'config/', 'data/', 'work/', 'logs/')):
+            raise HTTPException(status_code=404,detail='资源不存在')
         candidate = (DIST / path).resolve()
         if path and DIST.resolve() in candidate.parents and candidate.is_file():
             return FileResponse(candidate)
+        if backend_runtime.realtime_reads():
+            html = (DIST / 'index.html').read_text(encoding='utf-8')
+            return HTMLResponse(html.replace('<head>', '<head><meta name="pudu-live-data" content="1">',1))
         return FileResponse(DIST / "index.html")
