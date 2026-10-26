@@ -32,9 +32,9 @@
 
 | 对象 | 当前字段 | 飞书来源/本地含义 | 编辑及校验 |
 |---|---|---|---|
-| 申请身份 | requester、requester_open_id、department、department_id、submitter、submitter_open_id、position | 物料申请单／申请人、申请部门\|区域、提交人、岗位；部门 ID 为通讯录标识 | 在业务权限范围内选择申请人；提交人取真实登录身份；组织名称、路径和人员身份来自通讯录，不能在页面伪造登录人 |
+| 申请身份 | requester、requester_open_id、department、department_id、submitter、submitter_open_id | 物料申请单／申请人、申请部门\|区域、提交人；部门 ID 为通讯录标识 | 在业务权限范围内选择申请人；提交人取真实登录身份；组织名称、路径和人员身份来自通讯录，不能在页面伪造登录人 |
 | 普通申请内容 | title、customer_name、country、recipient_info、freight_payer、material_usage、request_reason | 物料申请单／标题、客户名称、国家、收件人信息、运费承担者、物料用途、申请原因；兼容旧备注来源 | 文本/实际选项编辑；保留必填、用途、身份及角色校验 |
-| 计划时间 | arrival_start、arrival_end、required_arrival_start/end、material_usage_time、预计最晚下单日、时效判断 | 要求到达开始日期、要求到达结束日期、物料使用时间及既有时效字段 | 编辑来源日期和原因后重新校验；自动判断和颜色说明由规则计算 |
+| 计划时间 | arrival_start、arrival_end、required_arrival_start/end、material_usage_time、预计最晚下单日、时效判断 | 要求达到开始日期、要求到达结束日期、物料使用时间及既有时效字段 | 编辑来源日期和原因后重新校验；自动判断和颜色说明由规则计算 |
 | 申请行 | product、model、language/region、quantity、remark、is_custom_material、source、admin_only | 申请明细的物料/文化周边关联、品类名称、产品型号名称、语种名称、文化周边战区、申请数量、备注、明细业务类型 | 选择对应库存记录；数量正整数；定制物料、管理员代申请及文化周边额度保留原规则 |
 | 申请价格快照 | unit_price_rmb、subtotal_rmb、request_total_rmb | 申请明细／申请时单价（人民币）、金额小计（人民币）；物料申请单／费用合计（人民币） | 选物料和数量后在同一业务事务生成快照与汇总；不是修改当前库存单价即可重写历史费用 |
 | 库存快照/现值 | stock_snapshot、current_stock、in_transit_stock、inventory_status、库存审查结果 | 提交时库存快照、主数据当前/在途库存、库存审查状态与结果 | 来源数量改变时重算；历史提交快照通过业务更正流程保留审计，不作为自由输入框 |
@@ -56,6 +56,7 @@
 
 - 通用字段注册支持文本、数字、实际单选/多选、日期、人员、附件、单向/双向关联；引用/公式通过源字段入口修改，自动编号和系统元数据自动维护。
 - 企业文化衫的实际源表最新库存 = 原始库存数量 + 入库/纠正 - 表格兑换数量 - 系统兑换数量；表格兑换数量来自行政兑换表查找汇总。源表与营销主库副本的同名字段保留不同的表 ID/字段 ID，不能混用。
+- API 中的 position 为旧兼容占位，当前申请表没有岗位/职位字段，现有页面没有该输入；申请明细 usage 的旧占位同样不能冒充独立字段，实际用途在所属申请单的物料用途字段。
 - 字段 ID 和记录 ID 是核对主键，中文字段名仅作显示；原始多值 JSON 与类型化 SQL 列一并保留。
 - 普通前端保存以 PostgreSQL 已提交事务为准；业务变更、审计和待同步任务应同事务提交。不要在飞书尚未完成时显示“已同步”。
 - 每日北京时间 03:00 的校验以飞书为准，采用字段差异和版本保护；旧待同步任务不能覆盖已采纳的飞书手工修改。本地未同步的新建记录单独保留核对。
