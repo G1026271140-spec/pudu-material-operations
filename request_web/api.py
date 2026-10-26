@@ -5,6 +5,7 @@ import hmac
 import io
 import json
 import logging
+import os
 import secrets
 import threading
 import time
@@ -929,6 +930,18 @@ def _management_snapshot() -> dict[str, Any]:
     region_rows = list(tables.get(legacy.REGION_TABLE_NAME, []))
     cultural_rows = list(tables.get(legacy.CULTURAL_MATERIAL_TABLE_NAME, []))
     categories = legacy.feishu_category_records_from_rows(category_rows)
+    from category_media import is_image
+    rows_by_id = {legacy.feishu_record_id(row): row for row in category_rows}
+    for category in categories:
+        row = rows_by_id.get(category["record_id"], {})
+        category["images"] = [
+            {"file_token": item["file_token"], "name": item["name"],
+             "path": "/api/live-image/" + "/".join(parse.quote(str(part), safe="") for part in (
+                 legacy.CATEGORY_TABLE_NAME, category["record_id"], item["file_token"]))
+             if backend_runtime.realtime_reads() else item.get("cached_path", "")}
+            for item in legacy.feishu_attachment_items(legacy.feishu_fields(row), "申领页图片")
+            if is_image(item)
+        ]
     inventory = legacy.feishu_inventory_records_from_rows(
         material_rows, category_rows, active_only=False
     )
@@ -959,6 +972,7 @@ def _management_snapshot() -> dict[str, Any]:
     return {
         "generatedAt": page.get("generated_at"),
         "categories": categories,
+        "categoryImagesEnabled": bool(os.environ.get("PUDU_DATABASE_DSN") and os.environ.get("PUDU_MEDIA_ROOT")),
         "inventory": inventory,
         "restockInventory": restock_inventory,
         "restockImages": _image_index(),
@@ -1432,6 +1446,32 @@ def management_dimension_submit(
     return {"accepted": True, "taskId": task_id}
 
 
+@api.post("/api/admin/category-images")
+async def upload_category_image(request: Request, actor: str = Depends(require_admin)) -> dict[str, Any]:
+    from material_store.media import MAX_IMAGE_BYTES, save_image
+    content = bytearray()
+    async for chunk in request.stream():
+        content.extend(chunk)
+        if len(content) > MAX_IMAGE_BYTES:
+            raise HTTPException(status_code=413, detail="单张品类图片不能超过 6 MB。")
+    try:
+        return await run_in_threadpool(save_image, bytes(content), parse.unquote(request.headers.get("X-File-Name", "category")), actor)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@api.get("/api/admin/category-images/{media_id}")
+def local_category_image(media_id: str, _: str = Depends(require_admin)) -> Response:
+    from material_store.media import load_image
+    try:
+        image = load_image(media_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(image["path"], media_type=image["type"], headers={"Cache-Control": "no-store"})
+
+
 @api.post("/api/admin/category/submit")
 def management_category_submit(
     body: dict[str, Any], _: str = Depends(require_admin)
@@ -1440,6 +1480,23 @@ def management_category_submit(
     from submission_queue import QUEUE_TASK_TYPE_CATEGORY_DELETE, QUEUE_TASK_TYPE_CATEGORY_SYNC
 
     operation = str(body.get("operation") or "")
+    if operation not in {"create", "edit", "delete"}:
+        raise HTTPException(status_code=422, detail="不支持的品类操作。")
+    media = body.get("category_media")
+    if media is not None:
+        from category_media import validate_image_selection
+        from material_store.media import load_image
+        try:
+            if not isinstance(media, dict) or operation == "delete":
+                raise ValueError("品类图片参数无效。")
+            validate_image_selection(media)
+            if operation == "create" and media["expected_image_tokens"]:
+                raise ValueError("新建品类只能选择新上传的图片。")
+            for item in media["images"]:
+                if item.get("local_media_id"):
+                    load_image(item["local_media_id"])
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
     token = str(body.get("submission_token") or uuid4().hex)
     if operation == "delete":
         try:
@@ -1464,6 +1521,7 @@ def management_category_submit(
                     "sync_args": sync_args,
                     "draft": dict(body.get("draft") or {}),
                     "notification_kind": "create" if operation == "create" else "edit",
+                    **({"category_media": media} if media is not None else {}),
                 },
             )
     except Exception as exc:

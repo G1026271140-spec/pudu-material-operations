@@ -1,0 +1,6691 @@
+{
+  "exported_at": "2026-10-26T21:19:41.754024+08:00",
+  "source": "live_application_identity",
+  "tables": [
+    {
+      "source": "primary",
+      "table_id": "tbl4UsiEmprnImIY",
+      "table_name": "物料主数据",
+      "fields": [
+        {
+          "field_id": "fld2UhHKQd",
+          "field_name": "物料编码",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld3d0RBks",
+          "field_name": "物料品类",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld26DOsnW",
+          "field_name": "产品型号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwFzY0cn",
+          "field_name": "语种",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxI2P07C",
+          "field_name": "当前库存",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7MD4420",
+          "field_name": "在途库存",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flddAKyNWW",
+          "field_name": "是否在申领页显示",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt79oWuRi",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optT5M5oGk",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2FBhXyL",
+          "field_name": "启用状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt3NeLf1F",
+                "name": "启用"
+              },
+              {
+                "color": 1,
+                "id": "optI61IS9F",
+                "name": "停用"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldqdnsA2x",
+          "field_name": "是否临时物料",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optKCwoI9Q",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optWmBhXWc",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldM98XVQT",
+          "field_name": "单价（美元）",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.00"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flddFgwqE1",
+          "field_name": "单价（人民币）",
+          "type": 20,
+          "ui_type": "Formula",
+          "property": {
+            "formatter": "0.00",
+            "formula_expression": "bitable::$table[tbl4UsiEmprnImIY].$field[fldM98XVQT]*6.77",
+            "type": {
+              "data_type": 2,
+              "ui_property": {
+                "formatter": "0.00"
+              },
+              "ui_type": "Number"
+            }
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldIYVotBW",
+          "field_name": "海关编码",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMePIniD",
+          "field_name": "品类关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldv4U0nYW",
+            "back_field_name": "物料主数据",
+            "multiple": true,
+            "table_id": "tbl45q6s50SzEnFI",
+            "table_name": "物料品类"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldFeKk2zw",
+          "field_name": "型号关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld9D1ZQzw",
+            "back_field_name": "物料主数据",
+            "multiple": true,
+            "table_id": "tbl233OjVUgT4cJ5",
+            "table_name": "产品型号"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1lKlPjC",
+          "field_name": "语种关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld2xd0znp",
+            "back_field_name": "物料主数据",
+            "multiple": true,
+            "table_id": "tblYZ3XpkUkQWevb",
+            "table_name": "物料语种"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwBOsC64",
+          "field_name": "库存归零时间",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldtNK1jaN",
+          "field_name": "申请明细",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld7t8G0oI",
+            "back_field_name": "物料编码",
+            "multiple": true,
+            "table_id": "tbl6i0F9UZjTuTV1",
+            "table_name": "申请明细"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6qyIeal",
+          "field_name": "库存流水",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld2DuHL0N",
+            "back_field_name": "物料编码",
+            "multiple": true,
+            "table_id": "tbljMfuTeGM7VC3v",
+            "table_name": "库存流水"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1Y9bf2w",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldl1JuFXD",
+          "field_name": "仓库物料位置",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldY59fk7a",
+            "back_field_name": "关联物料",
+            "multiple": true,
+            "table_id": "tbldA8qhSeIfJp3k",
+            "table_name": "仓库物料位置"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldr3SpFag",
+          "field_name": "物料货架",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld2MnIrLH",
+            "back_field_name": "关联物料",
+            "multiple": true,
+            "table_id": "tblqz8xmpgtv4Q9C",
+            "table_name": "物料货架"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldT5Va9NV",
+          "field_name": "物料申请单",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldxKqZaya",
+            "back_field_name": "物料编码",
+            "multiple": true,
+            "table_id": "tbl3eyt8lkl3uQa1",
+            "table_name": "物料申请单"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldbk7CsUV",
+          "field_name": "战区管理",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldQveqXsI",
+            "back_field_name": "物料数据关联",
+            "multiple": true,
+            "table_id": "tblFEKwM1kw9QZAx",
+            "table_name": "战区管理"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvYoUQp0",
+          "field_name": "父记录",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblu3wRpylTj6zJl",
+      "table_name": "文化周边管理库存",
+      "fields": [
+        {
+          "field_id": "fldcoomJKh",
+          "field_name": "文化周边编码",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldePaHkZ7",
+          "field_name": "物料品类",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldJuPoKgn",
+          "field_name": "产品型号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flde4JIHir",
+          "field_name": "战区管理",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optMWKSHji",
+                "name": "美洲战区"
+              },
+              {
+                "color": 1,
+                "id": "optelLVOZe",
+                "name": "日本战队"
+              },
+              {
+                "color": 2,
+                "id": "optBUO1Ikz",
+                "name": "电商（海外）"
+              },
+              {
+                "color": 3,
+                "id": "optoIj04lU",
+                "name": "大中华战区"
+              },
+              {
+                "color": 4,
+                "id": "optE9E40Y7",
+                "name": "电商（国内）"
+              },
+              {
+                "color": 5,
+                "id": "optvBkt7cI",
+                "name": "品牌&市场营销内部"
+              },
+              {
+                "color": 6,
+                "id": "optUZXDQXY",
+                "name": "亚太战区"
+              },
+              {
+                "color": 7,
+                "id": "optBK5zqiY",
+                "name": "欧洲战区"
+              },
+              {
+                "color": 8,
+                "id": "optv0uL80r",
+                "name": "HMT战队"
+              },
+              {
+                "color": 9,
+                "id": "optm9VEVtI",
+                "name": "澳新战队"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5XxOhp9",
+          "field_name": "当前库存",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxI7a91u",
+          "field_name": "是否可以申领",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt1jkFkNd",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "opt9OISxg7",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldRxdcq9Q",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldJabz3qK",
+          "field_name": "申请明细",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldGk1ZNVB",
+            "back_field_name": "文化周边物料",
+            "multiple": true,
+            "table_id": "tbl6i0F9UZjTuTV1",
+            "table_name": "申请明细"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7NtPRmz",
+          "field_name": "库存流水",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldA4ooChD",
+            "back_field_name": "文化周边物料",
+            "multiple": true,
+            "table_id": "tbljMfuTeGM7VC3v",
+            "table_name": "库存流水"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldO5JJjr5",
+          "field_name": "物料品类关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldm5SsXdh",
+            "back_field_name": "文化周边",
+            "multiple": true,
+            "table_id": "tbl45q6s50SzEnFI",
+            "table_name": "物料品类"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldBp7xfWQ",
+          "field_name": "产品型号关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldguqypG5",
+            "back_field_name": "文化周边",
+            "multiple": true,
+            "table_id": "tbl233OjVUgT4cJ5",
+            "table_name": "产品型号"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldGbohvWw",
+          "field_name": "战区关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldrbLBGG4",
+            "back_field_name": "文化周边",
+            "multiple": true,
+            "table_id": "tblFEKwM1kw9QZAx",
+            "table_name": "战区管理"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld3dNnFaZ",
+          "field_name": "单价（人民币）",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.00"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl3eyt8lkl3uQa1",
+      "table_name": "物料申请单",
+      "fields": [
+        {
+          "field_id": "fldIKaRgYM",
+          "field_name": "申请单号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldrmZXQiV",
+          "field_name": "申请类型",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optthOx2Xi",
+                "name": "普通物料申请"
+              },
+              {
+                "color": 1,
+                "id": "optmwMBHsp",
+                "name": "文化周边申请"
+              },
+              {
+                "color": 2,
+                "id": "opt1494208118",
+                "name": "企业文化衫领取"
+              },
+              {
+                "color": 3,
+                "id": "opt4b4JSSn",
+                "name": ""
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvY7xX7F",
+          "field_name": "申请人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2gDwsST",
+          "field_name": "申请人.部门",
+          "type": 4,
+          "ui_type": "MultiSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "7628923014596021451",
+                "name": "营销运营组"
+              },
+              {
+                "color": 1,
+                "id": "7628923088622030005",
+                "name": "美国战队"
+              },
+              {
+                "color": 2,
+                "id": "7628922927698250976",
+                "name": "市场营销部"
+              },
+              {
+                "color": 3,
+                "id": "7628922984250084564",
+                "name": "解决方案部"
+              },
+              {
+                "color": 4,
+                "id": "7641966919142608061",
+                "name": "解决方案中台组"
+              },
+              {
+                "color": 5,
+                "id": "7628923088621702325",
+                "name": "CR业务部"
+              },
+              {
+                "color": 6,
+                "id": "7628923088621784245",
+                "name": "亚太服务部"
+              },
+              {
+                "color": 7,
+                "id": "7628923088390245557",
+                "name": "区域市场组"
+              },
+              {
+                "color": 8,
+                "id": "7628922978881457340",
+                "name": "国内商务交付组"
+              },
+              {
+                "color": 9,
+                "id": "7628923067725532358",
+                "name": "拉美战队"
+              },
+              {
+                "color": 10,
+                "id": "7628923062394178751",
+                "name": "法国战队"
+              },
+              {
+                "color": 0,
+                "id": "7628923115457023175",
+                "name": "日本CR业务组"
+              },
+              {
+                "color": 1,
+                "id": "7628923051470703816",
+                "name": "IR业务部"
+              },
+              {
+                "color": 2,
+                "id": "7628923132242332874",
+                "name": "日本服务组"
+              },
+              {
+                "color": 3,
+                "id": "7628922960312929484",
+                "name": "行政服务部"
+              },
+              {
+                "color": 4,
+                "id": "7628922930642783460",
+                "name": "大中华战区"
+              },
+              {
+                "color": 5,
+                "id": "7628923010653031645",
+                "name": "HMT战队"
+              },
+              {
+                "color": 6,
+                "id": "7628922960313633996",
+                "name": "美澳英战区"
+              },
+              {
+                "color": 7,
+                "id": "7628923022464584925",
+                "name": "中东战队"
+              },
+              {
+                "color": 8,
+                "id": "7628923113350155449",
+                "name": "马来战队"
+              },
+              {
+                "color": 9,
+                "id": "7628922927698480352",
+                "name": "亚太战区"
+              },
+              {
+                "color": 10,
+                "id": "7628922993159638219",
+                "name": "新加坡战队"
+              },
+              {
+                "color": 0,
+                "id": "7628923101794946276",
+                "name": "泰国战队"
+              },
+              {
+                "color": 1,
+                "id": "7628923088260861127",
+                "name": "加拿大战队"
+              },
+              {
+                "color": 2,
+                "id": "7680400470846819587",
+                "name": "德国CR业务组"
+              },
+              {
+                "color": 3,
+                "id": "7628920708237806778",
+                "name": "X LAB"
+              },
+              {
+                "color": 4,
+                "id": "7628923146138045662",
+                "name": "欧洲服务A组"
+              },
+              {
+                "color": 5,
+                "id": "7628923020427168978",
+                "name": "产品营销组"
+              },
+              {
+                "color": 6,
+                "id": "7628923048850312380",
+                "name": "视觉设计组"
+              },
+              {
+                "color": 7,
+                "id": "7628922910611590342",
+                "name": "品牌部"
+              },
+              {
+                "color": 8,
+                "id": "7685223727974501563",
+                "name": "美英OR业务部"
+              },
+              {
+                "color": 9,
+                "id": "7686828336346451223",
+                "name": "海外市场营销组"
+              },
+              {
+                "color": 10,
+                "id": "7634507721791130805",
+                "name": "欧洲IR业务部"
+              },
+              {
+                "color": 0,
+                "id": "7628922984250739924",
+                "name": "日本战队"
+              },
+              {
+                "color": 1,
+                "id": "7628923161808948410",
+                "name": "欧洲服务B组"
+              },
+              {
+                "color": 2,
+                "id": "7662969211589971180",
+                "name": "IR&GR服务组"
+              },
+              {
+                "color": 3,
+                "id": "7686827885119032522",
+                "name": "国内市场营销组"
+              },
+              {
+                "color": 4,
+                "id": "7669702355567070426",
+                "name": "美国KA组"
+              },
+              {
+                "color": 5,
+                "id": "7628923153228057798",
+                "name": "韩国服务组"
+              },
+              {
+                "color": 6,
+                "id": "7647145311856872634",
+                "name": "HMT服务组"
+              },
+              {
+                "color": 7,
+                "id": "7647145570428636381",
+                "name": "项目交付组"
+              },
+              {
+                "color": 8,
+                "id": "7628923000968105164",
+                "name": "服务运营组"
+              },
+              {
+                "color": 9,
+                "id": "7628923048851049660",
+                "name": "服务代表组"
+              },
+              {
+                "color": 10,
+                "id": "7628923051476143285",
+                "name": "大中华服务部"
+              },
+              {
+                "color": 0,
+                "id": "7685225793111330032",
+                "name": "HR业务部"
+              },
+              {
+                "color": 1,
+                "id": "7685220938098609365",
+                "name": "欧洲OR业务部"
+              },
+              {
+                "color": 2,
+                "id": "7642671272216726727",
+                "name": "软件平台架构部"
+              },
+              {
+                "color": 3,
+                "id": "7628920682684812473",
+                "name": "IRPBU"
+              },
+              {
+                "color": 4,
+                "id": "7628922961399876830",
+                "name": "产品市场部"
+              },
+              {
+                "color": 5,
+                "id": "7628923064386882749",
+                "name": "西葡战队"
+              },
+              {
+                "color": 6,
+                "id": "7634508070634638564",
+                "name": "欧洲GR业务部"
+              },
+              {
+                "color": 7,
+                "id": "7642670873895636161",
+                "name": "硬件平台部电机组"
+              },
+              {
+                "color": 8,
+                "id": "7681240414930635992",
+                "name": "运维组"
+              },
+              {
+                "color": 9,
+                "id": "7642702365988981972",
+                "name": "生命周期工具链团队"
+              },
+              {
+                "color": 10,
+                "id": "7628923052718935239",
+                "name": "美洲服务部"
+              },
+              {
+                "color": 0,
+                "id": "7664886615538928938",
+                "name": "校招组"
+              },
+              {
+                "color": 1,
+                "id": "7628920752838495436",
+                "name": "SRPBU硬件组"
+              },
+              {
+                "color": 2,
+                "id": "7642671567725726913",
+                "name": "通用调度团队"
+              },
+              {
+                "color": 3,
+                "id": "7628923106414496970",
+                "name": "海外商务交付组"
+              },
+              {
+                "color": 4,
+                "id": "7647145533294824647",
+                "name": "渠道管理组"
+              },
+              {
+                "color": 5,
+                "id": "7628923106413759690",
+                "name": "英爱战队"
+              },
+              {
+                "color": 6,
+                "id": "7691300175118142730",
+                "name": "GR业务部"
+              },
+              {
+                "color": 7,
+                "id": "7628920747956341979",
+                "name": "SRPBU机械组"
+              },
+              {
+                "color": 8,
+                "id": "7628923000969202892",
+                "name": "KA业务部"
+              },
+              {
+                "color": 9,
+                "id": "7628920736166251745",
+                "name": "质量代表组"
+              },
+              {
+                "color": 10,
+                "id": "7628923106413186250",
+                "name": "SR3D业务部"
+              },
+              {
+                "color": 0,
+                "id": "7628922934325300431",
+                "name": "公共事务部"
+              },
+              {
+                "color": 1,
+                "id": "7628922984250379476",
+                "name": "荷比卢战队"
+              },
+              {
+                "color": 2,
+                "id": "7628922921146813659",
+                "name": "欧日韩战区"
+              },
+              {
+                "color": 3,
+                "id": "7628923024322530498",
+                "name": "中东欧战队"
+              },
+              {
+                "color": 4,
+                "id": "7664878608809233594",
+                "name": "COE"
+              },
+              {
+                "color": 5,
+                "id": "7628922965330267329",
+                "name": "IR部"
+              },
+              {
+                "color": 6,
+                "id": "7628920801417055429",
+                "name": "平台软件测试组"
+              },
+              {
+                "color": 7,
+                "id": "7628923037413805281",
+                "name": "德瑞奥战队"
+              },
+              {
+                "color": 8,
+                "id": "7660154130469080299",
+                "name": "IR测试组"
+              },
+              {
+                "color": 9,
+                "id": "7660154404645162215",
+                "name": "X LAB测试组"
+              },
+              {
+                "color": 10,
+                "id": "7628923076794010829",
+                "name": "销售运营组"
+              },
+              {
+                "color": 0,
+                "id": "7628922987501587660",
+                "name": "采购开发组"
+              },
+              {
+                "color": 1,
+                "id": "7697213769651686701",
+                "name": "ORPBU测试组"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldHSslDVT",
+          "field_name": "提交人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldTlkQNMU",
+          "field_name": "所属战区",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optjo740Mv",
+                "name": "美洲战区"
+              },
+              {
+                "color": 1,
+                "id": "optkC4gV9Y",
+                "name": "澳新战队"
+              },
+              {
+                "color": 2,
+                "id": "optDIMfeBp",
+                "name": "日本战队"
+              },
+              {
+                "color": 3,
+                "id": "optvADNfqB",
+                "name": "亚太战区"
+              },
+              {
+                "color": 4,
+                "id": "opt87vd6jN",
+                "name": "大中华战区"
+              },
+              {
+                "color": 5,
+                "id": "optnGO2a3Y",
+                "name": "欧洲战区"
+              },
+              {
+                "color": 6,
+                "id": "optNMqNLoz",
+                "name": "HMT战队"
+              },
+              {
+                "color": 7,
+                "id": "optTyzNue3",
+                "name": "品牌&市场营销内部"
+              },
+              {
+                "color": 8,
+                "id": "optNP13j9v",
+                "name": "电商（国内）"
+              },
+              {
+                "color": 9,
+                "id": "opt0SXXBag",
+                "name": "电商（海外）"
+              },
+              {
+                "color": 10,
+                "id": "opt2062286054",
+                "name": "欧洲战区、品牌&市场营销内部"
+              },
+              {
+                "color": 0,
+                "id": "opt1407102512",
+                "name": "亚太战区、电商（国内）"
+              },
+              {
+                "color": 1,
+                "id": "opt1891834161",
+                "name": "品牌&市场营销内部、大中华战区"
+              },
+              {
+                "color": 2,
+                "id": "opt984729123",
+                "name": "电商（国内）、品牌&市场营销内部"
+              },
+              {
+                "color": 3,
+                "id": "opt287056286",
+                "name": "欧洲战区、电商（海外）"
+              },
+              {
+                "color": 4,
+                "id": "opt1102608483",
+                "name": "日本战队、电商（海外）"
+              },
+              {
+                "color": 5,
+                "id": "opt1360492577",
+                "name": "美洲战区、品牌&市场营销内部"
+              },
+              {
+                "color": 6,
+                "id": "opt191506922",
+                "name": "大中华战区、电商（国内）"
+              },
+              {
+                "color": 7,
+                "id": "opt1748918919",
+                "name": "日本战队、品牌&市场营销内部"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwub0TgZ",
+          "field_name": "客户名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldiBYPjyD",
+          "field_name": "国家",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldgReTLDP",
+          "field_name": "收件人信息",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldan3JSkP",
+          "field_name": "运费承担者",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7zkjoNr",
+          "field_name": "用途|活动",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxKqZaya",
+          "field_name": "物料明细",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldT5Va9NV",
+            "back_field_name": "物料申请单",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldhiCjYok",
+          "field_name": "物料明细文字信息",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldCGPgaxI",
+          "field_name": "计划库存核实时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxuAiGYJ",
+          "field_name": "库存核实提醒状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optEHbQKai",
+                "name": "待提醒"
+              },
+              {
+                "color": 1,
+                "id": "optd0f89NI",
+                "name": "已提醒"
+              },
+              {
+                "color": 2,
+                "id": "optwrYaj3O",
+                "name": "无需提醒"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldVDVdk5o",
+          "field_name": "临时物料清理状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optMHtqaXh",
+                "name": "无临时物料"
+              },
+              {
+                "color": 1,
+                "id": "optCQMeZ8J",
+                "name": "待清理"
+              },
+              {
+                "color": 2,
+                "id": "optMuCAgGC",
+                "name": "已清理"
+              },
+              {
+                "color": 3,
+                "id": "optomeqiyo",
+                "name": "清理失败"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1u1vvtD",
+          "field_name": "审批状态",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2BUOnMw",
+          "field_name": "申请部门|区域",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1ajV6hQ",
+          "field_name": "业务类型",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld9BmiEH3",
+          "field_name": "审批意见",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2KQmT2w",
+          "field_name": "提交时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld21BlOuh",
+          "field_name": "审批时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5HODlXJ",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldkaC2CtD",
+          "field_name": "申请明细",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld3QWa92E",
+            "back_field_name": "所属申请单",
+            "multiple": true,
+            "table_id": "tbl6i0F9UZjTuTV1",
+            "table_name": "申请明细"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldUgdNAWa",
+          "field_name": "库存流水",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldp5QU0Vb",
+          "field_name": "物料用途",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldp331NUd",
+          "field_name": "标题",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldyn6IUF3",
+          "field_name": "费用合计（人民币）",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.00"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flda1qNhWt",
+          "field_name": "物料发货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldH9boU0e",
+          "field_name": "相关附件",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldM84QaMC",
+          "field_name": "库存审查状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optYx3aQpe",
+                "name": "待核实库存"
+              },
+              {
+                "color": 1,
+                "id": "opt0wZ66uG",
+                "name": "已核实库存"
+              },
+              {
+                "color": 2,
+                "id": "optvNId4GI",
+                "name": "编辑处理中"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld53o1Z42",
+          "field_name": "库存审查结论",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optbOB76wX",
+                "name": "库存充足"
+              },
+              {
+                "color": 1,
+                "id": "optZOldvaz",
+                "name": "部分库存不足"
+              },
+              {
+                "color": 2,
+                "id": "optYlsgigl",
+                "name": "全部库存不足"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5IBBxNX",
+          "field_name": "库存审查人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMjmAtyk",
+          "field_name": "库存审查时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld345mD6f",
+          "field_name": "申请物料更改信息说明",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldQMdxNPt",
+          "field_name": "申请物料最后修改人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldgOk4g1Q",
+          "field_name": "申请物料最后修改时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldVHKwBq4",
+          "field_name": "申请变更次数",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldUwEiuAI",
+          "field_name": "库存快照时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldDPeYfXS",
+          "field_name": "库存确认消息ID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxMO4LL2",
+          "field_name": "提交幂等键",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flddbjQm1N",
+          "field_name": "审批实例Code",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldtCgN2I6",
+          "field_name": "管理员通知状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optR1SA5vD",
+                "name": "待发送"
+              },
+              {
+                "color": 1,
+                "id": "opt2pc9IFA",
+                "name": "已发送"
+              },
+              {
+                "color": 2,
+                "id": "optrgnP1tb",
+                "name": "发送失败"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldpj4QDuF",
+          "field_name": "管理员通知时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": true,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldDSSeahV",
+          "field_name": "文化周边处理状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opthu0HDdH",
+                "name": "待处理"
+              },
+              {
+                "color": 1,
+                "id": "optd5pgqcV",
+                "name": "处理中"
+              },
+              {
+                "color": 2,
+                "id": "optPCxyptn",
+                "name": "已发放"
+              },
+              {
+                "color": 3,
+                "id": "optf3L8t31",
+                "name": "处理失败"
+              },
+              {
+                "color": 4,
+                "id": "opt1559848393",
+                "name": "驳回处理中"
+              },
+              {
+                "color": 5,
+                "id": "opt180674548",
+                "name": "已驳回"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvFgVxMI",
+          "field_name": "文化周边通知状态",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldbq8OvU1",
+          "field_name": "要求达到开始日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldO9pYIW3",
+          "field_name": "要求到达结束日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldLFMnKmx",
+          "field_name": "需要下单日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldsfugJKH",
+          "field_name": "预计完成制作日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7uAG4Nq",
+          "field_name": "申请时角色快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldIKEtnNm",
+          "field_name": "时间判定",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optOkRDUMO",
+                "name": "普通申请"
+              },
+              {
+                "color": 1,
+                "id": "optGyigxw3",
+                "name": "加急申请"
+              },
+              {
+                "color": 2,
+                "id": "optY9IXvKA",
+                "name": "时间豁免"
+              },
+              {
+                "color": 3,
+                "id": "optKYaoHUT",
+                "name": "待补充日期"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldrFmvW8s",
+          "field_name": "排期编辑版本",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldcPL9SP9",
+          "field_name": "物料到货状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optIwb60f7",
+                "name": "全部已到货"
+              },
+              {
+                "color": 1,
+                "id": "optYYDnxx0",
+                "name": "部分未到货"
+              },
+              {
+                "color": 2,
+                "id": "opt442976642",
+                "name": "部分已到货"
+              },
+              {
+                "color": 3,
+                "id": "opt180454566",
+                "name": "待下单"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldoXPxVw4",
+          "field_name": "物料使用时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2xK9ypy",
+          "field_name": "物料到货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldn6RaSH0",
+          "field_name": "物料下单时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld3UftBmz",
+          "field_name": "是否发货",
+          "type": 7,
+          "ui_type": "Checkbox",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldQZYSjSZ",
+          "field_name": "发货单号及文字信息",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldB2J7eCX",
+          "field_name": "发货图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldIT5LsN2",
+          "field_name": "文化周边消息ID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldXsnbzgf",
+          "field_name": "INV/PL",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwIgWFbO",
+          "field_name": "申请原因",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optkE1IYIR",
+                "name": "代理商支持"
+              },
+              {
+                "color": 1,
+                "id": "optKdv7Rsq",
+                "name": "展会需求"
+              },
+              {
+                "color": 2,
+                "id": "optfgmto4n",
+                "name": "客户来访"
+              },
+              {
+                "color": 3,
+                "id": "opt1YpaxyC",
+                "name": "其他"
+              },
+              {
+                "color": 4,
+                "id": "optAAshswh",
+                "name": "代理活动"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl6i0F9UZjTuTV1",
+      "table_name": "申请明细",
+      "fields": [
+        {
+          "field_id": "fldgtXS0w5",
+          "field_name": "明细编号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld3QWa92E",
+          "field_name": "所属申请单",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldkaC2CtD",
+            "back_field_name": "申请明细",
+            "multiple": true,
+            "table_id": "tbl3eyt8lkl3uQa1",
+            "table_name": "物料申请单"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldiIKb3ab",
+          "field_name": "明细业务类型",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optyuHaRlc",
+                "name": "普通物料"
+              },
+              {
+                "color": 1,
+                "id": "opt99bK22Z",
+                "name": "文化周边"
+              },
+              {
+                "color": 2,
+                "id": "opt2014084090",
+                "name": "企业文化衫"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7t8G0oI",
+          "field_name": "物料编码",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldtNK1jaN",
+            "back_field_name": "申请明细",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMWDekXk",
+          "field_name": "品类",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": true,
+            "table_id": "tbl45q6s50SzEnFI",
+            "table_name": "物料品类"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4HLcaoo",
+          "field_name": "产品型号",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": true,
+            "table_id": "tbl233OjVUgT4cJ5",
+            "table_name": "产品型号"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldgitw8bJ",
+          "field_name": "语种",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": true,
+            "table_id": "tblYZ3XpkUkQWevb",
+            "table_name": "物料语种"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldePX6DdL",
+          "field_name": "品类名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldPIPGplV",
+          "field_name": "产品型号名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldLIm2RCK",
+          "field_name": "语种名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1w2ilYr",
+          "field_name": "申请数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldBQSdsMx",
+          "field_name": "附件",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1rUKkE6",
+          "field_name": "提交时库存快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1UqEEjy",
+          "field_name": "审批通过数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2hHCqLQ",
+          "field_name": "实际发放数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld3abUfLi",
+          "field_name": "明细状态",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldsckhLZC",
+          "field_name": "原申请数量",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flddH4KaBt",
+          "field_name": "库存审查时库存",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5qIxpGl",
+          "field_name": "库存满足状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt0QbRoEM",
+                "name": "库存充足"
+              },
+              {
+                "color": 1,
+                "id": "optQWLWAfs",
+                "name": "库存不足，需要制作"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldbowOA0t",
+          "field_name": "明细变更说明",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1PVBGY4",
+          "field_name": "发放人",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1An7An4",
+          "field_name": "发放时间",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6zpyz74",
+          "field_name": "出库流水编号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4CRNs1f",
+          "field_name": "缺货说明",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld12FS5Sr",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldR1YiJBA",
+          "field_name": "库存流水",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldB7SHc5g",
+            "back_field_name": "关联明细",
+            "multiple": true,
+            "table_id": "tbljMfuTeGM7VC3v",
+            "table_name": "库存流水"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flddNVrcdq",
+          "field_name": "实际发放物料品类",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldRTGRUce",
+          "field_name": "实际发放产品型号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldDPjW8dw",
+          "field_name": "实际发放语种",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldIsVgogX",
+          "field_name": "实际发放物料编码",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldGk1ZNVB",
+          "field_name": "文化周边物料",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldJabz3qK",
+            "back_field_name": "申请明细",
+            "multiple": true,
+            "table_id": "tblu3wRpylTj6zJl",
+            "table_name": "文化周边管理库存"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldGc1jrJH",
+          "field_name": "文化周边战区",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldz3ai7O8",
+          "field_name": "申请时单价（人民币）",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.00"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flducRL8iq",
+          "field_name": "费用小计（人民币）",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.00"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldVVLOXK4",
+          "field_name": "下单表生成状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optBZkOi7f",
+                "name": "未生成"
+              },
+              {
+                "color": 1,
+                "id": "optJz7SwFn",
+                "name": "生成中"
+              },
+              {
+                "color": 2,
+                "id": "optAN3JtAz",
+                "name": "已生成"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld0A0xddO",
+          "field_name": "物料发货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldkYFqjU7",
+          "field_name": "物料使用时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldo9OyLHU",
+          "field_name": "物料到货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldZAXPcbF",
+          "field_name": "物料下单时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldllUWV3y",
+          "field_name": "物料到货状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 1,
+                "id": "optaTwoHlh",
+                "name": "未到货"
+              },
+              {
+                "color": 7,
+                "id": "optFXPI8qN",
+                "name": "已到货"
+              },
+              {
+                "color": 0,
+                "id": "optfelyRIY",
+                "name": "制作中"
+              },
+              {
+                "color": 2,
+                "id": "optUfXqyYF",
+                "name": "已下单"
+              },
+              {
+                "color": 3,
+                "id": "optgrAh9Fx",
+                "name": "已发货"
+              },
+              {
+                "color": 4,
+                "id": "optUYXKhbp",
+                "name": "已取消"
+              },
+              {
+                "color": 5,
+                "id": "optBzKapWi",
+                "name": "已完成"
+              },
+              {
+                "color": 6,
+                "id": "optU5QnQIB",
+                "name": "待安排"
+              },
+              {
+                "color": 8,
+                "id": "optopixQnZ",
+                "name": "无需下单"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldTO7yEIU",
+          "field_name": "计划到仓日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMTQIFxq",
+          "field_name": "是否到货",
+          "type": 7,
+          "ui_type": "Checkbox",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl45q6s50SzEnFI",
+      "table_name": "物料品类",
+      "fields": [
+        {
+          "field_id": "fld1EmAuru",
+          "field_name": "物料品类编码",
+          "type": 1005,
+          "ui_type": "AutoNumber",
+          "property": {
+            "auto_serial": {
+              "options": [
+                {
+                  "type": "system_number",
+                  "value": "3"
+                }
+              ],
+              "type": "custom"
+            }
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld1ZnsQu3",
+          "field_name": "物料品类",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldHqYYXAs",
+          "field_name": "中文页面名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldBdHDY4j",
+          "field_name": "英文页面名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld08wAirE",
+          "field_name": "是否在申领页显示",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optbhgBPp2",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optfd2c0ts",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldOm98U6v",
+          "field_name": "品类定义",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optb5ZjRpT",
+                "name": "印刷物料"
+              },
+              {
+                "color": 1,
+                "id": "optpbp2gos",
+                "name": "周边礼品"
+              },
+              {
+                "color": 2,
+                "id": "optw8ggZ53",
+                "name": "文化周边"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld0j2HWb9",
+          "field_name": "申领页图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldXV6SxKa",
+          "field_name": "装箱单产品类型",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optAFEhOgX",
+                "name": "Flyers"
+              },
+              {
+                "color": 1,
+                "id": "optP1gvbtw",
+                "name": "Brochures"
+              },
+              {
+                "color": 2,
+                "id": "optjaQUvqT",
+                "name": "Banners"
+              },
+              {
+                "color": 3,
+                "id": "optW00ImWD",
+                "name": "Give aways"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldx1V2W7q",
+          "field_name": "商业发票产品名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldWb00SO9",
+          "field_name": "启用状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optj1HAhTW",
+                "name": "启用"
+              },
+              {
+                "color": 1,
+                "id": "optVUVmizo",
+                "name": "停用"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4PycTvg",
+          "field_name": "是否无需型号",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optF7oQc1E",
+                "name": "否"
+              },
+              {
+                "color": 1,
+                "id": "optFpYQWhr",
+                "name": "是"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2EtY2BE",
+          "field_name": "是否无需语种",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optaoJrNlm",
+                "name": "否"
+              },
+              {
+                "color": 1,
+                "id": "optZrL4cKk",
+                "name": "是"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldeQIH0jS",
+          "field_name": "单价（美元）",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.00"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwycKSSj",
+          "field_name": "单价（人民币）",
+          "type": 20,
+          "ui_type": "Formula",
+          "property": {
+            "formatter": "0.00",
+            "formula_expression": "bitable::$table[tbl45q6s50SzEnFI].$field[fldeQIH0jS]*6.77",
+            "type": {
+              "data_type": 2,
+              "ui_property": {
+                "formatter": "0.00"
+              },
+              "ui_type": "Number"
+            }
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldSU06dXK",
+          "field_name": "海关编码",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld361H4lB",
+          "field_name": "库存行数",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld51TXwMI",
+          "field_name": "产品型号数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4SHmqeB",
+          "field_name": "语种数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5kk2zPo",
+          "field_name": "创建时间",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2yBCSie",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldv4U0nYW",
+          "field_name": "物料主数据",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldMePIniD",
+            "back_field_name": "品类关联",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld02EVY2i",
+          "field_name": "父记录",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbl45q6s50SzEnFI",
+            "table_name": "物料品类"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldm5SsXdh",
+          "field_name": "文化周边",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldO5JJjr5",
+            "back_field_name": "物料品类关联",
+            "multiple": true,
+            "table_id": "tblu3wRpylTj6zJl",
+            "table_name": "文化周边管理库存"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl233OjVUgT4cJ5",
+      "table_name": "产品型号",
+      "fields": [
+        {
+          "field_id": "fld2VgEeIo",
+          "field_name": "产品型号编码",
+          "type": 1005,
+          "ui_type": "AutoNumber",
+          "property": {
+            "auto_serial": {
+              "options": [
+                {
+                  "type": "fixed_text",
+                  "value": "X"
+                },
+                {
+                  "type": "system_number",
+                  "value": "3"
+                }
+              ],
+              "type": "custom"
+            }
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "flduNGc5os",
+          "field_name": "型号类型",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optqzZROpi",
+                "name": "普通物料"
+              },
+              {
+                "color": 1,
+                "id": "opthIKmLUy",
+                "name": "文化周边"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldCdm4wzb",
+          "field_name": "产品型号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldfS1pn1E",
+          "field_name": "中文页面名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMvJ3K47",
+          "field_name": "英文页面名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMeouiFj",
+          "field_name": "产品线",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opto80NJn6",
+                "name": "IR"
+              },
+              {
+                "color": 1,
+                "id": "optcdkXfGF",
+                "name": "CR"
+              },
+              {
+                "color": 2,
+                "id": "opt14mFQUI",
+                "name": "SR"
+              },
+              {
+                "color": 3,
+                "id": "optPk0BpZR",
+                "name": "GR"
+              },
+              {
+                "color": 4,
+                "id": "opt131L5Rw",
+                "name": "新项目"
+              },
+              {
+                "color": 5,
+                "id": "optCxbCZO6",
+                "name": "GT"
+              },
+              {
+                "color": 6,
+                "id": "optHvYYYBY",
+                "name": "Hulk"
+              },
+              {
+                "color": 7,
+                "id": "optMfyeTaX",
+                "name": " "
+              },
+              {
+                "color": 8,
+                "id": "optMdw1GOM",
+                "name": "OR"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldg5lzBU0",
+          "field_name": "启用状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optwrYTptS",
+                "name": "启用"
+              },
+              {
+                "color": 1,
+                "id": "opt8SPpHpT",
+                "name": "停用"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld9D1ZQzw",
+          "field_name": "物料主数据",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldFeKk2zw",
+            "back_field_name": "产品型号 2",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldguqypG5",
+          "field_name": "文化周边",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldBp7xfWQ",
+            "back_field_name": "产品型号关联",
+            "multiple": true,
+            "table_id": "tblu3wRpylTj6zJl",
+            "table_name": "文化周边管理库存"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblYZ3XpkUkQWevb",
+      "table_name": "物料语种",
+      "fields": [
+        {
+          "field_id": "fldtPMkPZE",
+          "field_name": "语种编码",
+          "type": 1005,
+          "ui_type": "AutoNumber",
+          "property": {
+            "auto_serial": {
+              "options": [
+                {
+                  "type": "fixed_text",
+                  "value": "Y"
+                },
+                {
+                  "type": "system_number",
+                  "value": "2"
+                }
+              ],
+              "type": "custom"
+            }
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldEYVyr3e",
+          "field_name": "语言种类",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldhwy00QI",
+          "field_name": "启用状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optdvoo8ns",
+                "name": "启用"
+              },
+              {
+                "color": 1,
+                "id": "optEZSeLBu",
+                "name": "停用"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2xd0znp",
+          "field_name": "物料主数据",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld1lKlPjC",
+            "back_field_name": "语种关联",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblFEKwM1kw9QZAx",
+      "table_name": "战区管理",
+      "fields": [
+        {
+          "field_id": "fldmDGD9wO",
+          "field_name": "战区编号",
+          "type": 1005,
+          "ui_type": "AutoNumber",
+          "property": {
+            "auto_serial": {
+              "options": [
+                {
+                  "type": "system_number",
+                  "value": "5"
+                }
+              ],
+              "type": "custom"
+            }
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld5zJ7eBQ",
+          "field_name": "战区名称",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt7MxJrip",
+                "name": "美洲战区"
+              },
+              {
+                "color": 1,
+                "id": "optwUNUzlZ",
+                "name": "澳新战队"
+              },
+              {
+                "color": 2,
+                "id": "optFQDI5nA",
+                "name": "日本战队"
+              },
+              {
+                "color": 3,
+                "id": "optTIqiYd8",
+                "name": "亚太战区"
+              },
+              {
+                "color": 4,
+                "id": "optwteCFq3",
+                "name": "大中华战区"
+              },
+              {
+                "color": 5,
+                "id": "optjRqSmxS",
+                "name": "欧洲战区"
+              },
+              {
+                "color": 6,
+                "id": "optu9SFw89",
+                "name": "HMT战队"
+              },
+              {
+                "color": 7,
+                "id": "optTYkYaE4",
+                "name": "品牌&市场营销内部"
+              },
+              {
+                "color": 8,
+                "id": "optYKnAJRR",
+                "name": "电商（国内）"
+              },
+              {
+                "color": 9,
+                "id": "opthxiUx4U",
+                "name": "电商（海外）"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flda3E0y9s",
+          "field_name": "启用状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optJBtSbDa",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optkjl4Hop",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldrbLBGG4",
+          "field_name": "文化周边",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldGbohvWw",
+            "back_field_name": "战区关联",
+            "multiple": true,
+            "table_id": "tblu3wRpylTj6zJl",
+            "table_name": "文化周边管理库存"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldQveqXsI",
+          "field_name": "物料数据关联",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldbk7CsUV",
+            "back_field_name": "战区管理",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbljMfuTeGM7VC3v",
+      "table_name": "库存流水",
+      "fields": [
+        {
+          "field_id": "fld1Owurqa",
+          "field_name": "原Supabase ID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld1wkD9IZ",
+          "field_name": "流水业务类型",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optMrArhsN",
+                "name": "文化周边"
+              },
+              {
+                "color": 1,
+                "id": "opt2O1oXmT",
+                "name": "营销物料"
+              },
+              {
+                "color": 2,
+                "id": "opt1294153369",
+                "name": "文化周边申领驳回"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2UDZN6m",
+          "field_name": "发生时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4HaCw9o",
+          "field_name": "流水类型",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2DuHL0N",
+          "field_name": "物料编码",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld6qyIeal",
+            "back_field_name": "库存流水",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld74FABY1",
+          "field_name": "物料品类",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld3VHZTcA",
+          "field_name": "产品型号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2y4NB3H",
+          "field_name": "语种",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1u247sT",
+          "field_name": "数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2VaWJr4",
+          "field_name": "变更前数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6OsbTdg",
+          "field_name": "变更后数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1ici2uJ",
+          "field_name": "库存变化",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4180xUe",
+          "field_name": "幂等键",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5y4D8CQ",
+          "field_name": "操作人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5Y7P89H",
+          "field_name": "操作状态",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4pbNnmP",
+          "field_name": "撤回时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5c229Tz",
+          "field_name": "原流水ID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4LBeRQm",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldB7SHc5g",
+          "field_name": "关联明细",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldR1YiJBA",
+            "back_field_name": "库存流水",
+            "multiple": true,
+            "table_id": "tbl6i0F9UZjTuTV1",
+            "table_name": "申请明细"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldA4ooChD",
+          "field_name": "文化周边物料",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld7NtPRmz",
+            "back_field_name": "库存流水",
+            "multiple": true,
+            "table_id": "tblu3wRpylTj6zJl",
+            "table_name": "文化周边管理库存"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldGkM9ZD7",
+          "field_name": "文化周边战区快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblZKYpNhA5aw3HV",
+      "table_name": "申请物料变更记录表",
+      "fields": [
+        {
+          "field_id": "fldxapsDPC",
+          "field_name": "文本",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldexIhO6d",
+          "field_name": "申请单号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldmvuhwk2",
+          "field_name": "操作人OpenID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flda0yOu91",
+          "field_name": "操作时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldsrHK2Kb",
+          "field_name": "变更说明",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldjLdmuVW",
+          "field_name": "变更前JSON",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldCiKntAO",
+          "field_name": "变更后JSON",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldIFJ2RJ5",
+          "field_name": "变更版本",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.0"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblqz8xmpgtv4Q9C",
+      "table_name": "物料货架",
+      "fields": [
+        {
+          "field_id": "fld1R8ShBf",
+          "field_name": "货架编号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldaxUFtpz",
+          "field_name": "货架地面位置",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld9hcgSVr",
+          "field_name": "货架图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwjN2hgu",
+          "field_name": "放置物料",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldjOmKe18",
+          "field_name": "SourceID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldHciBo7u",
+          "field_name": "关联货架行",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fld5lebrRH",
+            "back_field_name": "关联货架",
+            "multiple": true,
+            "table_id": "tbldA8qhSeIfJp3k",
+            "table_name": "仓库物料位置"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2MnIrLH",
+          "field_name": "关联物料",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldr3SpFag",
+            "back_field_name": "物料货架",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbldA8qhSeIfJp3k",
+      "table_name": "仓库物料位置",
+      "fields": [
+        {
+          "field_id": "fldX30nMua",
+          "field_name": "货架行",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld5lebrRH",
+          "field_name": "关联货架",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldHciBo7u",
+            "back_field_name": "货架行 2",
+            "multiple": true,
+            "table_id": "tblqz8xmpgtv4Q9C",
+            "table_name": "物料货架"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldYBBCDb9",
+          "field_name": "放置物料文字说明",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldt7YUjNs",
+          "field_name": "图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldY59fk7a",
+          "field_name": "关联物料",
+          "type": 21,
+          "ui_type": "DuplexLink",
+          "property": {
+            "back_field_id": "fldl1JuFXD",
+            "back_field_name": "仓库物料位置",
+            "multiple": true,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblytA4DHQVbJiIJ",
+      "table_name": "用户权限表",
+      "fields": [
+        {
+          "field_id": "flde9SGwYo",
+          "field_name": "用户编号",
+          "type": 1005,
+          "ui_type": "AutoNumber",
+          "property": {
+            "auto_serial": {
+              "type": "auto_increment_number"
+            }
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldjvS5kat",
+          "field_name": "用户账号",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldIRrp9Mt",
+          "field_name": "角色",
+          "type": 4,
+          "ui_type": "MultiSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optJcJonYu",
+                "name": "管理员"
+              },
+              {
+                "color": 1,
+                "id": "optnP9nIh0",
+                "name": "销售"
+              },
+              {
+                "color": 2,
+                "id": "optqlee6Z7",
+                "name": "区域市场经理"
+              },
+              {
+                "color": 3,
+                "id": "optH4iaIBL",
+                "name": "HR"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldAkxcnfu",
+          "field_name": "是否启用",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optsRiUH6M",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optgk5K04i",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldq1O6Sjs",
+          "field_name": "POLO申领数量累计",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldH0n3EhG",
+          "field_name": "文化夹克申领数量累计",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldZviMA22",
+          "field_name": "T恤-黑色（短袖）申领数量累计",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldM9P8Y4Q",
+          "field_name": "冲锋衣-黑色申领数量累计",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvHGX5Mf",
+          "field_name": "商务衬衫-黑色（长袖）神灵数量累计",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldJafoPOr",
+          "field_name": "文化衫申领数量累计",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldtGAg9eT",
+          "field_name": "父记录",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tblytA4DHQVbJiIJ",
+            "table_name": "用户权限表"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblkwz5617lcUEII",
+      "table_name": "BUG反馈收集",
+      "fields": [
+        {
+          "field_id": "fldiOcTKNd",
+          "field_name": "编号",
+          "type": 1005,
+          "ui_type": "AutoNumber",
+          "property": {
+            "auto_serial": {
+              "type": "auto_increment_number"
+            }
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fld6sz5Ntp",
+          "field_name": "人员",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7xQEXlj",
+          "field_name": "人员.部门",
+          "type": 4,
+          "ui_type": "MultiSelect",
+          "property": {
+            "options": []
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxi0GHxq",
+          "field_name": "BUG",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvPb9tAC",
+          "field_name": "优化",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblqkM5h34IJc1o5",
+      "table_name": "后台任务队列",
+      "fields": [
+        {
+          "field_id": "fldh251Xg3",
+          "field_name": "任务ID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldQBywunj",
+          "field_name": "任务类型",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldc6MRjZ4",
+          "field_name": "幂等键",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7co3b4n",
+          "field_name": "状态",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldkxECJbb",
+          "field_name": "载荷JSON",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldqZHccF4",
+          "field_name": "提交时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld9HkV8ns",
+          "field_name": "开始时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldoTcXGX5",
+          "field_name": "完成时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldLSzLniZ",
+          "field_name": "租约到期时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldfCEQVkp",
+          "field_name": "重试次数",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5aJVWS0",
+          "field_name": "下次重试时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2bTELtV",
+          "field_name": "Worker标识",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld8ZmhDJd",
+          "field_name": "结果JSON",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7N139Oi",
+          "field_name": "错误信息",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldHmNjeec",
+          "field_name": "完成状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optia2fC0U",
+                "name": "未完成"
+              },
+              {
+                "color": 1,
+                "id": "optjvJynfo",
+                "name": "已完成"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl0L6FyQocgHlZS",
+      "table_name": "后台任务载荷",
+      "fields": [
+        {
+          "field_id": "fld5vbI3F6",
+          "field_name": "任务ID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldt1uMUmm",
+          "field_name": "分片序号",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld9jXgMkN",
+          "field_name": "分片内容",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblvcbMPOaNUGwpO",
+      "table_name": "后台任务节点列表",
+      "fields": [
+        {
+          "field_id": "fldU5SJT59",
+          "field_name": "节点标识",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldKBmw7rb",
+          "field_name": "电脑名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldCJLwrek",
+          "field_name": "优先级",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0.0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldBl0ffap",
+          "field_name": "最后心跳时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld07GONzV",
+          "field_name": "应用版本",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldJ7Kyh6v",
+          "field_name": "节点状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optvVmPJP8",
+                "name": "在线"
+              },
+              {
+                "color": 1,
+                "id": "optg6g7Wlz",
+                "name": "离线"
+              },
+              {
+                "color": 2,
+                "id": "optOfU68T6",
+                "name": "失联"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldpy2bmPQ",
+          "field_name": "是否启用",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optaEmWE83",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optslldmmE",
+                "name": "否"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblIK0aWEMcMIbxt",
+      "table_name": "项目周边礼品物料筹备详情list",
+      "fields": [
+        {
+          "field_id": "fldGoBPnLQ",
+          "field_name": "项目名称",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optwUX804S",
+                "name": "巴拿马活动"
+              },
+              {
+                "color": 1,
+                "id": "opt3IdeR8f",
+                "name": "公共项目"
+              },
+              {
+                "color": 2,
+                "id": "optdP8QSSp",
+                "name": "周边电商化"
+              },
+              {
+                "color": 3,
+                "id": "opt530744945",
+                "name": "__CODEX_OWNER_FIELD_REGRESSION__"
+              },
+              {
+                "color": 4,
+                "id": "opt1419947560",
+                "name": "测试项目"
+              },
+              {
+                "color": 5,
+                "id": "opt156379096",
+                "name": "AAA"
+              },
+              {
+                "color": 6,
+                "id": "opt1706636937",
+                "name": "巴西新活动"
+              },
+              {
+                "color": 7,
+                "id": "opt617381312",
+                "name": "澳洲ISSA"
+              }
+            ]
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldT3IPEsj",
+          "field_name": "物料名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld8YtnV0L",
+          "field_name": "项目状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optpcUOuNe",
+                "name": "筹备中"
+              },
+              {
+                "color": 1,
+                "id": "optOMWYr6e",
+                "name": "已完结"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldgazMZbB",
+          "field_name": "物料状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 6,
+                "id": "optKsGwHpt",
+                "name": "已提需"
+              },
+              {
+                "color": 7,
+                "id": "optIgPoxIP",
+                "name": "寻源中"
+              },
+              {
+                "color": 8,
+                "id": "optw1RmHBR",
+                "name": "待确认下单"
+              },
+              {
+                "color": 1,
+                "id": "optxmJYYcc",
+                "name": "设计制作中"
+              },
+              {
+                "color": 0,
+                "id": "opt0K2jXbM",
+                "name": "已到货"
+              },
+              {
+                "color": 2,
+                "id": "optBBkZqAs",
+                "name": "在库有库存"
+              },
+              {
+                "color": 4,
+                "id": "optbetT483",
+                "name": "已发货"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldrARXhUa",
+          "field_name": "物料图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldtRwJF6V",
+          "field_name": "供应商联系方式",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldWETvWXK",
+          "field_name": "物料品类关联",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": true,
+            "table_id": "tbl45q6s50SzEnFI",
+            "table_name": "物料品类"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld4aQuoqH",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldhUH5fo2",
+          "field_name": "负责人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldbeCjKuG",
+          "field_name": "参与人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": true
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldik2eETL",
+          "field_name": "父记录 2",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tblIK0aWEMcMIbxt",
+            "table_name": "项目周边礼品物料筹备详情list"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl0s6IFfjPsYIen",
+      "table_name": "物料下单批次",
+      "fields": [
+        {
+          "field_id": "fldrlQp44d",
+          "field_name": "下单批次号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "flde6O9x5a",
+          "field_name": "批次状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optXPlg0dH",
+                "name": "生成中"
+              },
+              {
+                "color": 1,
+                "id": "optvszfSBR",
+                "name": "生成失败"
+              },
+              {
+                "color": 2,
+                "id": "optZPZDNyW",
+                "name": "已生成"
+              },
+              {
+                "color": 3,
+                "id": "optmnLldMl",
+                "name": "已作废"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldl5ti5ei",
+          "field_name": "下单表文件",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6Hboct1",
+          "field_name": "生成人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldqwogT4X",
+          "field_name": "生成时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldakjTWAm",
+          "field_name": "生成幂等键",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldS2BUgyZ",
+          "field_name": "启用自动补库",
+          "type": 7,
+          "ui_type": "Checkbox",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldkxgBC0v",
+          "field_name": "批次备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldv5AJCLL",
+          "field_name": "物料使用时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldbwbn4ps",
+          "field_name": "物料发货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldVNGS8kr",
+          "field_name": "物料到货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldDhLpEg6",
+          "field_name": "物料下单时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblOI5DtJydIREVu",
+      "table_name": "物料下单批次明细",
+      "fields": [
+        {
+          "field_id": "fldQVgdgeO",
+          "field_name": "批次明细编号",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldGFyEbPJ",
+          "field_name": "所属下单批次",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbl0s6IFfjPsYIen",
+            "table_name": "物料下单批次"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldMixIryy",
+          "field_name": "来源申请单",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbl3eyt8lkl3uQa1",
+            "table_name": "物料申请单"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldoKB0UqF",
+          "field_name": "来源申请明细",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbl6i0F9UZjTuTV1",
+            "table_name": "申请明细"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld8C18lqz",
+          "field_name": "关联物料",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbl4UsiEmprnImIY",
+            "table_name": "物料主数据"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldFPeOXMk",
+          "field_name": "关联文化周边库存",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tblu3wRpylTj6zJl",
+            "table_name": "文化周边管理库存"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6CHdrHI",
+          "field_name": "品类名称快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "flde7eKKsb",
+          "field_name": "型号或尺码快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldPOP4d4n",
+          "field_name": "语种快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld8lChhdg",
+          "field_name": "战区快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldOFQRbHH",
+          "field_name": "下单数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvDe9M26",
+          "field_name": "申请用途快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldUPmbYap",
+          "field_name": "明细备注快照",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwgopsCW",
+          "field_name": "计划到仓日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvfPZB1f",
+          "field_name": "补库状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt2OSOMuV",
+                "name": "待补库"
+              },
+              {
+                "color": 1,
+                "id": "optBluS1VC",
+                "name": "补库中"
+              },
+              {
+                "color": 2,
+                "id": "optHcu0BcV",
+                "name": "已补库"
+              },
+              {
+                "color": 3,
+                "id": "opt7vURd7Y",
+                "name": "补库异常"
+              },
+              {
+                "color": 4,
+                "id": "optkjnzWfo",
+                "name": "已取消"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldFOKlsOW",
+          "field_name": "实际补库时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd HH:mm"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldTTn7weu",
+          "field_name": "关联库存流水",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": true,
+            "table_id": "tbljMfuTeGM7VC3v",
+            "table_name": "库存流水"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2JgQWVq",
+          "field_name": "补库幂等建",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldUKbnszg",
+          "field_name": "补库异常说明",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldq3IESYB",
+          "field_name": "物料发货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld17f2xDO",
+          "field_name": "物料到货状态",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optOP0nfF6",
+                "name": "已到货"
+              },
+              {
+                "color": 1,
+                "id": "opt2jGMI9m",
+                "name": "未到货"
+              },
+              {
+                "color": 2,
+                "id": "optlbTqQMn",
+                "name": "制作中"
+              },
+              {
+                "color": 3,
+                "id": "opthH65rHl",
+                "name": "已下单"
+              },
+              {
+                "color": 4,
+                "id": "optLJ7n7GJ",
+                "name": "已发货"
+              },
+              {
+                "color": 5,
+                "id": "optRAbN4ez",
+                "name": "已取消"
+              },
+              {
+                "color": 6,
+                "id": "optdEMe9Il",
+                "name": "已完成"
+              },
+              {
+                "color": 7,
+                "id": "optTdiyN7F",
+                "name": "待安排"
+              },
+              {
+                "color": 8,
+                "id": "optrg47FdQ",
+                "name": "无需下单"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldVGU8aRc",
+          "field_name": "物料使用时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldItzchlw",
+          "field_name": "物料下单时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxPdOLR1",
+          "field_name": "物料到货时间",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tblOUvklAihp8g34",
+      "table_name": "文化周边编码及库存数量",
+      "fields": [
+        {
+          "field_id": "fldf5SRSn5",
+          "field_name": "物品分类",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optBSA1wsG",
+                "name": "文化衫"
+              },
+              {
+                "color": 1,
+                "id": "opt0EcWbln",
+                "name": "文创周边"
+              },
+              {
+                "color": 2,
+                "id": "optY5Lh87W",
+                "name": "【说明】\n1.产品正式名称采用“一级分类-产品名称-款式/主题名称”统一命名。\n2.产品编码采用“分类前缀 + 三位流水号”形式。文化服饰类编码建议统一使用CF（Corporate Fashion），文创周边类编码建议统一使用 CG（Cultural Goods）。\n3.颜色、尺码等库存维度信息，在库存SKU层单独管理。"
+              }
+            ]
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldgWL0cJR",
+          "field_name": "款式",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldy0UjLOf",
+          "field_name": "编码",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldyXPihmv",
+          "field_name": "图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldwqdnecL",
+          "field_name": "文化币售价/个",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1q7jLm6",
+          "field_name": "码数",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optR8a6iVL",
+                "name": "标品"
+              },
+              {
+                "color": 1,
+                "id": "opt2NYgnGH",
+                "name": "2XS"
+              },
+              {
+                "color": 2,
+                "id": "optjbd8bXD",
+                "name": "XS"
+              },
+              {
+                "color": 3,
+                "id": "opt2CfiroJ",
+                "name": "S"
+              },
+              {
+                "color": 4,
+                "id": "optFDRHORb",
+                "name": "M"
+              },
+              {
+                "color": 5,
+                "id": "optPqJgngW",
+                "name": "L"
+              },
+              {
+                "color": 6,
+                "id": "opt18rKBLd",
+                "name": "XL"
+              },
+              {
+                "color": 7,
+                "id": "optMm5gA7y",
+                "name": "2XL"
+              },
+              {
+                "color": 8,
+                "id": "optX3knOFt",
+                "name": "3XL"
+              },
+              {
+                "color": 9,
+                "id": "optHnHn2w0",
+                "name": "4XL"
+              },
+              {
+                "color": 10,
+                "id": "optrUZQiJx",
+                "name": "5XL"
+              },
+              {
+                "color": 0,
+                "id": "opt317mpeI",
+                "name": "6XL"
+              },
+              {
+                "color": 1,
+                "id": "optqxgy405",
+                "name": "7XL"
+              },
+              {
+                "color": 2,
+                "id": "opt42U6S9U",
+                "name": "8XL"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld1daDFDB",
+          "field_name": "原始库存数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldgo3lmnA",
+          "field_name": "入库/纠正",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldd2msnXE",
+          "field_name": "表格兑换数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld9wnPdsv",
+          "field_name": "最新库存",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldt0RG8Ai",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldBYQeDOO",
+          "field_name": "SourceID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldkk4LsEO",
+          "field_name": "系统兑换数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldzM8Ou4A",
+          "field_name": "父记录",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldA00ml9C",
+          "field_name": "父记录 2",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldpIrGTcV",
+          "field_name": "父记录 2 (1)",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld7oQPDmq",
+          "field_name": "父记录 2 (1) (1)",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "primary",
+      "table_id": "tbl555oQLUh7BiC8",
+      "table_name": "文化周边兑换",
+      "fields": [
+        {
+          "field_id": "fldjFHS6l8",
+          "field_name": "兑换方式",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt3iaVo8y",
+                "name": "公司配置申领"
+              },
+              {
+                "color": 1,
+                "id": "optyNH58k1",
+                "name": "文化币兑换"
+              },
+              {
+                "color": 2,
+                "id": "optILlKIpi",
+                "name": "外联活动事宜"
+              }
+            ]
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldedOWYwZ",
+          "field_name": "创建人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": true
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldsMccLor",
+          "field_name": "兑换人",
+          "type": 11,
+          "ui_type": "User",
+          "property": {
+            "multiple": false
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6tDLNff",
+          "field_name": "兑换人.部门",
+          "type": 4,
+          "ui_type": "MultiSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "7660154404645162215",
+                "name": "X LAB测试组"
+              },
+              {
+                "color": 1,
+                "id": "7628920708237806778",
+                "name": "X LAB"
+              },
+              {
+                "color": 2,
+                "id": "7628923088622030005",
+                "name": "美国战队"
+              },
+              {
+                "color": 3,
+                "id": "7628922913367067867",
+                "name": "证券事务组"
+              },
+              {
+                "color": 4,
+                "id": "7628922968463379650",
+                "name": "HRBP部"
+              },
+              {
+                "color": 5,
+                "id": "7628922893236096186",
+                "name": "Dream组"
+              },
+              {
+                "color": 6,
+                "id": "7628920663756655840",
+                "name": "GRPBU"
+              },
+              {
+                "color": 7,
+                "id": "7628923161808948410",
+                "name": "欧洲服务B组"
+              },
+              {
+                "color": 8,
+                "id": "7626583174827183041",
+                "name": "PBG"
+              },
+              {
+                "color": 9,
+                "id": "7642664299446209714",
+                "name": "AI Infra部"
+              },
+              {
+                "color": 10,
+                "id": "7664878608809233594",
+                "name": "COE"
+              },
+              {
+                "color": 0,
+                "id": "7628923022464584925",
+                "name": "中东战队"
+              },
+              {
+                "color": 1,
+                "id": "7628920672708398304",
+                "name": "M LAB"
+              },
+              {
+                "color": 2,
+                "id": "7628922960313633996",
+                "name": "美澳英战区"
+              },
+              {
+                "color": 3,
+                "id": "7628922960312667340",
+                "name": "法务部"
+              },
+              {
+                "color": 4,
+                "id": "7628920735210130628",
+                "name": "IRPBU软件组"
+              },
+              {
+                "color": 5,
+                "id": "7647145533294824647",
+                "name": "渠道管理组"
+              },
+              {
+                "color": 6,
+                "id": "7628923048851426492",
+                "name": "意大利战队"
+              },
+              {
+                "color": 7,
+                "id": "7642703037489122518",
+                "name": "通用导航及底盘团队"
+              },
+              {
+                "color": 8,
+                "id": "7662969211589971180",
+                "name": "IR&GR服务组"
+              },
+              {
+                "color": 9,
+                "id": "7647145570428636381",
+                "name": "项目交付组"
+              },
+              {
+                "color": 10,
+                "id": "7628920767884250310",
+                "name": "GRPBU软件组"
+              },
+              {
+                "color": 0,
+                "id": "7628923062394178751",
+                "name": "法国战队"
+              },
+              {
+                "color": 1,
+                "id": "7628920735210261700",
+                "name": "项目成员挂靠"
+              },
+              {
+                "color": 2,
+                "id": "7660154256519580884",
+                "name": "GR测试组"
+              },
+              {
+                "color": 3,
+                "id": "7628920736019827898",
+                "name": "GRPBU算法组"
+              },
+              {
+                "color": 4,
+                "id": "7628920801417055429",
+                "name": "平台软件测试组"
+              },
+              {
+                "color": 5,
+                "id": "7640108579793554632",
+                "name": "IR产品组"
+              },
+              {
+                "color": 6,
+                "id": "7664886615538928938",
+                "name": "校招组"
+              },
+              {
+                "color": 7,
+                "id": "7628920647398771910",
+                "name": "设计部"
+              },
+              {
+                "color": 8,
+                "id": "7628920663755377888",
+                "name": "SRPBU"
+              },
+              {
+                "color": 9,
+                "id": "7652266442369387708",
+                "name": "成本管理组"
+              },
+              {
+                "color": 10,
+                "id": "7628920716881677501",
+                "name": "GRPBU机械组"
+              },
+              {
+                "color": 0,
+                "id": "7642703547432455357",
+                "name": "通用交互团队"
+              },
+              {
+                "color": 1,
+                "id": "7642670873895636161",
+                "name": "硬件平台部电机组"
+              },
+              {
+                "color": 1,
+                "id": "7628920775175048420",
+                "name": "硬件平台部"
+              },
+              {
+                "color": 3,
+                "id": "7642671272216726727",
+                "name": "软件平台架构部"
+              },
+              {
+                "color": 4,
+                "id": "7642663352900898006",
+                "name": "基座模型部"
+              },
+              {
+                "color": 5,
+                "id": "7628922910611590342",
+                "name": "品牌部"
+              },
+              {
+                "color": 6,
+                "id": "7628922960312929484",
+                "name": "行政服务部"
+              },
+              {
+                "color": 7,
+                "id": "7628923106414496970",
+                "name": "海外商务交付组"
+              },
+              {
+                "color": 8,
+                "id": "7628920726062468294",
+                "name": "硬件测试组"
+              },
+              {
+                "color": 9,
+                "id": "7628923076794010829",
+                "name": "销售运营组"
+              },
+              {
+                "color": 10,
+                "id": "7628922999021882573",
+                "name": "收入成本核算组"
+              },
+              {
+                "color": 0,
+                "id": "7628922984948157652",
+                "name": "采购部"
+              },
+              {
+                "color": 1,
+                "id": "7640108423351094487",
+                "name": "GR产品组"
+              },
+              {
+                "color": 2,
+                "id": "7628920672708693216",
+                "name": "项目管理部"
+              },
+              {
+                "color": 3,
+                "id": "7628923020427168978",
+                "name": "产品营销组"
+              },
+              {
+                "color": 4,
+                "id": "7628922978881457340",
+                "name": "国内商务交付组"
+              },
+              {
+                "color": 5,
+                "id": "7628922984250084564",
+                "name": "解决方案部"
+              },
+              {
+                "color": 6,
+                "id": "7628920736166251745",
+                "name": "质量代表组"
+              },
+              {
+                "color": 7,
+                "id": "7628922927698250976",
+                "name": "市场营销部"
+              },
+              {
+                "color": 8,
+                "id": "7642702586063916249",
+                "name": "业务运营平台团队"
+              },
+              {
+                "color": 9,
+                "id": "7641580618152692956",
+                "name": "GRPBU电机组"
+              },
+              {
+                "color": 10,
+                "id": "7628922987501587660",
+                "name": "采购开发组"
+              },
+              {
+                "color": 0,
+                "id": "7628923048850312380",
+                "name": "视觉设计组"
+              },
+              {
+                "color": 1,
+                "id": "7642703884486790334",
+                "name": "通用互联团队"
+              },
+              {
+                "color": 2,
+                "id": "7626583725758155983",
+                "name": "数字化组"
+              },
+              {
+                "color": 3,
+                "id": "7628920686210075844",
+                "name": "知识产权部"
+              },
+              {
+                "color": 4,
+                "id": "7628923106413759690",
+                "name": "英爱战队"
+              },
+              {
+                "color": 5,
+                "id": "7628923014596021451",
+                "name": "营销运营组"
+              },
+              {
+                "color": 6,
+                "id": "7628920719652736210",
+                "name": "GRPBU硬件组"
+              },
+              {
+                "color": 7,
+                "id": "7626583725757811919",
+                "name": "AI变革部"
+              },
+              {
+                "color": 8,
+                "id": "7628923071668702417",
+                "name": "物料计划组"
+              },
+              {
+                "color": 9,
+                "id": "7628923048851049660",
+                "name": "服务代表组"
+              },
+              {
+                "color": 10,
+                "id": "7628923067725532358",
+                "name": "拉美战队"
+              },
+              {
+                "color": 0,
+                "id": "7642702365988981972",
+                "name": "生命周期工具链团队"
+              },
+              {
+                "color": 1,
+                "id": "7628923164504870081",
+                "name": "东莞仓储物流组"
+              },
+              {
+                "color": 2,
+                "id": "7628923051470703816",
+                "name": "IR业务部"
+              },
+              {
+                "color": 3,
+                "id": "7628923146138045662",
+                "name": "欧洲服务A组"
+              },
+              {
+                "color": 4,
+                "id": "7628920726061993158",
+                "name": "IRPBU机械组"
+              },
+              {
+                "color": 5,
+                "id": "7642663588188146874",
+                "name": "端到端导航组"
+              },
+              {
+                "color": 6,
+                "id": "7628922964599885025",
+                "name": "招聘部"
+              },
+              {
+                "color": 7,
+                "id": "7628923052717804743",
+                "name": "NPI组"
+              },
+              {
+                "color": 8,
+                "id": "7628920747956341979",
+                "name": "SRPBU机械组"
+              },
+              {
+                "color": 9,
+                "id": "7640108673533004998",
+                "name": "SR产品组"
+              },
+              {
+                "color": 10,
+                "id": "7628923088390245557",
+                "name": "区域市场组"
+              },
+              {
+                "color": 0,
+                "id": "7660153824582175934",
+                "name": "SR测试组"
+              },
+              {
+                "color": 1,
+                "id": "7642917883375160515",
+                "name": "CRPBU算法组"
+              },
+              {
+                "color": 2,
+                "id": "7628920801417563333",
+                "name": "IRPBU硬件组"
+              },
+              {
+                "color": 3,
+                "id": "7660154568966032623",
+                "name": "M LAB测试组"
+              },
+              {
+                "color": 3,
+                "id": "7628922960313093324",
+                "name": "报告&税务组"
+              },
+              {
+                "color": 5,
+                "id": "7628920775148620978",
+                "name": "机械平台部"
+              },
+              {
+                "color": 6,
+                "id": "7628920813433605324",
+                "name": "SQE组"
+              },
+              {
+                "color": 7,
+                "id": "7628923037413805281",
+                "name": "德瑞奥战队"
+              },
+              {
+                "color": 8,
+                "id": "7671118238105144500",
+                "name": "GR项目管理组"
+              },
+              {
+                "color": 9,
+                "id": "7641966919142608061",
+                "name": "解决方案中台组"
+              },
+              {
+                "color": 10,
+                "id": "7628920813434358988",
+                "name": "CRPBU机电测试组"
+              },
+              {
+                "color": 0,
+                "id": "7628923052718935239",
+                "name": "美洲服务部"
+              },
+              {
+                "color": 1,
+                "id": "7628923153228057798",
+                "name": "韩国服务组"
+              },
+              {
+                "color": 2,
+                "id": "7628923000968105164",
+                "name": "服务运营组"
+              },
+              {
+                "color": 3,
+                "id": "7634507721791130805",
+                "name": "欧洲IR业务部"
+              },
+              {
+                "color": 4,
+                "id": "7628923011593604324",
+                "name": "技术客服组"
+              },
+              {
+                "color": 5,
+                "id": "7642671567725726913",
+                "name": "通用调度团队"
+              },
+              {
+                "color": 6,
+                "id": "7671185883165379843",
+                "name": "基座模型数采实习生组"
+              },
+              {
+                "color": 7,
+                "id": "7628920649097596090",
+                "name": "质量部"
+              },
+              {
+                "color": 8,
+                "id": "7628922952469482705",
+                "name": "财经BP组"
+              },
+              {
+                "color": 9,
+                "id": "7628922925354060980",
+                "name": "工程部"
+              },
+              {
+                "color": 10,
+                "id": "7628923051476143285",
+                "name": "大中华服务部"
+              },
+              {
+                "color": 0,
+                "id": "7647145311856872634",
+                "name": "HMT服务组"
+              },
+              {
+                "color": 1,
+                "id": "7628923051470212296",
+                "name": "采购执行组"
+              },
+              {
+                "color": 2,
+                "id": "7628923024323431618",
+                "name": "需求计划组"
+              },
+              {
+                "color": 3,
+                "id": "7628920682684812473",
+                "name": "IRPBU"
+              },
+              {
+                "color": 4,
+                "id": "7628923106413186250",
+                "name": "SR3D业务部"
+              },
+              {
+                "color": 5,
+                "id": "7628920757307837659",
+                "name": "SQM组"
+              },
+              {
+                "color": 6,
+                "id": "7628922921146813659",
+                "name": "欧日韩战区"
+              },
+              {
+                "color": 7,
+                "id": "7628923088621702325",
+                "name": "CR业务部"
+              },
+              {
+                "color": 8,
+                "id": "7628920752838233292",
+                "name": "SRPBU应用软件组"
+              },
+              {
+                "color": 9,
+                "id": "7628920746178448604",
+                "name": "CRPBU软件组"
+              },
+              {
+                "color": 10,
+                "id": "7628920692860980429",
+                "name": "CRPBU硬件组"
+              },
+              {
+                "color": 0,
+                "id": "7628923113350155449",
+                "name": "马来战队"
+              },
+              {
+                "color": 1,
+                "id": "7664884041309015322",
+                "name": "营销招聘组"
+              },
+              {
+                "color": 2,
+                "id": "7669702355567070426",
+                "name": "美国KA组"
+              },
+              {
+                "color": 3,
+                "id": "7628923088621784245",
+                "name": "亚太服务部"
+              },
+              {
+                "color": 4,
+                "id": "7628922927698480352",
+                "name": "亚太战区"
+              },
+              {
+                "color": 5,
+                "id": "7628922993159638219",
+                "name": "新加坡战队"
+              },
+              {
+                "color": 6,
+                "id": "7628923101794946276",
+                "name": "泰国战队"
+              },
+              {
+                "color": 7,
+                "id": "7628923010653031645",
+                "name": "HMT战队"
+              },
+              {
+                "color": 8,
+                "id": "7685225793111330032",
+                "name": "HR业务部"
+              },
+              {
+                "color": 9,
+                "id": "7628923024322530498",
+                "name": "中东欧战队"
+              },
+              {
+                "color": 10,
+                "id": "7685223727974501563",
+                "name": "美英OR业务部"
+              },
+              {
+                "color": 0,
+                "id": "7685220938098609365",
+                "name": "欧洲OR业务部"
+              },
+              {
+                "color": 1,
+                "id": "7628923064386882749",
+                "name": "西葡战队"
+              },
+              {
+                "color": 2,
+                "id": "7628923115457023175",
+                "name": "日本CR业务组"
+              },
+              {
+                "color": 3,
+                "id": "7628923088260861127",
+                "name": "加拿大战队"
+              },
+              {
+                "color": 4,
+                "id": "7628923005964225756",
+                "name": "澳新战队"
+              },
+              {
+                "color": 5,
+                "id": "7680400470846819587",
+                "name": "德国CR业务组"
+              },
+              {
+                "color": 6,
+                "id": "7634508070634638564",
+                "name": "欧洲GR业务部"
+              },
+              {
+                "color": 7,
+                "id": "7628922930642783460",
+                "name": "大中华战区"
+              },
+              {
+                "color": 8,
+                "id": "7628923000969202892",
+                "name": "KA业务部"
+              },
+              {
+                "color": 9,
+                "id": "7628923010653998301",
+                "name": "SR2D业务部"
+              },
+              {
+                "color": 10,
+                "id": "7628923132242332874",
+                "name": "日本服务组"
+              },
+              {
+                "color": 0,
+                "id": "7628923139992931550",
+                "name": "建湖仓储物流组"
+              },
+              {
+                "color": 1,
+                "id": "7628922930642963684",
+                "name": "计划部"
+              },
+              {
+                "color": 2,
+                "id": "7628922961399876830",
+                "name": "产品市场部"
+              },
+              {
+                "color": 3,
+                "id": "7685739648528075978",
+                "name": "IRPBU交付运营组"
+              },
+              {
+                "color": 4,
+                "id": "optXThCt85",
+                "name": "刘如蓓"
+              },
+              {
+                "color": 5,
+                "id": "7628922871192849629",
+                "name": "集成供应链中心"
+              },
+              {
+                "color": 6,
+                "id": "7628920715169746120",
+                "name": "SE管理部"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldkg8Gpe9",
+          "field_name": "职位名称",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldephD2R3",
+          "field_name": "物品分类",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optaUCKF5j",
+                "name": "文化衫"
+              },
+              {
+                "color": 1,
+                "id": "optxGyxNOu",
+                "name": "其他文化周边"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld3dj3vAk",
+          "field_name": "款式",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optNm8rSEI",
+                "name": "文化衫-休闲T恤-黑色（短袖）"
+              },
+              {
+                "color": 1,
+                "id": "optZYpkNhV",
+                "name": "文化衫-休闲冲锋衣-黑色"
+              },
+              {
+                "color": 2,
+                "id": "optsHAPeHp",
+                "name": "文化衫-休闲商务POLO-黑色（短袖）"
+              },
+              {
+                "color": 3,
+                "id": "optu9S8GoE",
+                "name": "文化衫-休闲商务夹克-黑色（长袖）"
+              },
+              {
+                "color": 4,
+                "id": "opt0ww73Np",
+                "name": "文化衫-商务衬衫-黑色（长袖）"
+              },
+              {
+                "color": 5,
+                "id": "optQEF8au9",
+                "name": "文创周边-开瓶器-贝拉"
+              },
+              {
+                "color": 6,
+                "id": "optVgeAVzs",
+                "name": "文创周边-定制渔夫帽-黄色"
+              },
+              {
+                "color": 7,
+                "id": "optlee4beI",
+                "name": "文创周边-机器人冰箱贴-贝拉"
+              },
+              {
+                "color": 8,
+                "id": "opt6e8Kqyh",
+                "name": "文创周边-机器人冰箱贴-贝拉Pro"
+              },
+              {
+                "color": 9,
+                "id": "opt3bDLkzJ",
+                "name": "文创周边-机器人冰箱贴-欢乐送2"
+              },
+              {
+                "color": 10,
+                "id": "opt5VtEgCu",
+                "name": "文创周边-机器人冰箱贴-闪电匣"
+              },
+              {
+                "color": 0,
+                "id": "optpvG7bI6",
+                "name": "文创周边-机器人冰箱贴-葫芦"
+              },
+              {
+                "color": 1,
+                "id": "optYGGB3lE",
+                "name": "文创周边-机器人冰箱贴-SH1"
+              },
+              {
+                "color": 2,
+                "id": "opt1dkjJ3p",
+                "name": "文创周边-机器人冰箱贴-T300"
+              },
+              {
+                "color": 3,
+                "id": "optiDAXn4f",
+                "name": "文创周边-机器人冰箱贴-MT1"
+              },
+              {
+                "color": 4,
+                "id": "opti5NXzmc",
+                "name": "文创周边-机器人冰箱贴-CC1"
+              },
+              {
+                "color": 5,
+                "id": "optINnK07Q",
+                "name": "文创周边-机器人徽章-欢乐送2"
+              },
+              {
+                "color": 6,
+                "id": "optIAVVKiX",
+                "name": "文创周边-机器人徽章-葫芦"
+              },
+              {
+                "color": 7,
+                "id": "opt3fJzstl",
+                "name": "文创周边-机器人徽章-贝拉Pro"
+              },
+              {
+                "color": 8,
+                "id": "opt31ZrwtI",
+                "name": "文创周边-机器人徽章-欢乐送2&葫芦&贝拉"
+              },
+              {
+                "color": 9,
+                "id": "optRl8HV3v",
+                "name": "文创周边-机器人徽章-贝拉"
+              },
+              {
+                "color": 10,
+                "id": "opt6nuHOZL",
+                "name": "文创周边-机器人徽章-闪电匣"
+              },
+              {
+                "color": 0,
+                "id": "optgi7im4u",
+                "name": "文创周边-机器人徽章-SH1"
+              },
+              {
+                "color": 1,
+                "id": "optEu2hMpl",
+                "name": "文创周边-机器人徽章-T300"
+              },
+              {
+                "color": 2,
+                "id": "optgRDPp83",
+                "name": "文创周边-机器人徽章-MT1"
+              },
+              {
+                "color": 3,
+                "id": "opt9Xzhyxz",
+                "name": "文创周边-机器人徽章-CC1"
+              },
+              {
+                "color": 4,
+                "id": "optabgInF9",
+                "name": "文创周边-LOGO徽章-CC1"
+              },
+              {
+                "color": 5,
+                "id": "optA3pA0tX",
+                "name": "文创周边-定制鼠标垫-黑色"
+              },
+              {
+                "color": 6,
+                "id": "opt3xUauft",
+                "name": "文创周边-定制笔记本-灰/蓝色"
+              },
+              {
+                "color": 7,
+                "id": "optLR3CKSr",
+                "name": "文创周边-定制马克杯-白色"
+              },
+              {
+                "color": 8,
+                "id": "optUWtTgMq",
+                "name": "文创周边-定制靠垫-“靠谱青年款”"
+              },
+              {
+                "color": 9,
+                "id": "optODvTQY2",
+                "name": "文创周边-机器人滴胶公仔-贝拉"
+              },
+              {
+                "color": 10,
+                "id": "optliFbtRC",
+                "name": "文创周边-机器人毛绒公仔-CC1"
+              },
+              {
+                "color": 0,
+                "id": "optvGPbev1",
+                "name": "文创周边-机器人毛绒公仔-贝拉"
+              },
+              {
+                "color": 1,
+                "id": "optQqUetdx",
+                "name": "文创周边-机器人树脂手办-IP与贝拉"
+              },
+              {
+                "color": 2,
+                "id": "optJCUlCBg",
+                "name": "文创周边-机器人树脂手办-IP与T300"
+              },
+              {
+                "color": 3,
+                "id": "opteDHc7J6",
+                "name": "文创周边-机器人树脂手办-IP与CC1"
+              },
+              {
+                "color": 4,
+                "id": "optunukDrw",
+                "name": "文创周边-机器人积木玩具-CC1"
+              },
+              {
+                "color": 5,
+                "id": "opts2f0uTS",
+                "name": "文创周边-小米保温壶-标品"
+              },
+              {
+                "color": 6,
+                "id": "optqxDvhdy",
+                "name": "文创周边-小米智能台灯-标品"
+              },
+              {
+                "color": 7,
+                "id": "opt7udJEUC",
+                "name": "文创周边-膳魔师保温杯-标品"
+              },
+              {
+                "color": 8,
+                "id": "optcyBtC1g",
+                "name": "文创周边-小米音响-标品"
+              },
+              {
+                "color": 9,
+                "id": "opt8ZmeMEp",
+                "name": "文创周边-大疆云台-标品"
+              },
+              {
+                "color": 10,
+                "id": "optAwoJhnu",
+                "name": "文创周边-大疆无人机-标品"
+              },
+              {
+                "color": 0,
+                "id": "optFf91PQX",
+                "name": "文化衫-10周年纪念款（短袖）"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldoFTRnyE",
+          "field_name": "码数",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opt4niOw2p",
+                "name": "标品"
+              },
+              {
+                "color": 1,
+                "id": "opt7oV0Jsm",
+                "name": "2XS"
+              },
+              {
+                "color": 2,
+                "id": "optMMkktKs",
+                "name": "XS"
+              },
+              {
+                "color": 3,
+                "id": "optvpokOSW",
+                "name": "S"
+              },
+              {
+                "color": 4,
+                "id": "optzhYC8rQ",
+                "name": "M"
+              },
+              {
+                "color": 5,
+                "id": "opt1OIFiLi",
+                "name": "L"
+              },
+              {
+                "color": 6,
+                "id": "opt3aAVBaJ",
+                "name": "XL"
+              },
+              {
+                "color": 7,
+                "id": "opthe9KGKX",
+                "name": "2XL"
+              },
+              {
+                "color": 8,
+                "id": "optNrXlwjk",
+                "name": "3XL"
+              },
+              {
+                "color": 9,
+                "id": "optlcFM1qt",
+                "name": "4XL"
+              },
+              {
+                "color": 10,
+                "id": "optKLe5j0h",
+                "name": "5XL"
+              },
+              {
+                "color": 0,
+                "id": "optyOZWExl",
+                "name": "6XL"
+              },
+              {
+                "color": 1,
+                "id": "optBL5cGAk",
+                "name": "7XL"
+              },
+              {
+                "color": 2,
+                "id": "optq3GDG2Y",
+                "name": "8XL"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldvrxTecO",
+          "field_name": "数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldm00LvfT",
+          "field_name": "兑换日期",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxMMETqS",
+          "field_name": "申请事由",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldcTimd1j",
+          "field_name": "备注",
+          "type": 5,
+          "ui_type": "DateTime",
+          "property": {
+            "auto_fill": false,
+            "date_formatter": "yyyy/MM/dd"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldM2xx4zX",
+          "field_name": "SourceID",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    },
+    {
+      "source": "apparel_admin",
+      "table_id": "tbledtC3RafsHNh0",
+      "table_name": "文化周边编码及库存数量",
+      "display_name": "企业文化衫行政源表",
+      "fields": [
+        {
+          "field_id": "fldbPvpaQP",
+          "field_name": "物品分类",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optBSA1wsG",
+                "name": "文化衫"
+              },
+              {
+                "color": 1,
+                "id": "opt0EcWbln",
+                "name": "文创周边"
+              },
+              {
+                "color": 2,
+                "id": "optY5Lh87W",
+                "name": "【说明】\n1.产品正式名称采用“一级分类-产品名称-款式/主题名称”统一命名。\n2.产品编码采用“分类前缀 + 三位流水号”形式。文化服饰类编码建议统一使用CF（Corporate Fashion），文创周边类编码建议统一使用 CG（Cultural Goods）。\n3.颜色、尺码等库存维度信息，在库存SKU层单独管理。"
+              }
+            ]
+          },
+          "is_primary": true,
+          "description": null
+        },
+        {
+          "field_id": "fldh7hypPE",
+          "field_name": "款式",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldxhYwvcT",
+          "field_name": "编码",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldZPa9bGC",
+          "field_name": "图片",
+          "type": 17,
+          "ui_type": "Attachment",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldcQPYeVi",
+          "field_name": "文化币售价/个",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldLBx0iY0",
+          "field_name": "码数",
+          "type": 3,
+          "ui_type": "SingleSelect",
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "optR8a6iVL",
+                "name": "标品"
+              },
+              {
+                "color": 1,
+                "id": "opt2NYgnGH",
+                "name": "2XS"
+              },
+              {
+                "color": 2,
+                "id": "optjbd8bXD",
+                "name": "XS"
+              },
+              {
+                "color": 3,
+                "id": "opt2CfiroJ",
+                "name": "S"
+              },
+              {
+                "color": 4,
+                "id": "optFDRHORb",
+                "name": "M"
+              },
+              {
+                "color": 5,
+                "id": "optPqJgngW",
+                "name": "L"
+              },
+              {
+                "color": 6,
+                "id": "opt18rKBLd",
+                "name": "XL"
+              },
+              {
+                "color": 7,
+                "id": "optMm5gA7y",
+                "name": "2XL"
+              },
+              {
+                "color": 8,
+                "id": "optX3knOFt",
+                "name": "3XL"
+              },
+              {
+                "color": 9,
+                "id": "optHnHn2w0",
+                "name": "4XL"
+              },
+              {
+                "color": 10,
+                "id": "optrUZQiJx",
+                "name": "5XL"
+              },
+              {
+                "color": 0,
+                "id": "opt317mpeI",
+                "name": "6XL"
+              },
+              {
+                "color": 1,
+                "id": "optqxgy405",
+                "name": "7XL"
+              },
+              {
+                "color": 2,
+                "id": "opt42U6S9U",
+                "name": "8XL"
+              }
+            ]
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld5EdgT0j",
+          "field_name": "原始库存数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldrIT2TnY",
+          "field_name": "入库/纠正",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldsSm4peE",
+          "field_name": "表格兑换数量",
+          "type": 19,
+          "ui_type": "Lookup",
+          "property": {
+            "filter_info": {
+              "conditions": {
+                "children": [
+                  {
+                    "field_id": "fldwmURDYo",
+                    "field_type": 3,
+                    "operator": "is",
+                    "value": null
+                  },
+                  {
+                    "field_id": "fldTjZx8yr",
+                    "field_type": 3,
+                    "operator": "is",
+                    "value": null
+                  }
+                ],
+                "conjunction": "and"
+              },
+              "target_table": "tblttLY1LMqkWw4q"
+            },
+            "formatter": "0",
+            "formula": "bitable::$table[tblttLY1LMqkWw4q].FILTER(CurrentValue.$column[fldwmURDYo]=bitable::$table[tbledtC3RafsHNh0].$field[fldh7hypPE]&&CurrentValue.$column[fldTjZx8yr]=bitable::$table[tbledtC3RafsHNh0].$field[fldLBx0iY0]).$column[fldr86I8hu].LISTCOMBINE().SUM()",
+            "roll_up": 1,
+            "target_field": "fldr86I8hu"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld8fO8DM2",
+          "field_name": "系统兑换数量",
+          "type": 2,
+          "ui_type": "Number",
+          "property": {
+            "formatter": "0"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld6RjVT0Q",
+          "field_name": "最新库存",
+          "type": 20,
+          "ui_type": "Formula",
+          "property": {
+            "formatter": "0",
+            "formula_expression": "bitable::$table[tbledtC3RafsHNh0].$field[fld5EdgT0j]+bitable::$table[tbledtC3RafsHNh0].$field[fldrIT2TnY]-bitable::$table[tbledtC3RafsHNh0].$field[fldsSm4peE]-bitable::$table[tbledtC3RafsHNh0].$field[fld8fO8DM2]",
+            "type": {
+              "data_type": 2,
+              "ui_property": {
+                "formatter": "0"
+              },
+              "ui_type": "Number"
+            }
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld887Hnp2",
+          "field_name": "备注",
+          "type": 1,
+          "ui_type": "Text",
+          "property": null,
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldD5ajkrv",
+          "field_name": "父记录",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbledtC3RafsHNh0",
+            "table_name": "文化周边编码及库存数量"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldhAwDsaE",
+          "field_name": "父记录 2",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbledtC3RafsHNh0",
+            "table_name": "文化周边编码及库存数量"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fld2K4HadH",
+          "field_name": "父记录 2 (1)",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbledtC3RafsHNh0",
+            "table_name": "文化周边编码及库存数量"
+          },
+          "is_primary": false,
+          "description": null
+        },
+        {
+          "field_id": "fldZM4Bs5c",
+          "field_name": "父记录 2 (1) (1)",
+          "type": 18,
+          "ui_type": "SingleLink",
+          "property": {
+            "multiple": false,
+            "table_id": "tbledtC3RafsHNh0",
+            "table_name": "文化周边编码及库存数量"
+          },
+          "is_primary": false,
+          "description": null
+        }
+      ]
+    }
+  ],
+  "source_snapshots": {
+    "primary": "2026-10-26T21:19:41.754024+08:00",
+    "apparel_admin": "2026-10-26T21:56:19.913366+08:00"
+  }
+}

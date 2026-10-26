@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>品类图片编辑隔离预览</title></head>
+<body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {CategoryManager} from '../src/ManagementPage.tsx';
+import '../src/styles.css';
+// Test-only fixture: this page cannot read or write real business data.
+window.fetch=async()=>{throw Error('隔离预览禁止后台写入');};
+const sample='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160"><rect width="240" height="160" fill="#e5eff3"/><text x="120" y="85" text-anchor="middle" fill="#173e5a" font-size="22">图片示例</text></svg>');
+const category='测试品类';
+const catalog={categoryImagesEnabled:true,categories:[{record_id:'cat-1',category,zh_page_name:category,en_page_name:'Sample category',commercial_invoice_name:'Sample',status:'启用',category_definition:'周边礼品',no_model:true,no_language:true,images:[{file_token:'sample-1',name:'示例正面.png',path:sample},{file_token:'sample-2',name:'示例背面.png',path:sample}]}],inventory:[{record_id:'row-1',category,material_code:'TEST-001',model:'无需型号',language:'无需语种',quantity:0,status:'启用'}],culturalInventory:[],dimensions:{model:[],language:[],region:[]},categoryDefinitions:['周边礼品'],packingTypes:['其他'],statuses:['启用'],visibilityOptions:['是'],noModelText:'无需型号',noLanguageText:'无需语种'};
+function Fixture(){const[error,setError]=React.useState('');return React.createElement('main',{className:'management-page'},React.createElement('p',null,'隔离预览 · 示例数据 · 不会修改真实业务'),React.createElement(CategoryManager,{catalog,tr:(zh,en)=>new URLSearchParams(location.search).get('lang')==='en'?en:zh,setBusy:()=>{},setSuccess:()=>{},setError}),React.createElement('p',{role:'alert'},error));}
+createRoot(document.getElementById('root')).render(React.createElement(Fixture));
+</script></body></html>

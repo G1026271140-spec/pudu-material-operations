@@ -759,7 +759,11 @@ def process_task(
         media = payload.get("category_media")
         if media is not None:
             from category_media import category_media_fields
-            category_media_fields(media)
+            if "images" in media:
+                from category_media import validate_image_selection
+                validate_image_selection(media)
+            else:
+                category_media_fields(media)
         if not progress.get("write_done"):
             sync_result = inventory_app.sync_feishu_category_inventory(
                 **inventory_app.deserialize_category_sync_args(dict(payload["sync_args"]))
