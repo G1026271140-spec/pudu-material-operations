@@ -146,6 +146,11 @@ def _model_index() -> dict[str, str]:
 def build_catalog() -> dict[str, Any]:
     import app as legacy
 
+    if backend_runtime.realtime_reads():
+        from request_web.live_data import reader
+        reader().prefetch((*legacy.REQUEST_FORM_CACHE_TABLES,legacy.USER_PERMISSION_TABLE_NAME,
+            legacy.CULTURAL_MATERIAL_TABLE_NAME),contacts=True)
+
     revision = catalog_revision()
     cache = _json("request_form_cache.json")
     contacts = _json("contact_departments_cache.json")
@@ -737,6 +742,9 @@ def live_source_image(table: str, record_id: str, file_token: str) -> Response:
         return Response(output.getvalue(),media_type='image/webp',headers={'Cache-Control':'no-store'})
     except (KeyError, UnidentifiedImageError) as exc:
         raise HTTPException(status_code=404,detail='图片不存在') from exc
+    except RuntimeError as exc:
+        logging.warning('Live attachment download failed: %s',type(exc).__name__)
+        raise HTTPException(status_code=503,detail='图片读取暂时失败，请稍后重试。',headers={'Retry-After':'5'}) from exc
 
 
 @api.get("/api/catalog")

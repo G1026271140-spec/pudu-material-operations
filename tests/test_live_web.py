@@ -21,7 +21,7 @@ def live(monkeypatch):
     def rows(table):
         calls.append(table)
         return [dict(row,fields=dict(row['fields'])) for row in records[table]]
-    client = SimpleNamespace(list_tables=tables,list_records=rows)
+    client = SimpleNamespace(list_tables=tables,list_records=rows,tenant_access_token=lambda:'test-token')
     monkeypatch.setattr(app,'feishu_client',lambda:client)
     return records,calls,client
 
@@ -112,3 +112,32 @@ def test_live_health_is_a_valid_json_response_with_boolean_flags(monkeypatch):
     body=TestClient(web.api).get('/api/health').json()
     assert body['status']=='ok' and body['business_cache_enabled'] is False
     assert body['mode']=='live_read_only'
+
+
+def test_parallel_prefetch_overlaps_independent_reads_and_deduplicates_same_table(live):
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    records,calls,client=live
+    barrier=threading.Barrier(2)
+    original=client.list_records
+    def overlap(table):
+        barrier.wait(timeout=5)
+        return original(table)
+    client.list_records=overlap
+    with runtime.request_scope():
+        source=live_data.reader()
+        source.prefetch(['物料品类','用户权限表'])
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            results=list(pool.map(lambda _:source.rows('物料品类'),range(4)))
+        assert all(result[0]['record_id']=='category' for result in results)
+    assert sorted(calls)==['物料品类','用户权限表']
+
+
+def test_image_download_preserves_current_record_attachment_context(live):
+    _,_,client=live
+    url='https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?extra=record-context'
+    client.get_record=lambda *_:{'fields':{'申领页图片':[{'file_token':'allowed','url':url}]}}
+    seen=[]
+    client.download_bitable_attachment=lambda token,context:seen.append((token,context)) or b'image'
+    with runtime.request_scope(): assert live_data.image_bytes('物料品类','category','allowed')==b'image'
+    assert seen==[('allowed',url)]

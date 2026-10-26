@@ -4,9 +4,11 @@ Within a response we reuse the same source rows to assemble consistent views.
 The next request fetches them again. OAuth token reuse is separate from data.
 """
 from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import logging
 import time
+import threading
 from urllib.parse import quote
 
 import backend_runtime as runtime
@@ -39,11 +41,14 @@ class LiveReader:
         self._rows = {}
         self._documents = {}
         self._schema = None
+        self._meta_lock = threading.RLock()
+        self._row_locks = {}
         self.generated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def table_ids(self):
-        if self._ids is None:
-            self._ids = {row['name']:row['table_id'] for row in self.client.list_tables()}
+        with self._meta_lock:
+            if self._ids is None:
+                self._ids = {row['name']:row['table_id'] for row in self.client.list_tables()}
         return self._ids
 
     def table_id(self, name):
@@ -60,6 +65,12 @@ class LiveReader:
         return self._schema
 
     def rows(self, name):
+        with self._meta_lock:
+            lock = self._row_locks.setdefault(name,threading.RLock())
+        with lock:
+            return self._load_rows(name)
+
+    def _load_rows(self, name):
         if name not in self._rows:
             import app
             started = time.monotonic()
@@ -71,6 +82,21 @@ class LiveReader:
             self._rows[name] = rows
             logging.info('Live source read: table=%s rows=%d seconds=%.3f',name,len(rows),time.monotonic()-started)
         return self._rows[name]
+
+    def prefetch(self, names, *, contacts=False):
+        self.table_ids()
+        # Prime authentication before dispatching concurrent source reads.
+        self.client.tenant_access_token()
+        operations = []
+        if contacts and 'contact_departments_cache.json' not in self._documents:
+            operations.append(lambda:self.document('contact_departments_cache.json'))
+        operations.extend(lambda name=name:self.rows(name) for name in dict.fromkeys(names) if name not in self._rows)
+        if not operations:
+            return
+        with ThreadPoolExecutor(max_workers=min(6,len(operations))) as pool:
+            futures = [pool.submit(operation) for operation in operations]
+            for future in futures:
+                future.result()
 
     def document(self, name):
         if name not in self._documents:
@@ -152,8 +178,10 @@ def image_bytes(table, record_id, file_token):
         raise KeyError('Unsupported image table')
     source = reader()
     row = source.client.get_record(source.table_id(table),record_id)
-    allowed = {a['file_token'] for field in IMAGE_FIELDS[table]
+    allowed = {a['file_token']:a for field in IMAGE_FIELDS[table]
         for a in app.feishu_attachment_items(app.feishu_fields(row),field)}
     if file_token not in allowed:
         raise KeyError('Image is not attached to this record')
-    return source.client.download_media(file_token)
+    # Bitable download URLs carry record/field permission context required by
+    # some attachments; a bare media-token download can return HTTP 400.
+    return source.client.download_bitable_attachment(file_token,allowed[file_token]['url'])
