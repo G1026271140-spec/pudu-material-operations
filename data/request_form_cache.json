@@ -1,7 +1,7 @@
 {
   "schema_version": 6,
   "source": "static_snapshot",
-  "generated_at": "2026-10-25 10:32:33",
+  "generated_at": "2026-10-26 10:34:26",
   "products": [
     "产品折页(Single Product Brochure)",
     "产品单页(Product Flyer )",
@@ -2968,7 +2968,7 @@
       "product": "公司产品手册",
       "model": "无需型号",
       "language": "英语(English)",
-      "quantity": -317,
+      "quantity": -315,
       "unit_price_rmb": 5.416
     },
     {
