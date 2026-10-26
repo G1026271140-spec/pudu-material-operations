@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./allocation.css";
+import { requiredArrivalText } from "./allocationPresentation";
 
 type Lang = "zh" | "en";
 type Props = {
@@ -18,7 +19,7 @@ const isPrintMaterial = (material: any) =>
   material?.category_definition === "印刷物料";
 const defaultOrderRequired = (material: any, quantity: number) =>
   isPrintMaterial(material) && Number(material?.quantity || 0) < Number(quantity || 0);
-const PENDING_SESSION_CACHE_KEY = "pudu-allocation-pending-session-v1";
+const PENDING_SESSION_CACHE_KEY = "pudu-allocation-pending-session-v2";
 
 type PendingSessionCache = {
   requests: any[];
@@ -65,6 +66,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [operatorId, setOperatorId] = useState(operator);
   const [context, setContext] = useState<any>(null);
   const [rows, setRows] = useState<any[]>([]);
+  const [editingUid, setEditingUid] = useState<string | null>(null);
+  const editorRef = useRef<HTMLDialogElement>(null);
   const [splitIndex, setSplitIndex] = useState<number | null>(null);
   const [splitQuantities, setSplitQuantities] = useState<Record<string, number>>({});
   const [shipDate, setShipDate] = useState("");
@@ -90,6 +93,13 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     else loadPending();
     return () => { contextLoadRef.current += 1; };
   }, [directRequestId]);
+
+  useEffect(() => {
+    const dialog = editorRef.current;
+    if (!dialog) return;
+    if (editingUid && !dialog.open) dialog.showModal();
+    if (!editingUid && dialog.open) dialog.close();
+  }, [editingUid]);
 
   function applyPending(body: PendingSessionCache) {
     setPending(body.requests || []);
@@ -144,6 +154,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
   async function loadContext(id: string) {
     if (!id) return;
+    setEditingUid(null);
     const sequence = ++contextLoadRef.current;
     setWithdrawConfirm(false); setWithdrawQueued(false);
     setLoading(true); setError(""); setSuccess(""); setLiveWarning("");
@@ -194,6 +205,24 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const materialById = useMemo(() => Object.fromEntries(materials.map((x: any) => [x.record_id, x])), [materials]);
   const originalTotal = (context?.lines || []).reduce((sum: number, x: any) => sum + Number(x.subtotal_rmb || Number(x.unit_price_rmb || 0) * Number(x.quantity || 0)), 0);
   const currentTotal = rows.reduce((sum: number, x: any) => sum + Number(materialById[x.material_record_id]?.unit_price_rmb || 0) * Number(x.quantity || 0), 0);
+  const canEdit = Boolean(context?.verifiedLive) && !withdrawQueued && !submitting;
+  const editingIndex = rows.findIndex(row => row.uid === editingUid);
+  const editingRow = editingIndex >= 0 ? rows[editingIndex] : null;
+  const editingMaterial = materialById[editingRow?.material_record_id] || {};
+  const canOrder = isPrintMaterial(editingMaterial);
+  const categories = useMemo(() => unique(materials.map((x: any) => x.category)), [materials]);
+  const editorModels = unique(materials.filter((x: any) => x.category === editingRow?.category).map((x: any) => x.model));
+  const editorLanguages = unique(materials.filter((x: any) => x.category === editingRow?.category && x.model === editingRow?.model).map((x: any) => x.language));
+
+  function openLine(uid: string) {
+    if (canEdit) setEditingUid(uid);
+  }
+
+  function removeLine(uid: string) {
+    if (!canEdit || rows.length <= 1) return;
+    setRows(current => current.length > 1 ? current.filter(row => row.uid !== uid) : current);
+    setEditingUid(null);
+  }
 
   function selectMaterial(index: number, key: "category" | "model" | "language", value: string) {
     setRows(rows.map((row, i) => {
@@ -215,12 +244,15 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   function addRow() {
     const first = materials[0];
     if (!first) return setError(tr("物料目录为空，无法新增明细。", "The material catalog is empty."));
-    setRows([...rows, { uid: crypto.randomUUID(), line_record_id: "", material_record_id: first.record_id, category: first.category, model: first.model, language: first.language, quantity: 1, remark: "", order_required: defaultOrderRequired(first, 1) }]);
+    const uid = crypto.randomUUID();
+    setRows([...rows, { uid, line_record_id: "", material_record_id: first.record_id, category: first.category, model: first.model, language: first.language, quantity: 1, remark: "", order_required: defaultOrderRequired(first, 1) }]);
+    setEditingUid(uid);
   }
 
   function openSplit(index: number) {
     const row = rows[index];
     if (!row?.line_record_id) return;
+    setEditingUid(null);
     const original = (context?.lines || []).find((line: any) => line.record_id === row.line_record_id);
     setSplitIndex(index);
     setSplitQuantities({ [row.material_record_id]: Math.max(1, Number(original?.quantity || row.quantity || 1)) });
@@ -338,7 +370,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{tr("本机列表更新于：", "Local list updated at: ")}{pendingCachedAt}{pendingRefreshing ? tr(" · 后台正在核对飞书", " · background Feishu reconciliation") : ""}</p>}</div><button onClick={() => loadPending(true)}>↻ {tr("刷新本机列表", "Refresh local list")}</button></header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {pendingWarning && <div className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</div>}
-    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
+    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><span className="pending-arrival">{tr("要求到达：", "Required arrival: ")}{requiredArrivalText(item, lang)}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
   </main>;
 
   const request = context.request;
@@ -358,36 +390,42 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     </div>}
     {!context.verifiedLive && <div className="allocation-live-banner" role="status"><span>{liveChecking ? tr("正在核对实时申请明细和库存。下方为历史快照，核对完成前不能提交。", "Checking live request lines and stock. The snapshot below is read-only until verification finishes.") : (liveWarning || tr("当前仅显示历史快照，不能提交。", "Showing a read-only snapshot."))}</span>{!liveChecking && <button onClick={() => loadContext(requestId)}>{tr("重试实时读取", "Retry live verification")}</button>}</div>}
     {request.inventory_review_status === "已核实库存" ? <div className="allocation-success">✓ {tr("该申请已经完成库存核实，无需再次处理。", "This request has already completed inventory review.")}</div> : <>
-      <section className="request-overview"><div className="allocation-title"><b>{request.request_no || "-"}</b><span>{context.verifiedLive ? tr("实时库存更新于", "Live stock updated at") : tr("历史快照更新于", "Snapshot updated at")} {context.snapshotAt}</span></div><div className="allocation-metrics"><span>{tr("申请人", "Requester")}<b>{request.requester || "-"}</b></span><span>{tr("申请部门", "Department")}<b>{request.department || "-"}</b></span><span>{tr("当前结论", "Current Result")}<b>{context.result || "-"}</b></span><span>{tr("变更次数", "Changes")}<b>{request.inventory_review_version || 0}</b></span><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span></div><div className="request-notes"><p><b>{tr("申请原因", "Reason")}：</b>{request.request_reason || "-"}</p><p><b>{tr("物料用途", "Usage")}：</b>{request.material_usage || "-"}</p><p><b>{tr("收件人信息", "Recipient")}：</b>{request.recipient_info || "-"}</p></div></section>
+      <section className="request-overview">
+        <div className="allocation-title">
+          <div className="allocation-request-heading"><b>{request.request_no || "-"}</b><span>{context.verifiedLive ? tr("实时库存更新于", "Live stock updated at") : tr("历史快照更新于", "Snapshot updated at")} {context.snapshotAt}</span></div>
+          <div className="allocation-arrival"><span>{tr("物料要求到达时间", "Required Material Arrival")}</span><strong>{requiredArrivalText(request, lang)}</strong></div>
+        </div>
+        <div className="allocation-metrics"><span>{tr("申请人", "Requester")}<b>{request.requester || "-"}</b></span><span>{tr("申请部门", "Department")}<b>{request.department || "-"}</b></span><span>{tr("当前结论", "Current Result")}<b>{context.result || "-"}</b></span><span>{tr("变更次数", "Changes")}<b>{request.inventory_review_version || 0}</b></span><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span></div><div className="request-notes"><p><b>{tr("申请原因", "Reason")}：</b>{request.request_reason || "-"}</p><p><b>{tr("物料用途", "Usage")}：</b>{request.material_usage || "-"}</p><p><b>{tr("收件人信息", "Recipient")}：</b>{request.recipient_info || "-"}</p></div>
+      </section>
       <div className="allocation-withdraw-action"><button className="withdraw-request" disabled={submitting || withdrawQueued} onClick={() => setWithdrawConfirm(true)}>{withdrawQueued ? tr("删除任务已提交", "Deletion queued") : tr("删除申请", "Delete Request")}</button></div>
       <fieldset className="allocation-readonly-guard" disabled={!context.verifiedLive || withdrawQueued}>
       <section className="allocation-form"><div className="allocation-control"><label>{tr("申请单发货日期", "Shipping Date")} *<input type="date" value={shipDate} onChange={e => setShipDate(e.target.value)}/></label>{!context.signedCardAccess && <label>{tr("本次配货操作人", "Allocation Operator")} *<select value={operatorId} onChange={e => setOperatorId(e.target.value)}><option value="">{tr("请选择管理员", "Select administrator")}</option>{operators.map(x => <option key={x.open_id} value={x.open_id}>{x.name} · {(x.department_paths || []).join(" / ")}</option>)}</select></label>}</div>
         <div className="allocation-section-title"><div><h2>{tr("配货明细", "Allocation Lines")}</h2><p>{context.verifiedLive ? tr(`品类、型号和语种来自页面缓存（${context.cacheGeneratedAt || "未知时间"}）；库存来自本次实时读取。`, `Options use the page cache (${context.cacheGeneratedAt || "unknown"}); stock is live.`) : tr("当前为历史快照，库存尚未实时核对。", "This is a snapshot; stock has not been verified live.")}</p></div><button className="confirm-original" disabled={submitting} onClick={() => submit("confirm")}>✓ {tr("按原申请提交配货方案", "Submit Original Allocation")}</button></div>
-        <div className="allocation-lines">{rows.map((row, index) => {
-          const categories = unique(materials.map((x: any) => x.category));
-          const models = unique(materials.filter((x: any) => x.category === row.category).map((x: any) => x.model));
-          const languages = unique(materials.filter((x: any) => x.category === row.category && x.model === row.model).map((x: any) => x.language));
-          const material = materialById[row.material_record_id] || {};
-          const canOrder = isPrintMaterial(material);
-          return <article key={row.uid}>
-            <div className="line-index">{String(index + 1).padStart(2, "0")}</div>
-            <div className="line-fields">
-              <label>{tr("品类", "Category")}<select value={row.category} onChange={e => selectMaterial(index, "category", e.target.value)}>{categories.map(x => <option key={x}>{x}</option>)}</select></label>
-              <label>{tr("型号", "Model")}<select value={row.model} onChange={e => selectMaterial(index, "model", e.target.value)}>{models.map(x => <option key={x}>{x}</option>)}</select></label>
-              <label>{tr("语种", "Language")}<select value={row.language} onChange={e => selectMaterial(index, "language", e.target.value)}>{languages.map(x => <option key={x}>{x}</option>)}</select></label>
-              <label>{tr("数量", "Quantity")}<input type="number" min="1" value={row.quantity} onChange={e => { const quantity = Math.max(1, Number(e.target.value)); setRows(rows.map((x, i) => i === index ? {...x, quantity, order_required: canOrder ? x.order_required : false} : x)); }}/></label>
-              <label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && row.order_required ? "yes" : "no"} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, order_required: canOrder && e.target.value === "yes"} : x))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label>
-              <label className="remark">{tr("备注", "Remark")}<input value={row.remark} onChange={e => setRows(rows.map((x, i) => i === index ? {...x, remark: e.target.value} : x))}/></label>
-            </div>
-            <div className="stock-info">
-              <span>{tr("实时库存", "Live Stock")}<b className={Number(material.quantity || 0) < Number(row.quantity) ? "low" : ""}>{Number(material.quantity || 0)}</b></span>
-              <span>{tr("在途库存", "In Transit")}<b>{Number(material.in_transit_quantity || 0)}</b></span>
-              <span>{tr("单价", "Unit Price")}<b>{money(material.unit_price_rmb || 0)}</b></span>
-              {row.line_record_id && <button className="split-line-button" onClick={() => openSplit(index)}>{tr("分装", "Split")}</button>}
-              <button disabled={rows.length <= 1} onClick={() => setRows(rows.filter((_, i) => i !== index))}>{tr("删除", "Delete")}</button>
-            </div>
-          </article>;
-        })}</div>
+        <div className="allocation-table-toolbar"><strong>{rows.length} {tr("条明细", "lines")}</strong><span>{canEdit ? tr("点击明细行调整品类、规格、数量或进行分装。", "Select a line to edit its material, quantity or split allocation.") : tr("完成实时核对后可调整明细。", "Editing is available after live verification.")}</span></div>
+        <div className="allocation-table-scroll" role="region" aria-label={tr("配货明细表，可左右滚动", "Allocation lines, horizontally scrollable")} tabIndex={0}>
+          <table className="allocation-detail-table">
+            <caption className="allocation-sr-only">{tr("配货明细，按 Enter 或空格打开所选行", "Allocation lines. Press Enter or Space to edit a focused row.")}</caption>
+            <thead><tr><th scope="col">#</th><th scope="col">{tr("物料品类", "Material")}</th><th scope="col">{tr("型号 / 语种", "Model / Language")}</th><th scope="col" className="numeric">{tr("数量", "Qty")}</th><th scope="col" className="numeric">{context.verifiedLive ? tr("实时库存", "Live Stock") : tr("快照库存", "Snapshot Stock")}</th><th scope="col" className="numeric">{tr("在途", "In Transit")}</th><th scope="col" className="numeric">{tr("单价", "Unit Price")}</th><th scope="col" className="numeric">{tr("小计", "Subtotal")}</th><th scope="col">{tr("下单", "Order")}</th><th scope="col">{tr("备注", "Remark")}</th><th scope="col"><span className="allocation-sr-only">{tr("操作", "Actions")}</span></th></tr></thead>
+            <tbody>{rows.map((row, index) => {
+              const material = materialById[row.material_record_id] || {};
+              const low = Number(material.quantity || 0) < Number(row.quantity);
+              return <tr key={row.uid} className={`${low ? "stock-shortage" : ""} ${editingUid === row.uid ? "is-selected" : ""}`} tabIndex={canEdit ? 0 : -1} aria-disabled={!canEdit} aria-label={`${index + 1}. ${row.category} / ${row.model} / ${row.language}`} onClick={() => openLine(row.uid)} onKeyDown={event => { if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); openLine(row.uid); } }}>
+                <td className="line-number">{index + 1}</td>
+                <th scope="row" className="material-cell"><span>{row.category}</span>{row.split_source_line_id ? <small className="line-origin">{tr("分装", "Split")}</small> : !row.line_record_id && <small className="line-origin">{tr("新增", "New")}</small>}</th>
+                <td className="spec-cell"><strong>{row.model}</strong><small>{row.language}</small></td>
+                <td className="numeric line-quantity">{row.quantity}</td>
+                <td className={`numeric ${low ? "low" : ""}`}>{Number(material.quantity || 0)}{low && <small>{tr("不足", "Short")}</small>}</td>
+                <td className="numeric">{Number(material.in_transit_quantity || 0)}</td>
+                <td className="numeric">{money(material.unit_price_rmb || 0)}</td>
+                <td className="numeric line-subtotal">{money(Number(material.unit_price_rmb || 0) * Number(row.quantity || 0))}</td>
+                <td><span className={`order-indicator ${isPrintMaterial(material) && row.order_required ? "required" : ""}`}>{isPrintMaterial(material) && row.order_required ? tr("需要下单", "Required") : tr("无需下单", "No order")}</span></td>
+                <td className="line-remark" title={row.remark || ""}>{row.remark || "-"}</td>
+                <td><button type="button" className="edit-allocation-line" disabled={!canEdit} onClick={event => { event.stopPropagation(); openLine(row.uid); }}>{tr("调整", "Edit")}</button></td>
+              </tr>;
+            })}</tbody>
+          </table>
+        </div>
+        <p className="allocation-table-mobile-hint">{tr("左右滑动查看完整信息，点击行进行调整。", "Swipe horizontally for all columns. Select a line to edit.")}</p>
         <button className="add-allocation-line" onClick={addRow}>＋ {tr("新增明细", "Add Line")}</button>
         <div className="amount-comparison"><span>{tr("原申请总金额", "Original Total")}<b>{money(originalTotal)}</b></span><span>{tr("当前配货总金额", "Allocation Total")}<b>{money(currentTotal)}</b><em className={currentTotal - originalTotal < 0 ? "negative" : ""}>{currentTotal - originalTotal >= 0 ? "+" : ""}{money(currentTotal - originalTotal)}</em></span></div>
         <label className="change-note">{tr("配货调整说明", "Allocation Change Note")} *<textarea placeholder={tr("请说明替换、增加、删除物料或调整数量的原因；该说明会发送给申请人。", "Explain replacements, additions, deletions, or quantity changes. This will be sent to the requester.")} value={changeNote} onChange={e => setChangeNote(e.target.value)}/></label>
@@ -396,6 +434,30 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
       </section>
       </fieldset>
     </>}
+    <dialog className="allocation-line-editor" ref={editorRef} aria-labelledby="allocation-line-editor-title" onCancel={() => setEditingUid(null)} onClose={() => setEditingUid(null)} onClick={event => { if (event.target === event.currentTarget) setEditingUid(null); }}>
+      {editingRow && <div className="allocation-editor-panel">
+        <div className="allocation-editor-heading"><div><small>{tr("明细", "Line")} {editingIndex + 1} / {rows.length}</small><h2 id="allocation-line-editor-title">{tr("调整配货明细", "Edit Allocation Line")}</h2></div><button type="button" className="editor-close" aria-label={tr("关闭明细调整", "Close line editor")} onClick={() => setEditingUid(null)}>×</button></div>
+        <p className="allocation-editor-hint">{tr("调整暂存在当前方案，提交配货方案后才会写入。", "Edits stay in this draft until you submit the allocation plan.")}</p>
+        <div className="allocation-editor-body">
+          <fieldset disabled={!canEdit} className="allocation-editor-fields">
+            <label>{tr("物料品类", "Material Category")}<select value={editingRow.category} onChange={event => selectMaterial(editingIndex, "category", event.target.value)}>{categories.map(value => <option key={value}>{value}</option>)}</select></label>
+            <div className="allocation-editor-specs">
+              <label>{tr("型号", "Model")}<select value={editingRow.model} onChange={event => selectMaterial(editingIndex, "model", event.target.value)}>{editorModels.map(value => <option key={value}>{value}</option>)}</select></label>
+              <label>{tr("语种", "Language")}<select value={editingRow.language} onChange={event => selectMaterial(editingIndex, "language", event.target.value)}>{editorLanguages.map(value => <option key={value}>{value}</option>)}</select></label>
+            </div>
+            <div className="allocation-editor-specs">
+              <label>{tr("配货数量", "Allocation Quantity")}<input type="number" min="1" step="1" value={editingRow.quantity} onChange={event => { const quantity = Math.max(1, Math.floor(Number(event.target.value) || 1)); setRows(current => current.map(row => row.uid === editingUid ? { ...row, quantity, order_required: canOrder ? row.order_required : false } : row)); }}/></label>
+              <label>{tr("是否下单", "Order Required")}<select disabled={!canOrder} value={canOrder && editingRow.order_required ? "yes" : "no"} onChange={event => setRows(current => current.map(row => row.uid === editingUid ? { ...row, order_required: canOrder && event.target.value === "yes" } : row))}>{canOrder && <option value="yes">{tr("需要下单", "Order")}</option>}<option value="no">{tr("无需下单", "No Order")}</option></select></label>
+            </div>
+            <div className="allocation-editor-stock"><span>{tr("实时库存", "Live Stock")}<b className={Number(editingMaterial.quantity || 0) < Number(editingRow.quantity) ? "low" : ""}>{Number(editingMaterial.quantity || 0)}</b></span><span>{tr("在途库存", "In Transit")}<b>{Number(editingMaterial.in_transit_quantity || 0)}</b></span><span>{tr("单价", "Unit Price")}<b>{money(editingMaterial.unit_price_rmb || 0)}</b></span></div>
+            <label>{tr("备注", "Remark")}<textarea aria-label={tr("备注", "Remark")} rows={3} value={editingRow.remark} onChange={event => setRows(current => current.map(row => row.uid === editingUid ? { ...row, remark: event.target.value } : row))}/></label>
+            <div className="allocation-editor-line-total"><span>{tr("当前明细小计", "Line Subtotal")}</span><b>{money(Number(editingMaterial.unit_price_rmb || 0) * Number(editingRow.quantity || 0))}</b></div>
+            <div className="allocation-editor-actions">{editingRow.line_record_id && <button type="button" className="split-line-button" onClick={() => openSplit(editingIndex)}>{tr("分装此明细", "Split Line")}</button>}<button type="button" className="delete-allocation-line" disabled={rows.length <= 1} title={rows.length <= 1 ? tr("至少保留一条明细", "Keep at least one line") : undefined} onClick={() => removeLine(editingRow.uid)}>{tr("删除此明细", "Delete Line")}</button></div>
+          </fieldset>
+        </div>
+        <footer className="allocation-editor-footer"><button type="button" onClick={() => setEditingUid(null)}>{tr("完成调整", "Done Editing")}</button></footer>
+      </div>}
+    </dialog>
     {splitSource && <div className="allocation-modal-backdrop" onMouseDown={() => setSplitIndex(null)}>
       <div className="allocation-modal split-modal" role="dialog" aria-modal="true" aria-label={tr("分装申请明细", "Split request line")} onMouseDown={event => event.stopPropagation()}>
         <button className="close" aria-label={tr("关闭", "Close")} onClick={() => setSplitIndex(null)}>×</button>
