@@ -32,6 +32,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from shipping_page import render_shipping_template_page
 from project_config import get_setting
+from allocation_display import required_arrival_fields
 from live_cache import read_manifest, resolve_cache_path
 from submission_queue import (
     SUBMISSION_QUEUE_MODULE_VERSION,
@@ -87,7 +88,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 DEFAULT_PASSWORD = "376493"
 DEFAULT_APPROVAL_PASSWORD = "pd123456"
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.4.5"
+APP_VERSION = "V3.4.6"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8973,6 +8974,9 @@ def pending_inventory_review_summaries(
             "inventoryReviewVersion": feishu_int(fields, "申请变更次数"),
             "reminderAt": str(request.get("inventory_review_reminder_at") or ""),
             "submittedAt": str(request.get("submitted_at") or ""),
+            "requiredArrivalTime": str(request.get("required_arrival_time") or ""),
+            "requiredArrivalStart": str(request.get("required_arrival_start") or ""),
+            "requiredArrivalEnd": str(request.get("required_arrival_end") or ""),
             "lineCount": len(feishu_link_ids_any(fields, ["申请明细"])),
         })
     return summaries
@@ -11137,6 +11141,7 @@ def load_feishu_request_records(rows: list[dict] | None = None) -> list[dict[str
             {
                 "record_id": feishu_record_id(row),
                 "request_no": request_no,
+                **required_arrival_fields(fields),
                 "title": feishu_text(fields, "标题"),
                 "request_type": feishu_text(fields, "申请类型"),
                 "requester": request_applicant_text(fields),

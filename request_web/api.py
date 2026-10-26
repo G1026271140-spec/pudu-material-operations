@@ -976,6 +976,9 @@ def _allocation_summary(context: dict[str, Any]) -> dict[str, Any]:
         "inventoryReviewVersion": int(request.get("inventory_review_version") or 0),
         "reminderAt": str(request.get("inventory_review_reminder_at") or ""),
         "submittedAt": str(request.get("submitted_at") or ""),
+        "requiredArrivalTime": str(request.get("required_arrival_time") or ""),
+        "requiredArrivalStart": str(request.get("required_arrival_start") or ""),
+        "requiredArrivalEnd": str(request.get("required_arrival_end") or ""),
         "lineCount": len(list(context.get("lines") or [])),
     }
 

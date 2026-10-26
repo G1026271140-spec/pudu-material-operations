@@ -8,3 +8,82 @@
 .stock-info .split-line-button{margin-left:auto;color:#0e5685;font-weight:700;cursor:pointer}.stock-info .split-line-button+button{margin-left:0}.split-modal{width:min(800px,96vw);max-height:90dvh;overflow:auto}.split-intro{font-weight:700;color:#214d6a}.split-hint{font-size:12px;color:#577187;line-height:1.6}.split-options{display:grid;gap:10px;max-height:50dvh;overflow:auto}.split-options details{border:1px solid #c9dbe8;border-radius:8px;background:#f8fbfd;padding:0 12px 8px}.split-options summary{cursor:pointer;font-weight:800;padding:11px 0;color:#164766}.split-option{display:grid;grid-template-columns:minmax(160px,1fr) 120px 150px;gap:10px;align-items:end;padding:8px 0;border-top:1px solid #e2ebf1}.split-option-check{flex-direction:row!important;align-items:center;gap:9px}.split-option-check input{width:auto}.split-option label{font-size:12px}.split-option input[type=number]{padding:7px 9px}.split-totals{display:flex;gap:20px;flex-wrap:wrap;border-top:1px solid #c9dbe8;margin-top:14px;padding-top:14px;color:#46657b}.split-totals b{color:#0c3657}.split-modal button:active{transform:translateY(1px)}
 .allocation-withdraw-action{display:flex;justify-content:flex-end;margin:-6px 0 16px}.allocation-page .withdraw-request{border:1px solid #c13e2e;border-radius:7px;background:#fff;color:#b33123;padding:10px 16px;font-weight:700;cursor:pointer}.allocation-page .withdraw-request:disabled{opacity:.5;cursor:default}.allocation-page .withdraw-request:focus-visible{outline:2px solid #b33123;outline-offset:3px}
 @media(max-width:600px){.split-option{grid-template-columns:1fr 1fr}.split-option-check{grid-column:1/-1}.split-modal{padding:18px 12px}.split-options{max-height:52dvh}}
+
+/* Dense workbench: table layers 1-3; native dialog uses the browser top layer. */
+.allocation-request-heading{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.allocation-arrival{display:flex;flex-direction:column;gap:4px;max-width:50%;padding:8px 12px;background:#edf8f7;border-left:3px solid #087f82;border-radius:4px}
+.allocation-title .allocation-arrival span{font-size:12px;color:#315d63}
+.allocation-arrival strong{font-size:16px;color:#0c4c58;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pending-grid .pending-arrival{color:#245b65;font-weight:650;margin-top:3px}
+.request-overview .allocation-metrics{margin:14px 0;gap:0}
+.request-overview .allocation-metrics>span{border:0;border-right:1px solid #dce6ed;border-radius:0;padding:0 12px}
+.request-overview .allocation-metrics>span:first-child{padding-left:0}
+.request-overview .allocation-metrics>span:last-child{border-right:0}
+.request-overview .allocation-metrics b{font-size:16px;margin-top:4px}
+.request-overview .request-notes{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;padding:10px 12px;font-size:13px;line-height:1.5}
+.request-overview .request-notes p{margin:0;overflow-wrap:anywhere}
+.request-overview .request-notes p:last-child{grid-column:1/-1}
+.allocation-table-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;margin:16px 0 10px;font-size:13px}
+.allocation-table-toolbar strong{color:#123d5e;white-space:nowrap}
+.allocation-table-toolbar span{color:#526b7e;font-size:12px}
+.allocation-table-scroll{overflow:auto;max-height:min(54dvh,560px);border:1px solid #c9dbe8;border-radius:8px;scrollbar-gutter:stable;overscroll-behavior:contain}
+.allocation-table-scroll:focus-visible{outline:2px solid #087f82;outline-offset:3px}
+.allocation-detail-table{width:100%;min-width:1060px;border-collapse:separate;border-spacing:0;font-size:13px;line-height:1.4}
+.allocation-detail-table th,.allocation-detail-table td{padding:9px 12px;border-bottom:1px solid #e1e9ef;text-align:left;vertical-align:middle;background:inherit}
+.allocation-detail-table thead th{position:sticky;top:0;z-index:2;background:#edf5f7;color:#35546b;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 1px 0 #c9dbe8}
+.allocation-detail-table tbody tr{background:#fff;cursor:pointer}
+.allocation-detail-table tbody tr:nth-child(even){background:#f8fbfd}
+.allocation-detail-table tbody tr:hover,.allocation-detail-table tbody tr.is-selected{background:#eaf5f4}
+.allocation-detail-table tbody tr:focus-visible{outline:2px solid #087f82;outline-offset:-2px}
+.allocation-detail-table tbody tr[aria-disabled=true]{cursor:default}
+.allocation-detail-table tbody tr:last-child>*{border-bottom:0}
+.allocation-detail-table .material-cell{position:sticky;left:0;z-index:1;min-width:145px;max-width:210px;font-weight:650;box-shadow:1px 0 0 #e1e9ef}
+.allocation-detail-table thead th:nth-child(2){left:0;z-index:3}
+.allocation-detail-table .material-cell>span{display:block}
+.allocation-detail-table .line-origin{display:inline-block;margin-top:3px;color:#2c6f75;font-size:11px;font-weight:500}
+.allocation-detail-table .spec-cell{min-width:120px;max-width:190px}
+.allocation-detail-table .spec-cell strong{display:block;font-weight:600}
+.allocation-detail-table .spec-cell small{display:block;font-size:12px;color:#5b7386;margin-top:2px}
+.allocation-detail-table .numeric{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.allocation-detail-table .line-number{font-size:12px;color:#60798c;width:24px}
+.allocation-detail-table .line-quantity,.allocation-detail-table .line-subtotal{font-weight:750;color:#123d5e}
+.allocation-detail-table .low,.allocation-editor-stock .low{color:#b53f28;font-weight:750}
+.allocation-detail-table .low small{display:block;font-size:10px;line-height:1.2;font-weight:500}
+.allocation-detail-table .line-remark{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#516c80}
+.order-indicator{font-size:11px;color:#526c7d;white-space:nowrap}
+.order-indicator.required{color:#9b4f15;background:#fff3df;padding:4px 7px;border-radius:4px;font-weight:650}
+.allocation-page .edit-allocation-line{border:1px solid #c0d7e0;background:#fff;color:#15567c;border-radius:5px;min-height:32px;padding:5px 9px;font-weight:650;font-size:12px;white-space:nowrap;cursor:pointer}
+.allocation-page .edit-allocation-line:disabled{opacity:.5;cursor:default}
+.allocation-page .edit-allocation-line:focus-visible{outline:2px solid #087f82;outline-offset:2px}
+.allocation-table-mobile-hint{display:none}
+.allocation-sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+
+.allocation-line-editor{position:fixed;inset:0 0 0 auto;margin:0;border:0;padding:0;width:min(460px,100vw);height:100dvh;max-width:100vw;max-height:100dvh;background:#fff;color:#092c4c;box-shadow:-10px 0 35px #17334b26;overflow:hidden}
+.allocation-line-editor::backdrop{background:#17334b66}
+.allocation-editor-panel{height:100%;display:flex;flex-direction:column;text-align:left}
+.allocation-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 22px 12px}
+.allocation-editor-heading small{font-size:12px;color:#536f83;font-variant-numeric:tabular-nums}
+.allocation-editor-heading h2{font-size:21px;line-height:1.4;margin:3px 0 0;color:#0b3457}
+.allocation-page .editor-close{display:grid;place-items:center;width:40px;height:40px;background:#f3f7fa;border:1px solid #d2e0e9;border-radius:7px;color:#264e6c;font-size:25px;cursor:pointer;flex:none}
+.allocation-editor-hint{font-size:12px;line-height:1.6;color:#4e6c80;margin:0 22px 16px}
+.allocation-editor-body{flex:1;min-height:0;overflow:auto;padding:0 22px 20px;overscroll-behavior:contain}
+.allocation-editor-fields{padding:0;margin:0;border:0;display:grid;gap:18px;min-width:0}
+.allocation-editor-specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.allocation-editor-specs>*{min-width:0}
+.allocation-editor-fields input,.allocation-editor-fields select{min-height:44px}
+.allocation-editor-stock{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:13px 0;border-top:1px solid #dce7ee;border-bottom:1px solid #dce7ee}
+.allocation-editor-stock span{font-size:12px;color:#526f82}
+.allocation-editor-stock b{display:block;font-size:17px;color:#123d5e;margin-top:4px;font-variant-numeric:tabular-nums}
+.allocation-editor-fields textarea{resize:vertical;min-height:88px}
+.allocation-editor-line-total{display:flex;align-items:baseline;justify-content:space-between;gap:12px;color:#4e6b80;font-size:13px}
+.allocation-editor-line-total b{font-size:23px;color:#123d5e;font-variant-numeric:tabular-nums}
+.allocation-editor-actions{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:8px}
+.allocation-editor-actions button{min-height:40px;padding:8px 12px;border-radius:6px;border:1px solid #b9d0de;background:#fff;color:#15577d;font-size:13px;font-weight:650;cursor:pointer}
+.allocation-editor-actions .delete-allocation-line{border-color:#e4c2bd;color:#b33123;margin-left:auto}
+.allocation-editor-actions button:disabled{opacity:.45;cursor:default}
+.allocation-editor-footer{padding:14px 22px max(14px,env(safe-area-inset-bottom));border-top:1px solid #dce7ee;background:#fff}
+.allocation-editor-footer button{min-height:44px;width:100%;border:0;border-radius:7px;background:#0e5685;color:#fff;font-size:14px;font-weight:750;cursor:pointer}
+.allocation-line-editor button:focus-visible{outline:2px solid #087f82;outline-offset:3px}
+@media(max-width:900px){.allocation-arrival{max-width:55%}.allocation-arrival strong{font-size:14px}.allocation-table-scroll{max-height:54dvh}.allocation-table-mobile-hint{display:block;font-size:11px;color:#536f83;margin:8px 0 0}.allocation-detail-table th,.allocation-detail-table td{padding:9px 10px}}
+@media(max-width:520px){.allocation-title{align-items:stretch;flex-direction:column;gap:12px}.allocation-arrival{max-width:none}.request-overview .allocation-metrics{gap:12px 0}.request-overview .allocation-metrics>span:nth-child(2n){border-right:0}.request-overview .allocation-metrics>span:nth-child(2n+1){padding-left:0}.request-overview .request-notes{grid-template-columns:1fr}.allocation-table-toolbar{gap:5px}.allocation-detail-table .material-cell{min-width:115px;max-width:150px}.allocation-line-editor{width:100vw}.allocation-editor-heading{padding:18px 18px 12px}.allocation-editor-hint{margin-left:18px;margin-right:18px}.allocation-editor-body{padding-left:18px;padding-right:18px}.allocation-editor-footer{padding-left:18px;padding-right:18px}.allocation-editor-specs{gap:10px}}
+@media(prefers-reduced-motion:reduce){.allocation-loading i,.allocation-submit-overlay i{animation:none}.allocation-page button{transition:none}}
