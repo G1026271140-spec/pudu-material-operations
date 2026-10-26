@@ -713,7 +713,7 @@ _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": Non
 
 
 @api.get("/api/health")
-def health() -> dict[str, str]:
+def health() -> dict[str, Any]:
     if backend_runtime.realtime_reads():
         import app
         return {'status':'ok','version':app.APP_VERSION,'mode':'live_read_only' if backend_runtime.web_read_only() else 'live',

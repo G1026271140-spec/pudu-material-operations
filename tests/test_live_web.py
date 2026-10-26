@@ -104,3 +104,11 @@ def test_public_origin_override_uses_company_callback(monkeypatch):
     feishu_auth.public_origin.cache_clear()
     try: assert feishu_auth.callback_url()=='https://materials.pudu.work/auth/feishu/callback'
     finally: feishu_auth.public_origin.cache_clear()
+
+
+def test_live_health_is_a_valid_json_response_with_boolean_flags(monkeypatch):
+    monkeypatch.setenv('PUDU_REALTIME_READS','1')
+    monkeypatch.setenv('PUDU_WEB_READ_ONLY','1')
+    body=TestClient(web.api).get('/api/health').json()
+    assert body['status']=='ok' and body['business_cache_enabled'] is False
+    assert body['mode']=='live_read_only'
