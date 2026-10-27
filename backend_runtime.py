@@ -88,6 +88,7 @@ def request_scope(query=None):
     try:
         yield
     finally:
+        release_database_snapshot()
         request_state._value.reset(state_token)
         request_query._value.reset(query_token)
         _scope_active.reset(active_token)

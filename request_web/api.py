@@ -482,9 +482,7 @@ async def backend_request_context(request: Request, call_next):
             return JSONResponse({'detail':'数据库暂不可用，请稍后重试。' if backend_runtime.database_reads() else '飞书实时数据读取暂时失败，请稍后重试。'},status_code=503,
                 headers={'Cache-Control':'no-store','Retry-After':'5'})
         finally:
-            source=backend_runtime.request_state.get('_live_reader')
-            if source is not None and hasattr(source,'close'):
-                source.close()
+            backend_runtime.release_database_snapshot()
 
 
 @api.middleware("http")

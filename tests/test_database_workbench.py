@@ -175,7 +175,7 @@ def test_outbox_worker_publishes_once_and_detects_remote_manual_conflict(store):
     fake.fields['备注']='飞书人工备注'
     assert outbox_worker.run_once('admin',fake)['state']=='conflict'
     assert fake.fields['备注']=='飞书人工备注' and len(fake.writes)==1
-    assert repo.raw_record(s.conn,info,rid)['sync_state']=='pending'
+    assert repo.raw_record(s.conn,info,rid)['sync_state']=='conflict'
 
 
 def test_daily_feishu_authority_clears_local_edits_and_blocks_stale_job(store):
