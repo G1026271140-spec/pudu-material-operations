@@ -15,6 +15,8 @@ from fastapi.testclient import TestClient
 import app
 import backend_runtime as runtime
 from material_store import db,repository as repo
+from material_store import outbox_worker
+from material_store.reconcile import reconcile_snapshot
 from material_store.client import DatabaseReadClient
 from material_store.ingest import initial_import
 from request_web.live_data import reader
@@ -151,6 +153,60 @@ def test_nested_links_preserve_existing_backrefs_and_remove_old_target(store):
     change(s,stock,sid,'品类关联',[new_id])
     assert repo.link_ids(repo.raw_record(s.conn,cat,old_id)['fields'][back])==[]
     assert repo.link_ids(repo.raw_record(s.conn,cat,new_id)['fields'][back])==[other,sid]
+
+
+def test_outbox_worker_publishes_once_and_detects_remote_manual_conflict(store):
+    s=store
+    info,rid=s.seed('物料申请单',{'申请单号':s.prefix,'标题':'原测试标题','备注':'原备注'})
+    class Remote:
+        def __init__(self):self.fields={'标题':'原测试标题','备注':'原备注'};self.writes=[]
+        def get_record(self,table_id,record_id):
+            assert table_id==info['table_id'] and record_id==rid
+            return {'record_id':rid,'fields':dict(self.fields)}
+        def update_record(self,table_id,record_id,fields):
+            self.fields.update(fields);self.writes.append(dict(fields))
+    fake=Remote()
+    change(s,info,rid,'标题','新测试标题',key=s.prefix+'worker-1')
+    assert outbox_worker.run_once('admin',fake)['state']=='done'
+    assert fake.fields['标题']=='新测试标题' and len(fake.writes)==1
+    assert outbox_worker.run_once('admin',fake) is None
+    assert repo.raw_record(s.conn,info,rid)['sync_state']=='synced'
+    change(s,info,rid,'备注','本地备注',version=1,key=s.prefix+'worker-2')
+    fake.fields['备注']='飞书人工备注'
+    assert outbox_worker.run_once('admin',fake)['state']=='conflict'
+    assert fake.fields['备注']=='飞书人工备注' and len(fake.writes)==1
+    assert repo.raw_record(s.conn,info,rid)['sync_state']=='pending'
+
+
+def test_daily_feishu_authority_clears_local_edits_and_blocks_stale_job(store):
+    s=store;info,rid=category(s)
+    change(s,info,rid,'备注','待同步本地备注',key=s.prefix+'stale-outbound')
+    run_id=s.conn.execute("INSERT INTO material_ops.reconcile_runs(state) VALUES ('running') RETURNING id").fetchone()[0]
+    try:
+        # Even a remote value unchanged since yesterday wins at daily cutoff.
+        source=[{'record_id':rid,'fields':{'物料品类':'数据库测试品类','单价（美元）':2,'单价（人民币）':13.54}}]
+        with s.conn.transaction():stats=reconcile_snapshot(s.conn,info,source,run_id)
+        latest=repo.raw_record(s.conn,info,rid)
+        assert latest['fields'].get(s.field(info,'备注')) is None
+        assert latest['sync_state']=='synced' and stats['conflicts']==1
+        assert outbox_worker.claim('admin','stale-worker') is None
+        # A later human edit is a new version; cancelled history cannot block it.
+        change(s,info,rid,'备注','校验后新备注',version=latest['version'],key=s.prefix+'after-cutoff')
+        assert outbox_worker.claim('admin','new-worker')['record_key']==rid
+    finally:
+        s.conn.execute('DELETE FROM material_ops.audit WHERE reconcile_run=%s',(run_id,))
+        s.conn.execute('DELETE FROM material_ops.reconcile_runs WHERE id=%s',(run_id,))
+
+
+def test_daily_reconciliation_preserves_unsynced_local_creation(store):
+    s=store;info,rid=category(s)
+    with s.conn.transaction():
+        s.conn.execute(sql.SQL('UPDATE material_data.{} SET _remote_id=NULL,_sync_state=\'pending\' WHERE _record_key=%s').format(sql.Identifier(info['sql_table'])),(rid,))
+        run_id=s.conn.execute("INSERT INTO material_ops.reconcile_runs(state) VALUES ('running') RETURNING id").fetchone()[0]
+        stats=reconcile_snapshot(s.conn,info,[],run_id)
+        assert repo.raw_record(s.conn,info,rid)['sync_state']=='pending'
+        assert stats['deleted']==0
+    s.conn.execute('DELETE FROM material_ops.reconcile_runs WHERE id=%s',(run_id,))
 
 
 def test_link_selection_updates_display_label_and_remains_idempotent(store):

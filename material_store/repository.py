@@ -99,6 +99,26 @@ def insert_source_records(conn, info, records):
                     sql.Identifier(info["sql_table"])), [key, key, Jsonb(values), Jsonb(values)] + params)
 
 
+def allocate_request_no():
+    """Reserve a daily number atomically without holding either business lane."""
+    import os,psycopg
+    day=datetime.now().strftime('%Y%m%d')
+    prefix='REQ-'+day+'-'
+    # A short dedicated connection avoids borrowing a second pooled connection
+    # when five independent submissions already occupy the request pool.
+    with psycopg.connect(os.environ['PUDU_DATABASE_DSN'],autocommit=True) as conn, conn.transaction():
+        info=named_table(conn,'物料申请单')
+        field=next(f for f in info['fields'] if f['field_name']=='申请单号')
+        # Existing Feishu numbers seed the first reservation on a given day.
+        source=conn.execute(sql.SQL("SELECT _fields->>%s FROM material_data.{} WHERE NOT _deleted AND _fields->>%s LIKE %s").format(sql.Identifier(info['sql_table'])),
+                            (field['field_id'],field['field_id'],prefix+'%')).fetchall()
+        previous=max((int(v[0][len(prefix):]) for v in source if v[0] and v[0][len(prefix):].isdigit()),default=0)
+        reserved=conn.execute("""INSERT INTO material_ops.request_numbers(day,last_number) VALUES (%s,%s)
+             ON CONFLICT(day) DO UPDATE SET last_number=GREATEST(material_ops.request_numbers.last_number,excluded.last_number-1)+1
+             RETURNING last_number""",(day,previous+1)).fetchone()[0]
+    return f'{prefix}{reserved:03d}'
+
+
 def link_ids(value):
     """Accept both write payloads and Feishu's nested read representations."""
     result = []
@@ -263,6 +283,7 @@ def patch_record(conn, table_id, record_key, patch, expected_version, idempotenc
         raise ValueError("缺少操作人或保存标识。")
     with conn.transaction():
         # Human admin edits serialize briefly; no network call occurs inside this transaction.
+        conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
         conn.execute("SELECT pg_advisory_xact_lock(hashtextextended('pudu-database-editor',0))")
         info = table(conn,table_id)
         old = raw_record(conn,info,record_key,lock=True)

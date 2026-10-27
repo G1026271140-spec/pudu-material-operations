@@ -1,0 +1,27 @@
+[Unit]
+Description=PUDU PostgreSQL to Feishu outbox (%i)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gaohongyuan1
+WorkingDirectory=/home/gaohongyuan1/pudu-materials-operation/source
+Environment=PUDU_SECRETS_FILE=/home/gaohongyuan1/pudu-materials-operation/shared/config/secrets.toml
+Environment=PUDU_DATABASE_DSN=dbname=pudu_materials
+Environment=PUDU_DATA_SOURCE=postgresql
+Environment=PUDU_MEDIA_ROOT=/home/gaohongyuan1/pudu-materials-operation/shared/media
+Environment=PUDU_PUBLIC_ORIGIN=https://materials.pudu.work
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=TZ=Asia/Shanghai
+ExecStart=/home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m material_store.outbox_worker --lane %i
+Restart=always
+RestartSec=5
+TimeoutStopSec=180
+KillSignal=SIGINT
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

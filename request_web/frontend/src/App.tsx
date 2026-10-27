@@ -547,6 +547,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
       if (!r.ok) throw Error(errorMessage(body.detail, "提交失败"));
       const taskIds = Array.isArray(body.taskIds) ? body.taskIds : [body.taskId];
       setDone(
+        body.syncStatus==="pending"?`申请已保存到本地数据库（${taskIds.join("、")}），正在同步飞书。`:
         `申请已进入后台队列（${taskIds.length} 个任务：${taskIds.join("、")}）`,
       );
       setReview(false);

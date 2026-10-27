@@ -28,6 +28,11 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const loadTables=()=>json("/api/admin/database/tables").then(d=>{setTables(d.tables);setStatus(d);setTableId(old=>old||d.tables.find((t:Table)=>t.name==="物料品类"&&t.source==="primary")?.table_id||d.tables[0]?.table_id||"");});
   useEffect(()=>{loadTables().catch(e=>setError(e.message));},[]);
   useEffect(()=>{
+    if(!status?.sync_enabled)return;
+    const handle=setInterval(()=>{if(document.visibilityState==='visible'&&!edit&&!saving){void loadTables().catch(()=>{});setReload(n=>n+1);}},5000);
+    return ()=>clearInterval(handle);
+  },[status?.sync_enabled,edit,saving]);
+  useEffect(()=>{
     if(!tableId)return;
     const controller=new AbortController();const epoch=++requestEpoch.current;
     const timer=setTimeout(()=>{
@@ -67,7 +72,7 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const activeTable=tables.find(t=>t.table_id===tableId);
   return <section className="database-workbench" aria-label={tr("数据库工作台","Database workspace")}>
     <header className="database-heading"><div><h2>{tr("数据库工作台","Database workspace")}</h2><p>{tr("双击单元格或按 Enter 编辑，保存后立即更新本地数据。","Double-click a cell or press Enter to edit. Changes update the local database immediately.")}</p></div><button onClick={()=>{setReload(x=>x+1);void loadTables();}} disabled={saving}>{tr("刷新数据","Refresh")}</button></header>
-    {status&&<div className="database-source"><span>PostgreSQL</span><span>{tr("最近导入","Last imported")}：{status.imported_at?new Date(status.imported_at).toLocaleString():"—"}</span><span>{status.pending_sync} {tr("条任务待同步","pending sync tasks")}</span><small>{tr("飞书后台同步尚未启用；本页修改会持久保存在数据库。","Feishu sync is not enabled yet. Edits are durably saved in the database.")}</small></div>}
+    {status&&<div className="database-source"><span>PostgreSQL</span><span>{tr("最近导入","Last imported")}：{status.imported_at?new Date(status.imported_at).toLocaleString():"—"}</span><span>{status.pending_sync} {tr("条任务待同步","pending sync tasks")}</span><small>{status.sync_enabled?(status.workers_healthy?tr("飞书同步运行中 · 本地保存后自动同步","Feishu sync running · local changes sync automatically"):tr("飞书同步已启用，正在检查 Worker 状态","Feishu sync enabled; checking workers")):tr("飞书后台同步尚未启用；本页修改会持久保存在数据库。","Feishu sync is not enabled yet. Edits are durably saved in the database.")}{status.conflicts>0&&` · ${status.conflicts} ${tr("条历史冲突任务","historical conflicts")}`}</small></div>}
     {error&&<div className="database-error" role="alert">{error}<button onClick={()=>{setEdit(null);setReload(x=>x+1);}}>{tr("重新读取","Reload")}</button></div>}
     {notice&&!error&&<div className="database-notice" role="status">✓ {notice}</div>}
     <div className="database-layout"><aside className="database-tables" aria-label={tr("数据表","Tables")}>{tables.map(t=><button key={t.table_id} className={t.table_id===tableId?"active":""} onClick={()=>selectTable(t.table_id)}><span>{t.label}</span><small>{t.count}</small></button>)}</aside>

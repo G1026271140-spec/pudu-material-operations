@@ -101,6 +101,14 @@ def database_editor_enabled() -> bool:
     return database_reads() and os.environ.get('PUDU_DB_EDITOR_ENABLED', '').lower() in {'1','true','yes'}
 
 
+def database_business_writes_enabled() -> bool:
+    return database_reads() and os.environ.get('PUDU_BUSINESS_WRITES_ENABLED','').lower() in {'1','true','yes'}
+
+
+def database_worker_enabled() -> bool:
+    return database_reads() and os.environ.get('PUDU_OUTBOX_WORKER_ENABLED','').lower() in {'1','true','yes'}
+
+
 def release_database_snapshot():
     source=request_state.get('_live_reader')
     if source is not None and hasattr(source,'close'):

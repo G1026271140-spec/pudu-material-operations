@@ -28,6 +28,7 @@ DEFAULT_SHIPPING_COST = Decimal("100.00")
 class InvoicePricing:
     original_total: Decimal
     shipping_cost: Decimal
+    goods_unit_prices: tuple[Decimal, ...]
     goods_amounts: tuple[Decimal, ...]
 
     @property
@@ -37,9 +38,10 @@ class InvoicePricing:
 
 def invoice_pricing(lines: Iterable[ShippingLine], shipping_cost: object = DEFAULT_SHIPPING_COST) -> InvoicePricing:
     """Extract freight from the existing invoice value, never add it on top."""
+    line_list = list(lines)
     try:
         freight = Decimal(str(shipping_cost))
-        raw_amounts = [Decimal(str(line.unit_price)) * int(line.quantity) for line in lines]
+        raw_amounts = [Decimal(str(line.unit_price)) * int(line.quantity) for line in line_list]
     except (InvalidOperation, ValueError, TypeError, OverflowError) as exc:
         raise ValueError("运费及货物单价必须为有效数字。") from exc
     if not freight.is_finite() or freight < 0 or any(not n.is_finite() or n < 0 for n in raw_amounts):
@@ -49,16 +51,35 @@ def invoice_pricing(lines: Iterable[ShippingLine], shipping_cost: object = DEFAU
     original_total = raw_total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     if freight > original_total:
         raise ValueError(f"货物原总值为 {original_total:.2f} 美元，不足以扣出 {freight:.2f} 美元运费，请调整运费或货物单价。")
-    target_cents = int((original_total - freight) * 100)
-    # Largest-remainder allocation preserves the total to the cent and avoids
-    # assigning a negative rounding adjustment to a small/zero-value line.
-    shares = [Decimal(target_cents) * amount / raw_total if raw_total else Decimal(0) for amount in raw_amounts]
-    cents = [int(share.to_integral_value(rounding=ROUND_FLOOR)) for share in shares]
-    remainder = target_cents - sum(cents)
-    order = sorted(range(len(shares)), key=lambda i: (-(shares[i] - cents[i]), i))
-    for index in order[:remainder]:
-        cents[index] += 1
-    return InvoicePricing(original_total, freight, tuple(Decimal(n) / 100 for n in cents))
+    # Unit prices in an invoice must be payable cents. Allocate freight in
+    # proportion to the original goods values, then round *unit* prices.
+    target = original_total - freight
+    units = []
+    for line, original in zip(line_list, raw_amounts):
+        quantity = int(line.quantity)
+        if quantity <= 0:
+            raise ValueError("货物数量必须大于零。")
+        ideal_unit = (target * original / raw_total / quantity) if raw_total else Decimal(0)
+        units.append(ideal_unit.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+    # A one-cent unit adjustment can improve the invoice total without adding
+    # fractions of a cent to the displayed price. Stop when no move improves it.
+    gap = target - sum((unit * int(line.quantity) for unit, line in zip(units, line_list)), Decimal(0))
+    while gap:
+        choices = []
+        for index, line in enumerate(line_list):
+            step = Decimal(int(line.quantity)) / 100
+            if gap < 0 and units[index] == 0:
+                continue
+            improvement = abs(gap) - abs(gap - (step if gap > 0 else -step))
+            if improvement > 0:
+                choices.append((improvement, -index, index, step))
+        if not choices:
+            break
+        _, _, index, step = max(choices)
+        units[index] += Decimal('0.01') if gap > 0 else Decimal('-0.01')
+        gap += -step if gap > 0 else step
+    amounts = tuple(unit * int(line.quantity) for unit, line in zip(units, line_list))
+    return InvoicePricing(original_total, freight, tuple(units), amounts)
 
 @dataclass(frozen=True)
 class ShippingLine:
@@ -303,14 +324,10 @@ def _write_invoice(ws: Worksheet, lines: list[ShippingLine], pricing: InvoicePri
         ws.cell(row, 3, line.packing_type)
         ws.cell(row, 4, line.product_model or DEFAULT_PRODUCT_MODEL)
         ws.cell(row, 5, int(line.quantity))
-        if pricing.shipping_cost:
-            ws.cell(row, 6, float(pricing.goods_amounts[index] / int(line.quantity)))
-            ws.cell(row, 7, f"=ROUND(E{row}*F{row},2)")
-        else:
-            ws.cell(row, 6, float(line.unit_price))
-            ws.cell(row, 7, f"=E{row}*F{row}")
+        ws.cell(row, 6, float(pricing.goods_unit_prices[index]))
+        ws.cell(row, 7, f"=ROUND(E{row}*F{row},2)" if pricing.shipping_cost else f"=E{row}*F{row}")
         ws.cell(row, 5).number_format = "#,##0"
-        ws.cell(row, 6).number_format = "0.000######" if pricing.shipping_cost else "0.000"
+        ws.cell(row, 6).number_format = "0.00"
         ws.cell(row, 7).number_format = "0.00"
     # Freight is an invoice-only service line, not a physical packing item.
     for col, value in enumerate(("/", "Shipping Cost", "N/A", "N/A", 1, float(pricing.shipping_cost), f"=E{end_row}*F{end_row}"), start=1):

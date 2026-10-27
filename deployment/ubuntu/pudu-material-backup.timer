@@ -1,0 +1,11 @@
+[Unit]
+Description=PUDU daily backup before reconciliation
+
+[Timer]
+OnCalendar=*-*-* 02:40:00 Asia/Shanghai
+AccuracySec=1min
+Persistent=true
+Unit=pudu-material-backup.service
+
+[Install]
+WantedBy=timers.target

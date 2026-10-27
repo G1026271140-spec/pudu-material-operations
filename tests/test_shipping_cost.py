@@ -31,12 +31,13 @@ def test_distribution_is_proportional_and_zero_goods_stay_zero():
     assert pricing.goods_amounts == (Decimal("540"), Decimal("360"), Decimal("0"))
 
 
-def test_remainder_is_cent_exact_with_awkward_quantities():
+def test_awkward_quantities_keep_payable_unit_prices_and_close_total():
     lines = [line("A", 73, 2.213), line("B", 117, 3.321), line("C", 29, 1.019)]
     pricing = invoice_pricing(lines, "100.01")
     assert pricing.original_total == sum((Decimal(str(x.unit_price))*x.quantity for x in lines)).quantize(Decimal(".01"), rounding=ROUND_HALF_UP)
-    assert pricing.goods_total + pricing.shipping_cost == pricing.original_total
-    assert all(x >= 0 and x == x.quantize(Decimal(".01")) for x in pricing.goods_amounts)
+    assert abs(pricing.goods_total + pricing.shipping_cost - pricing.original_total) <= Decimal("0.01") * sum(x.quantity for x in lines)
+    assert all(x >= 0 and x == x.quantize(Decimal(".01")) for x in pricing.goods_unit_prices)
+    assert pricing.goods_amounts == tuple(price * x.quantity for price,x in zip(pricing.goods_unit_prices,lines))
 
 
 @pytest.mark.parametrize("cost", [-1, "NaN", "Infinity", None, "invalid"])
@@ -69,7 +70,9 @@ def test_invoice_adds_one_shipping_row_but_packing_is_unchanged():
     assert [inv.cell(18, col).value for col in range(1, 8)] == ["/", "Shipping Cost", "N/A", "N/A", 1, 100, "=E18*F18"]
     assert inv["G19"].value == "=SUM(G16:G18)"
     goods_amount = sum(Decimal(str(round(inv.cell(r, 5).value*inv.cell(r, 6).value, 2))) for r in (16, 17))
-    assert goods_amount + 100 == invoice_pricing(lines).original_total
+    assert abs(goods_amount + 100 - invoice_pricing(lines).original_total) <= Decimal("0.01") * sum(x.quantity for x in lines)
+    assert all(inv.cell(r,6).number_format == '0.00' for r in (16,17))
+    assert all(Decimal(str(inv.cell(r,6).value)).as_tuple().exponent >= -2 for r in (16,17))
     assert inv["G16"].value == "=ROUND(E16*F16,2)"
     assert pl["B15"].value == "A" and pl["B16"].value == "B"
     assert pl["G17"].value == "=SUM(G15:G16)"
@@ -94,12 +97,13 @@ def test_shipping_change_preserves_all_packing_cells_and_formats():
     assert snapshots[0] == snapshots[1]
 
 
-def test_many_rounding_cases_keep_original_invoice_total_to_the_cent():
+def test_many_rounding_cases_keep_unit_prices_to_cents_and_invoice_close():
     import random
     randomizer = random.Random(22)
     for _ in range(200):
         lines = [line(str(i), randomizer.randint(1, 2000), randomizer.randint(0, 40000)/1000) for i in range(9)]
         cost = randomizer.randint(0, 10000)/100
         pricing = invoice_pricing(lines, cost)
-        assert pricing.goods_total + pricing.shipping_cost == pricing.original_total
+        assert abs(pricing.goods_total + pricing.shipping_cost - pricing.original_total) <= Decimal("0.01") * sum(x.quantity for x in lines)
+        assert all(x == x.quantize(Decimal('0.01')) for x in pricing.goods_unit_prices)
         assert all(x >= 0 for x in pricing.goods_amounts)

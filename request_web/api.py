@@ -663,7 +663,7 @@ def current_feishu_user(request: Request) -> JSONResponse:
         "department_paths": contact.get("department_paths") or [],
         "roles": roles,
         "permission_status": permission_status,
-        "read_only": backend_runtime.web_read_only(),
+        "read_only": backend_runtime.web_read_only() and not backend_runtime.database_business_writes_enabled(),
         "data_source": "postgresql" if backend_runtime.database_reads() else "feishu",
         "version": __import__('app').APP_VERSION,
     }
@@ -693,7 +693,9 @@ async def frontend_cache_policy(request, call_next):
     editor_write=backend_runtime.database_editor_enabled() and (
         (path.startswith('/api/admin/database/') and request.method=='PATCH') or
         (path=='/api/admin/category-images' and request.method=='POST'))
-    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write:
+    business_write=backend_runtime.database_business_writes_enabled() and request.method=='POST' and path in {
+        '/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}
+    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write and not business_write:
         return JSONResponse({'detail':'当前服务器处于浏览验证阶段，业务提交尚未开放。'},status_code=409,
             headers={'Cache-Control':'no-store'})
     response = await call_next(request)
@@ -738,8 +740,8 @@ def health() -> dict[str, Any]:
         with connection() as conn:
             conn.execute('SELECT 1')
         return {'status':'ok','version':__import__('app').APP_VERSION,'mode':'postgresql',
-                'business_cache_enabled':False,'business_write_enabled':not backend_runtime.web_read_only(),
-                'database_editor_enabled':backend_runtime.database_editor_enabled(),'worker_enabled':False}
+                'business_cache_enabled':False,'business_write_enabled':backend_runtime.database_business_writes_enabled(),
+                'database_editor_enabled':backend_runtime.database_editor_enabled(),'worker_enabled':backend_runtime.database_worker_enabled()}
     if backend_runtime.realtime_reads():
         import app
         return {'status':'ok','version':app.APP_VERSION,'mode':'live_read_only' if backend_runtime.web_read_only() else 'live',
@@ -1880,6 +1882,26 @@ def submit(draft: RequestDraft, request: Request) -> dict[str, Any]:
             errors.append(str(exc))
     if errors:
         raise HTTPException(status_code=422, detail=list(dict.fromkeys(errors)))
+    if backend_runtime.database_business_writes_enabled():
+        from material_store.submissions import submit_groups
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        accepted=datetime.now(ZoneInfo('Asia/Shanghai'))
+        payload.update(accepted_date=accepted.date().isoformat(),accepted_at_ms=int(accepted.timestamp()*1000))
+        mixed=bool(standard_lines and cultural_lines)
+        standard=None;cultural=None
+        if standard_lines:
+            normal=dict(payload);normal['submission_token']=draft.submission_token+(':standard' if mixed else '')
+            standard=(normal,standard_lines)
+        if cultural_lines:
+            culture={key:payload.get(key) for key in ('requester','requester_open_id','submitter','submitter_open_id','department','department_id','material_usage')}
+            culture.update(submission_token=draft.submission_token+(':cultural' if mixed else ''),administrator_override=True)
+            cultural=(culture,cultural_lines)
+        try:result=submit_groups(standard,cultural)
+        except (ValueError,RuntimeError) as exc:raise HTTPException(422,str(exc)) from exc
+        return {'accepted':True,'created':any(r['created'] for r in result),'requestNos':[r['request_no'] for r in result],
+                'taskId':result[0]['request_no'],'taskIds':[r['request_no'] for r in result],
+                'status':'本地已保存 · 待同步飞书','syncStatus':'pending'}
     try:
         import app as legacy
         from submission_queue import (
@@ -1946,6 +1968,14 @@ def cultural_submit(draft: CulturalDraft, request: Request) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="请选择申请人。")
     if not draft.material_usage.strip():
         raise HTTPException(status_code=422, detail="请填写文化衫用途（展会名称）。")
+    if backend_runtime.database_business_writes_enabled():
+        from material_store.submissions import submit_groups
+        payload={key:value for key,value in draft.model_dump().items() if key!='lines'}
+        payload['submitter'],payload['submitter_open_id']=_authenticated_submitter(request)
+        try:result=submit_groups(cultural=(payload,[line.model_dump() for line in draft.lines]))
+        except (ValueError,RuntimeError) as exc:raise HTTPException(422,str(exc)) from exc
+        return {'accepted':True,'created':result[0]['created'],'requestNo':result[0]['request_no'],
+                'taskId':result[0]['request_no'],'status':'本地已保存 · 待同步飞书','syncStatus':'pending'}
     try:
         import app as legacy
 

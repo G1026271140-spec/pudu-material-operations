@@ -1,0 +1,19 @@
+[Unit]
+Description=PUDU daily Feishu-authoritative reconciliation
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=gaohongyuan1
+WorkingDirectory=/home/gaohongyuan1/pudu-materials-operation/source
+Environment=PUDU_SECRETS_FILE=/home/gaohongyuan1/pudu-materials-operation/shared/config/secrets.toml
+Environment=PUDU_DATABASE_DSN=dbname=pudu_materials
+Environment=PUDU_DATA_SOURCE=postgresql
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=TZ=Asia/Shanghai
+ExecStart=/home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m material_store.reconcile --once
+TimeoutStartSec=15min
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only

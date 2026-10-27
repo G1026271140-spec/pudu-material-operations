@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.6.1"
+APP_VERSION = "V3.6.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -612,6 +612,9 @@ def _native_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) 
 
 
 def get_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) -> FeishuBitableClient:
+    if runtime.database_reads() and runtime.request_state.get('_write_conn') is not None and app_token == feishu_bitable_app_token():
+        from material_store.client import DatabaseWriteClient
+        return DatabaseWriteClient(runtime.request_state['_write_conn'])
     client = _native_feishu_bitable_client(app_id, app_secret, app_token)
     if runtime.database_reads():
         from material_store.client import DatabaseReadClient
@@ -2846,6 +2849,10 @@ def feishu_rows(table_name: str) -> list[dict]:
 
 def fresh_feishu_rows(table_name: str) -> list[dict]:
     if runtime.database_reads():
+        if runtime.request_state.get('_write_conn') is not None:
+            from material_store import repository as store
+            conn=runtime.request_state['_write_conn']
+            return store.rows(conn,store.named_table(conn,table_name))
         from request_web.live_data import reader
         return reader().rows(table_name)
     client = feishu_client()
@@ -4476,6 +4483,9 @@ def submit_inventory_restock(draft: dict[str, object]) -> list[dict[str, object]
 
 
 def next_request_no(request_rows: list[dict] | None = None) -> str:
+    if runtime.database_reads() and runtime.request_state.get('_write_conn') is not None:
+        from material_store.repository import allocate_request_no
+        return allocate_request_no()
     today = datetime.now().strftime("%Y%m%d")
     prefix = f"{REQUEST_NO_PREFIX}-{today}-"
     max_number = 0
@@ -7714,7 +7724,7 @@ def submit_feishu_material_request(
     if canonical_row is not None:
         request_no = feishu_text(feishu_fields(canonical_row), "申请单号") or request_no
         created_new_request = feishu_record_id(canonical_row) == request_record_id
-    if created_new_request:
+    if created_new_request and not runtime.database_reads():
         try:
             from pending_inventory_sqlite import upsert as cache_pending_request
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=PUDU Feishu reconciliation at 03:00 Beijing time
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 Asia/Shanghai
+AccuracySec=1min
+Persistent=true
+Unit=pudu-material-reconcile.service
+
+[Install]
+WantedBy=timers.target

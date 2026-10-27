@@ -286,7 +286,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
       });
       const body = await response.json();
       if (!response.ok) throw Error(body.detail || "Submit failed");
-      setDone(`${t.successHint} (${body.taskId})`);
+      setDone(body.syncStatus==="pending"?`${lang==="zh"?"申请已保存到本地数据库，正在同步飞书":"Saved locally; syncing to Feishu"} (${body.requestNo})`:`${t.successHint} (${body.taskId})`);
       setReview(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Submit failed");

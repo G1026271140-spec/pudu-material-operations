@@ -51,9 +51,12 @@ def register_database_api(api, require_admin):
         repo=store()
         with database_connection() as conn:
             imported=conn.execute("SELECT completed_at FROM material_ops.import_runs WHERE state='done' ORDER BY completed_at DESC LIMIT 1").fetchone()
-            pending=conn.execute("SELECT count(*) FROM material_ops.outbox WHERE state IN ('pending','retry','processing','conflict')").fetchone()[0]
+            pending=conn.execute("SELECT count(*) FROM material_ops.outbox WHERE state IN ('pending','retry','processing')").fetchone()[0]
+            conflicts=conn.execute("SELECT count(*) FROM material_ops.outbox WHERE state='conflict'").fetchone()[0]
+            heartbeat=conn.execute("SELECT count(*) FROM material_ops.documents WHERE name IN ('worker:ordinary','worker:cultural','worker:admin') AND updated_at>now()-interval '2 minutes'").fetchone()[0]
             return {'tables':repo.list_tables(conn),'imported_at':imported[0].isoformat() if imported else None,
-                    'pending_sync':pending,'editor_enabled':backend_runtime.database_editor_enabled(),'sync_enabled':False}
+                    'pending_sync':pending,'conflicts':conflicts,'editor_enabled':backend_runtime.database_editor_enabled(),
+                    'sync_enabled':backend_runtime.database_worker_enabled(),'workers_healthy':heartbeat==3}
 
     @api.get('/api/admin/database/tables/{table_id}/records')
     def records(table_id:str,page:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=100),q:str=Query('',max_length=300),
