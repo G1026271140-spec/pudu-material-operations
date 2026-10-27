@@ -23,6 +23,20 @@ def elements_with_tag(value: object, tag: str) -> list[dict[str, object]]:
 
 
 class BotNotificationTests(unittest.TestCase):
+    def test_applicant_receipt_tables_are_root_elements_and_normalized(self) -> None:
+        for english in (False, True):
+            with self.subTest(english=english), patch.object(app, "requester_prefers_english", return_value=english):
+                card = app.sales_request_received_notification_card(
+                    "REQ-1", {"requester": "申请人", "material_usage": "验收"},
+                    [{"product": "产品折页", "model": "GT系列三折页", "language": "日语", "quantity": 2}],
+                )
+                tables = elements_with_tag(card, "table")
+                roots = [item for item in card["body"]["elements"] if item.get("tag") == "table"]
+                self.assertEqual(len(tables), 1)
+                self.assertEqual(tables, roots)
+                self.assertTrue(all(column["name"] == f"c{i}" for i, column in enumerate(tables[0]["columns"])))
+                self.assertIn("GT系列三折页", json.dumps(tables, ensure_ascii=False))
+
     def test_notification_tables_do_not_use_automatic_column_width(self) -> None:
         self.assertNotIn('"width": "auto"', inspect.getsource(app))
         self.assertNotIn('"width": "72px"', inspect.getsource(app))
@@ -899,16 +913,12 @@ class BotNotificationTests(unittest.TestCase):
         )
         body_elements = card["body"]["elements"]
         self.assertIn("物料明细", json.dumps(body_elements[0], ensure_ascii=False))
-        self.assertIn("申请信息", json.dumps(body_elements[1], ensure_ascii=False))
+        self.assertIn("申请信息", json.dumps(body_elements[2], ensure_ascii=False))
         self.assertLess(serialized.index("物料明细"), serialized.index("申请信息"))
-        detail_table = next(
-            element
-            for element in body_elements[0]["columns"][0]["elements"]
-            if element.get("tag") == "table"
-        )
-        self.assertEqual(detail_table["rows"][0]["quantity"], 1)
-        self.assertIn("产品单页", detail_table["rows"][0]["specification"])
-        self.assertIn("英语", detail_table["rows"][0]["specification"])
+        detail_table = next(element for element in body_elements if element.get("tag") == "table")
+        self.assertEqual(detail_table["rows"][0]["c2"], 1)
+        self.assertIn("产品单页", detail_table["rows"][0]["c1"])
+        self.assertIn("英语", detail_table["rows"][0]["c1"])
         self.assertNotIn("申请合计", serialized)
         self.assertNotIn("修改或撤回本条申请", serialized)
         self.assertNotIn("open_request_editor", serialized)

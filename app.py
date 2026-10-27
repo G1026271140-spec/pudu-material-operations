@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.7.0"
+APP_VERSION = "V3.7.1"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -7357,11 +7357,13 @@ def sales_request_received_notification_card(
             "direction": "vertical",
             "padding": "12px 12px 20px 12px",
             "elements": [
-                _feishu_notification_section(
-                    detail_title,
-                    [_feishu_requester_material_table(lines, english=english)],
-                    color="blue",
-                    focus=True,
+                {
+                    "tag": "markdown",
+                    "content": f"**<font color='blue'>{detail_title}</font>**",
+                    "text_size": "heading-4",
+                },
+                _feishu_normalize_card_tables(
+                    _feishu_requester_material_table(lines, english=english)
                 ),
                 _feishu_notification_section(
                     info_title,
