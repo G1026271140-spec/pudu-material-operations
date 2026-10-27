@@ -10,7 +10,7 @@ type Result = {table:Table;fields:Field[];records:Row[];count:number;labels:Reco
 type Edit = {row:Row;field:Field;key:string};
 type Option = {id:string;label:string};
 const text = (v:any):string => v==null?"":Array.isArray(v)?v.map(x=>typeof x==="object"?x?.name||x?.text||x?.id||"":String(x)).join("、"):typeof v==="object"?(v.value!=null?text(v.value):v.text||v.name||v.link||JSON.stringify(v)):String(v);
-const ids = (v:any):string[] => Array.isArray(v)?v.map(x=>typeof x==="string"?x:x.id||x.record_id).filter(Boolean):[];
+const ids = (v:any):string[] => [...new Set<string>((Array.isArray(v)?v:[v]).flatMap(x=>typeof x==="string"?[x]:x&&typeof x==="object"?[x.record_id||x.id,...(Array.isArray(x.record_ids)?x.record_ids:[]),...(Array.isArray(x.link_record_ids)?x.link_record_ids:[])]:[]).filter(x=>typeof x==="string"&&x))];
 const scalar = (field:Field) => [1,2,3,5,7,13].includes(field.type);
 const dateInput = (v:any) => {if(v==null||v==="")return "";const d=new Date(Number(v));return Number.isNaN(d.valueOf())?"":`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}T${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;};
 async function json(url:string,init?:RequestInit){const r=await fetch(url,{cache:"no-store",...init});const d=await r.json();if(!r.ok)throw Error(typeof d.detail==="string"?d.detail:"数据操作失败");return d;}
@@ -57,7 +57,7 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const columns=(data?.fields||[]).filter(f=>visible===null||visible.includes(f.field_id));
   function content(row:Row,field:Field){
     const value=row.fields[field.field_id];
-    if([2,20].includes(field.type)&&value!=null){const raw=typeof value==="object"?value.value:value;const n=Number(Array.isArray(raw)?raw[0]:raw);const formatter=field.property?.formatter||"";if(Number.isFinite(n)&&/^0(\.0+)?$/.test(formatter)){const digits=(formatter.split(".")[1]||"").length;return n.toLocaleString(lang==="zh"?"zh-CN":"en-GB",{minimumFractionDigits:digits,maximumFractionDigits:digits});}}
+    if([2,20].includes(field.type)&&value!=null){const raw=typeof value==="object"?value.value:value;const n=Number(Array.isArray(raw)?raw[0]:raw);const formatter=field.property?.formatter||"";if(Number.isFinite(n)&&/^0(\.0+)?$/.test(formatter)){const digits=(formatter.split(".")[1]||"").length;return n.toLocaleString(lang==="zh"?"zh-CN":"en-GB",{useGrouping:false,minimumFractionDigits:digits,maximumFractionDigits:digits});}}
     if(field.type===7)return value?"✓":"—";
     if(field.type===5&&value!=null)return new Date(Number(value)).toLocaleString(lang==="zh"?"zh-CN":"en-GB");
     if([18,21].includes(field.type))return ids(value).map(id=>data?.labels[field.field_id]?.[id]||tr("关联记录","Linked record")).join("、");

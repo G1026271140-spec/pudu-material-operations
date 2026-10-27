@@ -116,6 +116,15 @@ def test_category_rename_updates_stock_labels_without_rewriting_history(store):
     assert repo.raw_record(s.conn,history,hid)['fields'][s.field(history,'品类名称')]=='数据库测试品类'
 
 
+@pytest.mark.parametrize('value,expected', [
+    (None, []), ('recA', ['recA']),
+    ({'record_ids': ['recA', 'recB']}, ['recA', 'recB']),
+    ([{'record_ids': ['recA', 'recB'], 'text': 'Labels'}, {'link_record_ids': ['recB', 'recC']}, {'id': 'recD'}, '', None], ['recA', 'recB', 'recC', 'recD']),
+])
+def test_nested_feishu_link_read_formats(value, expected):
+    assert repo.link_ids(value) == expected
+
+
 def test_reciprocal_links_are_updated_and_invalid_targets_rollback(store):
     s=store;cat,cid=category(s)
     stock,sid=s.seed('物料主数据',{'物料编码':'TEST-002','物料品类':'数据库测试品类','当前库存':1})
@@ -125,6 +134,23 @@ def test_reciprocal_links_are_updated_and_invalid_targets_rollback(store):
     assert sid in repo.raw_record(s.conn,cat,cid)['fields'][back]
     with pytest.raises(ValueError):change(s,stock,sid,'品类关联',[s.prefix+'missing'],result['version'])
     assert repo.raw_record(s.conn,stock,sid)['fields'][link['field_id']]==[cid]
+
+
+def test_nested_links_preserve_existing_backrefs_and_remove_old_target(store):
+    s=store;cat,old_id=category(s)
+    _,new_id=s.seed('物料品类',{'物料品类':'新关联品类'})
+    stock,sid=s.seed('物料主数据',{'物料编码':'TEST-NESTED','物料品类':'数据库测试品类','当前库存':1,
+        '品类关联':[{'record_ids':[old_id],'text':'数据库测试品类'}]})
+    _,other=s.seed('物料主数据',{'物料编码':'TEST-OTHER','当前库存':2})
+    link=next(f for f in stock['fields'] if f['field_name']=='品类关联')
+    back=link['property']['back_field_id']
+    for target,links in [(old_id,[sid]),(new_id,[other])]:
+        values=repo.raw_record(s.conn,cat,target)['fields']
+        values[back]={'record_ids':links,'text':'已有物料'}
+        repo.replace_values(s.conn,cat,target,values)
+    change(s,stock,sid,'品类关联',[new_id])
+    assert repo.link_ids(repo.raw_record(s.conn,cat,old_id)['fields'][back])==[]
+    assert repo.link_ids(repo.raw_record(s.conn,cat,new_id)['fields'][back])==[other,sid]
 
 
 def test_link_selection_updates_display_label_and_remains_idempotent(store):

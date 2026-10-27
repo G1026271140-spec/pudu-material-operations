@@ -100,9 +100,21 @@ def insert_source_records(conn, info, records):
 
 
 def link_ids(value):
-    if not isinstance(value, list):
-        return []
-    return [item if isinstance(item, str) else str(item.get("record_id") or item.get("id") or "") for item in value if isinstance(item, (str, dict))]
+    """Accept both write payloads and Feishu's nested read representations."""
+    result = []
+    for item in value if isinstance(value, list) else [value]:
+        candidates = []
+        if isinstance(item, str):
+            candidates.append(item)
+        elif isinstance(item, dict):
+            candidates.append(item.get("record_id") or item.get("id"))
+            for key in ("record_ids", "link_record_ids"):
+                if isinstance(item.get(key), list):
+                    candidates.extend(item[key])
+        for candidate in candidates:
+            if isinstance(candidate, str) and candidate and candidate not in result:
+                result.append(candidate)
+    return result
 
 
 def number(value):
