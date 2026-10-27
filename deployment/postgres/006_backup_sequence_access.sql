@@ -1,0 +1,6 @@
+BEGIN;
+SET LOCAL ROLE pudu_material_owner;
+GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA material_ops TO gaohongyuan1;
+ALTER DEFAULT PRIVILEGES FOR ROLE pudu_material_owner IN SCHEMA material_ops
+ GRANT USAGE,SELECT ON SEQUENCES TO gaohongyuan1;
+COMMIT;
