@@ -265,7 +265,6 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
       <section className="corporate-section">
         <div className="corporate-title"><i>01</i><div><h2>{t.person}</h2></div></div>
         <div className="corporate-contact">
-          <label>{lang === "zh" ? "提交人（飞书登录）" : "Submitted By (Feishu Login)"}<input value={currentUser?.name || ""} readOnly aria-readonly="true" /></label>
           <label>{t.applicant} *
             <div className="corporate-combo">
               <input value={query} placeholder={t.applicantPlaceholder} onFocus={() => setMenu(true)} onChange={(event) => { requesterTouched.current = true; setQuery(event.target.value); setRequesterId(""); setMenu(true); }} />

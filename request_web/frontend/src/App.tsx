@@ -596,10 +596,6 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
           </div>
           <div className="grid3">
             <label>
-              {t("提交人（飞书登录）", "Submitted By (Feishu Login)")}
-              <input value={currentUser?.name || ""} readOnly aria-readonly="true" />
-            </label>
-            <label>
               {t("申请人", "Applicant")} *
               <div className="combobox">
                 <input
