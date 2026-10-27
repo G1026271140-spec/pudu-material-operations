@@ -25,3 +25,11 @@
 .new-model-product-lines label span{overflow-wrap:anywhere;font-weight:600}
 .new-model-product-lines input{width:100%;min-width:0}
 @media(max-width:700px){.management-page>.management-body{padding-top:10px}.management-toolbar{flex-wrap:wrap;gap:6px}.management-toolbar .management-tabs{flex-basis:100%}.management-refresh{margin-left:auto;margin-bottom:8px}.new-model-product-lines label{grid-template-columns:1fr;gap:4px}}
+
+.restock-category-group{margin:18px 0 24px}
+.restock-category-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid #d9e6ec}
+.restock-category-heading h3{margin:0;font-size:18px;color:#126478}
+.restock-category-heading>span{font-size:12px;color:#6a8293}
+.restock-cards{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media(max-width:1100px){.restock-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.restock-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.restock-category-group{margin:14px 0 18px}.restock-category-heading h3{font-size:16px}}
