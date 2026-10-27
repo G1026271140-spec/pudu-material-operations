@@ -560,7 +560,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
   if (!catalog)
     return (
       <main className="loading">
-        {error || t("正在读取本地物料缓存…", "Loading material cache…")}
+        {error || t("正在读取物料数据…", "Loading material data…")}
       </main>
     );
   if (done)

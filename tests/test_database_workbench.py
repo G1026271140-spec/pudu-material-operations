@@ -209,6 +209,17 @@ def test_daily_reconciliation_preserves_unsynced_local_creation(store):
     s.conn.execute('DELETE FROM material_ops.reconcile_runs WHERE id=%s',(run_id,))
 
 
+def test_enabled_local_submission_gate_allows_form_validation(store,monkeypatch):
+    monkeypatch.setenv('PUDU_BUSINESS_WRITES_ENABLED','1')
+    with TestClient(web.api) as browser:
+        # The real form uses POST /validate before it shows the final review.
+        # Invalid input must reach FastAPI validation instead of the old gate.
+        assert browser.post('/api/validate',json={}).status_code==422
+        assert browser.post('/api/submit',json={}).status_code==422
+        assert browser.post('/api/cultural-submit',json={}).status_code==422
+        assert browser.post('/api/admin/restock/submit',json={}).status_code==409
+
+
 def test_link_selection_updates_display_label_and_remains_idempotent(store):
     s=store;cat,cid=s.seed('物料品类',{'物料品类':'关联目标品类'})
     stock,sid=s.seed('物料主数据',{'物料编码':'TEST-003','物料品类':'原品类','当前库存':1})

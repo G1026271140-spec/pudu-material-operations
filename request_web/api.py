@@ -694,7 +694,7 @@ async def frontend_cache_policy(request, call_next):
         (path.startswith('/api/admin/database/') and request.method=='PATCH') or
         (path=='/api/admin/category-images' and request.method=='POST'))
     business_write=backend_runtime.database_business_writes_enabled() and request.method=='POST' and path in {
-        '/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}
+        '/api/validate','/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}
     if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write and not business_write:
         return JSONResponse({'detail':'当前服务器处于浏览验证阶段，业务提交尚未开放。'},status_code=409,
             headers={'Cache-Control':'no-store'})
