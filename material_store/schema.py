@@ -32,7 +32,7 @@ def register_schema(conn, snapshot: dict) -> dict:
                 _created_at timestamptz NOT NULL DEFAULT now(),
                 _updated_at timestamptz NOT NULL DEFAULT now(), _source_seen_at timestamptz
             )""").format(sql.Identifier(table_sql)))
-            for field in table["fields"]:
+            for ordinal, field in enumerate(table["fields"]):
                 _, column = table_column_names(table_id, field["field_id"])
                 kind = postgres_type(int(field["type"]))
                 prior = conn.execute("SELECT sql_type FROM material_meta.fields WHERE table_id=%s AND field_id=%s",
@@ -42,12 +42,12 @@ def register_schema(conn, snapshot: dict) -> dict:
                 conn.execute(sql.SQL("ALTER TABLE material_data.{} ADD COLUMN IF NOT EXISTS {} {}")
                              .format(sql.Identifier(table_sql), sql.Identifier(column), sql.SQL(kind)))
                 conn.execute("""INSERT INTO material_meta.fields
-                    (table_id,field_id,field_name,field_type,sql_column,sql_type,edit_mode,definition)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                    (table_id,field_id,field_name,field_type,sql_column,sql_type,edit_mode,definition,ordinal)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     ON CONFLICT(table_id,field_id) DO UPDATE SET field_name=excluded.field_name,field_type=excluded.field_type,
-                    edit_mode=excluded.edit_mode,definition=excluded.definition""",
+                    edit_mode=excluded.edit_mode,definition=excluded.definition,ordinal=excluded.ordinal""",
                     (table_id, field["field_id"], field["field_name"], int(field["type"]), column,
-                     kind, edit_mode(field), Jsonb(field)))
+                     kind, edit_mode(field), Jsonb(field), ordinal))
                 counts["fields"] += 1
             counts["tables"] += 1
     return counts
@@ -57,6 +57,6 @@ def metadata(conn, table_id: str):
     row = conn.execute("SELECT sql_table FROM material_meta.tables WHERE table_id=%s", (table_id,)).fetchone()
     if not row:
         raise ValueError("Unregistered source table")
-    fields = conn.execute("SELECT definition FROM material_meta.fields WHERE table_id=%s ORDER BY field_id",
+    fields = conn.execute("SELECT definition FROM material_meta.fields WHERE table_id=%s ORDER BY ordinal,field_id",
                           (table_id,)).fetchall()
     return row[0], [field[0] for field in fields]

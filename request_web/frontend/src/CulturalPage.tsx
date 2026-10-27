@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDatabaseRefresh } from "./useDatabaseRefresh";
 import CategoryCarousel from "./CategoryCarousel";
 import { withCurrentUser } from "./identity";
 import type { CurrentUser } from "./identity";
@@ -152,11 +153,14 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
     [done, setDone] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
   const requesterTouched = useRef(false);
+  async function refreshCatalog(){
+    const response=await fetch('/api/cultural-catalog',{cache:'no-store'});
+    if(!response.ok)throw Error('文化周边目录读取失败');
+    setCatalog(await response.json());
+  }
+  useDatabaseRefresh(refreshCatalog);
   useEffect(() => {
-    fetch("/api/cultural-catalog")
-      .then((r) => r.json())
-      .then(setCatalog)
-      .catch((e) => setError(e.message));
+    void refreshCatalog().catch((e) => setError(e.message));
   }, []);
   useEffect(() => {
     if (!catalog || !currentUser || currentUser.permission_status === "disabled" || requesterTouched.current || requesterId) return;

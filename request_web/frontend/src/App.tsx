@@ -121,7 +121,11 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     }
     const check = () => { void refresh(); };
     void refresh(true);
-    const timer = window.setInterval(check, 15000);
+    const databaseMode=document.querySelector('meta[name="pudu-data-source"]')?.getAttribute('content')==='postgresql';
+    const timer = window.setInterval(check, databaseMode?3000:15000);
+    const channel=databaseMode&&typeof BroadcastChannel!=="undefined"?new BroadcastChannel("pudu-business-data"):null;
+    if(channel)channel.onmessage=check;
+    window.addEventListener("pudu-business-data-changed",check);
     window.addEventListener("focus", check);
     document.addEventListener("visibilitychange", check);
     document.addEventListener("pudu:check-request-catalog", check);
@@ -129,6 +133,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
       stopped = true;
       controller.abort();
       window.clearInterval(timer);
+      channel?.close();
+      window.removeEventListener("pudu-business-data-changed",check);
       window.removeEventListener("focus", check);
       document.removeEventListener("visibilitychange", check);
       document.removeEventListener("pudu:check-request-catalog", check);

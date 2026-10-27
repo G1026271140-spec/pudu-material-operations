@@ -145,10 +145,15 @@ class LiveReader:
 
 
 def reader():
+    factory=LiveReader
+    if runtime.database_reads():
+        from request_web.postgres_data import PostgresReader
+        factory=PostgresReader
     if not runtime.in_request_scope():
-        return LiveReader()
+        if runtime.database_reads():raise RuntimeError('Database page reads require an HTTP request scope')
+        return factory()
     if '_live_reader' not in runtime.request_state:
-        runtime.request_state['_live_reader'] = LiveReader()
+        runtime.request_state['_live_reader'] = factory()
     return runtime.request_state['_live_reader']
 
 
@@ -163,6 +168,10 @@ IMAGE_FIELDS = {'物料品类':('申领页图片',),'文化周边编码及库存
 def attachment_images(table, row, field):
     import app
     result = []
+    if runtime.database_reads():
+        for item in app.feishu_fields(row).get(field) or []:
+            if isinstance(item,dict) and item.get('local_media_id'):
+                result.append({'path':'/api/database-image/'+quote(str(item['local_media_id']),safe=''),'name':item.get('name','图片')})
     for attachment in app.feishu_attachment_items(app.feishu_fields(row),field):
         if not attachment['name'].lower().endswith(('.png','.jpg','.jpeg','.webp','.gif','.avif','.bmp')):
             continue
@@ -184,4 +193,15 @@ def image_bytes(table, record_id, file_token):
         raise KeyError('Image is not attached to this record')
     # Bitable download URLs carry record/field permission context required by
     # some attachments; a bare media-token download can return HTTP 400.
-    return source.client.download_bitable_attachment(file_token,allowed[file_token]['url'])
+    client=source.client
+    if runtime.database_reads():
+        # Image bytes still use Feishu's attachment permission context. They do
+        # not determine the page's business values or stock.
+        client=client.remote
+        table_id=source.table_id(table)
+        runtime.release_database_snapshot()
+        latest=client.get_record(table_id,record_id)
+        remote={a['file_token']:a for field in IMAGE_FIELDS[table] for a in app.feishu_attachment_items(app.feishu_fields(latest),field)}
+        if file_token not in remote:raise KeyError('Remote attachment no longer exists')
+        return client.download_bitable_attachment(file_token,remote[file_token]['url'])
+    return client.download_bitable_attachment(file_token,allowed[file_token]['url'])

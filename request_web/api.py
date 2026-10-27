@@ -56,6 +56,11 @@ def _json(name: str) -> dict[str, Any]:
 
 
 def catalog_revision() -> str:
+    if backend_runtime.database_reads():
+        from material_store.db import connection
+        with connection() as conn:
+            revision=conn.execute("SELECT (SELECT coalesce(max(id),0) FROM material_ops.audit),(SELECT max(completed_at)::text FROM material_ops.import_runs WHERE state='done')").fetchone()
+        return 'pg-'+hashlib.sha256(repr(revision).encode()).hexdigest()
     if backend_runtime.realtime_reads():
         return "live"
     from catalog_deletions import revision
@@ -474,8 +479,12 @@ async def backend_request_context(request: Request, call_next):
             if not backend_runtime.realtime_reads():
                 raise
             logging.exception('Live source request failed')
-            return JSONResponse({'detail':'飞书实时数据读取暂时失败，请稍后重试。'},status_code=503,
+            return JSONResponse({'detail':'数据库暂不可用，请稍后重试。' if backend_runtime.database_reads() else '飞书实时数据读取暂时失败，请稍后重试。'},status_code=503,
                 headers={'Cache-Control':'no-store','Retry-After':'5'})
+        finally:
+            source=backend_runtime.request_state.get('_live_reader')
+            if source is not None and hasattr(source,'close'):
+                source.close()
 
 
 @api.middleware("http")
@@ -655,6 +664,7 @@ def current_feishu_user(request: Request) -> JSONResponse:
         "roles": roles,
         "permission_status": permission_status,
         "read_only": backend_runtime.web_read_only(),
+        "data_source": "postgresql" if backend_runtime.database_reads() else "feishu",
         "version": __import__('app').APP_VERSION,
     }
     return JSONResponse(body, headers={"Cache-Control": "no-store"})
@@ -679,11 +689,14 @@ def favicon() -> FileResponse:
 
 @api.middleware("http")
 async def frontend_cache_policy(request, call_next):
-    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'}:
+    path = request.url.path
+    editor_write=backend_runtime.database_editor_enabled() and (
+        (path.startswith('/api/admin/database/') and request.method=='PATCH') or
+        (path=='/api/admin/category-images' and request.method=='POST'))
+    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write:
         return JSONResponse({'detail':'当前服务器处于浏览验证阶段，业务提交尚未开放。'},status_code=409,
             headers={'Cache-Control':'no-store'})
     response = await call_next(request)
-    path = request.url.path
     content_type = response.headers.get("content-type", "")
     if path.startswith("/assets/"):
         response.headers["Cache-Control"] = (
@@ -720,6 +733,13 @@ _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": Non
 
 @api.get("/api/health")
 def health() -> dict[str, Any]:
+    if backend_runtime.database_reads():
+        from material_store.db import connection
+        with connection() as conn:
+            conn.execute('SELECT 1')
+        return {'status':'ok','version':__import__('app').APP_VERSION,'mode':'postgresql',
+                'business_cache_enabled':False,'business_write_enabled':not backend_runtime.web_read_only(),
+                'database_editor_enabled':backend_runtime.database_editor_enabled(),'worker_enabled':False}
     if backend_runtime.realtime_reads():
         import app
         return {'status':'ok','version':app.APP_VERSION,'mode':'live_read_only' if backend_runtime.web_read_only() else 'live',
@@ -890,6 +910,10 @@ def require_admin(request: Request) -> str:
     if not open_id:
         raise HTTPException(status_code=403, detail="仅已启用的管理员可访问物料管理。")
     return open_id
+
+
+from request_web.database_api import register_database_api
+register_database_api(api, require_admin)
 
 
 def _allocation_actor(
@@ -1162,7 +1186,7 @@ def allocation_pending(
         from request_web.live_data import reader
         source = reader()
         return {'requests':legacy.pending_inventory_review_summaries(source.rows(legacy.REQUEST_TABLE_NAME)),
-            'source':'live_feishu','updatedAt':source.generated_at,'refreshing':False,'refreshError':'',
+            'source':'postgresql' if backend_runtime.database_reads() else 'live_feishu','updatedAt':source.generated_at,'refreshing':False,'refreshError':'',
             'operators':_allocation_operators(legacy)}
 
     local_rows = list_pending()
@@ -1448,6 +1472,7 @@ def management_dimension_submit(
 
 @api.post("/api/admin/category-images")
 async def upload_category_image(request: Request, actor: str = Depends(require_admin)) -> dict[str, Any]:
+    backend_runtime.release_database_snapshot()
     from material_store.media import MAX_IMAGE_BYTES, save_image
     content = bytearray()
     async for chunk in request.stream():
@@ -1466,7 +1491,8 @@ async def upload_category_image(request: Request, actor: str = Depends(require_a
 def local_category_image(media_id: str, _: str = Depends(require_admin)) -> Response:
     from material_store.media import load_image
     try:
-        image = load_image(media_id)
+        source=backend_runtime.request_state.get('_live_reader')
+        image = load_image(media_id,conn=getattr(source,'_connection',None))
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return FileResponse(image["path"], media_type=image["type"], headers={"Cache-Control": "no-store"})
@@ -2095,5 +2121,6 @@ if DIST.is_dir():
             return FileResponse(candidate)
         if backend_runtime.realtime_reads():
             html = (DIST / 'index.html').read_text(encoding='utf-8')
-            return HTMLResponse(html.replace('<head>', '<head><meta name="pudu-live-data" content="1">',1))
+            source='postgresql' if backend_runtime.database_reads() else 'feishu'
+            return HTMLResponse(html.replace('<head>', f'<head><meta name="pudu-live-data" content="1"><meta name="pudu-data-source" content="{source}">',1))
         return FileResponse(DIST / "index.html")

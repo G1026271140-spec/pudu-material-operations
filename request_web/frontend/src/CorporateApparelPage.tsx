@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDatabaseRefresh } from "./useDatabaseRefresh";
 import CategoryCarousel from "./CategoryCarousel";
 import { withCurrentUser } from "./identity";
 import type { CurrentUser } from "./identity";
@@ -113,6 +114,12 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
   const [done, setDone] = useState("");
   const [submissionToken] = useState(() => crypto.randomUUID().replaceAll("-", ""));
   const requesterTouched = useRef(false);
+  useDatabaseRefresh(async()=>{
+    const response=await fetch('/api/corporate-apparel-catalog',{cache:'no-store'});
+    if(!response.ok)throw Error('目录读取失败');
+    setCatalog(await response.json());
+    await loadStock();
+  });
 
   useEffect(() => {
     const loadInEnglish = localStorage.getItem("pudu-lang") === "en";

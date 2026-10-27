@@ -90,7 +90,22 @@ def request_scope(query=None):
 
 
 def realtime_reads() -> bool:
-    return os.environ.get('PUDU_REALTIME_READS', '').lower() in {'1', 'true', 'yes'}
+    return database_reads() or os.environ.get('PUDU_REALTIME_READS', '').lower() in {'1', 'true', 'yes'}
+
+
+def database_reads() -> bool:
+    return os.environ.get('PUDU_DATA_SOURCE', '').lower() == 'postgresql'
+
+
+def database_editor_enabled() -> bool:
+    return database_reads() and os.environ.get('PUDU_DB_EDITOR_ENABLED', '').lower() in {'1','true','yes'}
+
+
+def release_database_snapshot():
+    source=request_state.get('_live_reader')
+    if source is not None and hasattr(source,'close'):
+        source.close()
+        del request_state['_live_reader']
 
 
 class _Cache:

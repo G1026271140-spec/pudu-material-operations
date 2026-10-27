@@ -1,5 +1,6 @@
 export type CurrentUser = {
   read_only?: boolean;
+  data_source?: string;
   version?: string;
   open_id: string;
   name: string;

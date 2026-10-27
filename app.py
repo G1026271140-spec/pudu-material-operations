@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.5.3"
+APP_VERSION = "V3.6.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -569,6 +569,9 @@ def corporate_apparel_source_app_token() -> str:
 
 def corporate_apparel_source_client() -> FeishuBitableClient:
     app_token = corporate_apparel_source_app_token()
+    if runtime.database_reads() and not app_token:
+        from material_store.client import DatabaseReadClient
+        return DatabaseReadClient('apparel_admin')
     if not app_token:
         raise RuntimeError(
             "企业文化衫行政源表尚未完成应用授权：请将‘营销物料管理’应用添加为源表协作者，"
@@ -604,8 +607,22 @@ def redact_feishu_error(message: str) -> str:
 
 
 @runtime.cache_resource(show_spinner=False)
-def get_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) -> FeishuBitableClient:
+def _native_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) -> FeishuBitableClient:
     return FeishuBitableClient(FeishuBitableConfig(app_id, app_secret, app_token))
+
+
+def get_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) -> FeishuBitableClient:
+    client = _native_feishu_bitable_client(app_id, app_secret, app_token)
+    if runtime.database_reads():
+        from material_store.client import DatabaseReadClient
+        if app_token == feishu_bitable_app_token():
+            return DatabaseReadClient('primary', remote=client)
+        if app_token == corporate_apparel_source_app_token():
+            return DatabaseReadClient('apparel_admin', remote=client)
+    return client
+
+
+get_feishu_bitable_client.clear = _native_feishu_bitable_client.clear
 
 
 def feishu_client() -> FeishuBitableClient | None:
@@ -2828,6 +2845,9 @@ def feishu_rows(table_name: str) -> list[dict]:
 
 
 def fresh_feishu_rows(table_name: str) -> list[dict]:
+    if runtime.database_reads():
+        from request_web.live_data import reader
+        return reader().rows(table_name)
     client = feishu_client()
     if client is None:
         return []
@@ -8283,13 +8303,20 @@ def request_inventory_review_context(
         raise RuntimeError("申请单不存在或已被删除。")
     # These independent reads used to run serially, so their latencies added
     # together on every detail click. Keep all three live, but overlap them.
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        material_future = executor.submit(fresh_feishu_rows, MATERIAL_TABLE_NAME)
-        category_future = executor.submit(fresh_feishu_rows, CATEGORY_TABLE_NAME)
-        line_future = executor.submit(fresh_feishu_rows, REQUEST_LINE_TABLE_NAME)
-        material_rows = material_future.result()
-        category_rows = category_future.result()
-        line_rows = line_future.result()
+    if runtime.database_reads():
+        # Local reads share the response's database snapshot. They do not need
+        # HTTP concurrency or new worker threads without the request context.
+        material_rows = fresh_feishu_rows(MATERIAL_TABLE_NAME)
+        category_rows = fresh_feishu_rows(CATEGORY_TABLE_NAME)
+        line_rows = fresh_feishu_rows(REQUEST_LINE_TABLE_NAME)
+    else:
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            material_future = executor.submit(fresh_feishu_rows, MATERIAL_TABLE_NAME)
+            category_future = executor.submit(fresh_feishu_rows, CATEGORY_TABLE_NAME)
+            line_future = executor.submit(fresh_feishu_rows, REQUEST_LINE_TABLE_NAME)
+            material_rows = material_future.result()
+            category_rows = category_future.result()
+            line_rows = line_future.result()
     return request_inventory_review_context_from_rows(
         request_row, material_rows, category_rows, line_rows,
     )

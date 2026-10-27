@@ -8,13 +8,14 @@ import CategoryModelMedia from "./CategoryModelMedia";
 import { categoryDeletePreview } from "./categoryDeletion";
 import type { CategoryDeleteScope } from "./categoryDeletion";
 import CategoryImageEditor from "./CategoryImageEditor";
+import DatabaseWorkbench from "./DatabaseWorkbench";
 import type { CategoryImage } from "./CategoryImageEditor";
 import "./management.css";
 
 type Lang = "zh" | "en";
 type Operation = "create" | "edit" | "delete";
 type Kind = "model" | "language" | "region";
-export type ManagementTab = "allocation" | "schedule" | "shipping" | "restock" | "category" | Kind;
+export type ManagementTab = "allocation" | "schedule" | "shipping" | "restock" | "category" | "database" | Kind;
 type Catalog = {
   generatedAt: string;
   categories: any[];
@@ -80,16 +81,18 @@ export default function ManagementPage({
   // Allocation and shipping schedule do not use the large management catalog.
   // Let their own data load immediately instead of blocking the whole page.
   useEffect(() => {
-    if (tab !== "allocation" && tab !== "schedule" && !catalog) load();
+    if (tab !== "allocation" && tab !== "schedule" && tab !== "database" && !catalog) load();
   }, [tab, catalog]);
   useEffect(() => setTab(initialTab), [initialTab]);
   function selectTab(next: ManagementTab) {
+    if(next===tab)return;
+    if(document.querySelector('meta[name="pudu-data-source"]')?.getAttribute('content')==='postgresql')setCatalog(null);
     setTab(next);
     setError("");
     setSuccess("");
     onTabChange?.(next);
   }
-  const needsCatalog = tab !== "allocation" && tab !== "schedule";
+  const needsCatalog = tab !== "allocation" && tab !== "schedule" && tab !== "database";
   const tabs = [
     ["allocation", tr("配货工作台", "Allocation")],
     ["schedule", tr("发货排期", "Shipping Schedule")],
@@ -99,6 +102,7 @@ export default function ManagementPage({
     ["model", tr("型号管理", "Models")],
     ["language", tr("语种管理", "Languages")],
     ["region", tr("战区管理", "Regions")],
+    ["database", tr("数据库工作台", "Database")],
   ] as const;
   return (
     <main className="management-page">
@@ -107,11 +111,12 @@ export default function ManagementPage({
         {needsCatalog && <button onClick={load}>↻ {tr("刷新本页数据", "Refresh page data")}</button>}
       </div>
       <div className="management-body">
-        <div className="management-tabs">{tabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} onClick={() => selectTab(key)}>{label}</button>)}</div>
+        <div className="management-tabs">{tabs.filter(([key])=>key!=="database"||document.querySelector('meta[name="pudu-data-source"]')?.getAttribute('content')==='postgresql').map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} onClick={() => selectTab(key)}>{label}</button>)}</div>
         {success && <div className="success-banner">✓ {success}</div>}
         {needsCatalog && !catalog && <div className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</div>}
         {tab === "allocation" && <AllocationWorkbench lang={lang} embedded />}
         {tab === "schedule" && <ShippingSchedulePage lang={lang} />}
+        {tab === "database" && <DatabaseWorkbench lang={lang} />}
         {tab === "shipping" && catalog && <ShippingTemplatePage catalog={catalog} lang={lang} />}
         {tab === "restock" && catalog && <Restock catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
         {tab === "category" && catalog && <CategoryManager catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
