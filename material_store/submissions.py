@@ -10,6 +10,7 @@ from .db import connection
 def submit_groups(standard=None,cultural=None):
     import app
     standard=standard or None;cultural=cultural or None
+    original_standard=standard;original_cultural=cultural
     if not standard and not cultural:raise ValueError('申请没有可提交的物料。')
     runtime.release_database_snapshot()
     results=[]
@@ -76,6 +77,13 @@ def submit_groups(standard=None,cultural=None):
                 number,count,created=app.submit_feishu_cultural_request(payload,lines)
                 app.update_cultural_request_cumulative_quantity(quota['permission_record_id'],quota['target_quantity'],quota['target_jacket_quantity'])
                 results.append({'request_no':number,'line_count':count,'created':created,'lane':'cultural'})
+            from .jobs import enqueue
+            for result in results:
+                group=original_standard if result['lane']=='ordinary' else original_cultural
+                if result['created'] and group:
+                    enqueue('普通申请通知' if result['lane']=='ordinary' else '文化申请通知',
+                        'notification:'+group[0]['submission_token'],
+                        {'request_no':result['request_no'],'request_payload':group[0],'lines':group[1]},conn=conn)
             for token,digest in hashes.items():
                 conn.execute("INSERT INTO material_ops.documents(name,payload) VALUES (%s,%s) ON CONFLICT(name) DO NOTHING",
                              ('submission:'+token,Jsonb({'hash':digest})))

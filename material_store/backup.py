@@ -48,6 +48,17 @@ def main():
         for name in ('media','config'):
             source=root/'shared'/name
             if source.exists():bundle.add(source,arcname=name)
+        extension=root/'shared/extensions/material-automation'
+        if extension.exists():
+            from io import BytesIO
+            files=[extension/'config.toml',*(extension/'state').glob('*.json')]
+            for source in files:
+                if not source.is_file():continue
+                content=source.read_bytes()
+                if source.suffix=='.json':json.loads(content)
+                member=tarfile.TarInfo('extension-state/material-automation/'+str(source.relative_to(extension)))
+                member.mode=0o600;member.size=len(content)
+                bundle.addfile(member,BytesIO(content))
     Path(str(archive)+'.partial').replace(archive)
     manifest={'created_at':datetime.now().isoformat(timespec='seconds'),
               'revision':(root/'source').resolve().name,

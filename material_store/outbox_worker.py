@@ -53,6 +53,8 @@ def _canonical(field, value):
 def _remote_fields(info, values, client):
     result = {}
     definitions = {f['field_id']: f for f in info['fields']}
+    from .effects import resolve
+    with connection() as conn:values=resolve(conn,values)
     for field_id, value in values.items():
         field = definitions[field_id]
         kind = int(field['type'])
@@ -63,7 +65,8 @@ def _remote_fields(info, values, client):
             with connection() as conn:
                 target = repo.table(conn, field['property']['table_id'])
                 for key in repo.link_ids(value):
-                    record = repo.raw_record(conn, target, key)
+                    record = repo.raw_record(conn, target, key,include_deleted=True)
+                    if record.get('deleted'):continue
                     if not record['remote_id']:
                         raise DependencyPending('关联记录尚未同步。')
                     linked.append(record['remote_id'])
@@ -103,9 +106,9 @@ def claim(lane, worker_id):
 
 def _find_remote_create(client, info, fields):
     # A retry after a successful remote create must find the existing record.
-    for name in ('提交幂等键', '幂等键', '原Supabase ID', '明细编号', '用户编号', '物料编码', '文化周边编码'):
+    for name in ('提交幂等键', '幂等键', '原Supabase ID', '明细编号', '用户编号', '物料编码', '文化周边编码', '型号编号', '战区名称', '语言种类', '产品型号', '物料品类'):
         identity = fields.get(name)
-        if identity:
+        if identity and any(f['field_name']==name for f in info['fields']):
             field=next(f for f in info['fields'] if f['field_name']==name)
             matches = [r for r in client.list_records(info['table_id'])
                        if _canonical(field,(r.get('fields') or {}).get(name)) == _canonical(field,identity)]
@@ -118,13 +121,30 @@ def _find_remote_create(client, info, fields):
 def publish(task, client):
     with connection() as conn:
         info = repo.table(conn, task['table_id'])
-        row = repo.raw_record(conn, info, task['record_key'])
+        row = repo.raw_record(conn, info, task['record_key'],include_deleted=True)
         baseline = row['baseline'] or {}
         remote_id = row['remote_id']
     if isinstance(client,dict):
         if info['source'] not in client:raise SourceConflict('来源表未配置对应的飞书应用。')
         client=client[info['source']]
     elif info['source']!='primary':raise SourceConflict('来源表未配置对应的飞书应用。')
+    if task['operation']=='delete':
+        if not remote_id:return None
+        from feishu_bitable import FeishuBitableError
+        try:
+            remote=client.get_record(info['table_id'],remote_id)
+        except FeishuBitableError as exc:
+            if '1254043' in str(exc):return remote_id
+            raise
+        # A delete may not erase a manual Feishu edit made since the last sync.
+        current=remote.get('fields') or {}
+        for field in info['fields']:
+            fid=field['field_id']
+            if field['type'] in {19,20} or field['type']>=1000:continue
+            if _canonical(field,current.get(field['field_name']))!=_canonical(field,_remote_fields(info,{fid:baseline.get(fid)},client).get(field['field_name'])):
+                raise SourceConflict('飞书记录已经变化，删除任务等待人工核对。')
+        client.delete_record(info['table_id'],remote_id)
+        return remote_id
     named = _remote_fields(info, task['patch'], client)
     if task['operation'] == 'create':
         if not named:
@@ -156,7 +176,7 @@ def publish(task, client):
 def finish(task, remote_id):
     with connection() as conn, conn.transaction():
         info=repo.table(conn, task['table_id'])
-        row=repo.raw_record(conn,info,task['record_key'],lock=True)
+        row=repo.raw_record(conn,info,task['record_key'],lock=True,include_deleted=True)
         state=conn.execute("SELECT state,claim_token FROM material_ops.outbox WHERE id=%s FOR UPDATE",(task['id'],)).fetchone()
         if state != ('processing',task['claim_token']):
             raise RuntimeError('任务租约已变更，不能完成旧任务。')
@@ -172,11 +192,15 @@ def finish(task, remote_id):
 def fail(task, exc):
     conflict=isinstance(exc,SourceConflict)
     delay=min(1800,2 ** min(task['attempts'],10))
-    with connection() as conn:
+    with connection() as conn,conn.transaction():
         conn.execute("""UPDATE material_ops.outbox SET state=%s,available_at=now()+(%s * interval '1 second'),
           lease_until=NULL,claim_token=NULL,last_error=%s
           WHERE id=%s AND claim_token=%s""",
           ('conflict' if conflict else 'retry',delay,type(exc).__name__+': '+str(exc)[:400],task['id'],task['claim_token']))
+        if conflict:
+            from psycopg import sql
+            info=repo.table(conn,task['table_id'])
+            conn.execute(sql.SQL("UPDATE material_data.{} SET _sync_state='conflict' WHERE _record_key=%s").format(sql.Identifier(info['sql_table'])),(task['record_key'],))
 
 
 def run_once(lane, client, worker_id='outbox-worker'):

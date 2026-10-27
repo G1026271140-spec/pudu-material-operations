@@ -72,6 +72,10 @@ def in_request_scope() -> bool:
     return _scope_active.get()
 
 
+def database_workflow_writes_enabled() -> bool:
+    return database_business_writes_enabled() and os.environ.get('PUDU_DATABASE_WORKFLOWS_ENABLED','').lower() in {'1','true','yes'}
+
+
 def web_read_only() -> bool:
     return os.environ.get('PUDU_WEB_READ_ONLY', '').lower() in {'1', 'true', 'yes'}
 

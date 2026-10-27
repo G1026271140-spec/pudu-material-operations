@@ -35,12 +35,12 @@ def named_table(conn, name, source="primary"):
     return table(conn, row[0])
 
 
-def raw_record(conn, info, record_key, *, lock=False):
-    row = conn.execute(sql.SQL("SELECT _record_key,_remote_id,_fields,_local_version,_sync_state,_baseline FROM material_data.{} WHERE (_record_key=%s OR _remote_id=%s) AND NOT _deleted {}")
-        .format(sql.Identifier(info["sql_table"]), sql.SQL("FOR UPDATE" if lock else "")), (record_key, record_key)).fetchone()
+def raw_record(conn, info, record_key, *, lock=False, include_deleted=False):
+    row = conn.execute(sql.SQL("SELECT _record_key,_remote_id,_fields,_local_version,_sync_state,_baseline,_deleted FROM material_data.{} WHERE (_record_key=%s OR _remote_id=%s) AND (NOT _deleted OR %s) {}")
+        .format(sql.Identifier(info["sql_table"]), sql.SQL("FOR UPDATE" if lock else "")), (record_key, record_key,include_deleted)).fetchone()
     if not row:
         raise ValueError("记录不存在，请刷新数据表。")
-    return {"record_id": row[0], "remote_id": row[1], "fields": row[2], "version": row[3], "sync_state": row[4], "baseline": row[5]}
+    return {"record_id": row[0], "remote_id": row[1], "fields": row[2], "version": row[3], "sync_state": row[4], "baseline": row[5],"deleted":row[6]}
 
 
 def feishu_record(info, row):

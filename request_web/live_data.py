@@ -110,7 +110,13 @@ class LiveReader:
                     self.rows(app.MODEL_TABLE_NAME),self.rows(app.LANGUAGE_TABLE_NAME),materials,request_visible_only=True)
                 data = app.request_form_cache_from_inventory(options,inventory,source='live_feishu')
             elif name == 'contact_departments_cache.json':
-                data = app.build_live_contact_department_cache()
+                conn=runtime.request_state.get('_write_conn')
+                if conn is not None:
+                    row=conn.execute('SELECT payload FROM material_ops.documents WHERE name=%s',(name,)).fetchone()
+                    if not row:raise RuntimeError('数据库通讯录未导入。')
+                    data=row[0]
+                else:
+                    data = app.build_live_contact_department_cache()
             elif name == 'warehouse_location_cache.json':
                 data = self.warehouse()
             else:

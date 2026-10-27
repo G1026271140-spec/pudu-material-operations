@@ -473,6 +473,8 @@ def safe_delete_archive(path: Path, root: Path) -> bool:
 
 def find_7zip() -> Path | None:
     candidates = [
+        shutil.which("7zz"),
+        shutil.which("7z"),
         shutil.which("7z.exe"),
         r"C:\Program Files\7-Zip\7z.exe",
         r"C:\Program Files (x86)\7-Zip\7z.exe",

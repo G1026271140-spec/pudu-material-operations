@@ -693,8 +693,9 @@ async def frontend_cache_policy(request, call_next):
     editor_write=backend_runtime.database_editor_enabled() and (
         (path.startswith('/api/admin/database/') and request.method=='PATCH') or
         (path=='/api/admin/category-images' and request.method=='POST'))
-    business_write=backend_runtime.database_business_writes_enabled() and request.method=='POST' and path in {
-        '/api/validate','/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}
+    business_write=backend_runtime.database_business_writes_enabled() and request.method=='POST' and (
+        path in {'/api/validate','/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}
+        or backend_runtime.database_workflow_writes_enabled())
     if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write and not business_write:
         return JSONResponse({'detail':'当前服务器处于浏览验证阶段，业务提交尚未开放。'},status_code=409,
             headers={'Cache-Control':'no-store'})
@@ -741,7 +742,7 @@ def health() -> dict[str, Any]:
             conn.execute('SELECT 1')
         return {'status':'ok','version':__import__('app').APP_VERSION,'mode':'postgresql',
                 'business_cache_enabled':False,'business_write_enabled':backend_runtime.database_business_writes_enabled(),
-                'database_editor_enabled':backend_runtime.database_editor_enabled(),'worker_enabled':backend_runtime.database_worker_enabled()}
+                'database_editor_enabled':backend_runtime.database_editor_enabled(),'workflow_write_enabled':backend_runtime.database_workflow_writes_enabled(),'worker_enabled':backend_runtime.database_worker_enabled()}
     if backend_runtime.realtime_reads():
         import app
         return {'status':'ok','version':app.APP_VERSION,'mode':'live_read_only' if backend_runtime.web_read_only() else 'live',
@@ -1018,6 +1019,18 @@ def _management_snapshot() -> dict[str, Any]:
         "noLanguageText": legacy.NO_LANGUAGE_TEXT,
         "maxRestockLines": legacy.MAX_RESTOCK_LINE_COUNT,
     }
+
+
+@api.get('/api/admin/runtime-status')
+def runtime_status(_: str = Depends(require_admin)) -> dict[str, Any]:
+    if not backend_runtime.database_reads():return {'mode':'feishu'}
+    from material_store.db import connection
+    with connection() as conn:
+        return {'mode':'postgresql',
+            'jobs':dict(conn.execute('SELECT state,count(*) FROM material_ops.jobs GROUP BY state').fetchall()),
+            'notifications':dict(conn.execute('SELECT state,count(*) FROM material_ops.effects GROUP BY state').fetchall()),
+            'sync':dict(conn.execute('SELECT state,count(*) FROM material_ops.outbox GROUP BY state').fetchall()),
+            'workers':[{'name':a,'updated_at':b.isoformat(),'version':c.get('version')} for a,b,c in conn.execute("SELECT name,updated_at,payload FROM material_ops.documents WHERE name LIKE 'worker:%' ORDER BY name")]}
 
 
 @api.get("/api/admin/management-catalog")
@@ -1736,6 +1749,9 @@ def _enqueue_key_lock(key: str):
 
 
 def _enqueue_fast(task_type: str, idempotency_key: str, payload: dict[str, Any]) -> str:
+    if backend_runtime.database_business_writes_enabled():
+        from material_store.jobs import submit
+        return submit(task_type,idempotency_key,payload)[0].task_id
     normalized_key = idempotency_key.strip()
     if not normalized_key:
         raise ValueError("后台任务提交标识不能为空。")
@@ -2017,6 +2033,10 @@ def corporate_exchange_sync_webhook(
     record_id = payload.record_id.strip()
     if not record_id.startswith("rec") or len(record_id) > 100:
         raise HTTPException(status_code=422, detail="无效的兑换记录 ID。")
+    if backend_runtime.database_business_writes_enabled():
+        from material_store.inbound import enqueue
+        enqueue('兑换数据回调',record_id)
+        return {'accepted':True,'durable':True}
     from corporate_exchange_sync import runner
 
     runner.trigger(record_id)
@@ -2062,6 +2082,10 @@ def pending_inventory_sync_webhook(
     record_id = payload.record_id.strip()
     if not record_id.startswith("rec") or len(record_id) > 100:
         raise HTTPException(status_code=422, detail="无效的申请单记录 ID。")
+    if backend_runtime.database_business_writes_enabled():
+        from material_store.inbound import enqueue
+        enqueue('飞书申请变更回调',record_id)
+        return {'accepted':True,'durable':True}
     _PENDING_ALLOCATION_EXECUTOR.submit(_apply_pending_inventory_event, record_id)
     return {"accepted": True}
 
@@ -2096,6 +2120,10 @@ def corporate_apparel_submit(draft: CorporateApparelDraft, request: Request) -> 
             resolve_cache_path(ROOT, "data/page_data_cache.json"), cached_permission_rows
         )
         queued_payload = legacy.queued_corporate_apparel_request_payload(payload, lines)
+        if backend_runtime.database_business_writes_enabled():
+            from material_store.jobs import submit
+            task,created=submit(QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST,draft.submission_token,queued_payload)
+            return {'accepted':True,'created':created,'taskId':task.task_id,'status':'本地已保存' if task.status=='已完成' else '已入队，等待处理','local_saved':task.status=='已完成'}
         try:
             legacy.validate_corporate_apparel_cached_quota(
                 draft.requester_open_id,

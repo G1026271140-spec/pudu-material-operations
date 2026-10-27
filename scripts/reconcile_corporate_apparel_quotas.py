@@ -137,6 +137,15 @@ def build_plan(client: FeishuBitableClient, exchange_client: FeishuBitableClient
         and fields.get("状态") == "已完成"
     }
 
+    import backend_runtime as runtime
+    if runtime.database_reads():
+        from material_store.db import connection
+        conn=runtime.request_state.get('_write_conn')
+        if conn is not None:
+            local=conn.execute("SELECT idempotency_key FROM material_ops.jobs WHERE task_type='企业文化衫领取' AND state='done'").fetchall()
+        else:
+            with connection() as opened:local=opened.execute("SELECT idempotency_key FROM material_ops.jobs WHERE task_type='企业文化衫领取' AND state='done'").fetchall()
+        completed_corporate_tokens.update(row[0] for row in local)
     for row in rows[REQUEST_LINE_TABLE]:
         fields = dict(row.get("fields") or {})
         if str(fields.get("明细状态") or "").strip() == "已驳回":

@@ -69,6 +69,7 @@ def inventory_query_error_text(error: Exception) -> str:
     return "库存查询暂时失败，请稍后重新发送查询内容。"
 
 
+@inventory_app.runtime.request_scope()
 def process_inventory_message(
     message_id: str,
     image_keys: list[str],
@@ -386,6 +387,17 @@ def handle_card_action(data: P2CardActionTrigger) -> P2CardActionTriggerResponse
         return card_action_response("warning", "暂不支持该卡片操作。")
     context = getattr(event, "context", None) if event else None
     message_id = str(getattr(context, "open_message_id", "") or "")
+    if inventory_app.runtime.database_business_writes_enabled():
+        from material_store.jobs import enqueue
+        params={'action_key':action_key,'action_name':action_name,'value':value,
+            'form_value':dict(getattr(action,'form_value',{}) or {}),'operator_open_id':operator_open_id,'message_id':message_id}
+        key='card:'+hashlib.sha256(json.dumps(params,sort_keys=True,ensure_ascii=False,default=str).encode()).hexdigest()
+        try:
+            enqueue('card_action',key,params)
+        except Exception:
+            logging.exception('Could not persist card action')
+            return card_action_response('error','操作未能保存，请稍后重试。')
+        return card_action_response('success','已保存，正在处理。')
     threading.Thread(
         target=process_card_action_async,
         kwargs={

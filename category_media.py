@@ -52,6 +52,27 @@ def apply_category_media(record_id: str, media: dict) -> None:
         app.feishu_update_record_fields(app.CATEGORY_TABLE_NAME, record_id, category_media_fields(media))
         return
     validate_image_selection(media)
+    import backend_runtime as runtime
+    if runtime.database_reads():
+        client=app.feishu_client()
+        row=client.get_record(app.feishu_table_id(app.CATEGORY_TABLE_NAME),record_id)
+        attachments=list(app.feishu_fields(row).get('申领页图片') or [])
+        identity=lambda item:item.get('file_token') or item.get('local_media_id')
+        current=[identity(item) for item in attachments if is_image(item) or item.get('local_media_id')]
+        desired=[identity(item) for item in media['images']]
+        if current!=media['expected_image_tokens'] and current!=desired:
+            raise ValueError('品类图片已发生变化，请刷新后重新编辑。')
+        from material_store.media import load_image
+        images=[]
+        for item in media['images']:
+            if item.get('local_media_id'):
+                local=load_image(item['local_media_id'],conn=runtime.request_state['_write_conn'])
+                images.append({**item,'name':local['name'],'type':local['type']})
+            else:
+                images.append(next(a for a in attachments if a.get('file_token')==item['file_token']))
+        app.feishu_update_record_fields(app.CATEGORY_TABLE_NAME,record_id,
+            {'申领页图片':[a for a in attachments if not is_image(a) and not a.get('local_media_id')]+images})
+        return
     from material_store.media import remote_token
     client = app.feishu_client()
     row = client.get_record(app.feishu_table_id(app.CATEGORY_TABLE_NAME), record_id)

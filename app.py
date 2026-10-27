@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.6.6"
+APP_VERSION = "V3.6.7"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -612,9 +612,12 @@ def _native_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) 
 
 
 def get_feishu_bitable_client(app_id: str, app_secret: str, app_token: str) -> FeishuBitableClient:
-    if runtime.database_reads() and runtime.request_state.get('_write_conn') is not None and app_token == feishu_bitable_app_token():
+    if runtime.database_reads() and runtime.request_state.get('_write_conn') is not None:
         from material_store.client import DatabaseWriteClient
-        return DatabaseWriteClient(runtime.request_state['_write_conn'])
+        if app_token == feishu_bitable_app_token():
+            return DatabaseWriteClient(runtime.request_state['_write_conn'])
+        if app_token == corporate_apparel_source_app_token():
+            return DatabaseWriteClient(runtime.request_state['_write_conn'],'apparel_admin')
     client = _native_feishu_bitable_client(app_id, app_secret, app_token)
     if runtime.database_reads():
         from material_store.client import DatabaseReadClient
@@ -7850,6 +7853,9 @@ def enqueue_feishu_background_write(
     payload: dict[str, object],
     idempotency_key: str | None = None,
 ) -> tuple[SubmissionTask, bool]:
+    if runtime.database_business_writes_enabled():
+        from material_store.jobs import enqueue
+        return enqueue(task_type,str(idempotency_key or uuid.uuid4().hex),payload,conn=runtime.request_state.get('_write_conn'))
     client = feishu_client()
     if client is None:
         raise RuntimeError("飞书未配置，无法创建后台写入任务。")

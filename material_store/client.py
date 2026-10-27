@@ -28,6 +28,10 @@ class DatabaseReadClient:
         def operation(conn):
             info=repo.table(conn,table_id)
             if info["source"]!=self.source:raise ValueError("来源不匹配。")
+            import backend_runtime as runtime
+            if runtime.request_state.get('_write_conn') is conn and info['name'] in {'物料主数据','文化周边管理库存','文化周边编码及库存数量'}:
+                from psycopg import sql
+                conn.execute(sql.SQL('SELECT _record_key FROM material_data.{} WHERE NOT _deleted ORDER BY _record_key FOR UPDATE').format(sql.Identifier(info['sql_table']))).fetchall()
             result=repo.rows(conn,info)
             if field_names is not None:
                 result=[{**r,"fields":{k:v for k,v in r["fields"].items() if k in field_names}} for r in result]
@@ -40,6 +44,10 @@ class DatabaseReadClient:
             if info["source"]!=self.source:raise ValueError("来源不匹配。")
             return repo.feishu_record(info,repo.raw_record(conn,info,record_id))
         return self._call(operation)
+
+    def search_records(self,table_id,field_name,value,page_size=100):
+        from .field_registry import scalar_text
+        return [r for r in self.list_records(table_id) if scalar_text(r['fields'].get(field_name))==str(value)]
 
     def discover_schema(self):
         return {"tables":{t["name"]:{"table_id":t["table_id"],"name":t["name"],"fields":{
@@ -58,6 +66,13 @@ class DatabaseWriteClient(DatabaseReadClient):
     def __init__(self,conn,source='primary'):
         super().__init__(source,conn=conn)
 
+    def _invalidate(self):
+        import backend_runtime as runtime
+        reader=runtime.request_state.get('_live_reader')
+        if reader is not None:
+            reader._rows.clear()
+            reader._documents.clear()
+
     def batch_create_records(self,table_id,records):
         from uuid import uuid4
         from psycopg import sql
@@ -67,6 +82,12 @@ class DatabaseWriteClient(DatabaseReadClient):
         if info['source']!=self.source:raise ValueError('来源不匹配。')
         result=[]
         for fields in records:
+            fields=dict(fields)
+            if info['name']=='用户权限表' and '用户编号' in fields:
+                self.conn.execute("SELECT pg_advisory_xact_lock(hashtextextended('permission-number',0))")
+                used=[str(row['fields'].get('用户编号') or '') for row in repo.rows(self.conn,info)]
+                if str(fields['用户编号']) in used:
+                    fields['用户编号']=str(max([int(value) for value in used if value.isdigit()] or [0])+1)
             values=repo.source_values(info,fields)
             rid='local_'+uuid4().hex
             self.conn.execute(sql.SQL("INSERT INTO material_data.{} (_record_key,_fields,_baseline,_local_version,_sync_state) VALUES (%s,%s,'{{}}'::jsonb,1,'pending')").format(sql.Identifier(info['sql_table'])),(rid,Jsonb(values)))
@@ -87,12 +108,14 @@ class DatabaseWriteClient(DatabaseReadClient):
                     updated[back]=list(dict.fromkeys([*repo.link_ids(updated.get(back)),rid]))
                     repo.replace_values(self.conn,target,parent['record_id'],updated)
             result.append({'record_id':rid,'fields':fields})
+        self._invalidate()
         return result
 
     def update_record(self,table_id,record_id,fields):
         from uuid import uuid4
         import backend_runtime as runtime
         info=repo.table(self.conn,table_id)
+        if info['source']!=self.source:raise ValueError('来源不匹配。')
         old=repo.raw_record(self.conn,info,record_id,lock=True)
         patch=repo.source_values(info,fields)
         changed={fid:value for fid,value in patch.items() if old['fields'].get(fid)!=value}
@@ -105,15 +128,65 @@ class DatabaseWriteClient(DatabaseReadClient):
                 self.conn.execute('UPDATE material_ops.outbox SET patch=%s WHERE id=%s',(Jsonb({**created[1],**changed}),created[0]))
             else:
                 repo._save_change(self.conn,info,old,changed,runtime.request_state.get('_write_actor','system'),str(uuid4()),runtime.request_state.get('_write_lane','ordinary'))
+        self._invalidate()
         return repo.feishu_record(info,repo.raw_record(self.conn,info,old['record_id']))
 
     def batch_update_records(self,table_id,records):
         return [self.update_record(table_id,row['record_id'],row.get('fields') or {}) for row in records]
 
+
     def delete_record(self,table_id,record_id):
         from psycopg import sql
+        from psycopg.types.json import Jsonb
+        from uuid import uuid4
+        import backend_runtime as runtime
         info=repo.table(self.conn,table_id)
-        row=repo.raw_record(self.conn,info,record_id)
-        if row['remote_id']:raise ValueError('业务记录不能在申请事务中删除。')
-        self.conn.execute('DELETE FROM material_ops.outbox WHERE table_id=%s AND record_key=%s',(table_id,record_id))
-        self.conn.execute(sql.SQL('DELETE FROM material_data.{} WHERE _record_key=%s').format(sql.Identifier(info['sql_table'])),(record_id,))
+        if info['source']!=self.source:raise ValueError('来源不匹配。')
+        prior=repo.raw_record(self.conn,info,record_id)
+        key=prior['record_id']
+        self.conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))',('outbox-record:'+table_id+':'+key,))
+        old=repo.raw_record(self.conn,info,key,lock=True)
+        version=old['version']+1
+        # Cancel unpublished writes before deletion; publishers hold the same
+        # reconciliation lock, so the transaction also takes a per-record lock.
+        self.conn.execute("UPDATE material_ops.outbox SET state='cancelled',last_error='记录已由业务操作删除',claim_token=NULL,lease_until=NULL WHERE table_id=%s AND record_key=%s AND state IN ('pending','retry')",(table_id,key))
+        self.conn.execute(sql.SQL("UPDATE material_data.{} SET _deleted=true,_local_version=%s,_sync_state=%s,_updated_at=now() WHERE _record_key=%s").format(sql.Identifier(info['sql_table'])),(version,'pending' if old['remote_id'] else 'synced',key))
+        if old['remote_id']:
+            self.conn.execute("INSERT INTO material_ops.outbox(idempotency_key,lane,table_id,record_key,local_version,patch,operation) VALUES (%s,%s,%s,%s,%s,'{}','delete')",(str(uuid4()),runtime.request_state.get('_write_lane','admin'),table_id,key,version))
+        self.conn.execute("INSERT INTO material_ops.audit(table_id,record_key,source,before_value,after_value,local_version,actor_open_id) VALUES (%s,%s,'frontend',%s,%s,%s,%s)",
+            (table_id,key,Jsonb(old['fields']),Jsonb({'deleted':True}),version,runtime.request_state.get('_write_actor','system')))
+
+        for field in info['fields']:
+            back=(field.get('property') or {}).get('back_field_id')
+            if field['type']!=21 or not back:continue
+            target=repo.table(self.conn,field['property']['table_id'])
+            for target_key in repo.link_ids(old['fields'].get(field['field_id'])):
+                try:parent=repo.raw_record(self.conn,target,target_key,lock=True)
+                except ValueError:continue
+                updated=dict(parent['fields'])
+                updated[back]=[linked for linked in repo.link_ids(updated.get(back)) if linked not in {key,old['remote_id']}]
+                repo.replace_values(self.conn,target,parent['record_id'],updated)
+        self._invalidate()
+
+    def batch_delete_records(self,table_id,record_ids):
+        for key in record_ids:self.delete_record(table_id,key)
+
+    def _request(self,method,path,*,params=None,payload=None,**kwargs):
+        if method=='POST' and path=='/im/v1/messages' and payload:
+            from .effects import defer
+            import json
+            kind=payload.get('msg_type')
+            content=json.loads(payload['content'])
+            if kind not in {'text','interactive'}:raise ValueError('不支持的通知类型。')
+            remote=defer(self.source,'send_text_message' if kind=='text' else 'send_interactive_message',
+                (payload['receive_id'],content['text'] if kind=='text' else content),params or {})
+            return {'data':{'message_id':remote}}
+        raise RuntimeError('本地事务禁止直接访问飞书 API。')
+
+    def tenant_access_token(self):
+        return 'local-database-no-http'
+
+    def __getattr__(self,name):
+        from .effects import METHODS,defer
+        if name in METHODS:return lambda *args,**kwargs:defer(self.source,name,args,kwargs)
+        raise RuntimeError('本地业务事务不允许调用外部接口：'+name)

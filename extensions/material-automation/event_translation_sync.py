@@ -15,6 +15,8 @@ from typing import Any
 import requests
 
 ROOT = Path(__file__).resolve().parent
+DATA_ROOT = Path(os.environ.get("PUDU_AUTOMATION_DATA_ROOT") or ROOT)
+CONFIG_PATH = Path(os.environ.get("PUDU_AUTOMATION_CONFIG") or ROOT / "config.toml")
 BASE_TOKEN = "OrBAb4nCDaOpCPspdhWcWm34nLe"
 SOURCE_TABLE = "tbl40ELOL01nFo4M"
 TARGET_TABLE = "tbl5QU4Tg36AGN6T"
@@ -84,7 +86,7 @@ FIXED = {
 
 
 def setup_logger() -> logging.Logger:
-    path = ROOT / "logs" / "event_translation_sync.log"
+    path = DATA_ROOT / "logs" / "event_translation_sync.log"
     path.parent.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger("event_translation_sync")
     logger.setLevel(logging.INFO)
@@ -97,7 +99,7 @@ def setup_logger() -> logging.Logger:
 
 class FeishuAppClient:
     def __init__(self) -> None:
-        config = tomllib.loads((ROOT / "config.toml").read_text(encoding="utf-8"))
+        config = tomllib.loads(CONFIG_PATH.read_text(encoding="utf-8"))
         credentials_path = Path(config["feishu"]["credentials_file"])
         credentials = tomllib.loads(credentials_path.read_text(encoding="utf-8"))
         self.app_id = str(credentials.get("FEISHU_APP_ID") or credentials.get("app_id") or "")
@@ -250,14 +252,14 @@ def translated_fields(client: FeishuAppClient, source: dict[str, Any]) -> dict[s
 
 
 def load_state() -> dict[str, Any]:
-    path = ROOT / "state" / "event_translation_sync.json"
+    path = DATA_ROOT / "state" / "event_translation_sync.json"
     if not path.exists():
         return {"version": 1, "records": {}}
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def save_state(state: dict[str, Any]) -> None:
-    path = ROOT / "state" / "event_translation_sync.json"
+    path = DATA_ROOT / "state" / "event_translation_sync.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(".tmp")
     temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
