@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.7.3"
+APP_VERSION = "V3.7.4"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -12870,6 +12870,10 @@ def corporate_apparel_catalog(
     synced_rows = list(
         rows if rows is not None else safe_feishu_rows(CORPORATE_APPAREL_TABLE_NAME)
     )
+    if runtime.database_reads():
+        from material_store.apparel import catalog
+        source = source_rows if source_rows is not None else corporate_apparel_source_client().list_records(CORPORATE_APPAREL_SOURCE_TABLE_ID)
+        return catalog(synced_rows, source)
     display_by_source = {value: key for key, value in CORPORATE_APPAREL_STYLE_MAP.items()}
     source_by_id = (
         {feishu_record_id(row): row for row in source_rows}
@@ -13008,6 +13012,9 @@ def ensure_corporate_apparel_quota_fields() -> None:
 def corporate_apparel_request_plan(
     request_payload: dict[str, object], lines: list[dict[str, object]]
 ) -> dict[str, object]:
+    if runtime.database_reads():
+        from material_store.apparel import request_plan
+        return request_plan(request_payload, lines)
     requester_open_id = str(request_payload.get("requester_open_id") or "").strip()
     if not requester_open_id.startswith("ou_"):
         raise RuntimeError("请选择已关联飞书账号的申请人。")
@@ -13132,7 +13139,7 @@ def submit_feishu_corporate_apparel_request(
         ):
             raise RuntimeError("企业文化衫同步记录缺少可写入的行政源记录 ID。")
     detail_text = "\n".join(
-        f"{index:02d}. {item['product']} / {item['size']} × {int(item['quantity'])}"
+        f"{index:02d}. {item.get('product_label', item['product'])} / {item['size']} × {int(item['quantity'])}"
         for index, item in enumerate(items, start=1)
     )
     request_rows = fresh_feishu_rows(REQUEST_TABLE_NAME)
@@ -13189,11 +13196,13 @@ def submit_feishu_corporate_apparel_request(
                     "审批通过数量": int(item["quantity"]),
                     "实际发放数量": int(item["quantity"]),
                     "物料数量": int(item["quantity"]),
-                    "品类名称": item["product"],
+                    "品类名称": item.get("product_label", item["product"]),
                     "产品型号名称": item["size"],
                     "明细业务类型": CORPORATE_APPAREL_LINE_TYPE,
                     "明细状态": "已发放",
-                    "备注": f"{CORPORATE_APPAREL_LINE_MARKER}:{item['record_id']}",
+                    "备注": f"{CORPORATE_APPAREL_LINE_MARKER}:{item['record_id']}" + (
+                        f"\n企业文化衫行政源记录ID:{item['source_record_id']}\n企业文化衫款式编号:{item['product']}"
+                        if runtime.database_reads() else ""),
                     "所属申请单": [request_record_id],
                 },
             )
@@ -13202,7 +13211,7 @@ def submit_feishu_corporate_apparel_request(
         )
     quota_fields = {
         str(item["field"]): int(item["target"])
-        for item in list(plan.get("quota_targets") or [])
+        for item in list(plan.get("quota_targets") or []) if item.get("field")
     }
     feishu_update_record_fields(
         USER_PERMISSION_TABLE_NAME,
@@ -13217,6 +13226,9 @@ def _corporate_apparel_card(
     material_usage: str = "",
 ) -> dict[str, object]:
     title = "企业文化衫领取已提交" if applicant else "企业文化衫领取通知"
+    if runtime.database_reads():
+        from material_store.apparel import display_name
+        lines = [{**line, 'product': display_name(str(line.get('product') or ''))} for line in lines]
     table_lines = [
         {"product": line.get("product"), "model": line.get("size") or line.get("model"), "quantity": line.get("quantity")}
         for line in lines
@@ -13329,11 +13341,15 @@ def corporate_apparel_request_context(request_no: str) -> dict[str, object]:
         if request_id not in linked and feishu_text(fields, "申请单号").strip() != normalized_no:
             continue
         marker = feishu_text(fields, "备注").strip()
-        record_id = marker.split(":", 1)[1].strip() if marker.startswith(f"{CORPORATE_APPAREL_LINE_MARKER}:") else ""
+        record_id = marker.splitlines()[0].split(":", 1)[1].strip() if marker.startswith(f"{CORPORATE_APPAREL_LINE_MARKER}:") else ""
+        from material_store.apparel import markers
+        extra = markers(marker)
         lines.append(
             {
                 "line_record_id": feishu_record_id(row),
                 "record_id": record_id,
+                "source_record_id": extra.get('企业文化衫行政源记录ID', ''),
+                "style_key": extra.get('企业文化衫款式编号', ''),
                 "product": feishu_text(fields, "品类名称").strip(),
                 "size": feishu_text(fields, "产品型号名称").strip(),
                 "quantity": feishu_int(fields, "申请数量"),
@@ -13355,6 +13371,9 @@ def corporate_apparel_request_context(request_no: str) -> dict[str, object]:
 
 
 def corporate_apparel_rejection_plan(request_no: str, operator_open_id: str) -> dict[str, object]:
+    if runtime.database_reads():
+        from material_store.apparel import rejection_plan
+        return rejection_plan(request_no, operator_open_id)
     if str(operator_open_id or "").strip() not in enabled_role_open_ids("HR"):
         raise PermissionError("只有已启用的 HR 可以驳回企业文化衫领取申请。")
     context = corporate_apparel_request_context(request_no)
@@ -13440,7 +13459,7 @@ def execute_corporate_apparel_rejection(plan: dict[str, object]) -> dict[str, ob
         )
     quota_fields = {
         str(item["field"]): int(item["target"])
-        for item in list(plan.get("quota_targets") or [])
+        for item in list(plan.get("quota_targets") or []) if item.get("field")
     }
     feishu_update_record_fields(
         USER_PERMISSION_TABLE_NAME,

@@ -1,0 +1,12 @@
+BEGIN;
+SELECT pg_advisory_xact_lock(hashtextextended('pudu-reconciliation',0));
+SET LOCAL ROLE pudu_material_owner;
+ALTER TABLE material_data."t_tbledtC3RafsHNh0" ADD COLUMN IF NOT EXISTS "f_fldDHvyAZY" text;
+INSERT INTO material_meta.fields (table_id,field_id,field_name,field_type,sql_column,sql_type,edit_mode,definition,ordinal) VALUES ('tbledtC3RafsHNh0','fldDHvyAZY','申领款式编号',1,'f_fldDHvyAZY','text','直接编辑','{"field_id": "fldDHvyAZY", "field_name": "申领款式编号", "is_extend": false, "is_primary": false, "is_synced": false, "property": null, "type": 1, "ui_type": "Text"}'::jsonb,16) ON CONFLICT(table_id,field_id) DO NOTHING;
+ALTER TABLE material_data."t_tbledtC3RafsHNh0" ADD COLUMN IF NOT EXISTS "f_fldSG5vBHw" text;
+INSERT INTO material_meta.fields (table_id,field_id,field_name,field_type,sql_column,sql_type,edit_mode,definition,ordinal) VALUES ('tbledtC3RafsHNh0','fldSG5vBHw','申领显示名称',1,'f_fldSG5vBHw','text','直接编辑','{"field_id": "fldSG5vBHw", "field_name": "申领显示名称", "is_extend": false, "is_primary": false, "is_synced": false, "property": null, "type": 1, "ui_type": "Text"}'::jsonb,17) ON CONFLICT(table_id,field_id) DO NOTHING;
+ALTER TABLE material_data."t_tbledtC3RafsHNh0" ADD COLUMN IF NOT EXISTS "f_fldMRU0uBL" text;
+INSERT INTO material_meta.fields (table_id,field_id,field_name,field_type,sql_column,sql_type,edit_mode,definition,ordinal) VALUES ('tbledtC3RafsHNh0','fldMRU0uBL','申领页显示',3,'f_fldMRU0uBL','text','直接编辑','{"field_id": "fldMRU0uBL", "field_name": "申领页显示", "is_extend": false, "is_primary": false, "is_synced": false, "property": {"options": [{"color": 0, "id": "opteGD58rD", "name": "是"}, {"color": 1, "id": "optUMna4aR", "name": "否"}]}, "type": 3, "ui_type": "SingleSelect"}'::jsonb,18) ON CONFLICT(table_id,field_id) DO NOTHING;
+ALTER TABLE material_data."t_tbledtC3RafsHNh0" ADD COLUMN IF NOT EXISTS "f_fldTcVVxM6" numeric;
+INSERT INTO material_meta.fields (table_id,field_id,field_name,field_type,sql_column,sql_type,edit_mode,definition,ordinal) VALUES ('tbledtC3RafsHNh0','fldTcVVxM6','每人累计领取上限',2,'f_fldTcVVxM6','numeric','直接编辑','{"field_id": "fldTcVVxM6", "field_name": "每人累计领取上限", "is_extend": false, "is_primary": false, "is_synced": false, "property": {"formatter": "0"}, "type": 2, "ui_type": "Number"}'::jsonb,19) ON CONFLICT(table_id,field_id) DO NOTHING;
+COMMIT;

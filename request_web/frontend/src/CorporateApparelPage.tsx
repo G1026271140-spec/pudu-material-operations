@@ -17,7 +17,7 @@ type Item = {
   available: number;
   images: string[];
 };
-type Catalog = { products: string[]; items: Item[]; users: User[]; departments: Department[] };
+type Catalog = { products: string[]; productLabels?: Record<string,string>; productLimits?: Record<string,number>; items: Item[]; users: User[]; departments: Department[] };
 type Line = { product: string; size: string; quantity: number };
 type Lang = "zh" | "en";
 
@@ -190,7 +190,8 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
   }
 
   function productLabel(product: string) {
-    return lang === "en" ? productLabels[product] || product : product;
+    const label=catalog?.productLabels?.[product]||product;
+    return lang === "en" && label === product ? productLabels[product] || label : label;
   }
 
   function reasonLabel(value: Exclude<Reason, "">) {
@@ -206,9 +207,9 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
     if (!active || !size) return setError(t.selectAvailableSize);
     const selected = activeItems.find((item) => item.size === size);
     if (!selected || selected.available < 1) return setError(t.sizeUnavailable);
-    const requested = active === poloProduct ? Math.trunc(quantity) : 1;
+    const requested = Math.trunc(quantity);
     if (!Number.isFinite(requested) || requested < 1 || requested > selected.available) return setError(t.quantityInvalid);
-    const limit = perProductLimits[active] || 1;
+    const limit = catalog?.productLimits?.[active] || perProductLimits[active] || 1;
     const currentProductTotal = lines.filter((line) => line.product === active).reduce((sum, line) => sum + line.quantity, 0);
     const existing = lines.find((line) => line.product === active && line.size === size);
     if (currentProductTotal + requested > limit) return setError(t.requestLimit(productLabel(active), limit));
@@ -297,7 +298,7 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
       </section>
 
       {error && <div className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></div>}
-      {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => { setSize(item.size); setQuantity(1); }}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div>{active === poloProduct && <label className="corporate-quantity">{t.quantity}<input type="number" inputMode="numeric" min={1} max={Math.min(2, activeItems.find((item) => item.size === size)?.available || 1)} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>}<button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
+      {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => { setSize(item.size); setQuantity(1); }}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div>{(catalog.productLimits?.[active] || perProductLimits[active] || 1) > 1 && <label className="corporate-quantity">{t.quantity}<input type="number" inputMode="numeric" min={1} max={Math.min(catalog.productLimits?.[active] || perProductLimits[active] || 1, activeItems.find((item) => item.size === size)?.available || 1)} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>}<button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
       {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p><p><b>{t.reason}：</b>{materialUsage()}</p>{lines.map((line) => <div className="corporate-review-line" key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
     </main>
   );

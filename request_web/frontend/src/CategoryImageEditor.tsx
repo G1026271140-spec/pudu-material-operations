@@ -2,7 +2,8 @@ import { useState } from "react";
 
 export type CategoryImage = { file_token?: string; local_media_id?: string; name: string; path: string };
 
-export default function CategoryImageEditor({ images, onChange, tr, onBusy }: {
+export default function CategoryImageEditor({ images, onChange, tr, onBusy, uploadUrl = "/api/admin/category-images" }: {
+  uploadUrl?: string;
   images: CategoryImage[];
   onChange: (images: CategoryImage[]) => void;
   tr: (zh: string, en: string) => string;
@@ -22,7 +23,7 @@ export default function CategoryImageEditor({ images, onChange, tr, onBusy }: {
     try {
       for (const file of Array.from(files)) {
         if (file.size > 6 * 1024 * 1024) throw Error(tr("单张图片不能超过 6 MB。", "Each image must be 6 MB or smaller."));
-        const response = await fetch("/api/admin/category-images", {
+        const response = await fetch(uploadUrl, {
           method: "POST", body: file,
           headers: { "Content-Type": "application/octet-stream", "X-File-Name": encodeURIComponent(file.name) },
         });

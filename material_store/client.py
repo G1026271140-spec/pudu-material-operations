@@ -120,12 +120,15 @@ class DatabaseWriteClient(DatabaseReadClient):
         patch=repo.source_values(info,fields)
         changed={fid:value for fid,value in patch.items() if old['fields'].get(fid)!=value}
         if changed:
-            created=self.conn.execute("SELECT id,patch FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND operation='create' AND state='pending' ORDER BY created_at LIMIT 1",(table_id,old['record_id'])).fetchone()
+            created=self.conn.execute("SELECT id,patch FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND operation='create' AND state='pending' ORDER BY created_at LIMIT 1 FOR UPDATE",(table_id,old['record_id'])).fetchone()
             if created and not old['remote_id']:
                 from psycopg.types.json import Jsonb
                 values=repo.recalculate(info,{**old['fields'],**changed})
-                repo.replace_values(self.conn,info,old['record_id'],values)
-                self.conn.execute('UPDATE material_ops.outbox SET patch=%s WHERE id=%s',(Jsonb({**created[1],**changed}),created[0]))
+                version=old['version']+1
+                repo.replace_values(self.conn,info,old['record_id'],values,version=version,state='pending')
+                self.conn.execute('UPDATE material_ops.outbox SET patch=%s,local_version=%s WHERE id=%s',(Jsonb({**created[1],**changed}),version,created[0]))
+                self.conn.execute("INSERT INTO material_ops.audit(table_id,record_key,source,before_value,after_value,local_version,actor_open_id) VALUES (%s,%s,'frontend',%s,%s,%s,%s)",
+                    (table_id,old['record_id'],Jsonb(old['fields']),Jsonb(values),version,runtime.request_state.get('_write_actor','system')))
             else:
                 repo._save_change(self.conn,info,old,changed,runtime.request_state.get('_write_actor','system'),str(uuid4()),runtime.request_state.get('_write_lane','ordinary'))
         self._invalidate()

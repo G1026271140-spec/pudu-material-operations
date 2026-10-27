@@ -152,7 +152,7 @@ def claim(lane, worker_id):
 
 def _find_remote_create(client, info, fields):
     # A retry after a successful remote create must find the existing record.
-    for name in ('提交幂等键', '幂等键', '原Supabase ID', '明细编号', '用户编号', '物料编码', '文化周边编码', '型号编号', '战区名称', '语言种类', '产品型号', '物料品类'):
+    for name in ('提交幂等键', '幂等键', '原Supabase ID', '明细编号', '用户编号', '物料编码', '文化周边编码', '型号编号', '战区名称', '语言种类', '产品型号', '物料品类', '编码'):
         identity = fields.get(name)
         if identity and any(f['field_name']==name for f in info['fields']):
             field=next(f for f in info['fields'] if f['field_name']==name)

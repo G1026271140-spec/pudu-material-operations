@@ -432,7 +432,7 @@ class CulturalDraft(BaseModel):
 class CorporateApparelLine(BaseModel):
     product: str
     size: str
-    quantity: int = Field(gt=0, le=10)
+    quantity: int = Field(gt=0, le=9999)
 
 
 class CorporateApparelDraft(BaseModel):
@@ -830,6 +830,8 @@ def corporate_apparel_catalog(response: Response) -> dict[str, Any]:
     return {
         "generatedAt": page.get("generated_at"),
         "products": catalog.get("products", []),
+        "productLabels": catalog.get("productLabels", {}),
+        "productLimits": catalog.get("productLimits", {}),
         "items": _corporate_apparel_web_items(catalog),
         "users": contacts.get("users", []),
         "departments": contacts.get("departments", []),
@@ -841,7 +843,7 @@ def _corporate_apparel_web_items(catalog: dict[str, Any]) -> list[dict[str, Any]
     for raw in list(catalog.get("items") or []):
         item = dict(raw)
         item["images"] = [
-            str(path) if backend_runtime.realtime_reads() and str(path).startswith('/api/live-image/')
+            str(path) if backend_runtime.realtime_reads() and str(path).startswith(('/api/live-image/', '/api/apparel-'))
             else f"/category-assets/{Path(str(path)).name}"
             for path in list(item.get("images") or [])
         ]
@@ -872,7 +874,7 @@ def corporate_apparel_stock(response: Response) -> dict[str, Any]:
         return {"items": items}
 
 
-def _signed_admin_open_id(request: Request) -> str:
+def _signed_role_open_id(request: Request, allowed_roles: set[str]) -> str:
     """Resolve an enabled administrator from the enterprise login and current cache."""
     from request_web import feishu_auth
 
@@ -901,9 +903,20 @@ def _signed_admin_open_id(request: Request) -> str:
         roles = fields.get("角色") or []
         if isinstance(roles, str):
             roles = [roles]
-        if "管理员" in roles:
+        if allowed_roles.intersection(roles):
             return open_id
     return ""
+
+
+def _signed_admin_open_id(request: Request) -> str:
+    return _signed_role_open_id(request, {"管理员"})
+
+
+def require_hr(request: Request) -> str:
+    actor = _signed_role_open_id(request, {"HR", "管理员"})
+    if not actor:
+        raise HTTPException(403, "仅已启用的 HR 和管理员可访问企业文化衫管理。")
+    return actor
 
 
 def require_admin(request: Request) -> str:
@@ -915,6 +928,8 @@ def require_admin(request: Request) -> str:
 
 from request_web.database_api import register_database_api
 register_database_api(api, require_admin)
+from request_web.apparel_api import register as register_apparel_api
+register_apparel_api(api, require_hr)
 
 
 def _allocation_actor(

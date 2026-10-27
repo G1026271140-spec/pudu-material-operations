@@ -6,11 +6,12 @@ import type { ManagementTab } from "./ManagementPage";
 import AllocationWorkbench from "./AllocationWorkbench";
 import CorporateApparelPage from "./CorporateApparelPage";
 import DatabaseWorkbench from "./DatabaseWorkbench";
+import ApparelManagementPage from "./ApparelManagementPage";
 import type { CurrentUser } from "./identity";
 import "./portal.css";
 
 type Lang = "zh" | "en";
-type PortalPage = "request" | "cultural" | "management" | "allocation" | "database";
+type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement";
 
 const managementPaths: Record<ManagementTab, string> = {
   schedule: "/management/shipping-schedule",
@@ -38,6 +39,7 @@ function pageFromLocation(): PortalPage {
   const section = new URLSearchParams(window.location.search).get("section");
   if (path === "/management/allocation") return "allocation";
   if (path === "/management/database") return "database";
+  if (path === "/management/corporate-apparel") return "apparelManagement";
   if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
     return "cultural";
   }
@@ -52,6 +54,7 @@ function pagePath(page: PortalPage): string {
   if (page === "management") return managementPaths.category;
   if (page === "allocation") return "/management/allocation";
   if (page === "database") return "/management/database";
+  if (page === "apparelManagement") return "/management/corporate-apparel";
   return "/request";
 }
 
@@ -83,6 +86,7 @@ const text = {
     management: "物料管理",
     allocation: "配货工作台",
     database: "数据库工作台",
+    apparelManagement: "企业文化衫管理",
     corporateApparel: "企业文化衫领取",
     corporateApparelHint: "在新页面打开企业文化衫领取",
     tools: "数据与系统工具",
@@ -100,6 +104,7 @@ const text = {
     management: "Material Management",
     allocation: "Allocation Workbench",
     database: "Database Workspace",
+    apparelManagement: "Corporate Apparel Management",
     corporateApparel: "Corporate Apparel Request",
     corporateApparelHint: "Open Corporate Apparel Request in a new tab",
     tools: "Data & System Tools",
@@ -126,6 +131,7 @@ export default function Portal() {
   );
   const t = text[lang];
   const canManage = currentUser?.permission_status === "enabled" && currentUser.roles.includes("管理员");
+  const canManageApparel = currentUser?.permission_status === "enabled" && currentUser.roles.some(role => role === "HR" || role === "管理员");
   useEffect(() => {
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
@@ -243,6 +249,7 @@ export default function Portal() {
         </nav>
         <div className="sidebar-system">
           <div className="sidebar-label">{t.tools}</div>
+          {canManageApparel && <button className={`database-nav-link${page === "apparelManagement" ? " active" : ""}`} onClick={() => navigate("apparelManagement")}>{t.apparelManagement}</button>}
           {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
           {canManage && <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>}
           {canManage&&currentUser?.data_source==='postgresql'&&<button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
@@ -267,6 +274,8 @@ export default function Portal() {
           <RequestPage lang={lang} currentUser={currentUser} />
         ) : page === "cultural" ? (
           <CulturalPage lang={lang} currentUser={currentUser} />
+        ) : page === "apparelManagement" ? (
+          canManageApparel ? <ApparelManagementPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.apparelManagement}</h1><p>{lang === "zh" ? "仅已启用的 HR 和管理员可访问此页面。" : "Only enabled HR staff and administrators can access this page."}</p></main> : null
         ) : canManage && page === "allocation" ? (
           <AllocationWorkbench lang={lang} />
         ) : canManage && page === "database" ? (
