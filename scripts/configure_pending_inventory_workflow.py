@@ -85,7 +85,7 @@ def main() -> int:
             {"id": item.get("workflow_id"), "status": item.get("status")} for item in matching
         ]}, ensure_ascii=False))
         return 0
-    secrets = tomllib.loads((ROOT / "config" / "secrets.toml").read_text(encoding="utf-8"))
+    secrets = tomllib.loads(__import__("backend_runtime").secrets_path(ROOT).read_text(encoding="utf-8-sig"))
     secret = str(secrets.get("CORPORATE_EXCHANGE_WEBHOOK_TOKEN") or "")
     if len(secret) < 32:
         raise RuntimeError("未配置内部回调密钥")

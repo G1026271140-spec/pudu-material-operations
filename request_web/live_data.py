@@ -203,10 +203,14 @@ def image_bytes(table, record_id, file_token):
     if runtime.database_reads():
         # Image bytes still use Feishu's attachment permission context. They do
         # not determine the page's business values or stock.
-        client=client.remote
+        adapter=client
+        client=adapter.remote
         table_id=source.table_id(table)
+        from material_store import repository as repo
+        remote_id=adapter._call(lambda conn:repo.raw_record(conn,repo.table(conn,table_id),record_id)['remote_id'])
+        if not remote_id:raise KeyError('Record is not yet published')
         runtime.release_database_snapshot()
-        latest=client.get_record(table_id,record_id)
+        latest=client.get_record(table_id,remote_id)
         remote={a['file_token']:a for field in IMAGE_FIELDS[table] for a in app.feishu_attachment_items(app.feishu_fields(latest),field)}
         if file_token not in remote:raise KeyError('Remote attachment no longer exists')
         return client.download_bitable_attachment(file_token,remote[file_token]['url'])

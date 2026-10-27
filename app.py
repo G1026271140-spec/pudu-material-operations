@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.6.7"
+APP_VERSION = "V3.6.8"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -190,13 +190,13 @@ INVENTORY_RESULT_INSUFFICIENT = "全部库存不足"
 DEFAULT_PUBLIC_APP_URL = str(
     get_setting(
         "deployment.custom_domain",
-        "https://pudu-material-operations.gaohongyuan.me/",
+        "https://materials.pudu.work/",
     )
 )
 DEFAULT_LOCAL_APP_URL = str(
     get_setting(
         "deployment.custom_domain",
-        "https://pudu-material-operations.gaohongyuan.me/",
+        "https://materials.pudu.work/",
     )
 )
 FREIGHT_PAYER_OPTIONS = [

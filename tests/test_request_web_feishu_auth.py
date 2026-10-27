@@ -7,7 +7,7 @@ from request_web import api as web_api
 from request_web.api import api
 
 
-PUBLIC = "https://pudu-material-operations.gaohongyuan.me"
+PUBLIC = "https://materials.pudu.work"
 
 
 @pytest.fixture(autouse=True)

@@ -1,0 +1,11 @@
+[Unit]
+Description=PUDU directory refresh at 03:10 Beijing time
+
+[Timer]
+OnCalendar=*-*-* 03:10:00 Asia/Shanghai
+AccuracySec=1min
+Persistent=true
+Unit=pudu-material-contacts.service
+
+[Install]
+WantedBy=timers.target

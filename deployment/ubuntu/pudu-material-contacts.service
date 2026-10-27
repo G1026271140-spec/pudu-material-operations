@@ -1,0 +1,32 @@
+[Unit]
+Description=PUDU directory metadata refresh
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=gaohongyuan1
+WorkingDirectory=/home/gaohongyuan1/pudu-materials-operation/source
+Environment=PUDU_SECRETS_FILE=/home/gaohongyuan1/pudu-materials-operation/shared/config/secrets.toml
+Environment=PUDU_DATABASE_DSN=dbname=pudu_materials
+Environment=PUDU_DATA_SOURCE=postgresql
+Environment=PUDU_BUSINESS_WRITES_ENABLED=1
+Environment=PUDU_DATABASE_WORKFLOWS_ENABLED=1
+Environment=PUDU_MEDIA_ROOT=/home/gaohongyuan1/pudu-materials-operation/shared/media
+Environment=PUDU_PUBLIC_ORIGIN=https://materials.pudu.work
+Environment=PUDU_FEISHU_CARD_WORKER_LOG_DIR=/home/gaohongyuan1/pudu-materials-operation/shared/card-logs
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=TZ=Asia/Shanghai
+ExecStart=/home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m material_store.contacts
+Restart=on-failure
+RestartSec=60
+TimeoutStartSec=300
+TimeoutStopSec=60
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/gaohongyuan1/pudu-materials-operation/shared
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -8,7 +8,7 @@
     "cache_workflow_file": "refresh-static-cache.yml"
   },
   "deployment": {
-    "custom_domain": "https://pudu-material-operations.gaohongyuan.me",
+    "custom_domain": "https://materials.pudu.work",
     "local_web": {
       "address": "127.0.0.1",
       "port": 8501,

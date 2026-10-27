@@ -71,7 +71,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true", help="Create and enable the workflow.")
     args = parser.parse_args()
-    secrets = tomllib.loads((ROOT / "config" / "secrets.toml").read_text(encoding="utf-8"))
+    secrets = tomllib.loads(__import__("backend_runtime").secrets_path(ROOT).read_text(encoding="utf-8-sig"))
     secret = str(secrets.get("CORPORATE_EXCHANGE_WEBHOOK_TOKEN") or "")
     if len(secret) < 32:
         raise RuntimeError("缺少独立的兑换同步回调密钥。")

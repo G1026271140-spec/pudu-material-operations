@@ -133,3 +133,39 @@ def test_failed_duplicate_submission_is_not_reported_as_saved(conn,monkeypatch):
  from types import SimpleNamespace
  monkeypatch.setattr(jobs,'enqueue',lambda *a,**k:(SimpleNamespace(status='失败'),False))
  with pytest.raises(ValueError,match='此前未能保存'):jobs.submit('测试任务','failed-key',{})
+
+
+def test_image_download_resolves_stable_local_key_to_feishu_record_id(conn,monkeypatch):
+ from types import SimpleNamespace
+ from request_web import live_data
+ from material_store.client import DatabaseReadClient
+ import app
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction(),runtime.request_scope():
+   info=repo.named_table(conn,app.CATEGORY_TABLE_NAME)
+   remote_id='rec-image-'+uuid4().hex;local_id='local_'+uuid4().hex
+   fields={'物料品类':'图片别名测试','申领页图片':[{'file_token':'fake-image-token','name':'image.png','url':'https://example.invalid/attachment'}]}
+   repo.insert_source_records(conn,info,[{'record_id':remote_id,'fields':fields}])
+   conn.execute(sql.SQL('UPDATE material_data.{} SET _record_key=%s WHERE _record_key=%s').format(sql.Identifier(info['sql_table'])),(local_id,remote_id))
+   native=Mock();native.get_record.return_value={'record_id':remote_id,'fields':fields}
+   native.download_bitable_attachment.return_value=b'image-bytes'
+   reader=SimpleNamespace(client=DatabaseReadClient(remote=native,conn=conn),table_id=lambda name:info['table_id'])
+   monkeypatch.setattr(live_data,'reader',lambda:reader)
+   assert live_data.image_bytes(app.CATEGORY_TABLE_NAME,local_id,'fake-image-token')==b'image-bytes'
+   native.get_record.assert_called_once_with(info['table_id'],remote_id)
+   raise RuntimeError('rollback')
+
+
+def test_directory_refresh_rejects_incomplete_result_before_replacing_data(conn):
+ from material_store.contacts import publish,NAME
+ from psycopg.types.json import Jsonb
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction():
+   old={'users':[{'open_id':'ou_preserved'}],'departments':[{'department_id':'old'}]}
+   conn.execute('INSERT INTO material_ops.documents(name,payload) VALUES (%s,%s) ON CONFLICT(name) DO UPDATE SET payload=excluded.payload',(NAME,Jsonb(old)))
+   with pytest.raises(ValueError):publish(conn,{'users':[],'departments':[]})
+   assert conn.execute('SELECT payload FROM material_ops.documents WHERE name=%s',(NAME,)).fetchone()[0]==old
+   new={'users':[{'open_id':'ou_updated'}],'departments':[{'department_id':'new'}]}
+   assert publish(conn,new)=={'users':1,'departments':1}
+   assert conn.execute('SELECT payload FROM material_ops.documents WHERE name=%s',(NAME,)).fetchone()[0]==new
+   raise RuntimeError('rollback')
