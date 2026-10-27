@@ -170,6 +170,8 @@ def save(actor,body):
             limit=integer(body.get('limit'),LIMIT,minimum=1)
             if limit>9999:raise ValueError('每人累计领取上限不能超过 9999 件。')
             if any(g['key']!=style_key and (g['source_style']==source_style or g['label']==label) for g in groups):raise ValueError('款式或申领页显示名称已存在。')
+            if old and source_style!=old['source_style'] and any(app.feishu_int(row['fields'],'表格兑换数量') for row in old_rows):
+                raise ValueError('该款式已有行政表兑换记录，不能改动匹配库存的源表款式名称；可修改申领页显示名称。')
             if operation=='create':style_key='apparel_'+uuid4().hex
             size_options={o['name'] for f in info['fields'] if f['field_name']=='码数' for o in f['property']['options']}
             inputs=body.get('rows');prepared=[];seen=set();kept=set()
@@ -180,7 +182,11 @@ def save(actor,body):
                 if size not in size_options or size in seen:raise ValueError('请选择有效且不重复的尺码。')
                 seen.add(size)
                 if rid and rid not in raw_rows:raise ValueError('库存规格不属于当前款式。')
-                if rid:kept.add(rid)
+                if rid:
+                    before=fields_by_id[rid]
+                    if size!=app.feishu_text(before,'码数') and (rid in history or raw_rows[rid]['remote_id'] in history or app.feishu_int(before,'系统兑换数量') or app.feishu_int(before,'表格兑换数量')):
+                        raise ValueError('该规格已有领用记录，不能更改尺码；请新增一个尺码规格。')
+                    kept.add(rid)
                 original=integer(item.get('original'),'原始库存数量',minimum=0);correction=integer(item.get('correction'),'入库/纠正')
                 code=str(item.get('code') or '').strip() or 'CF-'+uuid4().hex[:12].upper()
                 if len(code)>80 or (code in codes and codes[code]!=rid):raise ValueError('编码已存在或过长。')

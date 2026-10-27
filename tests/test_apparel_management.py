@@ -121,3 +121,15 @@ def test_administrative_source_create_uses_unique_sku_code_for_retry_dedup(store
  assert _find_remote_create(client,info,{'编码':'CF-UNIQUE','款式':'新款式'})==row
  client.list_records.return_value=[row,{**row,'record_id':'rec_duplicate'}]
  with pytest.raises(SourceConflict):_find_remote_create(client,info,{'编码':'CF-UNIQUE'})
+
+
+def test_external_exchange_history_protects_formula_matching_keys(store):
+ conn,actor=store;body=draft();key=apparel.save(actor,body)['style_key']
+ info=apparel.source_info(conn)
+ row=next(row for row in repo.rows(conn,info) if row['fields'].get(apparel.KEY)==key)
+ old=repo.raw_record(conn,info,row['record_id']);fid=next(field['field_id'] for field in info['fields'] if field['field_name']=='表格兑换数量')
+ repo.replace_values(conn,info,row['record_id'],{**old['fields'],fid:2})
+ style=next(style for style in apparel.manager_catalog(conn)['styles'] if style['key']==key)
+ edit={**body,'operation':'edit','style_key':key,'rows':style['rows'],'expected_versions':style['expected_versions'],'idempotency_key':'rename-source-'+uuid4().hex}
+ with pytest.raises(ValueError,match='源表款式名称'):apparel.save(actor,{**edit,'source_style':'改名-'+body['source_style']})
+ with pytest.raises(ValueError,match='不能更改尺码'):apparel.save(actor,{**edit,'rows':[{**style['rows'][0],'size':'L'}]})
