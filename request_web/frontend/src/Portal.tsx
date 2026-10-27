@@ -81,7 +81,7 @@ const text = {
     corporateApparel: "企业文化衫领取",
     corporateApparelHint: "在新页面打开企业文化衫领取",
     tools: "数据与系统工具",
-    version: "当前应用版本 V3.6.6",
+    version: "当前应用版本",
     denied: "仅已启用的管理员可访问物料管理",
     collapse: "收起左侧导航",
     expand: "展开左侧导航",
@@ -96,7 +96,7 @@ const text = {
     corporateApparel: "Corporate Apparel Request",
     corporateApparelHint: "Open Corporate Apparel Request in a new tab",
     tools: "Data & System Tools",
-    version: "Current Version V3.6.6",
+    version: "Current Version",
     denied: "Only enabled administrators can access Material Management",
     collapse: "Collapse sidebar",
     expand: "Expand sidebar",
@@ -243,7 +243,7 @@ export default function Portal() {
           <div className="sidebar-label">{t.tools}</div>
           {canManage&&currentUser?.data_source==='postgresql'&&<button className="database-nav-link" onClick={()=>{navigate("management");navigateManagementTab("database");}}>{lang==="zh"?"▦ 数据库工作台":"▦ Database workspace"}</button>}
           <div className="version-row">
-            <span>{t.version}</span>
+            <span>{t.version} {currentUser?.version || "—"}</span>
             <span>🔒</span>
           </div>
         </div>

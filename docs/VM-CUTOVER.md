@@ -1,4 +1,4 @@
-# 虚拟机完全替换说明 — V3.6.8
+# 虚拟机完全替换说明 — V3.6.9
 
 访问地址：https://materials.pudu.work/ 。企业文化衫专用入口为
 https://materials.pudu.work/corporate-apparel 。两个入口均通过飞书登录。
@@ -65,3 +65,5 @@ V3.6.8 补充：统一通知卡片与默认部署域名为 materials.pudu.work�
 
 通讯录与部门也在 VM 中刷新并写入 PostgreSQL：pudu-material-contacts.timer 每天北京时间 03:10 运行，读取不完整时保留原数据。旧电脑的联系人缓存程序不再承担生产更新。
 两条现有飞书云端同步工作流的 HTTP 回调已改为 materials.pudu.work 并回读验证为 enabled；原触发条件、数据映射和密钥保持一致。
+
+页面版本号直接读取服务端登录接口，随发布自动更新，避免固定文案滞后。
