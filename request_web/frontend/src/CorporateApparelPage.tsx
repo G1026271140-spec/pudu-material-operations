@@ -1,3 +1,4 @@
+import RequiredMark from "./RequiredMark";
 import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseRefresh } from "./useDatabaseRefresh";
@@ -266,7 +267,7 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
       <section className="corporate-section">
         <div className="corporate-title"><i>01</i><div><h2>{t.person}</h2></div></div>
         <div className="corporate-contact">
-          <label>{t.applicant} *
+          <label><span className="field-label">{t.applicant}<RequiredMark /></span>
             <div className="corporate-combo">
               <input value={query} placeholder={t.applicantPlaceholder} onFocus={() => setMenu(true)} onChange={(event) => { requesterTouched.current = true; setQuery(event.target.value); setRequesterId(""); setMenu(true); }} />
               <button type="button" onClick={() => setMenu(!menu)}>⌄</button>
@@ -274,7 +275,7 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
             </div>
           </label>
           <label>{t.department}<input value={department} readOnly placeholder={t.departmentPlaceholder} /></label>
-          <label>{t.reason} *<select value={reason} onChange={(event) => setReason(event.target.value as Reason)}><option value="">{t.reasonPlaceholder}</option>{reasonValues.map((value) => <option value={value} key={value}>{reasonLabel(value)}</option>)}</select></label>
+          <label><span className="field-label">{t.reason}<RequiredMark /></span><select value={reason} onChange={(event) => setReason(event.target.value as Reason)}><option value="">{t.reasonPlaceholder}</option>{reasonValues.map((value) => <option value={value} key={value}>{reasonLabel(value)}</option>)}</select></label>
         </div>
       </section>
 

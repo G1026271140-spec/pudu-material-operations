@@ -1,3 +1,4 @@
+import RequiredMark from "./RequiredMark";
 import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseRefresh } from "./useDatabaseRefresh";
@@ -315,8 +316,8 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
           </div>
         </div>
         <div className="culture-contact">
-          <label>
-            {t.applicant} *
+          <label><span className="field-label">
+            {t.applicant}<RequiredMark /></span>
             <div className="combobox">
               <input
                 value={query}
@@ -353,8 +354,8 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
             {t.department}
             <input value={department} readOnly />
           </label>
-          <label className="culture-usage">
-            {t.usage} *
+          <label className="culture-usage"><span className="field-label">
+            {t.usage}<RequiredMark /></span>
             <input
               value={materialUsage}
               maxLength={500}

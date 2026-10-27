@@ -228,13 +228,7 @@ export default function Portal() {
             <span>♧</span>
             {t.cultural}
           </button>
-          {canManage && <button
-            className={page === "allocation" ? "active" : ""}
-            onClick={() => navigate("allocation")}
-          >
-            <span aria-hidden="true">☷</span>
-            {t.allocation}
-          </button>}
+
 
           {canManage && <a
             className="corporate-apparel-link"
@@ -250,6 +244,7 @@ export default function Portal() {
         <div className="sidebar-system">
           <div className="sidebar-label">{t.tools}</div>
           {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
+          {canManage && <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>}
           {canManage&&currentUser?.data_source==='postgresql'&&<button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
           <div className="version-row">
             <span>{t.version} {currentUser?.version || "—"}</span>

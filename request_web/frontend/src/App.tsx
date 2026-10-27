@@ -1,3 +1,4 @@
+import RequiredMark from "./RequiredMark";
 import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryCarousel from "./CategoryCarousel";
@@ -589,8 +590,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
             </div>
           </div>
           <div className="grid3">
-            <label>
-              {t("申请人", "Applicant")} *
+            <label><span className="field-label">
+              {t("申请人", "Applicant")}<RequiredMark /></span>
               <div className="combobox">
                 <input
                   value={requesterQuery}
@@ -645,17 +646,17 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                 )}
               />
             </label>
-            <label>
+            <label><span className="field-label">
               {reason === "代理商支持"
                 ? t("代理商名称", "Distributor Name")
-                : t("客户名称", "Customer Name")} *
+                : t("客户名称", "Customer Name")}<RequiredMark /></span>
               <input
                 value={customer}
                 onChange={(e) => setCustomer(e.target.value)}
               />
             </label>
-            <label>
-              {t("国家", "Country")} *
+            <label><span className="field-label">
+              {t("国家", "Country")}<RequiredMark /></span>
               <input
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
@@ -666,8 +667,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
             {t("申请标题", "Request Title")} <b>{draft().title}</b>
           </div>
           <div className="grid2">
-            <label>
-              {t("收件人信息", "Recipient Information")} *
+            <label><span className="field-label">
+              {t("收件人信息", "Recipient Information")}<RequiredMark /></span>
               <textarea
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
@@ -677,8 +678,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                 )}
               />
             </label>
-            <label>
-              {t("物料用途", "Material Usage")} *
+            <label><span className="field-label">
+              {t("物料用途", "Material Usage")}<RequiredMark /></span>
               <textarea
                 value={usage}
                 onChange={(e) => setUsage(e.target.value)}
@@ -688,8 +689,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                 )}
               />
             </label>
-            <label>
-              {t("申请原因", "Request Reason")} *
+            <label><span className="field-label">
+              {t("申请原因", "Request Reason")}<RequiredMark /></span>
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
@@ -711,8 +712,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                 ))}
               </select>
             </label>
-            <label>
-              {t("物料使用时间", "Material Use Date")} *
+            <label><span className="field-label">
+              {t("物料使用时间", "Material Use Date")}<RequiredMark /></span>
               <input
                 type="date"
                 min={new Date().toISOString().slice(0, 10)}
@@ -928,8 +929,8 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
             </label>
             {customMaterial ? (
               <div className="custom-material-panel">
-                <label>
-                  {t("临时物料名称或规格说明", "Temporary material description")} *
+                <label><span className="field-label">
+                  {t("临时物料名称或规格说明", "Temporary material description")}<RequiredMark /></span>
                   <textarea
                     value={customDescription}
                     onChange={(event) => setCustomDescription(event.target.value)}

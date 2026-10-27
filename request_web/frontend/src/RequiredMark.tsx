@@ -1,0 +1,5 @@
+import "./required-mark.css";
+
+export default function RequiredMark() {
+  return <span className="required-mark" aria-hidden="true">*</span>;
+}
