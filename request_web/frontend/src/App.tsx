@@ -1,3 +1,4 @@
+import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryCarousel from "./CategoryCarousel";
 import CategoryModelMedia from "./CategoryModelMedia";
@@ -545,11 +546,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
       });
       const body = await r.json();
       if (!r.ok) throw Error(errorMessage(body.detail, "提交失败"));
-      const taskIds = Array.isArray(body.taskIds) ? body.taskIds : [body.taskId];
-      setDone(
-        body.syncStatus==="pending"?`申请已保存到本地数据库（${taskIds.join("、")}），正在同步飞书。`:
-        `申请已进入后台队列（${taskIds.length} 个任务：${taskIds.join("、")}）`,
-      );
+      setDone(requestSubmissionMessage(lang));
       setReview(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "提交失败");
@@ -567,7 +564,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     return (
       <main className="success">
         <div>✓</div>
-        <h1>{t("您的申请已提交", "Your request has been submitted")}</h1>
+        <h1>{t("提交成功", "Request submitted")}</h1>
         <p>{done}</p>
         <button onClick={() => location.reload()}>
           {t("继续申请", "New Request")}
@@ -589,9 +586,6 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
               <h2>
                 {t("申请与业务信息", "Application & Business Information")}
               </h2>
-              <p>
-                {t("填写领取申请的基础信息", "Complete the request details")}
-              </p>
             </div>
           </div>
           <div className="grid3">
@@ -734,12 +728,6 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
               <i>02</i>
               <div>
                 <h2>{t("选择申请物料", "Select Materials")}</h2>
-                <p>
-                  {t(
-                    `${catalog.products.length + adminProducts.length} 个规格弹层已随页面一次加载完成`,
-                    `${catalog.products.length + adminProducts.length} option panels are preloaded`,
-                  )}
-                </p>
               </div>
             </div>
             <div className="metrics">

@@ -5,14 +5,14 @@ import ManagementPage from "./ManagementPage";
 import type { ManagementTab } from "./ManagementPage";
 import AllocationWorkbench from "./AllocationWorkbench";
 import CorporateApparelPage from "./CorporateApparelPage";
+import DatabaseWorkbench from "./DatabaseWorkbench";
 import type { CurrentUser } from "./identity";
 import "./portal.css";
 
 type Lang = "zh" | "en";
-type PortalPage = "request" | "cultural" | "management";
+type PortalPage = "request" | "cultural" | "management" | "allocation" | "database";
 
 const managementPaths: Record<ManagementTab, string> = {
-  allocation: "/management/allocation",
   schedule: "/management/shipping-schedule",
   shipping: "/management/shipping-template",
   restock: "/management/restock",
@@ -20,7 +20,6 @@ const managementPaths: Record<ManagementTab, string> = {
   model: "/management/models",
   language: "/management/languages",
   region: "/management/regions",
-  database: "/management/database",
 };
 
 function normalizedPath(): string {
@@ -31,12 +30,14 @@ function managementTabFromLocation(): ManagementTab {
   const path = normalizedPath();
   const match = (Object.entries(managementPaths) as [ManagementTab, string][])
     .find(([, route]) => route === path);
-  return match?.[0] || "allocation";
+  return match?.[0] || "category";
 }
 
 function pageFromLocation(): PortalPage {
   const path = normalizedPath();
   const section = new URLSearchParams(window.location.search).get("section");
+  if (path === "/management/allocation") return "allocation";
+  if (path === "/management/database") return "database";
   if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
     return "cultural";
   }
@@ -48,7 +49,9 @@ function pageFromLocation(): PortalPage {
 
 function pagePath(page: PortalPage): string {
   if (page === "cultural") return "/cultural";
-  if (page === "management") return managementPaths.allocation;
+  if (page === "management") return managementPaths.category;
+  if (page === "allocation") return "/management/allocation";
+  if (page === "database") return "/management/database";
   return "/request";
 }
 
@@ -78,6 +81,8 @@ const text = {
     request: "物料申领",
     cultural: "文化周边申领",
     management: "物料管理",
+    allocation: "配货工作台",
+    database: "数据库工作台",
     corporateApparel: "企业文化衫领取",
     corporateApparelHint: "在新页面打开企业文化衫领取",
     tools: "数据与系统工具",
@@ -93,6 +98,8 @@ const text = {
     request: "Material Request",
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
+    allocation: "Allocation Workbench",
+    database: "Database Workspace",
     corporateApparel: "Corporate Apparel Request",
     corporateApparelHint: "Open Corporate Apparel Request in a new tab",
     tools: "Data & System Tools",
@@ -154,7 +161,7 @@ export default function Portal() {
     url.searchParams.delete("section");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setPage(next);
-    if (next === "management") setManagementTab("allocation");
+    if (next === "management") setManagementTab("category");
     window.scrollTo({ top: 0, behavior: "auto" });
   }
   function navigateManagementTab(next: ManagementTab) {
@@ -222,12 +229,13 @@ export default function Portal() {
             {t.cultural}
           </button>
           {canManage && <button
-            className={page === "management" ? "active" : ""}
-            onClick={() => navigate("management")}
+            className={page === "allocation" ? "active" : ""}
+            onClick={() => navigate("allocation")}
           >
-            <span>▣</span>
-            {t.management}
+            <span aria-hidden="true">☷</span>
+            {t.allocation}
           </button>}
+
           {canManage && <a
             className="corporate-apparel-link"
             href="/corporate-apparel"
@@ -241,7 +249,8 @@ export default function Portal() {
         </nav>
         <div className="sidebar-system">
           <div className="sidebar-label">{t.tools}</div>
-          {canManage&&currentUser?.data_source==='postgresql'&&<button className="database-nav-link" onClick={()=>{navigate("management");navigateManagementTab("database");}}>{lang==="zh"?"▦ 数据库工作台":"▦ Database workspace"}</button>}
+          {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
+          {canManage&&currentUser?.data_source==='postgresql'&&<button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
           <div className="version-row">
             <span>{t.version} {currentUser?.version || "—"}</span>
             <span>🔒</span>
@@ -263,6 +272,10 @@ export default function Portal() {
           <RequestPage lang={lang} currentUser={currentUser} />
         ) : page === "cultural" ? (
           <CulturalPage lang={lang} currentUser={currentUser} />
+        ) : canManage && page === "allocation" ? (
+          <AllocationWorkbench lang={lang} />
+        ) : canManage && page === "database" ? (
+          <DatabaseWorkbench lang={lang} />
         ) : canManage ? (
           <ManagementPage
             lang={lang}

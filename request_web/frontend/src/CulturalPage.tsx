@@ -1,3 +1,4 @@
+import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseRefresh } from "./useDatabaseRefresh";
 import CategoryCarousel from "./CategoryCarousel";
@@ -64,7 +65,7 @@ const c = {
     confirmHint: "提交后将直接登记发放并扣减库存",
     back: "返回修改",
     final: "确认提交",
-    success: "您的申请已提交",
+    success: "提交成功",
     successHint: "申请已进入后台队列",
     empty: "当前没有文化周边库存数据。",
     jacketNoticeTitle: "文化夹克申领提示",
@@ -106,7 +107,7 @@ const c = {
       "Submitting will issue the items and deduct inventory directly.",
     back: "Back to Edit",
     final: "Confirm Submit",
-    success: "Your request has been submitted",
+    success: "Request submitted",
     successHint: "The request has entered the background queue",
     empty: "No cultural merchandise inventory is available.",
     jacketNoticeTitle: "Cultural Jacket Notice",
@@ -286,7 +287,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
       });
       const body = await response.json();
       if (!response.ok) throw Error(body.detail || "Submit failed");
-      setDone(body.syncStatus==="pending"?`${lang==="zh"?"申请已保存到本地数据库，正在同步飞书":"Saved locally; syncing to Feishu"} (${body.requestNo})`:`${t.successHint} (${body.taskId})`);
+      setDone(requestSubmissionMessage(lang));
       setReview(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Submit failed");
@@ -305,16 +306,6 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
     );
   return (
     <main className="cultural-page">
-      <div className="legacy-page-header">
-        <div>
-          <small>{t.kicker}</small>
-          <h1>{t.title}</h1>
-          <p>{t.subtitle}</p>
-        </div>
-        <button>
-          ↻&nbsp; {lang === "zh" ? "刷新本页数据" : "Refresh page data"}
-        </button>
-      </div>
       <section>
         <div className="section-title">
           <i>01</i>

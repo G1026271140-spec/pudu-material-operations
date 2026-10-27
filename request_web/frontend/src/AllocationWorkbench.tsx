@@ -83,8 +83,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const [withdrawConfirm, setWithdrawConfirm] = useState(false);
   const [withdrawQueued, setWithdrawQueued] = useState(false);
   const submitLockRef = useRef(false);
-  const [pendingCachedAt, setPendingCachedAt] = useState("");
-  const [pendingRefreshing, setPendingRefreshing] = useState(false);
+  const [, setPendingCachedAt] = useState("");
+  const [, setPendingRefreshing] = useState(false);
   const [pendingWarning, setPendingWarning] = useState("");
   const [liveChecking, setLiveChecking] = useState(false);
   const [liveWarning, setLiveWarning] = useState("");
@@ -371,7 +371,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
   if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}><div className="allocation-loading"><i/><b>{tr("正在读取本机待核实申请单……", "Loading local pending requests…")}</b></div></main>;
   if (!requestId || !context) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("从当前未核实库存的申请单中选择并制定配货方案", "Select a pending request and prepare its allocation plan")}</p>{pendingCachedAt && <p className="pending-cache-note">{usesLiveData() ? tr("飞书读取时间：", "Read from Feishu at: ") : tr("本机列表更新于：", "Local list updated at: ")}{pendingCachedAt}{pendingRefreshing ? tr(" · 后台正在核对飞书", " · background Feishu reconciliation") : ""}</p>}</div><button onClick={() => loadPending(true)}>↻ {usesLiveData() ? tr("刷新飞书数据", "Refresh Feishu data") : tr("刷新本机列表", "Refresh local list")}</button></header>
+    <header><div><h1>{tr("配货工作台", "Allocation Workbench")}</h1></div><button onClick={() => loadPending(true)}>↻ {tr("刷新数据", "Refresh data")}</button></header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {pendingWarning && <div className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</div>}
     <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><span className="pending-arrival">{tr("要求到达：", "Required arrival: ")}{requiredArrivalText(item, lang)}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
@@ -385,7 +385,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const splitModels = unique(splitOptions.map((item: any) => item.model));
   const splitTotal = Object.values(splitQuantities).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
   return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><small>{tr("人工库存复核", "Manual Inventory Review")}</small><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("调整本次申请的配货方案", "Adjust the allocation plan for this request")}</p></div>{!directRequestId && <button onClick={() => { contextLoadRef.current += 1; setRequestId(""); setContext(null); loadPending(); }}>← {tr("返回申请单列表", "Back to requests")}</button>}</header>
+    <header><div><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("调整本次申请的配货方案", "Adjust the allocation plan for this request")}</p></div>{!directRequestId && <button onClick={() => { contextLoadRef.current += 1; setRequestId(""); setContext(null); loadPending(); }}>← {tr("返回申请单列表", "Back to requests")}</button>}</header>
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {success && <div className="allocation-toast allocation-task-toast" role="status">
       <button type="button" className="allocation-toast-close" aria-label={tr("关闭提示", "Close notification")} onClick={() => setSuccess("")}>×</button>

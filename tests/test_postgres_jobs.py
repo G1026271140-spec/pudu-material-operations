@@ -266,3 +266,65 @@ def test_withdrawal_allows_automatic_fields_and_deleted_parent_but_guards_manual
    auto['fields'][empty_text['field_name']]='飞书新填写的内容'
    assert empty_text['field_name'] in outbox_worker.delete_conflicts(conn,parent,row,auto,source)
    raise RuntimeError('rollback')
+
+
+@pytest.mark.parametrize('cultural',[False,True])
+def test_new_category_models_keep_their_product_lines_in_local_transaction_and_outbox(conn,monkeypatch,cultural):
+ import app
+ from feishu_bitable import FeishuBitableClient
+ from submission_queue import QUEUE_TASK_TYPE_CATEGORY_SYNC
+ monkeypatch.setattr(FeishuBitableClient,'_request',lambda *a,**k:(_ for _ in ()).throw(AssertionError('Unexpected Feishu HTTP')))
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction(),runtime.request_scope():
+   suffix=uuid4().hex
+   name='品类验收-'+suffix
+   actor='ou_test_'+suffix
+   permissions=repo.named_table(conn,app.USER_PERMISSION_TABLE_NAME)
+   repo.insert_source_records(conn,permissions,[{'record_id':'rec_'+suffix,'fields':{'用户编号':'test-'+suffix,'用户账号':[{'id':actor}],'角色':['管理员'],'是否启用':'是'}}])
+   models=['新型号A-'+suffix,'新型号B-'+suffix]
+   lines={models[0]:'CR',models[1]:'IR'}
+   language=app.NO_LANGUAGE_TEXT
+   if cultural:
+    regions=repo.named_table(conn,'战区管理')
+    language='隔离战区-'+suffix
+    repo.insert_source_records(conn,regions,[{'record_id':'region_'+suffix,'fields':{'战区名称':language,'启用状态':'启用'}}])
+   args={'old_product':'','new_product':name,'no_model':False,'no_language':not cultural,
+     'target_models':models,'target_languages':[language],'model_product_lines':lines,
+     'category_definition':app.CATEGORY_DEFINITION_CULTURAL if cultural else app.UNDEFINED_CATEGORY_DEFINITION,
+     'commercial_invoice_name':'Acceptance','target_values':{(model,language):{'quantity':3,'unit_price':1} for model in models}}
+   payload={'sync_args':app.serialize_category_sync_args(args),'draft':{'product':name},'notification_kind':'create'}
+   assert app.deserialize_category_sync_args(payload['sync_args'])['model_product_lines']==lines
+   task,_=jobs.enqueue(QUEUE_TASK_TYPE_CATEGORY_SYNC,'model-line-'+suffix,payload,conn=conn)
+   row=conn.execute('SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE id=%s',(task.task_id,)).fetchone()
+   jobs._run(conn,row)
+   model_table=repo.named_table(conn,app.MODEL_TABLE_NAME)
+   created={r['fields']['产品型号']:r for r in repo.rows(conn,model_table) if r['fields'].get('产品型号') in models}
+   assert len(created)==2
+   line_fid=next(f['field_id'] for f in model_table['fields'] if f['field_name']=='产品线')
+   stock=repo.named_table(conn,app.CULTURAL_MATERIAL_TABLE_NAME if cultural else app.MATERIAL_TABLE_NAME)
+   inventory=[r for r in repo.rows(conn,stock) if r['fields'].get('物料品类')==name]
+   assert len(inventory)==2
+   for model,line in lines.items():
+    assert created[model]['fields']['产品线']==line
+    patch,operation=conn.execute('SELECT patch,operation FROM material_ops.outbox WHERE record_key=%s',(created[model]['record_id'],)).fetchone()
+    assert operation=='create' and patch[line_fid]==line
+    material=next(r for r in inventory if r['fields']['产品型号']==model)
+    assert created[model]['record_id'] in repo.link_ids(material['fields'].get('产品型号关联' if cultural else '型号关联'))
+   raise RuntimeError('rollback')
+
+
+def test_category_cannot_overwrite_existing_model_product_line(conn):
+ import app
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction(),runtime.request_scope():
+   runtime.request_state['_write_conn']=conn
+   info=repo.named_table(conn,app.MODEL_TABLE_NAME)
+   from request_web.live_data import LiveReader
+   runtime.request_state['_live_reader']=LiveReader()
+   model='已有型号-'+uuid4().hex;key='rec-'+uuid4().hex
+   repo.insert_source_records(conn,info,[{'record_id':key,'fields':{'产品型号':model,'产品线':'CR'}}])
+   with pytest.raises(ValueError,match='型号管理'):
+    app.ensure_feishu_model_records([model],product_lines={model:'IR'})
+   assert repo.feishu_record(info,repo.raw_record(conn,info,key))['fields']['产品线']=='CR'
+   assert not conn.execute('SELECT 1 FROM material_ops.outbox WHERE record_key=%s',(key,)).fetchone()
+   raise RuntimeError('rollback')

@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.7.1"
+APP_VERSION = "V3.7.2"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -988,10 +988,32 @@ def material_language_link_field_name() -> str:
     return ""
 
 
-def ensure_feishu_model_records(models: list[str]) -> tuple[str, dict[str, str]]:
+def category_model_product_lines(models: list[str], value: object) -> dict[str, str]:
+    """Validate optional product lines attached only to selected model names."""
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError("新增型号的产品线格式无效。")
+    selected = {str(model).strip() for model in models}
+    result = {}
+    for model, line in value.items():
+        if not isinstance(model, str) or not isinstance(line, str):
+            raise ValueError("型号和产品线须为文本。")
+        model, line = model.strip(), line.strip()
+        if model not in selected:
+            raise ValueError("产品线只能关联本次选中的型号。")
+        if len(line) > 80:
+            raise ValueError("产品线名称最多 80 个字符。")
+        if line:
+            result[model] = line
+    return result
+
+
+def ensure_feishu_model_records(models: list[str], *, product_lines: dict[str, str] | None = None) -> tuple[str, dict[str, str]]:
     normalized_models = unique_preserve(
         [str(model).strip() or NO_MODEL_TEXT for model in models if str(model).strip()]
     )
+    product_lines = category_model_product_lines(normalized_models, product_lines)
     link_field = material_model_link_field_name()
     if normalized_models and not link_field:
         refresh_feishu_schema_cache()
@@ -1012,6 +1034,8 @@ def ensure_feishu_model_records(models: list[str]) -> tuple[str, dict[str, str]]
         record_id = feishu_record_id(row)
         if model and record_id and model not in model_ids:
             model_ids[model] = record_id
+        if model in product_lines and product_lines[model] != feishu_text(fields, "产品线").strip():
+            raise ValueError("已有型号的产品线请在型号管理中修改。")
         code = feishu_text(fields, "产品型号编码").strip()
         if code.isdigit():
             max_code = max(max_code, int(code))
@@ -1023,6 +1047,7 @@ def ensure_feishu_model_records(models: list[str]) -> tuple[str, dict[str, str]]
                 "产品型号编码": str(max_code + index),
                 "产品型号": model,
                 "启用状态": STATUS_ACTIVE,
+                **({"产品线": product_lines[model]} if model in product_lines else {}),
             }
             for index, model in enumerate(missing_models, start=1)
         ]
@@ -10868,6 +10893,7 @@ def sync_feishu_category_inventory(
     carry_language: str = "",
     initial_quantities: dict[tuple[str, str], int] | None = None,
     target_values: dict[tuple[str, str], dict[str, object]] | None = None,
+    model_product_lines: dict[str, str] | None = None,
 ) -> dict:
     client = feishu_client()
     if client is None:
@@ -10890,8 +10916,11 @@ def sync_feishu_category_inventory(
     category_en_page_name = category_en_page_name.strip() or new_product
     models = [NO_MODEL_TEXT] if no_model else target_models
     languages = [NO_LANGUAGE_TEXT] if no_language else target_languages
+    model_product_lines = category_model_product_lines(models, model_product_lines)
 
     if category_definition == CATEGORY_DEFINITION_CULTURAL:
+        if model_product_lines or any(not _cultural_dimension_record_id(MODEL_TABLE_NAME, "产品型号", model) for model in models):
+            ensure_feishu_model_records(models, product_lines=model_product_lines)
         return sync_feishu_cultural_category_inventory(
             old_product=old_product, new_product=new_product,
             models=models, regions=languages,
@@ -11000,7 +11029,10 @@ def sync_feishu_category_inventory(
             raise RuntimeError("创建物料品类后未返回记录 ID。")
         created_category = True
 
-    model_link_field, model_record_ids = ensure_feishu_model_records(plan["models"])
+    model_link_field, model_record_ids = (
+        ensure_feishu_model_records(plan["models"], product_lines=model_product_lines)
+        if model_product_lines else ensure_feishu_model_records(plan["models"])
+    )
     language_link_field, language_record_ids = ensure_feishu_language_records(plan["languages"])
     new_targets = [target for target in plan["targets"] if target["is_new"]]
     new_codes = next_material_codes_from_records(all_inventory, len(new_targets))

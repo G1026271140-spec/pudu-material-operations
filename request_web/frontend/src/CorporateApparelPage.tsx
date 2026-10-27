@@ -1,3 +1,4 @@
+import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseRefresh } from "./useDatabaseRefresh";
 import CategoryCarousel from "./CategoryCarousel";
@@ -55,7 +56,7 @@ const copy = {
     itemUnit: "件", remove: "删除", submit: "提交领取申请", chooseSize: "请选择尺码",
     remaining: (value: number) => `余 ${value}`, quantity: "领取数量", add: "加入领取清单",
     confirm: "确认领取信息", noDepartment: "未填写部门", back: "返回修改",
-    submitting: "正在提交…", confirmSubmit: "确认提交", success: "您的申请已提交",
+    submitting: "正在提交…", confirmSubmit: "确认提交", success: "提交成功",
     queued: (taskId: string) => `申请已进入后台队列（${taskId}）`, loading: "正在加载…",
     stockLoading: "正在核实实时库存，您可以先填写申请人信息…",
     stockFailed: "实时库存读取失败，请重试。", retry: "重试",
@@ -78,7 +79,7 @@ const copy = {
     itemUnit: "item(s)", remove: "Remove", submit: "Submit Collection Request", chooseSize: "Select a size",
     remaining: (value: number) => `${value} left`, quantity: "Quantity", add: "Add to List",
     confirm: "Confirm Collection Details", noDepartment: "No department", back: "Back to Edit",
-    submitting: "Submitting…", confirmSubmit: "Confirm Submission", success: "Your request has been submitted",
+    submitting: "Submitting…", confirmSubmit: "Confirm Submission", success: "Request submitted",
     queued: (taskId: string) => `Your request has entered the background queue (${taskId})`, loading: "Loading…",
     stockLoading: "Checking live stock. You can fill in the applicant details first…",
     stockFailed: "Could not load live stock. Please retry.", retry: "Retry",
@@ -249,7 +250,7 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
   }
 
   if (!catalog) return <main className="corporate-loading">{error || t.loading}</main>;
-  if (done) return <main className="corporate-success"><div>✓</div><h1>{t.success}</h1><p>{t.queued(done)}</p></main>;
+  if (done) return <main className="corporate-success"><div>✓</div><h1>{t.success}</h1><p>{requestSubmissionMessage(lang)}</p></main>;
   return (
     <main className="corporate-page">
       <header className="corporate-header">
