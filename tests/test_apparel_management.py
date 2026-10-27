@@ -133,3 +133,15 @@ def test_external_exchange_history_protects_formula_matching_keys(store):
  edit={**body,'operation':'edit','style_key':key,'rows':style['rows'],'expected_versions':style['expected_versions'],'idempotency_key':'rename-source-'+uuid4().hex}
  with pytest.raises(ValueError,match='源表款式名称'):apparel.save(actor,{**edit,'source_style':'改名-'+body['source_style']})
  with pytest.raises(ValueError,match='不能更改尺码'):apparel.save(actor,{**edit,'rows':[{**style['rows'][0],'size':'L'}]})
+
+
+def test_style_image_shared_by_several_sizes_has_one_public_preview_url(store):
+ conn,actor=store;body=draft();key=apparel.save(actor,body)['style_key']
+ info=apparel.source_info(conn)
+ row=next(row for row in repo.rows(conn,info) if row['fields'].get(apparel.KEY)==key)
+ photo={'file_token':'isolated-shared-photo','name':'photo.png'}
+ records=[{'record_id':'photo-row-M','fields':{**row['fields'],'码数':'M','图片':[photo]}},
+          {'record_id':'photo-row-L','fields':{**row['fields'],'码数':'L','图片':[photo]}}]
+ result=apparel.catalog([],records)
+ assert len(result['items'])==2
+ assert len({url for item in result['items'] for url in item['images']})==1

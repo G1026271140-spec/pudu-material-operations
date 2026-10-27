@@ -67,6 +67,15 @@ def image_items(row):
             'path':'/api/apparel-local-image/'+str(local) if local else '/api/apparel-image/'+quote(row['record_id'],safe='')+'/'+quote(token,safe='')})
     return result
 
+def style_images(records):
+    images = {}
+    for row in records:
+        for image in image_items(row):
+            identity = image.get('local_media_id') or image.get('file_token')
+            images.setdefault(identity, image)
+    return list(images.values())
+
+
 def catalog(synced_rows,source_rows):
     import app
     aliases={app.corporate_apparel_source_record_id(row['fields'].get('SourceID')):row['record_id'] for row in synced_rows}
@@ -74,10 +83,10 @@ def catalog(synced_rows,source_rows):
     for group in group_rows(source_rows):
         if not group['visible']:continue
         key=group['key'];products.append(key);labels[key]=group['label'];limits[key]=group['limit']
-        images=next((image_items(row) for row in group['records'] if image_items(row)),[])
+        images=style_images(group['records'])
         sized=[row for row in group['records'] if app.feishu_text(row['fields'],'码数')]
         for row in sized or group['records']:
-            f=row['fields'];pictures=image_items(row) or images
+            f=row['fields'];pictures=images
             latest=app.feishu_int(f,'最新库存') if '最新库存' in f else stock_value(f)
             items.append({'record_id':aliases.get(row['record_id'],row['record_id']),'source_record_id':row['record_id'],
                 'product':key,'product_label':group['label'],'source_style':group['source_style'],
@@ -105,7 +114,7 @@ def manager_catalog(conn):
                 'available':stock_value(f),'remark':app.feishu_text(f,'备注')})
         sizes=[item for item in records if item['size']]
         styles.append({k:v for k,v in group.items() if k!='records'}|{'rows':sizes or records,
-            'expected_versions':versions,'images':next((image_items(row) for row in group['records'] if image_items(row)),[]),
+            'expected_versions':versions,'images':style_images(group['records']),
             'total_stock':sum(item['available'] for item in sizes or records)})
     sizes=next(f for f in info['fields'] if f['field_name']=='码数')
     return {'styles':styles,'sizes':[option['name'] for option in sizes['property']['options']],
