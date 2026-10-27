@@ -1,4 +1,4 @@
-# 虚拟机完全替换说明 — V3.6.9
+# 虚拟机完全替换说明 — V3.7.0
 
 访问地址：https://materials.pudu.work/ 。企业文化衫专用入口为
 https://materials.pudu.work/corporate-apparel 。两个入口均通过飞书登录。
@@ -67,3 +67,39 @@ V3.6.8 补充：统一通知卡片与默认部署域名为 materials.pudu.work�
 两条现有飞书云端同步工作流的 HTTP 回调已改为 materials.pudu.work 并回读验证为 enabled；原触发条件、数据映射和密钥保持一致。
 
 页面版本号直接读取服务端登录接口，随发布自动更新，避免固定文案滞后。
+
+
+## V3.7.0 全部前端业务写入核对
+
+正常操作以虚拟机 PostgreSQL 为准；HTTP 返回保存成功前，业务数据、审计和
+outbox 必须在同一本地事务提交。后台 worker 再更新对应飞书表。飞书故障时
+本地已保存的内容仍可供页面读取，未同步任务保留重试状态。
+
+| 前端功能 | 本地入口 | 飞书更新方式 |
+| --- | --- | --- |
+| 普通物料申请、混合申请、文化周边申领 | submissions.submit_groups | ordinary/cultural outbox |
+| 企业文化衫申领、HR 驳回和额度恢复 | jobs + DatabaseWriteClient | apparel_admin/primary outbox |
+| 配货确认、配货编辑、撤回 | jobs + DatabaseWriteClient | create/update/delete outbox |
+| 补库、减库及库存流水 | jobs + DatabaseWriteClient | admin outbox |
+| 品类新增、编辑、删除、可选图片 | jobs + 本地 media | admin outbox，附件由 worker 上传 |
+| 型号、语言、战区管理 | jobs + DatabaseWriteClient | admin outbox |
+| 数据库工作台单元格编辑 | repository.patch_record | admin outbox |
+| 飞书卡片操作及回调 | 持久化本地 jobs/inbound | 同样的事务及 outbox |
+
+读取库存时，页面和业务事务共用关联记录 ID 对应的当前品类、型号、语种及战区
+名称。仅改变业务读取视图，不改写导入原文，也不修改历史申请快照。关联缺失时
+保留原文本，不进行模糊匹配，不另建库存行。
+
+撤回同步允许飞书自动生成的部门及历史创建基线中未记录的双向回链，也允许同时
+撤回的关联记录被飞书提前清理；其他人工字段变更仍进入冲突状态，避免误删。
+
+每日北京时间 03:00（systemd OnCalendar 中显式指定 Asia/Shanghai），读取两个
+飞书来源的全部 23 张表，以飞书值更新本地，包括手动修改和清空。日校验发现与
+旧待同步写入不同的字段时，保留冲突审计并阻止旧任务再次覆盖校验结果；尚未取得
+飞书 ID 的新建本地记录继续保留，等待同步。发货模板与发货排期维持现有附加功能。
+
+本次验证：全部注册字段的 PostgreSQL 回读、六组关联维度改名、撤回自动字段及
+真实人工冲突、日校验方向均纳入回归。只读生产对照 775 条普通库存、67 条文化
+周边库存、215 条文化衫规格；774 个有效普通申请组合全部可匹配。独立恢复库禁止
+真实飞书 HTTP，验证申请/驳回、配货/撤回、补减库、品类图片及维度修改，随后模拟
+飞书运行 worker，28 个 outbox 完成、34 条通知无重复，生产业务写入为零。

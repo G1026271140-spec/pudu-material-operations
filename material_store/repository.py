@@ -54,6 +54,54 @@ def rows(conn, info):
     return [feishu_record(info, {"record_id": row[0], "fields": row[1]}) for row in result]
 
 
+def business_rows(conn, info, records):
+    """Resolve current catalog labels by stable links without editing snapshots.
+
+    Historical request/ledger text and the raw database editor remain unchanged.
+    The same view is used by HTTP readers and transactional business builders.
+    """
+    rules = {
+        '物料主数据': {'品类关联': ('物料品类', '物料品类'),
+            '型号关联': ('产品型号', '产品型号'), '语种关联': ('语种', '语言种类')},
+        '文化周边管理库存': {'物料品类关联': ('物料品类', '物料品类'),
+            '产品型号关联': ('产品型号', '产品型号'), '战区关联': ('战区管理', '战区名称')},
+    }.get(info['name'], {}) if info['source'] == 'primary' else {}
+    if not rules:
+        return records
+    by_name = {f['field_name']: f for f in info['fields']}
+    resolved = []
+    for link_name, (label_name, target_name) in rules.items():
+        field = by_name.get(link_name)
+        if not field or label_name not in by_name:
+            continue
+        target_id = (field.get('property') or {}).get('table_id')
+        if not target_id:
+            continue
+        target = table(conn, target_id)
+        target_field = next((f['field_id'] for f in target['fields'] if f['field_name'] == target_name), None)
+        if not target_field:
+            continue
+        names = {}
+        for key, remote, values in conn.execute(sql.SQL(
+                'SELECT _record_key,_remote_id,_fields FROM material_data.{} WHERE NOT _deleted'
+                ).format(sql.Identifier(target['sql_table']))):
+            label = scalar_text(values.get(target_field))
+            if label:
+                names[key] = label
+                if remote:
+                    names[remote] = label
+        resolved.append((link_name, label_name, names))
+    result = []
+    for record in records:
+        fields = dict(record['fields'])
+        for link_name, label_name, names in resolved:
+            label = next((names[key] for key in link_ids(fields.get(link_name)) if key in names), None)
+            if label:
+                fields[label_name] = label
+        result.append({**record, 'fields': fields})
+    return result
+
+
 def source_values(info, fields):
     by_name = {f["field_name"]: f["field_id"] for f in info["fields"]}
     unknown = set(fields) - set(by_name)

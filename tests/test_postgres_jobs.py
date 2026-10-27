@@ -169,3 +169,100 @@ def test_directory_refresh_rejects_incomplete_result_before_replacing_data(conn)
    assert publish(conn,new)=={'users':1,'departments':1}
    assert conn.execute('SELECT payload FROM material_ops.documents WHERE name=%s',(NAME,)).fetchone()[0]==new
    raise RuntimeError('rollback')
+
+
+def test_submission_resolves_renamed_linked_model_like_the_page_without_rewriting_stock(conn,monkeypatch):
+ import app
+ from feishu_bitable import FeishuBitableClient
+ monkeypatch.setattr(FeishuBitableClient,'_request',lambda *a,**k:(_ for _ in ()).throw(AssertionError('Unexpected HTTP')))
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction(),runtime.request_scope():
+   runtime.request_state['_write_conn']=conn
+   models=repo.named_table(conn,app.MODEL_TABLE_NAME)
+   categories=repo.named_table(conn,app.CATEGORY_TABLE_NAME)
+   materials=repo.named_table(conn,app.MATERIAL_TABLE_NAME)
+   model_id='model-'+uuid4().hex;category_id='category-'+uuid4().hex;material_id='material-'+uuid4().hex
+   product='产品折页(Single Product Brochure)'
+   repo.insert_source_records(conn,models,[{'record_id':model_id,'fields':{'产品型号':'GT系列三折页','启用状态':'启用'}}])
+   repo.insert_source_records(conn,categories,[{'record_id':category_id,'fields':{'物料品类':product,'启用状态':'启用'}}])
+   repo.insert_source_records(conn,materials,[{'record_id':material_id,'fields':{
+    '物料编码':'regression-'+uuid4().hex,'物料品类':product,'产品型号':'GT系列3折页','语种':'日语(Japanese)','当前库存':7,
+    '型号关联':[{'text':'X049','type':'text','table_id':models['table_id'],'record_ids':[model_id]}]}}])
+   key=app.request_material_match_key(product,'GT系列三折页','日语(Japanese)')
+   category_rows=repo.rows(conn,categories)
+   assert key not in app.build_request_material_index(repo.rows(conn,materials),category_rows,include_all_for_admin=True)
+   source=app.fresh_feishu_rows(app.MATERIAL_TABLE_NAME)
+   matched=app.build_request_material_index(source,category_rows,include_all_for_admin=True)[key]
+   assert matched['record_id']==material_id
+   assert matched['fields']['当前库存']==7
+   stored=repo.feishu_record(materials,repo.raw_record(conn,materials,material_id))
+   assert stored['fields']['产品型号']=='GT系列3折页'
+   assert stored['fields']['当前库存']==7
+   raise RuntimeError('rollback')
+
+
+@pytest.mark.parametrize('stock_name,link_name,label_name,target_name',[
+ ('物料主数据','品类关联','物料品类','物料品类'),
+ ('物料主数据','型号关联','产品型号','产品型号'),
+ ('物料主数据','语种关联','语种','语言种类'),
+ ('文化周边管理库存','物料品类关联','物料品类','物料品类'),
+ ('文化周边管理库存','产品型号关联','产品型号','产品型号'),
+ ('文化周边管理库存','战区关联','战区管理','战区名称'),
+])
+def test_every_catalog_dimension_uses_stable_link_in_reads_and_writes(conn,stock_name,link_name,label_name,target_name):
+ from material_store.client import DatabaseReadClient
+ import app
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction(),runtime.request_scope():
+   runtime.request_state['_write_conn']=conn
+   info=repo.named_table(conn,stock_name)
+   link=next(f for f in info['fields'] if f['field_name']==link_name)
+   target=repo.table(conn,link['property']['table_id'])
+   target_id='rec-test-'+uuid4().hex;local_id='local_'+uuid4().hex;stock_id='stock-'+uuid4().hex
+   repo.insert_source_records(conn,target,[{'record_id':target_id,'fields':{target_name:'新名称-'+uuid4().hex}}])
+   conn.execute(sql.SQL('UPDATE material_data.{} SET _record_key=%s WHERE _record_key=%s').format(sql.Identifier(target['sql_table'])),(local_id,target_id))
+   repo.insert_source_records(conn,info,[{'record_id':stock_id,'fields':{label_name:'旧名称',link_name:[{'record_ids':[target_id],'text':'历史编号'}]}}])
+   read=DatabaseReadClient(conn=conn).get_record(info['table_id'],stock_id)
+   write=DatabaseWriteClient(conn).get_record(info['table_id'],stock_id)
+   fresh=next(row for row in app.fresh_feishu_rows(stock_name) if row['record_id']==stock_id)
+   assert read==write==fresh
+   assert read['fields'][label_name].startswith('新名称-')
+   assert repo.feishu_record(info,repo.raw_record(conn,info,stock_id))['fields'][label_name]=='旧名称'
+   filtered=next(row for row in DatabaseReadClient(conn=conn).list_records(info['table_id'],field_names=[label_name]) if row['record_id']==stock_id)
+   assert filtered['fields']=={label_name:read['fields'][label_name]}
+   orphan={'record_id':'orphan','fields':{label_name:'保留旧名称',link_name:['rec-missing']}}
+   assert repo.business_rows(conn,info,[orphan])==[orphan]
+   raise RuntimeError('rollback')
+
+
+def test_withdrawal_allows_automatic_fields_and_deleted_parent_but_guards_manual_changes(conn,monkeypatch):
+ from contextlib import contextmanager
+ from material_store import outbox_worker
+ @contextmanager
+ def same_connection():yield conn
+ monkeypatch.setattr(outbox_worker,'connection',same_connection)
+ with pytest.raises(RuntimeError,match='rollback'):
+  with conn.transaction(),runtime.request_scope():
+   parent=repo.named_table(conn,'物料申请单');lines=repo.named_table(conn,'申请明细')
+   pid='rec-parent-'+uuid4().hex;lid='rec-line-'+uuid4().hex
+   repo.insert_source_records(conn,parent,[{'record_id':pid,'fields':{'申请单号':'withdraw-test-'+uuid4().hex,'备注':'原备注'}}])
+   repo.insert_source_records(conn,lines,[{'record_id':lid,'fields':{'所属申请单':[pid],'申请数量':1}}])
+   client=DatabaseWriteClient(conn)
+   client.delete_record(lines['table_id'],lid);client.delete_record(parent['table_id'],pid)
+   source=Mock()
+   source.get_record.return_value={'record_id':lid,'fields':{'所属申请单':[pid],'申请数量':1}}
+   task={'table_id':lines['table_id'],'record_key':lid,'patch':{},'operation':'delete'}
+   assert outbox_worker.publish(task,source)==lid
+   source.get_record.return_value={'record_id':lid,'fields':{'所属申请单':[],'申请数量':1}}
+   assert outbox_worker.publish(task,source)==lid
+   row=repo.raw_record(conn,parent,pid,include_deleted=True)
+   auto={'fields':{'申请单号':repo.feishu_record(parent,row)['fields']['申请单号'],'备注':'原备注',
+     '申请人.部门':['部门自动回填'],'申请明细':[lid],'物料明细':['rec-auto-material']}}
+   assert outbox_worker.delete_conflicts(conn,parent,row,auto,source)==[]
+   auto['fields']['备注']='飞书人工修改'
+   assert '备注' in outbox_worker.delete_conflicts(conn,parent,row,auto,source)
+   auto['fields']['备注']='原备注'
+   empty_text=next(f for f in parent['fields'] if f['type']==1 and f['field_id'] not in row['baseline'])
+   auto['fields'][empty_text['field_name']]='飞书新填写的内容'
+   assert empty_text['field_name'] in outbox_worker.delete_conflicts(conn,parent,row,auto,source)
+   raise RuntimeError('rollback')

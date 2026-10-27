@@ -9,6 +9,7 @@ import os
 import time
 from uuid import uuid4
 
+from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from .db import connection
@@ -78,6 +79,51 @@ def _remote_fields(info, values, client):
     return result
 
 
+def delete_conflicts(conn, info, row, remote, client):
+    """Check deletion against saved source values, allowing reciprocal cleanup.
+
+    Old locally created records have no baseline for Feishu-generated backlinks
+    or the automatic applicant department. Other absent values remain guarded.
+    """
+    baseline = row['baseline'] or {}
+    current = remote.get('fields') or {}
+    conflicts = []
+    for field in info['fields']:
+        fid = field['field_id']
+        kind = int(field['type'])
+        if kind in {19, 20} or kind >= 1000:
+            continue
+        if fid not in baseline and (
+                (kind == 21 and (field.get('property') or {}).get('back_field_id'))
+                or (info['name'] == '物料申请单' and field['field_name'] == '申请人.部门')):
+            continue
+        actual = _canonical(field, current.get(field['field_name']))
+        if kind in {18, 21}:
+            target = repo.table(conn, field['property']['table_id'])
+            expected = []
+            tombstones = set()
+            for key, remote_id, deleted in conn.execute(
+                    sql.SQL('SELECT _record_key,_remote_id,_deleted FROM material_data.{}')
+                    .format(sql.Identifier(target['sql_table']))):
+                if deleted:
+                    tombstones.update(x for x in (key, remote_id) if x)
+            for key in repo.link_ids(baseline.get(fid)):
+                try:
+                    linked = repo.raw_record(conn, target, key, include_deleted=True)
+                    mapped = linked['remote_id'] or key
+                except ValueError:
+                    mapped = key  # Preserve known historic dangling source IDs.
+                if key not in tombstones and mapped not in tombstones:
+                    expected.append(mapped)
+            expected = sorted(expected)
+            actual = [key for key in actual if key not in tombstones]
+        else:
+            expected = _canonical(field, _remote_fields(info, {fid: baseline.get(fid)}, client).get(field['field_name']))
+        if actual != expected:
+            conflicts.append(field['field_name'])
+    return conflicts
+
+
 def claim(lane, worker_id):
     if lane not in LANES:
         raise ValueError('Unknown outbox lane')
@@ -137,12 +183,10 @@ def publish(task, client):
             if '1254043' in str(exc):return remote_id
             raise
         # A delete may not erase a manual Feishu edit made since the last sync.
-        current=remote.get('fields') or {}
-        for field in info['fields']:
-            fid=field['field_id']
-            if field['type'] in {19,20} or field['type']>=1000:continue
-            if _canonical(field,current.get(field['field_name']))!=_canonical(field,_remote_fields(info,{fid:baseline.get(fid)},client).get(field['field_name'])):
-                raise SourceConflict('飞书记录已经变化，删除任务等待人工核对。')
+        with connection() as conn:
+            conflicts = delete_conflicts(conn, info, row, remote, client)
+        if conflicts:
+            raise SourceConflict('飞书记录已经变化，删除任务等待人工核对。字段：' + '、'.join(conflicts))
         client.delete_record(info['table_id'],remote_id)
         return remote_id
     named = _remote_fields(info, task['patch'], client)

@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.6.9"
+APP_VERSION = "V3.7.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -2855,7 +2855,9 @@ def fresh_feishu_rows(table_name: str) -> list[dict]:
         if runtime.request_state.get('_write_conn') is not None:
             from material_store import repository as store
             conn=runtime.request_state['_write_conn']
-            return store.rows(conn,store.named_table(conn,table_name))
+            from material_store.client import DatabaseWriteClient
+            info = store.named_table(conn, table_name)
+            return DatabaseWriteClient(conn).list_records(info['table_id'])
         from request_web.live_data import reader
         return reader().rows(table_name)
     client = feishu_client()

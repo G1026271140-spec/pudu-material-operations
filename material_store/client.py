@@ -32,7 +32,7 @@ class DatabaseReadClient:
             if runtime.request_state.get('_write_conn') is conn and info['name'] in {'物料主数据','文化周边管理库存','文化周边编码及库存数量'}:
                 from psycopg import sql
                 conn.execute(sql.SQL('SELECT _record_key FROM material_data.{} WHERE NOT _deleted ORDER BY _record_key FOR UPDATE').format(sql.Identifier(info['sql_table']))).fetchall()
-            result=repo.rows(conn,info)
+            result=repo.business_rows(conn,info,repo.rows(conn,info))
             if field_names is not None:
                 result=[{**r,"fields":{k:v for k,v in r["fields"].items() if k in field_names}} for r in result]
             return result
@@ -42,7 +42,7 @@ class DatabaseReadClient:
         def operation(conn):
             info=repo.table(conn,table_id)
             if info["source"]!=self.source:raise ValueError("来源不匹配。")
-            return repo.feishu_record(info,repo.raw_record(conn,info,record_id))
+            return repo.business_rows(conn,info,[repo.feishu_record(info,repo.raw_record(conn,info,record_id))])[0]
         return self._call(operation)
 
     def search_records(self,table_id,field_name,value,page_size=100):
