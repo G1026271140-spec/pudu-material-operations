@@ -254,16 +254,15 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
   if (!catalog) return <main className="corporate-loading">{error || t.loading}</main>;
   if (done) return <main className="corporate-success"><div>✓</div><h1>{t.success}</h1><p>{requestSubmissionMessage(lang)}</p></main>;
   return (
-    <main className="corporate-page">
-      <header className="corporate-header">
+    <main className="corporate-page" aria-label={t.title}>
+      <div className="corporate-controls">
         <img src="/app-assets/pudu-logo-blue.png" alt="PUDU" />
-        <div className="corporate-header-title"><h1>{t.title}</h1></div>
         <div className="corporate-language-switch" role="group" aria-label="Language / 语言">
           <span className={lang === "en" ? "is-en" : ""} aria-hidden="true" />
           <button type="button" className={lang === "zh" ? "active" : ""} onClick={() => changeLang("zh")}>中文</button>
           <button type="button" className={lang === "en" ? "active" : ""} onClick={() => changeLang("en")}>English</button>
         </div>
-      </header>
+      </div>
 
       <section className="corporate-section">
         <div className="corporate-title"><i>01</i><div><h2>{t.person}</h2></div></div>

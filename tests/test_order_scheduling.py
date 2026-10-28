@@ -44,7 +44,7 @@ def test_order_schedule_filters_use_review_exclusion_not_order_filter():
     source = open("request_web/frontend/src/ShippingSchedulePage.tsx", encoding="utf-8").read()
     assert "SCHEDULE_URL" in source
     assert "<iframe" in source
-    assert "实时显示飞书发货排期" in source
+    assert "飞书发货排期实时视图" in source
 
 
 def test_invalid_dates_and_unknown_reason():

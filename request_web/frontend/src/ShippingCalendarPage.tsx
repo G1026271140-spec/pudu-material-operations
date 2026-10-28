@@ -155,14 +155,14 @@ export default function ShippingCalendarPage({ lang, active = true, editable = f
       {request.shipping_text && <span className="sc-tracking">{request.shipping_text}</span>}
     </button>;
   }
-  return <section className="shipping-calendar" aria-labelledby="sc-title">
-    <header className="sc-heading"><div><h2 id="sc-title">{tr('物料发货日历', 'Material Shipping Calendar')}</h2><p>{canEdit ? tr('已核实库存的申请单', 'Inventory-verified requests') : tr('仅显示我本人已核实库存的申请单', 'Only my inventory-verified requests')}</p></div><button type="button" onClick={() => void load()} disabled={loading}>{loading ? tr('读取中…', 'Loading…') : tr('刷新', 'Refresh')}</button></header>
+  return <section className="shipping-calendar" aria-label={tr('物料发货日历', 'Material Shipping Calendar')}>
+
     {canEdit && stagedEntries.length > 0 && <div className="sc-batch-bar" role="status"><div><strong>{tr(`${stagedEntries.length} 张申请单有暂存修改`, `${stagedEntries.length} requests have staged changes`)}</strong><span>{tr('点击统一提交，确认后同步飞书并通知申请人。', 'Submit together to update Feishu and notify applicants.')}</span><div className="sc-draft-list">{stagedEntries.map(({ base }) => <span className="sc-draft-chip" key={base.request_id}><button type="button" disabled={saving} onClick={() => open(base)}>{base.request_no}</button><button type="button" disabled={saving} aria-label={tr(`撤销 ${base.request_no} 的暂存修改`, `Discard staged edits for ${base.request_no}`)} onClick={() => removeStaged(base.request_id)}>×</button></span>)}</div></div><button type="button" disabled={saving} onClick={() => { if (window.confirm(tr('放弃全部暂存修改？', 'Discard all staged changes?'))) setStaged({}); }}>{tr('放弃全部', 'Discard all')}</button><button type="button" className="primary" disabled={saving || uploading} onClick={() => { setBatchError(''); setConfirmSubmit(true); }}>{tr('统一提交修改', 'Submit all changes')}</button></div>}
     {notice && <div className="sc-notice" role="status">{notice}<button type="button" onClick={() => setNotice('')} aria-label={tr('关闭提示', 'Dismiss')}>×</button></div>}
     {error && <div className="sc-error" role="alert">{error}<button type="button" onClick={() => void load()}>{tr('重试', 'Retry')}</button></div>}
     <div className="sc-filters"><label><span>{tr('搜索申请单', 'Search requests')}</span><input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={tr('单号、申请人、物料或发货信息', 'Number, requester, item or tracking info')} /></label>
       <label><span>{tr('日期依据', 'Date basis')}</span><select value={basis} onChange={e => { setBasis(e.target.value as DateBasis); setDay(''); }}><option value="ship_date">{tr('计划发货日', 'Planned ship date')}</option><option value="arrival_start">{tr('要求到达开始日', 'Required arrival start')}</option></select></label>
-      <button type="button" className={allDates ? 'active' : ''} aria-pressed={allDates} onClick={() => { setAllDates(value => !value); setDay(''); }}>{tr('全部日期', 'All dates')}</button>
+      <button type="button" className={allDates ? 'active' : ''} aria-pressed={allDates} onClick={() => { setAllDates(value => !value); setDay(''); }}>{tr('全部日期', 'All dates')}</button><button type="button" onClick={() => void load()} disabled={loading}>{loading ? tr('读取中…', 'Loading…') : tr('刷新', 'Refresh')}</button>
     </div>
     <div className="sc-layout">
       <aside className="sc-month-panel" aria-label={tr('日期筛选', 'Date filter')}>

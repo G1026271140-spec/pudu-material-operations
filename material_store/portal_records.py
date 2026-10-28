@@ -39,6 +39,7 @@ def entitlements(conn,actor,request_rows,line_rows,permissions):
     own_permission=next((row['fields'] for row in permissions if actor in app.feishu_person_open_ids(row['fields'],['用户账号'])),{})
     result=[]
     for group in groups:
+        if not group['visible']:continue
         key=group['key'];current=used[key]
         if key in app.CORPORATE_APPAREL_QUOTA_FIELDS:
             aliases,_=app.CORPORATE_APPAREL_QUOTA_FIELDS[key]

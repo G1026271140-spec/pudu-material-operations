@@ -574,12 +574,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
     );
   return (
     <>
-      <header className="request-page-header">
-        <b>PUDU</b>
-        <span>Material Operations</span>
-        <em>物料申领</em>
-      </header>
-      <main className="request-page">
+      <main className="request-page" aria-label={t("物料申领", "Material Request")}>
         <section>
           <div className="section-title">
             <i>01</i>

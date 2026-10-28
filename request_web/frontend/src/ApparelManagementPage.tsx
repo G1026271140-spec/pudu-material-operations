@@ -59,7 +59,7 @@ export default function ApparelManagementPage({lang}:{lang:"zh"|"en"}){
  const total=form.rows.reduce((sum,row)=>sum+Number(row.original)+Number(row.correction)-Number(row.external_redeemed)-Number(row.system_redeemed),0);
  return <main className="management-page apparel-management-page" aria-label={tr("企业文化衫管理","Corporate apparel management")}>
   <div className="management-body">
-   <div className="apparel-toolbar"><h2>{tr("企业文化衫管理","Corporate Apparel Management")}</h2><div><button onClick={()=>void load(form.key)} disabled={busy||uploading}>{tr("刷新数据","Refresh data")}</button><button className="primary" onClick={create} disabled={busy||uploading}>{tr("＋ 新增款式","＋ New style")}</button></div></div>
+   <div className="apparel-toolbar apparel-actions-only"><div><button onClick={()=>void load(form.key)} disabled={busy||uploading}>{tr("刷新数据","Refresh data")}</button><button className="primary" onClick={create} disabled={busy||uploading}>{tr("＋ 新增款式","＋ New style")}</button></div></div>
    {success&&<div role="status" className="success-banner">{success}</div>}
    {!catalog.schema_ready&&<div className="danger-box">{tr("行政源表的申领设置字段尚未就绪，请联系管理员。","The source settings are not ready. Contact an administrator.")}</div>}
    <div className="apparel-management-layout">

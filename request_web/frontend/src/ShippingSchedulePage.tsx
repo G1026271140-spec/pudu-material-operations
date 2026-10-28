@@ -10,12 +10,8 @@ export default function ShippingSchedulePage({ lang }: { lang: Lang }) {
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <section className="shipping-schedule-page" aria-labelledby="shipping-schedule-title">
+    <section className="shipping-schedule-page" aria-label={tr("发货排期", "Shipping Schedule")}>
       <div className="shipping-schedule-toolbar">
-        <div>
-          <h2 id="shipping-schedule-title">{tr("发货排期", "Shipping Schedule")}</h2>
-          <p>{tr("实时显示飞书发货排期，页面内容由飞书共享视图直接提供。", "Live shipping schedule provided directly by the Feishu shared view.")}</p>
-        </div>
         <div className="shipping-schedule-actions">
           <a href={SCHEDULE_URL} target="_blank" rel="noreferrer">{tr("打开实时排期", "Open Live Schedule")}</a>
           <a className="primary" href={EDIT_URL} target="_blank" rel="noreferrer">{tr("发货编辑", "Edit Shipping")}</a>

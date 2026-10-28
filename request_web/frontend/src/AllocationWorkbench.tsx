@@ -370,12 +370,12 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     finally { setSubmitting(false); submitLockRef.current = false; }
   }
 
-  if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}><div className="allocation-loading"><i/><b>{tr("正在读取本机待核实申请单……", "Loading local pending requests…")}</b></div></main>;
-  if (!requestId || !context) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><h1>{tr("配货工作台", "Allocation Workbench")}</h1></div><button onClick={() => loadPending(true)}>↻ {tr("刷新数据", "Refresh data")}</button></header>
+  if (loading) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`} aria-label={tr("配货工作台", "Allocation Workbench")}><div className="allocation-loading"><i/><b>{tr("正在读取本机待核实申请单……", "Loading local pending requests…")}</b></div></main>;
+  if (!requestId || !context) return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`} aria-label={tr("配货工作台", "Allocation Workbench")}>
+
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {pendingWarning && <div className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</div>}
-    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><span className="pending-arrival">{tr("要求到达：", "Required arrival: ")}{requiredArrivalText(item, lang)}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
+    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span><button className="allocation-refresh" onClick={() => loadPending(true)}>↻ {tr("刷新数据", "Refresh data")}</button></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><span className="pending-arrival">{tr("要求到达：", "Required arrival: ")}{requiredArrivalText(item, lang)}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
   </main>;
 
   const request = context.request;
@@ -385,8 +385,8 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const splitOptions = materials.filter((item: any) => item.category === splitSource?.category);
   const splitModels = unique(splitOptions.map((item: any) => item.model));
   const splitTotal = Object.values(splitQuantities).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
-  return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`}>
-    <header><div><h1>{tr("配货工作台", "Allocation Workbench")}</h1><p>{tr("调整本次申请的配货方案", "Adjust the allocation plan for this request")}</p></div>{!directRequestId && <button onClick={() => { contextLoadRef.current += 1; setRequestId(""); setContext(null); loadPending(); }}>← {tr("返回申请单列表", "Back to requests")}</button>}</header>
+  return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`} aria-label={tr("配货工作台", "Allocation Workbench")}>
+    {!directRequestId && <div className="allocation-toolbar"><button onClick={() => { contextLoadRef.current += 1; setRequestId(""); setContext(null); loadPending(); }}>← {tr("返回申请单列表", "Back to requests")}</button></div>}
     {error && <div className="allocation-toast" onClick={() => setError("")}>{error} ×</div>}
     {success && <div className="allocation-toast allocation-task-toast" role="status">
       <button type="button" className="allocation-toast-close" aria-label={tr("关闭提示", "Close notification")} onClick={() => setSuccess("")}>×</button>

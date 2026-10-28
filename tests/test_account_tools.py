@@ -168,3 +168,35 @@ def test_deleted_card_is_replaced_once_with_same_effect_uuid(account_store):
     assert sent['receive_id']==ids['sales'] and sent['uuid']==result['id']
     assert json.loads(sent['content'])==card
     assert effects.run_once({'primary':fake}) is None
+
+
+def test_quota_visibility_matches_claim_catalog_and_retains_hidden_history_and_counters(account_store):
+    conn,ids=account_store
+    source=apparel.source_info(conn);line=repo.named_table(conn,app.REQUEST_LINE_TABLE_NAME)
+    keys=['apparel_visible_'+uuid4().hex,'apparel_hidden_'+uuid4().hex]
+    records=['rec_'+uuid4().hex for _ in keys]
+    repo.insert_source_records(conn,source,[{'record_id':rid,'fields':{
+        '物品分类':'文化衫','款式':'文化衫-'+key,apparel.KEY:key,apparel.LABEL:label,
+        apparel.VISIBLE:visible,apparel.LIMIT:3,'码数':'M','原始库存数量':0}}
+        for rid,key,label,visible in zip(records,keys,['开放款式','隐藏款式'],['是','否'])])
+    parent=request(conn,ids['sales'],history.TYPES[2])
+    repo.insert_source_records(conn,line,[{'record_id':'rec_'+uuid4().hex,'fields':{
+        '所属申请单':[parent],'品类名称':label,'明细业务类型':app.CORPORATE_APPAREL_LINE_TYPE,
+        '申请数量':used,'实际发放数量':used,'备注':apparel.STYLE_MARKER+':'+key}}
+        for key,label,used in zip(keys,['开放款式','隐藏款式'],[3,2])])
+    def view():return history.history(conn,ids['sales'])
+    before=view()
+    quota={item['key']:item for item in before['quotas']}
+    assert set(quota)=={keys[0]}
+    assert quota[keys[0]]['used']==3 and quota[keys[0]]['remaining']==0
+    assert set(quota)==set(apparel.catalog([],repo.rows(conn,source))['products'])
+    assert any(item['id']==parent and any(detail['product']=='隐藏款式' for detail in item['lines']) for item in before['requests'])
+    # Local visibility edits must affect both views immediately, before outbox delivery.
+    client=DatabaseWriteClient(conn,'apparel_admin')
+    client.update_record(source['table_id'],records[0],{apparel.VISIBLE:'否'})
+    client.update_record(source['table_id'],records[1],{apparel.VISIBLE:'是'})
+    after=view();quota={item['key']:item for item in after['quotas']}
+    assert set(quota)=={keys[1]}==set(apparel.catalog([],repo.rows(conn,source))['products'])
+    assert quota[keys[1]]['used']==2 and quota[keys[1]]['remaining']==1
+    assert after['requests']==before['requests']
+    assert all(repo.raw_record(conn,source,rid)['sync_state']=='pending' for rid in records)
