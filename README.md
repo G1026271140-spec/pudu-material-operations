@@ -1,161 +1,99 @@
-# PUDU 物料库存 Streamlit
+> **当前生产：V3.9.8（2026-10-28）**，Ubuntu 虚拟机 + PostgreSQL + 飞书同步。
+> 本页位于默认分支 `master`。**开发和部署请使用 [`codex/postgres-core`](https://github.com/G1026271140-spec/pudu-material-operations/tree/codex/postgres-core) 分支**；默认分支中的其他文件保留历史版本，不能按旧 Windows / Streamlit 流程部署。
 
-这是一个基于 Streamlit 的物料库存应用，数据库只使用飞书多维表格：
+# PUDU Material Operations
 
-- 普通品类按「品类 + 型号 + 语种」管理库存组合。
-- 不按型号分类的品类按「品类 + 语种」管理，并把型号统一标记为「无需型号」。
-- 支持一次登记多种营销物料领取和物料采购。
-- 页面触发的飞书业务写入统一先进入飞书「后台任务队列」，由独立 Windows Worker 执行物料申请、采购补库、品类维护、库存提交修正/撤回和周边礼品项目写入；页面确认入队后可以直接关闭，任务失败会自动重试。
-- 普通物料申领不限制单次物料种类或单一明细数量；申请原因「代理商支持」兼容历史队列中的「代理活动」。选择代理商支持时，页面将客户名称外显为代理商名称，但仍写入原客户名称字段。管理员通知和配货工作台显示申请原因及申请总金额，配货调整时即时重算当前配货总金额。
-- 支持新增物料品类，并自动写入飞书「物料品类」和「物料主数据」表。
-- 工作台提供「发货模板填写」，国家名称支持输入中文、英文或两位代码并自动转换为英文简称；箱内品类按「印刷物料」「周边礼品」分成两个按钮式多选池，再按物料品类自动汇总唯一的商业发票明细。每箱长、宽、高和毛重为红底必填项，体积、1-3KG 包材重量和净重自动计算，下载文件统一移除单元格填充色，并支持一箱多品、同一物料拆分到多箱以及金额、重量和体积汇总。
-- 管理员可在统一的「物料管理」工作台切换采购补库和品类管理；工作台导航提供飞书库存查询入口。
-- 品类删除页按「印刷物料」「周边礼品」显示两个紧凑品类池，品类只能单选；选定品类后可分别多选产品型号和语种，并在提交前预览实际删除的物料行。
-- 采购补库支持最多 20 条明细、提交前预览、直接增加库存、逐条写入库存流水并向全部启用管理员发送补库卡片。
-- 库存登记会直接更新飞书「物料主数据」当前库存，并写入飞书「库存流水」。
-- 飞书机器人支持通过截图或文字查询物料库存；文字支持品类、型号、语种的部分词和近似拼写，并返回实时库存、库存不足、无此组合及相似组合卡片。
-- 实时库存页支持下载完整库存表、当前筛选结果和库存变更流水。
-- 实时库存查看页需要密码 `376493`。
+PUDU 营销物料管理系统。当前为 **Ubuntu 虚拟机 + PostgreSQL + 飞书多维表格同步**的正式运行系统，前端使用 React / TypeScript，后端使用 FastAPI，业务、数据同步与卡片通知由独立 Worker 处理。
 
-飞书多维表格是唯一运行时数据库。飞书配置缺失时，应用会直接停止并提示补齐配置。
+- **业务入口**：[materials.pudu.work](https://materials.pudu.work)
+- **运维与开发入口**：[docs/ops/README.md](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/README.md)
+- **开发约束**：[AGENTS.md](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/AGENTS.md)
+- **实际线上版本**：[健康接口](https://materials.pudu.work/api/health)；源码版本为 `app.py` 中的 `APP_VERSION`。本文根据 2026-10-28 的 V3.9.x 生产架构整理，发布后以接口和 Git SHA 为准。
 
-发货模板的物料下拉读取「物料品类」表，并自动带出「商业发票产品名称」「装箱单产品类型」、美元单价和海关编码；其中「商业发票产品名称」在新增或编辑品类时必填。所有自动带出的发货字段都可在生成前手动修改。
+## 当前数据流程
 
-## 运行
-
-```powershell
-cd "$env:USERPROFILE\Desktop\营销物料管理系统"
-.\run_app.ps1
+```mermaid
+flowchart LR
+    U[飞书登录用户] --> W[React / FastAPI]
+    W --> P[虚拟机 PostgreSQL]
+    P --> O[事务 outbox]
+    O --> F[飞书多维表格]
+    F --> E[通知 Worker 更新原卡片 / 发货卡片]
+    F --> R[每天北京时间 03:00 校验]
+    R --> P
 ```
 
-`run_app.ps1` 会自动寻找可用端口。如果 `8501` 被占用，会自动尝试 `8502`、`8503` 等端口。
+日常操作先在本地事务中保存业务、审计、幂等结果和待同步任务，页面随即读取 PostgreSQL 的最新数据；Worker 再将变动写入对应飞书表。飞书暂不可达时，已保存数据和同步任务保留，不能把“入队”当作“已同步”。页面不依赖定时业务缓存文件。
 
-## 一键部署与迁移
+每天 **03:00 Asia/Shanghai** 完整读取两套飞书来源的 23 张表，以飞书为准核对并更新本地，包括人工修改和清空。当前基准注册 366 个稳定字段；字段新增或类型变化必须同时维护注册和数据库迁移，不能跳过 schema 检查。
 
-项目内置原生 Windows 部署启动器，用于迁移接管或准备备用节点。启动器会自动安装 Git、Python 3.12 和 cloudflared，再配置飞书、域名、本地端口、后台 Worker 与缓存计划任务：
+## 主要功能
 
-```powershell
-.\scripts\run_deployment_launcher.ps1
+- 普通物料申请、文化周边申领、企业文化衫申领，库存、个人额度及审批 / 发放流程。
+- **配货与发货**：配货工作台、按本批同品类整组分装、发货日历、日期 / 运单文字 / 图片 / 发货状态统一提交。
+- **物料管理**：采购补库 / 减库、品类及可选图片、型号 / 语种 / 战区管理，新型号可关联产品线。
+- **企业文化衫管理**：HR / 管理员维护行政源款式和尺码，配置申领显示、图片和累计领取上限；有领用历史的规格保留历史，可下架。
+- **申请记录与额度**：本人历史，管理员个人 / 全部切换，HR 查看全公司文化周边与文化衫；文化衫及文化周边可勾选明细部分驳回，只退回所选行库存与额度并更新原卡片。
+- **用户权限管理**：完整通讯录实时刷新，角色修改同步飞书用户权限表；重复账号启用角色取并集，缺失人员默认销售。
+- **虚拟数据库**：仅管理员可查看和按字段规则编辑，保留飞书稳定 ID、审计及同步状态。
+- 发货模板保留附加功能；物料管理中的发货排期页面已关闭，旧地址跳转品类管理，“配货与发货”日历继续使用。INV Shipping Cost 按货值分摊，货物单价最多两位小数，允许合理舍入尾差。
+
+申请人只读查看自己的发货信息，管理员和中台可编辑发货，中台不开放配货。发货和日期变更均使用申请人卡片通知；物料管理、配货、发货不再额外发送管理员成功回执，原业务卡片和失败需核对提醒保留。
+
+导航固定为：**历史数据**（申请记录与额度）、**后台编辑**（配货与发货 → 物料管理 → 企业文化衫管理）、**系统工具**（用户权限管理 → 虚拟数据库）。入口及 API 均按飞书业务角色校验，Linux sudo 权限不等于网页管理权限。
+
+## 生产环境与仓库
+
+| 项目 | 当前约定 |
+|---|---|
+| VM | Ubuntu 24.04，`192.168.84.121`，Python 3.12 |
+| 数据库 | PostgreSQL `pudu_materials`；隔离测试库 `pudu_materials_test` |
+| 部署根 | `/home/gaohongyuan1/pudu-materials-operation` |
+| 生产代码来源 | [公司 GitLab](https://code.pudu.work/gaohongyuan1/pudu-materials-operation)，发布分支 `codex/postgres-core` |
+| GitHub | 同名 `codex/postgres-core` 保存本次 VM 发布版本；旧 `master` 为历史版本。生产发布仍从 GitLab 进行 |
+| 个人开发工作区 | `/srv/pudu-materials-workspaces/gaohongyuan1`、`/srv/pudu-materials-workspaces/weiwei` |
+| 当前运行源码 | `<部署根>/source` 指向不可变的 `releases/<SHA>` |
+| 外置状态 | `<部署根>/shared`，包含配置、媒体、自动化状态和备份，不进 Git |
+
+旧电脑物料系统任务已退出生产，不能重新启用。独立项目 PUDU Lead Intake Worker 不属于本系统，保持原状。`docs/handover` 和 `deployment/ubuntu/README.md` 中的 Windows / commissioning 说明仅供追溯，不可覆盖现网 unit 和 drop-in。
+
+## 修改与发布
+
+使用各自 Linux 账号，在本人的 VM 工作区操作。开始前检查未提交修改和 GitLab 最新代码；不要在集成仓库 `repo`、运行目录 `source` 或他人的工作区编辑。
+
+```bash
+cd /srv/pudu-materials-workspaces/"$(id -un)"
+git status --short
+git fetch origin codex/postgres-core
+git merge --ff-only origin/codex/postgres-core
+/home/gaohongyuan1/pudu-materials-operation/venv/bin/python scripts/new_ops_record.py short-task-name
+# 修改代码，填写 docs/ops/changes 中的记录，验证受影响功能
+git add <本次修改的文件>
+git commit -m "Describe the behavior change"
+sudo pudu-release
 ```
 
-首次使用可创建桌面快捷方式：
+`sudo pudu-release` 使用统一发布锁，三方合并本次提交，自动递增版本，运行后端 / 隔离 PostgreSQL 测试、前端测试和 build，推送 GitLab、备份、检查队列、切换 release 并核对本地 / 公网健康。结构冲突、测试失败或更新的 GitLab 提交会阻止旧版本覆盖。数据库 SQL 迁移须另行审查、验证和应用，发布工具不会自动执行全部迁移。
 
-```powershell
-.\scripts\install_deployment_launcher_shortcut.ps1
+两个管理员代码修改由最后提交的发布合并决定重叠内容；网页业务字段按服务器最后成功事务更新。两者均保留幂等、库存、额度和角色校验。禁止强推、整目录覆盖及手改 `source` 链接。
+
+## 测试、巡检与定时任务
+
+```bash
+cd /srv/pudu-materials-workspaces/"$(id -un)"
+PUDU_TEST_DATABASE_DSN='dbname=pudu_materials_test' \
+  /home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m pytest tests -q
+
+cd /home/gaohongyuan1/pudu-materials-operation/source
+/home/gaohongyuan1/pudu-materials-operation/venv/bin/python scripts/ops_status.py
 ```
 
-新电脑可通过部署启动器一键安装 Git、Python 3.12 和 cloudflared，并继续配置 Web、Tunnel、后台 Worker 与缓存任务。敏感项保存在 Git 忽略的 `.streamlit/secrets.toml`。完整说明见 `docs/deployment_launcher.md`。
+库存、额度、权限、删除、驳回和通知测试使用隔离数据库与模拟飞书，不向真实员工发送测试消息。巡检脚本只读，不触发重启、同步或消息。
 
-React 前端、FastAPI、本机 Web Runner、Cloudflare Tunnel 与公网域名之间的完整关系见 [`docs/frontend-and-tunnel-architecture.md`](docs/frontend-and-tunnel-architecture.md)。
+常驻服务包括 Web、business、effects、card、bridge、assets、english 以及 ordinary / cultural / admin 三条 outbox。定时任务为北京时间 **02:40 备份、03:00 飞书优先校验、03:10 通讯录刷新**。oneshot 执行后 inactive 正常，须看实际退出状态及结果。备份包含数据库、媒体、配置及自动化状态，按文件摘要与隔离恢复验证；凭据和备份另行受控移交。
 
-如果第一次运行时还没有安装依赖：
+## 继续交接
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
+每次任务在 `docs/ops/changes` 保存需求、后续更正、决定、代码 / 字段变化、实际验证和遗留事项，新规则同步更新运维手册。受限的历史对话按轮次单独归档，不能把原始聊天、员工数据、密钥或生产备份提交到 GitLab / GitHub。
 
-运行后打开脚本打印的链接：
-
-- 库存登记表单: `http://localhost:8501`
-- 实时库存表: `http://localhost:8501/?view=inventory`
-
-## Streamlit Secrets
-
-部署或本地运行前，在 `.streamlit/secrets.toml` 或 Streamlit Cloud Secrets 中填写：
-
-```toml
-INVENTORY_VIEW_PASSWORD = "replace-with-a-strong-password"
-APPROVAL_VIEW_PASSWORD = "replace-with-a-strong-password"
-FEISHU_APP_ID = "cli_xxx"
-FEISHU_APP_SECRET = "你的 app secret"
-FEISHU_BITABLE_APP_TOKEN = "多维表格 base 链接里的 app_token"
-FEISHU_CORPORATE_APPAREL_SOURCE_APP_TOKEN = "行政文化衫源表对应 Base 的 app_token"
-FEISHU_APPROVAL_WRITEBACK_APP_ID = "cli_xxx"
-FEISHU_APPROVAL_WRITEBACK_APP_SECRET = "审批回写应用的 app secret"
-GITHUB_CACHE_REFRESH_TOKEN = "GitHub repository_dispatch token"
-CLOUDFLARE_TUNNEL_TOKEN = "Cloudflare Named Tunnel token"
-```
-
-企业文化衫页面从主 Base 中的“文化周边编码及库存数量”同步表读取图片和目录标识，并从行政源表实时读取库存、尺码及已兑换数量；提交和驳回也通过上述独立源表 token 写入行政源表的“系统兑换数量”。“营销物料管理系统”应用必须对行政源表有编辑权限；源表的表 ID 配置在 `config/project_config.json` 的 `feishu.tables.corporate_apparel_source_table_id`。
-
-每天 10:30 和 16:30 的物料缓存任务会先运行 `scripts/reconcile_corporate_apparel_quotas.py --apply`：全量读取“文化周边兑换”和已完成的相关申请明细，把新增兑换计入“用户权限表”对应品类的累计领取数量；未登记人员会创建启用的销售权限记录。按来源累计与现有累计取较大值写入，重复刷新不会重复加数。手动刷新物料缓存和正式发布时也执行同一核对，然后再生成并发布页面缓存。
-
-“文化周边兑换份额即时同步”自动化建在行政源 Base「文化周边兑换记录」，监听源表「文化周边兑换（扫码接口）」的新增或修改，而不是应用 Base 中的同名同步表。它以独立密钥调用 `/api/corporate-exchange-sync`。Web 后台合并并发通知、直接重新读取行政源表、幂等核对权限份额，再发布本机权限快照供企业文化衫申领接口使用；自动化丢失或执行失败时仍由上述定时全量核对补偿。源 Base 与表 ID 配置在 `config/project_config.json`。密钥只保存在部署机器的 `.streamlit/secrets.toml` 中，键名为 `CORPORATE_EXCHANGE_WEBHOOK_TOKEN`，不提交到 Git。可用 `scripts/configure_corporate_exchange_workflow.py` 只读预览，确认后传 `--apply` 创建并启用源表流程，并停用旧的应用 Base 流程。
-
-应用会按表名自动发现以下飞书多维表格：
-
-- 物料主数据
-- 物料品类
-- 库存流水
-- 物料申请单
-- 申请明细
-- 库存批量操作
-- 后台任务队列
-- 后台任务载荷
-
-飞书应用需要开通多维表格读写权限，并在目标多维表格右上角 `... -> 更多 -> 添加文档应用` 中添加为文档应用。
-
-## 多人共同管理
-
-多人共同管理时，请让所有人访问同一个已部署的 Streamlit 应用地址。所有库存读取、登记、新增品类和流水写入都会访问同一个飞书多维表格。
-
-## 本地静态缓存任务
-
-控制中心的缓存刷新工具、桌面 `Update PUDU Static Cache` / `Update PUDU Image Cache` 和定时缓存任务，在校验成功后都会把缓存同步到正式本机网页。无需关闭网页服务或控制程序；已打开页面会在约 5 秒内提示新缓存，可点击“加载最新缓存”或在正常页面交互时加载，保留正在填写的表单和购物车。缓存发布失败或正式网页不可用时，工具会明确报错。完整版本发布仍按测试、打包、推送和运行组件同步流程执行。
-
-Windows 本地缓存节点每天 `10:30` 和 `16:30` 从飞书生成最新静态缓存，并推送到 GitHub `master`。物料申领与采购补库共用启用品类、型号、语种和库存组合缓存，因此本地任务会同时更新两个页面。周边礼品项目表中的图片附件会下载到 `assets/gift_projects`；附件更换或删除后，下次刷新会同步替换或清理对应静态图片。缓存生成前还会维护库存行状态：库存不为 `0` 的行自动启用；库存为 `0` 且超过 14 天没有有效库存数量变化的行自动停用，并向全部启用管理员发送明细卡片。`物料主数据.库存归零时间` 由程序自动创建和维护。
-
-发货模板页同样使用页面静态缓存；缓存中的「物料品类」记录会保留「商业发票产品名称」「装箱单产品类型」、美元单价和海关编码，以便线上页面刷新后直接识别最新品类配置。
-
-申请选项缓存使用 v2 结构，额外保存由启用物料行生成的品类、型号、语种组合配置。GitHub 与 Windows 刷新任务在推送缓存前都会重新验证组合配置和原始启用行，避免停用行或维度表中的孤立选项重新出现在申请页面。
-
-“物料仓库位置查询”使用独立的人工发布静态缓存，不参与上述定时任务，也不参与应用内“更新全部数据缓存”。仅在明确需要更新位置文字或图片时手动运行 `python scripts/generate_warehouse_location_cache.py` 并发布生成的缓存与图片。
-
-Windows 本地电脑另有 `PUDU Streamlit Nightly Wake` 定时任务，每天 23:20 使用无界面 Edge 检查生产应用；如遇休眠页会自动点击唤醒，并在 `work/streamlit-wake.log` 记录应用就绪结果。该任务只访问线上页面，不刷新飞书或静态缓存。
-
-如需手动执行，可双击桌面的 `PUDU Streamlit Manual Wake` 快捷方式。重新创建快捷方式时，运行 `scripts/install_streamlit_wake_shortcut.ps1` 即可。
-
-安装或重新配置本地缓存任务：
-
-```powershell
-.\scripts\install_local_cache_task.ps1
-```
-
-安装内容：
-
-- 计划任务：`PUDU Material Cache Refresh`
-- 独立运行目录：`%LOCALAPPDATA%\PuduMaterialCacheRunner`
-- 桌面手动入口：`Update PUDU Static Cache.lnk`
-- 运行日志：`%LOCALAPPDATA%\PuduMaterialCacheRunner\logs\latest.log`
-
-任务支持锁屏运行、从睡眠中唤醒和错过计划后补跑；电脑关机时无法执行。GitHub Actions 工作流保留手动触发作为备用，不再承担定时更新。
-
-## 申请后台任务 Worker
-
-应用内业务提交不再依赖浏览器页面持续打开。页面只把操作写入飞书「后台任务队列」；较大的任务载荷会自动拆分写入「后台任务载荷」，并在完整读回校验后才确认入队成功。关闭页面、刷新浏览器或 Streamlit Cloud 重启都不会中断后续写入。物料申请不再提供附件。Windows Worker 每 5 秒检查任务，异常后按退避时间自动重试；Worker 意外退出时，处理中任务会在 10 分钟租约到期后恢复。
-
-安装或更新 Worker：
-
-```powershell
-.\scripts\install_submission_worker_task.ps1
-```
-
-安装内容：
-
-- 计划任务：`PUDU Submission Worker`
-- 独立运行目录：`%LOCALAPPDATA%\PuduSubmissionWorker`
-- 独立 Git 副本和 Python 环境，不修改桌面项目，也不与缓存任务共用运行目录
-- Worker 日志：`%LOCALAPPDATA%\PuduSubmissionWorker\logs\worker.log`
-- 启动日志：`%LOCALAPPDATA%\PuduSubmissionWorker\logs\bootstrap.log`
-
-计划任务在当前 Windows 用户登录后常驻运行，锁屏不影响处理；异常退出后一分钟自动重启。代码更新并推送到 `master` 后，重新执行安装脚本即可停止旧进程、更新独立副本并启动新版本。
-
-## 迁移与导出文件
-
-`data/` 和 `outputs/` 下的 Excel/CSV 文件只作为历史导入、迁移模板或下载导出使用，不再作为应用运行时数据库。
-
-如需重新生成飞书导入模板：
-
-```powershell
-.\.venv\Scripts\python.exe scripts\generate_feishu_bitable_migration.py
-```
+新运维人员从 [接手与现状](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/01-%E6%8E%A5%E6%89%8B%E4%B8%8E%E7%8E%B0%E7%8A%B6.md) 开始，再读 [固定业务规则](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/02-%E5%9B%BA%E5%AE%9A%E4%B8%9A%E5%8A%A1%E8%A7%84%E5%88%99.md)、[开发与发布](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/03-%E5%BC%80%E5%8F%91%E4%B8%8E%E5%8F%91%E5%B8%83.md) 及 [备份恢复](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/05-%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D%E4%B8%8E%E5%9B%9E%E9%80%80.md)。
