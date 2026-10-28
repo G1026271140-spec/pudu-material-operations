@@ -44,6 +44,12 @@ def run_once():
             previous=conn.execute('SELECT state FROM material_ops.effects WHERE id::text=ANY(%s)',(data['effect_ids'],)).fetchall()
             if not blocked and any(row[0] in {'pending','processing','retry'} for row in previous):continue
             good=job[0]=='done' and len(outbox)==len(data['outbox_ids']) and all(row[0]=='done' for row in outbox) and all(row[0]=='done' for row in previous)
+            # Allocation edits already update the original requester/admin
+            # cards. Keep error reports, but do not send an extra success card.
+            if good and data['kind']=='申请物料库存编辑':
+                data.update(state='skipped',reason='配货调整沿用原卡片更新，不额外发送完成通知')
+                conn.execute('UPDATE material_ops.documents SET payload=%s,updated_at=now() WHERE name=%s',(Jsonb(data),name))
+                return {'job_id':data['job_id'],'skipped':True,'reason':'original_allocation_cards_updated'}
             status='任务已完成' if good else '任务需核对'
             users={actor for row in portal_records.permission_rows(conn) if app.feishu_permission_enabled(row['fields']) and '管理员' in app.feishu_choice_values(row['fields'],'角色') for actor in app.feishu_person_open_ids(row['fields'],['用户账号'])}
             directory=conn.execute("SELECT payload FROM material_ops.documents WHERE name='contact_departments_cache.json'").fetchone()

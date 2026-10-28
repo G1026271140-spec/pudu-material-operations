@@ -65,3 +65,24 @@ def test_disabled_admin_does_not_receive_completion(notices):
     conn.execute("UPDATE material_ops.outbox SET state='done' WHERE id=%s",(outbox,))
     conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s",(task.task_id,))
     assert completion.run_once()['recipients']==1
+
+
+def test_allocation_edit_updates_original_cards_without_extra_success_receipt(notices):
+    conn,ids=notices;task,outbox=monitored(conn,'申请物料库存编辑')
+    original=conn.execute('SELECT id,args,kwargs FROM material_ops.effects WHERE job_id=%s',(task.task_id,)).fetchone()
+    assert completion.run_once() is None
+    conn.execute("UPDATE material_ops.outbox SET state='done' WHERE id=%s",(outbox,))
+    assert completion.run_once() is None
+    conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s",(task.task_id,))
+    result=completion.run_once();assert result['skipped'] is True
+    assert completion.run_once() is None
+    assert conn.execute('SELECT id,args,kwargs FROM material_ops.effects WHERE job_id=%s',(task.task_id,)).fetchall()==[original]
+    assert conn.execute("SELECT payload->>'state' FROM material_ops.documents WHERE name=%s",(completion.PREFIX+task.task_id,)).fetchone()[0]=='skipped'
+
+
+def test_failed_allocation_sync_still_reports_needs_review(notices):
+    conn,ids=notices;task,outbox=monitored(conn,'申请物料库存编辑')
+    conn.execute("UPDATE material_ops.outbox SET state='conflict' WHERE id=%s",(outbox,))
+    result=completion.run_once();assert result['status']=='任务需核对'
+    receipt=conn.execute("SELECT args->1 FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]
+    assert receipt['header']['title']['content']=='配货任务需核对'
