@@ -9,10 +9,11 @@ from . import repository as repo
 TASKS={'采购补库','库存减库','物料品类同步','物料品类删除','型号语种管理','文化周边管理',
     '申请物料库存编辑','申请物料库存确认','申请物料库存驳回','物料申请撤回删除','库存提交撤回','库存提交修正','发货信息同步'}
 PREFIX='admin-completion:'
-SUPPRESSED_SUCCESS={
+SUPPRESSED_SUCCESS={kind:('正常完成不发送额外的管理员成功回执','admin_success_receipt_disabled') for kind in TASKS}
+SUPPRESSED_SUCCESS.update({
     '申请物料库存编辑':('配货调整沿用原卡片更新，不额外发送完成通知','original_allocation_cards_updated'),
     '发货信息同步':('保留申请人发货卡片，跳过管理员发货同步成功通知','applicant_shipping_card_retained'),
-}
+})
 
 def register(conn,job_id,kind,payload,result,actor=''):
     if kind not in TASKS:return

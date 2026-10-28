@@ -13340,6 +13340,10 @@ def corporate_apparel_request_context(request_no: str) -> dict[str, object]:
     ):
         raise RuntimeError("该申请单不是企业文化衫领取申请。")
     request_id = feishu_record_id(request_row)
+    request_ids = {request_id}
+    if runtime.database_reads():
+        from material_store.partial_rejection import request_identities
+        request_ids = request_identities(request_id)
     requester_ids = feishu_person_open_ids(request_fields, ["申请人", "申请人姓名"])
     lines: list[dict[str, object]] = []
     for row in fresh_feishu_rows(REQUEST_LINE_TABLE_NAME):
@@ -13347,7 +13351,7 @@ def corporate_apparel_request_context(request_no: str) -> dict[str, object]:
         if feishu_text(fields, "明细业务类型").strip() != CORPORATE_APPAREL_LINE_TYPE:
             continue
         linked = feishu_link_ids_any(fields, ["所属申请单", "申请单"])
-        if request_id not in linked and feishu_text(fields, "申请单号").strip() != normalized_no:
+        if (linked and not request_ids.intersection(linked)) or (not linked and feishu_text(fields, "申请单号").strip() != normalized_no):
             continue
         marker = feishu_text(fields, "备注").strip()
         record_id = marker.splitlines()[0].split(":", 1)[1].strip() if marker.startswith(f"{CORPORATE_APPAREL_LINE_MARKER}:") else ""
@@ -13362,6 +13366,8 @@ def corporate_apparel_request_context(request_no: str) -> dict[str, object]:
                 "product": feishu_text(fields, "品类名称").strip(),
                 "size": feishu_text(fields, "产品型号名称").strip(),
                 "quantity": feishu_int(fields, "申请数量"),
+                "issued_quantity": feishu_int(fields, "实际发放数量") if "实际发放数量" in fields else feishu_int(fields, "申请数量"),
+                "status": feishu_text(fields, "明细状态"),
             }
         )
     if not lines:
@@ -13379,10 +13385,10 @@ def corporate_apparel_request_context(request_no: str) -> dict[str, object]:
     }
 
 
-def corporate_apparel_rejection_plan(request_no: str, operator_open_id: str) -> dict[str, object]:
+def corporate_apparel_rejection_plan(request_no: str, operator_open_id: str, line_ids: list[str] | None = None) -> dict[str, object]:
     if runtime.database_reads():
         from material_store.apparel import rejection_plan
-        return rejection_plan(request_no, operator_open_id)
+        return rejection_plan(request_no, operator_open_id, line_ids)
     if str(operator_open_id or "").strip() not in enabled_role_open_ids("HR"):
         raise PermissionError("只有已启用的 HR 可以驳回企业文化衫领取申请。")
     context = corporate_apparel_request_context(request_no)
@@ -13477,12 +13483,15 @@ def execute_corporate_apparel_rejection(plan: dict[str, object]) -> dict[str, ob
     )
     feishu_update_record_fields(
         REQUEST_TABLE_NAME, request_record_id,
-        {"文化周边处理状态": CULTURAL_REQUEST_STATUS_REJECTED, "文化周边通知状态": "驳回待通知"},
+        {"文化周边处理状态": CULTURAL_REQUEST_STATUS_ISSUED if plan.get("partial_rejected") else CULTURAL_REQUEST_STATUS_REJECTED, "文化周边通知状态": "驳回待通知"},
     )
-    return {"request_no": request_no, "rejected": True, "restored_quantity": sum(int(item.get("quantity") or 0) for item in list(plan.get("stock_targets") or []))}
+    return {"request_no": request_no, "rejected": True, "restored_quantity": sum(int(item.get("quantity") or 0) for item in list(plan.get("stock_targets") or [])), **({"partial_rejected": bool(plan.get("partial_rejected")), "rejected_line_ids": plan.get("rejected_line_ids", []), "remaining_line_count": plan.get("remaining_line_count", 0)} if runtime.database_reads() else {})}
 
 
 def corporate_apparel_rejection_targets(request_no: str) -> list[dict[str, object]]:
+    if runtime.database_reads():
+        from material_store.partial_rejection import notification_targets
+        return notification_targets(request_no, apparel=True)
     context = corporate_apparel_request_context(request_no)
     request = dict(context["request"])
     lines = [dict(item) for item in list(context["lines"])]
@@ -13985,6 +13994,10 @@ def cultural_request_context(request_no: str) -> dict[str, object]:
     ):
         raise RuntimeError("该申请单不是文化周边申领，不能执行驳回。")
     request_id = feishu_record_id(request_row)
+    request_ids = {request_id}
+    if runtime.database_reads():
+        from material_store.partial_rejection import request_identities
+        request_ids = request_identities(request_id)
     requester_open_ids = feishu_person_open_ids(
         request_fields, ["申请人", "申请人姓名"]
     )
@@ -13993,8 +14006,8 @@ def cultural_request_context(request_no: str) -> dict[str, object]:
         fields = feishu_fields(row)
         linked_requests = feishu_link_ids_any(fields, ["所属申请单", "申请单"])
         if (
-            request_id not in linked_requests
-            and feishu_text(fields, "申请单号").strip() != normalized_no
+            (linked_requests and not request_ids.intersection(linked_requests))
+            or (not linked_requests and feishu_text(fields, "申请单号").strip() != normalized_no)
         ):
             continue
         if feishu_text(fields, "明细业务类型").strip() != "文化周边":
@@ -14006,6 +14019,8 @@ def cultural_request_context(request_no: str) -> dict[str, object]:
                 "model": feishu_text(fields, "产品型号名称"),
                 "region": feishu_text(fields, "文化周边战区"),
                 "quantity": feishu_int(fields, "申请数量"),
+                "issued_quantity": feishu_int(fields, "实际发放数量") if "实际发放数量" in fields else feishu_int(fields, "申请数量"),
+                "status": feishu_text(fields, "明细状态"),
                 "culture_record_ids": feishu_link_ids_any(
                     fields, ["文化周边物料"]
                 ),
@@ -14066,7 +14081,9 @@ def recalculate_cultural_request_quota(requester_open_id: str) -> dict[str, int]
         request_no = feishu_text(fields, "申请单号").strip()
         if not (request_ids & active_request_ids or request_no in active_request_nos):
             continue
-        quantity = max(0, feishu_int(fields, "申请数量"))
+        if feishu_text(fields, "明细状态") == CULTURAL_REQUEST_STATUS_REJECTED:
+            continue
+        quantity = max(0, feishu_int(fields, "实际发放数量") if "实际发放数量" in fields else feishu_int(fields, "申请数量"))
         product = feishu_text(fields, "品类名称").strip()
         if line_type == CORPORATE_APPAREL_LINE_TYPE and product not in {
             "休闲商务POLO-黑色（短袖）",
@@ -14098,6 +14115,9 @@ def recalculate_cultural_request_quota(requester_open_id: str) -> dict[str, int]
 
 
 def execute_cultural_request_rejection(draft: dict[str, object]) -> dict[str, object]:
+    if runtime.database_reads():
+        from material_store.partial_rejection import reject_cultural
+        return reject_cultural(draft)
     request_no = str(draft.get("request_no") or "").strip()
     operator_open_id = str(draft.get("operator_open_id") or "").strip()
     if operator_open_id not in enabled_admin_open_ids():
@@ -14255,6 +14275,9 @@ def _cultural_manual_rejection_card(
 
 
 def cultural_request_rejection_targets(request_no: str) -> list[dict[str, object]]:
+    if runtime.database_reads():
+        from material_store.partial_rejection import notification_targets
+        return notification_targets(request_no, apparel=False)
     context = cultural_request_context(request_no)
     request = dict(context["request"])
     lines = [dict(line) for line in list(context.get("lines") or [])]

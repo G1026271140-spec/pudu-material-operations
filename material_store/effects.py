@@ -51,15 +51,20 @@ def _finish_apparel_rejection(conn, effect_id):
     """Only acknowledge applicant/HR cards after all their HTTP calls succeed."""
     import app
     job=conn.execute('SELECT j.id,j.task_type,j.payload FROM material_ops.jobs j JOIN material_ops.effects e ON e.job_id=j.id WHERE e.id=%s',(effect_id,)).fetchone()
-    if not job or job[1]!=app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT:return
+    if not job or job[1] not in {app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT}:return
     if conn.execute("SELECT EXISTS(SELECT 1 FROM material_ops.effects WHERE job_id=%s AND state<>'done')",(job[0],)).fetchone()[0]:return
     number=(job[2].get('draft') or {}).get('request_no')
+    newer=conn.execute("""SELECT EXISTS(SELECT 1 FROM material_ops.jobs newer JOIN material_ops.jobs current ON current.id=%s
+        WHERE newer.state='done' AND newer.task_type=ANY(%s) AND newer.payload->'draft'->>'request_no'=%s
+          AND (newer.created_at,newer.id)>(current.created_at,current.id))""",(job[0],
+        [app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT],number)).fetchone()[0]
+    if newer:return
     info=repo.named_table(conn,app.REQUEST_TABLE_NAME)
     fields={field['field_name']:field['field_id'] for field in info['fields']}
     rows=conn.execute(sql.SQL('SELECT _record_key FROM material_data.{} WHERE NOT _deleted AND _fields->>%s=%s').format(sql.Identifier(info['sql_table'])),(fields['申请单号'],number)).fetchall()
     if len(rows)!=1:return
     old=repo.raw_record(conn,info,rows[0][0],lock=True)
-    if old['fields'].get(fields['文化周边处理状态'])!='已驳回' or old['fields'].get(fields['文化周边通知状态'])!='驳回待通知':return
+    if old['fields'].get(fields['文化周边处理状态']) not in {'已驳回','已发放'} or old['fields'].get(fields['文化周边通知状态'])!='驳回待通知':return
     repo._save_change(conn,info,old,{fields['文化周边通知状态']:'驳回已通知'},'worker:effects','apparel-notice:'+str(job[0]),'cultural')
 
 def run_once(clients):
@@ -72,6 +77,12 @@ def run_once(clients):
                 WHERE o.id::text IN (SELECT jsonb_array_elements_text(e.kwargs->'_outbox_ids')) AND o.state='done')
                 =jsonb_array_length(e.kwargs->'_outbox_ids'))
           AND NOT EXISTS(SELECT 1 FROM material_ops.effects p WHERE p.job_id=e.job_id AND p.ordinal<e.ordinal AND p.state NOT IN ('done','failed') AND NOT (e.kwargs ? '_shipping_request'))
+          AND (NOT (e.kwargs ? '_rejection_request') OR NOT EXISTS(
+              SELECT 1 FROM material_ops.effects earlier JOIN material_ops.jobs older ON older.id=earlier.job_id
+                JOIN material_ops.jobs current ON current.id=e.job_id
+              WHERE earlier.kwargs->>'_rejection_request'=e.kwargs->>'_rejection_request'
+                AND (older.created_at,older.id)<(current.created_at,current.id)
+                AND earlier.state NOT IN ('done','failed')))
           ORDER BY created_at,ordinal LIMIT 1 FOR UPDATE SKIP LOCKED""").fetchone()
         if row is None:return None
         if row[6] and row[2]!='update_interactive_message':

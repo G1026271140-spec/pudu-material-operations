@@ -90,13 +90,13 @@ def _run(conn,row):
         conn.execute('UPDATE material_ops.jobs SET result=%s WHERE id=%s',(Jsonb(progress),UUID(task.task_id)))
     result=dispatch(task,checkpoint) or {}
     import app
-    if task.task_type==app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT:
+    if task.task_type in {app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT}:
         dependencies=[str(row[0]) for row in conn.execute('SELECT id FROM material_ops.outbox WHERE job_id=%s',(task.task_id,))]
         for table_id,record_key in runtime.request_state.get('_write_touched',set()):
             dependencies.extend(str(row[0]) for row in conn.execute("SELECT id FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state IN ('pending','processing','retry')",(table_id,record_key)))
         dependencies=list(dict.fromkeys(dependencies))
         if dependencies:
-            conn.execute("UPDATE material_ops.effects SET kwargs=kwargs || %s WHERE job_id=%s",(Jsonb({'_outbox_ids':dependencies}),task.task_id))
+            conn.execute("UPDATE material_ops.effects SET kwargs=kwargs || %s WHERE job_id=%s",(Jsonb({'_outbox_ids':dependencies,'_rejection_request':str((task.payload.get('draft') or {}).get('request_no') or '')}),task.task_id))
     from .admin_completion import register as register_completion
     register_completion(conn,task.task_id,task.task_type,task.payload,result,runtime.request_state.get('_write_actor',''))
     conn.execute("UPDATE material_ops.jobs SET state='done',result=%s,completed_at=now(),last_error=NULL,attempts=attempts+1 WHERE id=%s",(Jsonb(result),UUID(task.task_id)))

@@ -313,14 +313,18 @@ def save_batch(actor, body):
                 raise RuntimeError('发货字段尚未生成同步任务，本批修改已回滚。')
             import os
             from .shipping_card import card as shipment_card
-            message = shipment_card(number, old['record_id'], patch[SHIPPED], next_date,
-                date_text(fields.get('要求达到开始日期')), patch[TEXT], len(patch[IMAGES]),
-                os.environ.get('PUDU_PUBLIC_ORIGIN', 'https://materials.pudu.work'))
+            origin=os.environ.get('PUDU_PUBLIC_ORIGIN','https://materials.pudu.work')
+            if date_changed:
+                from .shipping_card import date_change_card
+                message=date_change_card(number,old['record_id'],date_text(fields.get('物料发货时间')),next_date,patch[SHIPPED],origin)
+            else:
+                message = shipment_card(number, old['record_id'], patch[SHIPPED], next_date,
+                    date_text(fields.get('要求达到开始日期')), patch[TEXT], len(patch[IMAGES]), origin)
             # Supersede an older, never-attempted notification for this same
             # request. Its outbox still publishes in version order.
             conn.execute("UPDATE material_ops.effects SET state='failed',last_error='已被更新的发货提交替代，未发送旧通知' WHERE kwargs->>'_shipping_request'=%s AND state IN ('pending','retry') AND first_attempt_at IS NULL", (old['record_id'],))
             alias = effects.defer('primary', 'send_interactive_message', [recipient, message], {
-                'receive_id_type': 'open_id', '_outbox_ids': dependencies, '_shipping_request': old['record_id'], '_shipping_version': current['version']})
+                'receive_id_type': 'open_id', '_outbox_ids': dependencies, '_shipping_request': old['record_id'], '_shipping_version': current['version'], **({'_shipping_date_change':True,'_shipping_date_before':date_text(fields.get('物料发货时间')),'_shipping_date_after':next_date} if date_changed else {})})
             entries.append({'request_id': old['record_id'], 'request_no': number, 'version': current['version'],
                             'outbox_ids': dependencies, 'effect_id': alias[len(effects.PREFIX):]})
         result = {'batch_id': task.task_id, 'changed': len(entries), 'unchanged': len(changes) - len(entries), 'entries': entries}

@@ -491,7 +491,10 @@ def process_cultural_request_reject(
             card = dict(target["card"])
             if message_id:
                 try:
-                    client.update_interactive_message(message_id, card)
+                    if inventory_app.runtime.database_reads():
+                        client.update_interactive_message(message_id, card, _fallback_recipient=str(target["recipient_id"]))
+                    else:
+                        client.update_interactive_message(message_id, card)
                 except Exception as exc:
                     if "230031" not in str(exc):
                         raise
@@ -509,7 +512,7 @@ def process_cultural_request_reject(
         inventory_app.feishu_update_record_fields(
             inventory_app.REQUEST_TABLE_NAME,
             str(dict(context["request"]).get("record_id") or ""),
-            {"文化周边通知状态": "驳回已通知"},
+            {"文化周边通知状态": "驳回待通知" if inventory_app.runtime.database_reads() else "驳回已通知"},
         )
         progress["notification_done"] = True
         progress["notification_count"] = len(targets)
@@ -663,8 +666,9 @@ def process_corporate_apparel_request_reject(
             checkpoint(dict(progress))
 
     if not progress.get("rejection_plan"):
+        args = (str(draft.get("request_no") or ""), str(draft.get("operator_open_id") or ""))
         progress["rejection_plan"] = inventory_app.corporate_apparel_rejection_plan(
-            str(draft.get("request_no") or ""), str(draft.get("operator_open_id") or "")
+            *args, **({"line_ids": draft["line_ids"]} if "line_ids" in draft else {})
         )
         save_progress()
     if not progress.get("write_done"):

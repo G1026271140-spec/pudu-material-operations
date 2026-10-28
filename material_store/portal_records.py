@@ -80,6 +80,9 @@ def history(conn,actor,scope='mine'):
                 'issued':app.feishu_int(values,'实际发放数量'),'status':app.feishu_text(values,'明细状态'),
                 'remark':app.feishu_text(values,'备注') if kind!=TYPES[2] else ''})
         status=app.feishu_text(f,'文化周边处理状态') if kind in TYPES[1:] else r['status']
+        eligible=(admin or hr) and kind in TYPES[1:] and not row['deleted'] and status==app.CULTURAL_REQUEST_STATUS_ISSUED
+        for line in lines:line['can_reject']=bool(eligible and line['status']!=app.CULTURAL_REQUEST_STATUS_REJECTED and line['issued']>0)
+        if kind in TYPES[1:] and any(line['status']==app.CULTURAL_REQUEST_STATUS_REJECTED for line in lines) and any(line['status']!=app.CULTURAL_REQUEST_STATUS_REJECTED for line in lines):status='部分驳回'
         items.append({'id':row['record_id'],'number':number,'type':kind,'requester':r['requester'],'department':r['department'],
             'submitted_at':r['submitted_at'],'submitted_date':date_text(f.get('提交时间')),'status':'已撤回 / 已删除' if row['deleted'] else status,
             'review_status':app.feishu_text(f,'库存审查状态'),'ship_date':date_text(f.get('物料发货时间')),
@@ -88,11 +91,15 @@ def history(conn,actor,scope='mine'):
             'usage':r['material_usage'],'reason':r['request_reason'],'customer':r['customer_name'],'country':r['country'],
             'recipient':r['recipient_info'],'total_rmb':r['request_total_rmb'],'lines':lines,
             'detail_text':app.feishu_text(f,'物料明细文字信息'),'deleted':row['deleted'],
-            'can_reject':(admin or hr) and kind==TYPES[2] and not row['deleted'] and status==app.CULTURAL_REQUEST_STATUS_ISSUED})
-    notices={number:states for number,states in conn.execute("SELECT j.payload->'draft'->>'request_no',array_remove(array_agg(e.state),NULL) FROM material_ops.jobs j LEFT JOIN material_ops.effects e ON e.job_id=j.id WHERE j.task_type=%s GROUP BY j.id",(app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,))}
+            'can_reject':any(line['can_reject'] for line in lines)})
+    notices={number:states for number,states in conn.execute("""SELECT DISTINCT ON (j.payload->'draft'->>'request_no')
+        j.payload->'draft'->>'request_no',ARRAY(SELECT e.state FROM material_ops.effects e WHERE e.job_id=j.id)
+        FROM material_ops.jobs j WHERE j.task_type=ANY(%s)
+        ORDER BY j.payload->'draft'->>'request_no',j.created_at DESC,j.id DESC""",
+        ([app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT],))}
     for item in items:
         states=notices.get(item['number'])
-        if item['type']==TYPES[2] and states is not None:
+        if item['type'] in TYPES[1:] and states is not None:
             item['card_sync']='failed' if 'failed' in states else 'done' if states and all(state=='done' for state in states) else 'pending'
     items.sort(key=lambda row:(row['submitted_date'],row['number']),reverse=True)
     return {'requests':items,'quotas':entitlements(conn,actor,request_rows,line_rows,permission_rows(conn)),
@@ -100,18 +107,38 @@ def history(conn,actor,scope='mine'):
 
 
 def reject_apparel(actor,body):
-    import app,backend_runtime as runtime
+    return _reject(actor,body,TYPES[2])
+
+
+def reject_cultural(actor,body):
+    return _reject(actor,body,TYPES[1])
+
+
+def _reject(actor,body,kind):
+    import app,backend_runtime as runtime,hashlib,json
     from . import jobs
     runtime.release_database_snapshot()
-    if not isinstance(body,dict) or set(body)!={'request_id','confirmed'} or body['confirmed'] is not True or not isinstance(body['request_id'],str):
-        raise ValueError('请先确认要驳回的企业文化衫申领。')
+    allowed={'request_id','confirmed'}
+    if not isinstance(body,dict) or set(body) not in (allowed,allowed|{'line_ids'}) or body['confirmed'] is not True or not isinstance(body['request_id'],str):
+        raise ValueError('请先确认要驳回的申领明细。')
+    ids=body.get('line_ids')
+    if ids is not None and (not isinstance(ids,list) or not 1<=len(ids)<=200 or any(not isinstance(key,str) or not key for key in ids) or len(set(ids))!=len(ids)):
+        raise ValueError('请至少选择一条有效且不重复的明细。')
     with connection() as conn,conn.transaction():
-        if not {'HR','管理员'}.intersection(roles_for(conn,actor)):raise PermissionError('仅已启用 HR 或管理员可驳回企业文化衫申领。')
+        if not {'HR','管理员'}.intersection(roles_for(conn,actor)):raise PermissionError('仅已启用 HR 或管理员可驳回申领。')
         info=repo.named_table(conn,app.REQUEST_TABLE_NAME)
         raw=repo.raw_record(conn,info,body['request_id']);f=repo.feishu_record(info,raw)['fields']
-        if app.feishu_text(f,'申请类型')!=TYPES[2]:raise ValueError('此操作仅适用于企业文化衫申领。')
-        number=app.feishu_text(f,'申请单号');key='corporate-apparel-reject:'+number
+        if app.feishu_text(f,'申请类型')!=kind:raise ValueError('此操作仅适用于'+kind+'。')
+        number=app.feishu_text(f,'申请单号')
         if not number:raise ValueError('申请单缺少单号。')
+        if ids is not None:
+            keys={raw['record_id'],raw['remote_id']}
+            expected_type=app.CORPORATE_APPAREL_LINE_TYPE if kind==TYPES[2] else '文化周边'
+            available={row['record_id'] for row in repo.rows(conn,repo.named_table(conn,app.REQUEST_LINE_TABLE_NAME))
+                if app.feishu_text(row['fields'],'明细业务类型')==expected_type and keys.intersection(app.feishu_link_ids_any(row['fields'],['所属申请单','申请单']))}
+            if not set(ids)<=available:raise ValueError('所选明细不属于当前申请单，请刷新后重试。')
+        key=('corporate-apparel-reject:' if kind==TYPES[2] else 'cultural-request-reject:')+number
+        if ids is not None:key+=':'+hashlib.sha256(json.dumps(sorted(ids)).encode()).hexdigest()
         conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))',('job:'+key,))
         prior=conn.execute('SELECT id,state FROM material_ops.jobs WHERE idempotency_key=%s',(key,)).fetchone()
         if prior:
@@ -120,10 +147,15 @@ def reject_apparel(actor,body):
         else:
             status=app.feishu_text(f,'文化周边处理状态')
             if status==app.CULTURAL_REQUEST_STATUS_REJECTED:return {'rejected':True,'already_rejected':True}
-            if status!=app.CULTURAL_REQUEST_STATUS_ISSUED:raise ValueError('仅已发放的企业文化衫申领可以驳回。')
-            task,_=jobs.enqueue(app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,key,{'draft':{'request_no':number,'operator_open_id':actor}},conn=conn)
-            job_id=task.task_id
-    jobs.run_one(job_id=job_id,raise_errors=True)
+            if status!=app.CULTURAL_REQUEST_STATUS_ISSUED:raise ValueError('仅已发放的申领可以驳回。')
+            task_type=app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT if kind==TYPES[2] else app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT
+            draft={'request_no':number,'operator_open_id':actor,'requester_open_id':next(iter(app.feishu_person_open_ids(f,['申请人'])), '')}
+            if ids is not None:draft['line_ids']=sorted(ids)
+            task,_=jobs.enqueue(task_type,key,{'draft':draft},conn=conn);job_id=task.task_id
+    # The shared worker drains older intents first when another admin submits.
+    for _ in range(32):
+        processed=jobs.run_one(job_id=job_id,raise_errors=True)
+        if processed is None or processed.get('id')==job_id:break
     with connection() as conn:
         state,result=conn.execute('SELECT state,result FROM material_ops.jobs WHERE id=%s',(job_id,)).fetchone()
-    return {'job_id':job_id,'state':state,'rejected':state=='done','result':result}
+    return {'job_id':job_id,'state':state,'rejected':state=='done','partial_rejected':bool(result.get('partial_rejected')),'result':result}

@@ -35,6 +35,12 @@ def register(api,require_viewer,require_admin,require_hr):
         except PermissionError as e:raise HTTPException(403,str(e)) from e
         except (ValueError,TypeError,RuntimeError) as e:raise HTTPException(422,str(e)) from e
 
+    @api.post('/api/request-history/reject-cultural')
+    def reject_culture(body:dict,actor:str=Depends(require_hr)):
+        try:return portal_records.reject_cultural(actor,body)
+        except PermissionError as e:raise HTTPException(403,str(e)) from e
+        except (ValueError,TypeError,RuntimeError) as e:raise HTTPException(422,str(e)) from e
+
     @api.post('/api/admin/user-permissions/directory-refresh')
     def refresh_directory(actor:str=Depends(require_admin)):
         from material_store.contacts import enqueue_refresh

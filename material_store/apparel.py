@@ -280,27 +280,6 @@ def request_plan(payload,lines):
     exceeded=[item for item in quota if item['target']>item['limit']]
     return {'permission_record_id':permission['record_id'],'quota_allowed':not exceeded,'quota_exceeded':exceeded,'quota_targets':quota,'items':prepared if not exceeded else []}
 
-def rejection_plan(request_no,operator):
-    import app
-    if operator not in set(app.enabled_role_open_ids('HR'))|set(app.enabled_admin_open_ids()):raise PermissionError('仅 HR 和管理员可驳回企业文化衫申领。')
-    context=app.corporate_apparel_request_context(request_no);request=context['request']
-    if request['status']==app.CULTURAL_REQUEST_STATUS_REJECTED:return {'already_rejected':True,'context':context,'stock_targets':[],'quota_targets':[]}
-    source_rows=app.corporate_apparel_source_client().list_records(app.CORPORATE_APPAREL_SOURCE_TABLE_ID)
-    source={row['record_id']:row for row in source_rows}
-    aliases={row['record_id']:app.corporate_apparel_source_record_id(row['fields'].get('SourceID')) for row in app.fresh_feishu_rows(app.CORPORATE_APPAREL_TABLE_NAME)}
-    targets=[];totals={}
-    for item in context['lines']:
-        source_id=item.get('source_record_id') or aliases.get(item['record_id']) or item['record_id']
-        row=source.get(source_id)
-        if not row:raise ValueError('申领记录对应的行政源库存不存在。')
-        group=group_rows([row])[0];key=item.get('style_key') or group['key'];quantity=int(item['quantity'])
-        totals[key]=totals.get(key,0)+quantity
-        targets.append({**item,'source_record_id':source_id,'target_system_redeemed':max(0,app.feishu_int(row['fields'],'系统兑换数量')-quantity)})
-    permission=next((row for row in app.fresh_feishu_rows(app.USER_PERMISSION_TABLE_NAME) if request['requester_open_id'] in app.feishu_person_open_ids(row['fields'],['用户账号','用户','成员'])),None)
-    if not permission:raise ValueError('未找到申请人权限记录。')
-    quota=[]
-    for key,quantity in totals.items():
-        if key not in app.CORPORATE_APPAREL_QUOTA_FIELDS:continue
-        field,_=app._corporate_apparel_quota_field(key)
-        quota.append({'field':field,'target':max(0,app.feishu_int(permission['fields'],field)-quantity)})
-    return {'already_rejected':False,'context':context,'permission_record_id':permission['record_id'],'stock_targets':targets,'quota_targets':quota}
+def rejection_plan(request_no,operator,line_ids=None):
+    from .partial_rejection import apparel_plan
+    return apparel_plan(request_no,operator,line_ids)

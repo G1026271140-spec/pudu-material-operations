@@ -28,22 +28,16 @@ def monitored(conn,kind='采购补库'):
     conn.execute("UPDATE material_ops.jobs SET state='done' WHERE id=%s",(task.task_id,))
     return task,outbox
 
-def test_admin_completion_waits_real_source_and_applicant_effects_and_deduplicates(notices):
+def test_admin_success_waits_for_source_and_applicant_but_sends_no_extra_receipt(notices):
     conn,ids=notices;task,outbox=monitored(conn)
     assert completion.run_once() is None
     conn.execute("UPDATE material_ops.outbox SET state='done' WHERE id=%s",(outbox,))
     assert completion.run_once() is None
     conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s",(task.task_id,))
-    result=completion.run_once();assert result['status']=='任务已完成' and result['recipients']==1
+    assert completion.run_once()['skipped']
     assert completion.run_once() is None
-    rows=conn.execute("SELECT args,kwargs FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchall()
-    assert len(rows)==1 and rows[0][0][0]==ids['admin']
-    assert 'RESTOCK-ISOLATED' in __import__('json').dumps(rows[0][0][1],ensure_ascii=False) and '测试操作人' in __import__('json').dumps(rows[0][0][1],ensure_ascii=False)
-    assert rows[0][0][1]['schema']=='2.0'
-    assert '任务编号' not in __import__('json').dumps(rows[0][0][1],ensure_ascii=False)
-    fake=Mock();fake._request.return_value={'data':{'message_id':'om_isolated_admin'}}
-    assert effects.run_once({'primary':fake})['state']=='done'
-    assert effects.run_once({'primary':fake}) is None
+    assert conn.execute("SELECT count(*) FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]==0
+
 
 def test_source_conflict_reports_needs_review_instead_of_claiming_completed(notices):
     conn,ids=notices;task,outbox=monitored(conn)
@@ -64,6 +58,7 @@ def test_disabled_admin_does_not_receive_completion(notices):
     repo.insert_source_records(conn,permission,[{'record_id':'rec_disabled_admin_'+uuid4().hex,'fields':{'用户账号':[{'id':ids['other']}],'角色':['管理员'],'是否启用':'否'}}])
     conn.execute("UPDATE material_ops.outbox SET state='done' WHERE id=%s",(outbox,))
     conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s",(task.task_id,))
+    conn.execute("UPDATE material_ops.outbox SET state='conflict' WHERE id=%s",(outbox,))
     assert completion.run_once()['recipients']==1
 
 
@@ -131,3 +126,12 @@ def test_previously_queued_never_attempted_shipping_success_is_skipped(notices):
     assert entries[0][0]=='pending' and '_admin_completion' not in entries[0][1]
     assert entries[1][0]=='done' and '跳过' in entries[1][2]
     assert entries[2][0]=='pending' and entries[2][1]['_completion_status']=='任务需核对'
+
+
+@pytest.mark.parametrize('kind',sorted(completion.TASKS))
+def test_all_management_success_receipts_are_disabled(notices,kind):
+    conn,ids=notices;task,outbox=monitored(conn,kind)
+    conn.execute("UPDATE material_ops.outbox SET state='done' WHERE id=%s",(outbox,))
+    conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s",(task.task_id,))
+    assert completion.run_once()['skipped']
+    assert conn.execute("SELECT count(*) FROM material_ops.effects WHERE job_id=%s AND kwargs ? '_admin_completion'",(task.task_id,)).fetchone()[0]==0
