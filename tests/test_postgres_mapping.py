@@ -64,7 +64,7 @@ def test_all_registered_fields_round_trip_typed_values_without_changing_source_j
                 for expected, actual in zip(values, result[1:]):
                     assert actual == (expected.obj if isinstance(expected, Jsonb) else expected)
                 count += len(fields)
-            assert count == 362
+            assert count == 366
             raise RuntimeError("rollback_projection_test")
 
 
