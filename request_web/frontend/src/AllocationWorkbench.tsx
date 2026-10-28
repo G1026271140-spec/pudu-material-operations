@@ -1,3 +1,4 @@
+import SplitSelectionEditor from "./SplitSelectionEditor";
 import ToastMessage from "./ToastMessage";
 import { splitCategoryRows } from "./categoryGroups";
 import { groupByCategory } from "./categoryGroups";
@@ -268,14 +269,6 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     setSplitQuantities(quantities);
   }
 
-  function toggleSplitMaterial(materialId: string) {
-    const next = { ...splitQuantities };
-    if (materialId in next) delete next[materialId]; else next[materialId] = 1;
-    const selected = Object.keys(next);
-    selected.forEach((id, index) => { next[id] = Math.max(1, Math.floor(splitBaseQuantity / selected.length) + (index < splitBaseQuantity % selected.length ? 1 : 0)); });
-    setSplitQuantities(next);
-  }
-
   function switchSplitCategory(category: string) {
     if (category === splitCategory) return;
     if (splitCategory) setSplitDrafts(current => ({ ...current, [splitCategory]: { ...splitQuantities } }));
@@ -373,7 +366,6 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   const splitOriginals = (context.lines || []).filter((line: any) => line.product === splitCategory);
   const splitBaseQuantity = Math.max(1, splitOriginals.reduce((sum: number, line: any) => sum + Number(line.quantity || 0), 0) || splitGroup?.quantity || 1);
   const splitOptions = materials.filter((item: any) => item.category === splitCategory);
-  const splitModels = unique(splitOptions.map((item: any) => item.model));
   const splitTotal = Object.values(splitQuantities).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
   return <main className={`allocation-page ${embedded ? "embedded" : "standalone"}`} aria-label={tr("配货工作台", "Allocation Workbench")}>
     {!directRequestId && <div className="allocation-toolbar"><button onClick={() => { contextLoadRef.current += 1; setRequestId(""); setContext(null); loadPending(); }}>← {tr("返回申请单列表", "Back to requests")}</button></div>}
@@ -458,7 +450,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
         <button className="close" aria-label={tr("关闭", "Close")} onClick={() => setSplitCategory(null)}>×</button>
         <h2>{tr("按品类整组分装", "Split Entire Category")}</h2>
         <p className="split-intro">{splitGroup.category} · {splitGroup.entries.length} {tr("条本批明细", "lines in this plan")} · {tr("原申请", "Originally requested")} {splitBaseQuantity} {tr("件", "items")}</p>
-        <p className="split-hint">{tr("点击品类卡片切换，已选规格标蓝。选择型号与语种后可直接修改数量或比例；切换品类保留当前修改，点击应用后统一更新本批配货方案。", "This replaces all lines of this category in the current plan. Select model and language combinations to divide the category total. Quantities and percentages remain editable.")}</p>
+        <p className="split-hint">{tr("在下方框选池选择型号，在上方表格修改语种、数量和比例。已选型号标蓝，切换品类保留修改。", "Choose models in the pool below, then edit languages, quantities and percentages in the selected table above. Category changes keep your draft.")}</p>
         <div className="split-category-cards" aria-label={tr("本批申请品类", "Request categories")}>
           {groupByCategory(rows, row => row.category).map(group => {
             const picture = context.categoryImages?.[group.category]?.[0];
@@ -468,20 +460,7 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
             </button>;
           })}
         </div>
-        <div className="split-options split-model-cards">
-          {splitModels.map(model => <div className="split-model-card" key={model}>
-            <strong>{model}</strong>
-            {splitOptions.filter((item: any) => item.model === model).map((item: any) => {
-              const checked = item.record_id in splitQuantities;
-              const quantity = splitQuantities[item.record_id] || 0;
-              return <div className={`split-spec-card${checked ? " chosen" : ""}`} key={item.record_id}>
-                <button type="button" className="split-spec-choice" aria-pressed={checked} onClick={() => toggleSplitMaterial(item.record_id)}><b>{item.language}</b><span>{checked ? tr("已选", "Selected") : tr("选择", "Select")}</span></button>
-                <div className="split-spec-inputs"><label>{tr("数量", "Quantity")}<input type="number" min="1" disabled={!checked} value={checked ? quantity : ""} onChange={event => setSplitQuantities(current => ({ ...current, [item.record_id]: Math.max(1, Math.floor(Number(event.target.value) || 1)) }))}/></label>
-                <label>{tr("占本品类比例 %", "% of category")}<input type="number" min="0" step="0.1" disabled={!checked} value={checked ? Number((quantity / splitBaseQuantity * 100).toFixed(1)) : ""} onChange={event => setSplitQuantities(current => ({ ...current, [item.record_id]: Math.max(1, Math.round(splitBaseQuantity * (Number(event.target.value) || 0) / 100)) }))}/></label></div>
-              </div>;
-            })}
-          </div>)}
-        </div>
+        <SplitSelectionEditor options={splitOptions} quantities={splitQuantities} total={splitBaseQuantity} lang={lang} onChange={setSplitQuantities} />
         <div className="split-totals"><span>{tr("原申请", "Original")}: <b>{splitBaseQuantity}</b></span><span>{tr("分装后", "After split")}: <b>{splitTotal}</b></span><span>{tr("差额", "Difference")}: <b>{splitTotal - splitBaseQuantity > 0 ? "+" : ""}{splitTotal - splitBaseQuantity}</b></span></div>
         <div className="modal-actions"><button onClick={() => setSplitCategory(null)}>{tr("取消", "Cancel")}</button><button className="primary" onClick={applySplit}>{tr("应用分装修改", "Apply split changes")}</button></div>
       </div>

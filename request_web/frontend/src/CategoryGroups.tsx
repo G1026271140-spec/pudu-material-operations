@@ -10,7 +10,7 @@ function description<T>(group: CategoryGroup<T>, lang: 'zh' | 'en') { return lan
 export function CategoryRows<T>({ items, category, columns, lang, render, quantity, actions }: Props<T> & { columns: number }) {
   let position = 0;
   return <>{groupByCategory(items, category, quantity).map(group => <Fragment key={group.category}>
-    <tr className="request-category-heading"><th colSpan={columns} scope="rowgroup"><div><strong>{group.category || (lang === 'zh' ? '未分类' : 'Uncategorized')}</strong><span>{description(group, lang)}</span>{actions?.(group)}</div></th></tr>
+    <tr className="request-category-row"><td className="request-category-band" colSpan={columns} role="rowheader"><div><strong>{group.category || (lang === 'zh' ? '未分类' : 'Uncategorized')}</strong><span>{description(group, lang)}</span>{actions?.(group)}</div></td></tr>
     {group.entries.map(({ item, index }) => render(item, index, position++))}
   </Fragment>)}</>;
 }
