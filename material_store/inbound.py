@@ -18,7 +18,7 @@ def enqueue(kind,record_id):
     from .jobs import enqueue as add
     task,created=add(kind,'inbound:'+kind+':'+record_id+':'+str(int(time.time()//5)),{'record_id':record_id})
     if created:
-        with connection() as conn:conn.execute("UPDATE material_ops.jobs SET available_at=now()+interval '8 seconds' WHERE id=%s",(task.task_id,))
+        with connection() as conn:conn.execute("UPDATE material_ops.jobs SET available_at=now()+(%s * interval '1 second') WHERE id=%s",(1 if kind=='飞书申请变更回调' else 8,task.task_id))
     return task.task_id
 
 def refresh(names,clients=None):
@@ -88,9 +88,9 @@ def run_one(lane=None,job_id=None):
     if lane not in {None,'admin'}:return None
     with connection() as guard:
         if job_id:
-            row=guard.execute("SELECT id,task_type FROM material_ops.jobs WHERE id=%s AND task_type=ANY(%s) AND state IN ('pending','retry') AND available_at<=now()",(UUID(str(job_id)),list(TYPES))).fetchone()
+            row=guard.execute("SELECT id,task_type,payload FROM material_ops.jobs WHERE id=%s AND task_type=ANY(%s) AND state IN ('pending','retry') AND available_at<=now()",(UUID(str(job_id)),list(TYPES))).fetchone()
         else:
-            row=guard.execute("SELECT id,task_type FROM material_ops.jobs WHERE task_type=ANY(%s) AND state IN ('pending','retry') AND available_at<=now() ORDER BY created_at LIMIT 1",(list(TYPES),)).fetchone()
+            row=guard.execute("SELECT id,task_type,payload FROM material_ops.jobs WHERE task_type=ANY(%s) AND state IN ('pending','retry') AND available_at<=now() ORDER BY created_at LIMIT 1",(list(TYPES),)).fetchone()
         if not row:return None
         key='inbound:'+str(row[0])
         if not guard.execute('SELECT pg_try_advisory_lock(hashtextextended(%s,0))',(key,)).fetchone()[0]:return {'state':'busy'}
@@ -98,6 +98,8 @@ def run_one(lane=None,job_id=None):
             import app
             if row[1]==TYPES[0]:
                 result=refresh([app.REQUEST_TABLE_NAME,app.REQUEST_LINE_TABLE_NAME,app.MATERIAL_TABLE_NAME,app.LEDGER_TABLE_NAME])
+                from .auto_shipping import process_changed
+                result['automatic_shipping']=process_changed(record_id=(row[2] or {}).get('record_id'))
             elif row[1]==TYPES[1]:result=exchange_sync()
             else:
                 from .contacts import refresh_now

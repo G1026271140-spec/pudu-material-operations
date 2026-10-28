@@ -59,7 +59,7 @@ def catalog_revision() -> str:
     if backend_runtime.database_reads():
         from material_store.db import connection
         with connection() as conn:
-            revision=conn.execute("SELECT (SELECT coalesce(max(id),0) FROM material_ops.audit),(SELECT max(completed_at)::text FROM material_ops.import_runs WHERE state='done')").fetchone()
+            revision=conn.execute("SELECT (SELECT coalesce(max(id),0) FROM material_ops.audit),(SELECT max(completed_at)::text FROM material_ops.import_runs WHERE state='done'),(SELECT max(updated_at)::text FROM material_ops.documents WHERE name LIKE 'automatic-shipping:%')").fetchone()
         return 'pg-'+hashlib.sha256(repr(revision).encode()).hexdigest()
     if backend_runtime.realtime_reads():
         return "live"

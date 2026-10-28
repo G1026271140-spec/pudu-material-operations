@@ -7,6 +7,7 @@ export type ShippingRequest = {
   usage: string; reason: string; submitted_at: string; status: string;
   ship_date: string; arrival_start: string; arrival_end: string; shipped: boolean;
   shipping_text: string; images: CategoryImage[]; lines: ShippingLine[]; detail_text: string;
+  approval_status?: string;
   notification?: { state: string; error: string } | null;
 };
 export type DateBasis = 'ship_date' | 'arrival_start';

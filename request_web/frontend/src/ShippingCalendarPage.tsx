@@ -1,4 +1,5 @@
 import ToastMessage from "./ToastMessage";
+import { useDatabaseRefresh } from './useDatabaseRefresh';
 import { groupByCategory } from "./categoryGroups";
 import { CategoryRows } from "./CategoryGroups";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -22,6 +23,7 @@ export default function ShippingCalendarPage({ lang, active = true, editable = f
   const tr = (zh: string, en: string) => lang === 'zh' ? zh : en;
   const today = chinaToday();
   const [serverCanEdit, setServerCanEdit] = useState(false);
+  const [automaticShipping, setAutomaticShipping] = useState(false);
   const applicantView = new URLSearchParams(window.location.search).get('shipping_view') === 'readonly';
   const canEdit = editable && serverCanEdit && !applicantView;
   const [requests, setRequests] = useState<ShippingRequest[]>([]);
@@ -52,7 +54,7 @@ export default function ShippingCalendarPage({ lang, active = true, editable = f
     setLoading(true); setError('');
     try {
       const data = await jsonFetch(applicantView ? '/api/shipping-calendar?view=applicant' : '/api/shipping-calendar');
-      if (generation === loadGeneration.current) { setRequests(data.requests); setServerCanEdit(data.can_edit === true); }
+      if (generation === loadGeneration.current) { setRequests(data.requests); setServerCanEdit(data.can_edit === true); setAutomaticShipping(data.automatic_shipping === true); }
       return data.requests as ShippingRequest[];
     } catch (e) {
       if (generation === loadGeneration.current) setError(e instanceof Error ? e.message : '读取失败 / Failed to load');
@@ -60,11 +62,15 @@ export default function ShippingCalendarPage({ lang, active = true, editable = f
     } finally { if (generation === loadGeneration.current) setLoading(false); }
   }, [applicantView]);
   useEffect(() => { void load(); return () => { ++loadGeneration.current; }; }, [load]);
-  // Refresh from PostgreSQL while visible, keeping an open edit draft untouched.
-  useEffect(() => {
-    const timer = window.setInterval(() => { if (active && !document.hidden && !selected && !saving) void load(); }, 30000);
-    return () => window.clearInterval(timer);
-  }, [load, selected, active, saving]);
+  // Revision checks refresh visible data every three seconds without replacing an edit draft.
+  useDatabaseRefresh(async () => {
+    if (!active || document.hidden || saving || (selected && canEdit)) return;
+    const rows = await load();
+    if (selected && !canEdit) {
+      const current = rows?.find(row => row.request_id === selected.request_id);
+      if (current) { setSelected(current); setDraft(editDraft(current)); }
+    }
+  });
   useEffect(() => {
     if (selected && dialog.current && !dialog.current.open) dialog.current.showModal();
     if (!selected && dialog.current?.open) dialog.current.close();
@@ -155,7 +161,7 @@ export default function ShippingCalendarPage({ lang, active = true, editable = f
         {!urgent && request.sync_state === 'pending' && <span>{tr('待同步', 'Sync pending')}</span>}
         {request.sync_state === 'conflict' && <b className="sc-urgent">{tr('同步需核对', 'Sync needs review')}</b>}
       </span>
-      {request.notification && !staged[request.request_id] && <span className={`sc-notification-state ${['failed','blocked'].includes(request.notification.state) ? 'failed' : ''}`}>{request.notification.state === 'done' ? tr('申请人已通知', 'Applicant notified') : request.notification.state === 'blocked' ? tr('飞书同步需核对，尚未通知申请人', 'Feishu sync needs review; applicant not notified') : request.notification.state === 'failed' ? tr('申请人通知失败，需核对', 'Applicant notification failed') : tr('申请人待通知', 'Applicant notification pending')}</span>}
+      {request.notification && !staged[request.request_id] && <span title={request.notification.error || undefined} className={`sc-notification-state ${['failed','blocked'].includes(request.notification.state) ? 'failed' : ''}`}>{request.notification.state === 'waiting_approval' ? tr('待审批通过后通知', 'Awaiting approval') : request.notification.state === 'waiting_information' ? tr('待填写物流信息', 'Shipping details required') : request.notification.state === 'done' ? tr('申请人已通知', 'Applicant notified') : request.notification.state === 'blocked' ? tr('飞书同步需核对，尚未通知申请人', 'Feishu sync needs review; applicant not notified') : request.notification.state === 'failed' ? tr('申请人通知失败，需核对', 'Applicant notification failed') : tr('申请人待通知', 'Applicant notification pending')}</span>}
       {request.shipping_text && <span className="sc-tracking">{request.shipping_text}</span>}
     </button>;
   }
@@ -196,11 +202,11 @@ export default function ShippingCalendarPage({ lang, active = true, editable = f
       {selected && draft && <>
         <header className="sc-dialog-heading"><div><span className={`sc-status ${selected.shipped ? 'done' : 'waiting'}`}>{selected.shipped ? tr('已发货', 'Shipped') : tr('未发货', 'Not shipped')}</span><h2 id="sc-dialog-title">{selected.request_no}</h2><p>{selected.requester} · {selected.department}</p></div><button type="button" onClick={() => close()} disabled={saving || uploading} aria-label={tr('关闭详情', 'Close details')}>×</button></header>
         <div className="sc-dialog-body">
-          <dl className="sc-facts"><div><dt>{tr('计划发货日', 'Planned ship date')}</dt><dd>{selected.ship_date || '—'}</dd></div><div><dt>{tr('要求到达时间', 'Required arrival')}</dt><dd>{selected.arrival_start || '—'}{selected.arrival_end && selected.arrival_end !== selected.arrival_start ? ` – ${selected.arrival_end}` : ''}</dd></div><div><dt>{tr('客户 / 国家', 'Customer / country')}</dt><dd>{[selected.customer, selected.country].filter(Boolean).join(' / ') || '—'}</dd></div><div><dt>{tr('申请原因 / 用途', 'Reason / usage')}</dt><dd>{[selected.reason, selected.usage].filter(Boolean).join(' / ') || '—'}</dd></div><div className="wide"><dt>{tr('收件人信息', 'Recipient details')}</dt><dd>{selected.recipient || '—'}</dd></div></dl>
+          <dl className="sc-facts"><div><dt>{tr("审批状态", "Approval")}</dt><dd>{({ APPROVED: tr("已通过", "Approved"), PENDING: tr("审批中", "Pending"), REJECTED: tr("已驳回", "Rejected"), CANCELED: tr("已撤回", "Canceled") } as Record<string,string>)[selected.approval_status || ""] || selected.status}</dd></div><div><dt>{tr('计划发货日', 'Planned ship date')}</dt><dd>{selected.ship_date || '—'}</dd></div><div><dt>{tr('要求到达时间', 'Required arrival')}</dt><dd>{selected.arrival_start || '—'}{selected.arrival_end && selected.arrival_end !== selected.arrival_start ? ` – ${selected.arrival_end}` : ''}</dd></div><div><dt>{tr('客户 / 国家', 'Customer / country')}</dt><dd>{[selected.customer, selected.country].filter(Boolean).join(' / ') || '—'}</dd></div><div><dt>{tr('申请原因 / 用途', 'Reason / usage')}</dt><dd>{[selected.reason, selected.usage].filter(Boolean).join(' / ') || '—'}</dd></div><div className="wide"><dt>{tr('收件人信息', 'Recipient details')}</dt><dd>{selected.recipient || '—'}</dd></div></dl>
           <section className="sc-details"><h3>{tr('申请明细', 'Request details')}<span>{selected.lines.length}</span></h3><div className="sc-detail-table"><table><thead><tr><th>{tr('物料 / 型号 / 语种', 'Item / model / language')}</th><th>{tr('申请', 'Requested')}</th><th>{tr('核准', 'Approved')}</th><th>{tr('已发放', 'Issued')}</th></tr></thead><tbody><CategoryRows items={selected.lines} category={line => line.product} lang={lang} columns={4} render={line => <tr key={line.id}><td><strong>{line.product || '—'}</strong><span>{[line.model, line.language].filter(Boolean).join(' / ')}</span>{line.remark && <small>{line.remark}</small>}</td><td>{line.quantity}</td><td>{line.approved_quantity}</td><td>{line.issued_quantity}</td></tr>} /></tbody></table></div>{selected.lines.length === 0 && <p className="sc-prewrap">{selected.detail_text || tr('暂无结构化明细', 'No item details available')}</p>}</section>
           <fieldset className="sc-editor" disabled={!canEdit || saving || uploading}><legend>{tr('发货信息', 'Shipping details')}</legend>{canEdit && <label className="sc-date-editor"><span>{tr('物料发货日期', 'Material shipping date')}{selected.ship_date && <RequiredMark />}</span><input type="date" required={Boolean(selected.ship_date)} value={draft.ship_date} onChange={e => { const value = e.target.value; setDraft(current => current && { ...current, ship_date: value }); }} /></label>}<label className="sc-tracking-input"><span>{tr('发货单号及文字信息', 'Tracking number and shipping notes')}</span><textarea rows={4} maxLength={20000} value={draft.shipping_text} onChange={e => { const value = e.target.value; setDraft(current => current && { ...current, shipping_text: value }); }} placeholder={tr('填写物流公司、运单号及其他发货说明', 'Carrier, tracking number and other shipping notes')} /></label>
             {canEdit ? <CategoryImageEditor images={draft.images} uploadUrl="/api/admin/shipping-calendar/images" imageKind="shipping" onBusy={setUploading} tr={tr} onChange={images => setDraft(current => current && { ...current, images })} /> : null}
-            <label className={`sc-shipped-toggle ${draft.shipped ? 'checked' : ''}`}><input type="checkbox" checked={draft.shipped} onChange={e => { const value = e.target.checked; setDraft(current => current && { ...current, shipped: value }); }} /><span><b>{tr('是否发货', 'Shipped')}</b><small>{draft.shipped ? canEdit ? tr('暂存后预览为已发货，统一提交后生效', 'Preview as shipped; takes effect when submitted') : tr('已发货', 'Shipped') : canEdit ? tr('暂存后预览为未发货，统一提交后生效', 'Preview as not shipped; takes effect when submitted') : tr('尚未发货', 'Not shipped yet')}</small></span></label>
+            <label className={`sc-shipped-toggle ${draft.shipped ? 'checked' : ''}`}><input type="checkbox" checked={draft.shipped} disabled={automaticShipping} onChange={e => { const value = e.target.checked; setDraft(current => current && { ...current, shipped: value }); }} /><span><b>{tr('是否发货', 'Shipped')}</b><small>{automaticShipping ? tr('审批通过且有物流文字或图片后自动更新', 'Updated after approval and shipping text or an image') : draft.shipped ? canEdit ? tr('暂存后预览为已发货，统一提交后生效', 'Preview as shipped; takes effect when submitted') : tr('已发货', 'Shipped') : canEdit ? tr('暂存后预览为未发货，统一提交后生效', 'Preview as not shipped; takes effect when submitted') : tr('尚未发货', 'Not shipped yet')}</small></span></label>
           </fieldset>
           {!canEdit && <div className="sc-readonly-images">{draft.images.map(image => <a key={image.local_media_id || image.file_token} href={image.path} target="_blank" rel="noreferrer"><img src={image.path} alt={image.name} loading="lazy" /></a>)}</div>}
           {saveError && <ToastMessage className="sc-error" role="alert">{saveError}<button type="button" disabled={saving || uploading || loading} onClick={() => void reloadSelected()}>{tr('放弃修改并载入最新数据', 'Discard edits and reload latest')}</button></ToastMessage>}

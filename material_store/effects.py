@@ -83,8 +83,19 @@ def run_once(clients):
               WHERE earlier.kwargs->>'_rejection_request'=e.kwargs->>'_rejection_request'
                 AND (older.created_at,older.id)<(current.created_at,current.id)
                 AND earlier.state NOT IN ('done','failed')))
+          AND (NOT (e.kwargs ? '_automatic_shipping_signature') OR NOT EXISTS(
+              SELECT 1 FROM material_ops.effects earlier WHERE earlier.kwargs->>'_shipping_request'=e.kwargs->>'_shipping_request'
+                AND (earlier.created_at,earlier.id)<(e.created_at,e.id) AND earlier.first_attempt_at IS NOT NULL
+                AND earlier.state IN ('pending','retry','processing')))
           ORDER BY created_at,ordinal LIMIT 1 FOR UPDATE SKIP LOCKED""").fetchone()
         if row is None:return None
+        if row[4].get('_automatic_shipping_signature'):
+            from .auto_shipping import may_send
+            if not may_send(conn,row[4]['_shipping_request'],row[4]['_automatic_shipping_signature'],row[3][0]):
+                state='failed' if row[5] else 'done'
+                message='旧通知曾尝试发送且内容已变化，保留核对，不再重发旧内容' if row[5] else '当前申请尚不满足自动发货条件或内容已变化，未发送'
+                conn.execute("UPDATE material_ops.effects SET state=%s,completed_at=now(),last_error=%s WHERE id=%s",(state,message,row[0]))
+                return {'id':str(row[0]),'state':'skipped'}
         if row[6] and row[2]!='update_interactive_message':
             conn.execute("UPDATE material_ops.effects SET state='failed',last_error='消息结果需要人工核对，防止超出去重窗口后重复发送',claim_token=NULL,lease_until=NULL WHERE id=%s",(row[0],))
             return {'id':str(row[0]),'state':'failed'}
@@ -119,6 +130,9 @@ def run_once(clients):
             _replace_alias(conn,PREFIX+row[0].hex,remote)
             conn.execute("UPDATE material_ops.effects SET state='done',remote_id=%s,completed_at=now(),lease_until=NULL,claim_token=NULL,last_error=NULL WHERE id=%s",(remote,row[0]))
             _finish_apparel_rejection(conn,row[0])
+            if row[4].get('_automatic_shipping_signature'):
+                from .auto_shipping import mark_sent
+                mark_sent(conn,row[4]['_shipping_request'],str(row[0]))
         return {'id':str(row[0]),'state':'done'}
     except Exception as exc:
         # Permission errors are visible failures; no applicant message is

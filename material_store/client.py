@@ -121,8 +121,12 @@ class DatabaseWriteClient(DatabaseReadClient):
         patch=repo.source_values(info,fields)
         changed={fid:value for fid,value in patch.items() if old['fields'].get(fid)!=value}
         if changed:
-            created=self.conn.execute("SELECT id,patch FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND operation='create' AND state='pending' ORDER BY created_at LIMIT 1 FOR UPDATE",(table_id,old['record_id'])).fetchone()
-            if created and not old['remote_id']:
+            created=self.conn.execute("SELECT id,patch,local_version FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND operation='create' AND state='pending' ORDER BY created_at LIMIT 1 FOR UPDATE",(table_id,old['record_id'])).fetchone()
+            from .approval_sync import is_confirmation
+            later = created and self.conn.execute("SELECT EXISTS(SELECT 1 FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND local_version>%s)", (table_id,old['record_id'],created[2])).fetchone()[0]
+            # A confirmation is a separate update after parent creation and all
+            # child writes. Never fold later updates back ahead of that trigger.
+            if created and not old['remote_id'] and not later and not is_confirmation(info,changed):
                 from psycopg.types.json import Jsonb
                 values=repo.recalculate(info,{**old['fields'],**changed})
                 version=old['version']+1

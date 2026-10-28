@@ -125,10 +125,20 @@ def catalog(conn, *, owner=None):
         linked.sort(key=lambda line: (line['line_no'], line['id']))
         requests.append(present(raw, info, linked))
     statuses = notification_states(conn)
+    from .auto_shipping import enabled,document
+    automatic=enabled(conn)
+    visible=[]
     for request in requests:
         request['notification'] = statuses.get(request['request_id'])
+        native=(document(conn,request['request_id']).get('native') or {}) if automatic else {}
+        row=repo.raw_record(conn,info,request['request_id'])
+        if native.get('code')!=app.feishu_text(repo.feishu_record(info,row)['fields'],'审批实例Code'):native={}
+        request['approval_status']=native.get('status')
+        if native.get('status') not in {'REJECTED','CANCELED','DELETED'}:visible.append(request)
+    requests=visible
     requests.sort(key=lambda r: (r['ship_date'] or '9999', r['arrival_start'] or '9999', r['request_no']))
-    return {'requests': requests, 'generated_at': datetime.now().astimezone().isoformat(), 'source': 'postgresql'}
+    from .auto_shipping import enabled
+    return {'requests': requests, 'generated_at': datetime.now().astimezone().isoformat(), 'source': 'postgresql', 'automatic_shipping': enabled(conn)}
 
 
 def attachments(conn, incoming, current, actor):
@@ -164,6 +174,15 @@ def attachments(conn, incoming, current, actor):
     return result
 
 
+def validate_native_approval(conn,key,fields):
+    from .auto_shipping import enabled,document
+    import app
+    if enabled(conn):
+        native=document(conn,key).get('native') or {}
+        if native.get('code')==app.feishu_text(fields,'审批实例Code') and native.get('status') in {'REJECTED','CANCELED','DELETED'}:
+            raise ValueError('此申请的飞书审批已驳回或撤回，不能编辑发货。')
+
+
 def save(actor, body):
     import backend_runtime as runtime
     runtime.release_database_snapshot()
@@ -194,6 +213,7 @@ def save(actor, body):
         fields = repo.feishu_record(info, old)['fields']
         if not eligible(fields):
             raise ValueError('仅可编辑已核实库存且未撤回、驳回或取消的普通物料申请。')
+        validate_native_approval(conn,old['record_id'],fields)
         from .concurrency import check_version
         check_version(body['expected_version'],old['version'],'申请单版本无效，请重新载入后再保存。')
         if old['sync_state'] == 'conflict':
@@ -269,6 +289,7 @@ def save_batch(actor, body):
             number = app.feishu_text(fields, '申请单号')
             if not eligible(fields):
                 raise ValueError(number + ' 已不符合发货编辑条件，请刷新核对。')
+            validate_native_approval(conn,old['record_id'],fields)
             from .concurrency import check_version
             check_version(item['expected_version'],old['version'],number + ' 版本无效，本批尚未保存。')
             if old['sync_state'] == 'conflict':
@@ -280,7 +301,8 @@ def save_batch(actor, body):
             if not next_date and date_text(fields.get('物料发货时间')):
                 raise ValueError(number + ' 的发货日期不能为空，请选择新日期。')
             date_changed = next_date != date_text(fields.get('物料发货时间'))
-            patch = {TEXT: item['shipping_text'], SHIPPED: item['shipped'], IMAGES: images}
+            from .auto_shipping import enabled as automatic_enabled
+            patch = {TEXT: item['shipping_text'], SHIPPED: (fields.get(SHIPPED) is True) if automatic_enabled(conn) else item['shipped'], IMAGES: images}
             def image_keys(values):
                 return [v.get('local_media_id') or v.get('file_token') for v in values or []]
             if (app.feishu_text(fields, TEXT) == patch[TEXT] and (fields.get(SHIPPED) is True) == patch[SHIPPED]
@@ -311,6 +333,12 @@ def save_batch(actor, body):
             dependencies = list(dict.fromkeys([*dependencies, *related, *(schedule_outbox_dependencies(conn, old['record_id']) if date_changed else [])]))
             if not dependencies:
                 raise RuntimeError('发货字段尚未生成同步任务，本批修改已回滚。')
+            from .auto_shipping import enabled as automatic_enabled,stage
+            if automatic_enabled(conn):
+                stage(conn,old['record_id'])
+                entries.append({'request_id':old['record_id'],'request_no':number,'version':current['version'],
+                                'outbox_ids':dependencies,'effect_id':None,'automatic':True})
+                continue
             import os
             from .shipping_card import card as shipment_card
             origin=os.environ.get('PUDU_PUBLIC_ORIGIN','https://materials.pudu.work')
@@ -348,4 +376,10 @@ def notification_states(conn):
             if blocked:
                 state, error = 'blocked', '飞书字段同步需核对，尚未通知申请人。'
         result[key] = {'state': state, 'error': error or ''}
+    from .auto_shipping import enabled,PREFIX
+    if enabled(conn):
+        for name,state in conn.execute("SELECT name,payload FROM material_ops.documents WHERE name LIKE %s",(PREFIX+'%',)):
+            key=name[len(PREFIX):]
+            if state.get('dirty') or state.get('state') in {'waiting_approval','waiting_information','blocked'} or (state.get('state')=='pending' and key not in result):
+                result[key]={'state':state.get('state','pending'),'error':state.get('error','')}
     return result

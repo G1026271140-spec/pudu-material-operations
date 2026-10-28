@@ -129,7 +129,7 @@ def claim(lane, worker_id):
         raise ValueError('Unknown outbox lane')
     with connection() as conn, conn.transaction():
         conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
-        row = conn.execute("""SELECT id,table_id,record_key,local_version,patch,operation,attempts
+        row = conn.execute("""SELECT id,table_id,record_key,local_version,patch,operation,attempts,job_id
             FROM material_ops.outbox o WHERE lane=%s
              AND ((state IN ('pending','retry') AND available_at<=now())
                   OR (state='processing' AND lease_until<now()))
@@ -147,7 +147,7 @@ def claim(lane, worker_id):
             claimed_by=%s,lease_until=now()+interval '3 minutes',attempts=attempts+1
             WHERE id=%s""", (token, worker_id, row[0]))
         return {'id': row[0], 'table_id': row[1], 'record_key': row[2], 'version': row[3],
-                'patch': row[4], 'operation': row[5], 'attempts': row[6]+1, 'claim_token': token}
+                'patch': row[4], 'operation': row[5], 'attempts': row[6]+1, 'claim_token': token, 'job_id': row[7]}
 
 
 def _find_remote_create(client, info, fields):
@@ -208,6 +208,8 @@ def publish(task, client):
         row = repo.raw_record(conn, info, task['record_key'],include_deleted=True)
         baseline = row['baseline'] or {}
         remote_id = row['remote_id']
+        from .approval_sync import line_snapshot
+        approval_lines = line_snapshot(conn, info, row, task)
     if isinstance(client,dict):
         if info['source'] not in client:raise SourceConflict('来源表未配置对应的飞书应用。')
         client=client[info['source']]
@@ -238,6 +240,8 @@ def publish(task, client):
         if not remote_id:
             raise DependencyPending('本地记录尚未取得飞书 ID。')
         remote = client.get_record(info['table_id'], remote_id)
+        from .approval_sync import check_remote_links
+        check_remote_links(approval_lines, remote)
         remote_values = (remote.get('fields') or {})
         for fid in task['patch']:
             field = next(f for f in info['fields'] if f['field_id'] == fid)
@@ -273,12 +277,14 @@ def finish(task, remote_id):
 
 def fail(task, exc):
     conflict=isinstance(exc,SourceConflict)
-    delay=min(1800,2 ** min(task['attempts'],10))
+    dependency=isinstance(exc,DependencyPending)
+    delay=2 if dependency else min(1800,2 ** min(task['attempts'],10))
     with connection() as conn,conn.transaction():
         conn.execute("""UPDATE material_ops.outbox SET state=%s,available_at=now()+(%s * interval '1 second'),
-          lease_until=NULL,claim_token=NULL,last_error=%s
+          lease_until=NULL,claim_token=NULL,last_error=%s,
+          attempts=CASE WHEN %s THEN GREATEST(attempts-1,0) ELSE attempts END
           WHERE id=%s AND claim_token=%s""",
-          ('conflict' if conflict else 'retry',delay,type(exc).__name__+': '+str(exc)[:400],task['id'],task['claim_token']))
+          ('conflict' if conflict else 'retry',delay,type(exc).__name__+': '+str(exc)[:400],dependency,task['id'],task['claim_token']))
         if conflict:
             from psycopg import sql
             info=repo.table(conn,task['table_id'])
@@ -303,7 +309,7 @@ def run_once(lane, client, worker_id='outbox-worker'):
             return {'id':str(task['id']),'state':'done'}
         except Exception as exc:
             fail(task,exc)
-            LOGGER.warning('Outbox task %s: %s',task['id'],type(exc).__name__)
+            (LOGGER.info if isinstance(exc,DependencyPending) else LOGGER.warning)('Outbox task %s: %s',task['id'],type(exc).__name__)
             return {'id':str(task['id']),'state':'conflict' if isinstance(exc,SourceConflict) else 'retry'}
 
 

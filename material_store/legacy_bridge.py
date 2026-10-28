@@ -43,10 +43,11 @@ def main():
     import app
     client=app._native_feishu_bitable_client(app.feishu_app_id(),app.feishu_app_secret(),app.feishu_bitable_app_token())
     logging.basicConfig(level=logging.INFO)
-    beat=0
+    beat=0;legacy_at=0
     while True:
         try:
-            result=tick(client)
+            if time.monotonic()-legacy_at>=15:
+                legacy_at=time.monotonic();result=tick(client)
             if time.monotonic()-beat>60:
                 with runtime.request_scope():
                     try:app.enqueue_inventory_review_scheduled_tasks()
@@ -54,6 +55,11 @@ def main():
                 jobs.heartbeat('legacy-bridge');beat=time.monotonic()
         except Exception as exc:
             logging.warning('Feishu workflow bridge unavailable: %s',type(exc).__name__)
-        time.sleep(15)
+        try:
+            from .auto_shipping import poll
+            poll()
+        except Exception as exc:
+            logging.warning('Automatic shipping fallback will retry: %s',type(exc).__name__)
+        time.sleep(1)
 
 if __name__=='__main__':main()
