@@ -166,6 +166,17 @@ def _find_remote_create(client, info, fields):
                 raise SourceConflict('飞书已有该账号权限且内容不同，等待核对。')
             return rows[0]
         return None
+    if info['source']=='primary' and info['name']=='申请物料变更记录表':
+        identity=fields.get('文本')
+        if not identity:raise SourceConflict('申请变更日志缺少申请单及版本标识。')
+        rows=[row for row in client.list_records(info['table_id']) if (row.get('fields') or {}).get('文本')==identity]
+        if len(rows)>1:raise SourceConflict('飞书存在重复的申请变更日志版本。')
+        if rows:
+            definitions={field['field_name']:field for field in info['fields']}
+            if any(_canonical(definitions[name],rows[0]['fields'].get(name))!=_canonical(definitions[name],value) for name,value in fields.items()):
+                raise SourceConflict('飞书已有该申请版本的不同变更日志，等待核对。')
+            return rows[0]
+        return None
     for name in ('提交幂等键', '幂等键', '原Supabase ID', '明细编号', '用户编号', '物料编码', '文化周边编码', '型号编号', '战区名称', '语言种类', '产品型号', '物料品类', '编码'):
         identity = fields.get(name)
         if identity and any(f['field_name']==name for f in info['fields']):

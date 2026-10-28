@@ -49,12 +49,29 @@ def run_once():
             directory=conn.execute("SELECT payload FROM material_ops.documents WHERE name='contact_departments_cache.json'").fetchone()
             actor=data['actor']
             if directory:actor=next((u.get('name') for u in directory[0].get('users',[]) if u.get('open_id')==actor),actor)
-            text=data['kind']+' · '+status+'\n操作人：'+str(actor)+'\n'+'\n'.join(data['details'])
-            text+='\n本地数据库和飞书字段均已更新。' if good else '\n后台任务、飞书字段同步或业务通知存在失败，请核对任务记录。'
-            text+='\n任务编号：'+data['job_id']
+            subject=''
+            for detail in data['details']:
+                if detail.startswith(('申请单：','业务单号：','品类：')):
+                    subject=detail
+                    break
+            if subject.startswith('申请单：'):
+                identities=subject[len('申请单：'):].split('、');numbers=[]
+                info=repo.named_table(conn,app.REQUEST_TABLE_NAME)
+                for identity in identities:
+                    if identity.startswith(('local_','rec')):
+                        try:
+                            row=repo.raw_record(conn,info,identity,include_deleted=True)
+                            fields=repo.feishu_record(info,row)['fields']
+                            identity=app.feishu_text(fields,'申请单号')
+                        except ValueError:identity=''
+                    if identity and not identity.startswith(('local_','rec')):numbers.append(identity)
+                subject='申请单：'+'、'.join(numbers) if numbers else ''
+            from .task_result_card import card as result_card
+            import os
+            receipt=result_card(data['kind'],actor,subject,good,os.environ.get('PUDU_PUBLIC_ORIGIN','https://materials.pudu.work'))
             ordinal=conn.execute('SELECT coalesce(max(ordinal),0) FROM material_ops.effects WHERE job_id=%s',(data['job_id'],)).fetchone()[0]
             runtime.request_state.update(_write_conn=conn,_job_id=data['job_id'],_effect_ordinal=ordinal)
-            for recipient in sorted(users):effects.defer('primary','send_text_message',[recipient,text],{'receive_id_type':'open_id','_admin_completion':data['job_id'],'_completion_status':status})
+            for recipient in sorted(users):effects.defer('primary','send_interactive_message',[recipient,receipt],{'receive_id_type':'open_id','_admin_completion':data['job_id'],'_completion_status':status})
             data.update(state='queued',recipients=len(users),status=status)
             conn.execute('UPDATE material_ops.documents SET payload=%s,updated_at=now() WHERE name=%s',(Jsonb(data),name))
             return {'job_id':data['job_id'],'recipients':len(users),'status':status}

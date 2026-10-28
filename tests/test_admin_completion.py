@@ -38,7 +38,9 @@ def test_admin_completion_waits_real_source_and_applicant_effects_and_deduplicat
     assert completion.run_once() is None
     rows=conn.execute("SELECT args,kwargs FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchall()
     assert len(rows)==1 and rows[0][0][0]==ids['admin']
-    assert 'RESTOCK-ISOLATED' in rows[0][0][1] and '测试操作人' in rows[0][0][1]
+    assert 'RESTOCK-ISOLATED' in __import__('json').dumps(rows[0][0][1],ensure_ascii=False) and '测试操作人' in __import__('json').dumps(rows[0][0][1],ensure_ascii=False)
+    assert rows[0][0][1]['schema']=='2.0'
+    assert '任务编号' not in __import__('json').dumps(rows[0][0][1],ensure_ascii=False)
     fake=Mock();fake._request.return_value={'data':{'message_id':'om_isolated_admin'}}
     assert effects.run_once({'primary':fake})['state']=='done'
     assert effects.run_once({'primary':fake}) is None
@@ -47,8 +49,8 @@ def test_source_conflict_reports_needs_review_instead_of_claiming_completed(noti
     conn,ids=notices;task,outbox=monitored(conn)
     conn.execute("UPDATE material_ops.outbox SET state='conflict' WHERE id=%s",(outbox,))
     result=completion.run_once();assert result['status']=='任务需核对'
-    text=conn.execute("SELECT args->>1 FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]
-    assert '任务需核对' in text and '均已更新' not in text
+    text=conn.execute("SELECT args->1 FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]
+    assert '任务需核对' in __import__('json').dumps(text,ensure_ascii=False) and '均已更新' not in __import__('json').dumps(text,ensure_ascii=False)
 
 def test_legacy_jobs_never_retroactively_send_admin_receipts(notices):
     conn,ids=notices
