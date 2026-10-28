@@ -95,10 +95,13 @@ def run(clients):
     """Hold a session lock while fetching; no SQL transaction spans HTTP calls."""
     with connection() as guard:
         guard.execute("SELECT pg_advisory_lock(hashtextextended('pudu-reconciliation',0))")
+        run_id=None;stage='starting'
         try:
-            # The exclusive session lock means active publishers have finished.
-            # Any remaining processing row belongs to a terminated publisher.
+            # Register before preflight/fetch so schema or network failures are
+            # visible to the database workbench, not only the system journal.
+            run_id=guard.execute("INSERT INTO material_ops.reconcile_runs(state) VALUES ('running') RETURNING id").fetchone()[0]
             guard.execute("UPDATE material_ops.outbox SET state='retry',claim_token=NULL,lease_until=NULL,available_at=now() WHERE state='processing'")
+            stage='metadata'
             metadata=[repo.table(guard,r[0]) for r in guard.execute('SELECT table_id FROM material_meta.tables ORDER BY source_key,table_id')]
             def fetch(info):
                 client=clients[info['source']]
@@ -109,21 +112,25 @@ def run(clients):
                 ids=[r.get('record_id') or r.get('id') for r in records]
                 if len(ids)!=len(set(ids)):raise ValueError('飞书返回了重复记录：'+info['name'])
                 return info,records
-            with ThreadPoolExecutor(max_workers=3) as pool:
-                fetched=list(pool.map(fetch,metadata))
-            run_id=guard.execute("INSERT INTO material_ops.reconcile_runs(state) VALUES ('running') RETURNING id").fetchone()[0]
-            try:
-                with guard.transaction():
-                    summary={'tables':len(fetched),'source':'feishu','started_local':datetime.now().isoformat(timespec='seconds'),
-                             'changed':0,'created':0,'deleted':0,'conflicts':0}
-                    for info,records in fetched:
-                        stats=reconcile_snapshot(guard,info,records,run_id)
-                        for name,value in stats.items():summary[name]+=value
-                    guard.execute("UPDATE material_ops.reconcile_runs SET state='done',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
-                return summary
-            except Exception:
-                guard.execute("UPDATE material_ops.reconcile_runs SET state='failed',completed_at=now(),summary=%s WHERE id=%s",(Jsonb({'error_type':'reconciliation_failed'}),run_id))
-                raise
+            stage='source_fetch'
+            with ThreadPoolExecutor(max_workers=3) as pool:fetched=list(pool.map(fetch,metadata))
+            stage='apply'
+            with guard.transaction():
+                summary={'tables':len(fetched),'source':'feishu','started_local':datetime.now().isoformat(timespec='seconds'),
+                         'changed':0,'created':0,'deleted':0,'conflicts':0}
+                for info,records in fetched:
+                    stats=reconcile_snapshot(guard,info,records,run_id)
+                    for name,value in stats.items():summary[name]+=value
+                guard.execute("UPDATE material_ops.reconcile_runs SET state='done',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
+            return summary
+        except Exception as exc:
+            if run_id:
+                summary={'error_type':type(exc).__name__,'stage':stage}
+                message=str(exc)
+                if message.startswith('飞书字段定义与数据库注册不一致：'):
+                    summary.update(reason='schema_mismatch',table=message.split('：',1)[1])
+                guard.execute("UPDATE material_ops.reconcile_runs SET state='failed',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
+            raise
         finally:
             guard.execute("SELECT pg_advisory_unlock(hashtextextended('pudu-reconciliation',0))")
 

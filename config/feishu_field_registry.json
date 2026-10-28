@@ -5221,6 +5221,61 @@
           "property": null,
           "is_primary": false,
           "description": null
+        },
+        {
+          "field_id": "fldscalEfH",
+          "field_name": "申领款式编号",
+          "is_extend": false,
+          "is_primary": false,
+          "is_synced": true,
+          "property": null,
+          "type": 1,
+          "ui_type": "Text"
+        },
+        {
+          "field_id": "fldafrogkF",
+          "field_name": "申领显示名称",
+          "is_extend": false,
+          "is_primary": false,
+          "is_synced": true,
+          "property": null,
+          "type": 1,
+          "ui_type": "Text"
+        },
+        {
+          "field_id": "fld8ykP0ku",
+          "field_name": "申领页显示",
+          "is_extend": false,
+          "is_primary": false,
+          "is_synced": true,
+          "property": {
+            "options": [
+              {
+                "color": 0,
+                "id": "opteGD58rD",
+                "name": "是"
+              },
+              {
+                "color": 1,
+                "id": "optUMna4aR",
+                "name": "否"
+              }
+            ]
+          },
+          "type": 3,
+          "ui_type": "SingleSelect"
+        },
+        {
+          "field_id": "fldtQW0HM8",
+          "field_name": "每人累计领取上限",
+          "is_extend": false,
+          "is_primary": false,
+          "is_synced": true,
+          "property": {
+            "formatter": "0"
+          },
+          "type": 2,
+          "ui_type": "Number"
         }
       ]
     },
