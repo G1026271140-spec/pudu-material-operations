@@ -1429,9 +1429,10 @@ def allocation_withdraw(
 
 @api.post("/api/admin/restock/submit")
 def management_restock_submit(
-    draft: dict[str, Any], _: str = Depends(require_admin)
+    draft: dict[str, Any], actor: str = Depends(require_admin)
 ) -> dict[str, Any]:
     import app as legacy
+    draft = {**draft, "operator_open_id": actor}
     from submission_queue import QUEUE_TASK_TYPE_RESTOCK, QUEUE_TASK_TYPE_STOCK_REDUCTION
 
     errors = legacy.validate_restock_draft(draft)
@@ -1500,8 +1501,9 @@ def management_dimension_preview(
 
 @api.post("/api/admin/dimension/submit")
 def management_dimension_submit(
-    draft: dict[str, Any], _: str = Depends(require_admin)
+    draft: dict[str, Any], actor: str = Depends(require_admin)
 ) -> dict[str, Any]:
+    draft = {**draft, "operator_open_id": actor}
     from submission_queue import QUEUE_TASK_TYPE_DIMENSION_MANAGEMENT
 
     try:
@@ -1545,11 +1547,12 @@ def local_category_image(media_id: str, _: str = Depends(require_admin)) -> Resp
 
 @api.post("/api/admin/category/submit")
 def management_category_submit(
-    body: dict[str, Any], _: str = Depends(require_admin)
+    body: dict[str, Any], actor: str = Depends(require_admin)
 ) -> dict[str, Any]:
     import app as legacy
     from submission_queue import QUEUE_TASK_TYPE_CATEGORY_DELETE, QUEUE_TASK_TYPE_CATEGORY_SYNC
 
+    body = {**body, "draft": {**dict(body.get("draft") or {}), "operator_open_id": actor}}
     operation = str(body.get("operation") or "")
     if operation not in {"create", "edit", "delete"}:
         raise HTTPException(status_code=422, detail="不支持的品类操作。")

@@ -1,3 +1,5 @@
+import ToastMessage from "./ToastMessage";
+import { CategoryRows } from "./CategoryGroups";
 import RequiredMark from "./RequiredMark";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -110,7 +112,7 @@ export default function ManagementPage({
       <div className="management-body">
         <div className="management-toolbar"><nav className="management-tabs" aria-label={tr("物料管理功能", "Material management sections")}>{tabs.map(([key, label]) => <button key={key} className={(key === "category" ? inCategoryManagement : tab === key) ? "active" : ""} onClick={() => selectTab(key)}>{label}</button>)}</nav>{needsCatalog && <button className="management-refresh" onClick={load}>{tr("刷新数据", "Refresh data")}</button>}</div>
         {inCategoryManagement && <nav className="category-subnav" aria-label={tr("品类管理子页面", "Category management pages")}>{categoryTabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} aria-current={tab === key ? "page" : undefined} onClick={() => selectTab(key)}>{label}</button>)}</nav>}
-        {success && <div className="success-banner">✓ {success}</div>}
+        {success && <ToastMessage className="success-banner">✓ {success}</ToastMessage>}
         {needsCatalog && !catalog && <div className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</div>}
         {tab === "schedule" && <ShippingSchedulePage lang={lang} />}
         {tab === "shipping" && catalog && <ShippingTemplatePage catalog={catalog} lang={lang} />}
@@ -118,7 +120,7 @@ export default function ManagementPage({
         {tab === "category" && catalog && <CategoryManager catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
         {(["model", "language", "region"] as string[]).includes(tab) && catalog && <DimensionManager key={tab} kind={tab as Kind} catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
       </div>
-      {error && <div className="toast" onClick={() => setError("")}>{error} ×</div>}
+      {error && <ToastMessage className="toast" onClick={() => setError("")}>{error} ×</ToastMessage>}
       {busy && <div className="submit-overlay"><div className="spinner"/><strong>{tr("正在提交数据，请稍后……", "Submitting, please wait…")}</strong><span>{tr("任务正在进入后台队列，请勿重复提交", "The task is entering the background queue")}</span></div>}
     </main>
   );
@@ -223,7 +225,8 @@ function Restock({ catalog, tr, setBusy, setError, setSuccess }: any) {
 
 function DataTable({ rows, columns, labels, onDelete, onQuantity, tr }: any) {
   if (!rows.length) return <div className="empty-box">{tr ? tr("暂无数据", "No data") : "暂无数据"}</div>;
-  return <div className="table-wrap"><table className="admin-table"><thead><tr>{labels.map((x: string) => <th key={x}>{x}</th>)}{onDelete && <th/>}</tr></thead><tbody>{rows.map((row: any, i: number) => <tr key={row.record_id || row.key || i}>{columns.map((key: string) => <td key={key}>{key === "quantity" && onQuantity ? <input type="number" min="1" value={row[key]} onChange={e => onQuantity(i,+e.target.value)} /> : String(row[key] ?? "")}</td>)}{onDelete && <td><button className="danger-link" onClick={() => onDelete(i)}>{tr ? tr("删除", "Delete") : "删除"}</button></td>}</tr>)}</tbody></table></div>;
+  const renderRow = (row: any, i: number) => <tr key={row.record_id || row.key || i}>{columns.map((key: string) => <td key={key}>{key === "quantity" && onQuantity ? <input type="number" min="1" value={row[key]} onChange={e => onQuantity(i,+e.target.value)} /> : String(row[key] ?? "")}</td>)}{onDelete && <td><button className="danger-link" onClick={() => onDelete(i)}>{tr ? tr("删除", "Delete") : "删除"}</button></td>}</tr>;
+  return <div className="table-wrap"><table className="admin-table"><thead><tr>{labels.map((x: string) => <th key={x}>{x}</th>)}{onDelete && <th/>}</tr></thead><tbody>{columns.includes("product") ? <CategoryRows items={rows} category={(row: any) => row.product} lang={tr?.("zh", "en") || "zh"} columns={columns.length + (onDelete ? 1 : 0)} render={renderRow} /> : rows.map(renderRow)}</tbody></table></div>;
 }
 
 function Review({ title, children, onClose, onSubmit, tr, submitDisabled = false, submitLabel }: any) { return <div className="overlay" onMouseDown={onClose}><div className="modal admin-review" onMouseDown={e => e.stopPropagation()}><button className="close" onClick={onClose}>×</button><h2>{title}</h2>{children}<div className="reviewactions"><button onClick={onClose}>{tr ? tr("返回修改", "Back to Edit") : "返回修改"}</button><button className="primary" disabled={submitDisabled} onClick={onSubmit}>{submitLabel || (tr ? tr("确认提交", "Confirm Submit") : "确认提交")}</button></div></div></div>; }

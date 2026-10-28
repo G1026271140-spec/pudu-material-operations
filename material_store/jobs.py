@@ -96,6 +96,8 @@ def _run(conn,row):
         dependencies=list(dict.fromkeys(dependencies))
         if dependencies:
             conn.execute("UPDATE material_ops.effects SET kwargs=kwargs || %s WHERE job_id=%s",(Jsonb({'_outbox_ids':dependencies}),task.task_id))
+    from .admin_completion import register as register_completion
+    register_completion(conn,task.task_id,task.task_type,task.payload,result,runtime.request_state.get('_write_actor',''))
     conn.execute("UPDATE material_ops.jobs SET state='done',result=%s,completed_at=now(),last_error=NULL,attempts=attempts+1 WHERE id=%s",(Jsonb(result),UUID(task.task_id)))
     return result
 
@@ -119,6 +121,12 @@ def run_one(lane=None,job_id=None,*,raise_errors=False):
             with connection() as conn:
                 conn.execute("UPDATE material_ops.jobs SET attempts=attempts+1,state=CASE WHEN attempts>=9 OR %s THEN 'failed' ELSE 'retry' END,last_error=%s,available_at=now()+interval '30 seconds' WHERE id=%s AND state<>'done'",
                     (isinstance(exc,(ValueError,PermissionError)) or (isinstance(exc,RuntimeError) and row[1]!='审批回写管理员通知'),type(exc).__name__+': '+str(exc)[:500],selected))
+        if selected:
+            with runtime.request_scope(),connection() as conn,conn.transaction():
+                failed=conn.execute('SELECT state FROM material_ops.jobs WHERE id=%s',(selected,)).fetchone()
+                if failed and failed[0]=='failed':
+                    from .admin_completion import register as register_completion
+                    register_completion(conn,str(selected),row[1],row[3],{},str((row[3].get('draft') or {}).get('operator_open_id') or '系统'))
         if raise_errors:raise
         LOG.exception('Local job failed: %s',selected)
         return {'id':str(selected),'state':'retry'}

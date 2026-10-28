@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.8.4"
+APP_VERSION = "V3.8.5"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8785,6 +8785,9 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         material_id = str(item.get("material_record_id") or "")
         line_record_id = str(item.get("line_record_id") or "")
         split_source_line_id = str(item.get("split_source_line_id") or "")
+        split_source_line_ids = item.get("split_source_line_ids") or ([split_source_line_id] if split_source_line_id else [])
+        if not isinstance(split_source_line_ids, list) or any(not isinstance(value, str) or value not in valid_line_ids for value in split_source_line_ids) or len(set(split_source_line_ids)) != len(split_source_line_ids) or (split_source_line_id and split_source_line_id not in split_source_line_ids):
+            raise RuntimeError("整组分装的来源明细已变化，请刷新后重试。")
         quantity = int(item.get("quantity") or 0)
         if material_id in seen:
             raise RuntimeError("同一物料不能在申请中重复出现。")
@@ -8801,10 +8804,10 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
             seen_line_ids.add(line_record_id)
         material_fields = feishu_fields(material_by_id[material_id])
         product = feishu_text(material_fields, "物料品类")
-        if split_source_line_id:
+        for source_id in split_source_line_ids:
             source = next(
                 (line for line in list(context["lines"])
-                 if str(line.get("record_id") or "") == split_source_line_id),
+                 if str(line.get("record_id") or "") == source_id),
                 None,
             )
             if source is None or normalize_category_match_key(source.get("product")) != normalize_category_match_key(product):

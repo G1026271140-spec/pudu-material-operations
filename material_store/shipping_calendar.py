@@ -309,23 +309,22 @@ def save_batch(actor, body):
             dependencies = list(dict.fromkeys([*dependencies, *related, *(schedule_outbox_dependencies(conn, old['record_id']) if date_changed else [])]))
             if not dependencies:
                 raise RuntimeError('发货字段尚未生成同步任务，本批修改已回滚。')
-            message = ('物料申请发货信息更新\n申请单号：' + number
-                       + '\n发货状态：' + ('已发货' if patch[SHIPPED] else '未发货')
-                       + '\n计划发货日期：' + (next_date or '未设置')
-                       + '\n要求到达开始日期：' + (date_text(fields.get('要求达到开始日期')) or '未设置')
-                       + '\n发货单号及文字信息：\n' + (patch[TEXT] or '未填写')[:5000]
-                       + '\n发货图片：' + str(len(patch[IMAGES])) + ' 张（请在原申请单查看）')
             import os
-            origin = os.environ.get('PUDU_PUBLIC_ORIGIN', 'https://materials.pudu.work').rstrip('/')
-            message += '\n查看申请单及发货图片：' + origin + '/management/shipping-calendar?shipping_request=' + quote(old['record_id'], safe='')
+            from .shipping_card import card as shipment_card
+            message = shipment_card(number, old['record_id'], patch[SHIPPED], next_date,
+                date_text(fields.get('要求达到开始日期')), patch[TEXT], len(patch[IMAGES]),
+                os.environ.get('PUDU_PUBLIC_ORIGIN', 'https://materials.pudu.work'))
             # Supersede an older, never-attempted notification for this same
             # request. Its outbox still publishes in version order.
             conn.execute("UPDATE material_ops.effects SET state='failed',last_error='已被更新的发货提交替代，未发送旧通知' WHERE kwargs->>'_shipping_request'=%s AND state IN ('pending','retry') AND first_attempt_at IS NULL", (old['record_id'],))
-            alias = effects.defer('primary', 'send_text_message', [recipient, message], {
+            alias = effects.defer('primary', 'send_interactive_message', [recipient, message], {
                 'receive_id_type': 'open_id', '_outbox_ids': dependencies, '_shipping_request': old['record_id'], '_shipping_version': current['version']})
             entries.append({'request_id': old['record_id'], 'request_no': number, 'version': current['version'],
                             'outbox_ids': dependencies, 'effect_id': alias[len(effects.PREFIX):]})
         result = {'batch_id': task.task_id, 'changed': len(entries), 'unchanged': len(changes) - len(entries), 'entries': entries}
+        if entries:
+            from .admin_completion import register as register_completion
+            register_completion(conn,task.task_id,'发货信息同步',{'actor':actor},result,actor)
         conn.execute("UPDATE material_ops.jobs SET state='done',completed_at=now(),result=%s WHERE id=%s", (Jsonb(result), task.task_id))
         conn.execute('INSERT INTO material_ops.documents(name,payload) VALUES (%s,%s)',
                      ('shipping-batch:' + key, Jsonb({'actor': actor, 'hash': digest, 'result': result})))

@@ -21,7 +21,7 @@ def register(api, require_editor, require_viewer=None, editor_check=None):
     @api.get('/api/shipping-calendar')
     def own_catalog(request: Request, actor: str = Depends(viewer)):
         runtime.release_database_snapshot()
-        admin = can_manage(request)
+        admin = can_manage(request) and request.query_params.get('view') != 'applicant'
         runtime.release_database_snapshot()
         with connection() as conn, conn.transaction():
             conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')

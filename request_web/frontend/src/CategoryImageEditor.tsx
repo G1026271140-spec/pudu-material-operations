@@ -1,3 +1,4 @@
+import ToastMessage from "./ToastMessage";
 import { useState } from "react";
 
 export type CategoryImage = { file_token?: string; local_media_id?: string; name: string; path: string };
@@ -52,6 +53,6 @@ export default function CategoryImageEditor({ images, onChange, tr, onBusy, uplo
         onChange={e => { const files = e.currentTarget.files; void add(files); e.currentTarget.value = ""; }}/>
     </label>
     {images.length > 0 && <button type="button" className="category-image-clear" onClick={() => onChange([])}>{tr("移除全部图片", "Remove all images")}</button>}
-    {error && <p role="alert" className="negative">{error}</p>}
+    {error && <ToastMessage role="alert">{error}</ToastMessage>}
   </fieldset>;
 }

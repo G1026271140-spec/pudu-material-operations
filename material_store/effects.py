@@ -126,6 +126,9 @@ def main():
     logging.basicConfig(level=logging.INFO)
     beat=0
     while True:
+        from .admin_completion import run_once as completion_once
+        try:completion_once()
+        except Exception:logging.exception('Administrator completion scan failed; will retry')
         result=run_once(clients)
         if time.monotonic()-beat>10:
             from .jobs import heartbeat

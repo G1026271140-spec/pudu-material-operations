@@ -1,3 +1,5 @@
+import ToastMessage from "./ToastMessage";
+import { CategoryRows, CategoryList } from "./CategoryGroups";
 import RequiredMark from "./RequiredMark";
 import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -406,7 +408,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
             <h3>
               {t.cart} · {total}
             </h3>
-            {lines.map((line, i) => (
+            <CategoryList items={lines} category={line => line.product} lang={lang} render={(line, i) => (
               <div
                 className="culture-line"
                 key={`${line.product}${line.model}${line.region}`}
@@ -446,7 +448,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
                   ×
                 </button>
               </div>
-            ))}
+            )} />
           </div>
         )}
         <button
@@ -470,9 +472,9 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
         </button>
       </section>
       {error && (
-        <div className="toast" onClick={() => setError("")}>
+        <ToastMessage className="toast" onClick={() => setError("")}>
           {error} ×
-        </div>
+        </ToastMessage>
       )}
       {productNotice && (
         <div
@@ -676,14 +678,14 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
             </div>
             <table>
               <tbody>
-                {lines.map((line) => (
+                <CategoryRows items={lines} category={line => line.product} lang={lang} columns={4} render={(line) => (
                   <tr key={`${line.product}${line.model}${line.region}`}>
                     <td>{line.product}</td>
                     <td>{line.model}</td>
                     <td>{line.region}</td>
                     <td>{line.quantity}</td>
                   </tr>
-                ))}
+                )} />
               </tbody>
             </table>
             <div className="reviewactions">

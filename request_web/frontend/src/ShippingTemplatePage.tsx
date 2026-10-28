@@ -1,3 +1,4 @@
+import ToastMessage from "./ToastMessage";
 import RequiredMark from "./RequiredMark";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./shipping.css";
@@ -93,8 +94,8 @@ export default function ShippingTemplatePage({ catalog, lang }: { catalog: any; 
   }
 
   return <div className="shipping-page">
-    {error && <div className="shipping-toast" onClick={() => setError("")}>{error} ×</div>}
-    {success && <div className="shipping-success">✓ {success}</div>}
+    {error && <ToastMessage className="shipping-toast" onClick={() => setError("")}>{error} ×</ToastMessage>}
+    {success && <ToastMessage className="shipping-success">✓ {success}</ToastMessage>}
     <section className="shipping-section"><div className="shipping-section-title"><i>01</i><div><h2>{tr("发票与收件信息", "Invoice & Recipient")}</h2><p>{tr("填写模板日期和收件信息，系统自动生成发票编号", "Complete recipient details and generate the invoice number")}</p></div></div>
       <div className="shipping-grid three"><label>{tr("填写模板日期", "Template Date")}<input type="date" value={templateDate} onChange={e => setTemplateDate(e.target.value)}/></label><label>{tr("国家名称或英文缩写", "Country Name or Code")}<input maxLength={64} placeholder={tr("例如：泰国、Thailand 或 TH", "e.g. Thailand or TH")} value={addressCode} onChange={e => setAddressCode(e.target.value)}/></label><div className="invoice-code"><span>{tr("发票编号（自动）", "Invoice Number")}</span><b>{invoiceNumber || tr("等待填写地址缩写", "Waiting for country code")}</b></div></div>
       <label>{tr("收货地址", "Shipping Address")}<textarea value={address} onChange={e => setAddress(e.target.value)} placeholder={tr("可填写中文或英文地址", "Chinese or English address")}/></label>

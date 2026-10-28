@@ -1,3 +1,4 @@
+import ToastMessage from "./ToastMessage";
 import {useEffect,useState} from "react";
 import CategoryImageEditor from "./CategoryImageEditor";
 import type {CategoryImage} from "./CategoryImageEditor";
@@ -60,7 +61,7 @@ export default function ApparelManagementPage({lang}:{lang:"zh"|"en"}){
  return <main className="management-page apparel-management-page" aria-label={tr("企业文化衫管理","Corporate apparel management")}>
   <div className="management-body">
    <div className="apparel-toolbar apparel-actions-only"><div><button onClick={()=>void load(form.key)} disabled={busy||uploading}>{tr("刷新数据","Refresh data")}</button><button className="primary" onClick={create} disabled={busy||uploading}>{tr("＋ 新增款式","＋ New style")}</button></div></div>
-   {success&&<div role="status" className="success-banner">{success}</div>}
+   {success&&<ToastMessage role="status" className="success-banner">{success}</ToastMessage>}
    {!catalog.schema_ready&&<div className="danger-box">{tr("行政源表的申领设置字段尚未就绪，请联系管理员。","The source settings are not ready. Contact an administrator.")}</div>}
    <div className="apparel-management-layout">
     <aside className="apparel-style-list"><input aria-label={tr("搜索款式","Search styles")} placeholder={tr("搜索款式名称","Search styles")} value={query} onChange={event=>setQuery(event.target.value)}/>{catalog.styles.filter(item=>`${item.source_style} ${item.label}`.toLowerCase().includes(query.toLowerCase())).map(item=><button key={item.key} className={item.key===form.key?"active":""} onClick={()=>select(item)} disabled={busy||uploading}><strong>{item.label}</strong><span>{item.rows.length} {tr("个尺码","sizes")} · {item.total_stock} {tr("件","items")}</span><small>{item.visible?tr("申领页显示","Visible on request page"):tr("未展示","Hidden")}</small></button>)}</aside>
@@ -91,7 +92,7 @@ export default function ApparelManagementPage({lang}:{lang:"zh"|"en"}){
    </div>
   </div>
   {busy&&<div className="submit-overlay"><div className="spinner"/><strong>{tr("正在保存，请稍候…","Saving, please wait…")}</strong></div>}
-  {error&&<div className="toast" role="alert" onClick={()=>setError("")}>{error} ×</div>}
+  {error&&<ToastMessage className="toast" role="alert" onClick={()=>setError("")}>{error} ×</ToastMessage>}
   {review&&<div className="overlay"><div className="modal admin-review apparel-review"><button className="close" disabled={busy} onClick={()=>setReview(false)}>×</button><h2>{operation==="delete"?tr("确认删除款式","Confirm deletion"):tr("确认款式变更","Confirm style changes")}</h2><p><b>{form.label}</b> · {form.source_style}</p><dl><dt>{tr("申领页显示","Visible")}</dt><dd>{form.visible?tr("是","Yes"):tr("否","No")}</dd><dt>{tr("每人累计上限","Cumulative limit")}</dt><dd>{form.limit}</dd><dt>{tr("库存规格","Size rows")}</dt><dd>{original?.rows.length||0} → {operation==="delete"?0:form.rows.length}</dd><dt>{tr("目标可领取库存","Available stock")}</dt><dd>{operation==="delete"?0:total}</dd></dl><ul>{form.rows.map((row,index)=><li key={index}>{row.size||tr("未选尺码","No size")} · {Number(row.original)+Number(row.correction)-row.external_redeemed-row.system_redeemed} {tr("件","items")}</li>)}</ul>{operation==="delete"&&<label>{tr("输入款式显示名称确认删除","Type the display name to confirm deletion")}<input value={confirmation} onChange={event=>setConfirmation(event.target.value)}/></label>}<button className="primary" disabled={busy||(operation==="delete"&&confirmation!==form.label)} onClick={()=>void save()}>{busy?tr("正在保存…","Saving…"):tr("确认保存","Confirm")}</button></div></div>}
  </main>;
 }

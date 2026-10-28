@@ -1,3 +1,5 @@
+import ToastMessage from "./ToastMessage";
+import { CategoryRows } from "./CategoryGroups";
 import RequiredMark from "./RequiredMark";
 import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -773,7 +775,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                     </tr>
                   </thead>
                   <tbody>
-                    {lines.map((l, i) => (
+                    <CategoryRows items={lines} category={line => clean(line.product)} lang={lang} columns={6} render={(l, i) => (
                       <tr key={`${l.product}${l.model}${l.language}`}>
                         <td>
                           {clean(l.product)}
@@ -826,7 +828,7 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
                           </button>
                         </td>
                       </tr>
-                    ))}
+                    )} />
                   </tbody>
                 </table>
               )}
@@ -868,18 +870,18 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
           </div>
         </section>
         {error && (
-          <div className="toast" onClick={() => setError("")}>
+          <ToastMessage className="toast" onClick={() => setError("")}>
             {error} ×
-          </div>
+          </ToastMessage>
         )}
         {cartNotice && !error && (
-          <div
+          <ToastMessage
             className="toast cart-added-toast"
             role="status"
             onClick={() => setCartNotice(false)}
           >
             🛒 {t("已加入采购车", "Added to cart")} ×
-          </div>
+          </ToastMessage>
         )}
       </main>
       {active && (
@@ -1071,14 +1073,14 @@ export default function App({ lang = "zh", currentUser = null }: { lang?: "zh" |
             </h3>
             <table>
               <tbody>
-                {lines.map((l, i) => (
+                <CategoryRows items={lines} category={line => clean(line.product)} lang={lang} columns={4} render={(l, i) => (
                   <tr key={i}>
                     <td>{clean(l.product)}</td>
                     <td>{l.model}</td>
                     <td>{l.language}</td>
                     <td>{l.quantity}</td>
                   </tr>
-                ))}
+                )} />
               </tbody>
             </table>
             <div className="reviewactions">

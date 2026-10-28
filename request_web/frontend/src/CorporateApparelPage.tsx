@@ -1,3 +1,5 @@
+import ToastMessage from "./ToastMessage";
+import { CategoryList } from "./CategoryGroups";
 import RequiredMark from "./RequiredMark";
 import { requestSubmissionMessage } from "./submissionCopy";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -292,13 +294,13 @@ export default function CorporateApparelPage({ currentUser = null }: { currentUs
             </article>;
           })}
         </div>
-        {lines.length > 0 && <div className="corporate-cart"><h3>{t.cart} · {lines.reduce((sum, line) => sum + line.quantity, 0)} {t.itemUnit}</h3>{lines.map((line) => <div key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product || item.size !== line.size))}>{t.remove}</button></div>)}</div>}
+        {lines.length > 0 && <div className="corporate-cart"><h3>{t.cart} · {lines.reduce((sum, line) => sum + line.quantity, 0)} {t.itemUnit}</h3><CategoryList items={lines} category={line => productLabel(line.product)} lang={lang} render={(line) => <div key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b><button type="button" onClick={() => setLines(lines.filter((item) => item.product !== line.product || item.size !== line.size))}>{t.remove}</button></div>} /></div>}
         <button type="button" className="corporate-submit" disabled={!liveItems || !lines.length} onClick={() => { setError(""); setReview(true); }}>{t.submit}</button>
       </section>
 
-      {error && <div className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></div>}
+      {error && <ToastMessage className="corporate-toast" role="alert">⚠ {error}<button type="button" onClick={() => setError("")}>×</button></ToastMessage>}
       {active && <div className="corporate-overlay"><div className="corporate-modal"><button className="corporate-close" onClick={() => setActive("")}>×</button><h2>{productLabel(active)}</h2><p>{t.chooseSize}</p><div className="corporate-sizes">{activeItems.map((item) => <button type="button" className={size === item.size ? "active" : ""} key={item.record_id} onClick={() => { setSize(item.size); setQuantity(1); }}><b>{item.size}</b><span>{t.remaining(item.available)}</span></button>)}</div>{(catalog.productLimits?.[active] || perProductLimits[active] || 1) > 1 && <label className="corporate-quantity">{t.quantity}<input type="number" inputMode="numeric" min={1} max={Math.min(catalog.productLimits?.[active] || perProductLimits[active] || 1, activeItems.find((item) => item.size === size)?.available || 1)} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>}<button type="button" className="corporate-primary" onClick={add}>{t.add}</button></div></div>}
-      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p><p><b>{t.reason}：</b>{materialUsage()}</p>{lines.map((line) => <div className="corporate-review-line" key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b></div>)}<div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
+      {review && <div className="corporate-overlay"><div className="corporate-modal corporate-review"><button className="corporate-close" onClick={() => setReview(false)}>×</button><h2>{t.confirm}</h2><p>{user?.name} · {department || t.noDepartment}</p><p><b>{t.reason}：</b>{materialUsage()}</p><CategoryList items={lines} category={line => productLabel(line.product)} lang={lang} render={(line) => <div className="corporate-review-line" key={`${line.product}\0${line.size}`}><span>{productLabel(line.product)}</span><b>{line.size} × {line.quantity}</b></div>} /><div className="corporate-review-actions"><button type="button" onClick={() => setReview(false)}>{t.back}</button><button type="button" className="corporate-primary" disabled={busy} onClick={submit}>{busy ? t.submitting : t.confirmSubmit}</button></div></div></div>}
     </main>
   );
 }

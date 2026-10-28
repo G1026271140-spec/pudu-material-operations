@@ -88,7 +88,9 @@ def test_effects_wait_for_outbox_without_using_attempts_then_retry_same_uuid(sto
     calls = source._request.call_args_list
     assert calls[0].kwargs['payload']['uuid'] == calls[1].kwargs['payload']['uuid']
     assert calls[1].kwargs['payload']['receive_id'] == 'ou_isolated_applicant'
-    assert '发货状态：已发货' in calls[1].kwargs['payload']['content']
+    assert calls[1].kwargs['payload']['msg_type'] == 'interactive'
+    assert '您的物料申请已发货' in calls[1].kwargs['payload']['content']
+    assert 'shipping_view=readonly' in calls[1].kwargs['payload']['content']
     assert effects.run_once({'primary': source}) is None
 
 

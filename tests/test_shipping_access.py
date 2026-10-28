@@ -107,7 +107,7 @@ def test_admin_date_change_updates_request_lines_schedule_and_notification_depen
     assert len(dependency_keys) == 4
     assert dependency_keys <= set(result['entries'][0]['outbox_ids'])
     args = conn.execute('SELECT args FROM material_ops.effects WHERE job_id=%s', (result['batch_id'],)).fetchone()[0]
-    assert '2026-11-05' in args[1]
+    assert '2026-11-05' in __import__('json').dumps(args[1])
 
 
 @pytest.mark.parametrize('value', ['2026-02-30', '2026-11-05T12:00:00', 'bad', '', None])
