@@ -14,6 +14,7 @@ type Lang = "zh" | "en";
 type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement";
 
 const managementPaths: Record<ManagementTab, string> = {
+  calendar: "/management/shipping-calendar",
   schedule: "/management/shipping-schedule",
   shipping: "/management/shipping-template",
   restock: "/management/restock",

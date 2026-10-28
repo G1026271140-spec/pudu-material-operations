@@ -2,8 +2,9 @@ import { useState } from "react";
 
 export type CategoryImage = { file_token?: string; local_media_id?: string; name: string; path: string };
 
-export default function CategoryImageEditor({ images, onChange, tr, onBusy, uploadUrl = "/api/admin/category-images" }: {
+export default function CategoryImageEditor({ images, onChange, tr, onBusy, uploadUrl = "/api/admin/category-images", imageKind = "category" }: {
   uploadUrl?: string;
+  imageKind?: "category" | "shipping";
   images: CategoryImage[];
   onChange: (images: CategoryImage[]) => void;
   tr: (zh: string, en: string) => string;
@@ -39,14 +40,14 @@ export default function CategoryImageEditor({ images, onChange, tr, onBusy, uplo
     }
   }
   return <fieldset className="category-images" disabled={uploading}>
-    <legend>{tr("品类图片（选填）", "Category images (optional)")}</legend>
+    <legend>{imageKind === "shipping" ? tr("发货图片（选填）", "Shipping images (optional)") : tr("品类图片（选填）", "Category images (optional)")}</legend>
     <p>{tr("最多 12 张，每张不超过 6 MB，支持 PNG、JPEG、WebP。移除后可重新添加图片。", "Up to 12 PNG, JPEG or WebP images, 6 MB each. Remove an image to replace it.")}</p>
     <div className="category-image-list">{images.map((image, index) => <figure key={image.local_media_id || image.file_token || index}>
       {image.path ? <img src={image.path} alt={image.name}/> : <span>{image.name}</span>}
       <figcaption title={image.name}>{image.name}</figcaption>
       <button type="button" onClick={() => onChange(images.filter((_, i) => i !== index))} aria-label={tr(`移除 ${image.name}`, `Remove ${image.name}`)}>{tr("移除", "Remove")}</button>
     </figure>)}</div>
-    <label className="category-image-upload">{uploading ? tr("正在上传…", "Uploading…") : tr("添加品类图片", "Add category images")}
+    <label className="category-image-upload">{uploading ? tr("正在上传…", "Uploading…") : imageKind === "shipping" ? tr("添加发货图片", "Add shipping images") : tr("添加品类图片", "Add category images")}
       <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={uploading || images.length >= 12}
         onChange={e => { const files = e.currentTarget.files; void add(files); e.currentTarget.value = ""; }}/>
     </label>

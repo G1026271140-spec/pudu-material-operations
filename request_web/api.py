@@ -930,6 +930,8 @@ from request_web.database_api import register_database_api
 register_database_api(api, require_admin)
 from request_web.apparel_api import register as register_apparel_api
 register_apparel_api(api, require_hr)
+from request_web.shipping_calendar_api import register as register_shipping_calendar_api
+register_shipping_calendar_api(api, require_admin)
 
 
 def _allocation_actor(

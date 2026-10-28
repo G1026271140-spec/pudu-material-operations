@@ -2,6 +2,7 @@ import RequiredMark from "./RequiredMark";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import ShippingSchedulePage from "./ShippingSchedulePage";
+import ShippingCalendarPage from "./ShippingCalendarPage";
 import ShippingTemplatePage from "./ShippingTemplatePage";
 import CategoryCarousel from "./CategoryCarousel";
 import CategoryModelMedia from "./CategoryModelMedia";
@@ -14,7 +15,7 @@ import "./management.css";
 type Lang = "zh" | "en";
 type Operation = "create" | "edit" | "delete";
 type Kind = "model" | "language" | "region";
-export type ManagementTab = "schedule" | "shipping" | "restock" | "category" | Kind;
+export type ManagementTab = "schedule" | "calendar" | "shipping" | "restock" | "category" | Kind;
 type Catalog = {
   generatedAt: string;
   categories: any[];
@@ -80,7 +81,7 @@ export default function ManagementPage({
   // Allocation and shipping schedule do not use the large management catalog.
   // Let their own data load immediately instead of blocking the whole page.
   useEffect(() => {
-    if (tab !== "schedule" && !catalog) load();
+    if (tab !== "schedule" && tab !== "calendar" && !catalog) load();
   }, [tab, catalog]);
   useEffect(() => setTab(initialTab), [initialTab]);
   function selectTab(next: ManagementTab) {
@@ -91,7 +92,7 @@ export default function ManagementPage({
     setSuccess("");
     onTabChange?.(next);
   }
-  const needsCatalog = tab !== "schedule";
+  const needsCatalog = tab !== "schedule" && tab !== "calendar";
   const categoryTabs = [
     ["category", tr("物料品类", "Material Categories")],
     ["model", tr("型号管理", "Models")],
@@ -102,6 +103,7 @@ export default function ManagementPage({
   const tabs = [
     ["category", tr("品类管理", "Category Management")],
     ["restock", tr("采购补库", "Restock")],
+    ["calendar", tr("物料发货日历", "Shipping Calendar")],
     ["schedule", tr("发货排期", "Shipping Schedule")],
     ["shipping", tr("发货模板", "Shipping Template")],
   ] as const;
@@ -112,6 +114,7 @@ export default function ManagementPage({
         {inCategoryManagement && <nav className="category-subnav" aria-label={tr("品类管理子页面", "Category management pages")}>{categoryTabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} aria-current={tab === key ? "page" : undefined} onClick={() => selectTab(key)}>{label}</button>)}</nav>}
         {success && <div className="success-banner">✓ {success}</div>}
         {needsCatalog && !catalog && <div className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</div>}
+        {tab === "calendar" && <ShippingCalendarPage lang={lang} />}
         {tab === "schedule" && <ShippingSchedulePage lang={lang} />}
         {tab === "shipping" && catalog && <ShippingTemplatePage catalog={catalog} lang={lang} />}
         {tab === "restock" && catalog && <Restock catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
