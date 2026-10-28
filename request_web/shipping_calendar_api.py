@@ -22,7 +22,16 @@ def register(api, require_admin):
     @api.post('/api/admin/shipping-calendar/save')
     def save(body: dict, actor: str = Depends(require_admin)):
         try:
-            return shipping.save(actor, body)
+            raise ValueError('请使用日历中的统一提交按钮，确认后提交全部修改。')
+        except repo.VersionConflict as exc:
+            raise HTTPException(409, str(exc)) from exc
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(422, str(exc)) from exc
+
+    @api.post('/api/admin/shipping-calendar/batch')
+    def save_batch(body: dict, actor: str = Depends(require_admin)):
+        try:
+            return shipping.save_batch(actor, body)
         except repo.VersionConflict as exc:
             raise HTTPException(409, str(exc)) from exc
         except (ValueError, TypeError) as exc:

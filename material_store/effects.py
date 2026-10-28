@@ -51,7 +51,11 @@ def run_once(clients):
     with connection() as conn,conn.transaction():
         row=conn.execute("""SELECT id,source_key,method,args,kwargs,attempts,(first_attempt_at<now()-interval '50 minutes') FROM material_ops.effects e
           WHERE ((state IN ('pending','retry') AND available_at<=now()) OR (state='processing' AND lease_until<now()))
-          AND NOT EXISTS(SELECT 1 FROM material_ops.effects p WHERE p.job_id=e.job_id AND p.ordinal<e.ordinal AND p.state NOT IN ('done','failed'))
+          AND (NOT (e.kwargs ? '_outbox_ids') OR
+               (SELECT count(*) FROM material_ops.outbox o
+                WHERE o.id::text IN (SELECT jsonb_array_elements_text(e.kwargs->'_outbox_ids')) AND o.state='done')
+                =jsonb_array_length(e.kwargs->'_outbox_ids'))
+          AND NOT EXISTS(SELECT 1 FROM material_ops.effects p WHERE p.job_id=e.job_id AND p.ordinal<e.ordinal AND p.state NOT IN ('done','failed') AND NOT (e.kwargs ? '_shipping_request'))
           ORDER BY created_at,ordinal LIMIT 1 FOR UPDATE SKIP LOCKED""").fetchone()
         if row is None:return None
         if row[6] and row[2]!='update_interactive_message':

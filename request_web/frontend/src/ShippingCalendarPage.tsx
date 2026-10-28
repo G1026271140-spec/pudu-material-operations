@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CategoryImageEditor from './CategoryImageEditor';
-import type { CategoryImage } from './CategoryImageEditor';
-import { chinaToday, groupRequests, matchesSearch, monthDays, shiftMonth, urgency } from './shippingCalendar';
-import type { DateBasis, ShippingRequest } from './shippingCalendar';
+import { shippingDraft as editDraft, draftSignature as editSignature, stageShippingDraft, shippingBatchChanges, chinaToday, groupRequests, matchesSearch, monthDays, shiftMonth, urgency } from './shippingCalendar';
+import type { DateBasis, ShippingRequest, ShippingDraft as Draft, ShippingStaging } from './shippingCalendar';
 import './shipping-calendar.css';
 
 type Lang = 'zh' | 'en';
-type Draft = { shipping_text: string; shipped: boolean; images: CategoryImage[] };
-const editDraft = (request: ShippingRequest): Draft => ({ shipping_text: request.shipping_text, shipped: request.shipped, images: request.images });
-const editSignature = (draft: Draft) => JSON.stringify({ ...draft, images: draft.images.map(image => ({ local_media_id: image.local_media_id, file_token: image.file_token })) });
 async function jsonFetch(url: string, options?: RequestInit) {
   const response = await fetch(url, { cache: 'no-store', ...options });
   if (response.status === 401) throw Error('登录已过期，请重新通过飞书登录。 / Please sign in again.');
@@ -18,7 +14,7 @@ async function jsonFetch(url: string, options?: RequestInit) {
   return body;
 }
 
-export default function ShippingCalendarPage({ lang }: { lang: Lang }) {
+export default function ShippingCalendarPage({ lang, active = true }: { lang: Lang; active?: boolean }) {
   const tr = (zh: string, en: string) => lang === 'zh' ? zh : en;
   const today = chinaToday();
   const [requests, setRequests] = useState<ShippingRequest[]>([]);
@@ -33,6 +29,10 @@ export default function ShippingCalendarPage({ lang }: { lang: Lang }) {
   const [selected, setSelected] = useState<ShippingRequest | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
+  const [staged, setStaged] = useState<ShippingStaging>({});
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [batchError, setBatchError] = useState('');
+  const confirmDialog = useRef<HTMLDialogElement>(null);
   const [uploading, setUploading] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [confirmClose, setConfirmClose] = useState(false);
@@ -54,14 +54,20 @@ export default function ShippingCalendarPage({ lang }: { lang: Lang }) {
   useEffect(() => { void load(); return () => { ++loadGeneration.current; }; }, [load]);
   // Refresh from PostgreSQL while visible, keeping an open edit draft untouched.
   useEffect(() => {
-    const timer = window.setInterval(() => { if (!document.hidden && !selected) void load(); }, 30000);
+    const timer = window.setInterval(() => { if (active && !document.hidden && !selected && !saving) void load(); }, 30000);
     return () => window.clearInterval(timer);
-  }, [load, selected]);
+  }, [load, selected, active, saving]);
   useEffect(() => {
     if (selected && dialog.current && !dialog.current.open) dialog.current.showModal();
     if (!selected && dialog.current?.open) dialog.current.close();
   }, [selected]);
-  const matches = useMemo(() => requests.filter(request => matchesSearch(request, search)), [requests, search]);
+  const previewRequests = useMemo(() => requests.map(request => staged[request.request_id] ? { ...request, ...staged[request.request_id].draft } : request), [requests, staged]);
+  const matches = useMemo(() => previewRequests.filter(request => matchesSearch(request, search)), [previewRequests, search]);
+  const stagedEntries = Object.values(staged);
+  useEffect(() => {
+    if (confirmSubmit && confirmDialog.current && !confirmDialog.current.open) confirmDialog.current.showModal();
+    if (!confirmSubmit && confirmDialog.current?.open) confirmDialog.current.close();
+  }, [confirmSubmit]);
   const datedInMonth = matches.filter(request => request[basis].startsWith(month));
   const visible = matches.filter(request => allDates || (day ? request[basis] === day : !request[basis] || request[basis].startsWith(month)));
   const pending = visible.filter(request => !request.shipped);
@@ -72,46 +78,58 @@ export default function ShippingCalendarPage({ lang }: { lang: Lang }) {
   const offset = (new Date(`${month}-01T00:00:00Z`).getUTCDay() + 6) % 7;
   const totals = new Map(days.map(date => [date, { pending: datedInMonth.filter(r => r[basis] === date && !r.shipped).length, shipped: datedInMonth.filter(r => r[basis] === date && r.shipped).length }]));
   const formatDay = (value: string, weekday = false) => value ? new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { month: 'short', day: 'numeric', ...(weekday ? { weekday: 'short' as const } : {}), timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)) : tr('未设置', 'Not set');
-  const dirty = Boolean(selected && draft && editSignature(draft) !== editSignature(editDraft(selected)));
+  const dirty = Boolean(selected && draft && editSignature(draft) !== editSignature(staged[selected.request_id]?.draft || editDraft(selected)));
+  useEffect(() => {
+    if (!dirty && stagedEntries.length === 0 && !uploading && !saving) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty, stagedEntries.length, uploading, saving]);
   function open(request: ShippingRequest) {
-    setSelected(request); setDraft(editDraft(request)); setSaveError(''); setConfirmClose(false); saveAttempt.current = null;
+    const entry = staged[request.request_id];
+    setSelected(entry?.base || request); setDraft(entry?.draft || editDraft(request)); setSaveError(''); setConfirmClose(false);
   }
   function close(force = false) {
     if (saving || uploading) return;
     if (dirty && !force) { setConfirmClose(true); return; }
     setSelected(null); setDraft(null); setConfirmClose(false); setSaveError('');
   }
-  async function save() {
+  function save() {
     if (!selected || !draft || saving || uploading) return;
-    const payload = { request_id: selected.request_id, expected_version: selected.version,
-      shipping_text: draft.shipping_text, shipped: draft.shipped,
-      images: draft.images.map(image => image.local_media_id ? { local_media_id: image.local_media_id } : { file_token: image.file_token }) };
-    const signature = JSON.stringify(payload);
+    setStaged(current => stageShippingDraft(current, selected, draft));
+    setSelected(null); setDraft(null); setSaveError('');
+    setNotice(tr('修改已暂存，完成编辑后请点击“统一提交修改”。', 'Edits staged. Choose “Submit all changes” when ready.'));
+  }
+  async function submitBatch() {
+    if (saving || stagedEntries.length === 0) return;
+    const changes = shippingBatchChanges(staged);
+    const signature = JSON.stringify(changes);
     if (saveAttempt.current?.signature !== signature) saveAttempt.current = { signature, token: crypto.randomUUID() };
-    setSaving(true); setSaveError('');
+    setSaving(true); setBatchError('');
     try {
-      await jsonFetch('/api/admin/shipping-calendar/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, idempotency_key: saveAttempt.current.token }) });
-      // Reflect the durable local write immediately, independently of the next read.
-      setRequests(current => current.map(request => request.request_id === selected.request_id ? { ...request, ...draft, sync_state: 'pending' } : request));
-      setSelected(null); setDraft(null);
-      setNotice(tr('发货信息已保存，稍后将通过飞书同步。', 'Shipping details saved. They will sync to Feishu shortly.'));
+      const result = await jsonFetch('/api/admin/shipping-calendar/batch', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ changes, confirmed: true, idempotency_key: saveAttempt.current.token }) });
+      setRequests(current => current.map(request => staged[request.request_id] ? { ...request, ...staged[request.request_id].draft, sync_state: 'pending', notification: { state: 'pending', error: '' } } : request));
+      setStaged({}); setConfirmSubmit(false); saveAttempt.current = null;
+      setNotice(tr(`已提交 ${result.changed} 张申请单，飞书更新成功后将同步通知申请人。`, `${result.changed} requests submitted. Applicants will be notified after Feishu updates succeed.`));
       void load();
-    } catch (e) { setSaveError(e instanceof Error ? e.message : tr('保存失败', 'Save failed')); }
+    } catch (e) { setBatchError(e instanceof Error ? e.message : tr('提交失败，暂存修改仍保留。', 'Submission failed. Your staged edits are retained.')); }
     finally { setSaving(false); }
   }
+  function removeStaged(id: string) { setStaged(current => { const updated = { ...current }; delete updated[id]; return updated; }); }
   async function reloadSelected() {
     if (!selected) return;
     setSaveError('');
     const current = await load();
     const latest = current?.find(request => request.request_id === selected.request_id);
-    if (latest) open(latest);
+    if (latest) { removeStaged(selected.request_id); setSelected(latest); setDraft(editDraft(latest)); setSaveError(''); }
     else setSaveError(tr('该申请单已不在发货日历中，或数据读取失败，请关闭窗口并刷新。', 'This request is no longer available, or loading failed. Close and refresh.'));
   }
   function changeMonth(step: number) { setMonth(value => shiftMonth(value, step)); setDay(''); setAllDates(false); }
   function card(request: ShippingRequest) {
     const urgent = urgency(request, today);
     return <button type="button" className={`sc-card ${request.shipped ? 'is-shipped' : ''} ${urgent ? `is-${urgent}` : ''}`} key={request.request_id} onClick={() => open(request)}>
-      <span className="sc-card-top"><strong>{request.request_no}</strong><span className={`sc-status ${request.shipped ? 'done' : 'waiting'}`}>{request.shipped ? tr('已发货', 'Shipped') : tr('未发货', 'Not shipped')}</span></span>
+      <span className="sc-card-top"><strong>{request.request_no}{staged[request.request_id] && <em className="sc-staged-tag">{tr('未提交', 'Draft')}</em>}</strong><span className={`sc-status ${request.shipped ? 'done' : 'waiting'}`}>{request.shipped ? tr('已发货', 'Shipped') : tr('未发货', 'Not shipped')}</span></span>
       <span className="sc-person"><b>{request.requester || '—'}</b><span>{[request.department, request.country].filter(Boolean).join(' · ')}</span></span>
       {(request.usage || request.customer) && <span className="sc-purpose">{[request.usage, request.customer].filter(Boolean).join(' · ')}</span>}
       <span className="sc-card-dates"><span>{tr('计划发货', 'Planned ship')}<b>{formatDay(request.ship_date)}</b></span><span>{tr('要求到达', 'Arrival from')}<b>{formatDay(request.arrival_start)}</b></span></span>
@@ -122,11 +140,13 @@ export default function ShippingCalendarPage({ lang }: { lang: Lang }) {
         {!urgent && request.sync_state === 'pending' && <span>{tr('待同步', 'Sync pending')}</span>}
         {request.sync_state === 'conflict' && <b className="sc-urgent">{tr('同步需核对', 'Sync needs review')}</b>}
       </span>
+      {request.notification && !staged[request.request_id] && <span className={`sc-notification-state ${['failed','blocked'].includes(request.notification.state) ? 'failed' : ''}`}>{request.notification.state === 'done' ? tr('申请人已通知', 'Applicant notified') : request.notification.state === 'blocked' ? tr('飞书同步需核对，尚未通知申请人', 'Feishu sync needs review; applicant not notified') : request.notification.state === 'failed' ? tr('申请人通知失败，需核对', 'Applicant notification failed') : tr('申请人待通知', 'Applicant notification pending')}</span>}
       {request.shipping_text && <span className="sc-tracking">{request.shipping_text}</span>}
     </button>;
   }
   return <section className="shipping-calendar" aria-labelledby="sc-title">
     <header className="sc-heading"><div><h2 id="sc-title">{tr('物料发货日历', 'Material Shipping Calendar')}</h2><p>{tr('已核实库存的申请单', 'Inventory-verified requests')}</p></div><button type="button" onClick={() => void load()} disabled={loading}>{loading ? tr('读取中…', 'Loading…') : tr('刷新', 'Refresh')}</button></header>
+    {stagedEntries.length > 0 && <div className="sc-batch-bar" role="status"><div><strong>{tr(`${stagedEntries.length} 张申请单有暂存修改`, `${stagedEntries.length} requests have staged changes`)}</strong><span>{tr('点击统一提交，确认后同步飞书并通知申请人。', 'Submit together to update Feishu and notify applicants.')}</span><div className="sc-draft-list">{stagedEntries.map(({ base }) => <span className="sc-draft-chip" key={base.request_id}><button type="button" disabled={saving} onClick={() => open(base)}>{base.request_no}</button><button type="button" disabled={saving} aria-label={tr(`撤销 ${base.request_no} 的暂存修改`, `Discard staged edits for ${base.request_no}`)} onClick={() => removeStaged(base.request_id)}>×</button></span>)}</div></div><button type="button" disabled={saving} onClick={() => { if (window.confirm(tr('放弃全部暂存修改？', 'Discard all staged changes?'))) setStaged({}); }}>{tr('放弃全部', 'Discard all')}</button><button type="button" className="primary" disabled={saving || uploading} onClick={() => { setBatchError(''); setConfirmSubmit(true); }}>{tr('统一提交修改', 'Submit all changes')}</button></div>}
     {notice && <div className="sc-notice" role="status">{notice}<button type="button" onClick={() => setNotice('')} aria-label={tr('关闭提示', 'Dismiss')}>×</button></div>}
     {error && <div className="sc-error" role="alert">{error}<button type="button" onClick={() => void load()}>{tr('重试', 'Retry')}</button></div>}
     <div className="sc-filters"><label><span>{tr('搜索申请单', 'Search requests')}</span><input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={tr('单号、申请人、物料或发货信息', 'Number, requester, item or tracking info')} /></label>
@@ -165,13 +185,18 @@ export default function ShippingCalendarPage({ lang }: { lang: Lang }) {
           <section className="sc-details"><h3>{tr('申请明细', 'Request details')}<span>{selected.lines.length}</span></h3><div className="sc-detail-table"><table><thead><tr><th>{tr('物料 / 型号 / 语种', 'Item / model / language')}</th><th>{tr('申请', 'Requested')}</th><th>{tr('核准', 'Approved')}</th><th>{tr('已发放', 'Issued')}</th></tr></thead><tbody>{selected.lines.map(line => <tr key={line.id}><td><strong>{line.product || '—'}</strong><span>{[line.model, line.language].filter(Boolean).join(' / ')}</span>{line.remark && <small>{line.remark}</small>}</td><td>{line.quantity}</td><td>{line.approved_quantity}</td><td>{line.issued_quantity}</td></tr>)}</tbody></table></div>{selected.lines.length === 0 && <p className="sc-prewrap">{selected.detail_text || tr('暂无结构化明细', 'No item details available')}</p>}</section>
           <fieldset className="sc-editor" disabled={saving || uploading}><legend>{tr('发货信息', 'Shipping details')}</legend><label className="sc-tracking-input"><span>{tr('发货单号及文字信息', 'Tracking number and shipping notes')}</span><textarea rows={4} maxLength={20000} value={draft.shipping_text} onChange={e => { const value = e.target.value; setDraft(current => current && { ...current, shipping_text: value }); }} placeholder={tr('填写物流公司、运单号及其他发货说明', 'Carrier, tracking number and other shipping notes')} /></label>
             <CategoryImageEditor images={draft.images} uploadUrl="/api/admin/shipping-calendar/images" imageKind="shipping" onBusy={setUploading} tr={tr} onChange={images => setDraft(current => current && { ...current, images })} />
-            <label className={`sc-shipped-toggle ${draft.shipped ? 'checked' : ''}`}><input type="checkbox" checked={draft.shipped} onChange={e => { const value = e.target.checked; setDraft(current => current && { ...current, shipped: value }); }} /><span><b>{tr('是否发货', 'Shipped')}</b><small>{draft.shipped ? tr('保存后移入“已发货”列', 'Moves to Shipped after saving') : tr('保存后保留在“未发货”列', 'Remains in Not shipped after saving')}</small></span></label>
+            <label className={`sc-shipped-toggle ${draft.shipped ? 'checked' : ''}`}><input type="checkbox" checked={draft.shipped} onChange={e => { const value = e.target.checked; setDraft(current => current && { ...current, shipped: value }); }} /><span><b>{tr('是否发货', 'Shipped')}</b><small>{draft.shipped ? tr('暂存后预览为已发货，统一提交后生效', 'Preview as shipped; takes effect when submitted') : tr('暂存后预览为未发货，统一提交后生效', 'Preview as not shipped; takes effect when submitted')}</small></span></label>
           </fieldset>
           {saveError && <div className="sc-error" role="alert">{saveError}<button type="button" disabled={saving || uploading || loading} onClick={() => void reloadSelected()}>{tr('放弃修改并载入最新数据', 'Discard edits and reload latest')}</button></div>}
           {confirmClose && <div className="sc-discard" role="alert"><span>{tr('有尚未保存的修改。', 'You have unsaved edits.')}</span><button type="button" onClick={() => setConfirmClose(false)}>{tr('继续编辑', 'Keep editing')}</button><button type="button" onClick={() => close(true)}>{tr('放弃修改', 'Discard edits')}</button></div>}
         </div>
-        <footer className="sc-dialog-footer"><span role="status">{uploading ? tr('正在上传图片…', 'Uploading images…') : saving ? tr('正在保存…', 'Saving…') : selected.sync_state === 'conflict' ? tr('飞书同步需核对', 'Feishu sync needs review') : tr('保存后更新发货状态', 'Save to update shipping status')}</span><button type="button" disabled={saving || uploading} onClick={() => close()}>{tr('取消', 'Cancel')}</button><button type="button" className="primary" disabled={saving || uploading || !dirty} onClick={() => void save()}>{tr('保存发货信息', 'Save shipping details')}</button></footer>
+        <footer className="sc-dialog-footer"><span role="status">{uploading ? tr('正在上传图片…', 'Uploading images…') : saving ? tr('正在保存…', 'Saving…') : selected.sync_state === 'conflict' ? tr('飞书同步需核对', 'Feishu sync needs review') : tr('先暂存，全部编辑完成后统一提交', 'Stage edits, then submit all changes together')}</span><button type="button" disabled={saving || uploading} onClick={() => close()}>{tr('取消', 'Cancel')}</button><button type="button" className="primary" disabled={saving || uploading || !dirty} onClick={() => void save()}>{tr('暂存修改', 'Stage changes')}</button></footer>
       </>}
+    </dialog>
+    <dialog ref={confirmDialog} className="sc-dialog sc-submit-dialog" aria-labelledby="sc-submit-title" onCancel={event => { if (saving) event.preventDefault(); else setConfirmSubmit(false); }}>
+      <header className="sc-dialog-heading"><div><h2 id="sc-submit-title">{tr('发货信息即将同步给申请人，请确定提交', 'Shipping information will be shared with applicants. Please confirm submission.')}</h2><p>{tr(`共 ${stagedEntries.length} 张申请单`, `${stagedEntries.length} requests`)}</p></div></header>
+      <div className="sc-dialog-body"><ul className="sc-submit-list">{stagedEntries.map(({ base, draft: value }) => <li key={base.request_id}><strong>{base.request_no}</strong><span>{base.requester}</span><span>{value.shipped ? tr('已发货', 'Shipped') : tr('未发货', 'Not shipped')}</span><small>{tr(`${value.images.length} 张图片`, `${value.images.length} images`)}</small></li>)}</ul>{batchError && <div className="sc-error" role="alert">{batchError}</div>}</div>
+      <footer className="sc-dialog-footer"><span>{saving ? tr('正在提交，请稍候…', 'Submitting…') : tr('确认后保存并提交后台同步', 'Confirm to save and submit for synchronization')}</span><button type="button" disabled={saving} onClick={() => setConfirmSubmit(false)}>{tr('取消', 'Cancel')}</button><button type="button" className="primary" disabled={saving || stagedEntries.length === 0} onClick={() => void submitBatch()}>{tr('确定', 'Confirm')}</button></footer>
     </dialog>
   </section>;
 }

@@ -125,6 +125,8 @@ export default function Portal() {
     localStorage.getItem("pudu-lang") === "en" ? "en" : "zh",
   );
   const [page, setPage] = useState<PortalPage>(pageFromLocation);
+  const [allocationVisited, setAllocationVisited] = useState(page === "allocation");
+  useEffect(() => { if (page === "allocation") setAllocationVisited(true); }, [page]);
   const [managementTab, setManagementTab] = useState<ManagementTab>(managementTabFromLocation);
   const [allocationShippingTab, setAllocationShippingTab] = useState<AllocationShippingTab>(() => normalizedPath() === "/management/shipping-calendar" ? "shipping" : "allocation");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -292,7 +294,7 @@ export default function Portal() {
         ) : page === "apparelManagement" ? (
           canManageApparel ? <ApparelManagementPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.apparelManagement}</h1><p>{lang === "zh" ? "仅已启用的 HR 和管理员可访问此页面。" : "Only enabled HR staff and administrators can access this page."}</p></main> : null
         ) : canManage && page === "allocation" ? (
-          <AllocationShippingPage lang={lang} tab={allocationShippingTab} onTabChange={navigateAllocationShippingTab} />
+          null
         ) : canManage && page === "database" ? (
           <DatabaseWorkbench lang={lang} />
         ) : canManage ? (
@@ -311,6 +313,7 @@ export default function Portal() {
             </div>
           </main>
         ) : null}
+        {canManage && (allocationVisited || page === "allocation") && <div hidden={page !== "allocation"}><AllocationShippingPage lang={lang} tab={allocationShippingTab} onTabChange={navigateAllocationShippingTab} active={page === "allocation"} /></div>}
       </div>
     </div>
   );
