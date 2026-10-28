@@ -177,6 +177,19 @@ def _find_remote_create(client, info, fields):
                 raise SourceConflict('飞书已有该申请版本的不同变更日志，等待核对。')
             return rows[0]
         return None
+    if info['source']=='primary' and info['name'] in {'物料下单批次','物料下单批次明细'}:
+        name='下单批次号' if info['name']=='物料下单批次' else '批次明细编号'
+        definitions={field['field_name']:field for field in info['fields']}
+        identity=fields.get(name)
+        if not identity or name not in definitions:raise SourceConflict('下单批次缺少唯一批次或明细编号。')
+        rows=[row for row in client.list_records(info['table_id'])
+              if _canonical(definitions[name],(row.get('fields') or {}).get(name))==_canonical(definitions[name],identity)]
+        if len(rows)>1:raise SourceConflict('飞书存在重复的下单批次或明细编号。')
+        if rows:
+            if any(_canonical(definitions[key],rows[0]['fields'].get(key))!=_canonical(definitions[key],value) for key,value in fields.items()):
+                raise SourceConflict('飞书已有该下单编号的不同内容，等待核对。')
+            return rows[0]
+        return None
     for name in ('提交幂等键', '幂等键', '原Supabase ID', '明细编号', '用户编号', '物料编码', '文化周边编码', '型号编号', '战区名称', '语言种类', '产品型号', '物料品类', '编码'):
         identity = fields.get(name)
         if identity and any(f['field_name']==name for f in info['fields']):
