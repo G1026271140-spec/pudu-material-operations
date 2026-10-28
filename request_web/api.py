@@ -1250,6 +1250,14 @@ def allocation_pending(
     return {**snapshot, "operators": _allocation_operators(legacy)}
 
 
+def _allocation_category_images() -> dict[str, list[str]]:
+    try:
+        return _image_index()
+    except (OSError, ValueError, RuntimeError, KeyError):
+        # Optional photos must not prevent stock review or category selection.
+        return {}
+
+
 @api.get("/api/allocation/{request_id}")
 def allocation_context(
     request: Request,
@@ -1301,6 +1309,7 @@ def allocation_context(
             "snapshotAt": context.get("snapshot_at"),
             "shipDate": ship_date.isoformat() if ship_date else "",
             "materials": materials,
+            "categoryImages": _allocation_category_images(),
             "operatorOpenId": signed_operator,
             "signedCardAccess": bool(signed_operator),
             "operators": _allocation_operators(legacy),

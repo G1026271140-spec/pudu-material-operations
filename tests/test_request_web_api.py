@@ -1194,6 +1194,7 @@ def test_signed_card_allocation_context_keeps_live_request_and_cached_options(mo
     monkeypatch.setattr(legacy_app, "load_static_request_form_cache", lambda: {"generated_at": "cache-time"})
     monkeypatch.setattr(legacy_app, "cached_allocation_material_records", lambda *args, **kwargs: [{"record_id": "mat-1", "category": "产品单页", "model": "T300", "language": "英语"}])
     monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [])
+    monkeypatch.setattr(web_api, "_image_index", lambda: {"产品单页": ["/test-category-image.png"]})
 
     response = TestClient(api).get(
         "/api/allocation/request-1?operator=ou-admin&review_token=signed"
@@ -1228,6 +1229,7 @@ def test_allocation_snapshot_is_read_only_and_skips_feishu(monkeypatch):
     monkeypatch.setattr(legacy_app, "load_static_request_form_cache", lambda: {"generated_at": "cache-time"})
     monkeypatch.setattr(legacy_app, "cached_allocation_material_records", lambda *args, **kwargs: [])
     monkeypatch.setattr(web_api, "_allocation_operators", lambda _legacy: [])
+    monkeypatch.setattr(web_api, "_image_index", lambda: {"产品单页": ["/test-category-image.png"]})
 
     response = TestClient(api).get(
         "/api/allocation/request-1?operator=ou-admin&review_token=signed&snapshot=true"
@@ -1315,3 +1317,9 @@ def test_receipt_registration_is_local_and_never_waits_on_feishu(monkeypatch):
     monkeypatch.setattr(legacy_app, "feishu_client", lambda: pytest.fail("must not call Feishu on receipt registration"))
     web_api._schedule_submission_receipt("token", "ou_applicant", "物料申领", ["task-1"])
     assert observed == [("token", "ou_applicant", "物料申领", ["task-1"])]
+
+
+def test_optional_category_image_failure_never_blocks_allocation(monkeypatch):
+    def unavailable():raise FileNotFoundError('isolated missing photo index')
+    monkeypatch.setattr(web_api,'_image_index',unavailable)
+    assert web_api._allocation_category_images()=={}
