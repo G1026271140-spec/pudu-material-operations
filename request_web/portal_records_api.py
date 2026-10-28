@@ -1,4 +1,5 @@
 from fastapi import Depends,HTTPException,Request
+from uuid import UUID
 import backend_runtime as runtime
 from material_store import portal_records,user_permissions,repository as repo
 from material_store.db import connection
@@ -33,3 +34,17 @@ def register(api,require_viewer,require_admin,require_hr):
         try:return portal_records.reject_apparel(actor,body)
         except PermissionError as e:raise HTTPException(403,str(e)) from e
         except (ValueError,TypeError,RuntimeError) as e:raise HTTPException(422,str(e)) from e
+
+    @api.post('/api/admin/user-permissions/directory-refresh')
+    def refresh_directory(actor:str=Depends(require_admin)):
+        from material_store.contacts import enqueue_refresh
+        runtime.release_database_snapshot()
+        try:return enqueue_refresh(actor)
+        except PermissionError as e:raise HTTPException(403,str(e)) from e
+
+    @api.get('/api/admin/user-permissions/directory-refresh/{job_id}')
+    def directory_refresh_status(job_id:UUID,_:str=Depends(require_admin)):
+        from material_store.contacts import refresh_status
+        runtime.release_database_snapshot()
+        try:return refresh_status(job_id)
+        except ValueError as e:raise HTTPException(404,str(e)) from e

@@ -108,9 +108,9 @@ def run_one(lane=None,job_id=None,*,raise_errors=False):
         # Each worker owns a fresh scope; stale HTTP snapshots cannot leak in.
         with runtime.request_scope(),connection() as conn,conn.transaction():
             if job_id:
-                row=conn.execute("SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE id=%s AND state IN ('pending','retry') AND task_type NOT IN ('飞书申请变更回调','兑换数据回调') FOR UPDATE",(UUID(str(job_id)),)).fetchone()
+                row=conn.execute("SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE id=%s AND state IN ('pending','retry') AND task_type NOT IN ('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新') FOR UPDATE",(UUID(str(job_id)),)).fetchone()
             else:
-                row=conn.execute("SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE lane=%s AND state IN ('pending','retry') AND available_at<=now() AND task_type NOT IN ('飞书申请变更回调','兑换数据回调') ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED",(lane,)).fetchone()
+                row=conn.execute("SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE lane=%s AND state IN ('pending','retry') AND available_at<=now() AND task_type NOT IN ('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新') ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED",(lane,)).fetchone()
             if row is None:return None
             selected=row[0]
             return {'id':str(selected),'result':_run(conn,row),'state':'done'}

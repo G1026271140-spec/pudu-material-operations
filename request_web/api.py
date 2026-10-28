@@ -648,9 +648,9 @@ def current_feishu_user(request: Request) -> JSONResponse:
             continue
         if str(fields.get("是否启用") or "").strip() == "是":
             permission_status = "enabled"
-            roles = sorted({str(role) for role in fields.get("角色", []) if str(role).strip()})
-            break
-        permission_status = "disabled"
+            roles = sorted(set(roles) | {str(role) for role in fields.get("角色", []) if str(role).strip()})
+        elif permission_status != "enabled":
+            permission_status = "disabled"
     if permission_status == "missing":
         roles = ["销售"]
     body = {
