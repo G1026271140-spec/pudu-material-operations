@@ -52,7 +52,7 @@ def image_items(key, fields):
         local, token = item.get('local_media_id'), item.get('file_token')
         if not local and not token:
             continue
-        path = '/api/admin/shipping-calendar/' + quote(key, safe='')
+        path = '/api/shipping-calendar/' + quote(key, safe='')
         path += '/local-images/' + str(local) if local else '/remote-images/' + quote(token, safe='')
         images.append({**item, 'name': item.get('name') or '发货图片', 'path': path})
     return images
@@ -83,7 +83,7 @@ def present(raw, info, lines):
     }
 
 
-def catalog(conn):
+def catalog(conn, *, owner=None):
     """One SQL snapshot, including unscheduled requests and all detail rows."""
     import app
     info = source_info(conn)
@@ -116,6 +116,8 @@ def catalog(conn):
             .format(sql.Identifier(info['sql_table']))):
         raw = {'record_id': key, 'fields': fields, 'version': version, 'sync_state': state}
         named = repo.feishu_record(info, raw)['fields']
+        if owner is not None and owner not in app.feishu_person_open_ids(named, ['申请人']):
+            continue
         if not eligible(named) or not app.feishu_text(named, '申请单号'):
             continue
         linked = [*by_request.get(key, []), *by_request.get(remote, []), *by_number.get(app.feishu_text(named, '申请单号'), [])]
@@ -207,6 +209,22 @@ def save(actor, body):
         return result
 
 
+def schedule_outbox_dependencies(conn, request_id):
+    import app
+    from order_scheduling import BATCH_TABLE, DETAIL_TABLE
+    line_info = repo.named_table(conn, app.REQUEST_LINE_TABLE_NAME)
+    detail_info = repo.named_table(conn, DETAIL_TABLE)
+    batch_info = repo.named_table(conn, BATCH_TABLE)
+    lines = [row['record_id'] for row in repo.rows(conn, line_info) if request_id in app.feishu_link_ids_any(row['fields'], ['所属申请单', '申请单'])]
+    details = [row for row in repo.rows(conn, detail_info) if request_id in app.feishu_link_ids(row['fields'], '来源申请单')]
+    batches = {key for row in details for key in app.feishu_link_ids(row['fields'], '所属下单批次')}
+    result = []
+    for info, keys in [(line_info, lines), (detail_info, [row['record_id'] for row in details]), (batch_info, list(batches))]:
+        if keys:
+            result += [str(row[0]) for row in conn.execute("SELECT id FROM material_ops.outbox WHERE table_id=%s AND record_key=ANY(%s) AND state IN ('pending','processing','retry')", (info['table_id'], keys))]
+    return result
+
+
 def save_batch(actor, body):
     """Confirm all drafts atomically; publish fields before applicant messages."""
     import app
@@ -224,7 +242,7 @@ def save_batch(actor, body):
     allowed = {'request_id', 'expected_version', 'shipping_text', 'shipped', 'images'}
     ids = []
     for item in changes:
-        if not isinstance(item, dict) or set(item) != allowed:
+        if not isinstance(item, dict) or set(item) not in (allowed, allowed | {'ship_date'}):
             raise ValueError('只能提交申请单的三个发货字段。')
         if not isinstance(item['request_id'], str) or not item['request_id'] or item['request_id'] in ids:
             raise ValueError('申请单标识不能为空或重复。')
@@ -254,38 +272,52 @@ def save_batch(actor, body):
             if old['version'] != item['expected_version'] or old['sync_state'] == 'conflict':
                 raise repo.VersionConflict(number + ' 已被修改或存在同步冲突，本批尚未保存，请核对后重新提交。')
             images = attachments(conn, item['images'], fields.get(IMAGES), actor)
+            next_date = item.get('ship_date', date_text(fields.get('物料发货时间')))
+            if not isinstance(next_date, str) or (next_date and (len(next_date) != 10 or date_text(next_date) != next_date)):
+                raise ValueError(number + ' 的发货日期无效，请选择有效日期。')
+            if not next_date and date_text(fields.get('物料发货时间')):
+                raise ValueError(number + ' 的发货日期不能为空，请选择新日期。')
+            date_changed = next_date != date_text(fields.get('物料发货时间'))
             patch = {TEXT: item['shipping_text'], SHIPPED: item['shipped'], IMAGES: images}
             def image_keys(values):
                 return [v.get('local_media_id') or v.get('file_token') for v in values or []]
             if (app.feishu_text(fields, TEXT) == patch[TEXT] and (fields.get(SHIPPED) is True) == patch[SHIPPED]
-                    and image_keys(fields.get(IMAGES)) == image_keys(images)):
+                    and image_keys(fields.get(IMAGES)) == image_keys(images) and not date_changed):
                 continue
             recipients = app.feishu_person_open_ids(fields, ['申请人'])
             if len(recipients) != 1 or not recipients[0].startswith('ou_'):
                 raise ValueError(number + ' 缺少有效申请人账号，无法同步通知，请先核对申请人字段。')
-            prepared.append((old, fields, patch, recipients[0], number))
+            if date_changed:
+                from order_scheduling import date_ms
+                patch['物料发货时间'] = date_ms(next_date)
+            prepared.append((old, fields, patch, recipients[0], number, next_date, date_changed))
         task, _ = jobs.enqueue('发货信息同步', 'shipping-batch:' + key, {'actor': actor, 'hash': digest}, conn=conn)
         conn.execute("SELECT set_config('pudu.job_id',%s,true)", (task.task_id,))
         runtime.request_state.update(_write_conn=conn, _write_actor=actor, _write_lane='ordinary', _job_id=task.task_id, _effect_ordinal=0)
+        if any(item[-1] for item in prepared):
+            from request_web.live_data import LiveReader
+            runtime.request_state['_live_reader'] = LiveReader()
         entries = []
-        for old, fields, patch, recipient, number in prepared:
+        for old, fields, patch, recipient, number, next_date, date_changed in prepared:
+            before_ids = {str(row[0]) for row in conn.execute('SELECT id FROM material_ops.outbox WHERE job_id=%s', (task.task_id,))}
             DatabaseWriteClient(conn).update_record(info['table_id'], old['record_id'], patch)
+            if date_changed:
+                app.sync_request_ship_date_to_schedule(old['record_id'], next_date)
             current = repo.raw_record(conn, info, old['record_id'])
             dependencies = [str(row[0]) for row in conn.execute("SELECT id FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND local_version<=%s AND state IN ('pending','processing','retry') ORDER BY ordinal", (info['table_id'], old['record_id'], current['version']))]
+            related = [str(row[0]) for row in conn.execute('SELECT id FROM material_ops.outbox WHERE job_id=%s', (task.task_id,)) if str(row[0]) not in before_ids]
+            dependencies = list(dict.fromkeys([*dependencies, *related, *(schedule_outbox_dependencies(conn, old['record_id']) if date_changed else [])]))
             if not dependencies:
                 raise RuntimeError('发货字段尚未生成同步任务，本批修改已回滚。')
             message = ('物料申请发货信息更新\n申请单号：' + number
                        + '\n发货状态：' + ('已发货' if patch[SHIPPED] else '未发货')
-                       + '\n计划发货日期：' + (date_text(fields.get('物料发货时间')) or '未设置')
+                       + '\n计划发货日期：' + (next_date or '未设置')
                        + '\n要求到达开始日期：' + (date_text(fields.get('要求达到开始日期')) or '未设置')
                        + '\n发货单号及文字信息：\n' + (patch[TEXT] or '未填写')[:5000]
                        + '\n发货图片：' + str(len(patch[IMAGES])) + ' 张（请在原申请单查看）')
-            if old['remote_id']:
-                from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
-                base = app.get_secret_value('FEISHU_BITABLE_WEB_URL') or ('https://pudutech.feishu.cn/base/' + quote(app.feishu_bitable_app_token(), safe=''))
-                parsed = urlparse(base); query = dict(parse_qsl(parsed.query))
-                query.update(table=info['table_id'], record=old['remote_id']); query.pop('view', None)
-                message += '\n查看原申请单及发货图片：' + urlunparse(parsed._replace(query=urlencode(query)))
+            import os
+            origin = os.environ.get('PUDU_PUBLIC_ORIGIN', 'https://materials.pudu.work').rstrip('/')
+            message += '\n查看申请单及发货图片：' + origin + '/management/shipping-calendar?shipping_request=' + quote(old['record_id'], safe='')
             # Supersede an older, never-attempted notification for this same
             # request. Its outbox still publishes in version order.
             conn.execute("UPDATE material_ops.effects SET state='failed',last_error='已被更新的发货提交替代，未发送旧通知' WHERE kwargs->>'_shipping_request'=%s AND state IN ('pending','retry') AND first_attempt_at IS NULL", (old['record_id'],))

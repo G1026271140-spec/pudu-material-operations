@@ -11,7 +11,24 @@ from material_store import repository as repo, shipping_calendar as shipping
 from material_store.db import connection
 
 
-def register(api, require_admin):
+def register(api, require_admin, require_viewer=None, admin_check=None):
+    if require_viewer is not None and admin_check is None:
+        raise RuntimeError('Applicant calendar requires a server-side administrator check')
+    viewer = require_viewer or require_admin
+    def can_manage(request):
+        return bool(admin_check(request)) if admin_check else True
+
+    @api.get('/api/shipping-calendar')
+    def own_catalog(request: Request, actor: str = Depends(viewer)):
+        runtime.release_database_snapshot()
+        admin = can_manage(request)
+        runtime.release_database_snapshot()
+        with connection() as conn, conn.transaction():
+            conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
+            data = shipping.catalog(conn, owner=None if admin else actor)
+        data['can_edit'] = admin
+        return data
+
     @api.get('/api/admin/shipping-calendar')
     def catalog(_: str = Depends(require_admin)):
         runtime.release_database_snapshot()
@@ -68,10 +85,13 @@ def register(api, require_admin):
         except (ValueError, TypeError) as exc:
             raise HTTPException(404, '图片不存在。') from exc
 
-    def attached(conn, request_id, name, identity):
+    def attached(conn, request_id, name, identity, actor, admin):
         info = shipping.source_info(conn)
         raw = repo.raw_record(conn, info, request_id)
         fields = repo.feishu_record(info, raw)['fields']
+        import app
+        if not admin and actor not in app.feishu_person_open_ids(fields, ['申请人']):
+            raise ValueError('图片不存在。')
         if not shipping.eligible(fields):
             raise ValueError('申请单不在发货日历中。')
         item = next((item for item in fields.get(shipping.IMAGES) or [] if isinstance(item, dict) and item.get(name) == identity), None)
@@ -79,26 +99,32 @@ def register(api, require_admin):
             raise ValueError('图片未关联至此申请单。')
         return info, raw, item
 
+    @api.get('/api/shipping-calendar/{request_id}/local-images/{media_id}')
     @api.get('/api/admin/shipping-calendar/{request_id}/local-images/{media_id}')
-    def local_image(request_id: str, media_id: str, _: str = Depends(require_admin)):
+    def local_image(request: Request, request_id: str, media_id: str, actor: str = Depends(viewer)):
         from material_store.media import load_image
         runtime.release_database_snapshot()
         try:
             UUID(media_id)
+            admin = can_manage(request)
+            runtime.release_database_snapshot()
             with connection() as conn:
-                attached(conn, request_id, 'local_media_id', media_id)
+                attached(conn, request_id, 'local_media_id', media_id, actor, admin)
                 image = load_image(media_id, conn=conn)
             return FileResponse(image['path'], media_type=image['type'], headers={'Cache-Control': 'no-store'})
         except (ValueError, TypeError) as exc:
             raise HTTPException(404, '图片不存在或已移除。') from exc
 
+    @api.get('/api/shipping-calendar/{request_id}/remote-images/{file_token}')
     @api.get('/api/admin/shipping-calendar/{request_id}/remote-images/{file_token}')
-    def remote_image(request_id: str, file_token: str, _: str = Depends(require_admin)):
+    def remote_image(request: Request, request_id: str, file_token: str, actor: str = Depends(viewer)):
         import app
         runtime.release_database_snapshot()
         try:
+            admin = can_manage(request)
+            runtime.release_database_snapshot()
             with connection() as conn:
-                info, raw, _ = attached(conn, request_id, 'file_token', file_token)
+                info, raw, _ = attached(conn, request_id, 'file_token', file_token, actor, admin)
                 remote_id = raw['remote_id']
             if not remote_id:
                 raise ValueError('申请单尚未同步。')

@@ -174,7 +174,10 @@ export default function Portal() {
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setPage(next);
     if (next === "management") setManagementTab("category");
-    if (next === "allocation") setAllocationShippingTab("allocation");
+    if (next === "allocation") {
+      setAllocationShippingTab(canManage ? "allocation" : "shipping");
+      if (!canManage) { url.pathname = "/management/shipping-calendar"; window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`); }
+    }
     window.scrollTo({ top: 0, behavior: "auto" });
   }
   function navigateAllocationShippingTab(next: AllocationShippingTab) {
@@ -268,7 +271,7 @@ export default function Portal() {
           <div className="sidebar-label">{t.tools}</div>
           {canManageApparel && <button className={`database-nav-link${page === "apparelManagement" ? " active" : ""}`} onClick={() => navigate("apparelManagement")}>{t.apparelManagement}</button>}
           {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
-          {canManage && <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>}
+          {currentUser && <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>}
           {canManage&&currentUser?.data_source==='postgresql'&&<button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
           <div className="version-row">
             <span>{t.version} {currentUser?.version || "—"}</span>
@@ -293,7 +296,7 @@ export default function Portal() {
           <CulturalPage lang={lang} currentUser={currentUser} />
         ) : page === "apparelManagement" ? (
           canManageApparel ? <ApparelManagementPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.apparelManagement}</h1><p>{lang === "zh" ? "仅已启用的 HR 和管理员可访问此页面。" : "Only enabled HR staff and administrators can access this page."}</p></main> : null
-        ) : canManage && page === "allocation" ? (
+        ) : currentUser && page === "allocation" ? (
           null
         ) : canManage && page === "database" ? (
           <DatabaseWorkbench lang={lang} />
@@ -313,7 +316,7 @@ export default function Portal() {
             </div>
           </main>
         ) : null}
-        {canManage && (allocationVisited || page === "allocation") && <div hidden={page !== "allocation"}><AllocationShippingPage lang={lang} tab={allocationShippingTab} onTabChange={navigateAllocationShippingTab} active={page === "allocation"} /></div>}
+        {currentUser && (allocationVisited || page === "allocation") && <div hidden={page !== "allocation"}><AllocationShippingPage lang={lang} tab={canManage ? allocationShippingTab : "shipping"} onTabChange={navigateAllocationShippingTab} active={page === "allocation"} canManage={canManage} /></div>}
       </div>
     </div>
   );

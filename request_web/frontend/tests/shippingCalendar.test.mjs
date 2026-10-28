@@ -42,3 +42,10 @@ test('Batch includes every staged order with stable ordering and no UI attachmen
   assert.equal(rows[1].expected_version, 4);
   assert.deepEqual(rows[0].images, [{ local_media_id: 'local-photo' }]);
 });
+
+test('Date-only administrator edits remain staged and included in batch payload', () => {
+  const original = { ...request, version: 9, images: [] };
+  const staged = stageShippingDraft({}, original, { ...shippingDraft(original), ship_date: '2026-11-09' });
+  assert.equal(shippingBatchChanges(staged)[0].ship_date, '2026-11-09');
+  assert.equal(original.ship_date, '2026-10-27');
+});

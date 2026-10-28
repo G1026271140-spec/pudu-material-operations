@@ -40,9 +40,9 @@ export function groupRequests(requests: ShippingRequest[], basis: DateBasis): [s
     .map(([day, items]) => [day, items.sort((a, b) => (a.arrival_start || '9999').localeCompare(b.arrival_start || '9999') || a.request_no.localeCompare(b.request_no))]);
 }
 
-export type ShippingDraft = Pick<ShippingRequest, 'shipping_text' | 'shipped' | 'images'>;
+export type ShippingDraft = Pick<ShippingRequest, 'shipping_text' | 'shipped' | 'images' | 'ship_date'>;
 export type ShippingStaging = Record<string, { base: ShippingRequest; draft: ShippingDraft }>;
-export const shippingDraft = (request: ShippingRequest): ShippingDraft => ({ shipping_text: request.shipping_text, shipped: request.shipped, images: request.images });
+export const shippingDraft = (request: ShippingRequest): ShippingDraft => ({ shipping_text: request.shipping_text, shipped: request.shipped, images: request.images, ship_date: request.ship_date });
 export const draftSignature = (draft: ShippingDraft) => JSON.stringify({ ...draft, images: draft.images.map(image => ({ local_media_id: image.local_media_id, file_token: image.file_token })) });
 export function stageShippingDraft(current: ShippingStaging, request: ShippingRequest, draft: ShippingDraft): ShippingStaging {
   const base = current[request.request_id]?.base || request;
@@ -53,7 +53,7 @@ export function stageShippingDraft(current: ShippingStaging, request: ShippingRe
 }
 export function shippingBatchChanges(staged: ShippingStaging) {
   return Object.values(staged).map(({ base, draft }) => ({ request_id: base.request_id, expected_version: base.version,
-    shipping_text: draft.shipping_text, shipped: draft.shipped,
+    shipping_text: draft.shipping_text, shipped: draft.shipped, ship_date: draft.ship_date,
     images: draft.images.map(image => image.local_media_id ? { local_media_id: image.local_media_id } : { file_token: image.file_token }) }))
     .sort((a, b) => a.request_id.localeCompare(b.request_id));
 }

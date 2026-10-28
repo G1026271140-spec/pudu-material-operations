@@ -931,7 +931,9 @@ register_database_api(api, require_admin)
 from request_web.apparel_api import register as register_apparel_api
 register_apparel_api(api, require_hr)
 from request_web.shipping_calendar_api import register as register_shipping_calendar_api
-register_shipping_calendar_api(api, require_admin)
+def require_shipping_calendar_viewer(request: Request) -> str:
+    return _authenticated_submitter(request)[1]
+register_shipping_calendar_api(api, require_admin, require_shipping_calendar_viewer, _signed_admin_open_id)
 
 
 def _allocation_actor(
