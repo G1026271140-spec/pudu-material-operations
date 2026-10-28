@@ -15,7 +15,8 @@ remote=git('remote','get-url','origin');ssh=git('config','--get','core.sshComman
 for name in ['gaohongyuan1','weiwei']:
     target=base/name
     known=git('config','--global','--get-all','safe.directory') if subprocess.run(['runuser','-u','gaohongyuan1','--','git','config','--global','--get-all','safe.directory'],stdout=subprocess.DEVNULL).returncode==0 else ''
-    if str(target) not in known.splitlines():git('config','--global','--add','safe.directory',target)
+    for trusted in [target,target/'.git']:
+        if str(trusted) not in known.splitlines():git('config','--global','--add','safe.directory',trusted)
     if target.exists():
         print('Existing workspace retained: '+str(target));continue
     subprocess.run(['git','-c','safe.directory='+str(repo),'clone','--no-hardlinks',str(repo),str(target)],check=True)
