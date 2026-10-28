@@ -1,3 +1,5 @@
+> **现行运维入口（2026-10-28）**：[Ubuntu / PostgreSQL 运维与开发手册](docs/ops/README.md)。日常写入先 PG、Worker 同步飞书，每天北京时间 03:00 飞书优先核对；两个个人 VM 工作区统一 `sudo pudu-release`。下文保留迁移准备期 / 历史说明，不能据此重装、覆盖现网配置或恢复旧 Windows 任务。
+
 # PUDU Material Operations
 
 V3.5.3：React + TypeScript/Vite 前端、FastAPI/Uvicorn 后端和独立 Python Worker。虚拟机实时读表浏览模式并行读取通讯录与独立源表，并保留飞书附件下载上下文；不使用业务快照缓存。页面、权限和配货列表实时读取飞书，保留企业登录；浏览阶段关闭提交、同步 Webhook 和后台通知。

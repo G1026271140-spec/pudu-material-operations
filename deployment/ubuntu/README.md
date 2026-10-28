@@ -1,3 +1,5 @@
+> **现行运维入口（2026-10-28）**：[Ubuntu / PostgreSQL 运维与开发手册](../../docs/ops/README.md)。日常写入先 PG、Worker 同步飞书，每天北京时间 03:00 飞书优先核对；两个个人 VM 工作区统一 `sudo pudu-release`。下文保留迁移准备期 / 历史说明，不能据此重装、覆盖现网配置或恢复旧 Windows 任务。
+
 # Ubuntu 服务搭建（非业务上线）
 
 ## V3.5.2 网页浏览验证

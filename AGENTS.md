@@ -2,7 +2,9 @@
 
 The production system runs on Ubuntu VM 192.168.84.121 as user gaohongyuan1.
 The authoritative Git working copy is /home/gaohongyuan1/pudu-materials-operation/repo.
-Make system code changes in that VM working copy and commit/push them to GitLab.
+Make code changes in your own VM workspace under /srv/pudu-materials-workspaces/<account>.
+The integration checkout is managed by the release command; commit in your personal workspace,
+then use sudo pudu-release to merge, validate, push GitLab and deploy.
 Do not use or restart the retired Windows material-system runtimes. The separate
 PUDU Lead Intake Worker is outside this project's scope and must remain intact.
 
@@ -47,3 +49,28 @@ Delayed earlier jobs must finish or fail before later jobs in that business lane
 Ordinary material and cultural submissions retain independent business lanes.
 Outbox local versions determine Feishu publication order, including across lanes.
 The daily 03:00 Feishu-authoritative reconciliation remains unchanged.
+
+## Durable handover and conversation records
+
+Start by reading docs/ops/README.md and docs/ops/02-固定业务规则.md. These describe
+the current PostgreSQL VM production system. docs/handover and the commissioning
+notes in deployment/ubuntu/README.md are historical; do not install their old units
+over live production. Inspect effective systemd units/drop-ins before changing them.
+
+For every completed user task/conversation, create or update a record under
+docs/ops/changes using scripts/new_ops_record.py and the supplied template. Preserve
+the request, later corrections, decisions, changed files/fields, actual verification,
+and explicit remaining work. Include the record in the same code submission.
+Update the canonical business rules when an authorized requirement changes them.
+Release SHA and final runtime evidence come from shared/release-audit.jsonl and
+read-only live checks, never from an expected version written before deployment.
+
+Keep raw/redacted chat archives under shared/handover-archives or a restricted
+handover folder, never in Git. scripts/export_conversations.py exports only explicitly
+selected user/visible-assistant messages; no hidden reasoning or tool payloads.
+It is an explicit export tool, not an automatic listener for future chats.
+
+Do not restore extra administrator success cards for management/allocation/shipping.
+Keep applicant/original workflow cards and failure alerts. Both apparel and cultural
+partial rejection affect only selected issued lines and must update original cards.
+All operation details and superseded decisions are indexed in docs/ops.
