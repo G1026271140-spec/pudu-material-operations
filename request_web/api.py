@@ -736,9 +736,11 @@ _CORPORATE_APPAREL_STOCK_CACHE: dict[str, Any] = {"loaded_at": 0.0, "items": Non
 def health() -> dict[str, Any]:
     if backend_runtime.database_reads():
         from material_store.db import connection
+        from material_store.concurrency import last_commit_wins
         with connection() as conn:
             conn.execute('SELECT 1')
         return {'status':'ok','version':__import__('app').APP_VERSION,'mode':'postgresql',
+            'concurrent_edit_policy':'last_commit_wins' if last_commit_wins() else 'strict',
                 'business_cache_enabled':False,'business_write_enabled':backend_runtime.database_business_writes_enabled(),
                 'database_editor_enabled':backend_runtime.database_editor_enabled(),'workflow_write_enabled':backend_runtime.database_workflow_writes_enabled(),'worker_enabled':backend_runtime.database_worker_enabled()}
     if backend_runtime.realtime_reads():

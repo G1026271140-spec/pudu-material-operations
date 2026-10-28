@@ -341,7 +341,8 @@ def patch_record(conn, table_id, record_key, patch, expected_version, idempotenc
             if prior[0]!=table_id or prior[1]!=old["record_id"] or (prior[3]!=request_hash if prior[3] else prior[2]!=patch):
                 raise VersionConflict("保存标识已用于其他修改。")
             return {k:old[k] for k in ("record_id","fields","version","sync_state")}
-        if old["version"]!=expected_version:raise VersionConflict("此记录已被其他操作修改，请刷新后重试。")
+        from .concurrency import check_version
+        check_version(expected_version,old["version"],"记录版本无效，请刷新后重试。")
         validate_patch(info["fields"],patch)
         field = next(f for f in info["fields"] if f["field_id"] in patch)
         reason = edit_reason(info,field)

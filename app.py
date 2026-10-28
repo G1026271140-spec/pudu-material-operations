@@ -84,7 +84,7 @@ APP_RUNTIME = _AppRuntimeProxy()
 
 
 # 提交版本逐次递增；V0.9.9 的下一版进位为 V1.0.0，不使用 V0.9.10。
-APP_VERSION = "V3.8.9"
+APP_VERSION = "V3.9.0"
 REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION = 2
 if SUBMISSION_QUEUE_MODULE_VERSION != REQUIRED_SUBMISSION_QUEUE_MODULE_VERSION:
     raise RuntimeError(
@@ -8709,8 +8709,10 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
     context = request_inventory_review_context(request_id=request_id)
     request = dict(context["request"])
     current_version = int(request.get("inventory_review_version") or 0)
+    from material_store.concurrency import last_commit_wins
     recovering_notifications = (
-        current_version == expected_version + 1
+        not (last_commit_wins() and runtime.request_state.get("_write_conn"))
+        and current_version == expected_version + 1
         and str(request.get("inventory_change_note") or "") == change_note
     )
     if recovering_notifications:
@@ -8786,6 +8788,9 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         line_record_id = str(item.get("line_record_id") or "")
         split_source_line_id = str(item.get("split_source_line_id") or "")
         split_source_line_ids = item.get("split_source_line_ids") or ([split_source_line_id] if split_source_line_id else [])
+        if last_commit_wins() and runtime.request_state.get("_write_conn") and isinstance(split_source_line_ids, list):
+            split_source_line_ids = [value for value in split_source_line_ids if value in valid_line_ids]
+            if split_source_line_id not in valid_line_ids:split_source_line_id = ""
         if not isinstance(split_source_line_ids, list) or any(not isinstance(value, str) or value not in valid_line_ids for value in split_source_line_ids) or len(set(split_source_line_ids)) != len(split_source_line_ids) or (split_source_line_id and split_source_line_id not in split_source_line_ids):
             raise RuntimeError("整组分装的来源明细已变化，请刷新后重试。")
         quantity = int(item.get("quantity") or 0)
@@ -9223,7 +9228,8 @@ def execute_request_inventory_reject(draft: dict[str, object]) -> dict[str, obje
         raise RuntimeError("只有待审批申请可以驳回。")
     if str(request.get("inventory_review_status") or "") == INVENTORY_REVIEW_CONFIRMED:
         raise RuntimeError("该申请已经完成库存核实，不能驳回。")
-    if int(request.get("inventory_review_version") or 0) != expected_version:
+    from material_store.concurrency import last_commit_wins
+    if int(request.get("inventory_review_version") or 0) != expected_version and not (last_commit_wins() and runtime.request_state.get("_write_conn")):
         raise RuntimeError("申请已发生修改，请查看最新卡片后再驳回。")
     line_ids = [
         str(line.get("record_id") or "")

@@ -194,8 +194,8 @@ def save(actor, body):
         fields = repo.feishu_record(info, old)['fields']
         if not eligible(fields):
             raise ValueError('仅可编辑已核实库存且未撤回、驳回或取消的普通物料申请。')
-        if old['version'] != body['expected_version']:
-            raise repo.VersionConflict('此申请单已被其他操作修改，请重新载入后再保存。')
+        from .concurrency import check_version
+        check_version(body['expected_version'],old['version'],'申请单版本无效，请重新载入后再保存。')
         if old['sync_state'] == 'conflict':
             raise repo.VersionConflict('此申请单存在飞书同步冲突，请先在虚拟数据库核对。')
         images = attachments(conn, body['images'], fields.get(IMAGES), actor)
@@ -269,7 +269,9 @@ def save_batch(actor, body):
             number = app.feishu_text(fields, '申请单号')
             if not eligible(fields):
                 raise ValueError(number + ' 已不符合发货编辑条件，请刷新核对。')
-            if old['version'] != item['expected_version'] or old['sync_state'] == 'conflict':
+            from .concurrency import check_version
+            check_version(item['expected_version'],old['version'],number + ' 版本无效，本批尚未保存。')
+            if old['sync_state'] == 'conflict':
                 raise repo.VersionConflict(number + ' 已被修改或存在同步冲突，本批尚未保存，请核对后重新提交。')
             images = attachments(conn, item['images'], fields.get(IMAGES), actor)
             next_date = item.get('ship_date', date_text(fields.get('物料发货时间')))

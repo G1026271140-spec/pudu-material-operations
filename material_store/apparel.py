@@ -159,7 +159,8 @@ def save(actor,body):
         old_rows=old['records'] if old else []
         raw_rows={row['record_id']:repo.raw_record(conn,info,row['record_id'],lock=True) for row in old_rows}
         expected=body.get('expected_versions') or {}
-        if operation!='create' and expected!={rid:row['version'] for rid,row in raw_rows.items()}:raise repo.VersionConflict('款式或库存已被其他操作修改，请刷新后重新核对。')
+        from .concurrency import check_versions
+        if operation!='create':check_versions(expected,{rid:row['version'] for rid,row in raw_rows.items()},'款式或库存版本无效，请刷新后重新核对。')
         fields_by_id={row['record_id']:row['fields'] for row in rows}
         history=historical_source_ids(conn)
         def removable(rid):

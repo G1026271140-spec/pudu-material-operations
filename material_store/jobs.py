@@ -40,7 +40,8 @@ def enqueue(task_type,key,payload,*,conn=None):
     if prior:
         if prior[1]!=task_type or prior[3]!=payload:raise ValueError('同一提交标识不能用于不同的业务数据。')
         return _task(prior),False
-    row=conn.execute('INSERT INTO material_ops.jobs(task_type,idempotency_key,payload,lane) VALUES (%s,%s,%s,%s) RETURNING id,task_type,idempotency_key,payload,state,result',
+    conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))',('business-enqueue:'+lane_for(task_type),))
+    row=conn.execute('INSERT INTO material_ops.jobs(task_type,idempotency_key,payload,lane,created_at) VALUES (%s,%s,%s,%s,clock_timestamp()) RETURNING id,task_type,idempotency_key,payload,state,result',
                      (task_type,key,Jsonb(payload),lane_for(task_type))).fetchone()
     return _task(row),True
 
@@ -109,7 +110,21 @@ def run_one(lane=None,job_id=None,*,raise_errors=False):
     try:
         # Each worker owns a fresh scope; stale HTTP snapshots cannot leak in.
         with runtime.request_scope(),connection() as conn,conn.transaction():
-            if job_id:
+            from .concurrency import last_commit_wins
+            if last_commit_wins():
+                selected_lane=lane
+                if job_id:
+                    target=conn.execute("SELECT lane FROM material_ops.jobs WHERE id=%s AND state IN ('pending','retry')",(UUID(str(job_id)),)).fetchone()
+                    if target is None:return None
+                    selected_lane=target[0]
+                conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))',('business-lane:'+str(selected_lane),))
+                # Claim the oldest intent before checking retry time. A delayed
+                # older write may not run after and undo a newer successful one.
+                row=conn.execute("""SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs
+                    WHERE id=(SELECT id FROM material_ops.jobs WHERE lane=%s AND state IN ('pending','retry')
+                      AND task_type NOT IN ('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新')
+                      ORDER BY created_at,id LIMIT 1) AND available_at<=clock_timestamp() FOR UPDATE""",(selected_lane,)).fetchone()
+            elif job_id:
                 row=conn.execute("SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE id=%s AND state IN ('pending','retry') AND task_type NOT IN ('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新') FOR UPDATE",(UUID(str(job_id)),)).fetchone()
             else:
                 row=conn.execute("SELECT id,task_type,idempotency_key,payload,state,result FROM material_ops.jobs WHERE lane=%s AND state IN ('pending','retry') AND available_at<=now() AND task_type NOT IN ('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新') ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED",(lane,)).fetchone()
@@ -137,14 +152,21 @@ def submit(task_type,key,payload):
     if task.status=='失败':raise ValueError('这笔操作此前未能保存，请刷新后重新提交。')
     if task.status!='已完成':
         import psycopg
-        try:run_one(job_id=task.task_id,raise_errors=True)
+        try:
+            from .concurrency import last_commit_wins
+            for _ in range(32 if last_commit_wins() else 1):
+                processed=run_one(job_id=task.task_id,raise_errors=not last_commit_wins())
+                if processed is None or processed.get('id')==task.task_id:break
         except (psycopg.errors.DeadlockDetected,psycopg.errors.SerializationFailure,psycopg.errors.LockNotAvailable):
             # The durable job will retry. Return its identity so an HTTP retry
             # cannot create another business operation with a different token.
             return task,created
     with connection() as conn:
         state,result,error=conn.execute('SELECT state,result,last_error FROM material_ops.jobs WHERE id=%s',(task.task_id,)).fetchone()
-    if state!='done':raise RuntimeError(error or '这笔操作尚未完成，请稍后重试。')
+    if state!='done':
+        from .concurrency import last_commit_wins
+        if last_commit_wins() and state in {'pending','retry'}:return task,created
+        raise RuntimeError(error or '这笔操作尚未完成，请稍后重试。')
     from dataclasses import replace
     task=replace(task,status='已完成',result=result)
     # Invalidate the HTTP response snapshot so subsequent builders see commits.

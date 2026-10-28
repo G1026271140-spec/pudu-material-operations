@@ -67,11 +67,14 @@ def save(actor,body):
         old=originals[0] if originals else None
         versions=body.get('expected_versions')
         if versions is not None:
-            if not isinstance(versions,dict) or set(versions)!={row['record_id'] for row in originals} or any(type(versions[row['record_id']]) is not int or versions[row['record_id']]!=row['version'] for row in originals):
-                raise repo.VersionConflict('该账号的权限记录已变化，请刷新后重试。')
+            from .concurrency import check_versions
+            check_versions(versions,{row['record_id']:row['version'] for row in originals},'该账号的权限版本无效，请刷新后重试。')
         else:
             expected=body['expected_version']
-            if len(originals)>1 or (old and (type(expected)is not int or old['version']!=expected)) or (not old and expected is not None):
+            from .concurrency import last_commit_wins,check_version
+            if last_commit_wins() and old and expected is not None:
+                check_version(expected,old['version'],'权限版本无效。')
+            if not last_commit_wins() and (len(originals)>1 or (old and (type(expected)is not int or old['version']!=expected)) or (not old and expected is not None)):
                 raise repo.VersionConflict('人员权限已被其他操作修改，请刷新后重试。')
         if any(row['sync_state']=='conflict' for row in originals):raise repo.VersionConflict('该人员权限存在飞书同步冲突，请先核对。')
         if not body['enabled'] or '管理员' not in selected:
