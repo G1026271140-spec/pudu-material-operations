@@ -6,9 +6,10 @@ import "./allocation-shipping.css";
 
 export type AllocationShippingTab = "allocation" | "shipping";
 
-export default function AllocationShippingPage({ lang, tab, onTabChange, active = true, canManage = false }: {
+export default function AllocationShippingPage({ lang, tab, onTabChange, active = true, canManage = false, canEditShipping = false }: {
   active?: boolean;
   canManage?: boolean;
+  canEditShipping?: boolean;
   lang: "zh" | "en";
   tab: AllocationShippingTab;
   onTabChange: (tab: AllocationShippingTab) => void;
@@ -22,6 +23,6 @@ export default function AllocationShippingPage({ lang, tab, onTabChange, active 
       <button type="button" className={tab === "shipping" ? "active" : ""} aria-current={tab === "shipping" ? "page" : undefined} onClick={() => onTabChange("shipping")}>{tr("物料发货日历", "Material Shipping Calendar")}</button>
     </nav>
     {canManage && tab === "allocation" && <AllocationWorkbench lang={lang} embedded />}
-    {(shippingVisited || tab === "shipping") && <div hidden={tab !== "shipping"}><ShippingCalendarPage lang={lang} active={active && tab === "shipping"} editable={canManage} /></div>}
+    {(shippingVisited || tab === "shipping") && <div hidden={tab !== "shipping"}><ShippingCalendarPage lang={lang} active={active && tab === "shipping"} editable={canManage || canEditShipping} /></div>}
   </section>;
 }

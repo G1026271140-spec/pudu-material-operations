@@ -6357,7 +6357,8 @@
         "管理员",
         "销售",
         "区域市场经理",
-        "HR"
+        "HR",
+        "中台"
       ],
       "linked_table_id": null,
       "multiple": null,

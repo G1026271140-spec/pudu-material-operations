@@ -1,4 +1,4 @@
-"""Administrator shipping calendar and request-scoped image access."""
+"""Shipping editors (administrators and middle office) with scoped image access."""
 from urllib.parse import unquote
 from uuid import UUID
 
@@ -11,12 +11,12 @@ from material_store import repository as repo, shipping_calendar as shipping
 from material_store.db import connection
 
 
-def register(api, require_admin, require_viewer=None, admin_check=None):
-    if require_viewer is not None and admin_check is None:
-        raise RuntimeError('Applicant calendar requires a server-side administrator check')
-    viewer = require_viewer or require_admin
+def register(api, require_editor, require_viewer=None, editor_check=None):
+    if require_viewer is not None and editor_check is None:
+        raise RuntimeError('Applicant calendar requires a server-side shipping editor check')
+    viewer = require_viewer or require_editor
     def can_manage(request):
-        return bool(admin_check(request)) if admin_check else True
+        return bool(editor_check(request)) if editor_check else True
 
     @api.get('/api/shipping-calendar')
     def own_catalog(request: Request, actor: str = Depends(viewer)):
@@ -30,14 +30,14 @@ def register(api, require_admin, require_viewer=None, admin_check=None):
         return data
 
     @api.get('/api/admin/shipping-calendar')
-    def catalog(_: str = Depends(require_admin)):
+    def catalog(_: str = Depends(require_editor)):
         runtime.release_database_snapshot()
         with connection() as conn, conn.transaction():
             conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
             return shipping.catalog(conn)
 
     @api.post('/api/admin/shipping-calendar/save')
-    def save(body: dict, actor: str = Depends(require_admin)):
+    def save(body: dict, actor: str = Depends(require_editor)):
         try:
             raise ValueError('请使用日历中的统一提交按钮，确认后提交全部修改。')
         except repo.VersionConflict as exc:
@@ -46,7 +46,7 @@ def register(api, require_admin, require_viewer=None, admin_check=None):
             raise HTTPException(422, str(exc)) from exc
 
     @api.post('/api/admin/shipping-calendar/batch')
-    def save_batch(body: dict, actor: str = Depends(require_admin)):
+    def save_batch(body: dict, actor: str = Depends(require_editor)):
         try:
             return shipping.save_batch(actor, body)
         except repo.VersionConflict as exc:
@@ -55,7 +55,7 @@ def register(api, require_admin, require_viewer=None, admin_check=None):
             raise HTTPException(422, str(exc)) from exc
 
     @api.post('/api/admin/shipping-calendar/images')
-    async def upload(request: Request, actor: str = Depends(require_admin)):
+    async def upload(request: Request, actor: str = Depends(require_editor)):
         from material_store.media import save_image, MAX_IMAGE_BYTES
         runtime.release_database_snapshot()
         content = bytearray()
@@ -71,7 +71,7 @@ def register(api, require_admin, require_viewer=None, admin_check=None):
             raise HTTPException(422, str(exc)) from exc
 
     @api.get('/api/admin/shipping-calendar/uploads/{media_id}')
-    def preview(media_id: str, actor: str = Depends(require_admin)):
+    def preview(media_id: str, actor: str = Depends(require_editor)):
         from material_store.media import load_image
         runtime.release_database_snapshot()
         try:

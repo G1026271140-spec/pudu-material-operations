@@ -197,7 +197,7 @@ def save(actor, body):
         if old['version'] != body['expected_version']:
             raise repo.VersionConflict('此申请单已被其他操作修改，请重新载入后再保存。')
         if old['sync_state'] == 'conflict':
-            raise repo.VersionConflict('此申请单存在飞书同步冲突，请先在数据库工作台核对。')
+            raise repo.VersionConflict('此申请单存在飞书同步冲突，请先在虚拟数据库核对。')
         images = attachments(conn, body['images'], fields.get(IMAGES), actor)
         patch = {TEXT: text, SHIPPED: body['shipped'], IMAGES: images}
         runtime.request_state.update(_write_conn=conn, _write_actor=actor, _write_lane='ordinary')

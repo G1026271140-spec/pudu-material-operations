@@ -3763,11 +3763,18 @@
                 "color": 3,
                 "id": "optH4iaIBL",
                 "name": "HR"
+              },
+              {
+                "color": 4,
+                "id": "optPnA7iU1",
+                "name": "中台"
               }
             ]
           },
           "is_primary": false,
-          "description": null
+          "description": null,
+          "is_extend": false,
+          "is_synced": false
         },
         {
           "field_id": "fldAkxcnfu",

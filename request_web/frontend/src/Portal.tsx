@@ -74,7 +74,7 @@ function IdentityBar({ user, lang }: { user: CurrentUser | null; lang: Lang }) {
   return (
     <div className="identity-bar" aria-label={lang === "zh" ? "当前登录身份" : "Signed-in identity"}>
       <div className="identity-person">
-        {user.read_only && <span role="status">{user.data_source==='postgresql'?(lang==='zh'?'业务申请暂未开放 · 数据库工作台可编辑':'Submissions disabled · database editing available'):(lang === 'zh' ? '浏览验证 · 提交暂未开放' : 'Preview · submissions disabled')}</span>}
+        {user.read_only && <span role="status">{user.data_source==='postgresql'?(lang==='zh'?'业务申请暂未开放 · 虚拟数据库可编辑':'Submissions disabled · database editing available'):(lang === 'zh' ? '浏览验证 · 提交暂未开放' : 'Preview · submissions disabled')}</span>}
         {user.avatar_url ? <img src={user.avatar_url} alt="" referrerPolicy="no-referrer" /> : <span className="identity-avatar">{user.name.slice(0, 1)}</span>}
         <span className="identity-name">{user.name}</span>
         <span className="identity-role">{role}</span>
@@ -93,13 +93,15 @@ const text = {
     cultural: "文化周边申领",
     management: "物料管理",
     allocation: "配货与发货",
-    database: "数据库工作台",
+    database: "虚拟数据库",
     history: "申请记录与额度",
     permissions: "用户权限管理",
     apparelManagement: "企业文化衫管理",
     corporateApparel: "企业文化衫领取",
     corporateApparelHint: "在新页面打开企业文化衫领取",
-    tools: "数据与系统工具",
+    historyGroup: "历史数据",
+    editingGroup: "后台编辑",
+    systemGroup: "系统工具",
     version: "当前应用版本",
     denied: "仅已启用的管理员可访问物料管理",
     collapse: "收起左侧导航",
@@ -113,13 +115,15 @@ const text = {
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
     allocation: "Allocation & Shipping",
-    database: "Database Workspace",
+    database: "Virtual Database",
     history: "History & Allowances",
     permissions: "User Permissions",
     apparelManagement: "Corporate Apparel Management",
     corporateApparel: "Corporate Apparel Request",
     corporateApparelHint: "Open Corporate Apparel Request in a new tab",
-    tools: "Data & System Tools",
+    historyGroup: "History",
+    editingGroup: "Administration",
+    systemGroup: "System Tools",
     version: "Current Version",
     denied: "Only enabled administrators can access Material Management",
     collapse: "Collapse sidebar",
@@ -147,6 +151,7 @@ export default function Portal() {
   const t = text[lang];
   const canManage = currentUser?.permission_status === "enabled" && currentUser.roles.includes("管理员");
   const canManageApparel = currentUser?.permission_status === "enabled" && currentUser.roles.some(role => role === "HR" || role === "管理员");
+  const canEditShipping = currentUser?.permission_status === "enabled" && currentUser.roles.some(role => role === "中台" || role === "管理员");
   useEffect(() => {
     const refreshIdentity = () => {
       fetch("/api/auth/me", { cache: "no-store" })
@@ -283,13 +288,21 @@ export default function Portal() {
           </a>}
         </nav>
         <div className="sidebar-system">
-          <div className="sidebar-label">{t.tools}</div>
-          {currentUser && <button className={`database-nav-link${page === "history" ? " active" : ""}`} onClick={() => navigate("history")}>{t.history}</button>}
-          {canManage && <button className={`database-nav-link${page === "permissions" ? " active" : ""}`} onClick={() => navigate("permissions")}>{t.permissions}</button>}
-          {canManageApparel && <button className={`database-nav-link${page === "apparelManagement" ? " active" : ""}`} onClick={() => navigate("apparelManagement")}>{t.apparelManagement}</button>}
-          {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
-          {currentUser && <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>}
-          {canManage&&currentUser?.data_source==='postgresql'&&<button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
+          {currentUser && <div className="sidebar-tool-group" role="group" aria-label={t.historyGroup}>
+            <div className="sidebar-label">{t.historyGroup}</div>
+            <button className={`database-nav-link${page === "history" ? " active" : ""}`} onClick={() => navigate("history")}>{t.history}</button>
+          </div>}
+          {currentUser && <div className="sidebar-tool-group" role="group" aria-label={t.editingGroup}>
+            <div className="sidebar-label">{t.editingGroup}</div>
+            <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>
+            {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
+            {canManageApparel && <button className={`database-nav-link${page === "apparelManagement" ? " active" : ""}`} onClick={() => navigate("apparelManagement")}>{t.apparelManagement}</button>}
+          </div>}
+          {canManage && <div className="sidebar-tool-group" role="group" aria-label={t.systemGroup}>
+            <div className="sidebar-label">{t.systemGroup}</div>
+            <button className={`database-nav-link${page === "permissions" ? " active" : ""}`} onClick={() => navigate("permissions")}>{t.permissions}</button>
+            {currentUser?.data_source === 'postgresql' && <button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
+          </div>}
           <div className="version-row">
             <span>{t.version} {currentUser?.version || "—"}</span>
             <span>🔒</span>
@@ -337,7 +350,7 @@ export default function Portal() {
             </div>
           </main>
         ) : null}
-        {currentUser && (allocationVisited || page === "allocation") && <div hidden={page !== "allocation"}><AllocationShippingPage lang={lang} tab={canManage ? allocationShippingTab : "shipping"} onTabChange={navigateAllocationShippingTab} active={page === "allocation"} canManage={canManage} /></div>}
+        {currentUser && (allocationVisited || page === "allocation") && <div hidden={page !== "allocation"}><AllocationShippingPage lang={lang} tab={canManage ? allocationShippingTab : "shipping"} onTabChange={navigateAllocationShippingTab} active={page === "allocation"} canManage={canManage} canEditShipping={canEditShipping} /></div>}
       </div>
     </div>
   );

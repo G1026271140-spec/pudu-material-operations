@@ -933,7 +933,18 @@ register_apparel_api(api, require_hr)
 from request_web.shipping_calendar_api import register as register_shipping_calendar_api
 def require_shipping_calendar_viewer(request: Request) -> str:
     return _authenticated_submitter(request)[1]
-register_shipping_calendar_api(api, require_admin, require_shipping_calendar_viewer, _signed_admin_open_id)
+def _signed_shipping_editor_open_id(request: Request) -> str:
+    return _signed_role_open_id(request, {"管理员", "中台"})
+
+
+def require_shipping_editor(request: Request) -> str:
+    actor = _signed_shipping_editor_open_id(request)
+    if not actor:
+        raise HTTPException(403, "仅已启用的中台和管理员可编辑发货信息。")
+    return actor
+
+
+register_shipping_calendar_api(api, require_shipping_editor, require_shipping_calendar_viewer, _signed_shipping_editor_open_id)
 from request_web.portal_records_api import register as register_portal_records_api
 register_portal_records_api(api, require_shipping_calendar_viewer, require_admin, require_hr)
 
