@@ -1,47 +1,96 @@
-> **现行运维入口（2026-10-28）**：[Ubuntu / PostgreSQL 运维与开发手册](docs/ops/README.md)。日常写入先 PG、Worker 同步飞书，每天北京时间 03:00 飞书优先核对；两个个人 VM 工作区统一 `sudo pudu-release`。下文保留迁移准备期 / 历史说明，不能据此重装、覆盖现网配置或恢复旧 Windows 任务。
-
 # PUDU Material Operations
 
-V3.5.3：React + TypeScript/Vite 前端、FastAPI/Uvicorn 后端和独立 Python Worker。虚拟机实时读表浏览模式并行读取通讯录与独立源表，并保留飞书附件下载上下文；不使用业务快照缓存。页面、权限和配货列表实时读取飞书，保留企业登录；浏览阶段关闭提交、同步 Webhook 和后台通知。
+PUDU 营销物料管理系统。当前为 **Ubuntu 虚拟机 + PostgreSQL + 飞书多维表格同步**的正式运行系统，前端使用 React / TypeScript，后端使用 FastAPI，业务、数据同步与卡片通知由独立 Worker 处理。
 
-这是公司 GitLab 交接及 Ubuntu 迁移分支。**代码调整不表示现有 Windows 生产实例已经升级，也不表示虚拟机业务已接通。** Ubuntu 准备状态见 [服务部署说明](deployment/ubuntu/README.md)。
+- **业务入口**：[materials.pudu.work](https://materials.pudu.work)
+- **运维与开发入口**：[docs/ops/README.md](docs/ops/README.md)
+- **开发约束**：[AGENTS.md](AGENTS.md)
+- **实际线上版本**：[健康接口](https://materials.pudu.work/api/health)；源码版本为 `app.py` 中的 `APP_VERSION`。本文根据 2026-10-28 的 V3.9.x 生产架构整理，发布后以接口和 Git SHA 为准。
 
-## 业务组成
+## 当前数据流程
 
-- 普通物料、文化周边和企业文化衫申领；个人配额按现有品类规则共享。
-- 配货工作台、申请明细调整/分装、撤回、库存核实和提醒。
-- 采购补库、品类/型号/语种/战区管理、发货模板与运费分摊。
-- 飞书企业登录、申请人/提交人区分及管理员/HR 等角色权限。
-- 原“营销物料管理”应用身份访问飞书 Base、后台任务队列和通知；不用个人身份替代。
-- 后台任务保留幂等键、检查点、租约、失败和重试通知。SQLite 中的写入状态和通知 outbox 是持久业务状态，不能作为读取缓存删除。
-
-## 配置和运行
-
-环境变量优先；配置文件默认 `config/secrets.toml`，可通过 `PUDU_SECRETS_FILE` 指定外部受保护的 TOML。示例见 [secrets.toml.example](config/secrets.toml.example)。密钥、日志、业务快照及本地数据库不提交 Git。
-
-```sh
-python -m venv .venv
-# 激活虚拟环境后：
-python -m pip install -r requirements.txt
-python -m uvicorn request_web.api:api --host 127.0.0.1 --port 8501
+```mermaid
+flowchart LR
+    U[飞书登录用户] --> W[React / FastAPI]
+    W --> P[虚拟机 PostgreSQL]
+    P --> O[事务 outbox]
+    O --> F[飞书多维表格]
+    F --> E[通知 Worker 更新原卡片 / 发货卡片]
+    F --> R[每天北京时间 03:00 校验]
+    R --> P
 ```
 
-Windows 也可使用 `run_app.ps1`，它仅启动 FastAPI 并由其提供 React 静态资源。前端源码位于 `request_web/frontend/src`，构建后位于 `request_web/frontend/dist`。
+日常操作先在本地事务中保存业务、审计、幂等结果和待同步任务，页面随即读取 PostgreSQL 的最新数据；Worker 再将变动写入对应飞书表。飞书暂不可达时，已保存数据和同步任务保留，不能把“入队”当作“已同步”。页面不依赖定时业务缓存文件。
 
-`app.py` 现在是既有业务函数模块，保留模块名以兼容 API、Worker 和维护脚本的导入，不再作为页面程序运行。`backend_runtime.py` 提供独立的配置、缓存和请求局部状态工具，不参与身份授权。
+每天 **03:00 Asia/Shanghai** 完整读取两套飞书来源的 23 张表，以飞书为准核对并更新本地，包括人工修改和清空。当前基准注册 366 个稳定字段；字段新增或类型变化必须同时维护注册和数据库迁移，不能跳过 schema 检查。
 
-## 部署边界
+## 主要功能
 
-公司拟用域名是 `materials.pudu.work`；DNS、TLS、飞书重定向和工作台入口未验收前，不修改正式旧域名。不能关闭企业身份验证来让 HTTP IP 页面执行真实业务。
+- 普通物料申请、文化周边申领、企业文化衫申领，库存、个人额度及审批 / 发放流程。
+- **配货与发货**：配货工作台、按本批同品类整组分装、发货日历、日期 / 运单文字 / 图片 / 发货状态统一提交。
+- **物料管理**：采购补库 / 减库、品类及可选图片、型号 / 语种 / 战区管理，新型号可关联产品线。
+- **企业文化衫管理**：HR / 管理员维护行政源款式和尺码，配置申领显示、图片和累计领取上限；有领用历史的规格保留历史，可下架。
+- **申请记录与额度**：本人历史，管理员个人 / 全部切换，HR 查看全公司文化周边与文化衫；文化衫及文化周边可勾选明细部分驳回，只退回所选行库存与额度并更新原卡片。
+- **用户权限管理**：完整通讯录实时刷新，角色修改同步飞书用户权限表；重复账号启用角色取并集，缺失人员默认销售。
+- **虚拟数据库**：仅管理员可查看和按字段规则编辑，保留飞书稳定 ID、审计及同步状态。
+- 发货模板与发货排期保留附加功能；INV Shipping Cost 按货值分摊，货物单价最多两位小数，允许合理舍入尾差。
 
-虚拟机测试要求实时读取飞书，不复制生产业务缓存。`PUDU_REALTIME_READS=1` 仅能关闭后端数据函数缓存；旧目录的 JSON 读取路径还须完成独立适配和联调，不能只设置这个开关就宣称全站实时读取已经完成。
+申请人只读查看自己的发货信息，管理员和中台可编辑发货，中台不开放配货。发货和日期变更均使用申请人卡片通知；物料管理、配货、发货不再额外发送管理员成功回执，原业务卡片和失败需核对提醒保留。
 
-原应用文档和交接材料包含 V3.4.5 的生产历史，以本分支 README 和 Ubuntu 说明为新部署入口。尚未启用的 Ubuntu Worker 不得与旧生产 Worker 同时接管同一队列。
+导航固定为：**历史数据**（申请记录与额度）、**后台编辑**（配货与发货 → 物料管理 → 企业文化衫管理）、**系统工具**（用户权限管理 → 虚拟数据库）。入口及 API 均按飞书业务角色校验，Linux sudo 权限不等于网页管理权限。
 
-## 测试
+## 生产环境与仓库
 
-```sh
-python -m pytest tests -q
+| 项目 | 当前约定 |
+|---|---|
+| VM | Ubuntu 24.04，`192.168.84.121`，Python 3.12 |
+| 数据库 | PostgreSQL `pudu_materials`；隔离测试库 `pudu_materials_test` |
+| 部署根 | `/home/gaohongyuan1/pudu-materials-operation` |
+| 生产代码来源 | [公司 GitLab](https://code.pudu.work/gaohongyuan1/pudu-materials-operation)，发布分支 `codex/postgres-core` |
+| GitHub | 同名 `codex/postgres-core` 保存本次 VM 发布版本；旧 `master` 为历史版本。生产发布仍从 GitLab 进行 |
+| 个人开发工作区 | `/srv/pudu-materials-workspaces/gaohongyuan1`、`/srv/pudu-materials-workspaces/weiwei` |
+| 当前运行源码 | `<部署根>/source` 指向不可变的 `releases/<SHA>` |
+| 外置状态 | `<部署根>/shared`，包含配置、媒体、自动化状态和备份，不进 Git |
+
+旧电脑物料系统任务已退出生产，不能重新启用。独立项目 PUDU Lead Intake Worker 不属于本系统，保持原状。`docs/handover` 和 `deployment/ubuntu/README.md` 中的 Windows / commissioning 说明仅供追溯，不可覆盖现网 unit 和 drop-in。
+
+## 修改与发布
+
+使用各自 Linux 账号，在本人的 VM 工作区操作。开始前检查未提交修改和 GitLab 最新代码；不要在集成仓库 `repo`、运行目录 `source` 或他人的工作区编辑。
+
+```bash
+cd /srv/pudu-materials-workspaces/"$(id -un)"
+git status --short
+git fetch origin codex/postgres-core
+git merge --ff-only origin/codex/postgres-core
+/home/gaohongyuan1/pudu-materials-operation/venv/bin/python scripts/new_ops_record.py short-task-name
+# 修改代码，填写 docs/ops/changes 中的记录，验证受影响功能
+git add <本次修改的文件>
+git commit -m "Describe the behavior change"
+sudo pudu-release
 ```
 
-业务回归保留；只针对已删除控件/旧页面 CSS 的测试随对应页面退役，现有 React 页面布局和业务规则测试继续保留。导入守卫覆盖 API、发货工具、任务 Worker 和卡片 Worker，确保不再间接导入旧框架。涉及已发布业务快照的集成测试仍需通过受控测试数据单独验收，源码仓库不携带真实员工数据。
+`sudo pudu-release` 使用统一发布锁，三方合并本次提交，自动递增版本，运行后端 / 隔离 PostgreSQL 测试、前端测试和 build，推送 GitLab、备份、检查队列、切换 release 并核对本地 / 公网健康。结构冲突、测试失败或更新的 GitLab 提交会阻止旧版本覆盖。数据库 SQL 迁移须另行审查、验证和应用，发布工具不会自动执行全部迁移。
+
+两个管理员代码修改由最后提交的发布合并决定重叠内容；网页业务字段按服务器最后成功事务更新。两者均保留幂等、库存、额度和角色校验。禁止强推、整目录覆盖及手改 `source` 链接。
+
+## 测试、巡检与定时任务
+
+```bash
+cd /srv/pudu-materials-workspaces/"$(id -un)"
+PUDU_TEST_DATABASE_DSN='dbname=pudu_materials_test' \
+  /home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m pytest tests -q
+
+cd /home/gaohongyuan1/pudu-materials-operation/source
+/home/gaohongyuan1/pudu-materials-operation/venv/bin/python scripts/ops_status.py
+```
+
+库存、额度、权限、删除、驳回和通知测试使用隔离数据库与模拟飞书，不向真实员工发送测试消息。巡检脚本只读，不触发重启、同步或消息。
+
+常驻服务包括 Web、business、effects、card、bridge、assets、english 以及 ordinary / cultural / admin 三条 outbox。定时任务为北京时间 **02:40 备份、03:00 飞书优先校验、03:10 通讯录刷新**。oneshot 执行后 inactive 正常，须看实际退出状态及结果。备份包含数据库、媒体、配置及自动化状态，按文件摘要与隔离恢复验证；凭据和备份另行受控移交。
+
+## 继续交接
+
+每次任务在 `docs/ops/changes` 保存需求、后续更正、决定、代码 / 字段变化、实际验证和遗留事项，新规则同步更新运维手册。受限的历史对话按轮次单独归档，不能把原始聊天、员工数据、密钥或生产备份提交到 GitLab / GitHub。
+
+新运维人员从 [接手与现状](docs/ops/01-接手与现状.md) 开始，再读 [固定业务规则](docs/ops/02-固定业务规则.md)、[开发与发布](docs/ops/03-开发与发布.md) 及 [备份恢复](docs/ops/05-备份恢复与回退.md)。

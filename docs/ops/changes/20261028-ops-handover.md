@@ -31,3 +31,7 @@
 显式聊天导出不等于常驻监听未来对话；未来每次任务按 AGENTS.md 及模板补写，取得聊天文件后再导出。
 本次不改变业务数据、角色、库存、通知或定时方向，不向员工发送测试消息。
 生产配置、账号凭据、数据库和文件备份需受控单独移交；现有同机备份不等于异地灾备。
+
+## Additional user instructions
+
+Update the root README to the current PostgreSQL VM production architecture and submit one version to the existing GitHub repository. The README now describes active business features, roles, directories, immutable releases, schedules, tests and handover. Publish the exact GitLab release commit to G1026271140-spec/pudu-material-operations on codex/postgres-core; preserve the unrelated legacy master history. GitLab remains the production release source. Record the verified GitHub head in the restricted handover evidence after pushing.
