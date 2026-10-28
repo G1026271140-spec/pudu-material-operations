@@ -163,12 +163,10 @@ class ReactAllocationOrderRulesTests(unittest.TestCase):
         self.assertIn("<iframe", schedule)
         self.assertIn('target="_blank"', schedule)
 
-    def test_shipping_schedule_is_available_and_phone_responsive(self) -> None:
-        self.assertIn('["schedule", tr("发货排期", "Shipping Schedule")]', self.page)
-        self.assertIn('tab === "schedule"', self.page)
-        mobile = self.css.split("@media(max-width:700px)", 1)[1]
-        self.assertIn(".shipping-schedule-actions", mobile)
-        self.assertIn("height:72dvh", mobile)
+    def test_shipping_schedule_is_closed_in_material_management(self) -> None:
+        self.assertNotIn('["schedule", tr("发货排期", "Shipping Schedule")]', self.page)
+        self.assertNotIn("ShippingSchedulePage", self.page)
+        self.assertNotIn('"schedule"', self.page)
 
 
 class ReactSidebarCollapseTests(unittest.TestCase):
@@ -211,7 +209,6 @@ class ReactSidebarCollapseTests(unittest.TestCase):
             "/request",
             "/cultural",
             "/management/allocation",
-            "/management/shipping-schedule",
             "/management/shipping-template",
             "/management/restock",
             "/management/categories",

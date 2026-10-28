@@ -2216,6 +2216,8 @@ if DIST.is_dir():
 
     @api.get("/{path:path}")
     def spa(path: str) -> Response:
+        if path.rstrip("/").lower() == "management/shipping-schedule":
+            return RedirectResponse("/management/categories", status_code=307)
         if path.startswith(('.', 'config/', 'data/', 'work/', 'logs/')):
             raise HTTPException(status_code=404,detail='资源不存在')
         candidate = (DIST / path).resolve()

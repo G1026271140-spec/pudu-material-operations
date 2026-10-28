@@ -222,9 +222,13 @@ def test_fastapi_cache_asset_rejects_path_escape(tmp_path, monkeypatch):
     "/management/regions",
 ])
 def test_direct_route_serves_the_spa(path):
-    response = TestClient(api).get(path)
-    assert response.status_code == 200
-    assert "text/html" in response.headers["content-type"]
+    response = TestClient(api).get(path, follow_redirects=False)
+    if path == "/management/shipping-schedule":
+        assert response.status_code == 307
+        assert response.headers["location"] == "/management/categories"
+    else:
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
 
 
 @pytest.mark.skipif(not (Path(__file__).resolve().parents[1] / "data/request_form_cache.json").is_file(), reason="Published snapshot integration: source-only handover omits business data")

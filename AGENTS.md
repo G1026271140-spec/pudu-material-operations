@@ -23,7 +23,9 @@ notification tests; follow with read-only production verification. Never send
 test notifications to employees. PostgreSQL is authoritative for normal frontend
 writes, with a transactional Feishu outbox and independent notification effects.
 The daily reconciliation at 03:00 Asia/Shanghai adopts Feishu data. Retain the
-existing shipping-template and shipping-schedule auxiliary functionality.
+existing shipping-template functionality. The material-management shipping-schedule
+page is closed by the user request of 2026-10-28; its old URL redirects to category
+management. Preserve the separate allocation/shipping calendar and historical data.
 
 
 ## Concurrent administrators
