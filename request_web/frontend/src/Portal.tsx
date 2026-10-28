@@ -4,6 +4,8 @@ import CulturalPage from "./CulturalPage";
 import ManagementPage from "./ManagementPage";
 import type { ManagementTab } from "./ManagementPage";
 import AllocationWorkbench from "./AllocationWorkbench";
+import AllocationShippingPage from "./AllocationShippingPage";
+import type { AllocationShippingTab } from "./AllocationShippingPage";
 import CorporateApparelPage from "./CorporateApparelPage";
 import DatabaseWorkbench from "./DatabaseWorkbench";
 import ApparelManagementPage from "./ApparelManagementPage";
@@ -14,7 +16,6 @@ type Lang = "zh" | "en";
 type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement";
 
 const managementPaths: Record<ManagementTab, string> = {
-  calendar: "/management/shipping-calendar",
   schedule: "/management/shipping-schedule",
   shipping: "/management/shipping-template",
   restock: "/management/restock",
@@ -38,7 +39,7 @@ function managementTabFromLocation(): ManagementTab {
 function pageFromLocation(): PortalPage {
   const path = normalizedPath();
   const section = new URLSearchParams(window.location.search).get("section");
-  if (path === "/management/allocation") return "allocation";
+  if (path === "/management/allocation" || path === "/management/shipping-calendar") return "allocation";
   if (path === "/management/database") return "database";
   if (path === "/management/corporate-apparel") return "apparelManagement";
   if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
@@ -85,7 +86,7 @@ const text = {
     request: "物料申领",
     cultural: "文化周边申领",
     management: "物料管理",
-    allocation: "配货工作台",
+    allocation: "配货与发货",
     database: "数据库工作台",
     apparelManagement: "企业文化衫管理",
     corporateApparel: "企业文化衫领取",
@@ -103,7 +104,7 @@ const text = {
     request: "Material Request",
     cultural: "Cultural Merchandise Request",
     management: "Material Management",
-    allocation: "Allocation Workbench",
+    allocation: "Allocation & Shipping",
     database: "Database Workspace",
     apparelManagement: "Corporate Apparel Management",
     corporateApparel: "Corporate Apparel Request",
@@ -125,6 +126,7 @@ export default function Portal() {
   );
   const [page, setPage] = useState<PortalPage>(pageFromLocation);
   const [managementTab, setManagementTab] = useState<ManagementTab>(managementTabFromLocation);
+  const [allocationShippingTab, setAllocationShippingTab] = useState<AllocationShippingTab>(() => normalizedPath() === "/management/shipping-calendar" ? "shipping" : "allocation");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [identityLoaded, setIdentityLoaded] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
@@ -144,6 +146,7 @@ export default function Portal() {
     const handlePopState = () => {
       setPage(pageFromLocation());
       setManagementTab(managementTabFromLocation());
+      setAllocationShippingTab(normalizedPath() === "/management/shipping-calendar" ? "shipping" : "allocation");
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -169,6 +172,17 @@ export default function Portal() {
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setPage(next);
     if (next === "management") setManagementTab("category");
+    if (next === "allocation") setAllocationShippingTab("allocation");
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+  function navigateAllocationShippingTab(next: AllocationShippingTab) {
+    if (next === allocationShippingTab) return;
+    const url = new URL(window.location.href);
+    url.pathname = next === "shipping" ? "/management/shipping-calendar" : "/management/allocation";
+    url.searchParams.delete("section");
+    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setPage("allocation");
+    setAllocationShippingTab(next);
     window.scrollTo({ top: 0, behavior: "auto" });
   }
   function navigateManagementTab(next: ManagementTab) {
@@ -278,7 +292,7 @@ export default function Portal() {
         ) : page === "apparelManagement" ? (
           canManageApparel ? <ApparelManagementPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.apparelManagement}</h1><p>{lang === "zh" ? "仅已启用的 HR 和管理员可访问此页面。" : "Only enabled HR staff and administrators can access this page."}</p></main> : null
         ) : canManage && page === "allocation" ? (
-          <AllocationWorkbench lang={lang} />
+          <AllocationShippingPage lang={lang} tab={allocationShippingTab} onTabChange={navigateAllocationShippingTab} />
         ) : canManage && page === "database" ? (
           <DatabaseWorkbench lang={lang} />
         ) : canManage ? (
