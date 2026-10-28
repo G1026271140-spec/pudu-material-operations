@@ -107,6 +107,7 @@ class DatabaseWriteClient(DatabaseReadClient):
                     updated=dict(parent['fields'])
                     updated[back]=list(dict.fromkeys([*repo.link_ids(updated.get(back)),rid]))
                     repo.replace_values(self.conn,target,parent['record_id'],updated)
+            runtime.request_state.setdefault('_write_touched',set()).add((table_id,rid))
             result.append({'record_id':rid,'fields':fields})
         self._invalidate()
         return result
@@ -131,6 +132,7 @@ class DatabaseWriteClient(DatabaseReadClient):
                     (table_id,old['record_id'],Jsonb(old['fields']),Jsonb(values),version,runtime.request_state.get('_write_actor','system')))
             else:
                 repo._save_change(self.conn,info,old,changed,runtime.request_state.get('_write_actor','system'),str(uuid4()),runtime.request_state.get('_write_lane','ordinary'))
+        if changed:runtime.request_state.setdefault('_write_touched',set()).add((table_id,old['record_id']))
         self._invalidate()
         return repo.feishu_record(info,repo.raw_record(self.conn,info,old['record_id']))
 

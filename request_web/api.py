@@ -934,6 +934,8 @@ from request_web.shipping_calendar_api import register as register_shipping_cale
 def require_shipping_calendar_viewer(request: Request) -> str:
     return _authenticated_submitter(request)[1]
 register_shipping_calendar_api(api, require_admin, require_shipping_calendar_viewer, _signed_admin_open_id)
+from request_web.portal_records_api import register as register_portal_records_api
+register_portal_records_api(api, require_shipping_calendar_viewer, require_admin, require_hr)
 
 
 def _allocation_actor(

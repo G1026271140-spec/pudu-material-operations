@@ -46,6 +46,22 @@ def _replace_alias(conn,token,remote):
     for identity,patch in rows:
         conn.execute('UPDATE material_ops.outbox SET patch=%s WHERE id=%s',(Jsonb(json.loads(json.dumps(patch,ensure_ascii=False).replace(token,remote))),identity))
 
+
+def _finish_apparel_rejection(conn, effect_id):
+    """Only acknowledge applicant/HR cards after all their HTTP calls succeed."""
+    import app
+    job=conn.execute('SELECT j.id,j.task_type,j.payload FROM material_ops.jobs j JOIN material_ops.effects e ON e.job_id=j.id WHERE e.id=%s',(effect_id,)).fetchone()
+    if not job or job[1]!=app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT:return
+    if conn.execute("SELECT EXISTS(SELECT 1 FROM material_ops.effects WHERE job_id=%s AND state<>'done')",(job[0],)).fetchone()[0]:return
+    number=(job[2].get('draft') or {}).get('request_no')
+    info=repo.named_table(conn,app.REQUEST_TABLE_NAME)
+    fields={field['field_name']:field['field_id'] for field in info['fields']}
+    rows=conn.execute(sql.SQL('SELECT _record_key FROM material_data.{} WHERE NOT _deleted AND _fields->>%s=%s').format(sql.Identifier(info['sql_table'])),(fields['申请单号'],number)).fetchall()
+    if len(rows)!=1:return
+    old=repo.raw_record(conn,info,rows[0][0],lock=True)
+    if old['fields'].get(fields['文化周边处理状态'])!='已驳回' or old['fields'].get(fields['文化周边通知状态'])!='驳回待通知':return
+    repo._save_change(conn,info,old,{fields['文化周边通知状态']:'驳回已通知'},'worker:effects','apparel-notice:'+str(job[0]),'cultural')
+
 def run_once(clients):
     token=uuid4()
     with connection() as conn,conn.transaction():
@@ -74,12 +90,24 @@ def run_once(clients):
             remote=str((response.get('data') or {}).get('message_id') or '')
             if not remote:raise RuntimeError('飞书未返回消息 ID。')
         else:
-            remote=getattr(client,row[2])(*args,**kwargs) or ''
+            external={key:value for key,value in kwargs.items() if not key.startswith('_')}
+            try:
+                remote=getattr(client,row[2])(*args,**external) or ''
+            except Exception as exc:
+                if row[2]!='update_interactive_message' or '230031' not in str(exc) or not kwargs.get('_fallback_recipient'):
+                    raise
+                response=client._request('POST','/im/v1/messages',params={'receive_id_type':'open_id'},payload={
+                    'receive_id':kwargs['_fallback_recipient'],'msg_type':'interactive',
+                    'content':json.dumps(args[1],ensure_ascii=False),'uuid':str(row[0])})
+                remote=str((response.get('data') or {}).get('message_id') or '')
+                if not remote:raise RuntimeError('飞书未返回补发卡片消息 ID。')
         with connection() as conn,conn.transaction():
+            conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
             current=conn.execute('SELECT state,claim_token FROM material_ops.effects WHERE id=%s FOR UPDATE',(row[0],)).fetchone()
             if current!=('processing',token):raise RuntimeError('消息任务租约已改变。')
             _replace_alias(conn,PREFIX+row[0].hex,remote)
             conn.execute("UPDATE material_ops.effects SET state='done',remote_id=%s,completed_at=now(),lease_until=NULL,claim_token=NULL,last_error=NULL WHERE id=%s",(remote,row[0]))
+            _finish_apparel_rejection(conn,row[0])
         return {'id':str(row[0]),'state':'done'}
     except Exception as exc:
         # Permission errors are visible failures; no applicant message is

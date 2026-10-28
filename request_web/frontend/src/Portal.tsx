@@ -9,11 +9,13 @@ import type { AllocationShippingTab } from "./AllocationShippingPage";
 import CorporateApparelPage from "./CorporateApparelPage";
 import DatabaseWorkbench from "./DatabaseWorkbench";
 import ApparelManagementPage from "./ApparelManagementPage";
+import RequestHistoryPage from "./RequestHistoryPage";
+import UserPermissionsPage from "./UserPermissionsPage";
 import type { CurrentUser } from "./identity";
 import "./portal.css";
 
 type Lang = "zh" | "en";
-type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement";
+type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement" | "history" | "permissions";
 
 const managementPaths: Record<ManagementTab, string> = {
   schedule: "/management/shipping-schedule",
@@ -40,6 +42,8 @@ function pageFromLocation(): PortalPage {
   const path = normalizedPath();
   const section = new URLSearchParams(window.location.search).get("section");
   if (path === "/management/allocation" || path === "/management/shipping-calendar") return "allocation";
+  if (path === "/management/request-history") return "history";
+  if (path === "/management/user-permissions") return "permissions";
   if (path === "/management/database") return "database";
   if (path === "/management/corporate-apparel") return "apparelManagement";
   if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
@@ -55,6 +59,8 @@ function pagePath(page: PortalPage): string {
   if (page === "cultural") return "/cultural";
   if (page === "management") return managementPaths.category;
   if (page === "allocation") return "/management/allocation";
+  if (page === "history") return "/management/request-history";
+  if (page === "permissions") return "/management/user-permissions";
   if (page === "database") return "/management/database";
   if (page === "apparelManagement") return "/management/corporate-apparel";
   return "/request";
@@ -88,6 +94,8 @@ const text = {
     management: "物料管理",
     allocation: "配货与发货",
     database: "数据库工作台",
+    history: "申请记录与额度",
+    permissions: "用户权限管理",
     apparelManagement: "企业文化衫管理",
     corporateApparel: "企业文化衫领取",
     corporateApparelHint: "在新页面打开企业文化衫领取",
@@ -106,6 +114,8 @@ const text = {
     management: "Material Management",
     allocation: "Allocation & Shipping",
     database: "Database Workspace",
+    history: "History & Allowances",
+    permissions: "User Permissions",
     apparelManagement: "Corporate Apparel Management",
     corporateApparel: "Corporate Apparel Request",
     corporateApparelHint: "Open Corporate Apparel Request in a new tab",
@@ -138,11 +148,16 @@ export default function Portal() {
   const canManage = currentUser?.permission_status === "enabled" && currentUser.roles.includes("管理员");
   const canManageApparel = currentUser?.permission_status === "enabled" && currentUser.roles.some(role => role === "HR" || role === "管理员");
   useEffect(() => {
-    fetch("/api/auth/me", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((identity) => setCurrentUser(identity))
-      .catch(() => setCurrentUser(null))
-      .finally(() => setIdentityLoaded(true));
+    const refreshIdentity = () => {
+      fetch("/api/auth/me", { cache: "no-store" })
+        .then((response) => response.ok ? response.json() : null)
+        .then((identity) => setCurrentUser(identity))
+        .catch(() => setCurrentUser(null))
+        .finally(() => setIdentityLoaded(true));
+    };
+    refreshIdentity();
+    window.addEventListener("pudu-permissions-updated", refreshIdentity);
+    return () => window.removeEventListener("pudu-permissions-updated", refreshIdentity);
   }, []);
   useEffect(() => {
     const handlePopState = () => {
@@ -269,6 +284,8 @@ export default function Portal() {
         </nav>
         <div className="sidebar-system">
           <div className="sidebar-label">{t.tools}</div>
+          {currentUser && <button className={`database-nav-link${page === "history" ? " active" : ""}`} onClick={() => navigate("history")}>{t.history}</button>}
+          {canManage && <button className={`database-nav-link${page === "permissions" ? " active" : ""}`} onClick={() => navigate("permissions")}>{t.permissions}</button>}
           {canManageApparel && <button className={`database-nav-link${page === "apparelManagement" ? " active" : ""}`} onClick={() => navigate("apparelManagement")}>{t.apparelManagement}</button>}
           {canManage && <button className={`database-nav-link${page === "management" ? " active" : ""}`} onClick={() => navigate("management")}>{t.management}</button>}
           {currentUser && <button className={`database-nav-link${page === "allocation" ? " active" : ""}`} onClick={() => navigate("allocation")}>{t.allocation}</button>}
@@ -294,6 +311,10 @@ export default function Portal() {
           <RequestPage lang={lang} currentUser={currentUser} />
         ) : page === "cultural" ? (
           <CulturalPage lang={lang} currentUser={currentUser} />
+        ) : page === "history" ? (
+          currentUser ? <RequestHistoryPage lang={lang} currentUser={currentUser} /> : null
+        ) : page === "permissions" ? (
+          canManage && currentUser ? <UserPermissionsPage lang={lang} currentUser={currentUser} /> : identityLoaded ? <main className="locked-page"><h1>{t.permissions}</h1><p>{t.denied}</p></main> : null
         ) : page === "apparelManagement" ? (
           canManageApparel ? <ApparelManagementPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.apparelManagement}</h1><p>{lang === "zh" ? "仅已启用的 HR 和管理员可访问此页面。" : "Only enabled HR staff and administrators can access this page."}</p></main> : null
         ) : currentUser && page === "allocation" ? (
