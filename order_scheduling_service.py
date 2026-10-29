@@ -486,7 +486,7 @@ class SchedulingService:
             progress["generation_started"] = True
             checkpoint(dict(progress))
             batch_fields = {
-                "下单批次号": f"PO-{rules.today():%Y%m%d}-{key[:10].upper()}", "批次状态": "生成中",
+                "下单批次号": rules.batch_number(key), "批次状态": "生成中",
                 "生成幂等键": key, "生成人": [{"id": payload["operator_open_id"]}],
                 "生成时间": int(datetime.now(rules.CHINA_TZ).timestamp() * 1000),
                 # Arm only after every batch line is durably saved.

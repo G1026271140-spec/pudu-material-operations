@@ -178,10 +178,13 @@ def _find_remote_create(client, info, fields):
             return rows[0]
         return None
     if info['source']=='primary' and info['name'] in {'物料下单批次','物料下单批次明细'}:
-        name='下单批次号' if info['name']=='物料下单批次' else '批次明细编号'
+        # Display PO numbers from legacy releases can repeat on the same day.
+        # The full generation key is the durable batch identity; a different
+        # batch with the same old display number must never be adopted.
+        name='生成幂等键' if info['name']=='物料下单批次' else '批次明细编号'
         definitions={field['field_name']:field for field in info['fields']}
         identity=fields.get(name)
-        if not identity or name not in definitions:raise SourceConflict('下单批次缺少唯一批次或明细编号。')
+        if not identity or name not in definitions:raise SourceConflict('下单批次缺少唯一生成幂等键或明细编号。')
         rows=[row for row in client.list_records(info['table_id'])
               if _canonical(definitions[name],(row.get('fields') or {}).get(name))==_canonical(definitions[name],identity)]
         if len(rows)>1:raise SourceConflict('飞书存在重复的下单批次或明细编号。')

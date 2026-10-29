@@ -28,6 +28,13 @@ GENERATED = "下单表生成状态"
 IN_TRANSIT_STOCK = "在途库存"
 
 
+def batch_number(generation_key: str, *, day: date | None = None) -> str:
+    """Hash the complete identity: allocation keys share the same text prefix."""
+    if not str(generation_key).strip():raise ValueError("下单批次生成幂等键不能为空。")
+    digest=hashlib.sha256(generation_key.encode('utf-8')).hexdigest()[:16].upper()
+    return f"PO-{(day or today()):%Y%m%d}-{digest}"
+
+
 def today() -> date:
     return datetime.now(CHINA_TZ).date()
 
