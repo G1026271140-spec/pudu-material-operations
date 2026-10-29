@@ -566,6 +566,17 @@ class FeishuBitableClient:
         )
         return list(response.get("data", {}).get("records", []))
 
+    def batch_get_records(self, table_id: str, record_ids: list[str]) -> list[dict[str, Any]]:
+        if not 1 <= len(record_ids) <= 100 or not all(isinstance(key, str) and key for key in record_ids) or len(set(record_ids)) != len(record_ids):
+            raise ValueError("Batch reads require 1 to 100 unique record IDs.")
+        response = self._request(
+            "POST", f"/bitable/v1/apps/{self._quoted_app_token()}/tables/{parse.quote(table_id)}/records/batch_get",
+            payload={"record_ids": record_ids, "user_id_type": "open_id", "automatic_fields": False},
+        )
+        # The API separately reports absent / forbidden IDs. Callers must not
+        # complete tasks for records missing from this returned list.
+        return list(response.get("data", {}).get("records", []))
+
     def batch_update_records(
         self,
         table_id: str,

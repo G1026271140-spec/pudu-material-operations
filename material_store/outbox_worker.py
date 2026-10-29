@@ -205,6 +205,21 @@ def _find_remote_create(client, info, fields):
     raise SourceConflict('创建任务缺少可查重的业务标识。')
 
 
+def update_needed(info, baseline, patch, remote, named, client):
+    """The same field conflict and retry rules apply to single and batch writes."""
+    remote_values = remote.get('fields') or {}
+    for fid in patch:
+        field = next(f for f in info['fields'] if f['field_id'] == fid)
+        if fid not in baseline:continue
+        current = _canonical(field, remote_values.get(field['field_name']))
+        expected = _canonical(field, _remote_fields(info,{fid:baseline[fid]},client).get(field['field_name']))
+        target = _canonical(field, named.get(field['field_name']))
+        if current != expected and current != target:
+            raise SourceConflict('飞书该字段已经被人工修改，等待校验。')
+    return any(_canonical(next(f for f in info['fields'] if f['field_name']==name),remote_values.get(name))
+               != _canonical(next(f for f in info['fields'] if f['field_name']==name),value) for name,value in named.items())
+
+
 def publish(task, client):
     with connection() as conn:
         info = repo.table(conn, task['table_id'])
@@ -245,19 +260,7 @@ def publish(task, client):
         remote = client.get_record(info['table_id'], remote_id)
         from .approval_sync import check_remote_links
         check_remote_links(approval_lines, remote)
-        remote_values = (remote.get('fields') or {})
-        for fid in task['patch']:
-            field = next(f for f in info['fields'] if f['field_id'] == fid)
-            if fid not in baseline:
-                continue
-            current = _canonical(field, remote_values.get(field['field_name']))
-            expected = _canonical(field, _remote_fields(info,{fid:baseline[fid]},client).get(field['field_name']))
-            target = _canonical(field, named.get(field['field_name']))
-            if current != expected and current != target:
-                raise SourceConflict('飞书该字段已经被人工修改，等待校验。')
-        if any(_canonical(next(f for f in info['fields'] if f['field_name']==name),remote_values.get(name))
-               != _canonical(next(f for f in info['fields'] if f['field_name']==name),value)
-               for name,value in named.items()):
+        if update_needed(info, baseline, task['patch'], remote, named, client):
             client.update_record(info['table_id'], remote_id, named)
     return remote_id
 
@@ -275,7 +278,7 @@ def finish(task, remote_id):
                      (remote_id,Jsonb(baseline),task['version'],'synced' if row['version']==task['version'] else 'pending',task['record_key']))
         conn.execute("UPDATE material_ops.outbox SET state='done',completed_at=now(),lease_until=NULL,claim_token=NULL,last_error=NULL WHERE id=%s",(task['id'],))
         conn.execute("INSERT INTO material_ops.audit(table_id,record_key,source,after_value,local_version) VALUES (%s,%s,'worker',%s,%s)",
-                     (info['table_id'],task['record_key'],Jsonb({'outbox_id':str(task['id']),'sync':'done'}),task['version']))
+                     (info['table_id'],task['record_key'],Jsonb({'outbox_id':str(task['id']),'sync':'done',**({'batch_id':task['_batch']['id'],'batch_size':task['_batch']['size']} if task.get('_batch') else {})}),task['version']))
 
 
 def fail(task, exc):
@@ -307,6 +310,9 @@ def run_once(lane, client, worker_id='outbox-worker'):
             fail(task,DependencyPending('同一记录的同步仍在执行。'))
             return {'id':str(task['id']),'state':'retry'}
         try:
+            from .line_outbox_batch import run_claimed
+            batched=run_claimed(task,lane,client,worker_id,guard)
+            if batched is not None:return batched
             remote_id=publish(task,client)
             finish(task,remote_id)
             return {'id':str(task['id']),'state':'done'}
