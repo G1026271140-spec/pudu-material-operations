@@ -2,7 +2,7 @@ from unittest.mock import Mock
 import pytest
 from material_store.outbox_worker import _find_remote_create,SourceConflict
 
-@pytest.fixture(params=[('物料下单批次','下单批次号'),('物料下单批次明细','批次明细编号')])
+@pytest.fixture(params=[('物料下单批次','生成幂等键'),('物料下单批次明细','批次明细编号')])
 def table(request):
     name,key=request.param
     return {'source':'primary','name':name,'table_id':'test_order_table','fields':[{'field_id':'id_'+field,'field_name':field,'type':1} for field in [key,'批次备注','物料品类']]},key

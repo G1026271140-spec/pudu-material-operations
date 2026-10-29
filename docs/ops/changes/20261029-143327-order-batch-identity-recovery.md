@@ -27,3 +27,6 @@ order_scheduling.batch_number 对完整生成键取稳定摘要；SchedulingServ
 
 
 相关隔离回归：76 passed。覆盖同日不同完整键、相同键复用、相同键不同内容保留冲突、恢复后原任务 ID / 关联 / 下单数量保持、源端已存在同键拒绝修复、远端创建成功后进程中断重试不重复建单、两条原卡片依赖等待后仅更新原消息。恢复入口默认预览 `python scripts/repair_order_batch_collisions.py`，核对后加 `--apply`；生产实际恢复结果以受限凭据为准。
+
+
+首次统一发布的全量检查发现旧 tests/test_order_batch_identity.py 仍把显示批次号当作批次身份；按本次已证实的规则改为完整生成幂等键。保留原有“不串单、重试复用、同键不同内容冲突、重复身份拒绝”全部断言。测试失败时未 push / 上线，生产仍为原版本。
