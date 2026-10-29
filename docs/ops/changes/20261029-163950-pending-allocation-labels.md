@@ -34,3 +34,5 @@ material_store/pending_followup.py、pending_followup_schema.py；request_web/pe
 首次正式发布被全量测试阻止：隔离测试库字段映射用例把总数固定为 366，新增两字段后为 368。修正数量并额外断言两个字段均为文本，原逐字段原始 JSON / SQL 类型往返校验、事务回滚、应用角色无 DDL 权限校验全部保留；没有跳过或弱化字段校验。首次失败未推送或切换线上版本。
 
 修正后隔离全量回归：1108 passed、4 skipped、22 subtests passed；前端 31 passed，构建通过。
+
+线上浏览器验收发现 Portal 通用 section / article 样式给日期组加了 3px 边框、22px padding 和卡片 12px padding。对本模块的日期分组 / 卡片作精确样式隔离，日期仅显示分隔线，保持标签黄色语义与原系统配色；不改其他页面。
