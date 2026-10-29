@@ -71,8 +71,11 @@ def test_activation_baselines_without_any_business_write_or_historical_message(a
     conn,info,_,key,_,source=auto_store
     assert auto.enabled(conn)
     assert auto.activate(source)=={'already_enabled':True}
+    assert auto.process_one(key,source)['state']=='waiting_information'
+    assert fields(auto_store)['是否发货'] is True and not source.sent
+    drain(source)
     assert auto.process_one(key,source)['state']=='unchanged'
-    assert fields(auto_store)['是否发货'] is False and not source.sent
+    assert not source.sent
 
 
 @pytest.mark.parametrize('use_image',[False,True])
@@ -115,7 +118,9 @@ def test_approved_without_text_or_valid_image_never_notifies(auto_store):
     body=batch([change(conn,key,shipping_text='   ',images=[],shipped=True)])
     shipping.save_batch('ou_admin',body);drain(source)
     assert auto.process_one(key,source)['state']=='waiting_information'
-    assert not fields(auto_store)['是否发货'] and not source.sent
+    assert fields(auto_store)['是否发货'] is True and not source.sent
+    drain(source)
+    assert effects.run_once({'primary':source}) is None
 
 
 def test_native_approval_changes_after_logistics_are_entered(auto_store):
@@ -129,20 +134,23 @@ def test_native_approval_changes_after_logistics_are_entered(auto_store):
     assert len(source.sent)==1
 
 
-def test_missing_seven_approval_lines_never_marks_shipped(auto_store):
+def test_approval_marks_shipped_without_requiring_later_detail_writeback(auto_store):
     conn,info,_,key,_,source=auto_store
     add_lines(auto_store,7,lane='ordinary')
     save(auto_store);drain(source)
-    assert auto.process_one(key,source)['state']=='blocked'
-    assert not fields(auto_store)['是否发货'] and not source.sent
+    assert auto.process_one(key,source)['state']=='queued'
+    assert fields(auto_store)['是否发货'] is True
+    assert not source.sent
 
 
-def test_changed_quantity_outside_native_approval_is_blocked(auto_store):
+def test_shipped_flag_does_not_rewrite_issue_quantities(auto_store):
     conn,info,line_info,key,_,source=auto_store
     row=next(iter(source.rows[line_info['table_id']].values()))
     row['fields']['实际发放数量']=2;repo.insert_source_records(conn,line_info,[row])
     save(auto_store);drain(source)
-    assert auto.process_one(key,source)['state']=='blocked'
+    assert auto.process_one(key,source)['state']=='queued'
+    assert fields(auto_store)['是否发货'] is True
+    assert app.feishu_int(repo.feishu_record(line_info,repo.raw_record(conn,line_info,row['record_id']))['fields'],'实际发放数量')==2
     assert not source.sent
 
 
@@ -209,3 +217,37 @@ def test_old_rejection_cache_does_not_hide_or_block_a_new_instance(auto_store):
     request=next(r for r in shipping.catalog(conn)['requests'] if r['request_id']==key)
     assert request['approval_status'] is None
     assert save(auto_store)['changed']==1
+
+
+def test_approval_passes_before_line_writeback_and_without_logistics(auto_store):
+    conn,info,line_info,key,number,source=auto_store
+    row=repo.feishu_record(info,repo.raw_record(conn,info,key));row['fields']['审批状态']='待审批'
+    repo.insert_source_records(conn,info,[row])
+    line=next(iter(source.rows[line_info['table_id']].values()))
+    line['fields'].update(明细状态='待审批',实际发放数量=0)
+    repo.insert_source_records(conn,line_info,[line])
+    outcome=auto.process_one(key,source)
+    assert outcome['state']=='waiting_information' and outcome['flag_updated']
+    assert fields(auto_store)['是否发货'] is True
+    assert fields(auto_store)['审批状态']=='待审批'
+    drain(source)
+    assert effects.run_once({'primary':source}) is None and not source.sent
+    assert app.feishu_int(repo.feishu_record(line_info,repo.raw_record(conn,line_info,line['record_id']))['fields'],'实际发放数量')==0
+
+
+def test_add_logistics_after_approval_only_flag_sends_exactly_one_card(auto_store):
+    conn,info,_,key,_,source=auto_store
+    assert auto.process_one(key,source)['state']=='waiting_information'
+    drain(source);assert not source.sent
+    save(auto_store);drain(source)
+    assert auto.process_one(key,source)['state']=='queued'
+    drain(source);assert effects.run_once({'primary':source})['state']=='done'
+    assert len(source.sent)==1
+    assert auto.process_one(key,source)['state']=='unchanged'
+
+
+def test_another_native_request_number_does_not_mark_or_notify(auto_store):
+    conn,info,_,key,_,source=auto_store
+    state=auto.document(conn,key);state['native']['request_no']='OTHER';auto.put(conn,key,state)
+    assert auto.process_one(key,source)['state']=='unchanged'
+    assert fields(auto_store)['是否发货'] is False and not source.sent

@@ -281,6 +281,7 @@ def process_card_action_async(
                 "request_id": request_id,
                 "expected_version": version,
                 "operator_open_id": operator_open_id,
+                "message_id": message_id,
             }
             if str(form_value.get("ship_date") or "").strip():
                 draft["ship_date"] = str(form_value["ship_date"]).strip()
@@ -289,7 +290,7 @@ def process_card_action_async(
                 {"draft": draft},
                 idempotency_key=(
                     f"request-inventory-card-confirm:{request_id}:{version}:"
-                    f"{str(draft.get('ship_date') or '')}"
+                    f"{str(draft.get('ship_date') or '')}:{message_id}"
                 ),
             )
             return

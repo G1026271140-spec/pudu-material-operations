@@ -90,6 +90,10 @@ def _run(conn,row):
         conn.execute('UPDATE material_ops.jobs SET result=%s WHERE id=%s',(Jsonb(progress),UUID(task.task_id)))
     result=dispatch(task,checkpoint) or {}
     import app
+    if task.task_type==app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:
+        dependencies=[str(r[0]) for r in conn.execute('SELECT id FROM material_ops.outbox WHERE job_id=%s',(task.task_id,))]
+        if task.payload.get('draft',{}).get('request_id'):
+            conn.execute("UPDATE material_ops.effects SET kwargs=kwargs || %s WHERE job_id=%s AND method='update_interactive_message'",(Jsonb({'_outbox_ids':dependencies,'_inventory_request':str((task.payload.get('draft') or {}).get('request_id') or '')}),task.task_id))
     if task.task_type in {app.QUEUE_TASK_TYPE_CORPORATE_APPAREL_REQUEST_REJECT,app.QUEUE_TASK_TYPE_CULTURAL_REQUEST_REJECT}:
         dependencies=[str(row[0]) for row in conn.execute('SELECT id FROM material_ops.outbox WHERE job_id=%s',(task.task_id,))]
         for table_id,record_key in runtime.request_state.get('_write_touched',set()):

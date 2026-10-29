@@ -127,17 +127,19 @@ def native_details(client,code):
             'lines':[{'line_no':str(row.get('明细编号') or ''),'quantity':row.get('实际发放数量',row.get('审批通过数量',row.get('申请数量')))} for row in detail]}
 
 
+def approval_passed(native,number):
+    return native.get('status')=='APPROVED' and native.get('request_no')==number
+
+
 def ready(state,native,number):
-    if native.get('status')!='APPROVED':return False,'审批尚未通过。'
-    if state['source_status']!='已发放' or not state['ready_lines']:return False,'审批明细尚未完整回写，暂不自动发货。'
-    expected={r[0] for r in state['lines']}
-    if native.get('request_no')!=number or set(native.get('line_nos') or [])!=expected:
-        return False,'当前明细与已通过的审批不一致，需要核对。'
-    quantities={r['line_no']:int(repo.number(r.get('quantity'))) for r in native.get('lines',[])}
-    if any(quantities.get(no)!=quantity for no,_,quantity in state['lines']):
-        return False,'实际发放数量与审批结果不一致，需要核对。'
-    if not state['content']['text'] and not state['content']['images']:return False,'请填写发货文字信息或上传发货图片。'
+    if not approval_passed(native,number):return False,'审批尚未通过或审批申请单号不匹配。'
+    if not state['content']['text'] and not state['content']['images']:return False,'已发货，填写物流文字信息或上传发货图片后通知申请人。'
     return True,''
+
+
+def flag_due(fields,native):
+    import app
+    return fields.get('是否发货') is not True and native.get('code')==app.feishu_text(fields,'审批实例Code') and approval_passed(native,app.feishu_text(fields,'申请单号'))
 
 
 def process_one(key,client):
@@ -155,67 +157,69 @@ def process_one(key,client):
         cached=previous.get('native') or {}
         changed=current['fingerprint']!=previous.get('fingerprint') or previous.get('dirty')
         poll_native=current['code'] and (not cached or cached.get('code')!=current['code'] or (cached.get('status')=='PENDING' and time.time()-cached.get('checked_at',0)>=POLL_SECONDS))
-        if not changed and not poll_native:return {'state':'unchanged'}
+        if not changed and not poll_native and not flag_due(fields,cached):return {'state':'unchanged'}
         pending=conn.execute("SELECT EXISTS(SELECT 1 FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state NOT IN ('done','cancelled'))",(info['table_id'],old['record_id'])).fetchone()[0]
+        if pending:return {'state':'syncing'}
         dependencies=shipping.schedule_outbox_dependencies(conn,old['record_id'])
-        if pending or dependencies:return {'state':'syncing'}
-        from .approval_sync import line_snapshot
-        review=next(f['field_id'] for f in info['fields'] if f['field_name']=='库存审查状态')
-        line_snapshot(conn,info,old,{'operation':'update','patch':{review:'已核实库存'}})
     native=native_details(client,current['code']) if current['code'] and (changed or poll_native) else cached
-    allowed,reason=ready(current,native,app.feishu_text(fields,'申请单号'))
+    number=app.feishu_text(fields,'申请单号');passed=approval_passed(native,number)
+    allowed,reason=ready(current,native,number)
+    # A flag-only historical correction must never generate a historical receipt.
     meaningful=(previous.get('dirty') or previous.get('content')!=current['content']
-        or (previous.get('source_status')!='已发放' and current['source_status']=='已发放')
-        or (not previous.get('ready_lines') and current['ready_lines'])
-        or (previous.get('state')=='waiting_approval' and cached.get('status')=='PENDING' and native.get('status')=='APPROVED'))
+        or (cached.get('status')=='PENDING' and native.get('status')=='APPROVED')
+        or (previous.get('code')!=current['code'] and passed))
     with connection() as conn,conn.transaction(),runtime.request_scope():
         conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
         conn.execute("SELECT pg_advisory_xact_lock(hashtextextended('business-lane:ordinary',0))")
         latest=repo.raw_record(conn,info,old['record_id'],lock=True)
         if latest['version']!=old['version']:return {'state':'changed_during_check'}
         saved=document(conn,old['record_id'],lock=True)
-        # Another callback may already have handled this exact version.
-        if saved.get('fingerprint')==current['fingerprint'] and not saved.get('dirty') and saved.get('notice_signature')==digest(current['content']) and not meaningful:
-            saved['native']=native;put(conn,old['record_id'],saved)
-            return {'state':'unchanged'}
-        next_state={**current,'native':native,'dirty':False,'notice_signature':saved.get('notice_signature'),'state':'blocked','error':reason,'announced':saved.get('announced',False)}
-        if not allowed or not meaningful:
-            if allowed:next_state.update(state='baseline',error='')
-            elif native.get('status')!='APPROVED':next_state['state']='waiting_approval'
-            elif current['ready_lines'] and not current['content']['text'] and not current['content']['images']:next_state['state']='waiting_information'
-            put(conn,old['record_id'],next_state)
-            return {'state':next_state['state'],'reason':reason}
+        signature=digest(current['content'])
+        same_notice=(saved.get('effect_id') and saved.get('notice_signature')==signature
+                     and (saved.get('native') or {}).get('code')==native.get('code'))
+        flag_needed=passed and fields.get(shipping.SHIPPED) is not True
+        notice_needed=bool(allowed and meaningful and not same_notice)
+        next_state={**current,'native':native,'dirty':False,'notice_signature':saved.get('notice_signature'),
+                    'announced':saved.get('announced',False),'effect_id':saved.get('effect_id')}
+        if not passed:next_state.update(state='waiting_approval',error=reason)
+        elif not allowed:next_state.update(state='waiting_information',error=reason)
+        elif same_notice:next_state.update(state=saved.get('state','pending'),error=saved.get('error',''))
+        else:next_state.update(state='baseline',error='')
         recipients=app.feishu_person_open_ids(fields,['申请人'])
-        if len(recipients)!=1 or not recipients[0].startswith('ou_'):
-            next_state.update(state='blocked',error='申请人账号无效，不能发送发货通知。');put(conn,old['record_id'],next_state)
-            return {'state':'blocked'}
-        number=app.feishu_text(fields,'申请单号');notice_signature=digest(current['content'])
-        task,created=jobs.enqueue('发货信息同步','automatic-shipping:'+old['record_id']+':'+str(old['version'])+':'+notice_signature,
-            {'request_id':old['record_id'],'request_no':number,'automatic':True},conn=conn)
+        if notice_needed and (len(recipients)!=1 or not recipients[0].startswith('ou_')):
+            notice_needed=False;next_state.update(state='blocked',error='申请人账号无效，不能发送发货通知。')
+        if not flag_needed and not notice_needed:
+            put(conn,old['record_id'],next_state)
+            return {'state':next_state['state'],'reason':next_state.get('error','')}
+        task,created=jobs.enqueue('发货信息同步','automatic-shipping:v2:'+old['record_id']+':'+str(old['version'])+':'+signature,
+            {'request_id':old['record_id'],'request_no':number,'automatic':True,'notify':notice_needed},conn=conn)
         if not created:return {'state':'duplicate'}
         conn.execute("SELECT set_config('pudu.job_id',%s,true)",(task.task_id,))
         runtime.request_state.update(_write_conn=conn,_write_actor='system:automatic-shipping',_write_lane='ordinary',_job_id=task.task_id,_effect_ordinal=0)
-        from .client import DatabaseWriteClient
-        DatabaseWriteClient(conn).update_record(info['table_id'],old['record_id'],{shipping.SHIPPED:True})
+        if flag_needed:
+            from .client import DatabaseWriteClient
+            DatabaseWriteClient(conn).update_record(info['table_id'],old['record_id'],{shipping.SHIPPED:True})
         latest=repo.raw_record(conn,info,old['record_id'])
-        outbox=[str(r[0]) for r in conn.execute("SELECT id FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state IN ('pending','retry','processing')",(info['table_id'],old['record_id']))]
-        from .shipping_card import card,date_change_card
-        origin=os.environ.get('PUDU_PUBLIC_ORIGIN','https://materials.pudu.work')
-        before_date=(saved.get('content') or {}).get('ship_date')
-        date_changed=bool(before_date) and before_date!=current['content']['ship_date'] and saved.get('announced',False)
-        message=(date_change_card(number,old['record_id'],before_date,current['content']['ship_date'],True,origin) if date_changed
-            else card(number,old['record_id'],True,current['content']['ship_date'],current['content']['arrival_start'],current['content']['text'],len(current['content']['images']),origin))
-        conn.execute("UPDATE material_ops.effects SET state='done',completed_at=now(),last_error='已被最新发货信息替代，未发送旧通知' WHERE kwargs->>'_shipping_request'=%s AND state IN ('pending','retry') AND first_attempt_at IS NULL",(old['record_id'],))
-        alias=effects.defer('primary','send_interactive_message',[recipients[0],message],{
-            'receive_id_type':'open_id','_outbox_ids':outbox,'_shipping_request':old['record_id'],'_shipping_version':latest['version'],
-            '_automatic_shipping_signature':notice_signature,**({'_shipping_date_change':True,'_shipping_date_before':before_date,'_shipping_date_after':current['content']['ship_date']} if date_changed else {})})
-        result={'request_id':old['record_id'],'request_no':number,'automatic':True,'effect_id':alias[len(effects.PREFIX):],'outbox_ids':outbox}
+        outbox=list(dict.fromkeys([*dependencies,*[str(r[0]) for r in conn.execute("SELECT id FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state IN ('pending','retry','processing')",(info['table_id'],old['record_id']))]]))
+        result={'request_id':old['record_id'],'request_no':number,'automatic':True,'flag_updated':flag_needed,'effect_id':None,'outbox_ids':outbox}
+        if notice_needed:
+            from .shipping_card import card,date_change_card
+            origin=os.environ.get('PUDU_PUBLIC_ORIGIN','https://materials.pudu.work')
+            before_date=(saved.get('content') or {}).get('ship_date')
+            date_changed=bool(before_date) and before_date!=current['content']['ship_date'] and saved.get('announced',False)
+            message=(date_change_card(number,old['record_id'],before_date,current['content']['ship_date'],True,origin) if date_changed
+                else card(number,old['record_id'],True,current['content']['ship_date'],current['content']['arrival_start'],current['content']['text'],len(current['content']['images']),origin))
+            conn.execute("UPDATE material_ops.effects SET state='done',completed_at=now(),last_error='已被最新发货信息替代，未发送旧通知' WHERE kwargs->>'_shipping_request'=%s AND state IN ('pending','retry') AND first_attempt_at IS NULL",(old['record_id'],))
+            alias=effects.defer('primary','send_interactive_message',[recipients[0],message],{
+                'receive_id_type':'open_id','_outbox_ids':outbox,'_shipping_request':old['record_id'],'_shipping_version':latest['version'],
+                '_automatic_shipping_signature':signature,**({'_shipping_date_change':True,'_shipping_date_before':before_date,'_shipping_date_after':current['content']['ship_date']} if date_changed else {})})
+            result['effect_id']=alias[len(effects.PREFIX):]
+            next_state.update(notice_signature=signature,state='pending',error='',effect_id=result['effect_id'])
         conn.execute("UPDATE material_ops.jobs SET state='done',result=%s,completed_at=now() WHERE id=%s",(Jsonb(result),task.task_id))
         from .admin_completion import register
         register(conn,task.task_id,'发货信息同步',{'request_no':number},{'entries':[result]},'系统')
-        next_state.update(notice_signature=notice_signature,state='pending',error='',effect_id=result['effect_id'])
         put(conn,old['record_id'],next_state)
-        return {'state':'queued',**result}
+        return {'state':'queued' if notice_needed else next_state['state'],**result}
 
 
 def process_changed(record_id=None,client=None):
@@ -231,7 +235,7 @@ def process_changed(record_id=None,client=None):
                 if not eligible(row['fields']):continue
                 old=document(conn,row['record_id']);native=old.get('native') or {}
                 current=snapshot(conn,row['fields'],by_request.get(row['record_id'],[]))
-                if current['fingerprint']!=old.get('fingerprint') or old.get('dirty') or (current['code'] and (not native or native.get('code')!=current['code'] or (native.get('status')=='PENDING' and time.time()-native.get('checked_at',0)>=POLL_SECONDS))):
+                if flag_due(row['fields'],native) or current['fingerprint']!=old.get('fingerprint') or old.get('dirty') or (current['code'] and (not native or native.get('code')!=current['code'] or (native.get('status')=='PENDING' and time.time()-native.get('checked_at',0)>=POLL_SECONDS))):
                     keys.append(row['record_id'])
     if client is None:client=app._native_feishu_bitable_client(app.feishu_app_id(),app.feishu_app_secret(),app.feishu_bitable_app_token())
     results=[]
@@ -241,7 +245,7 @@ def process_changed(record_id=None,client=None):
             logging.warning('Automatic shipping check needs retry: %s',type(exc).__name__)
             return {'state':'retry','error_type':type(exc).__name__}
     with ThreadPoolExecutor(max_workers=3) as pool:results=list(pool.map(inspect,keys))
-    return {'checked':len(results),'queued':sum(r['state']=='queued' for r in results),'retry':sum(r['state']=='retry' for r in results)}
+    return {'checked':len(results),'queued':sum(r['state']=='queued' for r in results),'marked':sum(bool(r.get('flag_updated')) for r in results),'retry':sum(r['state']=='retry' for r in results)}
 
 
 def poll(client=None):

@@ -158,9 +158,10 @@ class FeishuCardWorkerTests(unittest.TestCase):
                     "request_id": "request-1",
                     "expected_version": 2,
                     "operator_open_id": "ou-admin",
+                    "message_id": "om-card-1",
                 }
             },
-            idempotency_key="request-inventory-card-confirm:request-1:2:",
+            idempotency_key="request-inventory-card-confirm:request-1:2::om-card-1",
         )
 
     def test_inventory_reject_stages_background_task(self) -> None:

@@ -620,7 +620,7 @@ class RequestInventoryReviewTests(unittest.TestCase):
         self.assertTrue(result["recovered_notifications"])
         self.assertEqual(result["notification_count"], 1)
         update_request.assert_not_called()
-        notify.assert_called_once_with("REQ-1", context["request"], context["lines"])
+        notify.assert_called_once_with("REQ-1", context["request"], context["lines"], update_only=True, original_message_id="", operator_open_id="ou_admin", request_id="request-1")
 
     def test_inventory_reminder_preserves_original_card_ids(self) -> None:
         context = {

@@ -6311,6 +6311,8 @@ def notify_enabled_admins_of_material_request(
     request_no: str,
     request_payload: dict[str, object],
     lines: list[dict[str, object]],
+    *, update_only: bool = False, original_message_id: str = "",
+    operator_open_id: str = "", request_id: str = "",
 ) -> int:
     client = feishu_client()
     if client is None:
@@ -6319,14 +6321,21 @@ def notify_enabled_admins_of_material_request(
     if not recipients:
         raise RuntimeError("用户权限表中没有启用的管理员账号。")
     try:
-        review_context = request_inventory_review_context(request_no=request_no)
+        review_context = request_inventory_review_context(**({"request_id": request_id} if request_id else {"request_no": request_no}))
     except Exception:
+        if update_only:
+            raise
         review_context = None
     existing_message_ids = (
-        [str(value) for value in list(dict(review_context.get("request") or {}).get("inventory_message_ids") or [])]
+        [str(value).strip() for value in list(dict(review_context.get("request") or {}).get("inventory_message_ids") or []) if str(value).strip()]
         if review_context
         else []
     )
+    if original_message_id:
+        existing_message_ids = unique_preserve([*existing_message_ids, original_message_id])
+    if update_only and not existing_message_ids:
+        raise RuntimeError("未找到原库存确认卡片，保留任务核对，不重新发送卡片。")
+    original_operator = operator_open_id
     message_ids: list[str] = []
     update_message = getattr(client, "update_interactive_message", None)
     if existing_message_ids and callable(update_message):
@@ -6337,7 +6346,7 @@ def notify_enabled_admins_of_material_request(
         # action link for historical batches as well.
         recipients_with_live_card: set[str] = set()
         for index, message_id in enumerate(existing_message_ids):
-            operator_open_id = recipients[index % len(recipients)]
+            operator_open_id = original_operator if message_id == original_message_id and original_operator else recipients[index % len(recipients)]
             card = material_request_notification_card(
                 request_no,
                 request_payload,
@@ -6358,9 +6367,9 @@ def notify_enabled_admins_of_material_request(
                 # fail-closed behavior for every other update error so the
                 # background task can retry the card refresh independently of
                 # the already committed business write.
-                if "230031" not in str(exc) and not isinstance(exc, LookupError):
+                if update_only or ("230031" not in str(exc) and not isinstance(exc, LookupError)):
                     raise
-        for operator_open_id in recipients:
+        for operator_open_id in ([] if update_only else recipients):
             if operator_open_id in recipients_with_live_card:
                 continue
             card = material_request_notification_card(
@@ -6374,6 +6383,8 @@ def notify_enabled_admins_of_material_request(
                 send_feishu_interactive_message(client, operator_open_id, card)
             )
     else:
+        if update_only:
+            raise RuntimeError("原库存确认卡片暂时无法更新，保留任务重试。")
         for open_id in recipients:
             card = material_request_notification_card(
                 request_no,
@@ -9081,6 +9092,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     )
     # The queued confirmation is authoritative. Manual edits made after enqueue
     # must not turn a valid background write into an optimistic-lock failure.
+    approval_started = bool(feishu_text(feishu_fields(context.get("request_row") or {}), "审批实例Code")) or str(request.get("status") or "") in {"已发放", "已驳回", "已撤回", "已取消"}
     line_updates = [
         {
             "record_id": str(line.get("record_id") or ""),
@@ -9093,6 +9105,7 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
         }
         for line in list(context["lines"])
         if str(line.get("record_id") or "")
+        and not (already_confirmed and approval_started)
         and (
             not already_confirmed
             or int(line.get("approved_qty") or 0) != int(line.get("quantity") or 0)
@@ -9150,6 +9163,8 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
             str(request.get("request_no") or ""),
             request,
             list(context.get("lines") or []),
+            update_only=True, original_message_id=str(draft.get("message_id") or ""),
+            operator_open_id=operator_open_id, request_id=request_id,
         )
         return {
             "request_no": request.get("request_no"),
@@ -9188,7 +9203,9 @@ def execute_request_inventory_confirm(draft: dict[str, object]) -> dict[str, obj
     if ship_date not in (None, ""):
         sync_request_ship_date_to_schedule(request_id, ship_date)
     notify_enabled_admins_of_material_request(
-        str(request.get("request_no") or ""), request, list(context["lines"])
+        str(request.get("request_no") or ""), request, list(context["lines"]),
+        update_only=True, original_message_id=str(draft.get("message_id") or ""),
+        operator_open_id=operator_open_id, request_id=request_id,
     )
     return {
         "request_no": request.get("request_no"),

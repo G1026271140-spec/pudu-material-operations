@@ -83,6 +83,11 @@ def run_once(clients):
               WHERE earlier.kwargs->>'_rejection_request'=e.kwargs->>'_rejection_request'
                 AND (older.created_at,older.id)<(current.created_at,current.id)
                 AND earlier.state NOT IN ('done','failed')))
+          AND (NOT (e.kwargs ? '_inventory_request') OR NOT EXISTS(
+              SELECT 1 FROM material_ops.effects earlier JOIN material_ops.jobs older ON older.id=earlier.job_id
+                JOIN material_ops.jobs current ON current.id=e.job_id
+              WHERE earlier.kwargs->>'_inventory_request'=e.kwargs->>'_inventory_request'
+                AND (older.created_at,older.id)<(current.created_at,current.id) AND earlier.state NOT IN ('done','failed')))
           AND (NOT (e.kwargs ? '_automatic_shipping_signature') OR NOT EXISTS(
               SELECT 1 FROM material_ops.effects earlier WHERE earlier.kwargs->>'_shipping_request'=e.kwargs->>'_shipping_request'
                 AND (earlier.created_at,earlier.id)<(e.created_at,e.id) AND earlier.first_attempt_at IS NOT NULL
