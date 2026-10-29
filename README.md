@@ -1,6 +1,6 @@
-> **当前生产：V4.0.7（2026-10-29）**，Ubuntu 虚拟机 + PostgreSQL + 飞书同步。
+> **当前生产：V4.0.9（2026-10-29）**，Ubuntu 虚拟机 + PostgreSQL + 飞书同步。
 > 本页位于默认分支 `master`。**开发和部署请使用 [`codex/postgres-core`](https://github.com/G1026271140-spec/pudu-material-operations/tree/codex/postgres-core) 分支**；默认分支中的其他文件保留历史版本。
-> 本次更新：修复下单批次标识冲突及原卡片依赖；新物料申请默认物流文字及示例图；通讯录按定时任务显示上次完成状态。
+> 本次更新：补齐审批通过前填写的物流文字 / 附件，由虚拟机 Worker 先本地保存，再写飞书及通知；无需重跑扣库工作流。
 
 # PUDU Material Operations
 
@@ -9,7 +9,7 @@ PUDU 营销物料管理系统。当前为 **Ubuntu 虚拟机 + PostgreSQL + 飞�
 - **业务入口**：[materials.pudu.work](https://materials.pudu.work)
 - **运维与开发入口**：[docs/ops/README.md](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/README.md)
 - **开发约束**：[AGENTS.md](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/AGENTS.md)
-- **实际线上版本**：[健康接口](https://materials.pudu.work/api/health)；源码版本为 `app.py` 中的 `APP_VERSION`。本文根据 2026-10-28 的 V3.9.x 生产架构整理，发布后以接口和 Git SHA 为准。
+- **实际线上版本**：[健康接口](https://materials.pudu.work/api/health)；源码版本为 `app.py` 中的 `APP_VERSION`。本文按当前 PostgreSQL 生产架构和业务规则维护，发布后以接口和 Git SHA 为准。
 
 ## 当前数据流程
 
@@ -20,6 +20,7 @@ flowchart LR
     P --> O[事务 outbox]
     O --> F[飞书多维表格]
     F --> E[通知 Worker 更新原卡片 / 发货卡片]
+    A[已通过的原生审批物流文字 / 附件] --> P
     F --> C[申请变更回调 / 15 秒补偿读取]
     C --> P
     F --> R[每天北京时间 03:00 校验]
@@ -47,6 +48,8 @@ flowchart LR
 - 发货模板保留附加功能；物料管理中的发货排期页面已关闭，旧地址跳转品类管理，“配货与发货”日历继续使用。INV Shipping Cost 按货值分摊，货物单价最多两位小数，允许合理舍入尾差。
 
 新建普通物料申请默认填写物流文字“待补充”和示例图片，先本地保存再由 Worker 写入飞书；占位内容不计为有效物流凭证。普通物料原生审批通过后自动勾选已发货；物流文字或发货图片至少一项有效时，再通知原申请人。状态勾选不等待物流信息或后续明细回写，不改写审批结果、发放数量或库存；通知等待相应飞书写入完成。申请变更回调优先，15 秒轮询补漏；页面通过 3 秒版本检查更新本地数据。网络和飞书处理时间会影响实际延迟，不承诺固定秒数。启用时建立历史基线，不批量补发旧通知。
+
+审批通过前补填的物流文字和图片由 VM Worker 从最终审批表单导入，本地保存后经 outbox 写入飞书。审批附件下载地址转为本地图片及多维表格附件，每个通过实例只导入一次；旧单补齐保护现有真实字段，后续网页编辑不被旧审批覆盖。无需重新执行原扣库工作流。
 
 申请人只读查看自己的发货信息，管理员和中台可编辑日期、物流文字和图片，已发货由规则自动判定；中台不开放配货。飞书“按原申请确认”完成后更新原库存确认卡片，移除已完成操作，不再另发一张；原卡片更新失败保留重试。发货和日期变更均使用申请人卡片通知；物料管理、配货、发货不再额外发送管理员成功回执，原业务卡片、申请人通知及配货 / 发货失败提醒保留；物料管理的“任务需核对”管理员卡片已停用，错误继续记录在后台。
 
