@@ -45,7 +45,11 @@ def digest(value):return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort
 def image_keys(conn,images):
     keys=[]
     from .shipping_defaults import real_images
+    from .approval_shipping import image_key
     for image in real_images(conn,images):
+        stable=image_key(conn,image)
+        if stable:
+            keys.append(stable);continue
         token=image.get('file_token')
         if not token and image.get('local_media_id'):
             row=conn.execute('SELECT feishu_file_token FROM material_ops.media WHERE id=%s',(image['local_media_id'],)).fetchone()
@@ -118,6 +122,7 @@ def stage(conn,key):
 
 
 def native_details(client,code):
+    from .approval_shipping import extract
     data=client._request('GET','/approval/v4/instances/'+quote(code,safe=''),params={'locale':'zh-CN','user_id_type':'open_id'})['data']
     form=json.loads(data.get('form') or '[]')
     rows=[row for field in form if field.get('type')=='fieldList' for row in field.get('value',[])]
@@ -125,7 +130,8 @@ def native_details(client,code):
     numbers=[str(row.get('明细编号') or '') for row in detail]
     return {'status':data.get('status'),'code':code,'checked_at':time.time(),'end_time':data.get('end_time'),
             'request_no':next((f.get('value') for f in form if f.get('name') in {'申请单号','物料申请单号'}),None),'line_nos':numbers,
-            'lines':[{'line_no':str(row.get('明细编号') or ''),'quantity':row.get('实际发放数量',row.get('审批通过数量',row.get('申请数量')))} for row in detail]}
+            'lines':[{'line_no':str(row.get('明细编号') or ''),'quantity':row.get('实际发放数量',row.get('审批通过数量',row.get('申请数量')))} for row in detail],
+            'shipping':extract(form)}
 
 
 def approval_passed(native,number):
@@ -146,7 +152,7 @@ def flag_due(fields,native):
 def process_one(key,client):
     import app
     import backend_runtime as runtime
-    from . import shipping_calendar as shipping,jobs,effects
+    from . import shipping_calendar as shipping,jobs,effects,approval_shipping as approval
     with connection() as conn:
         if not enabled(conn):return {'state':'disabled'}
         info,lines=graph(conn)
@@ -156,14 +162,21 @@ def process_one(key,client):
         if not shipping.eligible(fields):return {'state':'ineligible'}
         current=snapshot(conn,fields,lines.get(old['record_id'],[]));previous=document(conn,old['record_id'])
         cached=previous.get('native') or {}
+        import_due=approval.due(previous,cached,current['code'],app.feishu_text(fields,'申请单号'))
+        legacy_import=bool(import_due and 'shipping' not in cached)
         changed=current['fingerprint']!=previous.get('fingerprint') or previous.get('dirty')
-        poll_native=current['code'] and (not cached or cached.get('code')!=current['code'] or (cached.get('status')=='PENDING' and time.time()-cached.get('checked_at',0)>=POLL_SECONDS))
-        if not changed and not poll_native and not flag_due(fields,cached):return {'state':'unchanged'}
+        poll_native=current['code'] and (not cached or legacy_import or (import_due and previous.get('approval_import_error') and time.time()-cached.get('checked_at',0)>=60) or cached.get('code')!=current['code'] or (cached.get('status')=='PENDING' and time.time()-cached.get('checked_at',0)>=POLL_SECONDS))
+        if not changed and not poll_native and not import_due and not flag_due(fields,cached):return {'state':'unchanged'}
         pending=conn.execute("SELECT EXISTS(SELECT 1 FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state NOT IN ('done','cancelled'))",(info['table_id'],old['record_id'])).fetchone()[0]
         if pending:return {'state':'syncing'}
         dependencies=shipping.schedule_outbox_dependencies(conn,old['record_id'])
     native=native_details(client,current['code']) if current['code'] and (changed or poll_native) else cached
     number=app.feishu_text(fields,'申请单号');passed=approval_passed(native,number)
+    import_due=approval.due(previous,native,current['code'],number)
+    approval_patch,import_error=approval.prepare(native,fields,legacy=legacy_import) if import_due else ({},'')
+    if approval_patch:
+        fields={**fields,**approval_patch}
+        with connection() as conn:current=snapshot(conn,fields,lines.get(old['record_id'],[]))
     allowed,reason=ready(current,native,number)
     # A flag-only historical correction must never generate a historical receipt.
     meaningful=(previous.get('dirty') or previous.get('content')!=current['content']
@@ -182,15 +195,18 @@ def process_one(key,client):
         notice_needed=bool(allowed and meaningful and not same_notice)
         next_state={**current,'native':native,'dirty':False,'notice_signature':saved.get('notice_signature'),
                     'announced':saved.get('announced',False),'effect_id':saved.get('effect_id'),
+                    'logistics_import_code':native.get('code') if import_due and not import_error else saved.get('logistics_import_code'),
+                    'approval_import_error':import_error,
                     'notice_approval_code':saved.get('notice_approval_code') or ((saved.get('native') or {}).get('code') if saved.get('effect_id') else None)}
         if not passed:next_state.update(state='waiting_approval',error=reason)
         elif not allowed:next_state.update(state='waiting_information',error=reason)
         elif same_notice:next_state.update(state=saved.get('state','pending'),error=saved.get('error',''))
         else:next_state.update(state='baseline',error='')
+        if import_error:next_state.update(error=import_error)
         recipients=app.feishu_person_open_ids(fields,['申请人'])
         if notice_needed and (len(recipients)!=1 or not recipients[0].startswith('ou_')):
             notice_needed=False;next_state.update(state='blocked',error='申请人账号无效，不能发送发货通知。')
-        if not flag_needed and not notice_needed:
+        if not flag_needed and not notice_needed and not approval_patch:
             put(conn,old['record_id'],next_state)
             return {'state':next_state['state'],'reason':next_state.get('error','')}
         task,created=jobs.enqueue('发货信息同步','automatic-shipping:v2:'+old['record_id']+':'+str(old['version'])+':'+signature,
@@ -198,12 +214,12 @@ def process_one(key,client):
         if not created:return {'state':'duplicate'}
         conn.execute("SELECT set_config('pudu.job_id',%s,true)",(task.task_id,))
         runtime.request_state.update(_write_conn=conn,_write_actor='system:automatic-shipping',_write_lane='ordinary',_job_id=task.task_id,_effect_ordinal=0)
-        if flag_needed:
+        if flag_needed or approval_patch:
             from .client import DatabaseWriteClient
-            DatabaseWriteClient(conn).update_record(info['table_id'],old['record_id'],{shipping.SHIPPED:True})
+            DatabaseWriteClient(conn).update_record(info['table_id'],old['record_id'],{**approval_patch,**({shipping.SHIPPED:True} if flag_needed else {})})
         latest=repo.raw_record(conn,info,old['record_id'])
         outbox=list(dict.fromkeys([*dependencies,*[str(r[0]) for r in conn.execute("SELECT id FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state IN ('pending','retry','processing')",(info['table_id'],old['record_id']))]]))
-        result={'request_id':old['record_id'],'request_no':number,'automatic':True,'flag_updated':flag_needed,'effect_id':None,'outbox_ids':outbox}
+        result={'request_id':old['record_id'],'request_no':number,'automatic':True,'flag_updated':flag_needed,'approval_import_fields':list(approval_patch),'approval_import_error':import_error,'effect_id':None,'outbox_ids':outbox}
         if notice_needed:
             from .shipping_card import card,date_change_card
             origin=os.environ.get('PUDU_PUBLIC_ORIGIN','https://materials.pudu.work')
@@ -232,12 +248,13 @@ def process_changed(record_id=None,client=None):
         if record_id is not None:keys=[record_id]
         else:
             from .shipping_calendar import eligible
+            from .approval_shipping import due
             keys=[]
             for row in repo.rows(conn,info):
                 if not eligible(row['fields']):continue
                 old=document(conn,row['record_id']);native=old.get('native') or {}
                 current=snapshot(conn,row['fields'],by_request.get(row['record_id'],[]))
-                if flag_due(row['fields'],native) or current['fingerprint']!=old.get('fingerprint') or old.get('dirty') or (current['code'] and (not native or native.get('code')!=current['code'] or (native.get('status')=='PENDING' and time.time()-native.get('checked_at',0)>=POLL_SECONDS))):
+                if due(old,native,current['code'],app.feishu_text(row['fields'],'申请单号')) or flag_due(row['fields'],native) or current['fingerprint']!=old.get('fingerprint') or old.get('dirty') or (current['code'] and (not native or native.get('code')!=current['code'] or (native.get('status')=='PENDING' and time.time()-native.get('checked_at',0)>=POLL_SECONDS))):
                     keys.append(row['record_id'])
     if client is None:client=app._native_feishu_bitable_client(app.feishu_app_id(),app.feishu_app_secret(),app.feishu_bitable_app_token())
     results=[]
