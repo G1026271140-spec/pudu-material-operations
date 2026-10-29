@@ -42,7 +42,8 @@ def register_database_api(api, require_admin):
                 attached=conn.execute(sql.SQL('SELECT EXISTS(SELECT 1 FROM material_data.{} WHERE NOT _deleted AND _fields->%s @> %s)').format(sql.Identifier(category['sql_table'])),(fid,Jsonb([{'local_media_id':media_id}]))).fetchone()[0]
                 if not attached:raise ValueError('图片未关联至品类。')
                 image=load_image(media_id,conn=conn)
-            return FileResponse(image['path'],media_type=image['type'],headers={'Cache-Control':'no-store'})
+            from material_store import image_assets
+            return FileResponse(image_assets.local(image),media_type='image/webp',headers=image_assets.HEADERS)
         except (ValueError,TypeError) as exc:raise HTTPException(404,'图片不存在。') from exc
 
     @api.get('/api/admin/database/tables')

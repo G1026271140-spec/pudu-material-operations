@@ -255,7 +255,11 @@ def test_uploaded_local_picture_is_visible_after_cell_save_before_feishu_sync(st
     monkeypatch.setattr(web,'_signed_admin_open_id',lambda _:s.actor)
     client=TestClient(web.api)
     response=client.get('/api/database-image/'+image['local_media_id'])
-    assert response.status_code==200 and response.content==output.getvalue()
+    assert response.status_code==200 and response.headers['content-type']=='image/webp'
+    with Image.open(BytesIO(response.content)) as prepared:
+        assert prepared.size==(8,8)
+        assert abs(prepared.convert("RGB").getpixel((0,0))[1]-128)<8
+    assert 'private' in response.headers['cache-control']
     assert result['sync_state']=='pending'
     assert client.get('/api/database-image/'+str(uuid4())).status_code==404
 

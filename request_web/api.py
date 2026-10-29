@@ -453,11 +453,14 @@ async def _pending_inventory_lifespan(_app: FastAPI):
     import submission_receipts
 
     submission_receipts.start()
+    from material_store import image_assets
+    if backend_runtime.database_reads():image_assets.start()
     start_pending_reconciliation()
     try:
         yield
     finally:
         stop_pending_reconciliation()
+        image_assets.stop()
         submission_receipts.stop()
 
 
@@ -705,6 +708,8 @@ async def frontend_cache_policy(request, call_next):
             if response.status_code == 200
             else "no-store"
         )
+    elif path.startswith(("/api/live-image/","/api/database-image/","/api/apparel-image/","/api/apparel-local-image/")) and response.status_code==200 and content_type.startswith("image/"):
+        response.headers["Cache-Control"]="private, max-age=86400, immutable"
     elif content_type.startswith("text/html") or (backend_runtime.realtime_reads() and path.startswith('/api/')):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         response.headers["Pragma"] = "no-cache"
@@ -751,24 +756,25 @@ def health() -> dict[str, Any]:
 
 
 @api.get('/api/live-image/{table}/{record_id}/{file_token}')
-def live_source_image(table: str, record_id: str, file_token: str) -> Response:
-    if not backend_runtime.realtime_reads():
-        raise HTTPException(status_code=404,detail='资源不存在')
-    from request_web.live_data import image_bytes
-    from PIL import Image, ImageOps, UnidentifiedImageError
-    try:
-        content = image_bytes(table,record_id,file_token)
+async def live_source_image(table: str, record_id: str, file_token: str):
+    if not backend_runtime.realtime_reads():raise HTTPException(404,'资源不存在')
+    from material_store import image_assets
+    def prepare():
+        if backend_runtime.database_reads():
+            path=image_assets.primary(table,record_id,file_token)
+            return FileResponse(path,media_type='image/webp',headers=image_assets.HEADERS)
+        from request_web.live_data import image_bytes
+        from PIL import Image,ImageOps
+        content=image_bytes(table,record_id,file_token)
         with Image.open(io.BytesIO(content)) as original:
-            picture = ImageOps.exif_transpose(original).convert('RGB')
-            picture.thumbnail((1600,1600))
-            output = io.BytesIO()
-            picture.save(output,'WEBP',quality=78)
+            picture=ImageOps.exif_transpose(original).convert('RGB');picture.thumbnail((1600,1600))
+            output=io.BytesIO();picture.save(output,'WEBP',quality=78)
         return Response(output.getvalue(),media_type='image/webp',headers={'Cache-Control':'no-store'})
-    except (KeyError, UnidentifiedImageError) as exc:
-        raise HTTPException(status_code=404,detail='图片不存在') from exc
+    try:return await image_assets.isolated(prepare)
+    except (KeyError,ValueError,OSError) as exc:raise HTTPException(404,'图片不存在') from exc
     except RuntimeError as exc:
-        logging.warning('Live attachment download failed: %s',type(exc).__name__)
-        raise HTTPException(status_code=503,detail='图片读取暂时失败，请稍后重试。',headers={'Retry-After':'5'}) from exc
+        logging.warning('Attachment preparation failed: %s',type(exc).__name__)
+        raise HTTPException(503,'图片读取暂时失败，请稍后重试。',headers={'Retry-After':'5'}) from exc
 
 
 @api.get("/api/catalog")

@@ -108,13 +108,17 @@ def _run(conn,row):
 
 def run_one(lane=None,job_id=None,*,raise_errors=False):
     from .inbound import run_one as run_inbound
-    inbound=run_inbound(lane,job_id)
-    if inbound is not None:return inbound
+    if lane=='inbound':return run_inbound(None,job_id)
+    if job_id is not None or lane is None:
+        inbound=run_inbound(lane,job_id)
+        if inbound is not None:return inbound
     selected=None
     try:
         # Each worker owns a fresh scope; stale HTTP snapshots cannot leak in.
         with runtime.request_scope(),connection() as conn,conn.transaction():
             from .concurrency import last_commit_wins
+            # Use the same reconciliation -> business-lane lock order as all writers.
+            conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
             if last_commit_wins():
                 selected_lane=lane
                 if job_id:
@@ -151,31 +155,14 @@ def run_one(lane=None,job_id=None,*,raise_errors=False):
         return {'id':str(selected),'state':'retry'}
 
 def submit(task_type,key,payload):
+    """Durably accept an intent; only the dedicated Worker executes business."""
+    started=time.monotonic()
     runtime.release_database_snapshot()
     task,created=enqueue(task_type,key,payload)
     if task.status=='失败':raise ValueError('这笔操作此前未能保存，请刷新后重新提交。')
-    if task.status!='已完成':
-        import psycopg
-        try:
-            from .concurrency import last_commit_wins
-            for _ in range(32 if last_commit_wins() else 1):
-                processed=run_one(job_id=task.task_id,raise_errors=not last_commit_wins())
-                if processed is None or processed.get('id')==task.task_id:break
-        except (psycopg.errors.DeadlockDetected,psycopg.errors.SerializationFailure,psycopg.errors.LockNotAvailable):
-            # The durable job will retry. Return its identity so an HTTP retry
-            # cannot create another business operation with a different token.
-            return task,created
-    with connection() as conn:
-        state,result,error=conn.execute('SELECT state,result,last_error FROM material_ops.jobs WHERE id=%s',(task.task_id,)).fetchone()
-    if state!='done':
-        from .concurrency import last_commit_wins
-        if last_commit_wins() and state in {'pending','retry'}:return task,created
-        raise RuntimeError(error or '这笔操作尚未完成，请稍后重试。')
-    from dataclasses import replace
-    task=replace(task,status='已完成',result=result)
-    # Invalidate the HTTP response snapshot so subsequent builders see commits.
-    runtime.request_state.pop('_live_reader',None)
+    LOG.info('HTTP queue accepted: type=%s elapsed_ms=%d',task_type,round((time.monotonic()-started)*1000))
     return task,created
+
 
 def heartbeat(name):
     import app
@@ -184,7 +171,7 @@ def heartbeat(name):
             ('worker:'+name,Jsonb({'version':app.APP_VERSION,'worker':name})))
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--lane',choices=(*LANES,'all'),default='all');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--lane',choices=(*LANES,'inbound','all'),default='all');args=parser.parse_args()
     if not runtime.database_reads():raise RuntimeError('PostgreSQL mode required')
     logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
     def loop(lane):
@@ -195,8 +182,8 @@ def main():
             if result is None:time.sleep(1)
     if args.lane!='all':return loop(args.lane)
     from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=4,thread_name_prefix='business') as pool:
-        futures=[pool.submit(loop,lane) for lane in LANES]
+    with ThreadPoolExecutor(max_workers=5,thread_name_prefix='business') as pool:
+        futures=[pool.submit(loop,lane) for lane in (*LANES,'inbound')]
         for future in futures:future.result()
 
 if __name__=='__main__':main()

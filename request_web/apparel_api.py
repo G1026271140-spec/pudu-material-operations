@@ -65,24 +65,21 @@ def register(api,require_hr):
             runtime.release_database_snapshot()
             with connection() as conn:
                 attached(conn,media_id=media_id,hr=hr);image=load_image(media_id,conn=conn)
-            return FileResponse(image['path'],media_type=image['type'],headers={'Cache-Control':'no-store'})
+            from material_store import image_assets
+            return FileResponse(image_assets.local(image),media_type='image/webp',headers=image_assets.HEADERS)
         except (ValueError,TypeError) as e:raise HTTPException(404,'图片不存在。') from e
 
     @api.get('/api/apparel-image/{record_id}/{file_token}')
-    def remote_image(record_id:str,file_token:str,request:Request):
-        import app
-        try:
+    async def remote_image(record_id:str,file_token:str,request:Request):
+        from material_store import image_assets
+        def prepare():
             try:require_hr(request);hr=True
             except HTTPException:hr=False
             runtime.release_database_snapshot()
             with connection() as conn:
                 row=attached(conn,record_id=record_id,token=file_token,hr=hr)
                 info=apparel.source_info(conn);remote_id=repo.raw_record(conn,info,row['record_id'])['remote_id']
-                if not remote_id:raise ValueError('图片尚未上传。')
-            native=app._native_feishu_bitable_client(app.feishu_app_id(),app.feishu_app_secret(),app.corporate_apparel_source_app_token())
-            source=native.get_record(app.CORPORATE_APPAREL_SOURCE_TABLE_ID,remote_id)
-            item=next((item for item in app.feishu_attachment_items(source.get('fields') or {},'图片') if item['file_token']==file_token),None)
-            if not item:raise ValueError('图片已移除。')
-            content=native.download_bitable_attachment(file_token,item['url'])
-            return Response(content,media_type='image/'+('png' if content.startswith(b'\x89PNG') else 'webp' if content[8:12]==b'WEBP' else 'jpeg'),headers={'Cache-Control':'private, max-age=300'})
-        except (ValueError,TypeError,KeyError) as e:raise HTTPException(404,'图片不存在。') from e
+            path=image_assets.remote(info,row,remote_id,file_token,('图片',))
+            return FileResponse(path,media_type='image/webp',headers=image_assets.HEADERS)
+        try:return await image_assets.isolated(prepare)
+        except (ValueError,TypeError,KeyError,OSError) as e:raise HTTPException(404,'图片不存在。') from e
