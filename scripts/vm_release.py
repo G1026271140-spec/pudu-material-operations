@@ -81,6 +81,10 @@ def switch(destination):
 def queues_idle():
     code="import psycopg; c=psycopg.connect('dbname=pudu_materials'); print(sum(c.execute(\"SELECT count(*) FROM material_ops.\"+t+\" WHERE state='processing'\").fetchone()[0] for t in ('outbox','jobs','effects')))"
     if run([PYTHON,'-c',code])!='0':raise RuntimeError('A worker is processing a write; retry after it finishes.')
+    # Atomic jobs stay pending until commit. Their independently visible marker
+    # must also drain before restarting either administrator's Worker.
+    activity="import psycopg; c=psycopg.connect('dbname=pudu_materials'); print(c.execute(\"SELECT count(*) FROM material_ops.documents d JOIN pg_stat_activity p ON p.pid=(d.payload->>'pid')::integer AND p.backend_start=(d.payload->>'backend_start')::timestamptz WHERE strpos(d.name,'task-activity:')=1\").fetchone()[0])"
+    if run([PYTHON,'-c',activity])!='0':raise RuntimeError('A worker is processing a write; retry after it finishes.')
 
 def health(expected):
     for _ in range(50):

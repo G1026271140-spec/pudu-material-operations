@@ -72,6 +72,12 @@ def dispatch(task,checkpoint):
     return process_task(task,checkpoint)
 
 def _run(conn,row):
+    from .task_activity import track
+    with track(conn,str(row[0])):
+        return _execute(conn,row)
+
+
+def _execute(conn,row):
     from request_web.live_data import LiveReader
     task=_task(row)
     conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
@@ -88,6 +94,8 @@ def _run(conn,row):
     runtime.request_state['_live_reader']=LiveReader()
     def checkpoint(progress):
         conn.execute('UPDATE material_ops.jobs SET result=%s WHERE id=%s',(Jsonb(progress),UUID(task.task_id)))
+        from .task_activity import progress as publish_progress
+        publish_progress(task.task_id,progress)
     result=dispatch(task,checkpoint) or {}
     import app
     if task.task_type==app.QUEUE_TASK_TYPE_REQUEST_INVENTORY_CONFIRM:

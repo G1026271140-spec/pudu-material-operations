@@ -94,23 +94,25 @@ def run_one(lane=None,job_id=None):
         if not row:return None
         key='inbound:'+str(row[0])
         if not guard.execute('SELECT pg_try_advisory_lock(hashtextextended(%s,0))',(key,)).fetchone()[0]:return {'state':'busy'}
-        try:
-            import app
-            if row[1]==TYPES[0]:
-                result=refresh([app.REQUEST_TABLE_NAME,app.REQUEST_LINE_TABLE_NAME,app.MATERIAL_TABLE_NAME,app.LEDGER_TABLE_NAME])
-                from .auto_shipping import process_changed
-                result['automatic_shipping']=process_changed(record_id=(row[2] or {}).get('record_id'))
-            elif row[1]==TYPES[1]:result=exchange_sync()
-            else:
-                from .contacts import refresh_now
-                result=refresh_now()
-            guard.execute("UPDATE material_ops.jobs SET state=%s,result=%s,attempts=attempts+1,available_at=now()+interval '15 seconds',completed_at=CASE WHEN %s THEN now() ELSE NULL END,last_error=NULL WHERE id=%s",
-                ('retry' if result.get('skipped') else 'done',Jsonb(result),not bool(result.get('skipped')),row[0]))
-            return {'state':'retry' if result.get('skipped') else 'done','id':str(row[0])}
-        except Exception as exc:
-            if row[1]==TYPES[2]:
-                guard.execute("UPDATE material_ops.jobs SET state='failed',attempts=attempts+1,last_error=%s WHERE id=%s",(type(exc).__name__+': '+str(exc)[:400],row[0]))
-                return {'state':'failed','id':str(row[0])}
-            guard.execute("UPDATE material_ops.jobs SET state=CASE WHEN attempts>=39 THEN 'failed' ELSE 'retry' END,attempts=attempts+1,available_at=now()+interval '30 seconds',last_error=%s WHERE id=%s",(type(exc).__name__+': '+str(exc)[:400],row[0]))
-            return {'state':'retry','id':str(row[0])}
-        finally:guard.execute('SELECT pg_advisory_unlock(hashtextextended(%s,0))',(key,))
+        from .task_activity import track
+        with track(guard,str(row[0])):
+            try:
+                import app
+                if row[1]==TYPES[0]:
+                    result=refresh([app.REQUEST_TABLE_NAME,app.REQUEST_LINE_TABLE_NAME,app.MATERIAL_TABLE_NAME,app.LEDGER_TABLE_NAME])
+                    from .auto_shipping import process_changed
+                    result['automatic_shipping']=process_changed(record_id=(row[2] or {}).get('record_id'))
+                elif row[1]==TYPES[1]:result=exchange_sync()
+                else:
+                    from .contacts import refresh_now
+                    result=refresh_now()
+                guard.execute("UPDATE material_ops.jobs SET state=%s,result=%s,attempts=attempts+1,available_at=now()+interval '15 seconds',completed_at=CASE WHEN %s THEN now() ELSE NULL END,last_error=NULL WHERE id=%s",
+                    ('retry' if result.get('skipped') else 'done',Jsonb(result),not bool(result.get('skipped')),row[0]))
+                return {'state':'retry' if result.get('skipped') else 'done','id':str(row[0])}
+            except Exception as exc:
+                if row[1]==TYPES[2]:
+                    guard.execute("UPDATE material_ops.jobs SET state='failed',attempts=attempts+1,last_error=%s WHERE id=%s",(type(exc).__name__+': '+str(exc)[:400],row[0]))
+                    return {'state':'failed','id':str(row[0])}
+                guard.execute("UPDATE material_ops.jobs SET state=CASE WHEN attempts>=39 THEN 'failed' ELSE 'retry' END,attempts=attempts+1,available_at=now()+interval '30 seconds',last_error=%s WHERE id=%s",(type(exc).__name__+': '+str(exc)[:400],row[0]))
+                return {'state':'retry','id':str(row[0])}
+            finally:guard.execute('SELECT pg_advisory_unlock(hashtextextended(%s,0))',(key,))

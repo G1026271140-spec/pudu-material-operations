@@ -8,6 +8,7 @@ import AllocationShippingPage from "./AllocationShippingPage";
 import type { AllocationShippingTab } from "./AllocationShippingPage";
 import CorporateApparelPage from "./CorporateApparelPage";
 import DatabaseWorkbench from "./DatabaseWorkbench";
+import TaskMonitorPage from "./TaskMonitorPage";
 import ApparelManagementPage from "./ApparelManagementPage";
 import RequestHistoryPage from "./RequestHistoryPage";
 import UserPermissionsPage from "./UserPermissionsPage";
@@ -15,7 +16,7 @@ import type { CurrentUser } from "./identity";
 import "./portal.css";
 
 type Lang = "zh" | "en";
-type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement" | "history" | "permissions";
+type PortalPage = "request" | "cultural" | "management" | "allocation" | "database" | "apparelManagement" | "history" | "permissions" | "tasks";
 
 const managementPaths: Record<ManagementTab, string> = {
   shipping: "/management/shipping-template",
@@ -43,6 +44,7 @@ function pageFromLocation(): PortalPage {
   if (path === "/management/allocation" || path === "/management/shipping-calendar") return "allocation";
   if (path === "/management/request-history") return "history";
   if (path === "/management/user-permissions") return "permissions";
+  if (path === "/management/tasks") return "tasks";
   if (path === "/management/database") return "database";
   if (path === "/management/corporate-apparel") return "apparelManagement";
   if (path === "/cultural" || section === "cultural_request" || section === "cultural") {
@@ -60,6 +62,7 @@ function pagePath(page: PortalPage): string {
   if (page === "allocation") return "/management/allocation";
   if (page === "history") return "/management/request-history";
   if (page === "permissions") return "/management/user-permissions";
+  if (page === "tasks") return "/management/tasks";
   if (page === "database") return "/management/database";
   if (page === "apparelManagement") return "/management/corporate-apparel";
   return "/request";
@@ -93,6 +96,7 @@ const text = {
     management: "物料管理",
     allocation: "配货与发货",
     database: "虚拟数据库",
+    tasks: "后台任务",
     history: "申请记录与额度",
     permissions: "用户权限管理",
     apparelManagement: "企业文化衫管理",
@@ -115,6 +119,7 @@ const text = {
     management: "Material Management",
     allocation: "Allocation & Shipping",
     database: "Virtual Database",
+    tasks: "Background Tasks",
     history: "History & Allowances",
     permissions: "User Permissions",
     apparelManagement: "Corporate Apparel Management",
@@ -300,7 +305,10 @@ export default function Portal() {
           {canManage && <div className="sidebar-tool-group" role="group" aria-label={t.systemGroup}>
             <div className="sidebar-label">{t.systemGroup}</div>
             <button className={`database-nav-link${page === "permissions" ? " active" : ""}`} onClick={() => navigate("permissions")}>{t.permissions}</button>
-            {currentUser?.data_source === 'postgresql' && <button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>}
+            {currentUser?.data_source === 'postgresql' && <>
+              <button className={`database-nav-link${page === "database" ? " active" : ""}`} onClick={() => navigate("database")}>{t.database}</button>
+              <button className={`database-nav-link${page === "tasks" ? " active" : ""}`} onClick={() => navigate("tasks")}>{t.tasks}</button>
+            </>}
           </div>}
           <div className="version-row">
             <span>{t.version} {currentUser?.version || "—"}</span>
@@ -327,6 +335,8 @@ export default function Portal() {
           currentUser ? <RequestHistoryPage lang={lang} currentUser={currentUser} /> : null
         ) : page === "permissions" ? (
           canManage && currentUser ? <UserPermissionsPage lang={lang} currentUser={currentUser} /> : identityLoaded ? <main className="locked-page"><h1>{t.permissions}</h1><p>{t.denied}</p></main> : null
+        ) : page === "tasks" ? (
+          canManage && currentUser?.data_source === "postgresql" ? <TaskMonitorPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.tasks}</h1><p>{lang === "zh" ? "仅已启用的管理员可查看后台任务。" : "Only enabled administrators can view background tasks."}</p></main> : null
         ) : page === "apparelManagement" ? (
           canManageApparel ? <ApparelManagementPage lang={lang} /> : identityLoaded ? <main className="locked-page"><h1>{t.apparelManagement}</h1><p>{lang === "zh" ? "仅已启用的 HR 和管理员可访问此页面。" : "Only enabled HR staff and administrators can access this page."}</p></main> : null
         ) : currentUser && page === "allocation" ? (

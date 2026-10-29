@@ -64,3 +64,13 @@ def test_failed_health_restores_previous_source_and_restarts_services(tmp_path,m
     with pytest.raises(RuntimeError,match='health failed'):release.deploy('new','weiwei')
     assert (tmp_path/'source').resolve()==previous
     assert calls[-1]==['systemctl','start',*release.UNITS]
+
+
+def test_release_waits_for_inflight_atomic_job_markers(monkeypatch):
+    calls=[]
+    def run(args,**kwargs):
+        calls.append(args[-1])
+        return '1' if 'task-activity:' in args[-1] else '0'
+    monkeypatch.setattr(release,'run',run)
+    with pytest.raises(RuntimeError,match='processing a write'):release.queues_idle()
+    assert len(calls)==2

@@ -941,6 +941,8 @@ def require_admin(request: Request) -> str:
 
 from request_web.database_api import register_database_api
 register_database_api(api, require_admin)
+from request_web.task_monitor_api import register as register_task_monitor_api
+register_task_monitor_api(api, require_admin)
 from request_web.apparel_api import register as register_apparel_api
 register_apparel_api(api, require_hr)
 from request_web.shipping_calendar_api import register as register_shipping_calendar_api
