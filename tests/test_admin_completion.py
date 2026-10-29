@@ -39,12 +39,12 @@ def test_admin_success_waits_for_source_and_applicant_but_sends_no_extra_receipt
     assert conn.execute("SELECT count(*) FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]==0
 
 
-def test_source_conflict_reports_needs_review_instead_of_claiming_completed(notices):
+def test_management_conflict_is_retained_without_review_card(notices):
     conn,ids=notices;task,outbox=monitored(conn)
     conn.execute("UPDATE material_ops.outbox SET state='conflict' WHERE id=%s",(outbox,))
-    result=completion.run_once();assert result['status']=='任务需核对'
-    text=conn.execute("SELECT args->1 FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]
-    assert '任务需核对' in __import__('json').dumps(text,ensure_ascii=False) and '均已更新' not in __import__('json').dumps(text,ensure_ascii=False)
+    assert completion.run_once()['reason']=='management_review_receipt_disabled'
+    assert conn.execute('SELECT state FROM material_ops.outbox WHERE id=%s',(outbox,)).fetchone()[0]=='conflict'
+    assert conn.execute("SELECT count(*) FROM material_ops.effects WHERE kwargs ? '_admin_completion'").fetchone()[0]==0
 
 def test_legacy_jobs_never_retroactively_send_admin_receipts(notices):
     conn,ids=notices
@@ -53,7 +53,7 @@ def test_legacy_jobs_never_retroactively_send_admin_receipts(notices):
     assert completion.run_once() is None
 
 def test_disabled_admin_does_not_receive_completion(notices):
-    conn,ids=notices;task,outbox=monitored(conn)
+    conn,ids=notices;task,outbox=monitored(conn,'申请物料库存确认')
     permission=repo.named_table(conn,app.USER_PERMISSION_TABLE_NAME)
     repo.insert_source_records(conn,permission,[{'record_id':'rec_disabled_admin_'+uuid4().hex,'fields':{'用户账号':[{'id':ids['other']}],'角色':['管理员'],'是否启用':'否'}}])
     conn.execute("UPDATE material_ops.outbox SET state='done' WHERE id=%s",(outbox,))
@@ -135,3 +135,45 @@ def test_all_management_success_receipts_are_disabled(notices,kind):
     conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s",(task.task_id,))
     assert completion.run_once()['skipped']
     assert conn.execute("SELECT count(*) FROM material_ops.effects WHERE job_id=%s AND kwargs ? '_admin_completion'",(task.task_id,)).fetchone()[0]==0
+
+
+@pytest.mark.parametrize('kind',sorted(completion.SUPPRESSED_REVIEW))
+def test_all_management_failure_receipts_disabled_and_original_effect_kept(notices,kind):
+    conn,ids=notices;task,outbox=monitored(conn,kind)
+    original=conn.execute('SELECT id,args,kwargs,state FROM material_ops.effects WHERE job_id=%s',(task.task_id,)).fetchall()
+    conn.execute("UPDATE material_ops.jobs SET state='failed',last_error='retained failure' WHERE id=%s",(task.task_id,))
+    conn.execute("UPDATE material_ops.outbox SET state='conflict' WHERE id=%s",(outbox,))
+    assert completion.run_once()['reason']=='management_review_receipt_disabled'
+    assert conn.execute('SELECT id,args,kwargs,state FROM material_ops.effects WHERE job_id=%s',(task.task_id,)).fetchall()==original
+    assert conn.execute('SELECT state,last_error FROM material_ops.jobs WHERE id=%s',(task.task_id,)).fetchone()==('failed','retained failure')
+
+
+@pytest.mark.parametrize('attempts',[0,1])
+def test_queued_management_review_never_sends_even_on_retry(notices,attempts):
+    conn,ids=notices;task,outbox=monitored(conn,'物料品类同步')
+    with runtime.request_scope():
+        runtime.request_state.update(_write_conn=conn,_job_id=task.task_id,_effect_ordinal=1)
+        alias=effects.defer('primary','send_interactive_message',[ids['admin'],{'schema':'2.0'}],
+            {'receive_id_type':'open_id','_admin_completion':task.task_id,'_completion_status':'任务需核对'})
+    identity=alias[len(effects.PREFIX):]
+    conn.execute("UPDATE material_ops.effects SET state='retry',attempts=%s,first_attempt_at=CASE WHEN %s>0 THEN now() ELSE NULL END WHERE id=%s",(attempts,attempts,identity))
+    conn.execute("UPDATE material_ops.effects SET state='done' WHERE job_id=%s AND NOT (kwargs ? '_admin_completion')",(task.task_id,))
+    native=Mock()
+    assert effects.run_once({'primary':native})['state']=='skipped'
+    native._request.assert_not_called()
+    assert conn.execute('SELECT attempts,state FROM material_ops.effects WHERE id=%s',(identity,)).fetchone()==(attempts,'done')
+    assert conn.execute('SELECT state FROM material_ops.outbox WHERE id=%s',(outbox,)).fetchone()[0]=='pending'
+
+
+def test_management_review_cleanup_does_not_wait_for_or_modify_business_dependencies(notices):
+    conn,ids=notices;task,outbox=monitored(conn,'物料品类同步')
+    with runtime.request_scope():
+        runtime.request_state.update(_write_conn=conn,_job_id=task.task_id,_effect_ordinal=1)
+        alias=effects.defer('primary','send_interactive_message',[ids['admin'],{'schema':'2.0'}],
+            {'receive_id_type':'open_id','_admin_completion':task.task_id,'_completion_status':'任务需核对'})
+    identity=alias[len(effects.PREFIX):]
+    conn.execute("UPDATE material_ops.effects SET state='retry',attempts=1,first_attempt_at=now() WHERE id=%s",(identity,))
+    assert completion.run_once() is None
+    assert conn.execute('SELECT state,attempts FROM material_ops.effects WHERE id=%s',(identity,)).fetchone()==('done',1)
+    assert conn.execute('SELECT state FROM material_ops.outbox WHERE id=%s',(outbox,)).fetchone()[0]=='pending'
+    assert conn.execute("SELECT state FROM material_ops.effects WHERE job_id=%s AND NOT (kwargs ? '_admin_completion')",(task.task_id,)).fetchone()[0]=='pending'

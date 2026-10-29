@@ -1,9 +1,13 @@
 """Compact administrator result receipt without internal IDs, JSON or job metadata."""
 
+def section_for(kind):
+    return '发货' if kind=='发货信息同步' else '配货' if kind.startswith('申请物料库存') or kind=='物料申请撤回删除' else '物料管理'
+
+
 def card(kind,actor,subject,good,origin='https://materials.pudu.work'):
     shipping=kind=='发货信息同步'
     allocation=kind.startswith('申请物料库存') or kind=='物料申请撤回删除'
-    section='发货' if shipping else '配货' if allocation else '物料管理'
+    section=section_for(kind)
     titles={'采购补库':'采购补库已完成','库存减库':'库存减库已完成','物料品类同步':'品类变更已完成','物料品类删除':'品类删除已完成','型号语种管理':'基础信息变更已完成','申请物料库存编辑':'配货调整已完成','申请物料库存确认':'库存核实已完成','申请物料库存驳回':'物料申请已驳回','物料申请撤回删除':'申请删除已完成','发货信息同步':'发货信息已同步'}
     label=titles.get(kind,section+'任务已完成') if good else section+'任务需核对'
     path='/management/shipping-calendar' if shipping else '/management/allocation' if allocation else '/management'

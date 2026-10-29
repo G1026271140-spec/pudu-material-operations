@@ -94,6 +94,13 @@ def run_once(clients):
                 AND earlier.state IN ('pending','retry','processing')))
           ORDER BY created_at,ordinal LIMIT 1 FOR UPDATE SKIP LOCKED""").fetchone()
         if row is None:return None
+        if row[4].get('_admin_completion') and row[4].get('_completion_status')=='任务需核对':
+            from .admin_completion import SUPPRESSED_REVIEW,PREFIX as completion_prefix
+            kind=conn.execute('SELECT task_type FROM material_ops.jobs WHERE id=%s',(row[4]['_admin_completion'],)).fetchone()
+            if kind and kind[0] in SUPPRESSED_REVIEW:
+                conn.execute("UPDATE material_ops.effects SET state='done',completed_at=clock_timestamp(),last_error='已停用物料管理任务需核对通知',claim_token=NULL,lease_until=NULL WHERE id=%s",(row[0],))
+                conn.execute("UPDATE material_ops.documents SET payload=payload || %s,updated_at=clock_timestamp() WHERE name=%s",(Jsonb({'state':'skipped','reason':'物料管理任务需核对通知已停用'}),completion_prefix+str(row[4]['_admin_completion'])))
+                return {'id':str(row[0]),'state':'skipped'}
         if row[4].get('_automatic_shipping_signature'):
             from .auto_shipping import may_send
             if not may_send(conn,row[4]['_shipping_request'],row[4]['_automatic_shipping_signature'],row[3][0]):

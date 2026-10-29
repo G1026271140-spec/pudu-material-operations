@@ -1,4 +1,4 @@
-"""Send one durable admin result after each management/allocation/shipping operation."""
+"""Track operation results and send only the enabled administrator receipts."""
 import json
 from uuid import UUID
 from psycopg.types.json import Jsonb
@@ -9,6 +9,8 @@ from . import repository as repo
 TASKS={'采购补库','库存减库','物料品类同步','物料品类删除','型号语种管理','文化周边管理',
     '申请物料库存编辑','申请物料库存确认','申请物料库存驳回','物料申请撤回删除','库存提交撤回','库存提交修正','发货信息同步'}
 PREFIX='admin-completion:'
+from .task_result_card import section_for
+SUPPRESSED_REVIEW={kind for kind in TASKS if section_for(kind)=='物料管理'}
 SUPPRESSED_SUCCESS={kind:('正常完成不发送额外的管理员成功回执','admin_success_receipt_disabled') for kind in TASKS}
 SUPPRESSED_SUCCESS.update({
     '申请物料库存编辑':('配货调整沿用原卡片更新，不额外发送完成通知','original_allocation_cards_updated'),
@@ -42,14 +44,16 @@ def run_once():
         # policy changed and have never been attempted. Applicant effects and
         # failed/ambiguous sends remain untouched.
         obsolete=conn.execute("""UPDATE material_ops.effects e SET state='done',completed_at=clock_timestamp(),
-            last_error='按通知设置跳过管理员成功回执' FROM material_ops.jobs j
-            WHERE e.job_id=j.id AND j.task_type=ANY(%s) AND e.kwargs ? '_admin_completion'
-              AND e.kwargs->>'_completion_status'='任务已完成'
-              AND e.state IN ('pending','retry') AND e.first_attempt_at IS NULL
-            RETURNING e.job_id""",(list(SUPPRESSED_SUCCESS),)).fetchall()
+            last_error='按通知设置跳过管理员结果回执' FROM material_ops.jobs j
+            WHERE e.job_id=j.id AND e.kwargs ? '_admin_completion'
+              AND ((j.task_type=ANY(%s) AND e.kwargs->>'_completion_status'='任务已完成')
+                OR (j.task_type=ANY(%s) AND e.kwargs->>'_completion_status'='任务需核对'))
+              AND e.state IN ('pending','retry')
+              AND (e.first_attempt_at IS NULL OR (j.task_type=ANY(%s) AND e.kwargs->>'_completion_status'='任务需核对'))
+            RETURNING e.job_id""",(list(SUPPRESSED_SUCCESS),list(SUPPRESSED_REVIEW),list(SUPPRESSED_REVIEW))).fetchall()
         for job_id in {str(row[0]) for row in obsolete}:
             conn.execute("UPDATE material_ops.documents SET payload=payload || %s,updated_at=clock_timestamp() WHERE name=%s",
-                (Jsonb({'state':'skipped','reason':'按通知设置跳过管理员成功回执'}),PREFIX+job_id))
+                (Jsonb({'state':'skipped','reason':'按通知设置跳过管理员结果回执'}),PREFIX+job_id))
         # Inspect several waiting jobs so an older slow task never blocks the rest.
         rows=conn.execute("SELECT name,payload FROM material_ops.documents WHERE name LIKE 'admin-completion:%' AND payload->>'state'='waiting' ORDER BY updated_at LIMIT 30 FOR UPDATE SKIP LOCKED").fetchall()
         for name,data in rows:
@@ -68,6 +72,10 @@ def run_once():
                 data.update(state='skipped',reason=explanation)
                 conn.execute('UPDATE material_ops.documents SET payload=%s,updated_at=now() WHERE name=%s',(Jsonb(data),name))
                 return {'job_id':data['job_id'],'skipped':True,'reason':reason}
+            if not good and data['kind'] in SUPPRESSED_REVIEW:
+                data.update(state='skipped',reason='已关闭物料管理任务需核对通知，错误留存后台')
+                conn.execute('UPDATE material_ops.documents SET payload=%s,updated_at=now() WHERE name=%s',(Jsonb(data),name))
+                return {'job_id':data['job_id'],'skipped':True,'reason':'management_review_receipt_disabled'}
             status='任务已完成' if good else '任务需核对'
             users={actor for row in portal_records.permission_rows(conn) if app.feishu_permission_enabled(row['fields']) and '管理员' in app.feishu_choice_values(row['fields'],'角色') for actor in app.feishu_person_open_ids(row['fields'],['用户账号'])}
             directory=conn.execute("SELECT payload FROM material_ops.documents WHERE name='contact_departments_cache.json'").fetchone()

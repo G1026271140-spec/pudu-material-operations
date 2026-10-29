@@ -73,6 +73,8 @@ selected user/visible-assistant messages; no hidden reasoning or tool payloads.
 It is an explicit export tool, not an automatic listener for future chats.
 
 Do not restore extra administrator success cards for management/allocation/shipping.
-Keep applicant/original workflow cards and failure alerts. Both apparel and cultural
+Keep applicant/original workflow cards and allocation/shipping failure alerts.
+The 2026-10-29 user request disables the extra "物料管理任务需核对"
+administrator card, including queued retries; keep its errors in backend records. Both apparel and cultural
 partial rejection affect only selected issued lines and must update original cards.
 All operation details and superseded decisions are indexed in docs/ops.
