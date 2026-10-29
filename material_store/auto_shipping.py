@@ -132,7 +132,7 @@ def approval_passed(native,number):
 
 
 def ready(state,native,number):
-    if not approval_passed(native,number):return False,'审批尚未通过或审批申请单号不匹配。'
+    if native.get('code')!=state['code'] or not approval_passed(native,number):return False,'审批尚未通过或审批实例与当前申请不匹配。'
     if not state['content']['text'] and not state['content']['images']:return False,'已发货，填写物流文字信息或上传发货图片后通知申请人。'
     return True,''
 
@@ -176,11 +176,12 @@ def process_one(key,client):
         saved=document(conn,old['record_id'],lock=True)
         signature=digest(current['content'])
         same_notice=(saved.get('effect_id') and saved.get('notice_signature')==signature
-                     and (saved.get('native') or {}).get('code')==native.get('code'))
+                     and (saved.get('notice_approval_code') or (saved.get('native') or {}).get('code'))==native.get('code'))
         flag_needed=passed and fields.get(shipping.SHIPPED) is not True
         notice_needed=bool(allowed and meaningful and not same_notice)
         next_state={**current,'native':native,'dirty':False,'notice_signature':saved.get('notice_signature'),
-                    'announced':saved.get('announced',False),'effect_id':saved.get('effect_id')}
+                    'announced':saved.get('announced',False),'effect_id':saved.get('effect_id'),
+                    'notice_approval_code':saved.get('notice_approval_code') or ((saved.get('native') or {}).get('code') if saved.get('effect_id') else None)}
         if not passed:next_state.update(state='waiting_approval',error=reason)
         elif not allowed:next_state.update(state='waiting_information',error=reason)
         elif same_notice:next_state.update(state=saved.get('state','pending'),error=saved.get('error',''))
@@ -214,7 +215,7 @@ def process_one(key,client):
                 'receive_id_type':'open_id','_outbox_ids':outbox,'_shipping_request':old['record_id'],'_shipping_version':latest['version'],
                 '_automatic_shipping_signature':signature,**({'_shipping_date_change':True,'_shipping_date_before':before_date,'_shipping_date_after':current['content']['ship_date']} if date_changed else {})})
             result['effect_id']=alias[len(effects.PREFIX):]
-            next_state.update(notice_signature=signature,state='pending',error='',effect_id=result['effect_id'])
+            next_state.update(notice_signature=signature,notice_approval_code=native.get('code'),state='pending',error='',effect_id=result['effect_id'])
         conn.execute("UPDATE material_ops.jobs SET state='done',result=%s,completed_at=now() WHERE id=%s",(Jsonb(result),task.task_id))
         from .admin_completion import register
         register(conn,task.task_id,'发货信息同步',{'request_no':number},{'entries':[result]},'系统')

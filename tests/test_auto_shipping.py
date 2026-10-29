@@ -251,3 +251,18 @@ def test_another_native_request_number_does_not_mark_or_notify(auto_store):
     state=auto.document(conn,key);state['native']['request_no']='OTHER';auto.put(conn,key,state)
     assert auto.process_one(key,source)['state']=='unchanged'
     assert fields(auto_store)['是否发货'] is False and not source.sent
+
+
+def test_replaced_approval_blocks_old_card_and_new_approval_can_notify(auto_store):
+    conn,info,_,key,_,source=auto_store
+    save(auto_store);drain(source);assert auto.process_one(key,source)['state']=='queued';drain(source)
+    row=repo.feishu_record(info,repo.raw_record(conn,info,key));row['fields']['审批实例Code']=str(uuid4()).upper()
+    repo.insert_source_records(conn,info,[row]);source.rows[info['table_id']][key]=deepcopy(row)
+    assert effects.run_once({'primary':source})['state']=='skipped' and not source.sent
+    source.native_status='PENDING'
+    assert auto.process_one(key,source)['state']=='waiting_approval'
+    source.native_status='APPROVED'
+    state=auto.document(conn,key);state['native']['checked_at']=0;auto.put(conn,key,state)
+    assert auto.process_one(key,source)['state']=='queued'
+    drain(source);assert effects.run_once({'primary':source})['state']=='done'
+    assert len(source.sent)==1
