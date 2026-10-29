@@ -1927,6 +1927,26 @@
           },
           "is_primary": false,
           "description": null
+        },
+        {
+          "field_id": "fldx0dDBjm",
+          "field_name": "待核实标签",
+          "is_extend": false,
+          "is_primary": false,
+          "is_synced": false,
+          "property": null,
+          "type": 1,
+          "ui_type": "Text"
+        },
+        {
+          "field_id": "fldC20Nrr6",
+          "field_name": "待核实备注",
+          "is_extend": false,
+          "is_primary": false,
+          "is_synced": false,
+          "property": null,
+          "type": 1,
+          "ui_type": "Text"
         }
       ]
     },

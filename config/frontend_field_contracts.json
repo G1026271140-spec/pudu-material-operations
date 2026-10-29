@@ -2971,6 +2971,56 @@
     },
     {
       "source": "primary",
+      "table_name": "物料申请单",
+      "table_id": "tbl3eyt8lkl3uQa1",
+      "field_name": "待核实标签",
+      "field_id": "fldx0dDBjm",
+      "display_table_name": "物料申请单",
+      "feishu_type": 1,
+      "ui_type": "Text",
+      "sql_table": "material_data.t_tbl3eyt8lkl3uQa1",
+      "sql_column": "f_fldx0dDBjm",
+      "sql_type": "text",
+      "pages": [
+        "配货工作台"
+      ],
+      "edit_mode": "直接编辑",
+      "widget": "文本",
+      "permission_and_write_path": "仅管理员配货台跟进；不触发库存核实、审批或通知",
+      "options": [],
+      "linked_table_id": null,
+      "multiple": null,
+      "source_fields": [],
+      "daily_authority": "feishu",
+      "normal_authority": "postgresql"
+    },
+    {
+      "source": "primary",
+      "table_name": "物料申请单",
+      "table_id": "tbl3eyt8lkl3uQa1",
+      "field_name": "待核实备注",
+      "field_id": "fldC20Nrr6",
+      "display_table_name": "物料申请单",
+      "feishu_type": 1,
+      "ui_type": "Text",
+      "sql_table": "material_data.t_tbl3eyt8lkl3uQa1",
+      "sql_column": "f_fldC20Nrr6",
+      "sql_type": "text",
+      "pages": [
+        "配货工作台"
+      ],
+      "edit_mode": "直接编辑",
+      "widget": "文本",
+      "permission_and_write_path": "仅管理员配货台跟进；不触发库存核实、审批或通知",
+      "options": [],
+      "linked_table_id": null,
+      "multiple": null,
+      "source_fields": [],
+      "daily_authority": "feishu",
+      "normal_authority": "postgresql"
+    },
+    {
+      "source": "primary",
       "table_name": "申请明细",
       "table_id": "tbl6i0F9UZjTuTV1",
       "field_name": "明细编号",
@@ -8853,6 +8903,109 @@
     },
     {
       "source": "primary",
+      "table_name": "文化周边编码及库存数量",
+      "table_id": "tblOUvklAihp8g34",
+      "field_name": "申领款式编号",
+      "field_id": "fldscalEfH",
+      "display_table_name": "文化周边编码及库存数量",
+      "feishu_type": 1,
+      "ui_type": "Text",
+      "sql_table": "material_data.t_tblOUvklAihp8g34",
+      "sql_column": "f_fldscalEfH",
+      "sql_type": "text",
+      "pages": [
+        "企业文化衫申请"
+      ],
+      "edit_mode": "直接编辑",
+      "widget": "文本",
+      "permission_and_write_path": "行政源表维护；本表为同步副本，系统兑换数量由兑换流程更新",
+      "options": [],
+      "linked_table_id": null,
+      "multiple": null,
+      "source_fields": [],
+      "daily_authority": "feishu",
+      "normal_authority": "postgresql"
+    },
+    {
+      "source": "primary",
+      "table_name": "文化周边编码及库存数量",
+      "table_id": "tblOUvklAihp8g34",
+      "field_name": "申领显示名称",
+      "field_id": "fldafrogkF",
+      "display_table_name": "文化周边编码及库存数量",
+      "feishu_type": 1,
+      "ui_type": "Text",
+      "sql_table": "material_data.t_tblOUvklAihp8g34",
+      "sql_column": "f_fldafrogkF",
+      "sql_type": "text",
+      "pages": [
+        "企业文化衫申请"
+      ],
+      "edit_mode": "直接编辑",
+      "widget": "文本",
+      "permission_and_write_path": "行政源表维护；本表为同步副本，系统兑换数量由兑换流程更新",
+      "options": [],
+      "linked_table_id": null,
+      "multiple": null,
+      "source_fields": [],
+      "daily_authority": "feishu",
+      "normal_authority": "postgresql"
+    },
+    {
+      "source": "primary",
+      "table_name": "文化周边编码及库存数量",
+      "table_id": "tblOUvklAihp8g34",
+      "field_name": "申领页显示",
+      "field_id": "fld8ykP0ku",
+      "display_table_name": "文化周边编码及库存数量",
+      "feishu_type": 3,
+      "ui_type": "SingleSelect",
+      "sql_table": "material_data.t_tblOUvklAihp8g34",
+      "sql_column": "f_fld8ykP0ku",
+      "sql_type": "text",
+      "pages": [
+        "企业文化衫申请"
+      ],
+      "edit_mode": "直接编辑",
+      "widget": "单选下拉",
+      "permission_and_write_path": "行政源表维护；本表为同步副本，系统兑换数量由兑换流程更新",
+      "options": [
+        "是",
+        "否"
+      ],
+      "linked_table_id": null,
+      "multiple": null,
+      "source_fields": [],
+      "daily_authority": "feishu",
+      "normal_authority": "postgresql"
+    },
+    {
+      "source": "primary",
+      "table_name": "文化周边编码及库存数量",
+      "table_id": "tblOUvklAihp8g34",
+      "field_name": "每人累计领取上限",
+      "field_id": "fldtQW0HM8",
+      "display_table_name": "文化周边编码及库存数量",
+      "feishu_type": 2,
+      "ui_type": "Number",
+      "sql_table": "material_data.t_tblOUvklAihp8g34",
+      "sql_column": "f_fldtQW0HM8",
+      "sql_type": "numeric",
+      "pages": [
+        "企业文化衫申请"
+      ],
+      "edit_mode": "直接编辑",
+      "widget": "数字",
+      "permission_and_write_path": "行政源表维护；本表为同步副本，系统兑换数量由兑换流程更新",
+      "options": [],
+      "linked_table_id": null,
+      "multiple": null,
+      "source_fields": [],
+      "daily_authority": "feishu",
+      "normal_authority": "postgresql"
+    },
+    {
+      "source": "primary",
       "table_name": "文化周边兑换",
       "table_id": "tbl555oQLUh7BiC8",
       "field_name": "兑换方式",
@@ -9840,7 +9993,7 @@
       "api_key": "record_id",
       "sources": [],
       "mode": "记录 ID，系统生成",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9855,7 +10008,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9870,7 +10023,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9885,7 +10038,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9900,7 +10053,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9915,7 +10068,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9930,14 +10083,14 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
       "api_key": "position",
       "sources": [],
       "mode": "兼容占位值；当前表无岗位/职位字段，现有页面未提供此输入",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9952,7 +10105,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9967,7 +10120,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9982,7 +10135,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -9997,7 +10150,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10019,7 +10172,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10034,7 +10187,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10049,7 +10202,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10064,7 +10217,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10079,7 +10232,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10094,7 +10247,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10109,7 +10262,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10124,7 +10277,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10139,7 +10292,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10154,7 +10307,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10169,7 +10322,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_records",
@@ -10184,14 +10337,14 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8022
+      "code_line": 8068
     },
     {
       "builder": "load_feishu_request_line_records",
       "api_key": "record_id",
       "sources": [],
       "mode": "记录 ID，系统生成",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10206,7 +10359,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10221,7 +10374,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10236,7 +10389,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10258,7 +10411,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10308,7 +10461,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10365,7 +10518,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10408,7 +10561,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10451,7 +10604,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10508,7 +10661,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10558,7 +10711,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10608,7 +10761,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10623,7 +10776,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10638,7 +10791,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10660,14 +10813,14 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
       "api_key": "usage",
       "sources": [],
       "mode": "兼容占位值；申请用途实际保存在所属申请单的物料用途字段",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10696,7 +10849,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10711,7 +10864,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10726,7 +10879,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10741,7 +10894,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10770,7 +10923,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10799,7 +10952,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10821,7 +10974,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10836,7 +10989,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "load_feishu_request_line_records",
@@ -10851,14 +11004,14 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 8112
+      "code_line": 8158
     },
     {
       "builder": "parse_feishu_inventory_record",
       "api_key": "record_id",
       "sources": [],
       "mode": "记录 ID，系统生成",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10873,7 +11026,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10888,7 +11041,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10903,7 +11056,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10918,7 +11071,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10933,7 +11086,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10948,7 +11101,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10963,7 +11116,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -10985,7 +11138,7 @@
         }
       ],
       "mode": "派生值，编辑所列来源字段",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -11000,7 +11153,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -11015,7 +11168,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -11030,7 +11183,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "parse_feishu_inventory_record",
@@ -11045,14 +11198,14 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9349
+      "code_line": 9409
     },
     {
       "builder": "feishu_category_records_from_rows",
       "api_key": "record_id",
       "sources": [],
       "mode": "记录 ID，系统生成",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11067,7 +11220,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11089,7 +11242,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11111,7 +11264,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11126,7 +11279,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11141,7 +11294,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11156,7 +11309,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11171,7 +11324,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11193,7 +11346,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11208,7 +11361,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11223,7 +11376,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11238,7 +11391,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11253,7 +11406,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11268,7 +11421,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11283,7 +11436,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "feishu_category_records_from_rows",
@@ -11298,14 +11451,14 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 9417
+      "code_line": 9477
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
       "api_key": "record_id",
       "sources": [],
       "mode": "记录 ID，系统生成",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11320,7 +11473,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11335,7 +11488,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11350,7 +11503,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11365,7 +11518,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11380,7 +11533,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11395,7 +11548,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11410,7 +11563,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
@@ -11425,42 +11578,42 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
       "api_key": "status",
       "sources": [],
       "mode": "共享编辑器固定默认值；实际启用/可见性在品类表维护",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "load_cultural_dimension_inventory_records",
       "api_key": "request_visible",
       "sources": [],
       "mode": "共享编辑器固定默认值；实际启用/可见性在品类表维护",
-      "code_line": 12724
+      "code_line": 12791
     },
     {
       "builder": "corporate_apparel_catalog",
       "api_key": "products",
       "sources": [],
       "mode": "列表容器，字段见每个记录的对应关系",
-      "code_line": 12882
+      "code_line": 12953
     },
     {
       "builder": "corporate_apparel_catalog",
       "api_key": "items",
       "sources": [],
       "mode": "列表容器，字段见每个记录的对应关系",
-      "code_line": 12882
+      "code_line": 12953
     },
     {
       "builder": "corporate_apparel_catalog",
       "api_key": "record_id",
       "sources": [],
       "mode": "记录 ID，系统生成",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11475,7 +11628,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11497,7 +11650,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11519,7 +11672,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11541,7 +11694,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11563,7 +11716,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11585,7 +11738,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11607,7 +11760,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11629,7 +11782,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "corporate_apparel_catalog",
@@ -11644,7 +11797,7 @@
         }
       ],
       "mode": "字段或关联来源",
-      "code_line": 12867
+      "code_line": 12938
     },
     {
       "builder": "dimension_management_records",
@@ -11865,6 +12018,34 @@
           "table_name": "物料品类",
           "field_id": "fld0j2HWb9",
           "field_name": "申领页图片",
+          "source": "primary"
+        }
+      ],
+      "mode": "字段或关联来源"
+    },
+    {
+      "builder": "material_store.pending_followup.summary",
+      "api_key": "reviewLabel",
+      "sources": [
+        {
+          "table_id": "tbl3eyt8lkl3uQa1",
+          "field_id": "fldx0dDBjm",
+          "field_name": "待核实标签",
+          "table_name": "物料申请单",
+          "source": "primary"
+        }
+      ],
+      "mode": "字段或关联来源"
+    },
+    {
+      "builder": "material_store.pending_followup.summary",
+      "api_key": "reviewNote",
+      "sources": [
+        {
+          "table_id": "tbl3eyt8lkl3uQa1",
+          "field_id": "fldC20Nrr6",
+          "field_name": "待核实备注",
+          "table_name": "物料申请单",
           "source": "primary"
         }
       ],

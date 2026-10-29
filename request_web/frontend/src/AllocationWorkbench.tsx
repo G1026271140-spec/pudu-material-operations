@@ -7,6 +7,9 @@ import { CategoryRows } from "./CategoryGroups";
 import RequiredMark from "./RequiredMark";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./allocation.css";
+import "./pending-followup.css";
+import PendingAllocationList from "./PendingAllocationList";
+import PendingFollowupDialog from "./PendingFollowupDialog";
 import { requiredArrivalText } from "./allocationPresentation";
 
 type Lang = "zh" | "en";
@@ -71,6 +74,7 @@ async function jsonFetch(url: string, options?: RequestInit) {
 export default function AllocationWorkbench({ lang, directRequestId = "", operator = "", reviewToken = "", embedded = false }: Props) {
   const tr = (zh: string, en: string) => lang === "zh" ? zh : en;
   const [pending, setPending] = useState<any[]>([]);
+  const [followup, setFollowup] = useState<any>(null);
   const [operators, setOperators] = useState<any[]>([]);
   const [requestId, setRequestId] = useState(directRequestId);
   const [operatorId, setOperatorId] = useState(operator);
@@ -364,7 +368,11 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
 
     {error && <ToastMessage className="allocation-toast" onClick={() => setError("")}>{error} ×</ToastMessage>}
     {pendingWarning && <ToastMessage className="allocation-toast" onClick={() => setPendingWarning("")}>{pendingWarning} ×</ToastMessage>}
-    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span><button className="allocation-refresh" onClick={() => loadPending(true)}>↻ {tr("刷新数据", "Refresh data")}</button></div>{pending.length ? <div className="pending-grid">{pending.map(item => <button key={item.requestId} onClick={() => loadContext(item.requestId)}><strong>{item.requestNo}</strong><span>{item.requester} · {item.department}</span><span>{item.reason || "-"} · {item.lineCount} {tr("条明细", "lines")}</span><span className="pending-arrival">{tr("要求到达：", "Required arrival: ")}{requiredArrivalText(item, lang)}</span><em>{item.inventoryReviewResult || tr("待核实", "Pending")}</em></button>)}</div> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
+    <section className="pending-panel"><div className="pending-head"><h2>{tr("待库存核实申请", "Pending Inventory Reviews")}</h2><span>{pending.length} {tr("条", "requests")}</span><button className="allocation-refresh" onClick={() => loadPending(true)}>↻ {tr("刷新数据", "Refresh data")}</button></div>{pending.length ? <PendingAllocationList requests={pending} lang={lang} onOpen={loadContext} onAnnotate={setFollowup} /> : <div className="allocation-empty">{tr("本机暂无待核实申请；后台会定时与飞书核对。", "No pending requests in the local index; background reconciliation runs periodically.")}</div>}</section>
+    {success && <ToastMessage className="allocation-toast" role="status" onClick={() => setSuccess("")}>{success} ×</ToastMessage>}
+    {followup && <PendingFollowupDialog key={followup.requestId} request={followup} lang={lang} onClose={() => setFollowup(null)}
+      save={(id, body) => jsonFetch(`/api/admin/allocation/${encodeURIComponent(id)}/follow-up`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })}
+      onSaved={result => { setPending(items => items.map(item => item.requestId === result.request.requestId ? { ...item, ...result.request } : item)); setFollowup(null); setSuccess(tr("标签和备注已保存。", "Label and note saved.")); }} />}
   </main>;
 
   const request = context.request;

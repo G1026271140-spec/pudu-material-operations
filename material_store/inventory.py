@@ -52,6 +52,8 @@ SOURCE_OVERRIDES = {
 
 def policy(table, field):
     name, kind = field["field_name"], int(field["type"])
+    if table == "物料申请单" and name in {"待核实标签", "待核实备注"}:
+        return "仅管理员配货台跟进；不触发库存核实、审批或通知"
     if kind in READ_ONLY_TYPES:
         return "源字段编辑" if kind in {19, 20} else "系统生成"
     if table in {"后台任务队列", "后台任务载荷", "后台任务节点列表", "库存流水", "申请物料变更记录表"}:
@@ -134,7 +136,7 @@ def build(snapshot, source_root):
                 "display_table_name": display_name,
                 "feishu_type": int(field["type"]), "ui_type": field.get("ui_type"),
                 "sql_table": "material_data." + sql_table, "sql_column": sql_column,
-                "sql_type": postgres_type(int(field["type"])), "pages": TABLE_PAGES.get(display_name, []),
+                "sql_type": postgres_type(int(field["type"])), "pages": ["配货工作台"] if display_name == "物料申请单" and field["field_name"] in {"待核实标签", "待核实备注"} else TABLE_PAGES.get(display_name, []),
                 "edit_mode": edit_mode(field), "widget": WIDGETS.get(int(field["type"]), "显示及源字段入口"),
                 "permission_and_write_path": policy(display_name, field),
                 "options": [x["name"] for x in prop.get("options", [])],
@@ -194,6 +196,12 @@ def build(snapshot, source_root):
             bindings.append({"builder": "dimension_management_records" if kind != "category" else "request_web.api._management_snapshot",
                 "api_key": kind + "." + api_key, "sources": [{"table_id": table["table_id"], "table_name": table_name,
                 "field_id": field["field_id"], "field_name": name, "source": "primary"}], "mode": "字段或关联来源"})
+    for api_key, name in [("reviewLabel", "待核实标签"), ("reviewNote", "待核实备注")]:
+        table = by_name["物料申请单"]
+        field = next(f for f in table["fields"] if f["field_name"] == name)
+        bindings.append({"builder": "material_store.pending_followup.summary", "api_key": api_key,
+            "sources": [{"table_id": table["table_id"], "field_id": field["field_id"], "field_name": name,
+                "table_name": table["table_name"], "source": "primary"}], "mode": "字段或关联来源"})
     return {"schema_exported_at": snapshot["exported_at"], "excluded_pages": ["发货模板", "发货排期"],
             "fields": contracts, "api_bindings": bindings}
 
@@ -204,7 +212,7 @@ def write_inventory(root: Path):
     (root / "config/frontend_field_contracts.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = ["# 业务字段、编辑选项与飞书映射", "", "生成依据：当前 React/FastAPI 代码及应用身份导出的实际飞书字段元数据。",
              "", "发货模板、发货排期按用户要求保持现状，不创建字段定义。以下为主业务表的完整数据库映射，含关联/流程字段，不能将所有流程字段作为普通输入框直接覆盖。",
-             "", f"共 {len(snapshot['tables'])} 张来源表、{len(data['fields'])} 个字段（主业务库 22 张/342 字段，企业文化衫行政源表 1 张/16 字段）。每个字段均保留稳定字段 ID、类型化 SQL 列和原始 JSON 值。",
+             "", f"共 {len(snapshot['tables'])} 张来源表、{len(data['fields'])} 个字段（分别注册主业务库及企业文化衫行政源表）。每个字段均保留稳定字段 ID、类型化 SQL 列和原始 JSON 值。",
              "", "具体页面的业务输入、派生值和权限规则见 [页面字段说明](frontend-edit-contract.md)。机器可读定义为 config/frontend_field_contracts.json。", ""]
     for table in snapshot["tables"]:
         lines.extend(["## " + (table.get("display_name") or table["table_name"]), "", "来源：`" + table.get("source", "primary") + "`；实际表名：" + table["table_name"] + "；表 ID：`" + table["table_id"] + "`。",

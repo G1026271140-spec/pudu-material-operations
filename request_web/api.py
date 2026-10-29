@@ -943,6 +943,8 @@ from request_web.database_api import register_database_api
 register_database_api(api, require_admin)
 from request_web.task_monitor_api import register as register_task_monitor_api
 register_task_monitor_api(api, require_admin)
+from request_web.pending_followup_api import register as register_pending_followup_api
+register_pending_followup_api(api, require_admin)
 from request_web.apparel_api import register as register_apparel_api
 register_apparel_api(api, require_hr)
 from request_web.shipping_calendar_api import register as register_shipping_calendar_api
@@ -1245,7 +1247,13 @@ def allocation_pending(
     if backend_runtime.realtime_reads():
         from request_web.live_data import reader
         source = reader()
-        return {'requests':legacy.pending_inventory_review_summaries(source.rows(legacy.REQUEST_TABLE_NAME)),
+        requests=legacy.pending_inventory_review_summaries(source.rows(legacy.REQUEST_TABLE_NAME))
+        if backend_runtime.database_reads():
+            from material_store import pending_followup
+            from material_store.db import connection
+            backend_runtime.release_database_snapshot()
+            with connection() as conn:requests=pending_followup.decorate(conn,requests)
+        return {'requests':requests,
             'source':'postgresql' if backend_runtime.database_reads() else 'live_feishu','updatedAt':source.generated_at,'refreshing':False,'refreshError':'',
             'operators':_allocation_operators(legacy)}
 
