@@ -1,4 +1,5 @@
 import SplitSelectionEditor from "./SplitSelectionEditor";
+import { chooseAllocationMaterial, nextAllocationMaterial, mergeAllocationRows } from "./allocationRows";
 import ToastMessage from "./ToastMessage";
 import { splitCategoryRows } from "./categoryGroups";
 import { groupByCategory } from "./categoryGroups";
@@ -236,25 +237,26 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
   }
 
   function selectMaterial(index: number, key: "category" | "model" | "language", value: string) {
-    setRows(rows.map((row, i) => {
-      if (i !== index) return row;
-      const next = { ...row, [key]: value };
-      const candidates = materials.filter((x: any) =>
-        (key === "category" ? x.category === value : x.category === next.category) &&
-        (key === "model" ? x.model === value : key === "language" ? x.model === next.model && x.language === value : true));
-      const chosen = candidates[0];
-      if (key === "category" && chosen) { next.model = chosen.model; next.language = chosen.language; }
-      if (key === "model" && chosen) next.language = chosen.language;
-      const exact = materials.find((x: any) => x.category === next.category && x.model === next.model && x.language === next.language);
-      next.material_record_id = exact?.record_id || "";
-      next.order_required = defaultOrderRequired(exact, Number(next.quantity));
-      return next;
-    }));
+    const row = rows[index];
+    const chosen = chooseAllocationMaterial(materials, row, key, value);
+    if (!chosen) return setError(tr("未找到对应的物料规格。", "No matching material specification."));
+    try {
+      const next = mergeAllocationRows(rows.map((item, i) => i !== index ? item : {
+        ...item, category: chosen.category, model: chosen.model, language: chosen.language,
+        material_record_id: chosen.record_id, order_required: defaultOrderRequired(chosen, Number(item.quantity)),
+      }));
+      const merged = next.length < rows.length;
+      setRows(next);
+      if (merged) {
+        setEditingUid(next.find(item => item.material_record_id === chosen.record_id)?.uid || null);
+        setError(tr("相同规格已合并数量，请核对合并后的明细。", "Matching specifications were merged. Please review the combined quantity."));
+      }
+    } catch (error) { setError(error instanceof Error ? error.message : "修改失败"); }
   }
 
   function addRow() {
-    const first = materials[0];
-    if (!first) return setError(tr("物料目录为空，无法新增明细。", "The material catalog is empty."));
+    const first = nextAllocationMaterial(materials, rows);
+    if (!first) return setError(tr("所有物料规格均已在明细中，请直接修改已有明细的数量。", "All specifications are selected. Edit an existing quantity."));
     const uid = crypto.randomUUID();
     setRows([...rows, { uid, line_record_id: "", material_record_id: first.record_id, category: first.category, model: first.model, language: first.language, quantity: 1, remark: "", order_required: defaultOrderRequired(first, 1) }]);
     setEditingUid(uid);
@@ -296,7 +298,6 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     if (mode === "edit") {
       if (!rows.length) return tr("配货方案必须至少保留一条物料明细。", "Keep at least one material line.");
       if (rows.some(x => !x.material_record_id || Number(x.quantity) < 1)) return tr("配货方案中存在无效物料或数量。", "The allocation contains an invalid material or quantity.");
-      if (new Set(rows.map(x => x.material_record_id)).size !== rows.length) return tr("同一物料不能重复添加，请合并数量。", "Duplicate materials must be merged.");
       if (!changeNote.trim()) return tr("请填写配货调整说明。", "Enter an allocation change note.");
       if (!ack) return tr("请确认已核对方案并同意向申请人发送变更通知。", "Confirm the plan and requester notification.");
     }
@@ -329,6 +330,11 @@ export default function AllocationWorkbench({ lang, directRequestId = "", operat
     try {
       const suffix = directRequestId ? `?${signedQuery}` : "";
       const draft = allocationDraft(mode);
+      if (mode === "edit") {
+        const normalized = mergeAllocationRows(rows);
+        setRows(normalized);
+        draft.lines = normalized.map(x => ({ line_record_id: x.line_record_id, split_source_line_id: x.split_source_line_id || "", split_source_line_ids: x.split_source_line_ids || [], material_record_id: x.material_record_id, quantity: Number(x.quantity), remark: x.remark || "", order_required: x.order_required === true }));
+      }
       const body = await jsonFetch(`/api/allocation/${encodeURIComponent(requestId)}/submit${suffix}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation: mode, draft }) });
       setSuccess(`${tr("配货任务已进入后台队列", "Allocation task queued")}（${body.taskId}）`);
       // Queue acceptance is not inventory-review completion. Keep the request

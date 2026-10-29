@@ -1034,5 +1034,37 @@ class RequestInventoryReviewTests(unittest.TestCase):
         delete_lines.assert_not_called()
 
 
+    def test_converged_specification_deletes_only_the_superseded_detail(self) -> None:
+        context = {
+            "request": {"request_no": "REQ-1", "inventory_review_version": 0},
+            "lines": [
+                {"record_id": "line-a", "line_no": "REQ-1-01", "material_record_id": "mat-a", "product": "折页", "quantity": 20},
+                {"record_id": "line-b", "line_no": "REQ-1-02", "material_record_id": "mat-b", "product": "折页", "quantity": 30},
+                {"record_id": "line-c", "line_no": "REQ-1-03", "material_record_id": "mat-c", "product": "礼品", "quantity": 7},
+            ],
+            "material_rows": [{"record_id": key, "fields": {"物料品类": category, "产品型号": key, "语种": "英语", "当前库存": 100}} for key, category in [("mat-a", "折页"), ("mat-b", "折页"), ("mat-c", "礼品")]],
+        }
+        with (
+            patch.object(app, "request_inventory_review_context", return_value=context),
+            patch.object(app, "feishu_has_field", return_value=True),
+            patch.object(app, "feishu_datetime_value", return_value=123456),
+            patch.object(app, "feishu_batch_update_record_fields") as update_lines,
+            patch.object(app, "feishu_batch_create_records"),
+            patch.object(app, "feishu_batch_delete_record_ids") as delete_lines,
+            patch.object(app, "feishu_update_record_fields"),
+            patch.object(app, "ensure_request_change_record_fields"),
+            patch.object(app, "fresh_feishu_rows", return_value=[]),
+            patch.object(app, "notify_requester_of_inventory_edit"),
+            patch.object(app, "notify_enabled_admins_of_material_request"),
+        ):
+            app.execute_request_inventory_edit({"request_id": "request-1", "expected_version": 0, "change_note": "将 A 调整为 B，合并数量", "lines": [
+                {"line_record_id": "line-a", "material_record_id": "mat-b", "quantity": 50},
+                {"line_record_id": "line-c", "material_record_id": "mat-c", "quantity": 7},
+            ]})
+        updates = update_lines.call_args.args[1]
+        self.assertEqual([(row["record_id"], row["fields"]["申请数量"]) for row in updates], [("line-a", 50), ("line-c", 7)])
+        delete_lines.assert_called_once_with(app.REQUEST_LINE_TABLE_NAME, ["line-b"])
+
+
 if __name__ == "__main__":
     unittest.main()

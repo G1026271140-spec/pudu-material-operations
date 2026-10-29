@@ -8967,7 +8967,6 @@ def execute_request_inventory_edit(draft: dict[str, object]) -> dict[str, object
         str(line.get("record_id") or "")
         for line in list(context["lines"])
         if str(line.get("record_id") or "") not in kept_line_ids
-        and str(line.get("material_record_id") or "") not in seen
     ]
     if line_updates:
         feishu_batch_update_record_fields(REQUEST_LINE_TABLE_NAME, line_updates)
