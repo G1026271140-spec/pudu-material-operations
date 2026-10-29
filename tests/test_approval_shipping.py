@@ -120,7 +120,7 @@ def test_bad_form_reports_error_without_losing_the_approval_status():
 
 
 @pytest.mark.parametrize('prefill_text,prefill_image',[(True,True),(True,False),(False,True)])
-def test_calendar_real_fields_are_preserved_and_only_missing_fields_are_imported(final_shipping,prefill_text,prefill_image):
+def test_early_calendar_dispatch_preserves_both_logistics_fields_after_approval(final_shipping,prefill_text,prefill_image):
     from material_store import shipping_calendar as calendar
     from test_shipping_batch import batch,change
     data,download=final_shipping;conn,info,_,key,_,source=data
@@ -135,10 +135,10 @@ def test_calendar_real_fields_are_preserved_and_only_missing_fields_are_imported
     state=auto.document(conn,key);state['native']['checked_at']=0;auto.put(conn,key,state)
     result=auto.process_one(key,source)
     assert result['state']=='queued' and fields(data)['是否发货'] is True
-    assert fields(data)[defaults.TEXT]==('CALENDAR FIRST' if prefill_text else 'DHL FINAL 123')
-    if prefill_image:assert fields(data)[defaults.IMAGES]==before[defaults.IMAGES]
-    assert set(result['approval_import_fields'])==({defaults.TEXT} if not prefill_text else set())|({defaults.IMAGES} if not prefill_image else set())
-    assert download.call_count==(0 if prefill_image else 1)
+    assert fields(data)[defaults.TEXT]==before[defaults.TEXT]
+    assert fields(data)[defaults.IMAGES]==before[defaults.IMAGES]
+    assert result['approval_import_fields']==[]
+    assert not download.called
     drain(source);assert effects.run_once({'primary':source})['state']=='done'
     assert len(source.sent)==1
     assert auto.process_one(key,source)['state']=='unchanged'

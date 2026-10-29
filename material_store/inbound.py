@@ -12,7 +12,7 @@ from psycopg.types.json import Jsonb
 from .db import connection
 from . import repository as repo
 
-TYPES=('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新')
+TYPES=('飞书申请变更回调','兑换数据回调','公司通讯录实时刷新','手动飞书校验同步')
 
 def enqueue(kind,record_id):
     from .jobs import enqueue as add
@@ -103,6 +103,9 @@ def run_one(lane=None,job_id=None):
                     from .auto_shipping import process_changed
                     result['automatic_shipping']=process_changed(record_id=(row[2] or {}).get('record_id'))
                 elif row[1]==TYPES[1]:result=exchange_sync()
+                elif row[1]==TYPES[3]:
+                    from .manual_reconcile import execute
+                    result=execute(guard,row[0],row[2])
                 else:
                     from .contacts import refresh_now
                     result=refresh_now()
@@ -110,7 +113,7 @@ def run_one(lane=None,job_id=None):
                     ('retry' if result.get('skipped') else 'done',Jsonb(result),not bool(result.get('skipped')),row[0]))
                 return {'state':'retry' if result.get('skipped') else 'done','id':str(row[0])}
             except Exception as exc:
-                if row[1]==TYPES[2]:
+                if row[1] in {TYPES[2],TYPES[3]}:
                     guard.execute("UPDATE material_ops.jobs SET state='failed',attempts=attempts+1,last_error=%s WHERE id=%s",(type(exc).__name__+': '+str(exc)[:400],row[0]))
                     return {'state':'failed','id':str(row[0])}
                 guard.execute("UPDATE material_ops.jobs SET state=CASE WHEN attempts>=39 THEN 'failed' ELSE 'retry' END,attempts=attempts+1,available_at=now()+interval '30 seconds',last_error=%s WHERE id=%s",(type(exc).__name__+': '+str(exc)[:400],row[0]))

@@ -302,7 +302,9 @@ def save_batch(actor, body):
                 raise ValueError(number + ' 的发货日期不能为空，请选择新日期。')
             date_changed = next_date != date_text(fields.get('物料发货时间'))
             from .auto_shipping import enabled as automatic_enabled
-            patch = {TEXT: item['shipping_text'], SHIPPED: (fields.get(SHIPPED) is True) if automatic_enabled(conn) else item['shipped'], IMAGES: images}
+            from .shipping_defaults import real_text,real_images
+            logistics=bool(real_text(item['shipping_text']) or real_images(conn,images))
+            patch = {TEXT: item['shipping_text'], SHIPPED: ((fields.get(SHIPPED) is True) or logistics) if automatic_enabled(conn) else item['shipped'], IMAGES: images}
             def image_keys(values):
                 return [v.get('local_media_id') or v.get('file_token') for v in values or []]
             if (app.feishu_text(fields, TEXT) == patch[TEXT] and (fields.get(SHIPPED) is True) == patch[SHIPPED]
@@ -335,7 +337,7 @@ def save_batch(actor, body):
                 raise RuntimeError('发货字段尚未生成同步任务，本批修改已回滚。')
             from .auto_shipping import enabled as automatic_enabled,stage
             if automatic_enabled(conn):
-                stage(conn,old['record_id'])
+                stage(conn,old['record_id'],version=current['version'],fields={**fields,**patch})
                 entries.append({'request_id':old['record_id'],'request_no':number,'version':current['version'],
                                 'outbox_ids':dependencies,'effect_id':None,'automatic':True})
                 continue

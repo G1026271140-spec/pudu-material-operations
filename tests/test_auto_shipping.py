@@ -87,12 +87,11 @@ def test_text_or_image_alone_marks_shipped_and_sends_after_outbox(auto_store,use
     else:body=batch([change(conn,key,shipping_text='  DHL 123  ',images=[],shipped=False)])
     result=shipping.save_batch('ou_admin',body)
     assert result['entries'][0]['automatic'] and result['entries'][0]['effect_id'] is None
-    assert fields(auto_store)['是否发货'] is False
+    assert fields(auto_store)['是否发货'] is True
     assert auto.process_one(key,source)['state']=='syncing'
     drain(source)
     outcome=auto.process_one(key,source)
     assert outcome['state']=='queued' and fields(auto_store)['是否发货'] is True
-    assert effects.run_once({'primary':source}) is None
     assert not source.sent
     drain(source)
     assert effects.run_once({'primary':source})['state']=='done'
@@ -103,13 +102,13 @@ def test_text_or_image_alone_marks_shipped_and_sends_after_outbox(auto_store,use
     assert auto.document(conn,key)['announced'] is True
 
 
-@pytest.mark.parametrize('native_state',['PENDING','REJECTED','CANCELED'])
-def test_native_approval_must_be_passed_even_if_source_header_says_issued(auto_store,native_state):
+@pytest.mark.parametrize('native_state',['REJECTED','CANCELED'])
+def test_failed_native_approval_blocks_calendar_receipt(auto_store,native_state):
     conn,info,_,key,_,source=auto_store
     source.native_status=native_state
     save(auto_store);drain(source)
     assert auto.process_one(key,source)['state']=='waiting_approval'
-    assert not fields(auto_store)['是否发货'] and not source.sent
+    assert fields(auto_store)['是否发货'] and not source.sent
     assert effects.run_once({'primary':source}) is None
 
 
@@ -126,11 +125,13 @@ def test_approved_without_text_or_valid_image_never_notifies(auto_store):
 def test_native_approval_changes_after_logistics_are_entered(auto_store):
     conn,info,_,key,_,source=auto_store
     source.native_status='PENDING';save(auto_store);drain(source)
-    assert auto.process_one(key,source)['state']=='waiting_approval'
-    source.native_status='APPROVED'
-    state=auto.document(conn,key);state['native']['checked_at']=0;auto.put(conn,key,state)
     assert auto.process_one(key,source)['state']=='queued'
     drain(source);assert effects.run_once({'primary':source})['state']=='done'
+    assert len(source.sent)==1
+    source.native_status='APPROVED'
+    state=auto.document(conn,key);state['native']['checked_at']=0;auto.put(conn,key,state)
+    auto.process_one(key,source)
+    drain(source);assert effects.run_once({'primary':source}) is None
     assert len(source.sent)==1
 
 

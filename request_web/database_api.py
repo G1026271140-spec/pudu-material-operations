@@ -46,6 +46,20 @@ def register_database_api(api, require_admin):
             return FileResponse(image_assets.local(image),media_type='image/webp',headers=image_assets.HEADERS)
         except (ValueError,TypeError) as exc:raise HTTPException(404,'图片不存在。') from exc
 
+    @api.get('/api/admin/database/reconcile')
+    def reconcile_status(_:str=Depends(require_admin)):
+        enabled()
+        from material_store.manual_reconcile import status
+        with database_connection() as conn:return status(conn)
+
+    @api.post('/api/admin/database/reconcile',status_code=202)
+    def reconcile_start(body:dict,actor:str=Depends(require_admin)):
+        enabled()
+        if not backend_runtime.database_worker_enabled():raise HTTPException(403,'后台同步尚未启用。')
+        from material_store.manual_reconcile import request
+        try:return request(actor,body)
+        except ValueError as exc:raise HTTPException(422,str(exc)) from exc
+
     @api.get('/api/admin/database/tables')
     def tables(_:str=Depends(require_admin)):
         enabled()

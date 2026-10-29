@@ -1,3 +1,4 @@
+import DatabaseReconcile from "./DatabaseReconcile";
 import ToastMessage from "./ToastMessage";
 import { useEffect, useRef, useState } from "react";
 import CategoryImageEditor from "./CategoryImageEditor";
@@ -73,6 +74,7 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const activeTable=tables.find(t=>t.table_id===tableId);
   return <section className="database-workbench" aria-label={tr("虚拟数据库","Virtual database")}>
 
+    <DatabaseReconcile lang={lang} blocked={Boolean(edit)||saving} onCompleted={()=>{setReload(n=>n+1);void loadTables();window.dispatchEvent(new Event("pudu-business-data-changed"));}} />
     {status&&<div className="database-source"><span>PostgreSQL</span><span>{tr("最近导入","Last imported")}：{status.imported_at?new Date(status.imported_at).toLocaleString():"—"}</span><span>{status.pending_sync} {tr("条任务待同步","pending sync tasks")}</span><small>{status.sync_enabled?(status.workers_healthy?tr("飞书同步运行中 · 本地保存后自动同步","Feishu sync running · local changes sync automatically"):tr("飞书同步已启用，正在检查 Worker 状态","Feishu sync enabled; checking workers")):tr("飞书后台同步尚未启用；本页修改会持久保存在数据库。","Feishu sync is not enabled yet. Edits are durably saved in the database.")}{status.conflicts>0&&` · ${status.conflicts} ${tr("条历史冲突任务","historical conflicts")}`}</small></div>}
     {error&&<ToastMessage className="database-error" role="alert">{error}<button onClick={()=>{setEdit(null);setReload(x=>x+1);}}>{tr("重新读取","Reload")}</button></ToastMessage>}
     {notice&&!error&&<ToastMessage className="database-notice" role="status">✓ {notice}</ToastMessage>}

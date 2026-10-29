@@ -103,7 +103,7 @@ def run_once(clients):
                 return {'id':str(row[0]),'state':'skipped'}
         if row[4].get('_automatic_shipping_signature'):
             from .auto_shipping import may_send
-            if not may_send(conn,row[4]['_shipping_request'],row[4]['_automatic_shipping_signature'],row[3][0]):
+            if not may_send(conn,row[4]['_shipping_request'],row[4]['_automatic_shipping_signature'],row[3][0],row[4].get('_shipping_calendar_revision')):
                 state='failed' if row[5] else 'done'
                 message='旧通知曾尝试发送且内容已变化，保留核对，不再重发旧内容' if row[5] else '当前申请尚不满足自动发货条件或内容已变化，未发送'
                 conn.execute("UPDATE material_ops.effects SET state=%s,completed_at=now(),last_error=%s WHERE id=%s",(state,message,row[0]))

@@ -115,9 +115,14 @@ def activate(client=None,seed_native=None):
     return {'enabled':True,'baseline_requests':count,'business_writes':0,'notifications':0}
 
 
-def stage(conn,key):
+def stage(conn,key,*,version=None,fields=None):
+    import app
     state=document(conn,key,lock=True)
-    state.update(dirty=True,state='pending',error='满足审批和物流信息条件后自动同步发货。')
+    state.update(dirty=True,state='pending',error='发货信息等待同步后通知申请人。')
+    if version is not None:
+        body=content(conn,fields)
+        state.update(calendar_revision=version,early_dispatch=bool(body['text'] or body['images']),
+                     early_dispatch_code=app.feishu_text(fields,'审批实例Code'))
     put(conn,key,state)
 
 
@@ -138,8 +143,12 @@ def approval_passed(native,number):
     return native.get('status')=='APPROVED' and native.get('request_no')==number
 
 
-def ready(state,native,number):
-    if native.get('code')!=state['code'] or not approval_passed(native,number):return False,'审批尚未通过或审批实例与当前申请不匹配。'
+def ready(state,native,number,*,calendar=None):
+    calendar=calendar or {}
+    early=calendar.get('early_dispatch') and calendar.get('early_dispatch_code','') in {'',state['code']}
+    if native.get('code')==state['code'] and native.get('status') in {'REJECTED','CANCELED','DELETED'}:
+        return False,'审批已驳回或撤回，不能发送发货通知。'
+    if not early and (native.get('code')!=state['code'] or not approval_passed(native,number)):return False,'审批尚未通过或审批实例与当前申请不匹配。'
     if not state['content']['text'] and not state['content']['images']:return False,'已发货，填写物流文字信息或上传发货图片后通知申请人。'
     return True,''
 
@@ -173,11 +182,14 @@ def process_one(key,client):
     native=native_details(client,current['code']) if current['code'] and (changed or poll_native) else cached
     number=app.feishu_text(fields,'申请单号');passed=approval_passed(native,number)
     import_due=approval.due(previous,native,current['code'],number)
-    approval_patch,import_error=approval.prepare(native,fields) if import_due else ({},'')
+    early_dispatch=previous.get('early_dispatch') and previous.get('early_dispatch_code','') in {'',current['code']}
+    # An explicit early calendar dispatch owns the complete logistics payload;
+    # later approval only approves and must not fill or replace either field.
+    approval_patch,import_error=approval.prepare(native,fields) if import_due and not early_dispatch else ({},'')
     if approval_patch:
         fields={**fields,**approval_patch}
         with connection() as conn:current=snapshot(conn,fields,lines.get(old['record_id'],[]))
-    allowed,reason=ready(current,native,number)
+    allowed,reason=ready(current,native,number,calendar=previous)
     # A flag-only historical correction must never generate a historical receipt.
     meaningful=(previous.get('dirty') or previous.get('content')!=current['content']
         or (cached.get('status')=='PENDING' and native.get('status')=='APPROVED')
@@ -189,16 +201,21 @@ def process_one(key,client):
         if latest['version']!=old['version']:return {'state':'changed_during_check'}
         saved=document(conn,old['record_id'],lock=True)
         signature=digest(current['content'])
+        calendar_change=saved.get('calendar_revision') is not None and saved.get('calendar_revision')!=saved.get('notice_calendar_revision')
         same_notice=(saved.get('effect_id') and saved.get('notice_signature')==signature
-                     and (saved.get('notice_approval_code') or (saved.get('native') or {}).get('code'))==native.get('code'))
+                     and not calendar_change
+                     and ((saved.get('early_dispatch') and saved.get('early_dispatch_code','') in {'',current['code']})
+                          or (saved.get('notice_approval_code') or (saved.get('native') or {}).get('code'))==native.get('code')))
+        # Re-notification after an announced shipment is allowed only by a new calendar commit.
+        repeat_allowed=not saved.get('announced',False) or calendar_change
         flag_needed=passed and fields.get(shipping.SHIPPED) is not True
-        notice_needed=bool(allowed and meaningful and not same_notice)
-        next_state={**current,'native':native,'dirty':False,'notice_signature':saved.get('notice_signature'),
+        notice_needed=bool(allowed and meaningful and not same_notice and repeat_allowed)
+        next_state={**saved,**current,'native':native,'dirty':False,'notice_signature':saved.get('notice_signature'),
                     'announced':saved.get('announced',False),'effect_id':saved.get('effect_id'),
                     'logistics_import_code':native.get('code') if import_due and not import_error else saved.get('logistics_import_code'),
                     'approval_import_error':import_error,
                     'notice_approval_code':saved.get('notice_approval_code') or ((saved.get('native') or {}).get('code') if saved.get('effect_id') else None)}
-        if not passed:next_state.update(state='waiting_approval',error=reason)
+        if not passed and not allowed:next_state.update(state='waiting_approval',error=reason)
         elif not allowed:next_state.update(state='waiting_information',error=reason)
         elif same_notice:next_state.update(state=saved.get('state','pending'),error=saved.get('error',''))
         else:next_state.update(state='baseline',error='')
@@ -209,7 +226,7 @@ def process_one(key,client):
         if not flag_needed and not notice_needed and not approval_patch:
             put(conn,old['record_id'],next_state)
             return {'state':next_state['state'],'reason':next_state.get('error','')}
-        task,created=jobs.enqueue('发货信息同步','automatic-shipping:v2:'+old['record_id']+':'+str(old['version'])+':'+signature,
+        task,created=jobs.enqueue('发货信息同步','automatic-shipping:v3:'+old['record_id']+':'+str(old['version'])+':'+str(native.get('code') or '')+':'+str(saved.get('calendar_revision') or '')+':'+signature,
             {'request_id':old['record_id'],'request_no':number,'automatic':True,'notify':notice_needed},conn=conn)
         if not created:return {'state':'duplicate'}
         conn.execute("SELECT set_config('pudu.job_id',%s,true)",(task.task_id,))
@@ -230,9 +247,12 @@ def process_one(key,client):
             conn.execute("UPDATE material_ops.effects SET state='done',completed_at=now(),last_error='已被最新发货信息替代，未发送旧通知' WHERE kwargs->>'_shipping_request'=%s AND state IN ('pending','retry') AND first_attempt_at IS NULL",(old['record_id'],))
             alias=effects.defer('primary','send_interactive_message',[recipients[0],message],{
                 'receive_id_type':'open_id','_outbox_ids':outbox,'_shipping_request':old['record_id'],'_shipping_version':latest['version'],
+                '_shipping_calendar_revision':saved.get('calendar_revision'),
                 '_automatic_shipping_signature':signature,**({'_shipping_date_change':True,'_shipping_date_before':before_date,'_shipping_date_after':current['content']['ship_date']} if date_changed else {})})
             result['effect_id']=alias[len(effects.PREFIX):]
-            next_state.update(notice_signature=signature,notice_approval_code=native.get('code'),state='pending',error='',effect_id=result['effect_id'])
+            next_state.update(notice_signature=signature,notice_calendar_revision=saved.get('calendar_revision'),
+                              early_dispatch_code=current['code'] if saved.get('early_dispatch') else saved.get('early_dispatch_code'),
+                              notice_approval_code=native.get('code'),state='pending',error='',effect_id=result['effect_id'])
         conn.execute("UPDATE material_ops.jobs SET state='done',result=%s,completed_at=now() WHERE id=%s",(Jsonb(result),task.task_id))
         from .admin_completion import register
         register(conn,task.task_id,'发货信息同步',{'request_no':number},{'entries':[result]},'系统')
@@ -285,7 +305,7 @@ def poll(client=None):
     return result
 
 
-def may_send(conn,key,signature,recipient=None):
+def may_send(conn,key,signature,recipient=None,calendar_revision=None):
     """Recheck current local content immediately before claiming a send effect."""
     import app
     from . import shipping_calendar as shipping
@@ -294,9 +314,10 @@ def may_send(conn,key,signature,recipient=None):
     try:row=repo.raw_record(conn,info,key)
     except ValueError:return False
     fields=repo.feishu_record(info,row)['fields'];state=document(conn,row['record_id'])
+    if state.get('calendar_revision')!=calendar_revision:return False
     _,lines=graph(conn)
     current=snapshot(conn,fields,lines.get(row['record_id'],[]))
-    allowed,_=ready(current,state.get('native') or {},app.feishu_text(fields,'申请单号'))
+    allowed,_=ready(current,state.get('native') or {},app.feishu_text(fields,'申请单号'),calendar=state)
     return (shipping.eligible(fields) and fields.get(shipping.SHIPPED) is True
             and allowed and (recipient is None or app.feishu_person_open_ids(fields,['申请人'])==[recipient])
             and bool(content(conn,fields)['text'] or content(conn,fields)['images'])

@@ -90,7 +90,7 @@ def _feed(conn):
           COALESCE(j.subject_key,''),e.first_attempt_at::text FROM material_ops.effects e
         LEFT JOIN job_info j ON j.id=e.job_id
         UNION ALL
-        SELECT 'reconcile',r.id::text,'每日飞书校验','system',CASE WHEN r.state='running' THEN 'processing' ELSE r.state END,
+        SELECT 'reconcile',r.id::text,CASE WHEN r.summary->>'trigger'='manual' THEN '手动飞书校验' ELSE '每日飞书校验' END,'system',CASE WHEN r.state='running' THEN 'processing' ELSE r.state END,
           r.started_at,r.completed_at,NULL,0,CASE WHEN r.state='failed' THEN r.summary::text ELSE NULL END,
           NULL,'','',r.source_authority,NULL FROM material_ops.reconcile_runs r
         UNION ALL

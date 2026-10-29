@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 import json
 import logging
@@ -62,7 +63,7 @@ def reconcile_snapshot(conn,info,records,run_id):
         if done_ids:
             conn.execute("UPDATE material_ops.outbox SET state='done',completed_at=now(),claim_token=NULL,lease_until=NULL WHERE id=ANY(%s)",(done_ids,))
         if conflict_ids:
-            conn.execute("UPDATE material_ops.outbox SET state='conflict',last_error='03:00 飞书字段已变化，旧本地写入已取消',claim_token=NULL,lease_until=NULL WHERE id=ANY(%s)",(conflict_ids,))
+            conn.execute("UPDATE material_ops.outbox SET state='conflict',last_error='飞书全量校验：源字段已变化，旧本地写入已取消',claim_token=NULL,lease_until=NULL WHERE id=ANY(%s)",(conflict_ids,))
             conflicts+=len(conflict_ids)
         # The daily job adopts the entire current Feishu record, including
         # cleared fields. Unsynced *new* local records are handled separately.
@@ -81,7 +82,7 @@ def reconcile_snapshot(conn,info,records,run_id):
         key=old[0]
         pending=conn.execute("SELECT count(*) FROM material_ops.outbox WHERE table_id=%s AND record_key=%s AND state IN ('pending','processing','retry')",(info['table_id'],key)).fetchone()[0]
         if pending:
-            conn.execute("UPDATE material_ops.outbox SET state='conflict',last_error='03:00 飞书记录已删除',claim_token=NULL,lease_until=NULL WHERE table_id=%s AND record_key=%s AND state IN ('pending','processing','retry')",(info['table_id'],key))
+            conn.execute("UPDATE material_ops.outbox SET state='conflict',last_error='飞书全量校验：源记录已删除',claim_token=NULL,lease_until=NULL WHERE table_id=%s AND record_key=%s AND state IN ('pending','processing','retry')",(info['table_id'],key))
             conflicts+=pending
         conn.execute(sql.SQL("UPDATE material_data.{} SET _deleted=true,_sync_state='conflict',_updated_at=now() WHERE _record_key=%s")
                      .format(sql.Identifier(info['sql_table'])),(key,))
@@ -91,15 +92,18 @@ def reconcile_snapshot(conn,info,records,run_id):
     return {'changed':changed,'created':created,'deleted':deleted,'conflicts':conflicts}
 
 
-def run(clients):
+def run(clients, *, progress=None, trigger="daily", actor="system:daily-reconcile", db_connection=None):
     """Hold a session lock while fetching; no SQL transaction spans HTTP calls."""
-    with connection() as guard:
+    report = progress or (lambda value: None)
+    report({'stage':'waiting_lock','fetched':0,'total':0,'trigger':trigger})
+    with (nullcontext(db_connection) if db_connection is not None else connection()) as guard:
         guard.execute("SELECT pg_advisory_lock(hashtextextended('pudu-reconciliation',0))")
         run_id=None;stage='starting'
         try:
             # Register before preflight/fetch so schema or network failures are
             # visible to the database workbench, not only the system journal.
-            run_id=guard.execute("INSERT INTO material_ops.reconcile_runs(state) VALUES ('running') RETURNING id").fetchone()[0]
+            run_id=guard.execute("INSERT INTO material_ops.reconcile_runs(state,summary) VALUES ('running',%s) RETURNING id",(Jsonb({'trigger':trigger,'actor':actor}),)).fetchone()[0]
+            report({'stage':'metadata','run_id':str(run_id),'fetched':0,'total':0,'trigger':trigger})
             guard.execute("UPDATE material_ops.outbox SET state='retry',claim_token=NULL,lease_until=NULL,available_at=now() WHERE state='processing'")
             stage='metadata'
             metadata=[repo.table(guard,r[0]) for r in guard.execute('SELECT table_id FROM material_meta.tables ORDER BY source_key,table_id')]
@@ -113,36 +117,51 @@ def run(clients):
                 if len(ids)!=len(set(ids)):raise ValueError('飞书返回了重复记录：'+info['name'])
                 return info,records
             stage='source_fetch'
-            with ThreadPoolExecutor(max_workers=3) as pool:fetched=list(pool.map(fetch,metadata))
+            fetched=[]
+            report({'stage':stage,'run_id':str(run_id),'fetched':0,'total':len(metadata),'trigger':trigger})
+            with ThreadPoolExecutor(max_workers=3) as pool:
+                futures=[pool.submit(fetch,info) for info in metadata]
+                for future in as_completed(futures):
+                    fetched.append(future.result())
+                    report({'stage':stage,'run_id':str(run_id),'fetched':len(fetched),'total':len(metadata),'trigger':trigger})
+            order={info['table_id']:index for index,info in enumerate(metadata)}
+            fetched.sort(key=lambda item:order[item[0]['table_id']])
             stage='apply'
+            report({'stage':stage,'run_id':str(run_id),'fetched':len(fetched),'total':len(metadata),'trigger':trigger})
             with guard.transaction():
-                summary={'tables':len(fetched),'source':'feishu','started_local':datetime.now().isoformat(timespec='seconds'),
+                summary={'tables':len(fetched),'run_id':str(run_id),'trigger':trigger,'actor':actor,'source':'feishu','started_local':datetime.now().isoformat(timespec='seconds'),
                          'changed':0,'created':0,'deleted':0,'conflicts':0}
                 for info,records in fetched:
                     stats=reconcile_snapshot(guard,info,records,run_id)
                     for name,value in stats.items():summary[name]+=value
                 guard.execute("UPDATE material_ops.reconcile_runs SET state='done',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
+            report({'stage':'done',**summary})
             return summary
         except Exception as exc:
             if run_id:
-                summary={'error_type':type(exc).__name__,'stage':stage}
+                summary={'error_type':type(exc).__name__,'stage':stage,'trigger':trigger,'actor':actor}
                 message=str(exc)
                 if message.startswith('飞书字段定义与数据库注册不一致：'):
                     summary.update(reason='schema_mismatch',table=message.split('：',1)[1])
                 guard.execute("UPDATE material_ops.reconcile_runs SET state='failed',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
+                report({**summary,'stage':'failed','failed_stage':stage,'run_id':str(run_id)})
             raise
         finally:
             guard.execute("SELECT pg_advisory_unlock(hashtextextended('pudu-reconciliation',0))")
 
 
-def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--once',action='store_true',required=True);args=parser.parse_args()
-    if os.environ.get('PUDU_DATA_SOURCE')!='postgresql':raise RuntimeError('PostgreSQL mode required')
+def clients():
     import app
     if not app.corporate_apparel_source_app_token():raise RuntimeError('行政源表 Token 未配置，不能做全量日校验。')
     primary=app._native_feishu_bitable_client(app.feishu_app_id(),app.feishu_app_secret(),app.feishu_bitable_app_token())
     apparel=app._native_feishu_bitable_client(app.feishu_app_id(),app.feishu_app_secret(),app.corporate_apparel_source_app_token())
-    print(json.dumps(run({'primary':primary,'apparel_admin':apparel}),ensure_ascii=False))
+    return {'primary':primary,'apparel_admin':apparel}
+
+
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--once',action='store_true',required=True);args=parser.parse_args()
+    if os.environ.get('PUDU_DATA_SOURCE')!='postgresql':raise RuntimeError('PostgreSQL mode required')
+    print(json.dumps(run(clients()),ensure_ascii=False))
 
 
 if __name__=='__main__':main()
