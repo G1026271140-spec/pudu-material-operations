@@ -44,8 +44,8 @@ def digest(value):return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort
 
 def image_keys(conn,images):
     keys=[]
-    for image in images or []:
-        if not isinstance(image,dict):continue
+    from .shipping_defaults import real_images
+    for image in real_images(conn,images):
         token=image.get('file_token')
         if not token and image.get('local_media_id'):
             row=conn.execute('SELECT feishu_file_token FROM material_ops.media WHERE id=%s',(image['local_media_id'],)).fetchone()
@@ -57,7 +57,8 @@ def image_keys(conn,images):
 def content(conn,fields):
     import app
     from .shipping_calendar import date_text,TEXT,IMAGES
-    return {'text':app.feishu_text(fields,TEXT).strip(),'images':image_keys(conn,fields.get(IMAGES)),
+    from .shipping_defaults import real_text
+    return {'text':real_text(app.feishu_text(fields,TEXT)),'images':image_keys(conn,fields.get(IMAGES)),
             'ship_date':date_text(fields.get('物料发货时间')),'arrival_start':date_text(fields.get('要求达到开始日期'))}
 
 

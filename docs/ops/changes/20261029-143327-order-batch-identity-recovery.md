@@ -30,3 +30,8 @@ order_scheduling.batch_number 对完整生成键取稳定摘要；SchedulingServ
 
 
 首次统一发布的全量检查发现旧 tests/test_order_batch_identity.py 仍把显示批次号当作批次身份；按本次已证实的规则改为完整生成幂等键。保留原有“不串单、重试复用、同键不同内容冲突、重复身份拒绝”全部断言。测试失败时未 push / 上线，生产仍为原版本。
+
+
+## 已完成恢复验收
+
+V4.0.6（7144726ee968300815ad56806c543be18c2592b9）上线后，按预览修复两条原冲突 create；新编号分别 PO-20261029-85D52C70FAD871B6 和 PO-20261029-B7AA0D4829315F4A。原 Worker 已完成 2 批次与 7 明细；飞书全量回读按生成键 / 明细键确认各一条、父子关联与下单数量一致。REQ-20261029-004 两条 update_interactive_message 各尝试一次并完成，飞书 GET 原消息确认两条消息仍为 interactive；PATCH 正常无返回消息 ID，effects.remote_id 为空是原 SDK 的返回契约，不能因此认定新建或失败。当前未完成下单同步为 0。只读证据 shared/audits/order-recovery-20261029.json；恢复前镜像和原 outbox 状态另存受限恢复凭据。

@@ -83,6 +83,9 @@ class DatabaseWriteClient(DatabaseReadClient):
         result=[]
         for fields in records:
             fields=dict(fields)
+            if info['source']=='primary' and info['name']=='物料申请单' and fields.get('申请类型')=='普通物料申请':
+                from .shipping_defaults import initial_fields
+                fields=initial_fields(self.conn,fields)
             if info['name']=='用户权限表' and '用户编号' in fields:
                 self.conn.execute("SELECT pg_advisory_xact_lock(hashtextextended('permission-number',0))")
                 used=[str(row['fields'].get('用户编号') or '') for row in repo.rows(self.conn,info)]

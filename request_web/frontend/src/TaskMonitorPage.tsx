@@ -5,7 +5,8 @@ import "./task-monitor.css";
 type Lang = "zh" | "en";
 export type Task = {kind:string;id:string;title:string;subject:string;lane:string;state:string;created_at:string;completed_at:string|null;available_at:string|null;started_at:string|null;attempts:number;last_error:string|null;job_id:string|null};
 type Count = {state:string;count:number;kind?:string};
-type Snapshot = {entries:Task[];total:number;next_cursor:string;checked_at:string;global_counts:Count[];workers:{name:string;updated_at:string;version:string;healthy:boolean}[]};
+type Worker = {name:string;updated_at:string;version:string;healthy:boolean|null;mode?:"scheduled"|"continuous"};
+type Snapshot = {entries:Task[];total:number;next_cursor:string;checked_at:string;global_counts:Count[];workers:Worker[]};
 type Detail = {task:Task;data:Record<string,unknown>;related:Task[];related_counts:Count[];checked_at:string};
 const kinds = ["all","jobs","outbox","effects","reconcile","import"];
 const labels:Record<string,[string,string]> = {
@@ -29,6 +30,15 @@ export function TaskTable({entries,lang,onOpen}:{entries:Task[];lang:Lang;onOpen
     <td className={task.last_error?"task-error-cell":"task-result-cell"} title={task.last_error||""}>{task.last_error || (task.completed_at?tr("完成于 ","Completed ")+taskTime(task.completed_at,lang):task.state==="retry"?tr("下次尝试 ","Next attempt ")+taskTime(task.available_at,lang):task.state==="processing"?tr("Worker 正在处理","Worker is processing"):tr("等待 Worker 或前序依赖","Waiting for worker or dependencies"))}</td>
     <td><button type="button" onClick={()=>onOpen(task)}>{tr("查看","View")}</button></td>
   </tr>)}</tbody></table></div>;
+}
+
+export function WorkerHeartbeats({workers,lang}:{workers:Worker[];lang:Lang}) {
+  const tr=(zh:string,en:string)=>lang==="zh"?zh:en;
+  const continuous=workers.filter(worker=>worker.mode!=="scheduled");
+  const scheduled=workers.length-continuous.length;
+  return <details className="task-workers"><summary>{tr("后台服务心跳","Worker heartbeats")} · {continuous.filter(worker=>worker.healthy).length}/{continuous.length} {tr("常驻服务近期有活动","continuous workers recently active")}{scheduled?` · ${scheduled} ${tr("项定时任务","scheduled task(s)")}`:""}</summary><div>{workers.map(worker=><p key={worker.name}>
+    <b>{worker.name.replace("worker:","")}</b><span className={worker.mode!=="scheduled"&&!worker.healthy?"task-stale":""}>{worker.mode==="scheduled"?tr("定时刷新 · 上次完成","Scheduled refresh · last completed"):worker.healthy?tr("近期有活动","Recently active"):tr("心跳已过期，需核对","Stale heartbeat")}</span><time>{taskTime(worker.updated_at,lang)}</time><span title={worker.mode==="scheduled"?tr("上次执行版本","Last run version"):tr("运行版本","Runtime version")}>{worker.version}</span>
+  </p>)}</div></details>;
 }
 
 export default function TaskMonitorPage({lang}:{lang:Lang}) {
@@ -84,7 +94,7 @@ export default function TaskMonitorPage({lang}:{lang:Lang}) {
       {current?.entries.length?<TaskTable entries={current.entries} lang={lang} onOpen={open}/>:<div className="task-empty">{!current?tr("正在读取任务…","Loading tasks…"):state==="active"?tr("当前没有符合条件的进行中任务","No matching tasks in progress"):tr("没有符合条件的任务记录","No matching task records")}</div>}
       <div className="task-pagination"><span>{tr(`第 ${cursors.length} 页 · 每页 50 条`,`Page ${cursors.length} · 50 per page`)}</span><button type="button" disabled={cursors.length===1||busy} onClick={()=>setCursors(c=>c.slice(0,-1))}>{tr("上一页","Previous")}</button><button type="button" disabled={!current?.next_cursor||busy} onClick={()=>current?.next_cursor&&setCursors(c=>[...c,current.next_cursor])}>{tr("下一页","Next")}</button></div>
     </div>
-    {data&&<details className="task-workers"><summary>{tr("后台服务心跳","Worker heartbeats")} · {data.workers.filter(worker=>worker.healthy).length}/{data.workers.length} {tr("近期有活动","recently active")}</summary><div>{data.workers.map(worker=><p key={worker.name}><b>{worker.name.replace("worker:","")}</b><span className={worker.healthy?"":"task-stale"}>{worker.healthy?tr("近期有活动","Recently active"):tr("心跳已过期，需核对","Stale heartbeat")}</span><time>{taskTime(worker.updated_at,lang)}</time><span>{worker.version}</span></p>)}</div></details>}
+    {data&&<WorkerHeartbeats workers={data.workers} lang={lang}/>}
     <dialog ref={dialog} className="task-detail" onCancel={()=>setSelected(null)} onClose={()=>setSelected(null)} aria-labelledby="task-detail-title">
       <div className="task-detail-head"><h2 id="task-detail-title">{tr("任务详情","Task details")}</h2><button type="button" onClick={()=>setSelected(null)} aria-label={tr("关闭详情","Close details")}>×</button></div>
       {detailError&&<p className="task-detail-error" role="alert">{detailError} · {tr("详情更新失败","Details refresh failed")}</p>}
