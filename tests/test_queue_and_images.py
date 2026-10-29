@@ -130,3 +130,15 @@ def test_remote_image_http_reuses_vm_file_and_keeps_business_data_uncached(store
     row['fields']['申领页图片']=[];repo.insert_source_records(conn,info,[row])
     response=client.get(url)
     assert response.status_code==404 and 'no-store' in response.headers['cache-control']
+
+
+def test_image_preparation_starts_with_legacy_readonly_gate(monkeypatch):
+    from request_web.api import _pending_inventory_lifespan
+    monkeypatch.setattr(runtime,'web_read_only',lambda:True)
+    monkeypatch.setattr(runtime,'database_reads',lambda:True)
+    start=Mock();stop=Mock();monkeypatch.setattr(assets,'start',start);monkeypatch.setattr(assets,'stop',stop)
+    async def check():
+        async with _pending_inventory_lifespan(None):
+            start.assert_called_once();stop.assert_not_called()
+        stop.assert_called_once()
+    asyncio.run(check())

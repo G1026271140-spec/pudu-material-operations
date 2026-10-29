@@ -448,7 +448,12 @@ class CorporateApparelDraft(BaseModel):
 @asynccontextmanager
 async def _pending_inventory_lifespan(_app: FastAPI):
     if backend_runtime.web_read_only():
-        yield
+        from material_store import image_assets
+        if backend_runtime.database_reads():image_assets.start()
+        try:
+            yield
+        finally:
+            image_assets.stop()
         return
     import submission_receipts
 
