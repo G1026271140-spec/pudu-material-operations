@@ -144,6 +144,9 @@ def list_tasks(conn, *, kind='all',state='active',q='',since=None,until=None,job
     _enrich(conn,entries)
     global_counts=_rows(conn,prefix+sql.SQL('SELECT state,count(*) count FROM feed GROUP BY state'))
     workers=_rows(conn,"SELECT name,updated_at,payload->>'version' version,updated_at>clock_timestamp()-interval '2 minutes' healthy FROM material_ops.documents WHERE strpos(name,'worker:')=1 ORDER BY name")
+    for worker in workers:
+        worker['mode']='scheduled' if worker['name']=='worker:contacts' else 'continuous'
+        if worker['mode']=='scheduled':worker['healthy']=None
     return {'entries':[{**row,'last_error':redact(row['last_error'])} for row in entries],
             'total':sum(row['count'] for row in counts),'counts':counts,'global_counts':global_counts,
             'workers':workers,'next_cursor':next_cursor,'checked_at':datetime.now(timezone.utc).isoformat(),'refresh_seconds':2}
