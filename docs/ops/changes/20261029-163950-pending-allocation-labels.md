@@ -27,3 +27,10 @@ material_store/pending_followup.py、pending_followup_schema.py；request_web/pe
 隔离 pudu_materials_test 后端相关 27 passed，前端 31 passed，构建通过。覆盖先本地可读、outbox 仅两个字段、模拟飞书发布、无 effects、不改变原备注和业务字段、清空、幂等、输入 / 版本错误回滚、已核实及文化周边拒绝、严格版本 / 最后提交策略和管理员路由保护。日期含 UTC 跨日 / 非法 / 缺失值，标签和备注安全转义、独立按钮、清空恢复普通颜色均有验证。示例页仅模拟单据，用于黄色卡片视觉验收，未给真实待核实单预设标签，也未向员工发测试通知。
 
 正式发布使用唯一 pudu-release，版本与 Git SHA 以 shared/release-audit.jsonl 及 shared/audits/pending-followup-live-20261029.json 的实际结果为准；生产只读核对字段注册、源表、待核实列表及服务 / 公开健康接口，浏览器核验日期分组和编辑弹窗。原 Windows 服务保持停止，独立线索采集不在范围。
+
+
+## 发布回归补充
+
+首次正式发布被全量测试阻止：隔离测试库字段映射用例把总数固定为 366，新增两字段后为 368。修正数量并额外断言两个字段均为文本，原逐字段原始 JSON / SQL 类型往返校验、事务回滚、应用角色无 DDL 权限校验全部保留；没有跳过或弱化字段校验。首次失败未推送或切换线上版本。
+
+修正后隔离全量回归：1108 passed、4 skipped、22 subtests passed；前端 31 passed，构建通过。

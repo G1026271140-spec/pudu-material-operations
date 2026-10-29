@@ -64,7 +64,9 @@ def test_all_registered_fields_round_trip_typed_values_without_changing_source_j
                 for expected, actual in zip(values, result[1:]):
                     assert actual == (expected.obj if isinstance(expected, Jsonb) else expected)
                 count += len(fields)
-            assert count == 366
+            assert count == 368  # Existing 366 + two additive follow-up fields.
+            added = conn.execute("SELECT field_name,field_type FROM material_meta.fields WHERE table_id='tbl3eyt8lkl3uQa1' AND field_name IN ('待核实标签','待核实备注')").fetchall()
+            assert dict(added) == {'待核实标签': 1, '待核实备注': 1}
             raise RuntimeError("rollback_projection_test")
 
 
