@@ -120,20 +120,20 @@ def images(code,refs):
     return result
 
 
-def prepare(native,fields,*,legacy=False):
+def prepare(native,fields):
+    """Final approval only fills logistics still missing from the local calendar."""
     import app
     final=native.get('shipping') or {}
+    old=defaults.real_text(app.feishu_text(fields,defaults.TEXT))
+    with connection() as conn:
+        current_real=defaults.real_images(conn,fields.get(defaults.IMAGES))
+    if old and current_real:return {},''
     result={};text=defaults.real_text(final.get('text'))
     if final.get('error'):return result,final['error']
-    old=app.feishu_text(fields,defaults.TEXT)
-    if text and text!=old and not (legacy and defaults.real_text(old)):
-        result[defaults.TEXT]=text
+    if text and not old:result[defaults.TEXT]=text
     refs=final.get('images') or []
-    if refs:
-        with connection() as conn:
-            current_real=defaults.real_images(conn,fields.get(defaults.IMAGES))
-        if not (legacy and current_real):
-            try:actual=images(native['code'],refs)
-            except ValueError as exc:return result,str(exc)
-            if actual:result[defaults.IMAGES]=actual
+    if refs and not current_real:
+        try:actual=images(native['code'],refs)
+        except ValueError as exc:return result,str(exc)
+        if actual:result[defaults.IMAGES]=actual
     return result,''

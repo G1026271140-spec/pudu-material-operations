@@ -173,7 +173,7 @@ def process_one(key,client):
     native=native_details(client,current['code']) if current['code'] and (changed or poll_native) else cached
     number=app.feishu_text(fields,'申请单号');passed=approval_passed(native,number)
     import_due=approval.due(previous,native,current['code'],number)
-    approval_patch,import_error=approval.prepare(native,fields,legacy=legacy_import) if import_due else ({},'')
+    approval_patch,import_error=approval.prepare(native,fields) if import_due else ({},'')
     if approval_patch:
         fields={**fields,**approval_patch}
         with connection() as conn:current=snapshot(conn,fields,lines.get(old['record_id'],[]))

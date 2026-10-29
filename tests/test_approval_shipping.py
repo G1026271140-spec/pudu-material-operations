@@ -9,7 +9,7 @@ from psycopg import sql
 from material_store import approval_shipping as imported,auto_shipping as auto,repository as repo,shipping_defaults as defaults,effects
 from test_auto_shipping import auto_store,drain,fields,save
 from test_approval_sync import graph
-from test_shipping_calendar import store
+from test_shipping_calendar import store,image
 
 
 @pytest.fixture
@@ -117,3 +117,48 @@ def test_approval_url_and_redirect_validation_refuses_untrusted_targets(url):
 def test_bad_form_reports_error_without_losing_the_approval_status():
     result=imported.extract([{'name':defaults.IMAGES,'value':['x']*13}])
     assert result['version']==1 and '最多 12' in result['error']
+
+
+@pytest.mark.parametrize('prefill_text,prefill_image',[(True,True),(True,False),(False,True)])
+def test_calendar_real_fields_are_preserved_and_only_missing_fields_are_imported(final_shipping,prefill_text,prefill_image):
+    from material_store import shipping_calendar as calendar
+    from test_shipping_batch import batch,change
+    data,download=final_shipping;conn,info,_,key,_,source=data
+    source.native_status='PENDING'
+    assert auto.process_one(key,source)['state']=='waiting_approval'
+    photo=image('ou_admin') if prefill_image else None
+    calendar.save_batch('ou_admin',batch([change(conn,key,shipping_text='CALENDAR FIRST' if prefill_text else '待补充',
+        images=[{'local_media_id':photo['local_media_id']}] if photo else [],shipped=False)]))
+    drain(source)
+    before=deepcopy(fields(data))
+    source.native_status='APPROVED'
+    state=auto.document(conn,key);state['native']['checked_at']=0;auto.put(conn,key,state)
+    result=auto.process_one(key,source)
+    assert result['state']=='queued' and fields(data)['是否发货'] is True
+    assert fields(data)[defaults.TEXT]==('CALENDAR FIRST' if prefill_text else 'DHL FINAL 123')
+    if prefill_image:assert fields(data)[defaults.IMAGES]==before[defaults.IMAGES]
+    assert set(result['approval_import_fields'])==({defaults.TEXT} if not prefill_text else set())|({defaults.IMAGES} if not prefill_image else set())
+    assert download.call_count==(0 if prefill_image else 1)
+    drain(source);assert effects.run_once({'primary':source})['state']=='done'
+    assert len(source.sent)==1
+    assert auto.process_one(key,source)['state']=='unchanged'
+
+
+def test_calendar_edit_during_approval_download_wins_after_version_retry(final_shipping):
+    from material_store import shipping_calendar as calendar
+    from test_shipping_batch import batch,change
+    data,download=final_shipping;conn,info,_,key,_,source=data
+    payload=download.return_value
+    photo=image('ou_admin')
+    def simultaneous_edit(url):
+        calendar.save_batch('ou_admin',batch([change(conn,key,shipping_text='CONCURRENT CALENDAR',
+            images=[{'local_media_id':photo['local_media_id']}],shipped=False)]))
+        return payload
+    download.side_effect=simultaneous_edit
+    assert auto.process_one(key,source)['state']=='changed_during_check'
+    assert fields(data)[defaults.TEXT]=='CONCURRENT CALENDAR'
+    before=deepcopy(fields(data)[defaults.IMAGES]);drain(source)
+    download.side_effect=None
+    assert auto.process_one(key,source)['state']=='queued'
+    assert fields(data)[defaults.TEXT]=='CONCURRENT CALENDAR' and fields(data)[defaults.IMAGES]==before
+    assert download.call_count==1
