@@ -20,6 +20,7 @@ type PortalPage = "request" | "cultural" | "management" | "allocation" | "databa
 
 const managementPaths: Record<ManagementTab, string> = {
   shipping: "/management/shipping-template",
+  "order-packing": "/management/order-packing",
   restock: "/management/restock",
   category: "/management/categories",
   model: "/management/models",

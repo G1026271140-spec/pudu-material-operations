@@ -700,10 +700,11 @@ async def frontend_cache_policy(request, call_next):
         (path.startswith('/api/admin/database/') and request.method=='PATCH') or
         (path=='/api/admin/database/stock' and request.method=='POST') or
         (path=='/api/admin/category-images' and request.method=='POST'))
+    export_write=backend_runtime.database_reads() and path in {'/api/admin/order-packing/preview','/api/admin/order-packing/generate'} and request.method=='POST'
     business_write=backend_runtime.database_business_writes_enabled() and request.method=='POST' and (
         path in {'/api/validate','/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}
         or backend_runtime.database_workflow_writes_enabled())
-    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write and not business_write:
+    if backend_runtime.web_read_only() and request.method not in {'GET','HEAD','OPTIONS'} and not editor_write and not business_write and not export_write:
         return JSONResponse({'detail':'当前服务器处于浏览验证阶段，业务提交尚未开放。'},status_code=409,
             headers={'Cache-Control':'no-store'})
     response = await call_next(request)
@@ -952,6 +953,8 @@ def require_admin(request: Request) -> str:
 
 from request_web.database_api import register_database_api
 register_database_api(api, require_admin)
+from request_web.order_packing_api import register as register_order_packing_api
+register_order_packing_api(api, require_admin)
 from request_web.task_monitor_api import register as register_task_monitor_api
 register_task_monitor_api(api, require_admin)
 from request_web.pending_followup_api import register as register_pending_followup_api

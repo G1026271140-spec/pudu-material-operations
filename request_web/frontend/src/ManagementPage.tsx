@@ -1,4 +1,5 @@
 import ToastMessage from "./ToastMessage";
+import OrderPackingPage from "./OrderPackingPage";
 import { CategoryRows } from "./CategoryGroups";
 import RequiredMark from "./RequiredMark";
 import { useEffect, useMemo, useState } from "react";
@@ -15,7 +16,7 @@ import "./management.css";
 type Lang = "zh" | "en";
 type Operation = "create" | "edit" | "delete";
 type Kind = "model" | "language" | "region";
-export type ManagementTab = "shipping" | "restock" | "category" | Kind;
+export type ManagementTab = "shipping" | "restock" | "order-packing" | "category" | Kind;
 type Catalog = {
   generatedAt: string;
   categories: any[];
@@ -79,7 +80,7 @@ export default function ManagementPage({
       .catch((e) => setError(e.message));
   };
   useEffect(() => {
-    if (!catalog) load();
+    if (!catalog && tab !== "order-packing") load();
   }, [tab, catalog]);
   useEffect(() => setTab(initialTab), [initialTab]);
   function selectTab(next: ManagementTab) {
@@ -101,6 +102,7 @@ export default function ManagementPage({
     ["category", tr("品类管理", "Category Management")],
     ["restock", tr("采购补库", "Restock")],
     ["shipping", tr("发货模板", "Shipping Template")],
+    ["order-packing", tr("下单分装表生成", "Order and Packing Sheets")],
   ] as const;
   return (
     <main className="management-page">
@@ -108,7 +110,8 @@ export default function ManagementPage({
         <div className="management-toolbar"><nav className="management-tabs" aria-label={tr("物料管理功能", "Material management sections")}>{tabs.map(([key, label]) => <button key={key} className={(key === "category" ? inCategoryManagement : tab === key) ? "active" : ""} onClick={() => selectTab(key)}>{label}</button>)}</nav><button className="management-refresh" onClick={load}>{tr("刷新数据", "Refresh data")}</button></div>
         {inCategoryManagement && <nav className="category-subnav" aria-label={tr("品类管理子页面", "Category management pages")}>{categoryTabs.map(([key, label]) => <button key={key} className={tab === key ? "active" : ""} aria-current={tab === key ? "page" : undefined} onClick={() => selectTab(key)}>{label}</button>)}</nav>}
         {success && <ToastMessage className="success-banner">✓ {success}</ToastMessage>}
-        {!catalog && <div className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</div>}
+        {!catalog && tab !== "order-packing" && <div className="loading">{error || tr("正在读取管理数据缓存…", "Loading management cache…")}</div>}
+        {tab === "order-packing" && <OrderPackingPage lang={lang} />}
         {tab === "shipping" && catalog && <ShippingTemplatePage catalog={catalog} lang={lang} />}
         {tab === "restock" && catalog && <Restock catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
         {tab === "category" && catalog && <CategoryManager catalog={catalog} tr={tr} setBusy={setBusy} setError={setError} setSuccess={setSuccess} />}
