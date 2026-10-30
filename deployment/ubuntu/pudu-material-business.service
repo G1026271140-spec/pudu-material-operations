@@ -17,6 +17,8 @@ Environment=PUDU_PUBLIC_ORIGIN=https://materials.pudu.work
 Environment=PUDU_FEISHU_CARD_WORKER_LOG_DIR=/home/gaohongyuan1/pudu-materials-operation/shared/card-logs
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=TZ=Asia/Shanghai
+Environment=TMPDIR=/home/gaohongyuan1/pudu-materials-operation/shared/runtime-tmp
+ExecStartPre=/usr/bin/mkdir -p /home/gaohongyuan1/pudu-materials-operation/shared/runtime-tmp
 ExecStart=/home/gaohongyuan1/pudu-materials-operation/venv/bin/python -m material_store.jobs --lane all
 Restart=always
 RestartSec=5
