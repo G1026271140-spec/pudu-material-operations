@@ -277,7 +277,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
       return setError(
         lang === "zh" ? "请选择申请人。" : "Select an applicant.",
       );
-    if(!jacketAllowed&&lines.some(line=>restrictedProducts.includes(line.product)))return setError(lang==="zh"?"文化夹克仅限市场营销部或Dream组人员申领，请移除夹克或更换申请人。":"Jackets are limited to Marketing or Dream team applicants. Remove the jacket or change the applicant.");
+    if(!jacketAllowed&&lines.some(line=>restrictedProducts.includes(line.product)))return setError(lang==="zh"?"文化夹克仅限市场营销部、Dream组或品牌部人员申领，请移除夹克或更换申请人。":"Jackets are limited to Marketing, Dream team or Brand department applicants. Remove the jacket or change the applicant.");
     setBusy(true);
     setError("");
     try {

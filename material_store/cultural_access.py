@@ -1,7 +1,7 @@
 """Culture jacket eligibility is based on verified directory department IDs."""
 from .db import connection
 
-DEPARTMENTS=frozenset({'市场营销部','dream组'})
+DEPARTMENTS=frozenset({'市场营销部','dream组','品牌部'})
 PRODUCTS=frozenset({'文化夹克','休闲商务夹克-黑色（长袖）'})
 
 
@@ -35,4 +35,4 @@ def validate(payload,lines,*,conn=None,directory=None):
     requester=payload.get('requester_open_id')
     submitter=payload.get('submitter_open_id') or requester
     if not requester or requester not in allowed or submitter not in allowed:
-        raise ValueError('文化夹克仅限飞书通讯录部门为市场营销部或Dream组的人员申领。')
+        raise ValueError('文化夹克仅限飞书通讯录部门为市场营销部、Dream组或品牌部的人员申领。')
