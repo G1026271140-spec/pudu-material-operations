@@ -3710,7 +3710,7 @@ def find_feishu_material_by_id(record_id: str) -> dict | None:
 
 
 def find_feishu_material_record(product: str, model: str, language: str) -> dict | None:
-    key = (product, model or NO_MODEL_TEXT, language)
+    key = request_material_match_key(product, model, language)
     return feishu_inventory_index().get(key)
 
 
@@ -3775,11 +3775,13 @@ def feishu_inventory_index() -> dict[tuple[str, str, str], dict]:
     index: dict[tuple[str, str, str], dict] = {}
     for row in feishu_rows("物料主数据"):
         fields = feishu_fields(row)
-        key = (
+        key = request_material_match_key(
             feishu_text(fields, "物料品类"),
             feishu_text(fields, "产品型号") or NO_MODEL_TEXT,
             feishu_text(fields, "语种"),
         )
+        if key in index and feishu_record_id(index[key]) != feishu_record_id(row):
+            raise RuntimeError("存在重复物料规格，请先核对物料编码：" + " / ".join(key))
         index[key] = row
     return index
 
@@ -4162,7 +4164,7 @@ def apply_feishu_changes(changes: list[dict[str, object]]) -> list[list[object]]
         action = str(item["action"])
         quantity = int(item["quantity"])
         note = str(item["note"]).strip()
-        key = (product, model, language)
+        key = request_material_match_key(product, model, language)
         row = inventory_index.get(key)
         if row is None:
             raise RuntimeError(f"未找到物料组合: {product} / {model} / {language}")
@@ -4734,8 +4736,8 @@ def requester_has_enabled_role(requester_open_id: object, role_name: str) -> boo
         fields = feishu_fields(row)
         if not feishu_permission_enabled(fields):
             continue
-        if target in feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]):
-            return role_name in feishu_choice_values(fields, "角色")
+        if target in feishu_person_open_ids(fields, ["用户账号", "用户", "成员"]) and role_name in feishu_choice_values(fields, "角色"):
+            return True
     return False
 
 
@@ -7561,7 +7563,7 @@ def submit_feishu_material_request(
         material_rows,
         category_rows,
         include_all_for_admin=(
-            "管理员" in set(request_payload.get("accepted_roles") or [])
+            bool({"管理员", "区域市场经理"} & set(request_payload.get("accepted_roles") or []))
         ),
     )
     category_price_rmb = {
@@ -7591,6 +7593,9 @@ def submit_feishu_material_request(
             else material_index.get(key)
         )
         if material_row is None:
+            restricted = build_request_material_index(material_rows, category_rows, include_all_for_admin=True).get(key)
+            if restricted is not None:
+                raise RuntimeError(f"该物料规格仅对已启用的管理员或区域市场经理开放：{product} / {model} / {language}")
             raise RuntimeError(f"未找到物料组合：{product} / {model} / {language}")
         raw_material_by_id[feishu_record_id(material_row)] = material_row
         material_fields = feishu_fields(material_row)

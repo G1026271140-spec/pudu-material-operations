@@ -186,7 +186,7 @@ def build_catalog() -> dict[str, Any]:
     roles_by_user: dict[str, list[str]] = {}
     for row in page.get("tables", {}).get("用户权限表", []):
         fields = row.get("fields", {})
-        if str(fields.get("是否启用") or "").strip() != "是":
+        if not legacy.feishu_permission_enabled(fields):
             continue
         accounts = fields.get("用户账号") or []
         if isinstance(accounts, dict):
@@ -194,7 +194,7 @@ def build_catalog() -> dict[str, Any]:
         for account in accounts:
             open_id = str(account.get("id") or account.get("open_id") or "").strip() if isinstance(account, dict) else ""
             if open_id:
-                roles_by_user[open_id] = sorted({str(role) for role in fields.get("角色", []) if str(role).strip()})
+                roles_by_user[open_id] = sorted(set(roles_by_user.get(open_id, [])) | set(legacy.feishu_choice_values(fields, "角色")))
     combinations: dict[str, list[dict[str, Any]]] = {}
     for row in inventory_rows:
         product = str(row.get("product") or "").strip()

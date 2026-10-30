@@ -70,7 +70,7 @@ def _finish_apparel_rejection(conn, effect_id):
 def run_once(clients):
     token=uuid4()
     with connection() as conn,conn.transaction():
-        row=conn.execute("""SELECT id,source_key,method,args,kwargs,attempts,(first_attempt_at<now()-interval '50 minutes') FROM material_ops.effects e
+        row=conn.execute("""SELECT id,source_key,method,args,kwargs,attempts,(first_attempt_at<now()-interval '50 minutes'),remote_id FROM material_ops.effects e
           WHERE ((state IN ('pending','retry') AND available_at<=now()) OR (state='processing' AND lease_until<now()))
           AND (NOT (e.kwargs ? '_outbox_ids') OR
                (SELECT count(*) FROM material_ops.outbox o
@@ -108,21 +108,48 @@ def run_once(clients):
                 message='旧通知曾尝试发送且内容已变化，保留核对，不再重发旧内容' if row[5] else '当前申请尚不满足自动发货条件或内容已变化，未发送'
                 conn.execute("UPDATE material_ops.effects SET state=%s,completed_at=now(),last_error=%s WHERE id=%s",(state,message,row[0]))
                 return {'id':str(row[0]),'state':'skipped'}
-        if row[6] and row[2]!='update_interactive_message':
+        if row[6] and row[2]!='update_interactive_message' and not (row[2]=='send_interactive_message' and row[7]):
             conn.execute("UPDATE material_ops.effects SET state='failed',last_error='消息结果需要人工核对，防止超出去重窗口后重复发送',claim_token=NULL,lease_until=NULL WHERE id=%s",(row[0],))
             return {'id':str(row[0]),'state':'failed'}
         conn.execute("UPDATE material_ops.effects SET state='processing',claim_token=%s,lease_until=now()+interval '3 minutes',attempts=attempts+1,first_attempt_at=COALESCE(first_attempt_at,now()) WHERE id=%s",(token,row[0]))
     try:
-        with connection() as conn:
+        contact_card=None
+        with connection() as conn,conn.transaction():
             args=resolve(conn,row[3]);kwargs=resolve(conn,row[4])
+            if row[2] in {'send_interactive_message','update_interactive_message'} and len(args)>1 and isinstance(args[1],dict):
+                from .card_admin_contacts import refresh,enabled_admins
+                # Read current permissions only for cards containing our contact block.
+                _,has_contacts=refresh(args[1],[])
+                if has_contacts:
+                    contact_card,_=refresh(args[1],enabled_admins(conn))
+                    if not row[5] or row[2]=='update_interactive_message':
+                        args[1]=contact_card
+                        saved=conn.execute("UPDATE material_ops.effects SET args=%s WHERE id=%s AND claim_token=%s AND state='processing'",(Jsonb(args),row[0],token))
+                        if saved.rowcount!=1:raise RuntimeError('消息任务租约已改变。')
+                    # Retrying a possibly delivered send keeps its first UUID/body.
+                    # After obtaining the existing message ID, update that card only.
+        delivered_args=list(args)
         client=clients[row[1]]
         if row[2] in {'send_text_message','send_interactive_message'}:
             kind='text' if row[2]=='send_text_message' else 'interactive'
             content={'text':args[1]} if kind=='text' else args[1]
-            response=client._request('POST','/im/v1/messages',params={'receive_id_type':kwargs.get('receive_id_type','open_id')},
-                payload={'receive_id':args[0],'msg_type':kind,'content':json.dumps(content,ensure_ascii=False),'uuid':str(row[0])})
-            remote=str((response.get('data') or {}).get('message_id') or '')
-            if not remote:raise RuntimeError('飞书未返回消息 ID。')
+            if contact_card is not None and row[7]:
+                remote=row[7]
+                client.update_interactive_message(remote,contact_card)
+                delivered_args[1]=contact_card
+            else:
+                response=client._request('POST','/im/v1/messages',params={'receive_id_type':kwargs.get('receive_id_type','open_id')},
+                    payload={'receive_id':args[0],'msg_type':kind,'content':json.dumps(content,ensure_ascii=False),'uuid':str(row[0])})
+                remote=str((response.get('data') or {}).get('message_id') or '')
+                if not remote:raise RuntimeError('飞书未返回消息 ID。')
+                if contact_card is not None and contact_card!=args[1]:
+                    # Persist the confirmed ID before PATCH. If PATCH fails, retry
+                    # that original card without sending another message.
+                    with connection() as conn:
+                        saved=conn.execute("UPDATE material_ops.effects SET remote_id=%s WHERE id=%s AND claim_token=%s AND state='processing'",(remote,row[0],token))
+                        if saved.rowcount!=1:raise RuntimeError('消息任务租约已改变。')
+                    client.update_interactive_message(remote,contact_card)
+                    delivered_args[1]=contact_card
         else:
             external={key:value for key,value in kwargs.items() if not key.startswith('_')}
             try:
@@ -140,7 +167,7 @@ def run_once(clients):
             current=conn.execute('SELECT state,claim_token FROM material_ops.effects WHERE id=%s FOR UPDATE',(row[0],)).fetchone()
             if current!=('processing',token):raise RuntimeError('消息任务租约已改变。')
             _replace_alias(conn,PREFIX+row[0].hex,remote)
-            conn.execute("UPDATE material_ops.effects SET state='done',remote_id=%s,completed_at=now(),lease_until=NULL,claim_token=NULL,last_error=NULL WHERE id=%s",(remote,row[0]))
+            conn.execute("UPDATE material_ops.effects SET state='done',remote_id=%s,args=%s,completed_at=now(),lease_until=NULL,claim_token=NULL,last_error=NULL WHERE id=%s",(remote,Jsonb(delivered_args),row[0]))
             _finish_apparel_rejection(conn,row[0])
             if row[4].get('_automatic_shipping_signature'):
                 from .auto_shipping import mark_sent
