@@ -1,6 +1,6 @@
-> **当前生产：V4.2.2（2026-10-30）**，Ubuntu 虚拟机 + PostgreSQL + 飞书同步。
+> **当前生产：V4.2.3（2026-10-30）**，Ubuntu 虚拟机 + PostgreSQL + 飞书同步。
 > 本页位于默认分支 `master`。开发和部署使用 [`codex/postgres-core`](https://github.com/G1026271140-spec/pudu-material-operations/tree/codex/postgres-core)；默认分支其他文件保留历史版本。
-> 最新功能：下单分装表生成，支持批量选择申请单、额外物料及自定义物料，合并导出下单表和分装表。
+> 最新调整：下单分装日历区分有无印刷物料并默认隐藏无印刷申请；修复生产 Worker 的 Excel 临时目录。
 
 # PUDU Material Operations
 
@@ -114,3 +114,5 @@ cd /home/gaohongyuan1/pudu-materials-operation/source
 每次任务在 `docs/ops/changes` 保存需求、后续更正、决定、代码 / 字段变化、实际验证和遗留事项，新规则同步更新运维手册。受限的历史对话按轮次单独归档，不能把原始聊天、员工数据、密钥或生产备份提交到 GitLab / GitHub。
 
 新运维人员从 [接手与现状](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/01-%E6%8E%A5%E6%89%8B%E4%B8%8E%E7%8E%B0%E7%8A%B6.md) 开始，再读 [固定业务规则](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/02-%E5%9B%BA%E5%AE%9A%E4%B8%9A%E5%8A%A1%E8%A7%84%E5%88%99.md)、[开发与发布](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/03-%E5%BC%80%E5%8F%91%E4%B8%8E%E5%8F%91%E5%B8%83.md) 及 [备份恢复](https://github.com/G1026271140-spec/pudu-material-operations/blob/codex/postgres-core/docs/ops/05-%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D%E4%B8%8E%E5%9B%9E%E9%80%80.md)。
+
+下单分装表生成：默认隐藏无印刷物料的申请，可切换分类；日历以蓝色 / 灰色数量区分两类。业务 Worker 的 Excel 临时文件使用受限共享目录，保留生产只读保护。
