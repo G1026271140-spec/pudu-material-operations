@@ -124,11 +124,14 @@ def delete_conflicts(conn, info, row, remote, client):
     return conflicts
 
 
-def claim(lane, worker_id):
+def claim(lane, worker_id, *, reconciliation_guard=None):
     if lane not in LANES:
         raise ValueError('Unknown outbox lane')
     with connection() as conn, conn.transaction():
-        conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
+        # run_once already owns the session lock across HTTP. Re-acquiring it
+        # on another backend deadlocks behind a queued exclusive reconciliation.
+        if reconciliation_guard is None:
+            conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
         row = conn.execute("""SELECT id,table_id,record_key,local_version,patch,operation,attempts,job_id
             FROM material_ops.outbox o WHERE lane=%s
              AND ((state IN ('pending','retry') AND available_at<=now())
@@ -303,7 +306,7 @@ def run_once(lane, client, worker_id='outbox-worker'):
     # process crash. They also prevent reconciliation racing an active write.
     with psycopg.connect(os.environ['PUDU_DATABASE_DSN'],autocommit=True) as guard:
         guard.execute("SELECT pg_advisory_lock_shared(hashtextextended('pudu-reconciliation',0))")
-        task=claim(lane,worker_id)
+        task=claim(lane,worker_id,reconciliation_guard=guard)
         if task is None:return None
         resource='outbox-record:'+task['table_id']+':'+task['record_key']
         if not guard.execute('SELECT pg_try_advisory_lock(hashtextextended(%s,0))',(resource,)).fetchone()[0]:

@@ -12,10 +12,11 @@ LIMIT=50
 LOG=logging.getLogger(__name__)
 
 
-def claim_more(first,lane,identity,info,limit):
+def claim_more(first,lane,identity,info,limit,*,reconciliation_guard=None):
     if not 1<=limit<=LIMIT:raise ValueError('明细批量上限须为 1 至 50。')
     with connection() as conn,conn.transaction():
-        conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
+        if reconciliation_guard is None:
+            conn.execute("SELECT pg_advisory_xact_lock_shared(hashtextextended('pudu-reconciliation',0))")
         params=[lane,first['table_id'],first['operation'],first['id'],first['record_key'],first.get('job_id')]
         scope=sql.SQL('true')
         if first.get('job_id') is None:
@@ -66,7 +67,7 @@ def run_claimed(first,lane,clients,identity,guard,limit=LIMIT):
         number=next((f for f in info['fields'] if f['field_name']=='明细编号'),None)
         if not number or not first['patch'].get(number['field_id']):return None
         if not all(callable(getattr(client,n,None)) for n in ('list_records','batch_create_records')):return None
-    tasks=[first,*claim_more(first,lane,identity,info,limit)]
+    tasks=[first,*claim_more(first,lane,identity,info,limit,reconciliation_guard=guard)]
     batch_id=str(uuid4());started=time.monotonic();results={};operations=[];write_count=0
     def fail(task,exc):
         worker.fail(task,exc)
