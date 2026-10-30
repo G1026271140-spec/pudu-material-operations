@@ -31,6 +31,8 @@ type Catalog = {
   departments: Department[];
   maxCulturalShirtQuantity: number;
   maxJacketQuantity: number;
+  jacketEligibleRequesterIds?: string[];
+  restrictedCulturalProducts?: string[];
 };
 type Line = {
   product: string;
@@ -192,11 +194,14 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
         .slice(0, 80),
     [catalog, query, currentUser],
   );
+  const restrictedProducts=catalog?.restrictedCulturalProducts||["文化夹克","休闲商务夹克-黑色（长袖）"];
+  const jacketAllowed=catalog?.jacketEligibleRequesterIds?.includes(requesterId)===true;
+  const availableCombinations=(catalog?.combinations||[]).filter(item=>!restrictedProducts.includes(item.product)||jacketAllowed);
   const products = [
-    ...new Set(catalog?.combinations.map((x) => x.product) || []),
+    ...new Set(availableCombinations.map((x) => x.product)),
   ];
   const options =
-    catalog?.combinations.filter((x) => x.product === active) || [];
+    availableCombinations.filter((x) => x.product === active);
   const models = [...new Set(options.map((x) => x.model))];
   const regions = [
     ...new Set(
@@ -210,7 +215,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
   const culturalShirtTotal = total - jacketTotal;
   function open(product: string) {
     const scoped =
-      catalog?.combinations.filter((x) => x.product === product) || [];
+      availableCombinations.filter((x) => x.product === product);
     setActive(product);
     setModel(scoped[0]?.model || "");
     setRegion(scoped[0]?.region || "");
@@ -272,6 +277,7 @@ export default function CulturalPage({ lang, currentUser = null }: { lang: Lang;
       return setError(
         lang === "zh" ? "请选择申请人。" : "Select an applicant.",
       );
+    if(!jacketAllowed&&lines.some(line=>restrictedProducts.includes(line.product)))return setError(lang==="zh"?"文化夹克仅限市场营销部或Dream组人员申领，请移除夹克或更换申请人。":"Jackets are limited to Marketing or Dream team applicants. Remove the jacket or change the applicant.");
     setBusy(true);
     setError("");
     try {

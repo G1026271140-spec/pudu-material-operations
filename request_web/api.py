@@ -795,7 +795,7 @@ def request_catalog_revision(response: Response) -> dict[str, str]:
 
 
 @api.get("/api/cultural-catalog")
-def cultural_catalog() -> dict[str, Any]:
+def cultural_catalog(request: Request) -> dict[str, Any]:
     import app as legacy
 
     page = _json("page_data_cache.json")
@@ -807,6 +807,14 @@ def cultural_catalog() -> dict[str, Any]:
         list(tables.get(legacy.CATEGORY_TABLE_NAME, [])),
         list(tables.get(legacy.MODEL_TABLE_NAME, [])),
     )
+    from material_store.cultural_access import filter_catalog,eligible_people,restricted,PRODUCTS
+    viewer=''
+    if request.cookies.get('pudu_feishu'):
+        try:_,viewer=_authenticated_submitter(request)
+        except HTTPException:viewer=''
+    eligible=eligible_people(contacts)
+    filtered=filter_catalog(filtered,contacts,viewer)
+    if viewer not in eligible:images={name:values for name,values in images.items() if not restricted(name)}
     combinations = [
         {
             "product": row["product"],
@@ -826,6 +834,8 @@ def cultural_catalog() -> dict[str, Any]:
         "departments": contacts.get("departments", []),
         "maxCulturalShirtQuantity": legacy.CULTURAL_REQUEST_MAX_TOTAL_QUANTITY,
         "maxJacketQuantity": legacy.CULTURAL_JACKET_MAX_TOTAL_QUANTITY,
+        "jacketEligibleRequesterIds": sorted(eligible) if viewer in eligible else [],
+        "restrictedCulturalProducts": sorted(PRODUCTS),
     }
 
 
@@ -2045,6 +2055,11 @@ def submit(draft: RequestDraft, request: Request) -> dict[str, Any]:
 
 @api.post("/api/cultural-submit")
 def cultural_submit(draft: CulturalDraft, request: Request) -> dict[str, Any]:
+    from material_store.cultural_access import restricted,validate
+    if any(restricted(line.product) and line.quantity>0 for line in draft.lines):
+        _,actor=_authenticated_submitter(request)
+        try:validate({**draft.model_dump(),"submitter_open_id":actor},[line.model_dump() for line in draft.lines],directory=_json("contact_departments_cache.json"))
+        except ValueError as exc:raise HTTPException(403,str(exc)) from exc
     if not draft.requester_open_id or not draft.requester:
         raise HTTPException(status_code=422, detail="请选择申请人。")
     if not draft.material_usage.strip():

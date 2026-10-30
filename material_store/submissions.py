@@ -56,6 +56,8 @@ def submit_groups(standard=None,cultural=None):
                 results.append({'request_no':number,'line_count':count,'created':created,'lane':'ordinary'})
             if cultural:
                 payload,lines=cultural
+                from .cultural_access import validate
+                validate(payload,lines,conn=conn)
                 runtime.request_state['_write_lane']='cultural'
                 runtime.request_state['_write_actor']=payload.get('submitter_open_id') or payload.get('requester_open_id')
                 requester=payload.get('requester_open_id') or ''
