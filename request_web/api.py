@@ -698,6 +698,7 @@ async def frontend_cache_policy(request, call_next):
     path = request.url.path
     editor_write=backend_runtime.database_editor_enabled() and (
         (path.startswith('/api/admin/database/') and request.method=='PATCH') or
+        (path=='/api/admin/database/stock' and request.method=='POST') or
         (path=='/api/admin/category-images' and request.method=='POST'))
     business_write=backend_runtime.database_business_writes_enabled() and request.method=='POST' and (
         path in {'/api/validate','/api/submit','/api/cultural-submit','/api/admin/shipping/invoice-preview','/api/admin/shipping/generate'}

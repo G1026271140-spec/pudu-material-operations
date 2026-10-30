@@ -106,6 +106,33 @@ def test_disabled_or_foreign_admin_and_future_versions_refused(inventory):
     assert stock.save(actor,{**body,'quantity':80})['changed'] is False
 
 
+def test_nonpositive_cultural_stock_updates_claimability_without_notification(inventory):
+    conn,actor=inventory;info,key=seed(conn,'cultural',是否可以申领='是')
+    result=stock.save(actor,draft(conn,'cultural',key,quantity=-2))
+    assert result['after']==-2
+    fields=repo.feishu_record(info,repo.raw_record(conn,info,key))['fields']
+    assert fields['是否可以申领']==app.cultural_stock_fields(-2)['是否可以申领']
+    permission=repo.named_table(conn,app.USER_PERMISSION_TABLE_NAME);other='ou_disabled_'+uuid4().hex
+    repo.insert_source_records(conn,permission,[{'record_id':'rec_'+uuid4().hex,'fields':{'用户账号':[{'id':other}],'角色':['管理员'],'是否启用':'否'}}])
+    with pytest.raises(PermissionError):stock.save(other,draft(conn,'cultural',key))
+
+
+def test_read_only_web_middleware_allows_authorized_stock_editor_route(monkeypatch):
+    import asyncio,importlib
+    import backend_runtime as runtime
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse
+    web=importlib.import_module('request_web.api')
+    monkeypatch.setattr(runtime,'web_read_only',lambda:True)
+    monkeypatch.setattr(runtime,'database_editor_enabled',lambda:True)
+    monkeypatch.setattr(runtime,'database_business_writes_enabled',lambda:True)
+    monkeypatch.setattr(runtime,'database_workflow_writes_enabled',lambda:False)
+    async def next_handler(request):return JSONResponse({'reached_authorization':True})
+    request=Request({'type':'http','method':'POST','path':'/api/admin/database/stock','headers':[]})
+    response=asyncio.run(web.frontend_cache_policy(request,next_handler))
+    assert response.status_code==200
+
+
 def test_filters_all_four_dimensions_and_apparel_header_exclusion(inventory):
     conn,_=inventory
     region=repo.named_table(conn,app.REGION_TABLE_NAME);rid='rec_zone_'+uuid4().hex

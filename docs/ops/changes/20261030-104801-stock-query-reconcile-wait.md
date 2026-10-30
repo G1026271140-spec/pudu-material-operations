@@ -26,7 +26,7 @@
 
 - 实际 timer / journal 确认 2026-10-30 03:00 历史运行被旧 Worker 跨连接锁互等阻塞，03:15 超时；V4.1.7 已修 guard/claim 重复锁。09:41:04–09:42:08 补跑 23 表成功，更新 644、新增 13、冲突 0。未重复运行审批、扣库或通知。
 - material_store/reconcile.py：等待锁前登记运行，120 秒等待超时记录原因、阶段、耗时；恢复原锁超时设置；显示逐表读取进度。取完全部来源后才原子应用的规则保留。
-- material_store/stock_workbench.py、request_web/database_api.py：三来源库存投影、四维筛选、编码搜索、分页与专用保存接口。文化衫按最新值计算纠正差额，保留兑换；关联流水不伪造跨 Base 链接。
+- material_store/stock_workbench.py、request_web/database_api.py、request_web/api.py：三来源库存投影、四维筛选、编码搜索、分页与专用保存接口。文化衫按最新值计算纠正差额，保留兑换；关联流水不伪造跨 Base 链接。
 - StockWorkbench.tsx、stock-workbench.css、DatabaseWorkbench.tsx：在虚拟数据库内增加库存查询页签，5 秒自动刷新，编辑期间保留草稿，保存失败保留内容；DatabaseReconcile.tsx 显示每日运行阶段和等待失败原因。
 - tests/test_stock_workbench.py、test_reconcile_wait_record.py：隔离 PG、禁止飞书 HTTP；三类型保存、流水审计、outbox、幂等、旧版本并发更新、失败回滚、过滤、权限及真实锁等待超时。
 
@@ -34,7 +34,7 @@
 
 | 验证对象 | 环境 / 命令 | 实际结果 / 证据位置 |
 |---|---|---|
-| 受影响功能 | 隔离 pudu_materials_test；stock_workbench、reconcile_wait_record、manual_reconcile、reconcile_preflight、reconcile_outbox_locking | 25 passed；shared/stock-workbench-tests.log |
+| 受影响功能 | 隔离 pudu_materials_test；stock_workbench、reconcile_wait_record、manual_reconcile、reconcile_preflight、reconcile_outbox_locking | 27 passed；shared/stock-workbench-tests.log |
 | 前端 | VM npm run build | TypeScript / Vite build 成功；shared/stock-workbench-build.log |
 | 统一发布 | sudo pudu-release | 发布命令执行完整后端 / 前端测试和构建；真实终态见 shared/release-audit.jsonl |
 | 线上只读回读 | 三类库存列表 / 过滤 / 对话框取消 / 定时器与服务 / 公网版本 | 发布后写入 shared/audits/stock-workbench-live-20261030.json 及受限截图；不写生产库存，不发送测试通知 |
