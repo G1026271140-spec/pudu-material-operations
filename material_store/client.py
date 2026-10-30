@@ -156,7 +156,9 @@ class DatabaseWriteClient(DatabaseReadClient):
         if info['source']!=self.source:raise ValueError('来源不匹配。')
         prior=repo.raw_record(self.conn,info,record_id)
         key=prior['record_id']
-        self.conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))',('outbox-record:'+table_id+':'+key,))
+        if not self.conn.execute('SELECT pg_try_advisory_xact_lock(hashtextextended(%s,0))',('outbox-record:'+table_id+':'+key,)).fetchone()[0]:
+            from .outbox_worker import DependencyPending
+            raise DependencyPending('此记录正在同步，删除业务稍后重试，尚未提交本次修改。')
         old=repo.raw_record(self.conn,info,key,lock=True)
         version=old['version']+1
         # Cancel unpublished writes before deletion; publishers hold the same

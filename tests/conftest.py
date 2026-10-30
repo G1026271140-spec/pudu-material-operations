@@ -3,6 +3,20 @@ import socket
 
 
 @pytest.fixture(autouse=True)
+def close_database_pool_when_clearing_test_cache(monkeypatch):
+    """cache_clear alone leaves psycopg pool threads and sockets alive."""
+    from material_store.db import pool
+    clear=pool.cache_clear
+    def close_and_clear():
+        if pool.cache_info().currsize:pool().close()
+        clear()
+    close_and_clear()
+    monkeypatch.setattr(pool,'cache_clear',close_and_clear)
+    yield
+    close_and_clear()
+
+
+@pytest.fixture(autouse=True)
 def unit_tests_never_contact_external_services(monkeypatch):
     """Unmocked I/O fails immediately, not against a real company API."""
     original = socket.socket.connect

@@ -52,3 +52,16 @@ def test_standalone_claim_still_obeys_reconciliation_lock(batched):
             with conn.transaction():
                 conn.execute("SET LOCAL statement_timeout='150ms'")
                 worker.claim('ordinary','standalone')
+
+
+def test_delete_never_waits_while_an_outbox_publisher_holds_record_lock(batched):
+    from material_store.client import DatabaseWriteClient
+    from material_store import repository as repo
+    conn,info,lines,key,number,source=batched
+    rid=next(iter(source.rows[lines['table_id']]))
+    with psycopg.connect(os.environ['PUDU_DATABASE_DSN'],autocommit=True) as guard:
+        resource='outbox-record:'+lines['table_id']+':'+rid
+        guard.execute('SELECT pg_advisory_lock(hashtextextended(%s,0))',(resource,))
+        with pytest.raises(worker.DependencyPending,match='正在同步'):
+            with conn.transaction():DatabaseWriteClient(conn).delete_record(lines['table_id'],rid)
+        assert repo.raw_record(conn,lines,rid)['deleted'] is False

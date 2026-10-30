@@ -20,3 +20,9 @@ outbox_worker.claim 及 line_outbox_batch.claim_more 接受既有 reconciliation
 ## 运维
 
 保持每日北京时间 03:00。不可通过禁用校验、绕过锁或重放原申请规避问题；回退仍遵守正式流程并保留 outbox / effects。
+
+## 全量验收补充
+
+生产队列恢复时，删除操作遇到正在发布的记录改为 try-lock + DependencyPending，让完整业务事务回滚后重试，避免在持有其他行锁时等待外部发布完成。新增隔离校验确认记录未删除、任务可重试。
+
+全量首次运行暴露测试 fixtures 对 pool.cache_clear 只清引用而未关闭旧 psycopg 连接池，累积连接使五并发检查收到连接槽不足的 503；没有忽略该检查。tests/conftest.py 在清测试池缓存及每个用例结束时关闭池，避免遗留后台池线程和连接。更新后全量实际 1142 passed、4 skipped、22 subtests passed（reconcile-lock-all-tests.log），包含保留的五并发读写检查。此回收只在测试环境中运行，不调整生产 PostgreSQL 连接上限。
