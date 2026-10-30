@@ -1,47 +1,66 @@
-"""Two printable supplier sheets using the approved existing five-column format."""
+"""Order/packing exports styled from the user's approved workbook, without source data."""
+from copy import copy
+from functools import lru_cache
 from io import BytesIO
+from pathlib import Path
+from xml.etree.ElementTree import fromstring
+import json
 from openpyxl import Workbook
-from openpyxl.styles import Alignment,Border,Font,PatternFill,Side
-from openpyxl.utils import get_column_letter
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
-import math,unicodedata
+from openpyxl.styles import Font,PatternFill,Border,Alignment,Protection
+from openpyxl.worksheet.dimensions import SheetFormatProperties
+from openpyxl.worksheet.properties import WorksheetProperties
+from openpyxl.worksheet.page import PrintPageSetup,PageMargins
+from openpyxl.worksheet.header_footer import HeaderFooter
 
 HEADERS=('类型','物料名称','语种','数量','用途')
+TEMPLATE=Path(__file__).resolve().parents[1]/'assets/order_packing/template-style.json'
+
+
+@lru_cache(maxsize=1)
+def template():
+    return json.loads(TEMPLATE.read_text(encoding='utf-8'))
+
+
+def template_sha256():
+    return template()['source_sha256']
 
 
 def workbook(view):
-    wb=Workbook();wb.remove(wb.active)
-    edge=Side(style='thin',color='B8CDD6')
-    def sheet(name,widths):
-        ws=wb.create_sheet(name);ws.append(HEADERS);ws.freeze_panes='A2';ws.sheet_view.showGridLines=False
-        for i,width in enumerate(widths,1):ws.column_dimensions[get_column_letter(i)].width=width
-        for cell in ws[1]:cell.font=Font(name='微软雅黑',size=11,bold=True,color='FFFFFF');cell.fill=PatternFill('solid',fgColor='17647A');cell.alignment=Alignment(vertical='center')
-        ws.row_dimensions[1].height=28;ws.print_title_rows='1:1';ws.sheet_properties.pageSetUpPr.fitToPage=True
-        ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=0
-        ws.oddFooter.center.text='第 &P 页 / 共 &N 页';return ws
-    def row(ws,data,fill=False):
-        for value in data:
+    profile=template();wb=Workbook();wb.remove(wb.active);wb.loaded_theme=profile['theme'].encode()
+    classes={'font':Font,'fill':PatternFill,'border':Border,'alignment':Alignment,'protection':Protection}
+    styles={key:{**{kind:cls.from_tree(fromstring(item[kind])) for kind,cls in classes.items()},'number_format':item['number_format']} for key,item in profile['styles'].items()}
+    def apply(cell,key):
+        for kind,value in styles[key].items():setattr(cell,kind,copy(value))
+    def row(ws,values,keys):
+        for value in values:
             if isinstance(value,str) and (len(value)>32767 or ILLEGAL_CHARACTERS_RE.search(value)):raise ValueError('导出文字过长或含无效字符，请核对用途和备注。')
-        ws.append(data);number=ws.max_row
-        for cell in ws[number]:
-            if isinstance(cell.value,str):
-                if len(cell.value)>32767 or ILLEGAL_CHARACTERS_RE.search(cell.value):raise ValueError('导出文字过长或含无效字符，请核对用途和备注。')
-                cell.data_type='s'
-            cell.font=Font(name='微软雅黑',size=10);cell.border=Border(left=edge,right=edge,top=edge,bottom=edge)
-            cell.alignment=Alignment(vertical='center',wrap_text=True,horizontal='right' if cell.column==4 else 'left')
-            if fill:cell.fill=PatternFill('solid',fgColor='EFF6F8')
-        lines=max((sum(max(1,math.ceil(sum(2 if unicodedata.east_asian_width(c) in 'WF' else 1 for c in segment)/(ws.column_dimensions[get_column_letter(i)].width-2))) for segment in str(v).split('\n')) for i,v in enumerate(data,1) if v is not None),default=1)
-        ws.row_dimensions[number].height=min(409,max(25,13*(lines+1)));ws.cell(number,4).number_format='#,##0'
-    orders=sheet('下单表',[22,22,25,12,78])
-    for i,item in enumerate(view['orders']):row(orders,[item[k] for k in ['category','model','language','quantity','usage']],i%2==1)
-    packing=sheet('分装表',[22,22,25,12,65])
+        ws.append(values);number=ws.max_row
+        for cell,key in zip(ws[number],keys):
+            apply(cell,key)
+            if isinstance(cell.value,str):cell.data_type='s'
+        return number
+    def sheet(name):
+        settings=profile['sheets'][name];ws=wb.create_sheet(name)
+        for col,width in settings['column_widths'].items():ws.column_dimensions[col].width=width
+        for key,cls in [('sheet_format',SheetFormatProperties),('sheet_properties',WorksheetProperties),('page_setup',PrintPageSetup),('page_margins',PageMargins),('header_footer',HeaderFooter)]:
+            setattr(ws,'HeaderFooter' if key=='header_footer' else key,cls.from_tree(fromstring(settings[key])))
+        ws.freeze_panes=settings['freeze_panes'];ws.sheet_view.showGridLines=settings['gridlines'];ws.sheet_view.zoomScale=settings['zoom_scale']
+        row(ws,HEADERS,settings['header_styles'])
+        if settings['header_height'] is not None:ws.row_dimensions[1].height=settings['header_height']
+        return ws,settings
+    orders,settings=sheet('下单表')
+    for item in view['orders']:
+        # The reference uses single-line purpose summaries, separated with +.
+        row(orders,[item[k].replace('\n',' + ') if isinstance(item[k],str) else item[k] for k in ['category','model','language','quantity','usage']],settings['body_styles'])
+    packing,settings=sheet('分装表')
     for index,group in enumerate(view['packing']):
-        if index:packing.append([])
-        start=None
+        if index:
+            for _ in range(2 if index==1 else 1):row(packing,[None]*5,settings['separator_styles'])
+        start=None;keys=settings['group_styles'][index%len(settings['group_styles'])]
         for i,item in enumerate(group['rows']):
-            label=group['label']
-            model=item['model']+('\n制作备注：'+item['remark'] if item.get('remark') else '')
-            row(packing,[item['category'],model,item['language'],item['quantity'],label if i==0 else ''],index%2==1)
-            if start is None:start=packing.max_row
+            model=item['model']+('（制作备注：'+item['remark']+'）' if item.get('remark') else '')
+            number=row(packing,[item['category'],model,item['language'],item['quantity'],group['label'] if i==0 else None],keys)
+            if start is None:start=number
         if start is not None and packing.max_row>start:packing.merge_cells(start_row=start,end_row=packing.max_row,start_column=5,end_column=5)
     output=BytesIO();wb.save(output);return output.getvalue()

@@ -112,3 +112,5 @@ cd /home/gaohongyuan1/pudu-materials-operation/source
 新运维人员从 [接手与现状](docs/ops/01-接手与现状.md) 开始，再读 [固定业务规则](docs/ops/02-固定业务规则.md)、[开发与发布](docs/ops/03-开发与发布.md) 及 [备份恢复](docs/ops/05-备份恢复与回退.md)。
 
 下单分装表生成：默认隐藏无印刷物料的申请，可切换分类；日历以蓝色 / 灰色数量区分两类。业务 Worker 的 Excel 临时文件使用受限共享目录，保留生产只读保护。
+
+下单分装 Excel 已套用用户原始模板样式；模板去数据样式定义保存在 assets/order_packing/template-style.json，后续生成统一使用，不把模板内业务明细放入源码。

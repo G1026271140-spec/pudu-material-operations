@@ -78,7 +78,7 @@ def test_multiple_requests_catalog_and_custom_extras_merge_and_reconcile(export_
     for ws in wb:
         assert tuple(c.value for c in ws[1])==xlsx.HEADERS
         assert sum(c.value for row in ws.iter_rows(min_row=2) for c in row if c.column==4 and isinstance(c.value,int))==39
-        assert ws.freeze_panes=='A2' and ws.print_title_rows=='$1:$1'
+        assert ws.freeze_panes==('A2' if ws.title=='分装表' else None) and ws.print_title_rows is None
     assert {row[4].value for row in list(wb['分装表'].rows)[1:] if row[4].value}=={g['label'] for g in view['packing']}
     assert all('999' not in r['usage'] for r in view['orders'])
 

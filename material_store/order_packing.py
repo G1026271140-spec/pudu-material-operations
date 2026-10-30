@@ -217,7 +217,7 @@ def root():
 
 
 def execute(conn,task_id,payload):
-    from .order_packing_xlsx import workbook
+    from .order_packing_xlsx import workbook,template_sha256
     row=conn.execute('SELECT payload FROM material_ops.documents WHERE name=%s',(PREFIX+str(task_id),)).fetchone()
     if not row:raise ValueError('导出快照不存在。')
     snapshot=row[0];summary=views(snapshot)
@@ -230,7 +230,7 @@ def execute(conn,task_id,payload):
     day=date.fromisoformat(snapshot['generation_date'])
     return {'filename':f'{day.month}月{day.day}日营销物料下单与分装.xlsx','generation_date':snapshot['generation_date'],
             'quantity':summary['quantity'],'specifications':summary['specifications'],'request_count':snapshot['request_count'],
-            'extra_count':snapshot['extra_count'],'size':len(data),'sha256':sha256(data).hexdigest()}
+            'extra_count':snapshot['extra_count'],'size':len(data),'sha256':sha256(data).hexdigest(),'template_sha256':template_sha256()}
 
 
 def download(conn,task_id):
