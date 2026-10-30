@@ -92,18 +92,29 @@ def reconcile_snapshot(conn,info,records,run_id):
     return {'changed':changed,'created':created,'deleted':deleted,'conflicts':conflicts}
 
 
-def run(clients, *, progress=None, trigger="daily", actor="system:daily-reconcile", db_connection=None):
+def run(clients, *, progress=None, trigger="daily", actor="system:daily-reconcile", db_connection=None, lock_timeout_ms=120000):
     """Hold a session lock while fetching; no SQL transaction spans HTTP calls."""
     report = progress or (lambda value: None)
-    report({'stage':'waiting_lock','fetched':0,'total':0,'trigger':trigger})
+    started=datetime.now().astimezone();clock=time.monotonic()
     with (nullcontext(db_connection) if db_connection is not None else connection()) as guard:
-        guard.execute("SELECT pg_advisory_lock(hashtextextended('pudu-reconciliation',0))")
-        run_id=None;stage='starting'
+        run_id=None;stage='waiting_lock';locked=False;previous_timeout=None;metadata=[];fetched=[]
+        def emit(value):
+            payload={'trigger':trigger,'actor':actor,'started_local':started.isoformat(timespec='seconds'),**value}
+            if run_id:guard.execute("UPDATE material_ops.reconcile_runs SET summary=%s WHERE id=%s AND state='running'",(Jsonb(payload),run_id))
+            try:report(payload)
+            except Exception as exc:LOGGER.warning('Reconciliation progress callback failed: %s',type(exc).__name__)
         try:
-            # Register before preflight/fetch so schema or network failures are
-            # visible to the database workbench, not only the system journal.
-            run_id=guard.execute("INSERT INTO material_ops.reconcile_runs(state,summary) VALUES ('running',%s) RETURNING id",(Jsonb({'trigger':trigger,'actor':actor}),)).fetchone()[0]
-            report({'stage':'metadata','run_id':str(run_id),'fetched':0,'total':0,'trigger':trigger})
+            # Register BEFORE waiting, so lock failures are durable and visible.
+            run_id=guard.execute("INSERT INTO material_ops.reconcile_runs(state,summary) VALUES ('running',%s) RETURNING id",(Jsonb({'trigger':trigger,'actor':actor,'stage':stage}),)).fetchone()[0]
+            emit({'stage':stage,'run_id':str(run_id),'fetched':0,'total':0})
+            if type(lock_timeout_ms) is not int or not 1<=lock_timeout_ms<=600000:raise ValueError('校验锁等待时间无效。')
+            previous_timeout=guard.execute('SHOW lock_timeout').fetchone()[0]
+            guard.execute("SELECT set_config('lock_timeout',%s,false)",(str(lock_timeout_ms)+'ms',))
+            guard.execute("SELECT pg_advisory_lock(hashtextextended('pudu-reconciliation',0))")
+            locked=True
+            guard.execute("SELECT set_config('lock_timeout',%s,false)",(previous_timeout,))
+            stage='metadata'
+            emit({'stage':stage,'run_id':str(run_id),'fetched':0,'total':0})
             guard.execute("UPDATE material_ops.outbox SET state='retry',claim_token=NULL,lease_until=NULL,available_at=now() WHERE state='processing'")
             stage='metadata'
             metadata=[repo.table(guard,r[0]) for r in guard.execute('SELECT table_id FROM material_meta.tables ORDER BY source_key,table_id')]
@@ -118,36 +129,43 @@ def run(clients, *, progress=None, trigger="daily", actor="system:daily-reconcil
                 return info,records
             stage='source_fetch'
             fetched=[]
-            report({'stage':stage,'run_id':str(run_id),'fetched':0,'total':len(metadata),'trigger':trigger})
+            emit({'stage':stage,'run_id':str(run_id),'fetched':0,'total':len(metadata)})
             with ThreadPoolExecutor(max_workers=3) as pool:
                 futures=[pool.submit(fetch,info) for info in metadata]
                 for future in as_completed(futures):
                     fetched.append(future.result())
-                    report({'stage':stage,'run_id':str(run_id),'fetched':len(fetched),'total':len(metadata),'trigger':trigger})
+                    emit({'stage':stage,'run_id':str(run_id),'fetched':len(fetched),'total':len(metadata)})
             order={info['table_id']:index for index,info in enumerate(metadata)}
             fetched.sort(key=lambda item:order[item[0]['table_id']])
             stage='apply'
-            report({'stage':stage,'run_id':str(run_id),'fetched':len(fetched),'total':len(metadata),'trigger':trigger})
+            emit({'stage':stage,'run_id':str(run_id),'fetched':len(fetched),'total':len(metadata)})
             with guard.transaction():
-                summary={'tables':len(fetched),'run_id':str(run_id),'trigger':trigger,'actor':actor,'source':'feishu','started_local':datetime.now().isoformat(timespec='seconds'),
+                summary={'tables':len(fetched),'run_id':str(run_id),'trigger':trigger,'actor':actor,'source':'feishu','started_local':started.isoformat(timespec='seconds'),
+                         'duration_ms':round((time.monotonic()-clock)*1000),
                          'changed':0,'created':0,'deleted':0,'conflicts':0}
                 for info,records in fetched:
                     stats=reconcile_snapshot(guard,info,records,run_id)
                     for name,value in stats.items():summary[name]+=value
+                summary['duration_ms']=round((time.monotonic()-clock)*1000)
                 guard.execute("UPDATE material_ops.reconcile_runs SET state='done',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
-            report({'stage':'done',**summary})
+            emit({'stage':'done',**summary})
             return summary
         except Exception as exc:
             if run_id:
-                summary={'error_type':type(exc).__name__,'stage':stage,'trigger':trigger,'actor':actor}
+                summary={'error_type':type(exc).__name__,'stage':stage,'trigger':trigger,'actor':actor,
+                         'fetched':len(fetched),'total':len(metadata),'started_local':started.isoformat(timespec='seconds'),
+                         'duration_ms':round((time.monotonic()-clock)*1000)}
                 message=str(exc)
                 if message.startswith('飞书字段定义与数据库注册不一致：'):
                     summary.update(reason='schema_mismatch',table=message.split('：',1)[1])
+                if getattr(exc,'sqlstate',None)=='55P03' and stage=='waiting_lock':
+                    summary.update(reason='lock_timeout',message='等待同步任务释放校验锁超时，本次尚未应用飞书数据。')
                 guard.execute("UPDATE material_ops.reconcile_runs SET state='failed',completed_at=now(),summary=%s WHERE id=%s",(Jsonb(summary),run_id))
-                report({**summary,'stage':'failed','failed_stage':stage,'run_id':str(run_id)})
+                emit({**summary,'stage':'failed','failed_stage':stage,'run_id':str(run_id)})
             raise
         finally:
-            guard.execute("SELECT pg_advisory_unlock(hashtextextended('pudu-reconciliation',0))")
+            if previous_timeout is not None:guard.execute("SELECT set_config('lock_timeout',%s,false)",(previous_timeout,))
+            if locked:guard.execute("SELECT pg_advisory_unlock(hashtextextended('pudu-reconciliation',0))")
 
 
 def clients():

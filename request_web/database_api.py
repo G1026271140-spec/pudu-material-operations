@@ -24,6 +24,29 @@ def register_database_api(api, require_admin):
     def enabled():
         if not backend_runtime.database_reads():raise HTTPException(404,"数据库工作台尚未启用。")
 
+    @api.get('/api/admin/database/stock')
+    def stock_records(kind:str='all',category:str=Query('',max_length=200),model:str=Query('',max_length=200),
+                      language:str=Query('',max_length=200),region:str=Query('',max_length=200),q:str=Query('',max_length=300),
+                      page:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=100),_:str=Depends(require_admin)):
+        enabled()
+        from material_store import stock_workbench
+        try:
+            with database_connection() as conn:
+                result=stock_workbench.catalog(conn,kind=kind,category=category,model=model,language=language,region=region,q=q,page=page,limit=limit)
+            result['editor_enabled']=backend_runtime.database_editor_enabled() and backend_runtime.database_business_writes_enabled()
+            return result
+        except (ValueError,TypeError) as exc:raise HTTPException(422,str(exc)) from exc
+
+    @api.post('/api/admin/database/stock')
+    def stock_save(body:dict,actor:str=Depends(require_admin)):
+        enabled()
+        if not backend_runtime.database_editor_enabled() or not backend_runtime.database_business_writes_enabled():raise HTTPException(403,'库存编辑尚未启用。')
+        from material_store import stock_workbench
+        try:return stock_workbench.save(actor,body)
+        except PermissionError as exc:raise HTTPException(403,str(exc)) from exc
+        except store().VersionConflict as exc:raise HTTPException(409,str(exc)) from exc
+        except (ValueError,TypeError,ArithmeticError) as exc:raise HTTPException(422,str(exc)) from exc
+
     @api.get('/api/database-image/{media_id}')
     def category_image(media_id:str):
         # The enterprise middleware authenticates this request. Only images

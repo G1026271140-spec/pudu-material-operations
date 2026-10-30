@@ -29,8 +29,10 @@ export default function DatabaseReconcile({lang,blocked,onCompleted}:{lang:'zh'|
   },[]);
   useEffect(()=>{if(confirm)dialog.current?.showModal();else dialog.current?.close();},[confirm]);
   const task=data?.manual,active=task&&['pending','retry','processing'].includes(task.state);
-  const last=data?.last_run,progress=task?.progress;
-  const stages:Record<string,string>={waiting_lock:tr('等待当前校验结束','Waiting for current run'),metadata:tr('正在核对字段定义','Checking field definitions'),source_fetch:tr('正在读取飞书数据','Reading Feishu data'),apply:tr('正在更新本地数据库','Updating local database')};
+  const last=data?.last_run,progress=active?task?.progress:last?.state==='running'?last?.summary:null;
+  const running=active||last?.state==='running';
+  const manualFailed=task?.state==='failed'&&(!last?.completed_at||new Date(task.created_at).valueOf()>=new Date(last.completed_at).valueOf());
+  const stages:Record<string,string>={waiting_lock:tr('等待同步任务释放校验锁','Waiting for synchronization lock'),metadata:tr('正在核对字段定义','Checking field definitions'),source_fetch:tr('正在读取飞书数据','Reading Feishu data'),apply:tr('正在更新本地数据库','Updating local database')};
   async function submit(){
     if(sending)return;setSending(true);setError('');
     if(!token.current)token.current=crypto.randomUUID();
@@ -42,10 +44,11 @@ export default function DatabaseReconcile({lang,blocked,onCompleted}:{lang:'zh'|
   return <>
     <div className="database-reconcile" aria-label={tr('飞书数据校验同步','Feishu reconciliation')}>
       <div><strong>{tr('飞书 → 本地数据库','Feishu → local database')}</strong>
-        <span role="status">{active?(stages[progress?.stage]||tr('已提交，等待后台执行','Queued for background execution'))+(progress?.total?` · ${progress.fetched}/${progress.total} ${tr('张表','tables')}`:''):task?.state==='failed'?tr('上次手动校验失败，请查看后台任务','Last manual run failed; check background tasks'):last?`${last.state==='done'?tr('最近校验完成','Last reconciliation completed'):last.state==='failed'?tr('最近校验失败','Last reconciliation failed'):last.state==='interrupted'?tr('上次校验中断，可重新执行','Previous run interrupted; retry available'):tr('全量校验进行中','Full reconciliation running')} · ${new Date(last.completed_at||last.started_at).toLocaleString(lang==='zh'?'zh-CN':'en-GB')}`:tr('可手动核对全部来源表，日常 03:00 校验照常执行','Reconcile all source tables; the daily 03:00 run remains scheduled')}</span>
-        {!active&&last?.state==='done'&&<small>{last.summary?.tables} {tr('张表','tables')} · {tr('更新','Updated')} {last.summary?.changed||0} · {tr('新增','Created')} {last.summary?.created||0} · {tr('源表已删除','Source deleted')} {last.summary?.deleted||0} · {tr('冲突留档','Conflicts recorded')} {last.summary?.conflicts||0}</small>}
+        <span role="status">{running?(stages[progress?.stage]||tr('已提交，等待后台执行','Queued for background execution'))+(progress?.total?` · ${progress.fetched}/${progress.total} ${tr('张表','tables')}`:''):manualFailed?tr('上次手动校验失败，请查看后台任务','Last manual run failed; check background tasks'):last?`${last.state==='done'?tr('最近校验完成','Last reconciliation completed'):last.state==='failed'?tr('最近校验失败','Last reconciliation failed'):last.state==='interrupted'?tr('上次校验中断，可重新执行','Previous run interrupted; retry available'):tr('全量校验进行中','Full reconciliation running')} · ${new Date(last.completed_at||last.started_at).toLocaleString(lang==='zh'?'zh-CN':'en-GB')}`:tr('可手动核对全部来源表，日常 03:00 校验照常执行','Reconcile all source tables; the daily 03:00 run remains scheduled')}</span>
+        {last?.state==='failed'&&last.summary?.reason==='lock_timeout'&&<small>{tr('等待同步任务释放校验锁超时；本次未应用数据，可稍后重试。','Timed out waiting for synchronization; no data was applied. Retry later.')}</small>}
+        {!running&&last?.state==='done'&&<small>{last.summary?.tables} {tr('张表','tables')} · {tr('更新','Updated')} {last.summary?.changed||0} · {tr('新增','Created')} {last.summary?.created||0} · {tr('源表已删除','Source deleted')} {last.summary?.deleted||0} · {tr('冲突留档','Conflicts recorded')} {last.summary?.conflicts||0}</small>}
       </div>
-      <button type="button" className="primary" disabled={blocked||sending||!data||active||data?.full_run_active} onClick={()=>setConfirm(true)}>{active?tr('校验同步中…','Reconciling…'):tr('手动校验同步飞书','Reconcile from Feishu')}</button>
+      <button type="button" className="primary" disabled={blocked||sending||!data||running||data?.full_run_active} onClick={()=>setConfirm(true)}>{running?tr('校验同步中…','Reconciling…'):tr('手动校验同步飞书','Reconcile from Feishu')}</button>
     </div>
     {error&&<ToastMessage role="alert">{error}<button onClick={()=>setError('')}>×</button></ToastMessage>}
     <dialog ref={dialog} className="database-dialog" aria-labelledby="reconcile-title" onCancel={e=>{e.preventDefault();if(!sending)setConfirm(false);}}>

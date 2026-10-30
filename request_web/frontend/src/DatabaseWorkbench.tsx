@@ -1,4 +1,5 @@
 import DatabaseReconcile from "./DatabaseReconcile";
+import StockWorkbench from "./StockWorkbench";
 import ToastMessage from "./ToastMessage";
 import { useEffect, useRef, useState } from "react";
 import CategoryImageEditor from "./CategoryImageEditor";
@@ -19,6 +20,8 @@ async function json(url:string,init?:RequestInit){const r=await fetch(url,{cache
 
 export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const tr=(zh:string,en:string)=>lang==="zh"?zh:en;
+  const [view,setView]=useState(()=>new URLSearchParams(window.location.search).get("view")==="stock"?"stock":"tables");
+  const [stockBusy,setStockBusy]=useState(false);
   const [tables,setTables]=useState<Table[]>([]),[tableId,setTableId]=useState("");
   const [status,setStatus]=useState<any>(null),[data,setData]=useState<Result|null>(null);
   const [page,setPage]=useState(0),[query,setQuery]=useState(""),[sort,setSort]=useState(""),[descending,setDescending]=useState(false);
@@ -30,12 +33,12 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const loadTables=()=>json("/api/admin/database/tables").then(d=>{setTables(d.tables);setStatus(d);setTableId(old=>old||d.tables.find((t:Table)=>t.name==="物料品类"&&t.source==="primary")?.table_id||d.tables[0]?.table_id||"");});
   useEffect(()=>{loadTables().catch(e=>setError(e.message));},[]);
   useEffect(()=>{
-    if(!status?.sync_enabled)return;
+    if(view!=="tables"||!status?.sync_enabled)return;
     const handle=setInterval(()=>{if(document.visibilityState==='visible'&&!edit&&!saving){void loadTables().catch(()=>{});setReload(n=>n+1);}},5000);
     return ()=>clearInterval(handle);
-  },[status?.sync_enabled,edit,saving]);
+  },[status?.sync_enabled,edit,saving,view]);
   useEffect(()=>{
-    if(!tableId)return;
+    if(!tableId||view!=="tables")return;
     const controller=new AbortController();const epoch=++requestEpoch.current;
     const timer=setTimeout(()=>{
       setLoading(true);setError("");
@@ -46,7 +49,7 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
         .finally(()=>{if(epoch===requestEpoch.current)setLoading(false);});
     },query?220:0);
     return ()=>{clearTimeout(timer);controller.abort();};
-  },[tableId,page,query,sort,descending,reload]);
+  },[tableId,page,query,sort,descending,reload,view]);
   function selectTable(id:string){if(saving)return;setTableId(id);setData(null);setPage(0);setQuery("");setSort("");setVisible(null);setEdit(null);setError("");setNotice("");}
   function open(row:Row,field:Field){if(saving)return;setError("");setEdit({row,field,key:crypto.randomUUID()});}
   async function save(value:any){
@@ -74,7 +77,9 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
   const activeTable=tables.find(t=>t.table_id===tableId);
   return <section className="database-workbench" aria-label={tr("虚拟数据库","Virtual database")}>
 
-    <DatabaseReconcile lang={lang} blocked={Boolean(edit)||saving} onCompleted={()=>{setReload(n=>n+1);void loadTables();window.dispatchEvent(new Event("pudu-business-data-changed"));}} />
+    <div className="database-view-tabs" role="tablist" aria-label={tr("数据库视图","Database views")}>{[["tables",tr("数据表","Data tables")],["stock",tr("库存查询","Inventory lookup")]].map(([key,label])=><button type="button" key={key} id={"database-tab-"+key} role="tab" aria-selected={view===key} aria-controls={"database-panel-"+key} disabled={Boolean(edit)||saving||stockBusy} onClick={()=>setView(key)}>{label}</button>)}</div>
+    <DatabaseReconcile lang={lang} blocked={Boolean(edit)||saving||stockBusy} onCompleted={()=>{setReload(n=>n+1);void loadTables();window.dispatchEvent(new Event("pudu-business-data-changed"));}} />
+    {view==="stock"?<div role="tabpanel" id="database-panel-stock" aria-labelledby="database-tab-stock"><StockWorkbench lang={lang} onBusy={setStockBusy}/></div>:<div role="tabpanel" id="database-panel-tables" aria-labelledby="database-tab-tables">
     {status&&<div className="database-source"><span>PostgreSQL</span><span>{tr("最近导入","Last imported")}：{status.imported_at?new Date(status.imported_at).toLocaleString():"—"}</span><span>{status.pending_sync} {tr("条任务待同步","pending sync tasks")}</span><small>{status.sync_enabled?(status.workers_healthy?tr("飞书同步运行中 · 本地保存后自动同步","Feishu sync running · local changes sync automatically"):tr("飞书同步已启用，正在检查 Worker 状态","Feishu sync enabled; checking workers")):tr("飞书后台同步尚未启用；本页修改会持久保存在数据库。","Feishu sync is not enabled yet. Edits are durably saved in the database.")}{status.conflicts>0&&` · ${status.conflicts} ${tr("条历史冲突任务","historical conflicts")}`}</small></div>}
     {error&&<ToastMessage className="database-error" role="alert">{error}<button onClick={()=>{setEdit(null);setReload(x=>x+1);}}>{tr("重新读取","Reload")}</button></ToastMessage>}
     {notice&&!error&&<ToastMessage className="database-notice" role="status">✓ {notice}</ToastMessage>}
@@ -90,6 +95,7 @@ export default function DatabaseWorkbench({lang}:{lang:"zh"|"en"}){
       <footer className="database-footer"><span>{data?.count??0} {tr("条记录","records")}{loading&&` · ${tr("正在读取…","Loading…")}`}</span><div><button disabled={page===0||loading||saving} onClick={()=>setPage(v=>v-1)}>{tr("上一页","Previous")}</button><span>{page+1} / {Math.max(1,Math.ceil((data?.count||0)/50))}</span><button disabled={!data||(page+1)*50>=data.count||loading||saving} onClick={()=>setPage(v=>v+1)}>{tr("下一页","Next")}</button></div></footer>
     </div></div>
     {edit&&(!edit.field.editable||!scalar(edit.field))&&<ComplexEditor key={edit.key} edit={edit} fields={data?.fields||[]} tableId={tableId} tr={tr} saving={saving} onSave={save} onClose={()=>setEdit(null)} onSource={field=>{const row=edit.row;setVisible(v=>v!==null&&!v.includes(field.field_id)?[...v,field.field_id]:v);open(row,field);requestAnimationFrame(()=>{const cell=grid.current?.querySelector<HTMLElement>(`[data-field="${field.field_id}"][data-record="${row.record_id}"]`);cell?.scrollIntoView({block:"nearest",inline:"nearest"});cell?.querySelector<HTMLInputElement>("input")?.focus();});}}/>}
+    </div>}
   </section>;
 }
 
